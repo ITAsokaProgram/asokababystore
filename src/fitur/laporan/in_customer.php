@@ -78,7 +78,6 @@ $token = $menuHandler->getToken();
 
         /* --- Enhanced DataTables Styling --- */
         table.dataTable thead th {
-            @apply bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold uppercase text-xs border-b border-pink-200 px-6 py-4 rounded-t-xl shadow-lg;
             background: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);
             position: relative;
             overflow: hidden;
@@ -100,7 +99,6 @@ $token = $menuHandler->getToken();
         }
 
         table.dataTable tbody td {
-            @apply px-6 py-4 border-b border-pink-100 text-gray-700 font-medium;
             transition: all 0.2s ease;
         }
 
@@ -109,7 +107,6 @@ $token = $menuHandler->getToken();
         }
 
         table.dataTable tbody tr:hover {
-            @apply bg-gradient-to-r from-pink-50 to-rose-50 transform scale-[1.01] shadow-md;
             border-radius: 0.75rem;
         }
 
@@ -147,19 +144,16 @@ $token = $menuHandler->getToken();
 
         /* Enhanced Search & Length Controls */
         .dataTables_wrapper .dataTables_filter input {
-            @apply rounded-xl border-2 border-pink-200 shadow-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-pink-400 transition-all duration-300;
             background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(4px);
         }
 
         .dataTables_wrapper .dataTables_length select {
-            @apply rounded-xl border-2 border-pink-200 shadow-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-pink-400 transition-all duration-300;
             background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(4px);
         }
 
         .dataTables_wrapper .dataTables_info {
-            @apply text-gray-600 font-semibold;
             background: rgba(255, 255, 255, 0.8);
             padding: 0.75rem 1rem;
             border-radius: 0.75rem;
@@ -175,14 +169,7 @@ $token = $menuHandler->getToken();
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        /* Enhanced Button Styles */
-        .btn-primary {
-            @apply bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105;
-        }
-
-        .btn-secondary {
-            @apply bg-gradient-to-r from-gray-400 to-gray-500 hover:from-gray-500 hover:to-gray-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105;
-        }
+      
 
         /* Enhanced Loading Animation */
         .loading-spinner {
@@ -197,13 +184,11 @@ $token = $menuHandler->getToken();
 
         /* Enhanced File Upload Area */
         .file-upload-area {
-            @apply border-2 border-dashed border-pink-300 rounded-xl p-8 text-center transition-all duration-300;
             background: rgba(255, 255, 255, 0.5);
             backdrop-filter: blur(4px);
         }
 
         .file-upload-area:hover {
-            @apply border-pink-400 bg-pink-50;
             transform: scale(1.02);
         }
 
@@ -216,7 +201,6 @@ $token = $menuHandler->getToken();
         }
 
         .image-item {
-            @apply rounded-xl overflow-hidden shadow-lg transition-all duration-300;
             aspect-ratio: 1;
         }
 
@@ -228,7 +212,6 @@ $token = $menuHandler->getToken();
 
         /* Enhanced Status Badges */
         .status-badge {
-            @apply px-3 py-1 rounded-full text-xs font-semibold;
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: white;
             box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
