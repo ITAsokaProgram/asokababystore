@@ -694,9 +694,9 @@ header('Access-Control-Allow-Headers: Authorization, Content-Type');
 
 ## 📞 **Contact & Support**
 
-- **Developer**: [Nurman Syah]
+- **Developer**: [IT Asoka]
 - **Project**: Asoka Internal And External Website
-- **Repository**: [https://github.com/ProgramNS/asoka-id.git]
+- **Repository**: [https://github.com/ITAsokaProgram/asokababystore.git]
 - **Documentation**: Updated August 2025
 
 ---
