@@ -75,4 +75,4 @@ logs/
 config.env
 
 #qur
-qur.text
+qur.text.env*
