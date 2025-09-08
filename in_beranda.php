@@ -1,0 +1,642 @@
+<?php
+include 'aa_kon_sett.php';
+include 'src/auth/middleware_login.php';
+include 'src/api/middleware/permission_access.php';
+require_once 'src/component/menu_handler.php';
+
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: POST");
+header("Access-Control-Allow-Headers: Content-Type");
+
+
+// Create menu handler for this specific menu
+$menuHandler = new MenuHandler('dashboard');
+
+// Initialize and check access - this handles all authentication and permission logic
+if (!$menuHandler->initialize()) {
+  // If initialize() returns false, the error page has already been shown and script has exited
+  exit();
+}
+
+// If we reach here, user has access to the menu
+$user_id = $menuHandler->getUserId();
+$logger = $menuHandler->getLogger();
+$token = $menuHandler->getToken();
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Beranda</title>
+
+  <!-- font awesome cdn link  -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
+
+  <!-- Penjelasan: Link ke CSS eksternal dengan cache busting query string -->
+  <link rel="stylesheet" href="css/header.css">
+  <link rel="stylesheet" href="css/sidebar.css">
+  <link rel="stylesheet" href="css/animation-fade-in.css">
+  <!-- Setting logo pada tab di website Anda / Favicon -->
+  <link rel="icon" type="image/png" href="images/logo1.png">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="src/style/default-font.css">
+  <link rel="stylesheet" href="src/output2.css">
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  <!-- <link rel="stylesheet" href="src/style/output.css"> -->
+  <style>
+    .btn.active {
+      background-color: transparent;
+      color: #ec4899;
+      outline: 2px solid #ec4899;
+      outline-offset: 1px;
+    }
+
+    /* --- Enhanced Card & Glass Styles --- */
+    .glass-container {
+      background: rgba(255, 255, 255, 0.80);
+      backdrop-filter: blur(8px);
+      border-radius: 1.25rem;
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+      border: 1.5px solid #bae6fd;
+      padding: 2rem;
+    }
+
+    .card-glass {
+      background: rgba(255, 255, 255, 0.90);
+      backdrop-filter: blur(6px);
+      border-radius: 1.25rem;
+      box-shadow: 0 4px 24px 0 rgba(31, 38, 135, 0.10);
+      border: 1.5px solid #ec4899;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+
+    .card-glass:hover {
+      box-shadow: 0 8px 32px 0 rgba(236, 72, 153, 0.18);
+      transform: scale(1.02);
+    }
+
+    .skeleton-loader {
+      background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+      background-size: 200% 100%;
+      animation: skeleton 1.2s ease-in-out infinite;
+    }
+
+    @keyframes skeleton {
+      0% {
+        background-position: 200% 0;
+      }
+
+      100% {
+        background-position: -200% 0;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-white flex">
+
+  <?php include 'src/component/navigation_report.php'; ?>
+  <?php include 'src/component/sidebar_report.php'; ?>
+
+
+  <main id="main-content" class="flex-1 p-8 transition-all duration-300 ml-64 mt-16 bg-gray-100">
+
+    <!-- Shortcut Menu -->
+    <section class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-3 gap-4 mb-8">
+      <!-- Member Card Enhanced - Modified -->
+      <div
+        class="dashboard-card bg-gradient-to-br from-blue-50 via-white to-indigo-100 rounded-2xl p-2 shadow border border-blue-200/70 backdrop-blur-sm animate-fade-in-up">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-bold flex items-center gap-2 text-blue-800">
+            <span class="w-6 h-6 flex items-center justify-center rounded-full bg-blue-100 shadow">
+              <i class="fa-solid fa-users text-blue-600 text-base"></i>
+            </span>
+            Member
+          </h2>
+          <div class="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+        </div>
+
+        <div class="space-y-4">
+          <!-- Top Sales -->
+          <div
+            class="cursor-pointer bg-gradient-to-br from-white/90 to-blue-50/80 rounded-xl p-1.5 shadow border border-blue-100/60 hover:scale-105 hover:shadow-md transition-all duration-300 flex flex-col animate-fade-in-up"
+            onclick="window.location.href='/src/fitur/member/top_sales'">
+            <div class="flex items-center justify-between mb-1">
+              <div class="flex items-center gap-2">
+                <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                <span class="font-semibold text-xs text-gray-800 whitespace-nowrap" title="Top Sales">Top Sales</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between text-xs text-gray-600">
+              <div class="flex items-center gap-1 max-w-[100px]" title="Product Terlaris">
+                <i class="fa-solid fa-trophy text-blue-600 text-xs"></i>
+                <span id="top_sales_product_member" class="whitespace-nowrap"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Produk Favorit -->
+          <div
+            class="cursor-pointer bg-gradient-to-br from-white/90 to-amber-50/80 rounded-xl p-1.5 shadow border border-amber-100/60 hover:scale-105 hover:shadow-md transition-all duration-300 flex flex-col animate-fade-in-up"
+            onclick="window.location.href='/src/fitur/member/product_favorite'">
+            <div class="flex items-center justify-between mb-1">
+              <div class="flex items-center gap-2">
+                <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                <span class="font-semibold text-xs text-gray-800 whitespace-nowrap" title="Produk Favorit">Produk
+                  Favorit</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between text-xs text-gray-600">
+              <div class="flex items-center gap-1 max-w-[100px]" title="Favorit Member">
+                <i class="fa-solid fa-heart text-amber-500 text-xs"></i>
+                <span id="top_sales_member" class="whitespace-nowrap"></span>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="cursor-pointer bg-gradient-to-br from-white/90 to-green-50/80 rounded-xl p-1.5 shadow border border-green-100/60 hover:scale-105 hover:shadow-md transition-all duration-300 flex flex-col animate-fade-in-up"
+            onclick="window.location.href='/src/fitur/member/top_sales'">
+            <div class="flex items-center justify-between mb-1">
+              <div class="flex items-center gap-2">
+                <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span class="font-semibold text-xs text-gray-800 whitespace-nowrap" title="Top Member">Top Member</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between text-xs text-gray-600">
+              <div class="flex items-center gap-1 max-w-[100px]" title="Top Member">
+                <i class="fa-solid fa-user text-green-500 text-xs"></i>
+                <span id="top_member" class="whitespace-nowrap"></span>
+              </div>
+              <div class="flex items-center gap-1 max-w-[100px]" title="Top Member">
+                <i class="fa-solid fa-money-bill text-green-500 text-xs"></i>
+                <span id="top_member_nominal" class="whitespace-nowrap font-mono text-xs italic"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Transaksi Card -->
+      <div
+        class="dashboard-card bg-gradient-to-br from-emerald-50 to-teal-100 rounded-xl p-3 shadow-lg border border-emerald-200/50 backdrop-blur-sm">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-base font-bold flex items-center gap-2 text-emerald-800">
+            <i class="fa-solid fa-credit-card text-emerald-600"></i> Transaksi
+          </h2>
+          <div class="flex items-center gap-2">
+            <div class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></div>
+            <button id="view-all-transaksi" class="text-emerald-600 hover:text-emerald-800 transition hover:scale-110"
+              title="Lihat Semua Transaksi">
+              <i class="fa-solid fa-external-link-alt text-xs"></i>
+            </button>
+          </div>
+        </div>
+
+        <div
+          class="cursor-pointer bg-gradient-to-br from-emerald-50 via-white to-emerald-100 rounded-xl p-1.5 shadow border border-emerald-200/80 text-center hover:shadow-lg hover:scale-[1.01] transition-all duration-200 mb-2 backdrop-blur-sm animate-fade-in-up"
+          onclick="window.location.href='/src/fitur/transaction/detail_transaksi_cabang?cabang=all'">
+          <div class="flex flex-col items-center mb-1">
+            <span class="font-semibold text-emerald-700 text-xs tracking-wide">Total Transaksi Kemarin</span>
+          </div>
+          <div class="flex flex-col sm:flex-row items-center justify-center gap-1">
+            <div class="flex flex-col items-center px-1">
+              <span class="text-[10px] text-gray-500 font-medium">Total</span>
+              <span class="text-xs font-bold text-emerald-700" id="total_trans"></span>
+            </div>
+            <div class="flex flex-col items-center px-1">
+              <span class="text-[10px] text-gray-500 font-medium">Member</span>
+              <span class="text-xs font-bold text-blue-700" id="total_trans_member"></span>
+            </div>
+            <div class="flex flex-col items-center px-1">
+              <span class="text-[10px] text-gray-500 font-medium">Non</span>
+              <span class="text-xs font-bold text-red-700" id="total_trans_non"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="space-y-1.5 mb-2 text-xs">
+          <!-- Tertinggi -->
+          <div
+            class="bg-gradient-to-br from-emerald-50 via-white to-emerald-100 rounded-xl p-1.5 shadow border border-emerald-200/80 transition-all duration-200 hover:shadow-lg hover:scale-[1.01] cursor-pointer backdrop-blur-sm animate-fade-in-up"
+            onclick="window.location.href='/src/fitur/transaction/transaksi_cabang'">
+            <div class="flex items-center justify-between mb-1">
+              <span id="cabang-t" class="font-medium flex items-center gap-1">
+                <i class="fa-solid fa-store text-emerald-600"></i>
+                <span class="truncate max-w-[80px]"></span>
+              </span>
+              <span
+                class="text-emerald-600 text-[11px] font-semibold bg-emerald-100 px-2 py-0.5 rounded-full">Tertinggi</span>
+            </div>
+            <div class="flex justify-between font-bold text-[11px]">
+              <span>Total: <span class="text-emerald-700" id="trans_tertinggi_total"></span></span>
+              <span>Member: <span class="text-blue-600" id="trans_tertinggi_member"></span></span>
+              <span>Non: <span class="text-red-500" id="trans_tertinggi_non"></span></span>
+            </div>
+          </div>
+
+          <!-- Terendah -->
+          <div
+            class="bg-gradient-to-br from-teal-50 via-white to-teal-100 rounded-xl p-1.5 shadow border border-teal-200/80 transition-all duration-200 hover:shadow-lg hover:scale-[1.01] cursor-pointer backdrop-blur-sm animate-fade-in-up"
+            onclick="window.location.href='/src/fitur/transaction/transaksi_cabang'">
+            <div class="flex items-center justify-between mb-1">
+              <span id="cabang-tr" class="font-medium flex items-center gap-1">
+                <i class="fa-solid fa-store text-teal-600"></i>
+                <span class="truncate max-w-[80px]"></span>
+              </span>
+              <span class="text-teal-600 text-[11px] font-semibold bg-teal-100 px-2 py-0.5 rounded-full">Terendah</span>
+            </div>
+            <div class="flex justify-between font-bold text-[11px]">
+              <span>Total: <span class="text-teal-700" id="trans_terendah_total"></span></span>
+              <span>Member: <span class="text-blue-600" id="trans_terendah_member"></span></span>
+              <span>Non: <span class="text-red-500" id="trans_terendah_non"></span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Invalid Transaksi -->
+      <div
+        class="dashboard-card bg-gradient-to-br from-red-50 to-rose-100 rounded-xl p-3 shadow-lg border border-red-200/50 backdrop-blur-sm">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-base font-bold flex items-center gap-2 text-red-800">
+            <i class="fa-solid fa-exclamation-triangle text-red-600"></i> Invalid Transaksi
+          </h2>
+          <div class="flex items-center gap-2">
+            <div class="w-1.5 h-1.5 bg-red-400 rounded-full animate-pulse"></div>
+            <button id="view-all-invalid" class="text-red-600 hover:text-red-800 transition hover:scale-110"
+              title="Lihat Semua Invalid Transaksi">
+              <i class="fa-solid fa-external-link-alt text-xs"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Top Invalid Transaksi -->
+        <div class="grid grid-cols-1 gap-2 mb-2 text-xs" id="invalid-transaksi-container">
+          <!-- Data akan diisi oleh JavaScript -->
+          <div class="flex items-center justify-center text-gray-500 bg-white/60 rounded-xl p-2">
+            <i class="fa-solid fa-spinner fa-spin mr-1"></i> Loading...
+          </div>
+        </div>
+      </div>
+
+      <!-- Transaksi Margin Minus -->
+      <div
+        class="dashboard-card bg-gradient-to-br from-orange-50 to-amber-100 rounded-xl p-4 shadow-lg border border-orange-200/50 backdrop-blur-sm">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-lg font-bold flex items-center gap-2 text-orange-800">
+            <i class="fa-solid fa-chart-line text-orange-600"></i> Margin Minus
+          </h2>
+          <div class="flex items-center gap-2">
+            <div class="w-1.5 h-1.5 bg-orange-400 rounded-full animate-pulse"></div>
+            <button id="view-all-margin-minus" class="text-orange-600 hover:text-orange-800 transition hover:scale-110"
+              title="Lihat Semua Margin Minus">
+              <i class="fa-solid fa-external-link-alt text-xs"></i>
+            </button>
+          </div>
+        </div>
+        <div id="top-margin-minus-container" class="grid grid-cols-1 gap-2 text-xs">
+          <!-- Data akan diisi oleh JavaScript -->
+          <div class="flex items-center justify-center text-gray-500 bg-white/60 rounded-xl p-2">
+            <i class="fa-solid fa-spinner fa-spin mr-1"></i> Loading...
+          </div>
+        </div>
+      </div>
+
+      <!-- Retur Barang -->
+      <div
+        class="dashboard-card bg-gradient-to-br from-purple-50 to-violet-100 rounded-xl p-4 shadow-lg border border-purple-200/50 backdrop-blur-sm">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-lg font-bold flex items-center gap-2 text-purple-800">
+            <i class="fa-solid fa-undo text-purple-600"></i> Retur Barang
+          </h2>
+          <div class="flex items-center gap-2">
+            <div class="w-1.5 h-1.5 bg-purple-400 rounded-full animate-pulse"></div>
+            <button id="view-all-retur" class="text-purple-600 hover:text-purple-800 transition hover:scale-110"
+              title="Lihat Semua Retur Barang">
+              <i class="fa-solid fa-external-link-alt text-xs"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Top Retur Barang -->
+        <div class="grid grid-cols-1 gap-2 mb-3 text-xs" id="top-retur-container">
+          <!-- Data akan diisi oleh JavaScript -->
+          <div class="flex items-center justify-center text-gray-500 bg-white/60 rounded-xl p-2">
+            <i class="fa-solid fa-spinner fa-spin mr-1"></i> Loading...
+          </div>
+        </div>
+      </div>
+
+      <!-- Aktifitas Transaksi -->
+      <div
+        class="dashboard-card bg-gradient-to-br from-indigo-50 to-blue-100 rounded-xl p-4 shadow-lg border border-indigo-200/50 backdrop-blur-sm">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-lg font-bold flex items-center gap-2 text-indigo-800">
+            <i class="fa-solid fa-bag-shopping text-indigo-600"></i> Multi - Transaksi
+          </h2>
+          <div class="flex items-center gap-2">
+            <div class="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-pulse"></div>
+            <button id="view-all-activity" class="text-indigo-600 hover:text-indigo-800 transition hover:scale-110"
+              title="Lihat Semua Aktifitas Transaksi">
+              <i class="fa-solid fa-external-link-alt text-xs"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Top Aktifitas Transaksi -->
+        <div class="grid grid-cols-1 gap-2 mb-3 text-xs" id="top-activity-container">
+          <!-- Data akan diisi oleh JavaScript -->
+          <div class="flex items-center justify-center text-gray-500 bg-white/60 rounded-xl p-2">
+            <i class="fa-solid fa-spinner fa-spin mr-1"></i> Loading...
+          </div>
+        </div>
+    </section>
+
+    </div>
+
+    <!-- <section class="animate-fade-in-up "> -->
+      <!-- WRAPPER yang selalu center -->
+      <!-- <div class="flex items-center justify-center"> -->
+        <!-- CONTAINER yang lebarnya fleksibel -->
+        <!-- <div class="flex items-center gap-3 px-4 py-3 -->
+              <!-- backdrop-blur-sm bg-white/90 rounded-xl shadow-xl -->
+              <!-- w-auto max-w-[90vw]"> -->
+          <!-- <span -->
+            <!-- class="text-2xl text-yellow-400 transition-all duration-200 hover:text-yellow-300 hover:opacity-80 cursor-pointer" -->
+            <!-- onclick="window.location.href='/src/fitur/laporan/in_review_cust'" title="Review"> -->
+            <!-- <i class="fa fa-star"></i> -->
+          <!-- </span>
+        </div>
+      </div>
+    </section> -->
+
+    <!-- Grafik Penjualan -->
+    <section
+      class="glass-container animate-fade-in-up mt-8 backdrop-blur-sm bg-white/90 rounded-2xl shadow-xl border border-white/20 p-8">
+      <div
+        class="flex flex-col lg:flex-row items-center justify-between mb-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200/50">
+        <div class="flex items-center gap-3 mb-4 lg:mb-0">
+          <div
+            class="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+            <i class="fa fa-chart-line text-white text-xl"></i>
+          </div>
+          <div>
+            <h2 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
+              Grafik Penjualan
+            </h2>
+            <p class="text-blue-600 text-sm font-medium">Analisis Performa Penjualan</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 text-sm text-blue-600">
+          <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+          <span class="font-medium">Real-time Analytics</span>
+        </div>
+      </div>
+
+      <!-- Controls Section -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white/80 rounded-xl p-4 border border-blue-100/50 shadow-sm">
+          <label for="period1" class="block text-blue-700 font-semibold mb-2 flex items-center gap-2">
+            <i class="fa-solid fa-calendar-alt text-blue-600"></i>
+            Periode Grafik 1
+          </label>
+          <select id="period1"
+            class="w-full px-4 py-3 border border-blue-200 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-400 transition-all duration-200 bg-white/90 font-medium text-blue-700">
+            <option value="day">📅 Per Hari</option>
+            <option value="month">📊 Per Bulan</option>
+            <option value="year">📈 Per Tahun</option>
+          </select>
+        </div>
+
+        <div class="bg-white/80 rounded-xl p-4 border border-blue-100/50 shadow-sm">
+          <label for="period2" class="block text-blue-700 font-semibold mb-2 flex items-center gap-2">
+            <i class="fa-solid fa-chart-bar text-blue-600"></i>
+            Periode Grafik 2
+          </label>
+          <select id="period2"
+            class="w-full px-4 py-3 border border-blue-200 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-400 transition-all duration-200 bg-white/90 font-medium text-blue-700">
+            <option value="per_jam">⏰ Per Jam (Kemarin)</option>
+            <option value="7_hari">📅 7 Hari Terakhir</option>
+            <option value="30_hari">📊 30 Hari Terakhir</option>
+            <option value="12_bulan">📈 1 Tahun Terakhir</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Charts Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Chart 1 -->
+        <div
+          class="bg-gradient-to-br from-white/95 to-blue-50/50 rounded-2xl shadow-lg p-6 h-[420px] relative border border-blue-200/50 hover:shadow-xl transition-all duration-300">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-blue-800 flex items-center gap-2">
+              <i class="fa-solid fa-chart-line text-blue-600"></i>
+              Tren Penjualan
+            </h3>
+            <div class="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+          </div>
+          <div id="chart1-skeleton"
+            class="absolute inset-0 flex justify-center items-center skeleton-loader bg-white/80 rounded-xl">
+            <div
+              class="w-16 h-16 border-4 border-t-transparent border-blue-500 border-solid rounded-full animate-spin shadow-lg">
+            </div>
+          </div>
+          <div id="chart1" class="w-full h-[350px]"></div>
+        </div>
+
+        <!-- Chart 2 -->
+        <div
+          class="bg-gradient-to-br from-white/95 to-indigo-50/50 rounded-2xl shadow-lg p-6 h-[420px] relative border border-indigo-200/50 hover:shadow-xl transition-all duration-300">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-indigo-800 flex items-center gap-2">
+              <i class="fa-solid fa-chart-area text-indigo-600"></i>
+              Tren Omzet
+            </h3>
+            <div class="w-3 h-3 bg-indigo-500 rounded-full animate-pulse"></div>
+          </div>
+          <div id="chart2-skeleton"
+            class="absolute inset-0 flex justify-center items-center skeleton-loader bg-white/80 rounded-xl">
+            <div
+              class="w-16 h-16 border-4 border-t-transparent border-indigo-500 border-solid rounded-full animate-spin shadow-lg">
+            </div>
+          </div>
+          <div id="chart2" class="w-full h-[350px]"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- custom js file link -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.3.0/dist/echarts.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  <script src="src/js/dashboard/display.js" type="module"></script>
+  <script src="src/js/dashboard/dashboardChart.js"></script>
+  <script src="src/js/middleware_auth.js"></script>
+  <script src="src/js/logout.js"></script>
+
+  <script>
+    // GSAP Animations for Dashboard Cards
+    document.addEventListener('DOMContentLoaded', function () {
+      // Initial state - hide all cards
+      gsap.set('.dashboard-card', {
+        opacity: 0,
+        y: 50,
+        scale: 0.9
+      });
+
+      // Animate cards in sequence
+      gsap.timeline()
+        .to('.dashboard-card:nth-child(1)', {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.6,
+          ease: 'back.out(1.7)'
+        })
+        .to('.dashboard-card:nth-child(2)', {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.6,
+          ease: 'back.out(1.7)'
+        }, '-=0.3')
+        .to('.dashboard-card:nth-child(3)', {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.6,
+          ease: 'back.out(1.7)'
+        }, '-=0.3')
+        .to('.dashboard-card:nth-child(4)', {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.6,
+          ease: 'back.out(1.7)'
+        }, '-=0.3')
+        .to('.dashboard-card:nth-child(5)', {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.6,
+          ease: 'back.out(1.7)'
+        }, '-=0.3')
+        .to('.dashboard-card:nth-child(6)', {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.6,
+          ease: 'back.out(1.7)'
+        }, '-=0.3');
+
+      // Hover animations for cards
+      const cards = document.querySelectorAll('.dashboard-card');
+      cards.forEach(card => {
+        card.addEventListener('mouseenter', () => {
+          gsap.to(card, {
+            scale: 1.05,
+            duration: 0.3,
+            ease: 'power2.out',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+          });
+        });
+
+        card.addEventListener('mouseleave', () => {
+          gsap.to(card, {
+            scale: 1,
+            duration: 0.3,
+            ease: 'power2.out',
+            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+          });
+        });
+      });
+
+      // Animate chart section
+      gsap.from('.glass-container', {
+        opacity: 0,
+        y: 100,
+        duration: 0.8,
+        ease: 'power2.out',
+        delay: 1.2
+      });
+    });
+  </script>
+
+  <script>
+    document.getElementById("toggle-sidebar").addEventListener("click", function () {
+      document.getElementById("sidebar").classList.toggle("open");
+    });
+    document.addEventListener("DOMContentLoaded", function () {
+      const sidebar = document.getElementById("sidebar");
+      const closeBtn = document.getElementById("closeSidebar");
+
+      closeBtn.addEventListener("click", function () {
+        sidebar.classList.remove("open"); // Hilangkan class .open agar sidebar tertutup
+      });
+    });
+    document.getElementById("toggle-hide").addEventListener("click", function () {
+      var sidebarTexts = document.querySelectorAll(".sidebar-text");
+      let mainContent = document.getElementById("main-content");
+      let sidebar = document.getElementById("sidebar");
+      var toggleButton = document.getElementById("toggle-hide");
+      var icon = toggleButton.querySelector("i");
+
+      if (sidebar.classList.contains("w-64")) {
+        // Sidebar mengecil
+        sidebar.classList.remove("w-64", "px-5");
+        sidebar.classList.add("w-16", "px-2");
+        sidebarTexts.forEach((text) => text.classList.add("hidden")); // Sembunyikan teks
+        mainContent.classList.remove("ml-64");
+        mainContent.classList.add("ml-16"); // Main ikut mundur
+        toggleButton.classList.add("left-20"); // Geser tombol lebih dekat
+        toggleButton.classList.remove("left-64");
+        icon.classList.remove("fa-angle-left"); // Ubah ikon
+        icon.classList.add("fa-angle-right");
+      } else {
+        // Sidebar membesar
+        sidebar.classList.remove("w-16", "px-2");
+        sidebar.classList.add("w-64", "px-5");
+        sidebarTexts.forEach((text) => text.classList.remove("hidden")); // Tampilkan teks kembali
+        mainContent.classList.remove("ml-16");
+        mainContent.classList.add("ml-64");
+        toggleButton.classList.add("left-64"); // Geser tombol ke posisi awal
+        toggleButton.classList.remove("left-20");
+        icon.classList.remove("fa-angle-right"); // Ubah ikon
+        icon.classList.add("fa-angle-left");
+      }
+    });
+    document.addEventListener("DOMContentLoaded", function () {
+      const profileImg = document.getElementById("profile-img");
+      const profileCard = document.getElementById("profile-card");
+
+      profileImg.addEventListener("click", function (event) {
+        event.preventDefault();
+        profileCard.classList.toggle("show");
+      });
+
+      // Tutup profile-card jika klik di luar
+      document.addEventListener("click", function (event) {
+        if (!profileCard.contains(event.target) && !profileImg.contains(event.target)) {
+          profileCard.classList.remove("show");
+        }
+      });
+    });
+  </script>
+
+
+</body>
+
+</html>

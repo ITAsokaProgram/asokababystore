@@ -1,0 +1,78 @@
+# Node.js
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+pnpm-lock.yaml
+
+# PHP Composer
+vendor/
+composer.json
+composer.lock
+
+# Environment files
+*.env
+**/*.env
+
+# OS / Editor junk
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
+
+# Build / Dist folders
+dist/
+build/
+public/storage/
+
+# Cache
+*.cache
+.cache/
+
+# log file
+src/log/
+
+# Services
+asoka-461004-c0b99b8beff3.json
+
+# Configuration files
+aa_kon_sett.php
+
+# File upload user
+uploaded_img/
+
+# Build/minified files
+*.min.js
+*.min.css
+
+# PHP cache
+*.php.cache
+
+# Editor/backup files
+*~
+*.swp
+*.swo
+
+# Test/coverage
+coverage/
+.nyc_output/
+
+# Composer installer
+composer.phar
+composer-setup.php
+
+# Log files
+logs/
+
+# Local database
+*.sqlite
+*.sqlite3
+*.db
+*.sql
+
+# Local config
+config.env
+
+#qur
+qur.text

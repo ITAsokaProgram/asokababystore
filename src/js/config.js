@@ -1,0 +1,2 @@
+export const supabaseUrl = "https://icftoopegbmshndzyshe.supabase.co"; // Ganti dengan URL Supabase kamu
+export const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImljZnRvb3BlZ2Jtc2huZHp5c2hlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI5NzYyNDAsImV4cCI6MjA1ODU1MjI0MH0.ucX7adRB32CyItPNkAdhzLFLB-aEciCimmEBp-NaOcU"; 

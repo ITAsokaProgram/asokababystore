@@ -1,0 +1,8 @@
+[
+    {
+      "menu_code": "product ",
+      "menu_nama": "Product",
+      "endpoint_url": "/src/fitur/products/product.php"
+    }
+    
+  ]

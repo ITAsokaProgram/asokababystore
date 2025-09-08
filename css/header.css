@@ -1,0 +1,21 @@
+.profile-card {
+    position: absolute;
+    right: 10px;
+    top: 50px;
+    background: white;
+    padding: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease-in-out;
+    z-index: 50;
+    /* Supaya tampil di atas elemen lain */
+}
+
+.profile-card.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}

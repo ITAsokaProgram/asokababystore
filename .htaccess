@@ -1,0 +1,68 @@
+RewriteEngine On
+php_value upload_max_filesize 10M
+php_value post_max_size 12M
+RewriteCond %{HTTP:Authorization} ^(.*)
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%1]
+
+# Mengecualikan folder src/api/ agar tetap bisa mengakses file .php
+RewriteCond %{REQUEST_URI} ^/src/api/ [NC]
+RewriteCond %{REQUEST_URI} ^/src/config/ [NC]
+
+
+# Hanya menghapus .php di folder fitur/laporan/
+RewriteCond %{REQUEST_URI} ^/src/fitur/laporan/ [NC,OR]
+RewriteCond %{REQUEST_URI} ^/src/fitur/account/ [NC]
+RewriteCond %{THE_REQUEST} \s/+(.+?)\.php[\s?/] [NC]
+RewriteRule ^ /%1 [R=301,L,NE]
+
+# Menghapus .php hanya untuk fitur/laporan/
+RewriteCond %{REQUEST_URI} ^/src/fitur/laporan/ [NC,OR]
+RewriteCond %{REQUEST_URI} ^/src/fitur/account/ [NC]
+RewriteCond %{REQUEST_FILENAME} !-d 
+RewriteCond %{DOCUMENT_ROOT}/$1.php -f 
+RewriteRule ^(.+?)/?$ $1.php [L]
+
+# Jika ingin redirect index.php ke /
+RewriteRule ^index/?$ / [R=301,L]
+
+
+# Menghapus .php untuk semua file di root (kecuali yang sudah diatur)
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^(.+)$ $1.php [L]
+
+
+# Mencegah akses langsung ke direktori
+Options -Indexes 
+
+
+
+# Mencegah cache untuk file HTML, CSS, dan JS
+<FilesMatch "\.(html|htm|js|css)$">
+    FileETag None
+    <IfModule mod_headers.c>
+        Header unset ETag
+        Header set Cache-Control "private, no-cache, no-store, proxy-revalidate, no-transform"
+        Header set Pragma "no-cache"
+    </IfModule>
+</FilesMatch>
+
+# Mencegah akses langsung ke file tertentu
+<Files "aa_kon_sett.php">
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+
+# Extra Security Headers
+<IfModule mod_headers.c>
+	Header set X-XSS-Protection "1; mode=block"
+</IfModule>
+
+
+# Mengarahkan ke halaman error kustom
+ErrorDocument 404 /errorpage.php
+ErrorDocument 403 /errorpage.php
+ErrorDocument 401 /src/component/error_token.php
+ErrorDocument 429 /error429.php
+ErrorDocument 500 /error500.php

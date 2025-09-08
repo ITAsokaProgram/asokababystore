@@ -1,0 +1,53 @@
+body {
+    font-family: 'Poppins', sans-serif;
+    background: #f8f9fa;
+}
+
+/* Header */
+.header {
+    background: #2C3E50;
+    color: white;
+}
+
+.header .logo img {
+    width: 150px;
+}
+
+.header .icons div {
+    cursor: pointer;
+    font-size: 20px;
+    margin: 0 10px;
+}
+
+
+/* Form */
+.penjualan {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    margin: 20px;
+}
+
+/* Table */
+table {
+    width: 100%;
+}
+
+table th {
+    background: #2C3E50;
+    color: white;
+}
+
+table tr:hover {
+    background: #f1f1f1;
+}
+
+/* Footer */
+.footer {
+    text-align: center;
+    padding: 20px;
+    background: #2C3E50;
+    color: white;
+    margin-top: 20px;
+}

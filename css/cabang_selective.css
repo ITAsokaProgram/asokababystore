@@ -1,0 +1,118 @@
+/* Multi-Select Dropdown Styling */
+.multi-select-container {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    min-width: 200px;
+    font-family: Arial, sans-serif;
+  }
+  
+  .multi-select-button {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    background-color: white;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 4px;
+    position: relative;
+    padding-right: 30px;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+  }
+  
+  .multi-select-button:hover {
+    border-color: #007bff;
+  }
+  
+  .multi-select-button:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  }
+  
+  .multi-select-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-top: none;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .multi-select-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
+    transition: background-color 0.2s ease;
+  }
+  
+  .multi-select-item:last-child {
+    border-bottom: none;
+  }
+  
+  .multi-select-item:hover {
+    background-color: #f8f9fa;
+  }
+  
+  .multi-select-item input[type="checkbox"] {
+    margin: 0;
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+  }
+  
+  .multi-select-item label {
+    cursor: pointer;
+    flex: 1;
+    margin: 0;
+    user-select: none;
+  }
+  
+  .selected-text {
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: calc(100% - 20px);
+  }
+  
+  /* Scrollbar styling untuk dropdown list */
+  .multi-select-list::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .multi-select-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  
+  .multi-select-list::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+  }
+  
+  .multi-select-list::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+  }
+  
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .multi-select-container {
+      width: 100%;
+    }
+    
+    .multi-select-list {
+      max-height: 150px;
+    }
+  }
