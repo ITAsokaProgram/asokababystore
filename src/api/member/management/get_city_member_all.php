@@ -19,8 +19,7 @@ WHERE t.tgl_trans >= CURDATE() - INTERVAL 3 MONTH
   AND c.kota IS NOT NULL
   AND c.kota <> ''
 GROUP BY c.kota
-ORDER BY total_member DESC
-LIMIT 10"; 
+ORDER BY total_member DESC";
 
     $res = $conn->query($sql);
 

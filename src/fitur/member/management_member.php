@@ -323,7 +323,7 @@
             </div>
 
             <!-- Analytics & Advanced Features -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div>
 
                 <!-- Member Location Analytics -->
                 <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-blue-100 p-6">
@@ -334,7 +334,7 @@
                             </div>
                             <h3 class="text-lg font-semibold text-gray-800">Sebaran Member</h3>
                         </div>
-                        <button class="text-blue-600 hover:text-blue-800 text-sm font-medium" onclick="window.location.href='member_analytics'">
+                        <button class="text-blue-600 hover:text-blue-800 text-sm font-medium" onclick="window.location.href='sebaran_member'">
                             <i class="fas fa-external-link-alt mr-1"></i>Detail
                         </button>
                     </div>
@@ -344,10 +344,10 @@
                         <!-- isi akan diganti via JS -->
                     </div>
                 </div>
+            </div>
 
-
-                <!-- Member Actions -->
-                <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-purple-100 p-6">
+            <!-- Member Actions -->
+            <!-- <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-purple-100 p-6">
                     <div class="flex items-center gap-3 mb-4">
                         <div class="bg-gradient-to-r from-purple-500 to-pink-600 p-2 rounded-lg">
                             <i class="fas fa-bolt text-white text-lg"></i>
@@ -431,10 +431,10 @@
                             </div>
                         </button>
                     </div>
-                </div>
+                </div> -->
 
 
-            </div>
+
             <!-- Member Monitoring -->
             <?php require_once __DIR__ . "/monitoring_member.php" ?>
 
