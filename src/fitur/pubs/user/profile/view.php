@@ -28,7 +28,7 @@ if ($token) {
         INSERT INTO visitors (user_id, ip, user_agent, page, page_name) 
         VALUES (?, ?, ?, ?, ?)
     ");
-        $stmt->bind_param("isss", $userId, $ip, $ua, $page, $pageName);
+        $stmt->bind_param("issss", $userId, $ip, $ua, $page, $pageName);
         $stmt->execute();
     }
 } else {
