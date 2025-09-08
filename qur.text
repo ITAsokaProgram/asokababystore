@@ -1,0 +1,331 @@
+// Upload FTP
+$ftp_server = "sftp://sftp-server.chakra.uno";
+$ftp_conn = ftp_connect($ftp_server) or die("Tidak bisa konek FTP");
+$ftp_user = "asoka";
+$ftp_pass = "x0KdhrYuzpjp1SvsOAsfYkMKOkfV9vLM";
+
+if (ftp_login($ftp_conn, $ftp_user, $ftp_pass)) {
+    ftp_put($ftp_conn, $filename, $filepath, FTP_BINARY);
+    echo "Upload sukses!\n";
+} else {
+    echo "Gagal login FTP!\n";
+}
+ftp_close($ftp_conn);
+
+
+Template Untuk View Product
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Toko Online - Produk Pilihan</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { 'sans': ['Inter','system-ui','sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root{
+      --primary:#ff6b81; /* Asoka pink */
+      --primary-dark:#e55a6f;
+      --primary-50:#ffe4e9;
+      --primary-100:#ffd1db;
+    }
+    .nice-scrollbar::-webkit-scrollbar{width:8px;height:8px}
+    .nice-scrollbar::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:9999px}
+    .nice-scrollbar::-webkit-scrollbar-track{background:#f1f5f9}
+  </style>
+</head>
+<body class="bg-gradient-to-br from-[var(--primary-50)] via-white to-[var(--primary-100)] min-h-screen font-sans">
+  <!-- Header -->
+  <header class="shadow-xl" style="background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%)">
+    <div class="max-w-7xl mx-auto px-4 py-6">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+        <!-- Logo -->
+        <div class="text-white text-2xl md:text-3xl font-bold">✨ Toko Mama</div>
+
+        <!-- Search Box -->
+        <div class="relative w-full md:max-w-md">
+          <input id="searchInput" type="text" placeholder="Cari produk favorit..."
+                 class="w-full px-6 py-3 pr-12 rounded-full border-0 shadow-lg focus:shadow-xl focus:outline-none focus:ring-4 transition-all duration-300 text-gray-700"
+                 style="--tw-ring-color:rgba(255,107,129,.25)" />
+          <button class="absolute right-3 top-1/2 -translate-y-1/2 bg-white text-[var(--primary)] p-2 rounded-full hover:scale-110 transition-transform duration-300" aria-label="Cari">
+            🔍
+          </button>
+        </div>
+
+        <!-- Cart Icon (placeholder) -->
+        <div class="text-white cursor-pointer hover:scale-110 transition-transform duration-300" title="Keranjang">
+          <span class="text-2xl">🛒</span>
+          <span class="ml-2 bg-white/20 text-white text-xs px-2 py-1 rounded-full">0</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Categories -->
+    <div class="flex flex-wrap justify-center gap-3 mb-8">
+      <button class="category-btn px-6 py-3 bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-300 font-medium active"
+              data-category="all">Semua Produk</button>
+      <button class="category-btn px-6 py-3 bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-300 font-medium"
+              data-category="fashion">👗 Fashion</button>
+      <button class="category-btn px-6 py-3 bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-300 font-medium"
+              data-category="kecantikan">💄 Kecantikan</button>
+      <button class="category-btn px-6 py-3 bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-300 font-medium"
+              data-category="rumah">🏠 Rumah Tangga</button>
+      <button class="category-btn px-6 py-3 bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-300 font-medium"
+              data-category="anak">👶 Anak & Bayi</button>
+    </div>
+
+    <!-- Products Grid -->
+    <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="hidden text-center py-20">
+      <div class="mx-auto w-16 h-16 rounded-2xl bg-white shadow grid place-items-center mb-4">
+        <svg class="h-7 w-7" style="color:var(--primary)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15V6a2 2 0 0 0-2-2H9l-6 6v5a2 2 0 0 0 2 2h7"/><path d="M3 10h6v-6"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      </div>
+      <p class="text-slate-600">Tidak ada produk yang cocok.</p>
+    </div>
+  </div>
+
+  <!-- Product Detail Modal (WA CTA + stok per cabang) -->
+  <div id="productModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+      <!-- Modal Header -->
+      <div class="flex justify-between items-center p-6 border-b border-gray-200">
+        <h2 id="modalTitle" class="text-2xl font-bold text-gray-800">Detail Produk</h2>
+        <button id="closeModal" class="text-gray-500 hover:text-gray-700 text-3xl font-light hover:scale-110 transition-transform duration-300" aria-label="Tutup">✕</button>
+      </div>
+      <!-- Modal Content -->
+      <div id="modalContent" class="p-6 nice-scrollbar"></div>
+    </div>
+  </div>
+
+  <script>
+    // ====== KONFIG ======
+    const WHATSAPP_PHONE = '628123456789'; // ganti ke nomor bisnismu
+
+    // ====== DATA SAMPLE (tambah stok per cabang + sku) ======
+    const products = [
+      { id:1, sku:'SKU-001', name:'Dress Floral Cantik', category:'fashion', price:250000, rating:4.8, reviews:156, image:'👗',
+        description:'Dress floral yang cantik dan nyaman untuk acara casual maupun semi formal',
+        details:'Material: Katun premium, Ukuran: S-XL, Warna: Pink, Biru, Kuning. Cocok untuk ibu muda yang ingin tampil fresh dan feminine.',
+        stocks:[ {branch:'ADET', code:'1376', qty:8}, {branch:'ACE', code:'1505', qty:0}, {branch:'APRS', code:'1501', qty:3} ] },
+      { id:2, sku:'SKU-002', name:'Lipstick Matte Premium', category:'kecantikan', price:85000, rating:4.9, reviews:289, image:'💄',
+        description:'Lipstick matte yang tahan lama dengan formula yang tidak membuat bibir kering',
+        details:'Tersedia 12 warna, formula long-lasting, tidak transfer, diperkaya vitamin E. Perfect untuk daily wear dan special occasion.',
+        stocks:[ {branch:'ABIN', code:'1502', qty:5}, {branch:'ADET', code:'1376', qty:2} ] },
+      { id:3, sku:'SKU-003', name:'Set Peralatan Dapur', category:'rumah', price:320000, rating:4.7, reviews:203, image:'🍳',
+        description:'Set lengkap peralatan dapur anti lengket untuk memasak sehari-hari',
+        details:'Terdiri dari wajan, panci, spatula, dan peralatan pendukung. Material berkualitas tinggi, anti lengket, mudah dibersihkan.',
+        stocks:[ {branch:'AXY', code:'2103', qty:10}, {branch:'ASIH', code:'2104', qty:3} ] },
+      { id:4, sku:'SKU-004', name:'Baju Bayi Set Lucu', category:'anak', price:180000, rating:4.9, reviews:312, image:'👶',
+        description:'Set baju bayi yang lucu dan nyaman untuk si kecil',
+        details:'100% katun organik, hypoallergenic, tersedia ukuran 0-24 bulan. Desain unisex dengan motif yang menggemaskan.',
+        stocks:[ {branch:'ACIB', code:'1379', qty:0}, {branch:'APEN', code:'1908', qty:8} ] },
+      { id:5, sku:'SKU-005', name:'Hijab Satin Premium', category:'fashion', price:95000, rating:4.6, reviews:178, image:'🧕',
+        description:'Hijab satin premium dengan kualitas terbaik dan nyaman digunakan',
+        details:'Material satin silk, tidak mudah kusut, tersedia berbagai warna pastel yang cocok untuk segala acara.',
+        stocks:[ {branch:'APRS', code:'1501', qty:12} ] },
+      { id:6, sku:'SKU-006', name:'Serum Wajah Vitamin C', category:'kecantikan', price:125000, rating:4.8, reviews:245, image:'✨',
+        description:'Serum vitamin C untuk mencerahkan dan mengatasi penuaan dini',
+        details:'Mengandung 20% Vitamin C, Hyaluronic Acid, dan Niacinamide. Cocok untuk semua jenis kulit, hasil terlihat dalam 2-4 minggu.',
+        stocks:[ {branch:'ADET', code:'1376', qty:4}, {branch:'ARAW', code:'1378', qty:2} ] }
+    ];
+
+    // ====== STATE ======
+    let filteredProducts = [...products];
+    let currentCategory = 'all';
+
+    // ====== INIT ======
+    document.addEventListener('DOMContentLoaded', () => {
+      renderProducts();
+      setupEventListeners();
+    });
+
+    // ====== RENDER GRID ======
+    function renderProducts(){
+      const grid = document.getElementById('productsGrid');
+      const empty = document.getElementById('emptyState');
+      grid.innerHTML = '';
+
+      if (!filteredProducts.length){
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+
+      const frag = document.createDocumentFragment();
+      filteredProducts.forEach(p => frag.appendChild(createProductCard(p)));
+      grid.appendChild(frag);
+    }
+
+    function createProductCard(product){
+      const totalStock = product.stocks.reduce((a,s)=>a + (Number(s.qty)||0), 0);
+      const card = document.createElement('div');
+      card.className = 'bg-white rounded-2xl shadow-lg hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 overflow-hidden';
+      card.innerHTML = `
+        <div class="bg-gradient-to-br from-[var(--primary-100)] to-[var(--primary-50)] h-48 flex items-center justify-center text-6xl">${product.image}</div>
+        <div class="p-5">
+          <h3 class="font-bold text-lg text-gray-800 mb-2 line-clamp-2">${product.name}</h3>
+          <p class="text-gray-600 text-sm mb-3 line-clamp-2">${product.description}</p>
+          <div class="flex items-center justify-between mb-3">
+            <div class="text-2xl font-bold" style="color:var(--primary)">Rp ${product.price.toLocaleString('id-ID')}</div>
+            <span class="text-xs ${totalStock>0?'text-emerald-600':'text-rose-600'}">Stok: ${totalStock}</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <button class="btn-detail rounded-xl text-white py-2.5 font-semibold hover:opacity-95 transition" style="background-color:var(--primary)" data-id="${product.id}">Detail & Pesan</button>
+            <button class="rounded-xl border-2 py-2.5 font-semibold hover:bg-[var(--primary-50)] transition" style="border-color:var(--primary); color:var(--primary)">Favorit</button>
+          </div>
+        </div>`;
+      // Click detail
+      card.querySelector('.btn-detail').addEventListener('click', (e)=>{
+        e.stopPropagation();
+        showProductDetail(product);
+      });
+      // Click card = juga buka detail
+      card.addEventListener('click', ()=> showProductDetail(product));
+      return card;
+    }
+
+    // ====== EVENTS ======
+    function setupEventListeners(){
+      // Category buttons
+      document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.addEventListener('click', function(){
+          document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('!text-white'));
+          document.querySelectorAll('.category-btn').forEach(b => b.style.background='');
+          this.style.background = `linear-gradient(90deg, ${getComputedStyle(document.documentElement).getPropertyValue('--primary')} 0%, ${getComputedStyle(document.documentElement).getPropertyValue('--primary-dark')} 100%)`;
+          this.classList.add('!text-white');
+          currentCategory = this.dataset.category;
+          filterProducts();
+        });
+      });
+
+      // Search with debounce
+      const debounce = (fn, wait=250)=>{ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), wait); } };
+      document.getElementById('searchInput').addEventListener('input', debounce(filterProducts, 200));
+
+      // Modal close handlers
+      document.getElementById('closeModal').addEventListener('click', hideProductDetail);
+      document.getElementById('productModal').addEventListener('click', (e)=>{ if(e.target.id==='productModal') hideProductDetail(); });
+    }
+
+    // ====== FILTER ======
+    function filterProducts(){
+      const q = document.getElementById('searchInput').value.toLowerCase().trim();
+      filteredProducts = products.filter(p => {
+        const matchesCat = currentCategory==='all' || p.category===currentCategory;
+        const matchesText = !q || p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q) || (p.sku||'').toLowerCase().includes(q);
+        return matchesCat && matchesText;
+      });
+      renderProducts();
+    }
+
+    // ====== MODAL DETAIL + WA CTA ======
+    function showProductDetail(product){
+      const modal = document.getElementById('productModal');
+      const content = document.getElementById('modalContent');
+      document.getElementById('modalTitle').textContent = product.name;
+
+      // Chip stok tersedia (jawaban untuk: "ini ada stok di cabang mana")
+      const chips = product.stocks.filter(s=> (Number(s.qty)||0)>0)
+        .map(s=>`<span class="inline-flex items-center gap-2 text-xs px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">${s.branch}<span class="opacity-60">(${s.code})</span></span>`)
+        .join(' ');
+
+      // Dropdown hanya cabang stok > 0
+      const options = product.stocks.filter(s=> (Number(s.qty)||0)>0);
+      const selectHTML = options.length
+        ? options.map(s=>`<option value="${s.code}" data-name="${s.branch}">${s.branch} (${s.code})</option>`).join('')
+        : '<option value="" disabled>Tidak tersedia</option>';
+
+      content.innerHTML = `
+        <div class="grid md:grid-cols-2 gap-8">
+          <div class="bg-gradient-to-br from-[var(--primary-100)] to-[var(--primary-50)] h-80 rounded-2xl flex items-center justify-center text-8xl">${product.image}</div>
+          <div>
+            <div class="text-3xl font-bold mb-2" style="color:var(--primary)">Rp ${product.price.toLocaleString('id-ID')}</div>
+            <div class="flex items-center mb-3">
+              <div class="text-yellow-400 text-lg mr-3">${'⭐'.repeat(Math.floor(product.rating))}</div>
+              <span class="text-gray-600">${product.rating} dari ${product.reviews} ulasan</span>
+            </div>
+            <p class="text-gray-700 mb-4 leading-relaxed">${product.details}</p>
+
+            <div class="mb-4">
+              <div class="text-xs text-gray-500 mb-2">Ada stok di cabang:</div>
+              <div class="flex flex-wrap gap-2">${chips || '<span class="text-sm text-gray-500">Belum ada stok</span>'}</div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+              <div>
+                <label class="block text-xs text-gray-500 mb-1" for="branchSelect">Pilih Cabang</label>
+                <select id="branchSelect" class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 shadow-sm focus:outline-none focus:ring-4" style="--tw-ring-color:rgba(255,107,129,.2)">${selectHTML}</select>
+              </div>
+              <div>
+                <label class="block text-xs text-gray-500 mb-1" for="qtyInput">Qty (opsional)</label>
+                <input id="qtyInput" type="number" min="1" class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 shadow-sm focus:outline-none focus:ring-4" style="--tw-ring-color:rgba(255,107,129,.2)" placeholder="1" />
+              </div>
+            </div>
+
+            <p class="text-xs text-gray-500 mb-2">Tombol di bawah akan membuka WhatsApp dan mengisi pesan otomatis.</p>
+            <a id="waButton" href="#" target="_blank" rel="noopener"
+               class="inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-white font-semibold shadow hover:opacity-95"
+               style="background-color:var(--primary)">Chat via WhatsApp</a>
+          </div>
+        </div>
+        <div class="mt-8 pt-8 border-t border-gray-200">
+          <h3 class="text-xl font-bold mb-4">Deskripsi Produk</h3>
+          <p class="text-gray-700 leading-relaxed">${product.description}</p>
+        </div>`;
+
+      // Update WA link
+      const branchSelect = content.querySelector('#branchSelect');
+      const qtyInput = content.querySelector('#qtyInput');
+      const waButton = content.querySelector('#waButton');
+
+      function updateWa(){
+        const code = branchSelect?.value || '';
+        const name = branchSelect?.options[branchSelect.selectedIndex]?.dataset?.name || '-';
+        const qty = qtyInput.value && Number(qtyInput.value)>0 ? Number(qtyInput.value) : null;
+        const lines = [
+          `Halo, saya ingin pesan:`,
+          `• Produk: ${product.name} (SKU: ${product.sku})`,
+          `• Cabang: ${name} (${code||'-'})`,
+          qty ? `• Qty: ${qty}` : null,
+          '',
+          'Apakah stoknya masih tersedia? Terima kasih.'
+        ].filter(Boolean);
+        const text = encodeURIComponent(lines.join('\n'));
+        waButton.href = `https://wa.me/${WHATSAPP_PHONE}?text=${text}`;
+      }
+      branchSelect && branchSelect.addEventListener('change', updateWa);
+      qtyInput && qtyInput.addEventListener('input', ()=>{ clearTimeout(qtyInput._t); qtyInput._t=setTimeout(updateWa,150); });
+      updateWa();
+
+      modal.classList.remove('hidden');
+      document.body.style.overflow='hidden';
+    }
+
+    function hideProductDetail(){
+      document.getElementById('productModal').classList.add('hidden');
+      document.body.style.overflow='auto';
+    }
+
+    // Utility: line clamp helper
+    const style = document.createElement('style');
+    style.textContent = `
+      .line-clamp-2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+      @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+      #productModal{animation:fadeIn .25s ease-out}
+    `;
+    document.head.appendChild(style);
+  </script>
+</body>
+</html>
