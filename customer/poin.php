@@ -215,7 +215,7 @@ if ($token) {
                 <div class="relative w-full sm:w-auto">
                     <select
                         id="branch-selector"
-                        class="appearance-none bg-gray-100 text-gray-800 px-5 py-2.5 rounded-full font-medium text-sm w-full border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500 transition">
+                        class="appearance-none bg-gray-100 text-gray-800 px-5 py-2.5 rounded-full font-medium text-xs w-full border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500 transition">
                         <option disabled selected value="">📌 Pilih Cabang Lain</option>
                     </select>
                     <!-- Dropdown Icon -->

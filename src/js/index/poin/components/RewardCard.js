@@ -62,7 +62,6 @@ export const createRewardCard = (reward, userPoints) => {
           </div>
 
           <div class="flex items-center justify-between">
-            <span class="text-xs text-gray-500">Cabang:</span>
             <span class="text-xs" data-store-id="${reward.store}">
                 ${
                   reward.nm_store

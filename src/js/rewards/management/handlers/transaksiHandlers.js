@@ -125,3 +125,11 @@ export function whatsappStruk() {
   const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
   window.open(url, "_blank");
 }
+
+// Expose handlers globally so inline onclick in server-rendered HTML can call them
+window.cetakStruk = cetakStruk;
+window.viewDetail = viewDetail;
+window.batalkanTransaksi = batalkanTransaksi;
+window.printStruk = printStruk;
+window.downloadStruk = downloadStruk;
+window.whatsappStruk = whatsappStruk;

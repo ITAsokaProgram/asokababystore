@@ -91,13 +91,26 @@ export const showRewardPreviewModal = (reward, elements, userPoints) => {
  * @param {string} rewardCode - The reward code to display
  * @param {HTMLElement} elements - DOM elements
  */
-export const showSuccessModal = (message, rewardCode, qrRewardCode, elements) => {
-  const { successMessage, rewardCode: codeElement , qrRewardCode: codeQR} = elements;
+export const showSuccessModal = (
+  message,
+  rewardCode,
+  qrRewardCode,
+  elements,
+  closeModalBtn
+) => {
+  const {
+    successMessage,
+    rewardCode: codeElement,
+    qrRewardCode: codeQR,
+  } = elements;
 
   if (successMessage) successMessage.textContent = message;
   if (codeElement) codeElement.textContent = rewardCode;
   if (codeQR) codeQR.src = qrRewardCode;
-
+  closeModalBtn.addEventListener("click", () => {
+    closeModal(elements.successModal);
+    location.reload();
+  });
   showModal(elements.successModal);
 };
 
@@ -119,8 +132,7 @@ export const showErrorModal = (message, elements) => {
  * @param {HTMLElement} elements - DOM elements
  */
 export const showConfirmModal = (reward, elements) => {
-  const { confirmEmoji, confirmRewardName, confirmPoints } =
-    elements;
+  const { confirmEmoji, confirmRewardName, confirmPoints } = elements;
 
   if (confirmEmoji) confirmEmoji.textContent = "🎁";
   if (confirmRewardName) confirmRewardName.textContent = reward.name;

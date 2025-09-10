@@ -87,7 +87,8 @@ export const confirmExchange = async (updatePointsCallback, renderRewardsCallbac
         "Penukaran poin berhasil!",
         result.code,
         result.qr,
-        elements
+        elements,
+        elements.closeModalBtn
       );
     } else {
       throw new Error("Exchange failed");

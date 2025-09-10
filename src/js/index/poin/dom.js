@@ -33,7 +33,7 @@ export const elements = {
   successMessage: document.getElementById('successMessage'),
   rewardCode: document.getElementById('rewardCode'),
   copyCodeBtn: document.getElementById('copyCodeBtn'),
-  
+  closeModalBtn: document.getElementById('closeModalBtn'),
   // Error modal elements
   errorMessage: document.getElementById('errorMessage'),
   
@@ -45,6 +45,7 @@ export const elements = {
   // Navigation elements
   goBackBtn: document.getElementById('goBackBtn'),
   historyFloatingBtn: document.getElementById('historyFloatingBtn')
+  
 };
 
 /**

@@ -551,22 +551,25 @@ $token = $menuHandler->getToken();
 
         // Modal functions
         function tambahHadiah() {
-            document.getElementById('modalTambahHadiah').classList.remove('hidden');
+            const modal = document.getElementById('modalTambahHadiah');
+            const content = document.getElementById('modalContent');
+            // clear any leftover inline styles from previous close animation
+            if (content) {
+                content.style.opacity = '';
+                content.style.transform = '';
+            }
+            modal.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
-            
-            // Add smooth animation
-            gsap.from("#modalContent", {
-                duration: 0.3,
-                scale: 0.9,
-                opacity: 0,
-                ease: "power2.out"
-            });
+            // animate modal content in for a smooth entry
+            if (content) {
+                gsap.fromTo(content, { scale: 0.98, opacity: 0 }, { duration: 0.25, scale: 1, opacity: 1, ease: "power2.out" });
+            }
         }
 
         function closeModal(modalId, contentId) {
             const modal = document.getElementById(modalId);
             const content = document.getElementById(contentId);
-            
+
             // Add smooth closing animation
             gsap.to(content, {
                 duration: 0.2,
@@ -576,11 +579,19 @@ $token = $menuHandler->getToken();
                 onComplete: () => {
                     modal.classList.add('hidden');
                     document.body.style.overflow = 'auto';
-                    
+
                     // Reset form if it's the add modal
                     if (modalId === 'modalTambahHadiah') {
-                        document.getElementById('formTambahHadiah').reset();
-                        document.getElementById('imagePreview').classList.add('hidden');
+                        const form = document.getElementById('formTambahHadiah');
+                        if (form) form.reset();
+                        const preview = document.getElementById('imagePreview');
+                        if (preview) preview.classList.add('hidden');
+                    }
+
+                    // Clear inline styles so next open is fresh
+                    if (content) {
+                        content.style.opacity = '';
+                        content.style.transform = '';
                     }
                 }
             });

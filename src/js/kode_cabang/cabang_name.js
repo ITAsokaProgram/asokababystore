@@ -14,7 +14,7 @@ export const cabangName = async (selectId) => {
 
     if (response.status === 200) {
       // Filter hanya cabang dengan nama 'Asoka Baby Store'
-      const keywords = ["asoka baby store", "asoka veteran" , "asoka air"];
+      const keywords = ["asoka baby store", "asoka veteran", "asoka air"];
 
       const filteredData = data.data.filter(
         (item) =>
@@ -28,7 +28,7 @@ export const cabangName = async (selectId) => {
         filteredData.forEach((item) => {
           const option = document.createElement("option");
           option.value = item.store;
-          option.textContent = item.nama_cabang;
+          option.textContent = toPascalCase(item.nama_cabang);
           select.appendChild(option);
         });
       } else {
@@ -46,4 +46,11 @@ export const cabangName = async (selectId) => {
   }
 };
 
+function toPascalCase(str) {
+  return str
+    .toLowerCase()
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
 export default { cabangName };

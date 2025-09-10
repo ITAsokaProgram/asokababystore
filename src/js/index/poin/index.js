@@ -11,6 +11,7 @@ import {
 import {
   fetchRewards,
   fetchUserPoints,
+  handleExpiredDate,
   processRewardsData,
 } from "./services/api.js";
 import { filterRewardsByStore } from "./utils/helpers.js";
@@ -57,6 +58,9 @@ const loadInitialData = async () => {
 
   // Render initial view
   renderRewards();
+
+  // update expired points display
+  await handleExpiredDate();
 };
 
 // Initialize the application when the DOM is loaded

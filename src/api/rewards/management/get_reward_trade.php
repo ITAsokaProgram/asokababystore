@@ -61,7 +61,7 @@ try {
      hadiah_t.poin_tukar, hadiah_t.status, 
      hadiah_t.expired_at, hadiah_t.ditukar_tanggal, 
      hadiah_t.dibuat_tanggal, hadiah_t.cabang, hadiah_t.kd_store, 
-     ua.no_hp AS number_phone, ua.nama_lengkap, h.qty
+     ua.no_hp AS number_phone, ua.nama_lengkap, h.qty = 1
      FROM hadiah_t 
 LEFT JOIN user_asoka ua ON ua.id_user = hadiah_t.id_user
 LEFT JOIN hadiah h ON h.id_hadiah = hadiah_t.id_hadiah";

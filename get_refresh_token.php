@@ -1,6 +1,4 @@
 <?php
-session_start();
-
 require_once 'vendor/autoload.php'; // Pastikan pakai Composer Google Client
 
 $client = new Google_Client();

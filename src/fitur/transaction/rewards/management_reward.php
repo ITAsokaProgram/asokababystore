@@ -269,89 +269,21 @@
                         <table class="min-w-full divide-y divide-blue-200">
                             <thead class="bg-gradient-to-r from-blue-400 to-blue-500 text-white">
                                 <tr>
-                                    <th class="w-[5%] px-4 py-3 text-left text-xs font-semibold">No</th>
-                                    <th class="w-[12%] px-4 py-3 text-left text-xs font-semibold">Member</th>
-                                    <th class="w-[15%] px-4 py-3 text-left text-xs font-semibold">Hadiah</th>
-                                    <th class="w-[6%] px-4 py-3 text-center text-xs font-semibold">Qty</th>
-                                    <th class="w-[8%] px-4 py-3 text-center text-xs font-semibold">Poin Tukar</th>
-                                    <th class="w-[10%] px-4 py-3 text-left text-xs font-semibold">Tanggal</th>
-                                    <th class="w-[8%] px-4 py-3 text-center text-xs font-semibold">Status</th>
-                                    <th class="w-[8%] px-4 py-3 text-left text-xs font-semibold">Cabang</th>
-                                    <th class="w-[10%] px-4 py-3 text-center text-xs font-semibold">Aksi</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold">No</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold">ID</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold">Member</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold">Hadiah</th>
+                                    <th class="px-4 py-3 text-center text-xs font-semibold">Qty</th>
+                                    <th class="px-4 py-3 text-center text-xs font-semibold">Poin</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold">Dibuat</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold">Ditukar</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold">Expired</th>
+                                    <th class="px-4 py-3 text-center text-xs font-semibold">Status</th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold">Cabang</th>
+                                    <th class="px-4 py-3 text-center text-xs font-semibold">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="tableBody" class="divide-y divide-blue-100 text-grey-700 text-sm">
-                                <!-- Sample Data -->
-                                <tr class="hover:bg-blue-50/50 transition-colors duration-200">
-                                    <td class="px-4 py-4 text-center">1</td>
-                                    <td class="px-4 py-4">
-                                        <span class="font-mono text-xs bg-blue-100 px-2 py-1 rounded">TRX001</span>
-                                    </td>
-                                    <td class="px-4 py-4">
-                                        <div class="flex items-center gap-2">
-                                            <div class="bg-blue-100 p-2 rounded-full">
-                                                <i class="fas fa-user text-blue-600 text-xs"></i>
-                                            </div>
-                                            <div>
-                                                <p class="font-medium text-gray-800">Budi Santoso</p>
-                                                <p class="text-xs text-gray-500">0812-3456-7890</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-4 py-4">
-                                        <span class="font-mono text-xs">1234567890</span>
-                                    </td>
-                                    <td class="px-4 py-4">
-                                        <div class="flex items-center gap-2">
-                                            <i class="fas fa-gift text-blue-500"></i>
-                                            <span class="font-medium">Voucher Diskon 50%</span>
-                                        </div>
-                                    </td>
-                                    <td class="px-4 py-4 text-center">
-                                        <span class="bg-gray-100 px-2 py-1 rounded text-xs font-medium">1</span>
-                                    </td>
-                                    <td class="px-4 py-4 text-center">
-                                        <span
-                                            class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium">500</span>
-                                    </td>
-                                    <td class="px-4 py-4">
-                                        <div class="text-xs">
-                                            <div class="font-medium">15 Des 2024</div>
-                                            <div class="text-gray-500">14:30</div>
-                                        </div>
-                                    </td>
-                                    <td class="px-4 py-4 text-center">
-                                        <span class="status-success px-3 py-1 rounded-full text-xs font-medium">
-                                            <i class="fas fa-check mr-1"></i>Berhasil
-                                        </span>
-                                    </td>
-                                    <td class="px-4 py-4">
-                                        <div class="text-xs">
-                                            <div class="font-medium">Kasir 1</div>
-                                            <div class="text-gray-500">KSR001</div>
-                                        </div>
-                                    </td>
-                                    <td class="px-4 py-4">Jakarta Pusat</td>
-                                    <td class="px-4 py-4">
-                                        <div class="flex items-center justify-center gap-1">
-                                            <button onclick="cetakStruk(1)"
-                                                class="p-2 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors duration-200"
-                                                title="Cetak Struk">
-                                                <i class="fas fa-receipt text-xs"></i>
-                                            </button>
-                                            <button onclick="viewDetail(1)"
-                                                class="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors duration-200"
-                                                title="Detail">
-                                                <i class="fas fa-eye text-xs"></i>
-                                            </button>
-                                            <button onclick="batalkanTransaksi(1)"
-                                                class="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors duration-200"
-                                                title="Batalkan">
-                                                <i class="fas fa-times text-xs"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -399,136 +331,156 @@
 
         <!-- Modal Struk Digital -->
         <div id="modalStruk"
-            class="fixed inset-0 bg-black/50 flex justify-center items-center z-50 hidden backdrop-blur-sm transition-all duration-300">
+            class="fixed inset-0 bg-black/60 flex justify-center items-center z-50 hidden backdrop-blur-sm transition-all duration-300">
             <div
-                class="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-blue-100 relative animate-fade-in-up overflow-hidden">
+                class="bg-white w-full max-w-sm mx-4 rounded-xl shadow-2xl relative animate-fade-in-up overflow-hidden">
+                <!-- Close Button -->
                 <button onclick="closeModal('modalStruk')"
-                    class="absolute top-4 right-4 text-gray-500 hover:text-blue-500 text-xl bg-white/80 rounded-full p-2 shadow-md transition-all duration-200 z-10">
+                    class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-lg bg-white/90 rounded-full w-8 h-8 flex items-center justify-center shadow-sm transition-all duration-200 z-10 no-print">
                     <i class="fas fa-times"></i>
                 </button>
 
                 <div class="print-area">
-                    <!-- Header Struk -->
-                    <div class="bg-gradient-to-r from-blue-500 to-blue-400 text-white p-6 text-center">
-                        <h2 class="text-2xl font-bold mb-2">
-                            <i class="fas fa-receipt mr-2"></i>
-                            Struk Penukaran Hadiah
-                        </h2>
-                        <p class="text-blue-100 text-sm">Digital Receipt</p>
+                    <!-- Header -->
+                    <div class="bg-gradient-to-r from-blue-600 to-blue-500 text-white p-4 text-center">
+                        <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-2">
+                            <i class="fas fa-receipt text-xl"></i>
+                        </div>
+                        <h2 class="text-lg font-bold mb-1">Struk Penukaran Hadiah</h2>
+                        <p class="text-blue-100 text-xs">Digital Receipt</p>
                     </div>
 
-                    <!-- Content Struk -->
-                    <div class="p-6 space-y-4">
-                        <!-- Info Toko -->
-                        <div class="text-center border-b pb-4">
-                            <h3 class="font-bold text-lg">NAMA TOKO ANDA</h3>
-                            <p class="text-sm text-gray-600">Jl. Contoh Alamat No. 123</p>
-                            <p class="text-sm text-gray-600">Telp: (021) 12345678</p>
-                        </div>
+                    <!-- Content -->
+                    <div class="p-4 space-y-4 text-sm">
+                        <!-- Store Info -->
+                        <!-- <div class="text-center receipt-section">
+                            <h3 class="font-bold text-base text-gray-800">NAMA TOKO ANDA</h3>
+                            <p class="text-xs text-gray-500 mt-1">Jl. Contoh Alamat No. 123</p>
+                            <p class="text-xs text-gray-500">Telp: (021) 12345678</p>
+                        </div> -->
 
-                        <!-- Info Transaksi -->
-                        <div class="border-b pb-4">
-                            <div class="grid grid-cols-2 gap-2 text-sm">
+                        <!-- Transaction Info -->
+                        <div class="receipt-section">
+                            <div class="grid grid-cols-2 gap-3">
                                 <div>
-                                    <span class="text-gray-600">ID Transaksi:</span>
-                                    <p class="font-mono font-bold" id="strukTrxId">TRX001</p>
+                                    <p class="text-xs text-gray-500 mb-1">ID Transaksi</p>
+                                    <p class="font-mono font-semibold text-gray-800" id="strukTrxId">TRX001</p>
                                 </div>
                                 <div>
-                                    <span class="text-gray-600">Tanggal:</span>
-                                    <p class="font-medium" id="strukTanggal">15 Des 2024, 14:30</p>
+                                    <p class="text-xs text-gray-500 mb-1">Tanggal</p>
+                                    <p class="font-medium text-gray-800" id="strukTanggal">15 Des 2024</p>
                                 </div>
                                 <div>
-                                    <span class="text-gray-600">Kasir:</span>
-                                    <p class="font-medium" id="strukKasir">Kasir 1</p>
+                                    <p class="text-xs text-gray-500 mb-1">Kasir</p>
+                                    <p class="font-medium text-gray-800" id="strukKasir">Kasir 1</p>
                                 </div>
                                 <div>
-                                    <span class="text-gray-600">Cabang:</span>
-                                    <p class="font-medium" id="strukCabang">Jakarta Pusat</p>
+                                    <p class="text-xs text-gray-500 mb-1">Cabang</p>
+                                    <p class="font-medium text-gray-800" id="strukCabang">Jakarta Pusat</p>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Info Member -->
-                        <div class="border-b pb-4">
-                            <h4 class="font-semibold text-blue-600 mb-2">
-                                <i class="fas fa-user mr-2"></i>Data Member
-                            </h4>
-                            <div class="space-y-1 text-sm">
-                                <p><span class="text-gray-600">Nama:</span> <span class="font-medium"
-                                        id="strukMemberNama">Budi Santoso</span></p>
-                                <p><span class="text-gray-600">HP:</span> <span class="font-mono"
-                                        id="strukMemberHp">0812-3456-7890</span></p>
+                        <!-- Member Info -->
+                        <div class="receipt-section">
+                            <div class="flex items-center mb-2">
+                                <i class="fas fa-user text-blue-500 mr-2 text-sm"></i>
+                                <h4 class="font-semibold text-gray-700">Data Member</h4>
+                            </div>
+                            <div class="pl-6 space-y-1">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">Nama</span>
+                                    <span class="font-medium text-gray-800" id="strukMemberNama">Budi Santoso</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">HP</span>
+                                    <span class="font-mono text-gray-800" id="strukMemberHp">0812-3456-7890</span>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Item Hadiah -->
-                        <div class="border-b pb-4">
-                            <h4 class="font-semibold text-green-600 mb-2">
-                                <i class="fas fa-gift mr-2"></i>Hadiah yang Ditukar
-                            </h4>
-                            <div id="strukItems" class="space-y-2">
-                                <!-- Items akan diisi dinamis -->
+                        <!-- Gift Items -->
+                        <div class="receipt-section">
+                            <div class="flex items-center mb-3">
+                                <i class="fas fa-gift text-green-500 mr-2 text-sm"></i>
+                                <h4 class="font-semibold text-gray-700">Hadiah yang Ditukar</h4>
+                            </div>
+                            <div id="strukItems" class="pl-6 space-y-2">
+                                <div class="flex justify-between items-start py-2 border-b border-gray-100">
+                                    <div class="flex-1">
+                                        <p class="font-medium text-gray-800">Voucher Belanja Rp100.000</p>
+                                        <p class="text-xs text-gray-500">Berlaku 30 hari</p>
+                                    </div>
+                                    <div class="text-right ml-3">
+                                        <p class="font-semibold text-red-600">500 poin</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Total -->
-                        <div class="border-b pb-4">
-                            <div class="flex justify-between items-center text-lg font-bold">
-                                <span class="text-gray-700">Total Poin Digunakan:</span>
-                                <span class="text-red-600" id="strukTotalPoin">500 poin</span>
-                            </div>
-                            <div class="flex justify-between items-center text-sm text-gray-600 mt-2">
-                                <span>Poin Sebelum:</span>
-                                <span id="strukPoinSebelum">1,250 poin</span>
-                            </div>
-                            <div class="flex justify-between items-center text-sm text-gray-600">
-                                <span>Poin Sesudah:</span>
-                                <span id="strukPoinSesudah">750 poin</span>
+                        <!-- Point Summary -->
+                        <div class="receipt-section">
+                            <div class="space-y-2">
+                                <div class="flex justify-between items-center py-2 bg-red-50 px-3 rounded-lg">
+                                    <span class="font-semibold text-gray-700">Total Poin Digunakan</span>
+                                    <span class="text-lg font-bold text-red-600" id="strukTotalPoin">500 poin</span>
+                                </div>
+                                <div class="flex justify-between items-center text-xs text-gray-600 px-3">
+                                    <span>Poin Sebelumnya</span>
+                                    <span id="strukPoinSebelum">1,250 poin</span>
+                                </div>
+                                <div class="flex justify-between items-center text-xs text-gray-600 px-3">
+                                    <span>Sisa Poin</span>
+                                    <span class="font-semibold text-green-600" id="strukPoinSesudah">750 poin</span>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Catatan -->
-                        <div class="text-center text-xs text-gray-500">
-                            <p class="mb-2">
+                        <!-- Important Note -->
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                            <div class="flex items-center mb-1">
+                                <i class="fas fa-clock text-yellow-600 mr-2 text-sm"></i>
+                                <p class="font-semibold text-yellow-800 text-xs">Penting!</p>
+                            </div>
+                            <p class="text-xs text-yellow-700">Ambil hadiah dalam 7 hari setelah penukaran</p>
+                        </div>
+
+                        <!-- QR Code -->
+                        <!-- <div class="text-center pt-2">
+                            <div class="inline-block p-3 bg-gray-50 rounded-lg border">
+                                <div class="w-16 h-16 bg-gray-200 flex items-center justify-center rounded border">
+                                    <i class="fas fa-qrcode text-xl text-gray-400"></i>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-2">Kode Verifikasi</p>
+                            </div>
+                        </div> -->
+
+                        <!-- Footer -->
+                        <div class="text-center pt-2 border-t border-gray-200">
+                            <p class="text-xs text-gray-500 mb-1">
                                 <i class="fas fa-heart text-red-400 mr-1"></i>
                                 Terima kasih atas kepercayaan Anda
                             </p>
-                            <p>Simpan struk ini sebagai bukti penukaran hadiah</p>
-                            <div class="mt-3 p-2 bg-yellow-50 rounded-lg">
-                                <p class="font-medium text-yellow-700">
-                                    <i class="fas fa-clock mr-1"></i>
-                                    Ambil hadiah dalam 7 hari
-                                </p>
-                            </div>
-                        </div>
-
-                        <!-- QR Code Placeholder -->
-                        <div class="text-center pt-4">
-                            <div class="inline-block p-4 bg-gray-100 rounded-lg">
-                                <div class="w-20 h-20 bg-gray-300 flex items-center justify-center rounded">
-                                    <i class="fas fa-qrcode text-2xl text-gray-500"></i>
-                                </div>
-                                <p class="text-xs text-gray-500 mt-2">QR Code Verifikasi</p>
-                            </div>
+                            <p class="text-xs text-gray-400">Simpan struk sebagai bukti penukaran</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Action Buttons Struk -->
-                <div class="flex gap-2 p-4 bg-gray-50 border-t">
+                <!-- Action Buttons -->
+                <div class="flex gap-2 p-3 bg-gray-50 border-t no-print">
                     <button onclick="printStruk()"
-                        class="flex-1 px-4 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-all duration-200 flex items-center justify-center gap-2 font-semibold">
-                        <i class="fas fa-print"></i>
+                        class="flex-1 px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-200 flex items-center justify-center gap-2 text-sm font-medium">
+                        <i class="fas fa-print text-sm"></i>
                         <span>Print</span>
                     </button>
                     <button onclick="downloadStruk()"
-                        class="flex-1 px-4 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-all duration-200 flex items-center justify-center gap-2 font-semibold">
-                        <i class="fas fa-download"></i>
+                        class="flex-1 px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all duration-200 flex items-center justify-center gap-2 text-sm font-medium">
+                        <i class="fas fa-download text-sm"></i>
                         <span>Download</span>
                     </button>
                     <button onclick="whatsappStruk()"
-                        class="flex-1 px-4 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all duration-200 flex items-center justify-center gap-2 font-semibold">
-                        <i class="fab fa-whatsapp"></i>
+                        class="flex-1 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 flex items-center justify-center gap-2 text-sm font-medium">
+                        <i class="fab fa-whatsapp text-sm"></i>
                         <span>WhatsApp</span>
                     </button>
                 </div>

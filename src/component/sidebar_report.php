@@ -284,6 +284,17 @@
                 <span class="sidebar-text ml-3 font-medium transition-all duration-300 group-hover:translate-x-1">Produk</span>
             </a>
         </div>
+
+        <!-- Asset -->
+        <div class="relative mb-4">
+            <a href="/src/fitur/aset/history_aset" id="productLink" data-menu="history_aset"
+                class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-fuchsia-100 hover:to-fuchsia-200 hover:text-fuchsia-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-fuchsia-300">
+                <div class="w-8 flex justify-center">
+                    <i class="fa-solid fa-boxes-packing text-xl text-fuchsia-600 group-hover:text-fuchsia-700 transition-all duration-300 group-hover:scale-125 group-hover:-rotate-12 group-hover:drop-shadow-lg"></i>
+                </div>
+                <span class="sidebar-text ml-3 font-medium transition-all duration-300 group-hover:translate-x-1">Management Aset</span>
+            </a>
+        </div>
        <!-- Upload -->
         <div x-data="{ open: false }" class="relative mb-4">
             <button @click="open = !open" id="upload-menu" data-menu="upload_banner"

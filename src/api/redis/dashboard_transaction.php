@@ -1,5 +1,4 @@
 <?php
-
 require_once __DIR__ . "/../../../config.php";
 require_once __DIR__ . "/../../../redis.php";
 
@@ -36,9 +35,7 @@ $ttl = $next9am->getTimestamp() - $now->getTimestamp();
 $sqlTotalTransaksi = "SELECT COUNT(DISTINCT no_bon) AS total_transaksi,
 COUNT(DISTINCT CASE WHEN kd_cust IS NOT NULL AND kd_cust NOT IN ('', '898989',  '999999999') THEN no_bon END) AS member,
 COUNT(DISTINCT CASE WHEN kd_cust IS NULL OR kd_cust IN ('', '898989',  '999999999') THEN no_bon END) AS non_member
-FROM trans_b 
-WHERE tgl_trans = CURDATE() - INTERVAL 1 DAY 
-";
+FROM trans_b WHERE tgl_trans = CURDATE() - INTERVAL 1 DAY";
 
 $sqlTertinggiTrans = "SELECT 
  ks.Nm_Alias AS cabang,

@@ -44,27 +44,23 @@ export function renderTransaksiTable(transaksiData, currentFilter) {
           <span class="font-medium">${highlightText(trx.nama_hadiah || 'N/A', searchKeyword)}</span>
         </div>
       </td>
-      <td class="px-4 py-4 text-center"><span class="bg-gray-100 px-2 py-1 rounded text-xs font-medium">${trx.qty || 1}</span></td>
+      <td class="px-4 py-4 text-center"><span class="bg-gray-100 px-2 py-1 rounded text-xs font-medium">${trx.qty ?? 1}</span></td>
       <td class="px-4 py-4 text-center"><span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium">${fmt.number(trx.poin_tukar || 0)}</span></td>
-      <td class="px-4 py-4">
-        <div class="text-xs">
-          <div class="font-medium">${trx.dibuat_tanggal || 'N/A'}</div>
-        </div>
-      </td>
+      <td class="px-4 py-4"><div class="text-xs"><div class="font-medium">${trx.dibuat_tanggal || 'N/A'}</div></div></td>
+      <td class="px-4 py-4"><div class="text-xs"><div class="font-medium">${trx.ditukar_tanggal || '-'}</div></div></td>
+      <td class="px-4 py-4"><div class="text-xs"><div class="font-medium">${trx.expired_at || '-'}</div></div></td>
       <td class="px-4 py-4 text-center">
         <span class="${statusUI.cls(trx.status)} px-3 py-1 rounded-full text-xs font-medium">
-          <i class="${statusUI.icon(trx.status)} mr-1"></i>${highlightText(statusUI.text(trx.status), searchKeyword)}
+          <i class="${statusUI.icon(trx.status)} mr-1"></i>${highlightText(trx.status, searchKeyword)}
         </span>
       </td>
-      <td class="px-4 py-4">${highlightText(trx.cabang || 'N/A', searchKeyword)}</td>
+      <td class="px-4 py-4">${highlightText(trx.cabang || trx.kd_store || 'N/A', searchKeyword)}</td>
       <td class="px-4 py-4">
         <div class="flex items-center justify-center gap-1">
           <button onclick="cetakStruk(${trx.id})" class="p-2 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors duration-200" title="Cetak Struk">
             <i class="fas fa-receipt text-xs"></i>
           </button>
-          <button onclick="viewDetail(${trx.id})" class="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors duration-200" title="Detail">
-            <i class="fas fa-eye text-xs"></i>
-          </button>
+          
           ${trx.status === "pending" ? `
           <button onclick="batalkanTransaksi(${trx.id})" class="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors duration-200" title="Batalkan">
             <i class="fas fa-times text-xs"></i>

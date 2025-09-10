@@ -6,10 +6,10 @@ export const fmt = {
 
 export const statusUI = {
   icon(status) {
-    return ({ success:"fas fa-check", pending:"fas fa-clock", cancelled:"fas fa-times" }[status]) || "fas fa-question";
+    return ({ claimed:"fas fa-check", pending:"fas fa-clock", expired:"fas fa-times" }[status]) || "fas fa-question";
   },
   text(status) {
-    return ({ success:"Berhasil", pending:"Proses", cancelled:"Dibatalkan" }[status]) || "Unknown";
+    return ({ claimed:"Berhasil", pending:"Proses", expired:"Dibatalkan" }[status]) || "Unknown";
   },
   cls(status) {
     return `status-${status}`;

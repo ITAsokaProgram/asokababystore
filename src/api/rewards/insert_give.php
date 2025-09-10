@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ .'/../../../vendor/autoload.php';
+require_once __DIR__ . '/../../../vendor/autoload.php';
 require_once __DIR__ . "/../../../aa_kon_sett.php";
 require_once __DIR__ . "/../../auth/middleware_login.php";
 header("Content-Type:application/json");
@@ -53,7 +53,7 @@ foreach ($requiredFields as $field) {
 if (!empty($missingFields)) {
     http_response_code(400);
     echo json_encode([
-        'success' => false, 
+        'success' => false,
         'message' => 'Field berikut harus diisi: ' . implode(', ', $missingFields)
     ]);
     exit;
@@ -62,15 +62,15 @@ if (!empty($missingFields)) {
 // Sanitize and validate data
 $nama_hadiah = trim($_POST['nama_hadiah']);
 $plu = trim($_POST['plu']);
-$poin_dibutuhkan = (int)$_POST['poin_dibutuhkan'];
-$qty_hadiah = (int)$_POST['qty_hadiah'];
+$poin_dibutuhkan = (int) $_POST['poin_dibutuhkan'];
+$qty_hadiah = (int) $_POST['qty_hadiah'];
 $cabang = $_POST['cabang'];
 $createdAt = date('Y-m-d H:i:s');
 // Validate numeric values
 if ($poin_dibutuhkan <= 0 || $qty_hadiah <= 0 || $cabang <= 0) {
     http_response_code(400);
     echo json_encode([
-        'success' => false, 
+        'success' => false,
         'message' => 'Poin, qty, dan cabang harus berupa angka positif'
     ]);
     exit;
@@ -106,20 +106,20 @@ try {
     $cloudinary = new Cloudinary([
         'cloud' => [
             'cloud_name' => $env['CLOUDINARY_NAME'],
-            'api_key'    => $env['CLOUDINARY_KEY'],
+            'api_key' => $env['CLOUDINARY_KEY'],
             'api_secret' => $env['CLOUDINARY_SECRET']
         ]
     ]);
-    
+
     // Start MySQLi transaction
     $conn->autocommit(FALSE);
     $conn->begin_transaction();
-    
+
     try {
         // Generate a unique filename
         $fileExtension = $allowedMimeTypes[$fileMime];
         $uniqueFilename = 'reward_' . uniqid() . '.' . $fileExtension;
-        
+
         // Upload to Cloudinary with optimization
         $uploadResult = $cloudinary->uploadApi()->upload(
             $_FILES['gambar_hadiah']['tmp_name'],
@@ -130,7 +130,7 @@ try {
                 'fetch_format' => 'auto'
             ]
         );
-        
+
         // Prepare upload result in the format expected by the rest of the code
         $uploadResult = [
             'file_id' => $uploadResult['public_id'],
@@ -141,15 +141,15 @@ try {
             "INSERT INTO hadiah (nama_hadiah, kode_karyawan, nama_karyawan, plu, poin, qty, kd_store, file_id, image_url, tanggal_dibuat) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         );
         $stmt->bind_param(
-            "sisiiissss", 
-            $nama_hadiah, 
+            "sisiiissss",
+            $nama_hadiah,
             $verif->kode,
             $verif->nama,
-            $plu, 
-            $poin_dibutuhkan, 
-            $qty_hadiah, 
-            $cabang, 
-            $uploadResult['file_id'], 
+            $plu,
+            $poin_dibutuhkan,
+            $qty_hadiah,
+            $cabang,
+            $uploadResult['file_id'],
             $uploadResult['public_url'],
             $createdAt
         );
@@ -157,10 +157,35 @@ try {
         $rewardId = $conn->insert_id;
         $stmt->close();
 
+        // insert activity log into log_hadiah
+        try {
+            $id_user = $verif->id ?? $verif->kode ?? '';
+            $logTime = date('Y-m-d H:i:s');
+            $logActivity = 'CREATE HADIAH ';
+            // use NULLIF to allow empty id_user -> NULL (avoids empty-string FK issues)
+            $logStmt = $conn->prepare("INSERT INTO log_hadiah (id_hadiah, id_user, log_activity, created_at) VALUES (?, NULLIF(?, ''), ?, ?)");
+            if (!$logStmt) throw new Exception('prepare failed: ' . $conn->error);
+            $idUserVal = $id_user === null ? '' : (string)$id_user;
+            $logStmt->bind_param('isss', $rewardId, $idUserVal, $logActivity, $logTime);
+            if (!$logStmt->execute()) {
+                $err = $logStmt->error ?: $conn->error;
+                $logStmt->close();
+                throw new Exception('execute failed: ' . $err);
+            }
+            $logStmt->close();
+        } catch (Exception $e) {
+            // rollback and report
+            error_log('Failed to insert log_hadiah: ' . $e->getMessage());
+            $conn->rollback();
+            $conn->autocommit(TRUE);
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Gagal menyimpan log aktivitas: ' . $e->getMessage()]);
+            exit;
+        }
 
         http_response_code(201);
         echo json_encode([
-            'success' => true, 
+            'success' => true,
             'message' => 'Data berhasil disimpan',
         ]);
         // If we get here, everything was successful
