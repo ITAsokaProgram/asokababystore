@@ -48,7 +48,7 @@ try {
     if (!$old) throw new Exception('Record not found');
 
     // fields to consider
-    $fields = ['nama_barang','merk','harga_beli','nama_toko','tanggal_beli','tanggal_ganti','tanggal_perbaikan','tanggal_mutasi','tanggal_rusak','group_aset','mutasi_untuk','mutasi_dari','kd_store','status'];
+    $fields = ['nama_barang','merk','harga_beli','nama_toko','tanggal_beli','tanggal_ganti','tanggal_perbaikan','tanggal_mutasi','tanggal_rusak','group_aset','mutasi_untuk','mutasi_dari','kd_store','status', 'no_seri', 'keterangan'];
     $updates = [];
     $types = '';
     $values = [];

@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Master Produk</title>
     <!-- Tailwind via CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../../output2.css">
     <script>
         tailwind.config = {
             theme: {
@@ -29,7 +29,9 @@
     <link rel="icon" type="image/png" href="../../../public/images/logo1.png">
 
     <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-Avb2QiuDEEvB4bZJYdft2mNjVShBftLdPG8FJ0V7irTLQ8Uo0qcPxh4Plq7G5tGm0rU+1SPhVotteLpBERwTkw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        integrity="sha512-Avb2QiuDEEvB4bZJYdft2mNjVShBftLdPG8FJ0V7irTLQ8Uo0qcPxh4Plq7G5tGm0rU+1SPhVotteLpBERwTkw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css" rel="stylesheet" />
@@ -277,6 +279,7 @@
                 opacity: 0;
                 transform: translateY(30px) scale(0.95);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0) scale(1);
@@ -292,6 +295,7 @@
                 opacity: 0;
                 transform: translateX(-20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateX(0);
@@ -602,7 +606,7 @@
             .card-modern {
                 border-radius: 12px;
             }
-            
+
             .modal-content {
                 border-radius: 16px;
                 margin: 1rem;
@@ -614,7 +618,7 @@
 <body class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 font-sans min-h-screen">
     <?php include '../../component/navigation_report.php'; ?>
     <?php include '../../component/sidebar_report.php'; ?>
-    
+
     <main id="main-content" class="flex-1 p-4 lg:p-8 transition-all duration-300 ml-64">
         <div class="max-w-7xl mx-auto">
             <!-- Enhanced Header -->
@@ -626,15 +630,18 @@
                                 <i class="fa-solid fa-box-open text-2xl text-white"></i>
                             </div>
                             <div>
-                                <h1 class="text-4xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
+                                <h1
+                                    class="text-4xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
                                     Produk Online
                                 </h1>
-                                <p class="text-slate-600 mt-2 text-lg">Kelola katalog produk Anda dengan mudah dan efisien</p>
+                                <p class="text-slate-600 mt-2 text-lg">Kelola katalog produk Anda dengan mudah dan
+                                    efisien</p>
                             </div>
                         </div>
-                        
+
                         <div class="flex items-center gap-4 w-full lg:w-auto">
-                            <button id="btnAdd" class="px-8 py-4 rounded-xl btn-primary shadow-lg flex items-center gap-3 text-sm font-semibold whitespace-nowrap">
+                            <button id="btnAdd"
+                                class="px-8 py-4 rounded-xl btn-primary shadow-lg flex items-center gap-3 text-sm font-semibold whitespace-nowrap">
                                 <i class="fa-solid fa-plus text-lg"></i>
                                 Tambah Produk
                             </button>
@@ -652,7 +659,7 @@
                         </div>
                         <h3 class="text-lg font-semibold text-slate-800">Filter Produk</h3>
                     </div>
-                    
+
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <!-- Filter Cabang -->
                         <div class="space-y-3">
@@ -660,7 +667,8 @@
                                 <i class="fa-solid fa-store-alt mr-2 text-blue-500"></i>
                                 Cabang
                             </label>
-                            <select id="filterCabang" class="w-full px-4 py-4 border-2 input-modern text-slate-700 font-medium">
+                            <select id="filterCabang"
+                                class="w-full px-4 py-4 border-2 input-modern text-slate-700 font-medium">
                                 <option value="">Semua Cabang</option>
                                 <!-- opsi cabang bisa diisi via JS dari API kode_store -->
                             </select>
@@ -673,9 +681,7 @@
                                 Pencarian Lanjutan
                             </label>
                             <div class="relative">
-                                <input 
-                                    type="text" 
-                                    id="filterSearch" 
+                                <input type="text" id="filterSearch"
                                     placeholder="Cari berdasarkan nama produk, atau barcode..."
                                     class="w-full px-4 py-4 pr-12 border-2 input-modern text-slate-700 placeholder-slate-400 font-medium">
                                 <div class="absolute right-4 top-1/2 transform -translate-y-1/2">
@@ -700,9 +706,10 @@
                                 <p class="text-slate-600 text-sm mt-1">Kelola semua produk dalam satu tempat</p>
                             </div>
                         </div>
-                        
+
                         <div class="flex items-center gap-3">
-                            <div class="px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                            <div
+                                class="px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
                                 <span class="text-sm font-semibold text-blue-700" id="countText">0 produk</span>
                             </div>
                         </div>
@@ -713,49 +720,57 @@
                     <table class="min-w-full table-auto" id="productTable">
                         <thead class="table-header">
                             <tr>
-                                <th class="px-6 py-5 text-left text-xs font-bold text-slate-600 uppercase tracking-wider w-16">
+                                <th
+                                    class="px-6 py-5 text-left text-xs font-bold text-slate-600 uppercase tracking-wider w-16">
                                     <div class="flex items-center gap-2">
                                         <i class="fa-solid fa-hashtag"></i>
                                         No
                                     </div>
                                 </th>
-                                <th class="px-6 py-5 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
+                                <th
+                                    class="px-6 py-5 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
                                     <div class="flex items-center gap-2">
                                         <i class="fa-solid fa-box"></i>
                                         Produk
                                     </div>
                                 </th>
-                                <th class="px-6 py-5 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
+                                <th
+                                    class="px-6 py-5 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
                                     <div class="flex items-center gap-2">
                                         <i class="fa-solid fa-tag"></i>
                                         Harga
                                     </div>
                                 </th>
-                                <th class="px-6 py-5 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
+                                <th
+                                    class="px-6 py-5 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
                                     <div class="flex items-center gap-2">
                                         <i class="fa-solid fa-warehouse"></i>
                                         Stok
                                     </div>
                                 </th>
-                                <th class="px-6 py-5 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
+                                <th
+                                    class="px-6 py-5 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
                                     <div class="flex items-center gap-2">
                                         <i class="fa-solid fa-layer-group"></i>
                                         Kategori
                                     </div>
                                 </th>
-                                 <th class="px-6 py-5 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
+                                <th
+                                    class="px-6 py-5 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
                                     <div class="flex items-center gap-2">
                                         <i class="fa-solid fa-layer-group"></i>
                                         Tanggal Upload
                                     </div>
                                 </th>
-                                <th class="px-6 py-5 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
+                                <th
+                                    class="px-6 py-5 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
                                     <div class="flex items-center gap-2">
                                         <i class="fa-solid fa-store"></i>
                                         Cabang
                                     </div>
                                 </th>
-                                <th class="px-6 py-5 text-center text-xs font-bold text-slate-600 uppercase tracking-wider w-40">
+                                <th
+                                    class="px-6 py-5 text-center text-xs font-bold text-slate-600 uppercase tracking-wider w-40">
                                     <div class="flex items-center justify-center gap-2">
                                         <i class="fa-solid fa-cog"></i>
                                         Aksi
@@ -769,22 +784,27 @@
                 </div>
 
                 <!-- Enhanced Pagination -->
-                <div class="px-6 py-5 bg-gradient-to-r from-slate-50 to-blue-50 border-t border-slate-100 flex items-center justify-between">
+                <div
+                    class="px-6 py-5 bg-gradient-to-r from-slate-50 to-blue-50 border-t border-slate-100 flex items-center justify-between">
                     <div class="flex items-center gap-2">
                         <div class="p-2 bg-white rounded-lg border border-slate-200 shadow-sm">
                             <i class="fa-solid fa-info-circle text-blue-500"></i>
                         </div>
-                        <span class="text-sm font-medium text-slate-600" id="countText2">Menampilkan 1-10 dari 100 produk</span>
+                        <span class="text-sm font-medium text-slate-600" id="countText2">Menampilkan 1-10 dari 100
+                            produk</span>
                     </div>
                     <div class="flex items-center gap-3">
-                        <button id="prevBtn" class="px-4 py-2 bg-white border-2 border-slate-200 rounded-lg text-sm font-medium hover:border-blue-300 hover:bg-blue-50 transition-all flex items-center gap-2">
+                        <button id="prevBtn"
+                            class="px-4 py-2 bg-white border-2 border-slate-200 rounded-lg text-sm font-medium hover:border-blue-300 hover:bg-blue-50 transition-all flex items-center gap-2">
                             <i class="fa-solid fa-chevron-left"></i>
                             Sebelumnya
                         </button>
-                        <div class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg text-sm font-semibold shadow-sm">
+                        <div
+                            class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg text-sm font-semibold shadow-sm">
                             <span id="pageText">Hal 1 dari 10</span>
                         </div>
-                        <button id="nextBtn" class="px-4 py-2 bg-white border-2 border-slate-200 rounded-lg text-sm font-medium hover:border-blue-300 hover:bg-blue-50 transition-all flex items-center gap-2">
+                        <button id="nextBtn"
+                            class="px-4 py-2 bg-white border-2 border-slate-200 rounded-lg text-sm font-medium hover:border-blue-300 hover:bg-blue-50 transition-all flex items-center gap-2">
                             Selanjutnya
                             <i class="fa-solid fa-chevron-right"></i>
                         </button>
@@ -808,7 +828,8 @@
                                 <p class="text-slate-600 mt-1">Lengkapi informasi produk dengan detail</p>
                             </div>
                         </div>
-                        <button id="closeModal" class="text-slate-400 hover:text-slate-600 transition-colors p-2 hover:bg-slate-100 rounded-lg">
+                        <button id="closeModal"
+                            class="text-slate-400 hover:text-slate-600 transition-colors p-2 hover:bg-slate-100 rounded-lg">
                             <i class="fa-solid fa-xmark text-2xl"></i>
                         </button>
                     </div>
@@ -825,65 +846,55 @@
                             </div>
                             <h3 class="text-lg font-semibold text-slate-800">Informasi Dasar</h3>
                         </div>
-                        
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="space-y-2">
                                 <label class="block text-sm font-semibold text-slate-700">
                                     <i class="fa-solid fa-barcode mr-2 text-blue-500"></i>
                                     Barcode
                                 </label>
-                                <input
-                                    id="barcode"
-                                    name="barcode"
+                                <input id="barcode" name="barcode"
                                     class="w-full px-4 py-4 border-2 rounded-xl input-modern bg-white font-medium"
-                                    placeholder="Masukkan barcode produk"
-                                    required type="number" />
+                                    placeholder="Masukkan barcode produk" required type="number" />
                             </div>
-                            
+
                             <div class="space-y-2">
                                 <label class="block text-sm font-semibold text-slate-700">
                                     <i class="fa-solid fa-hashtag mr-2 text-blue-500"></i>
                                     PLU
                                 </label>
-                                <input
-                                    id="plu"
-                                    name="plu"
+                                <input id="plu" name="plu"
                                     class="w-full px-4 py-4 border-2 rounded-xl input-modern bg-white font-medium"
-                                    placeholder="Masukkan kode PLU"
-                                    required type="number" />
+                                    placeholder="Masukkan kode PLU" required type="number" />
                             </div>
-                            
+
                             <div class="space-y-2">
                                 <label class="block text-sm font-semibold text-slate-700">
                                     <i class="fa-solid fa-store mr-2 text-blue-500"></i>
                                     Cabang
                                 </label>
-                                <select name="branch" id="cabang" class="w-full px-4 py-4 border-2 rounded-xl input-modern bg-white font-medium">
+                                <select name="branch" id="cabang"
+                                    class="w-full px-4 py-4 border-2 rounded-xl input-modern bg-white font-medium">
                                     <option value="">Pilih Cabang</option>
                                 </select>
                             </div>
-                            
+
                             <div class="space-y-2">
                                 <label class="block text-sm font-semibold text-slate-700">
                                     <i class="fa-solid fa-box mr-2 text-blue-500"></i>
                                     Nama Produk
                                 </label>
-                                <input
-                                    id="name"
-                                    name="nama_produk"
+                                <input id="name" name="nama_produk"
                                     class="w-full px-4 py-4 border-2 rounded-xl input-modern bg-white font-medium"
-                                    placeholder="Masukkan nama produk"
-                                    required />
+                                    placeholder="Masukkan nama produk" required />
                             </div>
-                            
+
                             <div class="space-y-2 md:col-span-2">
                                 <label class="block text-sm font-semibold text-slate-700">
                                     <i class="fa-solid fa-layer-group mr-2 text-blue-500"></i>
                                     Kategori
                                 </label>
-                                <input
-                                    id="category"
-                                    name="kategori"
+                                <input id="category" name="kategori"
                                     class="w-full px-4 py-4 border-2 rounded-xl input-modern bg-white font-medium"
                                     placeholder="Masukkan kategori produk" />
                             </div>
@@ -898,16 +909,13 @@
                             </div>
                             <h3 class="text-lg font-semibold text-slate-800">Deskripsi Produk</h3>
                         </div>
-                        
+
                         <div class="space-y-2">
                             <label class="block text-sm font-semibold text-slate-700">
                                 <i class="fa-solid fa-file-text mr-2 text-blue-500"></i>
                                 Detail Deskripsi
                             </label>
-                            <textarea
-                                id="description"
-                                name="deskripsi"
-                                rows="5"
+                            <textarea id="description" name="deskripsi" rows="5"
                                 class="w-full px-4 py-4 border-2 rounded-xl input-modern bg-white resize-none font-medium"
                                 placeholder="Tuliskan deskripsi produk secara detail..."></textarea>
                         </div>
@@ -921,35 +929,41 @@
                             </div>
                             <h3 class="text-lg font-semibold text-slate-800">Gambar Produk</h3>
                         </div>
-                        
+
                         <div class="upload-area p-8 text-center">
                             <input id="imageInput" name="gambar-produk" type="file" accept="image/*" class="hidden" />
-                            <button type="button" id="uploadBtn" class="text-slate-500 hover:text-slate-700 transition-colors flex flex-col items-center justify-center w-full">
+                            <button type="button" id="uploadBtn"
+                                class="text-slate-500 hover:text-slate-700 transition-colors flex flex-col items-center justify-center w-full">
                                 <div class="p-4 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl mb-4">
                                     <i class="fa-solid fa-cloud-upload-alt text-4xl text-blue-600"></i>
                                 </div>
                                 <div class="text-lg font-semibold text-slate-700 mb-2">Upload Gambar Produk</div>
-                                <div class="text-sm text-slate-500">Klik untuk memilih gambar atau drag & drop di sini</div>
+                                <div class="text-sm text-slate-500">Klik untuk memilih gambar atau drag & drop di sini
+                                </div>
                                 <div class="text-xs text-slate-400 mt-2">Format: JPG, PNG, WEBP (Max: 5MB)</div>
                             </button>
 
                             <!-- Preview dan Cropper Container -->
                             <div id="cropperContainer" class="mt-6 hidden">
-                                <div class="relative bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl overflow-hidden shadow-inner" style="max-height: 400px;">
+                                <div class="relative bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl overflow-hidden shadow-inner"
+                                    style="max-height: 400px;">
                                     <img id="preview" src="" alt="" class="max-w-full max-h-96 mx-auto block" />
                                 </div>
 
                                 <!-- Crop Controls -->
                                 <div id="cropControls" class="mt-6 flex items-center justify-center gap-3 flex-wrap">
-                                    <button type="button" id="cropBtn" class="px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all flex items-center gap-2 font-semibold shadow-md">
+                                    <button type="button" id="cropBtn"
+                                        class="px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all flex items-center gap-2 font-semibold shadow-md">
                                         <i class="fa-solid fa-crop"></i>
                                         Crop Gambar
                                     </button>
-                                    <button type="button" id="resetCropBtn" class="px-4 py-3 bg-gradient-to-r from-slate-500 to-slate-600 text-white rounded-xl hover:from-slate-600 hover:to-slate-700 transition-all flex items-center gap-2 font-semibold shadow-md">
+                                    <button type="button" id="resetCropBtn"
+                                        class="px-4 py-3 bg-gradient-to-r from-slate-500 to-slate-600 text-white rounded-xl hover:from-slate-600 hover:to-slate-700 transition-all flex items-center gap-2 font-semibold shadow-md">
                                         <i class="fa-solid fa-undo"></i>
                                         Reset
                                     </button>
-                                    <button type="button" id="cancelCropBtn" class="px-4 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all flex items-center gap-2 font-semibold shadow-md">
+                                    <button type="button" id="cancelCropBtn"
+                                        class="px-4 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all flex items-center gap-2 font-semibold shadow-md">
                                         <i class="fa-solid fa-times"></i>
                                         Batal
                                     </button>
@@ -958,19 +972,24 @@
 
                             <!-- Final Cropped Result -->
                             <div id="croppedResult" class="mt-6 hidden">
-                                <div class="p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl border-2 border-green-200">
+                                <div
+                                    class="p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl border-2 border-green-200">
                                     <div class="text-sm font-semibold text-emerald-700 mb-4 flex items-center gap-2">
                                         <i class="fa-solid fa-check-circle"></i>
                                         Gambar Siap Digunakan
                                     </div>
-                                    <img id="croppedPreview" src="" alt="" class="mx-auto rounded-xl border-2 border-emerald-200 shadow-md" style="max-width: 200px; max-height: 200px;" />
+                                    <img id="croppedPreview" src="" alt=""
+                                        class="mx-auto rounded-xl border-2 border-emerald-200 shadow-md"
+                                        style="max-width: 200px; max-height: 200px;" />
                                     <div class="mt-4 flex justify-center gap-3">
-                                        <button type="button" id="editCropBtn" class="px-4 py-2 text-sm bg-blue-100 text-blue-600 rounded-xl hover:bg-blue-200 transition-colors font-medium border border-blue-200">
-                                            <i class="fa-solid fa-edit mr-1"></i> 
+                                        <button type="button" id="editCropBtn"
+                                            class="px-4 py-2 text-sm bg-blue-100 text-blue-600 rounded-xl hover:bg-blue-200 transition-colors font-medium border border-blue-200">
+                                            <i class="fa-solid fa-edit mr-1"></i>
                                             Edit Ulang
                                         </button>
-                                        <button type="button" id="removeCropBtn" class="px-4 py-2 text-sm bg-red-100 text-red-600 rounded-xl hover:bg-red-200 transition-colors font-medium border border-red-200">
-                                            <i class="fa-solid fa-trash mr-1"></i> 
+                                        <button type="button" id="removeCropBtn"
+                                            class="px-4 py-2 text-sm bg-red-100 text-red-600 rounded-xl hover:bg-red-200 transition-colors font-medium border border-red-200">
+                                            <i class="fa-solid fa-trash mr-1"></i>
                                             Hapus
                                         </button>
                                     </div>
@@ -981,11 +1000,13 @@
 
                     <!-- Form Actions -->
                     <div class="flex justify-end gap-4 pt-6 border-t border-slate-200">
-                        <button type="button" id="cancelBtn" class="px-8 py-4 btn-ghost rounded-xl text-sm font-semibold flex items-center gap-2">
+                        <button type="button" id="cancelBtn"
+                            class="px-8 py-4 btn-ghost rounded-xl text-sm font-semibold flex items-center gap-2">
                             <i class="fa-solid fa-times"></i>
                             Batal
                         </button>
-                        <button type="submit" class="px-8 py-4 btn-accent rounded-xl text-sm font-semibold flex items-center gap-2 shadow-lg">
+                        <button type="submit"
+                            class="px-8 py-4 btn-accent rounded-xl text-sm font-semibold flex items-center gap-2 shadow-lg">
                             <i class="fa-solid fa-save"></i>
                             Simpan Produk
                         </button>
@@ -997,18 +1018,18 @@
 
     <!-- Scripts -->
     <script>
-        document.getElementById("toggle-sidebar").addEventListener("click", function() {
+        document.getElementById("toggle-sidebar").addEventListener("click", function () {
             document.getElementById("sidebar").classList.toggle("open");
         });
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             const sidebar = document.getElementById("sidebar");
             const closeBtn = document.getElementById("closeSidebar");
 
-            closeBtn.addEventListener("click", function() {
+            closeBtn.addEventListener("click", function () {
                 sidebar.classList.remove("open");
             });
         });
-        document.getElementById("toggle-hide").addEventListener("click", function() {
+        document.getElementById("toggle-hide").addEventListener("click", function () {
             var sidebarTexts = document.querySelectorAll(".sidebar-text");
             let mainContent = document.getElementById("main-content");
             let sidebar = document.getElementById("sidebar");
@@ -1037,16 +1058,16 @@
                 icon.classList.add("fa-angle-left");
             }
         });
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             const profileImg = document.getElementById("profile-img");
             const profileCard = document.getElementById("profile-card");
 
-            profileImg.addEventListener("click", function(event) {
+            profileImg.addEventListener("click", function (event) {
                 event.preventDefault();
                 profileCard.classList.toggle("show");
             });
 
-            document.addEventListener("click", function(event) {
+            document.addEventListener("click", function (event) {
                 if (!profileCard.contains(event.target) && !profileImg.contains(event.target)) {
                     profileCard.classList.remove("show");
                 }

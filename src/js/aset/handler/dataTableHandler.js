@@ -71,26 +71,29 @@ function renderRows(items) {
     : `<span class="text-gray-500">Tidak ada gambar</span>`;
 
   tr.innerHTML = `
-      <td class="px-4 py-4 align-top text-sm font-medium">${no}</td>
+      <td class="px-4 py-4 align-top text-sm font-medium text-center">${no}</td>
+      <td class="px-6 py-4 align-top truncate">${escapeHtml(it.no_seri || '')}</td>
       <td class="px-6 py-4 align-top truncate">${escapeHtml(it.nama_barang || '')}</td>
+      <td class="px-6 py-4 align-top truncate">${escapeHtml(it.group_aset || '')}</td>
       <td class="px-6 py-4 align-top truncate">${escapeHtml(it.merk || '')}</td>
   <td class="px-6 py-4 align-top truncate">${escapeHtml((it.tanggal_rusak||'').split(' ')[0])}</td>
   <td class="px-6 py-4 align-top truncate">${escapeHtml((it.tanggal_perbaikan||'').split(' ')[0])}</td>
   <td class="px-6 py-4 align-top truncate">${escapeHtml((it.tanggal_ganti||'').split(' ')[0])}</td>
-      <td class="px-6 py-4 align-top truncate">${escapeHtml(it.harga_beli || '')}</td>
+      <td class="px-6 py-4 align-top truncate">${it.harga_beli.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}</td>
       <td class="px-6 py-4 align-top truncate">${escapeHtml(it.nama_toko || '')}</td>
   <td class="px-6 py-4 align-top truncate">${escapeHtml((it.tanggal_beli||'').split(' ')[0])}</td>
       <td class="px-6 py-4 align-top truncate">${escapeHtml(it.mutasi_dari || '')}</td>
       <td class="px-6 py-4 align-top truncate">${escapeHtml(it.mutasi_untuk || '')}</td>
-      <td class="px-6 py-4 align-top truncate">${escapeHtml(it.tanggal_mutasi || '')}</td>
+      <td class="px-6 py-4 align-top truncate">${escapeHtml(it.tanggal_mutasi || '').split(' ')[0]}</td>
       <td class="px-6 py-4 align-top">${statusHtml}</td>
       <td class="px-6 py-4 align-top truncate">${imageCell}</td>
       <td class="px-6 py-4 align-top truncate">${escapeHtml(it.nm_alias || '')}</td>
-      <td class="px-6 py-4 align-top truncate">${escapeHtml(it.group_aset || '')}</td>
+      <td class="px-6 py-4 align-top text-warp">${escapeHtml(it.keterangan || '')}</td>
       <td class="px-6 py-4 align-top">
         <div class="flex gap-2">
           <button data-id="${it.idhistory_aset}" class="btn-edit px-3 py-1 bg-indigo-600 text-white rounded text-sm">Edit</button>
           <button data-id="${it.idhistory_aset}" class="btn-delete px-3 py-1 bg-red-600 text-white rounded text-sm">Delete</button>
+          <button data-id="${it.idhistory_aset}" class="btn-history px-3 py-1 bg-blue-600 text-white rounded text-sm" title="Lihat Riwayat Edit"><i class="fa-solid fa-book"></i></button>
         </div>
       </td>
     `;
@@ -138,6 +141,12 @@ function renderRows(items) {
       } catch (err) {
         await Swal.fire({ icon: 'error', title: 'Gagal', text: err.message || 'Terjadi kesalahan' });
       }
+    });
+  });
+  tbody.querySelectorAll('.btn-history').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const id = btn.getAttribute('data-id');
+      await openHistoryModal(id);
     });
   });
 
@@ -285,13 +294,8 @@ function attachListeners() {
     searchInput.addEventListener('input', deb);
   }
 
-  if (cabangSelect) {
-    cabangSelect.addEventListener('change', (e) => {
-      state.kd_store = e.target.value;
-      state.page = 1;
-      render();
-    });
-  }
+  // `filterCabang` is populated and wired in selectHandler.initSelectCabang()
+  // avoid attaching a duplicate change listener here to prevent double-fetches
 
   const dateChange = (key, value) => {
     state[key] = value;
@@ -359,7 +363,7 @@ async function openEditModal(id) {
     if (!form) throw new Error('Form not found');
     form.querySelector('#idhistory_aset').value = item.idhistory_aset || '';
   const dateFields = ['tanggal_beli','tanggal_ganti','tanggal_perbaikan','tanggal_mutasi','tanggal_rusak'];
-  ['nama_barang','merk','harga_beli','nama_toko','tanggal_beli','tanggal_ganti','tanggal_perbaikan','tanggal_mutasi','tanggal_rusak','group_aset','mutasi_untuk','mutasi_dari','kd_store','status'].forEach(k => {
+  ['nama_barang','merk','harga_beli','nama_toko','tanggal_beli','tanggal_ganti','tanggal_perbaikan','tanggal_mutasi','tanggal_rusak','group_aset','mutasi_untuk','mutasi_dari','kd_store','status', 'no_seri', 'keterangan'].forEach(k => {
       const el = form.querySelector(`[name="${k}"]`);
       if (!el) return;
       let val = item[k] ?? '';
@@ -377,3 +381,65 @@ async function openEditModal(id) {
     alert('Gagal memuat data untuk edit: ' + err.message);
   }
 }
+
+// History modal fetch & render helper
+async function openHistoryModal(id) {
+  try {
+    const token = getCookie('token');
+    const url = new URL('/src/api/aset/get_history_log.php', window.location.origin);
+    url.searchParams.set('idhistory_aset', id);
+    const res = await fetch(url.toString(), { method: 'GET', headers: { 'Authorization': 'Bearer ' + token } });
+    const json = await res.json();
+    if (!json.status) throw new Error(json.message || 'Gagal memuat riwayat');
+    const items = json.data.items || [];
+
+    const tbody = document.getElementById('historyLogBody');
+    if (!tbody) throw new Error('Modal body not found');
+    tbody.innerHTML = '';
+
+    items.forEach(it => {
+      const user = it.nama || '';
+      const tanggal = it.tanggal || '';
+      let kegiatan = it.kegiatan || '';
+      let parsed = null;
+      try { parsed = JSON.parse(kegiatan); } catch (e) { parsed = null; }
+      if (Array.isArray(parsed)) {
+        parsed.forEach(ch => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td class="px-3 py-2 align-top border-t">${escapeHtml(user)}</td>
+            <td class="px-3 py-2 align-top border-t">${escapeHtml(tanggal)}</td>
+            <td class="px-3 py-2 align-top border-t">${escapeHtml(ch.field || '')}</td>
+            <td class="px-3 py-2 align-top border-t">${escapeHtml(ch.old ?? '')}</td>
+            <td class="px-3 py-2 align-top border-t">${escapeHtml(ch.new ?? '')}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } else {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="px-3 py-2 align-top border-t">${escapeHtml(user)}</td>
+          <td class="px-3 py-2 align-top border-t">${escapeHtml(tanggal)}</td>
+          <td class="px-3 py-2 align-top border-t">-</td>
+          <td class="px-3 py-2 align-top border-t" colspan="2">${escapeHtml(kegiatan)}</td>
+        `;
+        tbody.appendChild(tr);
+      }
+    });
+
+    const modal = document.getElementById('historyLogModal');
+    if (modal) modal.classList.remove('hidden');
+  } catch (err) {
+    console.error(err);
+    await Swal.fire({ icon: 'error', title: 'Gagal', text: err.message || 'Terjadi kesalahan' });
+  }
+}
+
+// close handler for history modal
+document.addEventListener('click', (ev) => {
+  const closeBtn = ev.target.closest && ev.target.closest('#closeHistoryModal');
+  if (closeBtn) {
+    const modal = document.getElementById('historyLogModal');
+    if (modal) modal.classList.add('hidden');
+  }
+});

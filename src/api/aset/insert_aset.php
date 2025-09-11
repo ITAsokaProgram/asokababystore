@@ -3,7 +3,7 @@ require_once __DIR__ . '/../../../aa_kon_sett.php';
 require_once __DIR__ . '/../../auth/middleware_login.php';
 header("Access-Control-Allow-Methods: POST");
 header('Content-Type: application/json');
-
+date_default_timezone_set('Asia/Jakarta');
 use Cloudinary\Cloudinary;
 $env = parse_ini_file(__DIR__ . '/../../../config.env');
 // Get token from Authorization header
@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 try {
     // Validate required fields
-    $required_fields = ['nama_barang', 'merk', 'harga_beli', 'nama_toko', 'kd_store'];
+    $required_fields = ['nama_barang', 'merk', 'harga_beli', 'nama_toko', 'kd_store', 'no_seri'];
     $missing_fields = [];
 
     foreach ($required_fields as $field) {
@@ -80,8 +80,11 @@ try {
         tanggal_rusak,
         group_aset,
         status,
-        image_url
-    ) VALUES (?, ?, ?, ?, NULLIF(?, ''), NULLIF(?, ''), ?, ?, ?, NULLIF(?, ''), NULLIF(?, ''), NULLIF(?, ''), NULLIF(?, ''), ?, ?)";
+        image_url,
+        no_seri,
+        keterangan,
+        tanggal_dibuat
+    ) VALUES (?, ?, ?, ?, NULLIF(?, ''), NULLIF(?, ''), ?, ?, ?, NULLIF(?, ''), NULLIF(?, ''), NULLIF(?, ''), NULLIF(?, ''), ?, ?, ?, ?, ?)";
 
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
@@ -92,6 +95,7 @@ try {
 
     // Prepare values for bind_param
     $nama_barang = $_POST['nama_barang'];
+    $now = date('Y-m-d H:i:s');
     $merk = $_POST['merk'];
     $harga_beli = $_POST['harga_beli'];
     $nama_toko = $_POST['nama_toko'];
@@ -121,9 +125,11 @@ try {
     $tanggal_mutasi = $normalizeDatetime($_POST['tanggal_mutasi'] ?? '');
     $tanggal_rusak = $normalizeDatetime($_POST['tanggal_rusak'] ?? '');
     $group_aset = isset($_POST['group_aset']) ? trim($_POST['group_aset']) : '';
+    $no_seri = isset($_POST['no_seri']) ? trim($_POST['no_seri']) : '';
+    $keterangan = isset($_POST['keterangan']) ? trim($_POST['keterangan']) : '';
 
     $stmt->bind_param(
-    'sssssssssssssss',
+    'ssssssssssssssssss',
         $nama_barang,
         $merk,
         $harga_beli,
@@ -138,7 +144,10 @@ try {
         $tanggal_rusak,
     $group_aset,
         $status,
-        $image_url
+        $image_url,
+        $no_seri,
+        $keterangan,
+        $now
     );
 
     if (!$stmt->execute()) {

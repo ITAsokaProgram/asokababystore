@@ -4,28 +4,10 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Master Produk</title>
-    <!-- Tailwind via CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: {
-                            50: '#f0f9ff',
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            700: '#1d4ed8',
-                            900: '#1e3a8a'
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+    <title>Management Aset</title>
     <link rel="stylesheet" href="../../style/header.css">
     <link rel="stylesheet" href="../../style/sidebar.css">
+    <link rel="stylesheet" href="../../output2.css">
     <link rel="icon" type="image/png" href="../../../public/images/logo1.png">
 
     <!-- Font Awesome for icons -->
@@ -620,20 +602,20 @@
         }
 
         ::-webkit-scrollbar-thumb:hover {
-                  background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
-                }
+            background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+        }
 
-            /* Responsive enhancements */
-            @media (max-width: 768px) {
-                .card-modern {
-                    border-radius: 12px;
-                }
-
-                .modal-content {
-                    border-radius: 16px;
-                    margin: 1rem;
-                }
+        /* Responsive enhancements */
+        @media (max-width: 768px) {
+            .card-modern {
+                border-radius: 12px;
             }
+
+            .modal-content {
+                border-radius: 16px;
+                margin: 1rem;
+            }
+        }
     </style>
 </head>
 
@@ -857,11 +839,25 @@
                                 <th
                                     class="truncate px-6 py-5 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
                                     <div class="flex items-center gap-2">
+                                        <i class="fa-solid fa-barcode"></i>
+
+                                        No_seri
+                                    </div>
+                                </th>
+                                <th
+                                    class="truncate px-6 py-5 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
+                                    <div class="flex items-center gap-2">
                                         <i class="fa-solid fa-box-open"></i>
                                         Nama Barang
                                     </div>
                                 </th>
-
+                                <th
+                                    class="truncate px-6 py-5 text-left text-xs font-bold text-slate-600 uppercase tracking-wider w-40">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fa-solid fa-building"></i>
+                                        Group Aset
+                                    </div>
+                                </th>
                                 <th
                                     class="truncate px-6 py-5 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
                                     <div class="flex items-center gap-2">
@@ -963,10 +959,10 @@
                                     </div>
                                 </th>
                                 <th
-                                    class="truncate px-6 py-5 text-left text-xs font-bold text-slate-600 uppercase tracking-wider w-40">
+                                    class="truncate px-6 py-5 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">
                                     <div class="flex items-center gap-2">
-                                        <i class="fa-solid fa-building"></i>
-                                        Group Aset
+                                        <i class="fa-solid fa-note-sticky"></i>
+                                        Keterangan
                                     </div>
                                 </th>
                                 <th
@@ -1072,7 +1068,7 @@
             });
         });
     </script>
-    <!-- Add Asset Modal -->
+    <!-- Edit Asset Modal -->
     <div id="addAssetModal" class="fixed inset-0 z-50 overflow-y-auto hidden">
         <div class="flex items-center justify-center min-h-screen p-4">
             <div class="fixed inset-0 bg-black opacity-50"></div>
@@ -1089,6 +1085,13 @@
                     <input type="hidden" name="idhistory_aset" id="idhistory_aset" value="">
                     <!-- Basic Info Section -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                No Seri <span class="text-red-500">*</span>
+                            </label>
+                            <input type="number" name="no_seri" required
+                                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Nama Barang <span class="text-red-500">*</span>
@@ -1121,15 +1124,8 @@
                                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         </div>
 
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Tanggal Beli
-                            </label>
-                            <input type="date" name="tanggal_beli"
-                                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        </div>
 
-                        <div>
+                                                <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Kode Store <span class="text-red-500">*</span>
                             </label>
@@ -1139,9 +1135,28 @@
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Tanggal Beli
+                            </label>
+                            <input type="date" name="tanggal_beli"
+                                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Tanggal Ganti
                             </label>
                             <input type="date" name="tanggal_ganti"
+                                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+
+                         <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Tanggal Rusak
+                            </label>
+                            <input type="date" name="tanggal_rusak"
                                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         </div>
 
@@ -1153,6 +1168,7 @@
                                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         </div>
 
+                        
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Tanggal Mutasi
@@ -1162,10 +1178,8 @@
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Tanggal Rusak
-                            </label>
-                            <input type="date" name="tanggal_rusak"
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Group Aset</label>
+                            <input type="text" name="group_aset" id="input_group_aset" placeholder="Isi group manual"
                                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         </div>
 
@@ -1185,11 +1199,7 @@
                                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         </div>
 
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Group Aset</label>
-                            <input type="text" name="group_aset" id="input_group_aset" placeholder="Isi group manually"
-                                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        </div>
+
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -1200,7 +1210,14 @@
                                 <option value="Baru">Baru</option>
                                 <option value="Services">Services</option>
                                 <option value="Mutasi">Mutasi</option>
+                                <option value="Rusak">Rusak</option>
                             </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Keterangan</label>
+                            <textarea name="keterangan" id="input_keterangan" placeholder="Isi keterangan"
+                                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
                         </div>
                     </div>
 
@@ -1279,6 +1296,38 @@
     <script src="/src/js/aset/main.js" type="module">
     </script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- History Log Modal -->
+    <div id="historyLogModal" class="fixed inset-0 z-50 overflow-y-auto hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="fixed inset-0 bg-black opacity-50"></div>
+            <div class="relative bg-white rounded-xl shadow-2xl max-w-4xl w-full p-6 overflow-hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold text-gray-800">Riwayat Perubahan Aset</h3>
+                    <button id="closeHistoryModal" class="text-gray-500 hover:text-gray-800">Tutup ✕</button>
+                </div>
+
+                <!-- make the log area scrollable with a max height -->
+                <div class="overflow-x-auto" style="max-height:60vh; overflow:auto;">
+                    <table class="w-full table-auto border-collapse">
+                        <thead class="table-header text-left"
+                            style="position:sticky; top:0; background:#fff; z-index:5;">
+                            <tr>
+                                <th class="px-3 py-2">User</th>
+                                <th class="px-3 py-2">Tanggal</th>
+                                <th class="px-3 py-2">Field</th>
+                                <th class="px-3 py-2">Old</th>
+                                <th class="px-3 py-2">New</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyLogBody">
+                            <!-- rows inserted dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 
 </body>
 

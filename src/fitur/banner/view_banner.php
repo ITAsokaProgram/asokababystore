@@ -44,43 +44,50 @@ $token = $menuHandler->getToken();
             outline: 2px solid #ec4899;
             outline-offset: 1px;
         }
-        
+
         /* Enhanced animations */
         .upload-area-hover {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
+
         .upload-area-hover:hover {
             transform: translateY(-2px);
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
-        
+
         .card-hover {
             transition: all 0.3s ease;
         }
-        
+
         .card-hover:hover {
             transform: translateY(-4px);
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
-        
-        
+
+
         @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {
+
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
                 transform: translateY(0);
             }
+
             40% {
                 transform: translateY(-10px);
             }
+
             60% {
                 transform: translateY(-5px);
             }
         }
-        
+
         .gradient-bg {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
-        
+
         .glass-effect {
             background: rgba(255, 255, 255, 0.25);
             backdrop-filter: blur(10px);
@@ -92,13 +99,14 @@ $token = $menuHandler->getToken();
 <body class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 min-h-screen flex">
     <?php include '../../component/navigation_report.php'; ?>
     <?php include '../../component/sidebar_report.php'; ?>
-    
+
     <main id="main-content" class="flex-1 p-6 lg:p-8 transition-all duration-300 ml-64 mt-16">
         <div class="max-w-7xl mx-auto space-y-8">
             <!-- Header Section -->
             <div class="text-center mb-8">
-                <h1 class="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">
-                <i class="fa-solid fa-image mr-2"></i>Banner Management
+                <h1
+                    class="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">
+                    <i class="fa-solid fa-image mr-2"></i>Banner Management
                 </h1>
                 <p class="text-gray-600 text-lg font-medium">Upload dan kelola banner promo dengan mudah</p>
             </div>
@@ -106,7 +114,8 @@ $token = $menuHandler->getToken();
             <!-- Upload Section -->
             <div class="glass-effect rounded-3xl shadow-2xl p-8 animate-fade-in-up">
                 <div class="flex items-center gap-3 mb-6">
-                    <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                    <div
+                        class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
                         <i class="fas fa-cloud-upload-alt text-white text-xl"></i>
                     </div>
                     <div>
@@ -122,19 +131,22 @@ $token = $menuHandler->getToken();
                         class="relative flex flex-col items-center justify-center border-3 border-dashed border-gray-300 rounded-2xl p-12 bg-gradient-to-br from-white to-gray-50 upload-area-hover cursor-pointer group">
                         <input type="file" id="promoImage" name="promoImage[]" accept="image/*" multiple
                             class="hidden" />
-                        
+
                         <!-- Upload Icon with Animation -->
-                        <div class="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <div
+                            class="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                             <i class="fas fa-cloud-arrow-up text-white text-3xl"></i>
                         </div>
-                        
+
                         <!-- Upload Text -->
                         <div class="text-center space-y-2">
                             <h3 class="text-xl font-semibold text-gray-800">Drag & Drop Gambar</h3>
-                            <p class="text-gray-500">atau <span class="text-blue-600 underline cursor-pointer font-semibold hover:text-blue-700 transition-colors" id="selectFile">pilih file</span> dari komputer Anda</p>
+                            <p class="text-gray-500">atau <span
+                                    class="text-blue-600 underline cursor-pointer font-semibold hover:text-blue-700 transition-colors"
+                                    id="selectFile">pilih file</span> dari komputer Anda</p>
                             <p class="text-sm text-gray-400">Mendukung format: JPG, PNG, GIF (Max 5MB per file)</p>
                         </div>
-                        
+
                         <!-- Preview Grid -->
                         <div id="preview-list" class="w-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
                         </div>
@@ -143,7 +155,20 @@ $token = $menuHandler->getToken();
                     <!-- Date Selection -->
                     <div class="grid md:grid-cols-2 gap-6">
                         <div class="space-y-2">
-                            <label for="mainPromoDate" class="block text-sm font-semibold text-gray-700 flex items-center gap-2">
+                            <label for="mainPromoName"
+                                class="block text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                <i class="fas fa-tag text-blue-500"></i>
+                                Nama Promo (Default)
+                            </label>
+                            <input type="text" name="mainPromoName" id="mainPromoName"
+                                class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
+                                placeholder="Contoh: Promo Ramadhan" />
+                            <p class="text-xs text-gray-500">Nama promo yang berlaku bila tidak diisi per gambar</p>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label for="mainPromoDate"
+                                class="block text-sm font-semibold text-gray-700 flex items-center gap-2">
                                 <i class="fas fa-calendar-alt text-blue-500"></i>
                                 Tanggal Tayang Utama
                             </label>
@@ -151,9 +176,10 @@ $token = $menuHandler->getToken();
                                 class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white" />
                             <p class="text-xs text-gray-500">Default untuk semua gambar jika tidak diisi individual</p>
                         </div>
-                        
+
                         <div class="space-y-2">
-                            <label for="mainPromoDateEnd" class="block text-sm font-semibold text-gray-700 flex items-center gap-2">
+                            <label for="mainPromoDateEnd"
+                                class="block text-sm font-semibold text-gray-700 flex items-center gap-2">
                                 <i class="fas fa-calendar-check text-green-500"></i>
                                 Tanggal Selesai Penayangan
                             </label>
@@ -191,7 +217,8 @@ $token = $menuHandler->getToken();
                 <!-- Header with Actions -->
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 gap-4">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-gradient-to-r from-green-500 to-teal-600 rounded-xl flex items-center justify-center">
+                        <div
+                            class="w-10 h-10 bg-gradient-to-r from-green-500 to-teal-600 rounded-xl flex items-center justify-center">
                             <i class="fas fa-images text-white"></i>
                         </div>
                         <div>
@@ -199,7 +226,7 @@ $token = $menuHandler->getToken();
                             <p class="text-gray-600 text-sm">Kelola semua banner yang telah diupload</p>
                         </div>
                     </div>
-                    
+
                     <div class="flex flex-wrap gap-3">
                         <button id="cleanExpiredBtn"
                             class="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white px-6 py-3 rounded-xl shadow-lg transition-all duration-300 flex items-center gap-2 font-semibold transform hover:scale-105">
@@ -215,7 +242,8 @@ $token = $menuHandler->getToken();
                 </div>
 
                 <!-- Loading Skeleton -->
-                <div id="gallery-loading" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mb-6">
+                <div id="gallery-loading"
+                    class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mb-6">
                     <div class="bg-gray-200 rounded-2xl h-48 animate-pulse"></div>
                     <div class="bg-gray-200 rounded-2xl h-48 animate-pulse"></div>
                     <div class="bg-gray-200 rounded-2xl h-48 animate-pulse"></div>
@@ -223,10 +251,28 @@ $token = $menuHandler->getToken();
                 </div>
 
                 <!-- Gallery Grid -->
-                <div id="promoGallery" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6"></div>
+                <div id="promoGallery" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                </div>
             </div>
         </div>
     </main>
+    <!-- Image Preview Modal -->
+    <div id="imagePreviewModal"
+        class="hidden fixed inset-0 z-50 bg-black bg-opacity-80 flex items-center justify-center">
+        <div class="relative max-w-4xl w-full px-4">
+            <!-- Close button -->
+            <button id="closeImagePreview"
+                class="absolute top-4 right-4 text-white text-2xl font-bold hover:text-gray-300">
+                &times;
+            </button>
+
+            <!-- Image -->
+            <img id="imagePreviewImg" src="" alt="" class="mx-auto max-h-[80vh] rounded-lg shadow-lg" />
+
+            <!-- Caption -->
+            <p id="imagePreviewCaption" class="text-center text-white mt-4 text-sm"></p>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -239,7 +285,7 @@ $token = $menuHandler->getToken();
         const selectFile = document.getElementById('selectFile');
         const previewList = document.getElementById('preview-list');
         const mainPromoDate = document.getElementById('mainPromoDate');
-
+        let allFiles = [];
         selectFile.addEventListener('click', (e) => {
             e.stopPropagation();
             fileInput.click();
@@ -257,13 +303,13 @@ $token = $menuHandler->getToken();
             fileInput.click();
         });
 
-        dropArea.addEventListener('dragover', e => { 
-            e.preventDefault(); 
+        dropArea.addEventListener('dragover', e => {
+            e.preventDefault();
             dropArea.classList.add('border-blue-400', 'bg-blue-50');
         });
 
-        dropArea.addEventListener('dragleave', e => { 
-            e.preventDefault(); 
+        dropArea.addEventListener('dragleave', e => {
+            e.preventDefault();
             dropArea.classList.remove('border-blue-400', 'bg-blue-50');
         });
 
@@ -272,18 +318,19 @@ $token = $menuHandler->getToken();
             e.preventDefault();
             dropArea.classList.remove('border-blue-400', 'bg-blue-50');
             if (e.dataTransfer.files.length) {
-                droppedFiles = e.dataTransfer.files;
-                showPreviewList(droppedFiles);
+                Array.from(e.dataTransfer.files).forEach(f => allFiles.push(f)); // simpan semua
+                showPreviewList(e.dataTransfer.files);
             }
         });
 
         fileInput.addEventListener('change', e => {
-            droppedFiles = null;
-            if (fileInput.files.length) showPreviewList(fileInput.files);
+            if (fileInput.files.length) {
+                Array.from(fileInput.files).forEach(f => allFiles.push(f)); // simpan semua
+                showPreviewList(fileInput.files);
+            }
         });
 
         function showPreviewList(files) {
-            previewList.innerHTML = '';
             Array.from(files).forEach((file, idx) => {
                 const reader = new FileReader();
                 reader.onload = e => {
@@ -297,6 +344,9 @@ $token = $menuHandler->getToken();
                             </div>
                         </div>
                         <div class="space-y-2">
+                            <input type="text" name="promoName[]" 
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200" 
+                                placeholder="Nama Promo (opsional, kosong = default)" />
                             <input type="date" name="promoDateStart[]" 
                                 class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200" 
                                 placeholder="Tanggal Tayang" required>
@@ -316,8 +366,8 @@ $token = $menuHandler->getToken();
         document.getElementById('uploadForm').addEventListener('submit', function (e) {
             e.preventDefault();
             const formData = new FormData();
-            const files = droppedFiles || fileInput.files;
-            
+            const files = allFiles;
+
             if (!files.length) {
                 Swal.fire({
                     title: 'Pilih Gambar',
@@ -328,14 +378,16 @@ $token = $menuHandler->getToken();
                 return;
             }
 
+            const nameInputs = previewList.querySelectorAll('input[name="promoName[]"]');
             const dateStartInputs = previewList.querySelectorAll('input[name="promoDateStart[]"]');
             const dateEndInputs = previewList.querySelectorAll('input[name="promoDateEnd[]"]');
             const mainPromoDateEnd = document.getElementById('mainPromoDateEnd');
+            const mainPromoName = document.getElementById('mainPromoName');
 
             for (let i = 0; i < files.length; i++) {
                 const startVal = dateStartInputs[i].value || mainPromoDate.value;
                 const endVal = dateEndInputs[i].value || mainPromoDateEnd.value;
-                
+
                 if (!startVal || !endVal) {
                     Swal.fire({
                         title: 'Tanggal Diperlukan',
@@ -345,18 +397,22 @@ $token = $menuHandler->getToken();
                     });
                     return;
                 }
-                
+
                 formData.append('promoImage[]', files[i]);
                 formData.append('promoDateStart[]', startVal);
                 formData.append('promoDateEnd[]', endVal);
+                // per-file promo name (optional). If empty, server can fallback to mainPromoName
+                const perName = (nameInputs[i] && nameInputs[i].value) ? nameInputs[i].value.trim() : '';
+                formData.append('promoName[]', perName);
             }
-            
+
+            formData.append('mainPromoName', mainPromoName.value || '');
             formData.append('mainPromoDate', mainPromoDate.value);
             formData.append('mainPromoDateEnd', mainPromoDateEnd.value);
 
-            Swal.fire({ 
-                title: 'Mengupload...', 
-                allowOutsideClick: false, 
+            Swal.fire({
+                title: 'Mengupload...',
+                allowOutsideClick: false,
                 didOpen: () => Swal.showLoading(),
                 background: '#f8fafc',
                 backdrop: 'rgba(0,0,0,0.4)'
@@ -365,24 +421,24 @@ $token = $menuHandler->getToken();
             fetch('/src/api/image/put_image.php', { method: 'POST', body: formData })
                 .then(res => res.json())
                 .then(result => {
-                    if (result.success) { 
+                    if (result.success) {
                         Swal.fire({
-                            title: 'Berhasil!', 
-                            text: 'Banner berhasil diupload.', 
+                            title: 'Berhasil!',
+                            text: 'Banner berhasil diupload.',
                             icon: 'success',
                             confirmButtonColor: '#10B981'
-                        }).then(() => location.reload()); 
-                    } else { 
+                        }).then(() => location.reload());
+                    } else {
                         Swal.fire({
-                            title: 'Gagal', 
-                            text: result.error || 'Gagal upload', 
+                            title: 'Gagal',
+                            text: result.error || 'Gagal upload',
                             icon: 'error',
                             confirmButtonColor: '#EF4444'
-                        }); 
+                        });
                     }
                 }).catch(() => Swal.fire({
-                    title: 'Gagal', 
-                    text: 'Terjadi kesalahan', 
+                    title: 'Gagal',
+                    text: 'Terjadi kesalahan',
                     icon: 'error',
                     confirmButtonColor: '#EF4444'
                 }));
@@ -396,8 +452,8 @@ $token = $menuHandler->getToken();
                     document.getElementById('gallery-loading').style.display = 'none';
                     const gallery = document.getElementById('promoGallery');
                     gallery.innerHTML = '';
-                    
-                    if (!data.length) { 
+
+                    if (!data.length) {
                         gallery.innerHTML = `
                             <div class="col-span-full text-center py-16">
                                 <div class="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -406,20 +462,20 @@ $token = $menuHandler->getToken();
                                 <h3 class="text-xl font-semibold text-gray-600 mb-2">Belum ada banner promo</h3>
                                 <p class="text-gray-500">Upload banner pertama Anda di atas</p>
                             </div>
-                        `; 
-                        return; 
+                        `;
+                        return;
                     }
-                    
+
                     data.forEach((item, index) => {
                         const div = document.createElement('div');
                         div.className = 'bg-white rounded-2xl shadow-lg overflow-hidden card-hover group';
                         const domain = window.location.origin;
-                        
+
                         div.innerHTML = `
                             <div class="relative overflow-hidden">
                                 <img src="${domain + item.path}" alt="${item.filename}" 
-                                    class="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-110">
-                                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                    data-full-src="${domain + item.path}" data-caption="${item.promo_name || ''}"
+                                    class="promo-img cursor-pointer w-full h-48 object-cover transition-transform duration-300 group-hover:scale-110 cursor-pointer">
                                 <button data-index="${index}" 
                                     class="deleteBtn absolute top-3 right-3 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full shadow-lg transition-all duration-300 opacity-0 group-hover:opacity-100 transform scale-90 group-hover:scale-100 z-10" 
                                     title="Hapus Banner">
@@ -427,6 +483,9 @@ $token = $menuHandler->getToken();
                                 </button>
                             </div>
                             <div class="p-4 space-y-2">
+                             <div class="flex items-center justify-between text-sm">
+                                    <span class="font-semibold text-gray-800 truncate block" title=${item.promo_name}>${item.promo_name || '-'}</span>
+                                    </div>
                                 <div class="flex items-center justify-between text-sm">
                                     <span class="text-gray-500">Mulai:</span>
                                     <span class="font-semibold text-gray-800">${item.tanggal_mulai || '-'}</span>
@@ -443,42 +502,79 @@ $token = $menuHandler->getToken();
                         gallery.appendChild(div);
                     });
 
+                    // Image preview handlers: clicking any .promo-img opens a fullscreen modal
+                    function openImagePreview(url, caption) {
+                        const modal = document.getElementById('imagePreviewModal');
+                        const img = document.getElementById('imagePreviewImg');
+                        const cap = document.getElementById('imagePreviewCaption');
+                        if (!modal || !img) return;
+                        img.src = url;
+                        img.alt = caption || '';
+                        cap.textContent = caption || '';
+                        modal.classList.remove('hidden');
+                        document.body.classList.add('overflow-hidden');
+                    }
+
+                    function closeImagePreview() {
+                        const modal = document.getElementById('imagePreviewModal');
+                        const img = document.getElementById('imagePreviewImg');
+                        if (!modal || !img) return;
+                        modal.classList.add('hidden');
+                        img.src = '';
+                        document.body.classList.remove('overflow-hidden');
+                    }
+
+                    document.querySelectorAll('.promo-img').forEach(img => {
+                        img.addEventListener('click', () => openImagePreview(img.dataset.fullSrc, img.dataset.caption || img.alt));
+                    });
+
+                    // Close modal handlers
+                    const modalEl = document.getElementById('imagePreviewModal');
+                    if (modalEl) {
+                        modalEl.addEventListener('click', (ev) => {
+                            if (ev.target === modalEl) closeImagePreview();
+                        });
+                    }
+                    const closeBtn = document.getElementById('closeImagePreview');
+                    if (closeBtn) closeBtn.addEventListener('click', closeImagePreview);
+                    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeImagePreview(); });
+
                     // Enhanced Delete Buttons
                     document.querySelectorAll('.deleteBtn').forEach(button => {
                         button.addEventListener('click', function () {
                             const idx = this.dataset.index;
                             const filename = data[idx].filename;
-                            
-                            Swal.fire({ 
-                                title: 'Hapus Banner?', 
-                                text: `"${filename}" akan dihapus permanen`, 
-                                icon: 'warning', 
-                                showCancelButton: true, 
-                                confirmButtonText: 'Ya, Hapus', 
+
+                            Swal.fire({
+                                title: 'Hapus Banner?',
+                                text: `"${filename}" akan dihapus permanen`,
+                                icon: 'warning',
+                                showCancelButton: true,
+                                confirmButtonText: 'Ya, Hapus',
                                 cancelButtonText: 'Batal',
                                 confirmButtonColor: '#EF4444',
                                 cancelButtonColor: '#6B7280'
                             }).then(result => {
                                 if (result.isConfirmed) {
                                     fetch('/src/api/image/delete_image.php', {
-                                        method: 'POST', 
-                                        headers: { 'Content-Type': 'application/json' }, 
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
                                         body: JSON.stringify({ filename })
                                     }).then(res => res.json()).then(result => {
-                                        if (result.success) { 
+                                        if (result.success) {
                                             Swal.fire({
-                                                title: 'Berhasil', 
-                                                text: 'Banner dihapus', 
+                                                title: 'Berhasil',
+                                                text: 'Banner dihapus',
                                                 icon: 'success',
                                                 confirmButtonColor: '#10B981'
-                                            }).then(() => location.reload()); 
-                                        } else { 
+                                            }).then(() => location.reload());
+                                        } else {
                                             Swal.fire({
-                                                title: 'Gagal', 
-                                                text: result.error || 'Gagal menghapus', 
+                                                title: 'Gagal',
+                                                text: result.error || 'Gagal menghapus',
                                                 icon: 'error',
                                                 confirmButtonColor: '#EF4444'
-                                            }); 
+                                            });
                                         }
                                     });
                                 }
@@ -492,27 +588,27 @@ $token = $menuHandler->getToken();
 
         // Enhanced Clean Expired Button
         document.getElementById('cleanExpiredBtn').addEventListener('click', function () {
-            Swal.fire({ 
-                title: 'Membersihkan...', 
-                allowOutsideClick: false, 
+            Swal.fire({
+                title: 'Membersihkan...',
+                allowOutsideClick: false,
                 didOpen: () => Swal.showLoading(),
                 background: '#f8fafc'
             });
-            
+
             fetch('/src/api/image/clean_expired_banner.php')
                 .then(res => res.json())
                 .then(result => {
                     if (result.success) {
                         Swal.fire({
-                            title: 'Selesai', 
-                            text: `Banner expired dihapus: ${result.deleted}`, 
+                            title: 'Selesai',
+                            text: `Banner expired dihapus: ${result.deleted}`,
                             icon: 'success',
                             confirmButtonColor: '#10B981'
                         }).then(() => location.reload());
                     } else {
                         Swal.fire({
-                            title: 'Gagal', 
-                            text: result.error || 'Gagal membersihkan', 
+                            title: 'Gagal',
+                            text: result.error || 'Gagal membersihkan',
                             icon: 'error',
                             confirmButtonColor: '#EF4444'
                         });
@@ -533,27 +629,27 @@ $token = $menuHandler->getToken();
                 cancelButtonColor: '#6B7280'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    Swal.fire({ 
-                        title: 'Membersihkan...', 
-                        allowOutsideClick: false, 
+                    Swal.fire({
+                        title: 'Membersihkan...',
+                        allowOutsideClick: false,
                         didOpen: () => Swal.showLoading(),
                         background: '#f8fafc'
                     });
-                    
+
                     fetch('/src/api/image/clean_orphaned_files.php')
                         .then(res => res.json())
                         .then(result => {
                             if (result.success) {
                                 Swal.fire({
-                                    title: 'Selesai', 
-                                    text: `File orphaned dihapus: ${result.deleted_files}`, 
+                                    title: 'Selesai',
+                                    text: `File orphaned dihapus: ${result.deleted_files}`,
                                     icon: 'success',
                                     confirmButtonColor: '#10B981'
                                 }).then(() => location.reload());
                             } else {
                                 Swal.fire({
-                                    title: 'Gagal', 
-                                    text: result.error || 'Gagal membersihkan', 
+                                    title: 'Gagal',
+                                    text: result.error || 'Gagal membersihkan',
                                     icon: 'error',
                                     confirmButtonColor: '#EF4444'
                                 });
@@ -563,6 +659,7 @@ $token = $menuHandler->getToken();
             });
         });
     </script>
+
 </body>
 
 </html>

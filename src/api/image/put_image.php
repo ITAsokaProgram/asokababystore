@@ -13,7 +13,10 @@ if (file_exists($jsonFile)) {
 $uploadedFiles = $_FILES['promoImage'];
 $promoDateStarts = $_POST['promoDateStart'] ?? [];
 $promoDateEnds = $_POST['promoDateEnd'] ?? [];
+$promoNames = $_POST['promoName'] ?? [];
 $mainPromoDate = $_POST['mainPromoDate'] ?? null;
+$mainPromoDateEnd = $_POST['mainPromoDateEnd'] ?? null;
+$mainPromoName = $_POST['mainPromoName'] ?? null;
 
 if (!empty($uploadedFiles['name'][0]) && is_dir($dir)) {
     for ($i = 0; $i < count($uploadedFiles['name']); $i++) {
@@ -30,7 +33,17 @@ if (!empty($uploadedFiles['name'][0]) && is_dir($dir)) {
         $uniqueName = $baseName . '_' . uniqid() . '.' . $ext;
         
         $tanggal_mulai = isset($promoDateStarts[$i]) && $promoDateStarts[$i] ? $promoDateStarts[$i] : $mainPromoDate;
-        $tanggal_selesai = isset($promoDateEnds[$i]) && $promoDateEnds[$i] ? $promoDateEnds[$i] : $mainPromoDate;
+        $tanggal_selesai = isset($promoDateEnds[$i]) && $promoDateEnds[$i] ? $promoDateEnds[$i] : $mainPromoDateEnd;
+
+        // determine promo name (per-file falls back to main promo name)
+        $promo_name = '';
+        if (isset($promoNames[$i]) && strlen(trim($promoNames[$i])) > 0) {
+            $promo_name = trim($promoNames[$i]);
+        } elseif (!empty($mainPromoName)) {
+            $promo_name = trim($mainPromoName);
+        }
+        // sanitize promo name (remove control chars)
+        $promo_name = preg_replace('/[\x00-\x1F\x7F]/u', '', $promo_name);
         
         $targetPath = $dir . '/' . $uniqueName;
         
@@ -45,11 +58,17 @@ if (!empty($uploadedFiles['name'][0]) && is_dir($dir)) {
                 if ($item['filename'] === $uniqueName || $item['original_name'] === $originalName) {
                     $item['filename'] = $uniqueName;
                     $item['path'] = $urlPrefix . $uniqueName;
-                $item['tanggal_mulai'] = $tanggal_mulai;
-                $item['tanggal_selesai'] = $tanggal_selesai;
-                $found = true;
-                break;
-            }
+                    $item['tanggal_mulai'] = $tanggal_mulai;
+                    $item['tanggal_selesai'] = $tanggal_selesai;
+                    // update promo_name if provided, otherwise keep existing or fallback
+                    if ($promo_name !== '') {
+                        $item['promo_name'] = $promo_name;
+                    } elseif (!isset($item['promo_name']) || $item['promo_name'] === '') {
+                        $item['promo_name'] = $mainPromoName ?? '';
+                    }
+                    $found = true;
+                    break;
+                }
         }
         unset($item);
 
@@ -60,9 +79,10 @@ if (!empty($uploadedFiles['name'][0]) && is_dir($dir)) {
                     "original_name" => $originalName,
                     "path" => $urlPrefix . $uniqueName,
                 "tanggal_mulai" => $tanggal_mulai,
-                "tanggal_selesai" => $tanggal_selesai
+                "tanggal_selesai" => $tanggal_selesai,
+                "promo_name" => $promo_name
             ];
-            }
+        }
         }
     }
 

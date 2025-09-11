@@ -144,7 +144,7 @@ try {
     $count_stmt->close();
 
     // Fetch rows with limit (include store alias)
-    $sql = "SELECT h.idhistory_aset, h.nama_barang, h.merk, h.harga_beli, h.nama_toko, h.tanggal_beli, h.tanggal_ganti, h.tanggal_perbaikan, h.tanggal_mutasi, h.tanggal_rusak, h.group_aset, h.mutasi_untuk, h.mutasi_dari, h.kd_store, ks.nm_alias AS nm_alias, h.status, h.image_url FROM history_aset h LEFT JOIN kode_store ks ON h.kd_store = ks.kd_store " . $where_sql . " ORDER BY CASE WHEN h.group_aset IS NULL OR h.group_aset = '' THEN 1 ELSE 0 END, 
+    $sql = "SELECT h.idhistory_aset, h.nama_barang, h.no_seri, h.keterangan, h.merk, h.harga_beli, h.nama_toko, h.tanggal_beli, h.tanggal_ganti, h.tanggal_perbaikan, h.tanggal_mutasi, h.tanggal_rusak, h.group_aset, h.mutasi_untuk, h.mutasi_dari, h.kd_store, ks.nm_alias AS nm_alias, h.status, h.image_url FROM history_aset h LEFT JOIN kode_store ks ON h.kd_store = ks.kd_store " . $where_sql . " ORDER BY CASE WHEN h.group_aset IS NULL OR h.group_aset = '' THEN 1 ELSE 0 END, 
     h.group_aset ASC, 
     h.tanggal_beli DESC LIMIT ? OFFSET ?";
     $stmt = $conn->prepare($sql);
