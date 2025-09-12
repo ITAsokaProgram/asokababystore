@@ -30,6 +30,7 @@ try {
     $search = isset($_GET['search']) ? trim($_GET['search']) : '';
     $kd_store = isset($_GET['kd_store']) ? trim($_GET['kd_store']) : '';
     $group_aset = isset($_GET['group_aset']) ? trim($_GET['group_aset']) : '';
+    $status_aset = isset($_GET['status_aset']) ? trim($_GET['status_aset']) : '';
     $id = isset($_GET['id']) ? trim($_GET['id']) : '';
     // date filters (supports from/to for each date column)
     $tanggal_beli_from = isset($_GET['tanggal_beli_from']) ? trim($_GET['tanggal_beli_from']) : '';
@@ -67,6 +68,12 @@ try {
     if ($group_aset !== '') {
         $where[] = "h.group_aset = ?";
         $params[] = $group_aset;
+        $types .= 's';
+    }
+
+    if ($status_aset !== '') {
+        $where[] = "h.status = ?";
+        $params[] = $status_aset;
         $types .= 's';
     }
 

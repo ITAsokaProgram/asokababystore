@@ -1,15 +1,14 @@
 import getCookie from "../../index/utils/cookies.js";
 import { api } from "../services/api.js";
 
-export const formInsertHandler = () => {
-  const form = document.getElementById("assetForm");
-  const imageInput = form.querySelector("#image");
-  const imagePreview = form.querySelector("#imagePreview");
+export const formEditHandler = () => {
+  const form = document.getElementById("editAssetForm");
+  const imageInput = form.querySelector("#edit_image");
+  const imagePreview = form.querySelector("#editImagePreview");
   const previewImg = imagePreview.querySelector("img");
-  const hiddenId = form.querySelector("#idhistory_aset");
+  const hiddenId = form.querySelector("#edit_idhistory_aset");
 
   // Handle image preview
-  imagePreview.classList.add("hidden");
   imageInput.addEventListener("change", (e) => {
     if (e.target.files && e.target.files[0]) {
       const reader = new FileReader();
@@ -28,12 +27,12 @@ export const formInsertHandler = () => {
     try {
       // Validate required fields
       const requiredFields = [
-        "nama_barang",
-        "merk",
-        "tanggal_beli",
-        "harga_beli",
-        "nama_toko",
-        "kd_store",
+        "edit_nama_barang",
+        "edit_merk",
+        "edit_tanggal_beli",
+        "edit_harga_beli",
+        "edit_nama_toko",
+        "edit_kd_store",
       ];
       const missingFields = [];
 
@@ -56,8 +55,6 @@ export const formInsertHandler = () => {
         throw new Error("Sesi login tidak valid");
       }
 
-      // Reset form and close modal
-      const modal = document.getElementById("addAssetModal");
       Swal.fire({
         title: "Menyimpan...",
         text: "Mohon tunggu sebentar",
@@ -66,12 +63,27 @@ export const formInsertHandler = () => {
           Swal.showLoading();
         },
       });
-      await api.insertDataAset(token, formData);
-      if (modal) modal.classList.add("hidden");
+
+      await api.editDataAset(token, formData);
+      await Swal.fire({
+        title: "Success",
+        text: "Data berhasil diupdate",
+        icon: "success",
+      });
+
+      // Reset form and image preview
       form.reset();
       imagePreview.classList.add("hidden");
       previewImg.src = "";
-      // imagePreview.classList.add("hidden");
+
+      // Close modal
+      const modal = document.getElementById("editAssetModal");
+      if (modal) modal.classList.add("hidden");
+
+      // Refresh table to show updated data
+      if (typeof window.renderAsetTable === "function") {
+        window.renderAsetTable({ resetPage: false });
+      }
     } catch (error) {
       console.error("Form submission error:", error);
       await Swal.fire({

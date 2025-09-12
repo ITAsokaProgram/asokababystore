@@ -677,6 +677,22 @@
                                 <!-- opsi cabang akan diisi via JS dari API kode_store; default ke alias pertama -->
                             </select>
                         </div>
+                        <div class="space-y-3">
+                            <label for="filterCabang" class="block text-sm font-semibold text-slate-700">
+                                <i class="fa-solid fa-circle-check mr-2 text-blue-500"></i>
+                                Status
+                            </label>
+                            <select id="filterStatus"
+                                class="w-full px-4 py-4 border-2 input-modern text-slate-700 font-medium focus:ring-2 focus:ring-blue-200">
+                                <option value="">Semua Status</option>
+                                <option value="Baru">Baru</option>
+                                <option value="Bekas">Bekas</option>
+                                <option value="Services">Services</option>
+                                <option value="Rusak">Rusak</option>
+                                <option value="Mutasi">Mutasi</option>
+
+                            </select>
+                        </div>
 
                         <!-- Filter Search -->
                         <div class="space-y-3">
@@ -1068,14 +1084,14 @@
             });
         });
     </script>
-    <!-- Edit Asset Modal -->
+    <!-- Tambah Asset Modal -->
     <div id="addAssetModal" class="fixed inset-0 z-50 overflow-y-auto hidden">
         <div class="flex items-center justify-center min-h-screen p-4">
             <div class="fixed inset-0 bg-black opacity-50"></div>
 
             <div class="relative bg-white rounded-xl shadow-2xl max-w-4xl w-full p-6 overflow-hidden">
                 <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-2xl font-semibold text-gray-800">Edit Asset</h3>
+                    <h3 class="text-2xl font-semibold text-gray-800">Tambah Asset</h3>
                     <button type="button" class="close-modal text-gray-400 hover:text-gray-600">
                         <i class="fas fa-times text-2xl"></i>
                     </button>
@@ -1089,7 +1105,7 @@
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 No Seri <span class="text-red-500">*</span>
                             </label>
-                            <input type="number" name="no_seri" required
+                            <input type="text" name="no_seri" required
                                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         </div>
                         <div>
@@ -1135,7 +1151,7 @@
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Tanggal Beli
+                                Tanggal Beli<span class="text-red-500">*</span>
                             </label>
                             <input type="date" name="tanggal_beli"
                                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
@@ -1208,6 +1224,7 @@
                             <select name="status"
                                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                 <option value="Baru">Baru</option>
+                                <option value="Bekas">Bekas</option>
                                 <option value="Services">Services</option>
                                 <option value="Mutasi">Mutasi</option>
                                 <option value="Rusak">Rusak</option>
@@ -1268,6 +1285,205 @@
         </div>
     </div>
 
+    <!-- Edit Asset Modal -->
+    <div id="editAssetModal" class="fixed inset-0 z-50 overflow-y-auto hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="fixed inset-0 bg-black opacity-50"></div>
+
+            <div class="relative bg-white rounded-xl shadow-2xl max-w-4xl w-full p-6 overflow-hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-semibold text-gray-800">Edit Asset</h3>
+                    <button type="button" class="close-modal-edit text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+
+                <form id="editAssetForm" class="space-y-6">
+                    <input type="hidden" name="edit_idhistory_aset" id="edit_idhistory_aset" value="">
+                    <!-- Basic Info Section -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                No Seri <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="edit_no_seri" required
+                                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Nama Barang <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="edit_nama_barang" required
+                                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Merk <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="edit_merk" required
+                                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Harga Beli <span class="text-red-500">*</span>
+                            </label>
+                            <input type="number" name="edit_harga_beli" required
+                                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Nama Toko <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="edit_nama_toko" required
+                                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+
+                                                <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Kode Store <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="edit_kd_store" required
+                                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Tanggal Beli<span class="text-red-500">*</span>
+                            </label>
+                            <input type="date" name="edit_tanggal_beli"
+                                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Tanggal Ganti
+                            </label>
+                            <input type="date" name="edit_tanggal_ganti"
+                                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+
+                         <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Tanggal Rusak
+                            </label>
+                            <input type="date" name="edit_tanggal_rusak"
+                                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Tanggal Perbaikan
+                            </label>
+                            <input type="date" name="edit_tanggal_perbaikan"
+                                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Tanggal Mutasi
+                            </label>
+                            <input type="date" name="edit_tanggal_mutasi"
+                                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Group Aset</label>
+                            <input type="text" name="edit_group_aset" id="input_group_aset" placeholder="Isi group manual"
+                                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Mutasi Dari
+                            </label>
+                            <input type="text" name="edit_mutasi_dari"
+                                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Mutasi Untuk
+                            </label>
+                            <input type="text" name="edit_mutasi_untuk"
+                                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Status
+                            </label>
+                            <select name="edit_status"
+                                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="Baru">Baru</option>
+                                <option value="Bekas">Bekas</option>
+                                <option value="Services">Services</option>
+                                <option value="Mutasi">Mutasi</option>
+                                <option value="Rusak">Rusak</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Keterangan</label>
+                            <textarea name="edit_keterangan" id="input_keterangan" placeholder="Isi keterangan"
+                                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Image Upload Section -->
+                    <div class="mt-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Foto Aset
+                        </label>
+                        <div class="mt-1 flex flex-col items-center justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg"
+                            id="dropzone">
+                            <div class="space-y-1 text-center">
+                                <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none"
+                                    viewBox="0 0 48 48" aria-hidden="true">
+                                    <path
+                                        d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                <div class="flex text-sm text-gray-600">
+                                    <label for="edit_image"
+                                        class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                                        <span>Upload a file</span>
+                                        <input id="edit_image" name="edit_image" type="file" class="sr-only" accept="image/*">
+                                    </label>
+                                    <p class="pl-1">or drag and drop</p>
+                                </div>
+                                <p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                            </div>
+
+                            <!-- Image Preview -->
+                            <div id="editImagePreview" class="mt-4 hidden">
+                                <img src="" alt="Preview" class="max-h-48 rounded-lg mx-auto shadow-md">
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="flex justify-end gap-4 mt-6 pt-6 border-t">
+                        <button type="button"
+                            class="close-modal-edit px-6 py-2 border rounded-lg text-gray-600 hover:bg-gray-50">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            Save Asset
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Modal handling
         document.addEventListener('DOMContentLoaded', function () {
@@ -1275,9 +1491,6 @@
             const openModalBtn = document.getElementById('btnAdd');
             const closeModalBtns = document.querySelectorAll('.close-modal');
             const form = document.getElementById('assetForm');
-            const imageInput = document.getElementById('image');
-            const imagePreview = document.getElementById('imagePreview');
-            const previewImg = imagePreview.querySelector('img');
 
             // Open modal
             openModalBtn.addEventListener('click', () => {

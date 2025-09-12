@@ -36,7 +36,7 @@ try {
         exit;
     }
 
-    $id = $_POST['idhistory_aset'] ?? null;
+    $id = $_POST['edit_idhistory_aset'] ?? null;
     if (!$id) throw new Exception('Missing idhistory_aset');
 
     // load existing row
@@ -54,8 +54,9 @@ try {
     $values = [];
     $changes = [];
 
-    foreach ($fields as $f) {
-        $newv = $_POST[$f] ?? null;
+        foreach ($fields as $f) {
+            // accept both plain field or prefixed 'edit_' (frontend sends edit_<field>)
+            $newv = $_POST['edit_' . $f] ?? ($_POST[$f] ?? null);
         // normalize datetime / date inputs similar to insert
         if (in_array($f, ['tanggal_beli','tanggal_ganti','tanggal_perbaikan','tanggal_mutasi','tanggal_rusak']) && $newv !== null) {
             // replace T with space
@@ -77,13 +78,20 @@ try {
 
     // handle image upload
     $image_url = $old['image_url'] ?? null;
-    if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-        $upload = $cloudinary->uploadApi()->upload($_FILES['image']['tmp_name'], ['folder' => 'aset_barang']);
-        $image_url = $upload['secure_url'];
-        $updates[] = 'image_url = ?';
-        $types .= 's';
-        $values[] = $image_url;
-        $changes[] = ['field' => 'image_url', 'old' => $old['image_url'] ?? null, 'new' => $image_url];
+        // handle image upload - accept 'edit_image' as uploaded file field
+        if (isset($_FILES['edit_image']) && $_FILES['edit_image']['error'] === UPLOAD_ERR_OK) {
+            $upload = $cloudinary->uploadApi()->upload($_FILES['edit_image']['tmp_name'], ['folder' => 'aset_barang']);
+        } elseif (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+            $upload = $cloudinary->uploadApi()->upload($_FILES['image']['tmp_name'], ['folder' => 'aset_barang']);
+        } else {
+            $upload = null;
+        }
+        if ($upload) {
+            $image_url = $upload['secure_url'];
+            $updates[] = 'image_url = ?';
+            $types .= 's';
+            $values[] = $image_url;
+            $changes[] = ['field' => 'image_url', 'old' => $old['image_url'] ?? null, 'new' => $image_url];
     }
 
     if (count($updates) === 0) {

@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 try {
     // Validate required fields
-    $required_fields = ['nama_barang', 'merk', 'harga_beli', 'nama_toko', 'kd_store', 'no_seri'];
+    $required_fields = ['nama_barang', 'merk', 'tanggal_beli' ,'harga_beli', 'nama_toko', 'kd_store', 'no_seri'];
     $missing_fields = [];
 
     foreach ($required_fields as $field) {

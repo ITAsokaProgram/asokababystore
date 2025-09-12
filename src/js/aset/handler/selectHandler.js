@@ -2,7 +2,9 @@ import getCookie from '../../index/utils/cookies.js';
 
 export async function initSelectCabang() {
   const sel = document.getElementById('filterCabang');
+  const selStatus = document.getElementById('filterStatus');
   if (!sel) return;
+  if(!selStatus) return;
 
   // clear existing options
   sel.innerHTML = '';
@@ -47,6 +49,10 @@ export async function initSelectCabang() {
       if (typeof window.renderAsetTable === 'function') window.renderAsetTable({kd_store: v, page: 1});
     });
 
+    selStatus.addEventListener('change', (e) => {
+      const v = e.target.value;
+      if (typeof window.renderAsetTable === 'function') window.renderAsetTable({status_aset: v, page: 1});
+    });
   } catch (err) {
     console.error('initSelectCabang error', err);
     // fallback

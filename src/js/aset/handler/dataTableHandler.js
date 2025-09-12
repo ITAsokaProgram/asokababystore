@@ -3,6 +3,7 @@
 
 import { api } from '../services/api.js';
 import getCookie from '../../index/utils/cookies.js';
+import { formEditHandler } from './formEditHandler.js';
 
 const qs = (s) => document.querySelector(s);
 
@@ -12,6 +13,7 @@ let state = {
   search: '',
   kd_store: '',
   group_aset: '',
+  status_aset: '',
   // date filters
   tanggal_beli_from: '',
   tanggal_beli_to: '',
@@ -39,6 +41,7 @@ async function fetchData() {
   if (state.search) url.searchParams.set('search', state.search);
   if (state.kd_store) url.searchParams.set('kd_store', state.kd_store);
   if (state.group_aset) url.searchParams.set('group_aset', state.group_aset);
+  if (state.status_aset) url.searchParams.set('status_aset', state.status_aset);
   // date filters
   if (state.tanggal_beli_from) url.searchParams.set('tanggal_beli_from', state.tanggal_beli_from);
   if (state.tanggal_beli_to) url.searchParams.set('tanggal_beli_to', state.tanggal_beli_to);
@@ -320,6 +323,7 @@ window.renderAsetTable = async function(opts = {}) {
   if (opts.search !== undefined) state.search = opts.search;
   if (opts.kd_store !== undefined) state.kd_store = opts.kd_store;
   if (opts.group_aset !== undefined) state.group_aset = opts.group_aset;
+  if(opts.status_aset !== undefined) state.status_aset = opts.status_aset;
   // support explicit date filter clearing/setting from external callers
   const dateKeys = [
     'tanggal_beli_from','tanggal_beli_to',
@@ -359,12 +363,12 @@ async function openEditModal(id) {
     if (!item) throw new Error('Record not found');
 
     // populate form
-    const form = document.getElementById('assetForm');
+    const form = document.getElementById('editAssetForm');
     if (!form) throw new Error('Form not found');
-    form.querySelector('#idhistory_aset').value = item.idhistory_aset || '';
+    form.querySelector('#edit_idhistory_aset').value = item.idhistory_aset || '';
   const dateFields = ['tanggal_beli','tanggal_ganti','tanggal_perbaikan','tanggal_mutasi','tanggal_rusak'];
   ['nama_barang','merk','harga_beli','nama_toko','tanggal_beli','tanggal_ganti','tanggal_perbaikan','tanggal_mutasi','tanggal_rusak','group_aset','mutasi_untuk','mutasi_dari','kd_store','status', 'no_seri', 'keterangan'].forEach(k => {
-      const el = form.querySelector(`[name="${k}"]`);
+      const el = form.querySelector(`[name="edit_${k}"]`);
       if (!el) return;
       let val = item[k] ?? '';
       if (val && dateFields.includes(k)) {
@@ -373,9 +377,28 @@ async function openEditModal(id) {
       }
       el.value = val;
     });
+    // Show existing image if available
+    const imagePreview = document.getElementById('editImagePreview');
+    const previewImg = imagePreview.querySelector('img');
+    if (item.image_url) {
+      previewImg.src = item.image_url;
+      imagePreview.classList.remove('hidden');
+    } else {
+      imagePreview.classList.add('hidden');
+    }
+
     // show modal
-    const modal = document.getElementById('addAssetModal');
+    const modal = document.getElementById('editAssetModal');
+    const closeBtn = document.querySelectorAll('.close-modal-edit');
     modal.classList.remove('hidden');
+    closeBtn.forEach(btn => btn.addEventListener('click', () => { 
+      modal.classList.add('hidden');
+      // Reset image preview when closing
+      imagePreview.classList.add('hidden');
+      previewImg.src = '';
+    }));
+
+
   } catch (err) {
     console.error(err);
     alert('Gagal memuat data untuk edit: ' + err.message);

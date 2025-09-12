@@ -130,10 +130,4 @@ Catatan penting (rule of thumb):
 - `get_history_log.php` <-> `src/js/aset/handler/dataTableHandler.js` : fetch and display modal history
 
 -------------------------
-10) Bila Anda mau dokumentasi per-file (lebih detil)
 
-- Saya bisa memperluas dokumen ini menjadi per-file detail (fungsi utama, inputs/outputs, contoh request/response). Beri daftar folder yang ingin Anda per-detail-kan dan saya akan generate secara iteratif.
-
----
-Dokumentasi ini menggantikan versi ringkas sebelumnya dan sudah disimpan di `REPO_CODE_DOCUMENTATION.md`.
-Jika ada file/folder yang belum tercantum di listing Anda, beri tahu dan saya tambahkan ke dokumen.
