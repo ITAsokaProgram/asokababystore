@@ -871,7 +871,6 @@ function checkTerms() {
 
 // Initialize all functionality when DOM is ready
 document.addEventListener("DOMContentLoaded", () => {
-    console.log("Initializing member check functionality...");
     
     btnClickCheck("cek-member", "#member");
     btnClickCheck("cek-member1", "#member1");
@@ -886,7 +885,6 @@ document.addEventListener("DOMContentLoaded", () => {
     onlyNumberInput('input[placeholder="NO HP Aktif"]', 13);
     checkBoxAddress("alamat_domisili", "provinsi_domisili", "kota_domisili", "kelurahan_domisili", "kecamatan_domisili");
     
-    console.log("Member check functionality initialized");
 });
 
 export default { getDataToMember, openModal };

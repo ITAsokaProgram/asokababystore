@@ -6,8 +6,6 @@ import { getDataToMember, openModal } from '../cek_member.js';
 
 // Wait for DOM to be ready
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("Initializing main functionality...");
-    
 const cookies = getCookie('token');
 const menu = document.getElementById('openModalBottom');
 const menuWeb = document.getElementById('openModal');
@@ -22,7 +20,6 @@ const init_fetch = async () => {
         const openModal1Btn = document.getElementById("openModal1");
         if (openModal1Btn) {
             openModal1Btn.disabled = false;
-            console.log("Modal button enabled");
         } else {
             console.warn("Modal button not found");
         }
@@ -54,7 +51,6 @@ const init_fetch = async () => {
     }
         
     toogleLoginDropdown(false);
-        console.log("Main functionality initialized");
     };
     
 init_fetch();
