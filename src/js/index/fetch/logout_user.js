@@ -1,5 +1,6 @@
 export const logoutUser = (idBtn) => {
     const btnLogout = document.getElementById(idBtn);
+    if (!btnLogout) return;
     btnLogout.addEventListener("click", (e) => {
         e.preventDefault();
         Swal.fire({
@@ -11,34 +12,32 @@ export const logoutUser = (idBtn) => {
             cancelButtonText: 'Tidak'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Jika pengguna mengonfirmasi, panggil fungsi logout
                 fetch('/src/api/user/logout_user_pubs')
-                .then(res => res.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        // Hapus token dari cookie
-                        document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-                        Swal.fire({
-                            title: 'Berhasil',
-                            text: data.message,
-                            icon: 'success',
-                            confirmButtonText: 'OK'
-                        }).then(() => {
-                            window.location.href = '/';
-                        });
-                    } else {
-                        Swal.fire({
-                            title: 'Error',
-                            text: data.message,
-                            icon: 'error',
-                            confirmButtonText: 'OK'
-                        });
-                    }
-                });
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            Swal.fire({
+                                title: 'Berhasil',
+                                text: "Anda telah berhasil logout.",
+                                icon: 'success',
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+                                window.location.href = '/log_in';
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Error',
+                                text: data.message || 'Terjadi kesalahan saat logout.',
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            });
+                        }
+                    }).catch(err => {
+                        console.error("Logout fetch error:", err);
+                        Swal.fire('Error', 'Gagal menghubungi server. Silakan coba lagi.', 'error');
+                    });
             }
         });
-    }
-    );
+    });
 }
-
 export default logoutUser;
