@@ -1,37 +1,34 @@
 <?php
 include '../../../aa_kon_sett.php';
+require_once __DIR__ . '/../../../vendor/autoload.php';
+require_once __DIR__ . '/../../../.env.php';
+
+use PHPMailer\PHPMailer\OAuth;
+use PHPMailer\PHPMailer\PHPMailer;
+use League\OAuth2\Client\Provider\Google;
+
 header('Content-Type: application/json');
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
-$data = json_decode(file_get_contents('php://input'), true);
 
-if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    $sql = sintaksQuery("SELECT * FROM contact_us ORDER BY dikirim DESC ");
-    $processQueryContact = getContact($conn, $sql);
-    echo json_encode(['data' => $processQueryContact]);
-}
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $kode = $data['kode'];
-    $status = $data['status'];
-    if (empty($kode) && empty($status)) {
-        return;
-        exit;
+function updateQuery($conn, $sql, $params = []) {
+    $stmt = $conn->prepare($sql);
+    if (!$stmt) {
+        throw new Exception("SQL Prepare Error: " . $conn->error);
     }
-    $validStatus = preg_match('/^[a-za-Z]+$/', $status);
-    $validKode = preg_match('/^[0-9]$/', $kode);
-    $sql = "UPDATE contact_us SET status = ? WHERE no_hp = ?";
-    $params = [$status, $kode];
-    $prosessUpdateQuery = updateQuery($conn, $sql, $params);
-    echo json_encode(['message' => "Berhasil Kirim Pesan"]);
+    $types = str_repeat("s", count($params));
+    $stmt->bind_param($types, ...$params);
+    $result = $stmt->execute();
+    if (!$result) {
+        throw new Exception("SQL Execute Error: " . $stmt->error);
+    }
+    $stmt->close();
+    return $result;
 }
 
-
-function getContact($conn, $sql)
-{
-    $query = $sql;
-    $stmt = $conn->prepare($query);
+function getContact($conn, $sql) {
+    $stmt = $conn->prepare($sql);
     $stmt->execute();
     $result = $stmt->get_result();
     $data = $result->fetch_all(MYSQLI_ASSOC);
@@ -39,24 +36,92 @@ function getContact($conn, $sql)
     return $data;
 }
 
-function updateQuery($conn, $sql, $params = [])
-{
-    $stmt = $conn->prepare($sql);
-    if (!$stmt) {
-        die("SQL Error: " . $conn->error);
+function sintaksQuery($sql) {
+    return $sql;
+}
+
+
+$method = $_SERVER['REQUEST_METHOD'];
+
+try {
+    if ($method === 'GET') {
+        $sql = sintaksQuery("SELECT id, no_hp, nama_lengkap, email, subject, message, status, dikirim FROM contact_us ORDER BY dikirim DESC");
+        $processQueryContact = getContact($conn, $sql);
+        echo json_encode(['data' => $processQueryContact]);
+    } elseif ($method === 'POST') {
+        $data = json_decode(file_get_contents('php://input'), true);
+
+        $kode = $data['kode'] ?? null;
+        $status = $data['status'] ?? null;
+        $balasan = $data['balasan'] ?? null;
+        $email_penerima = $data['email'] ?? null;
+
+        if (empty($kode) || empty($status)) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'Data tidak lengkap.']);
+            exit;
+        }
+
+        $sql = "UPDATE contact_us SET status = ? WHERE no_hp = ?";
+        $params = [$status, $kode];
+        updateQuery($conn, $sql, $params);
+
+        if (!empty($balasan) && !empty($email_penerima)) {
+            $mail = new PHPMailer(true);
+            $mail->isSMTP();
+            $mail->Host = 'smtp.gmail.com';
+            $mail->Port = 587;
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->SMTPAuth = true;
+            $mail->AuthType = 'XOAUTH2';
+
+            $emailSender = GOOGLE_SENDER_MAIL;
+            $clientId = GOOGLE_CLIENT_ID;
+            $clientSecret = GOOGLE_CLIENT_SECRET;
+            $refreshToken = GOOGLE_REFRESH_TOKEN;
+
+            $provider = new Google(['clientId' => $clientId, 'clientSecret' => $clientSecret]);
+            $mail->setOAuth(new OAuth(['provider' => $provider, 'clientId' => $clientId, 'clientSecret' => $clientSecret, 'refreshToken' => $refreshToken, 'userName' => $emailSender]));
+
+        $htmlContent = file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/template/email/balasan_laporan.html');
+            if ($htmlContent === false) {
+                throw new Exception("Template email tidak ditemukan.");
+            }
+            
+            $placeholders = [
+                '{{nama_pelanggan}}' => $data['nama'] ?? 'Pelanggan',
+                '{{subjek_laporan}}' => $data['subject'] ?? 'Laporan Anda',
+                '{{isi_laporan}}' => $data['laporan_awal'] ?? '-',
+                '{{isi_balasan}}' => nl2br(htmlspecialchars($balasan)),
+                '{{store_name}}' => 'ASOKA Baby Store',
+                '{{store_url}}' => 'https://asokababystore.com',
+                '{{store_logo}}' => 'https://asokababystore.com/public/images/logo.png',
+            ];
+
+            foreach ($placeholders as $key => $value) {
+                $htmlContent = str_replace($key, $value, $htmlContent);
+            }
+
+            $mail->setFrom($emailSender, 'ASOKA Baby Store');
+            $mail->addAddress($email_penerima);
+            $mail->Subject = 'Re: ' . ($data['subject'] ?? 'Laporan Pelanggan');
+            $mail->isHTML(true);
+            $mail->Body = $htmlContent;
+
+            $mail->send();
+            echo json_encode(['success' => true, 'message' => 'Status berhasil diperbarui dan email balasan telah dikirim.']);
+        } else {
+            echo json_encode(['success' => true, 'message' => 'Status berhasil diperbarui.']);
+        }
     }
-
-    // Tentukan tipe data parameter, misalnya "ss" untuk dua string
-    $types = str_repeat("s", count($params)); // asumsikan semua string
-    $stmt->bind_param($types, ...$params);
-
-    return $stmt->execute();
+} catch (Exception $e) {
+    http_response_code(500); 
+    echo json_encode([
+        'success' => false,
+        'message' => 'Terjadi kesalahan di server: ' . $e->getMessage()
+    ]);
+} finally {
+    if (isset($conn)) {
+        $conn->close();
+    }
 }
-
-function sintaksQuery($sql)
-{
-    $query = $sql;
-    return $query;
-}
-
-$conn->close();

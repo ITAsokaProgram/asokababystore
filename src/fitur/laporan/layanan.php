@@ -54,6 +54,7 @@ $token = $menuHandler->getToken();
     <script src="https://unpkg.com/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
     <script src="https://unpkg.com/tippy.js@6.3.7/dist/tippy-bundle.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         * {
@@ -816,6 +817,10 @@ $token = $menuHandler->getToken();
                     <button onclick="kirimWhatsApp()" class="btn btn-primary" id="send">
                         <i class="fab fa-whatsapp"></i>
                         Kirim WhatsApp
+                    </button>
+                     <button onclick="kirimBalasanEmail()" class="btn btn-primary" id="kirimEmailButton">
+                        <i class="fas fa-paper-plane"></i>
+                        Kirim Balasan
                     </button>
                     <button id="selesaiButton" onclick="selesaiLaporan()" 
                         class="btn btn-success hidden">

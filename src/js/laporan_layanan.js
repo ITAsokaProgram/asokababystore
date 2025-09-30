@@ -139,6 +139,8 @@ function getStatusClass(status) {
     }
 }
 function openModal(laporan) {
+    laporanTerpilih = laporan; // Simpan data laporan ke variabel global
+
     // Isi modal dengan data laporan
     document.getElementById('modalKode').textContent = laporan.no_hp || '-';
     document.getElementById('modalNama').textContent = laporan.nama_lengkap || '-';
@@ -146,45 +148,59 @@ function openModal(laporan) {
     document.getElementById('modalDeskripsi').textContent = laporan.message || '-';
     document.getElementById('modalTanggal').textContent = formatTanggal(laporan.dikirim);
     document.getElementById('modalStatus').textContent = laporan.status || 'open';
+    document.getElementById('pesan_balasan').value = ''; // Kosongkan textarea
 
     // Tombol Kirim dan Selesai
-    const sendBtn = document.getElementById('send');  
-    const selesaiBtn = document.getElementById('selesaiButton'); 
+    const kirimBtn = document.getElementById('kirimEmailButton');
+    const selesaiBtn = document.getElementById('selesaiButton');
+    const balasanTextarea = document.getElementById('pesan_balasan');
 
-    // Sembunyikan kontrol jika tidak dalam status "in_progress"
-    sendBtn.classList.remove('hidden');
-    selesaiBtn.classList.add('hidden'); 
-
-    // Jika status in_progress, sembunyikan tombol Kirim dan tampilkan tombol Selesai
-    if (laporan.status === 'in_progress') {
-        sendBtn.classList.add('hidden');  
-        selesaiBtn.classList.remove('hidden');  
+    // Atur visibilitas tombol berdasarkan status
+    if (laporan.status === 'selesai') {
+        kirimBtn.classList.add('hidden');
+        selesaiBtn.classList.add('hidden');
+        balasanTextarea.disabled = true;
+    } else if (laporan.status === 'in_progress') {
+        kirimBtn.classList.add('hidden');
+        selesaiBtn.classList.remove('hidden');
+        balasanTextarea.disabled = false;
+    } else { // status 'open'
+        kirimBtn.classList.remove('hidden');
+        selesaiBtn.classList.add('hidden');
+        balasanTextarea.disabled = false;
     }
 
     // Tampilkan modal detail
     document.getElementById('modalDetail').classList.remove('hidden');
 }
-
 // Fungsi untuk menandai laporan selesai
 function selesaiLaporan() {
-    const laporanId = document.getElementById('modalKode').textContent;
-    fetch(`../../api/customer/laporan_layanan`, {
+    if (!laporanTerpilih) return;
+
+    fetch(`/src/api/customer/laporan_layanan.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ kode: laporanId, status: 'selesai' })
+        body: JSON.stringify({ 
+            kode: laporanTerpilih.no_hp, 
+            status: 'selesai' 
+        })
     })
     .then(res => res.json())
     .then(res => {
         if (res.success) {
-            document.getElementById('modalStatus').textContent = 'done';
-            document.getElementById('selesaiButton').classList.add('hidden');
+            Swal.fire('Berhasil', 'Laporan telah ditandai sebagai selesai.', 'success');
+            closeModal();
+            fetchData();
+        } else {
+            Swal.fire('Gagal', 'Gagal memperbarui status laporan.', 'error');
         }
-    });
+    }).catch(err => console.error(err));
 }
 
 
 function closeModal() {
     document.getElementById('modalDetail').classList.add('hidden');
+    laporanTerpilih = null; // Reset variabel global
 }
 
 function kirimWhatsApp() {
@@ -320,3 +336,65 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 });
+async function kirimBalasanEmail() {
+    if (!laporanTerpilih) return;
+
+    const balasan = document.getElementById("pesan_balasan").value.trim();
+    if (balasan === "") {
+        Swal.fire('Peringatan', 'Mohon isi pesan balasan terlebih dahulu.', 'warning');
+        return;
+    }
+
+    const button = document.getElementById('kirimEmailButton');
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim...';
+
+    let responseText = ''; // Simpan respons teks untuk debug
+    try {
+        const response = await fetch('/src/api/customer/laporan_layanan.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                kode: laporanTerpilih.no_hp,
+                status: 'in_progress',
+                balasan: balasan,
+                email: laporanTerpilih.email,
+                nama: laporanTerpilih.nama_lengkap,
+                subject: laporanTerpilih.subject,
+                laporan_awal: laporanTerpilih.message
+            }),
+        });
+        
+        responseText = await response.text(); // Baca sebagai teks dulu
+        const result = JSON.parse(responseText); // Coba parse sebagai JSON
+
+        if (response.ok && result.success) {
+            await Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                text: result.message,
+                timer: 2000,
+                showConfirmButton: false
+            });
+            closeModal();
+            fetchData();
+        } else {
+            throw new Error(result.message || 'Gagal mengirim balasan.');
+        }
+
+    } catch (error) {
+        console.error('Error:', error);
+        // Jika error karena parsing JSON gagal
+        if (error instanceof SyntaxError) {
+             console.error("Respons Server (bukan JSON):", responseText);
+             await Swal.fire('Error Kritis', 'Server memberikan respons yang tidak valid. Cek console untuk detail.', 'error');
+        } else {
+             // Untuk error lainnya
+             await Swal.fire('Oops...', error.message, 'error');
+        }
+    } finally {
+        button.disabled = false;
+        button.innerHTML = '<i class="fas fa-paper-plane"></i> Kirim Balasan';
+    }
+}
+
