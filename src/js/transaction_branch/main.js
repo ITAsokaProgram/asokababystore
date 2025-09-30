@@ -19,16 +19,9 @@ const init = async () => {
       detailCabang(responseDetail.data);
     }
   } else {
-    const tempData = sessionStorage.getItem("transaksi_cabang");
-    if (tempData?.length > 0) {
-      const parsed = JSON.parse(tempData);
-      cardContainer(parsed.data);
-      cardContainerAll(parsed.data_all);
-    } else {
       const responseTrans = await getTransCabang();
       cardContainer(responseTrans.data);
       cardContainerAll(responseTrans.data_all);
-    }
   }
 };
 

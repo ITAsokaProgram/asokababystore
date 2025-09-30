@@ -11,8 +11,6 @@ export const getTransCabang = async () => {
     });
     if (response.status === 200) {
       const data = await response.json();
-      sessionStorage.setItem("transaksi_cabang", JSON.stringify(data));
-      
       Toastify({
         text: "Berhasil Memuat Data",
         duration: 1000,
