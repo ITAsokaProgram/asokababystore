@@ -68,9 +68,10 @@ function renderRows(items) {
     tr.className = 'table-row';
     const statusHtml = renderStatusBadge(it.status || '');
     const no = startIndex + idx + 1;
-  // prepare image cell as a link/text so image loads only on demand
   const imageCell = (it.image_url && it.image_url.trim())
-    ? `<a href="#" class="image-link text-indigo-600 underline" data-url="${escapeHtml(it.image_url)}">Lihat Gambar</a>`
+    ? `<a href="#" class="image-link text-indigo-600 underline" data-url="${escapeHtml(it.image_url)}">
+      <img src="${escapeHtml(it.image_url)}" alt="Image" class="inline-block w-20 h-20 object-cover rounded" />
+    </a>`
     : `<span class="text-gray-500">Tidak ada gambar</span>`;
 
   tr.innerHTML = `
