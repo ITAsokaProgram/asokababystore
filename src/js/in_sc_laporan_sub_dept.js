@@ -96,7 +96,6 @@ document
     formData.append("page", currentPage);
     formData.append("query_type", "query3");
 
-    console.log("🔄 Mengirim data ke server:", Object.fromEntries(formData));
 
     $.ajax({
       url: `../../api/subdepartemen/post_data_sub_dept.php?filter=${filter}`,
@@ -105,21 +104,17 @@ document
       processData: false,
       contentType: false,
       success: function (response) {
-        console.log("✅ Response dari server (RAW):", response);
         let jsonResponse;
         try {
           jsonResponse =
             typeof response === "string" ? JSON.parse(response) : response;
-          console.log("📋 Parsed JSON Response:", jsonResponse);
         } catch (error) {
-          console.error("❌ Gagal parsing JSON:", error, response);
           return;
         }
         if (jsonResponse && jsonResponse.status === "success") {
           if (jsonResponse.tableData) {
             tableDataCache = jsonResponse.tableData;
             totalPages = jsonResponse.totalPages ? jsonResponse.totalPages : 1;
-            console.log("📌 Total Pages Updated:", totalPages);
             Swal.close();
             localStorage.setItem(
               "salesTableOriginal",
@@ -173,10 +168,6 @@ document.body.addEventListener("click", function (e) {
     }
   }
   sessionStorage.setItem("activeQueryType", activeQueryType);
-  console.log(
-    "Setelah klik btn-back, activeQueryType sekarang:",
-    sessionStorage.getItem("activeQueryType")
-  );
 });
 
 function resetPieChart() {
@@ -373,7 +364,6 @@ if (startDateInput && endDateInput) {
 
 // echart js
 function updateTable(data, tableId) {
-  console.log("📋 Updating Table with Data:", data);
   var tableBody = document.querySelector(`#${tableId} tbody`);
   if (!tableBody) {
     console.error("❌ Table body tidak ditemukan!");
@@ -428,7 +418,6 @@ function updateTable(data, tableId) {
     }
   });
 
-  console.log("✅ Table updated successfully!");
 }
 
 // Fungsi untuk memperbarui chart
@@ -460,7 +449,6 @@ echartDiagram.setOption(optionsChart);
 
 // Event handler saat pie chart diklik
 echartDiagram.on("click", function (params) {
-  console.log(params); // Debugging
   let subdept = params.data.subdept || "";
   let kodeSupp = params.data.kode || "";
 
@@ -539,7 +527,6 @@ function btnSubSend(page, filter) {
   // formData.append("limit", document.querySelector("#limitData").value);
   formData.append("page", page);
 
-  console.log("🔄 Mengirim data ke server:", Object.fromEntries(formData));
 
   fetch(`../../api/subdepartemen/post_data_sub_dept.php?filter=${filter}`, {
     method: "POST",
@@ -547,12 +534,9 @@ function btnSubSend(page, filter) {
   })
     .then((res) => res.json())
     .then((jsonResponse) => {
-      console.log("📋 Parsed JSON Response:", jsonResponse);
 
       if (jsonResponse.status === "success") {
         if (jsonResponse.tableData) {
-          console.log("data pages dari db:", jsonResponse.totalPages);
-          console.log("✅ Table Data Ditemukan:", jsonResponse.tableData);
 
           tableDataCache = jsonResponse.tableData;
           totalPages = jsonResponse.totalPages || 1;
@@ -598,7 +582,6 @@ function formatCurrency(value) {
 }
 // Update Chart Diagram
 function updateChart(labels, data, table) {
-  console.log("📊 Updating Chart with Data:", labels, data, table);
 
   const newData = labels.map((label, index) => {
     const row = table[index] || {};
@@ -617,7 +600,6 @@ function updateChart(labels, data, table) {
       rp_percent: persentaseRp, // tambahan
     };
   });
-  console.log("📊 Data Chart Final:", newData);
 
   echartDiagram.setOption({
     tooltip: {
@@ -673,7 +655,6 @@ function updateChart(labels, data, table) {
 }
 
 function updatePieChart(labels, data, table) {
-  console.log("📊 Updating Chart with Data:", labels, data, table);
   var newData = labels.map((label, index) => {
     const parts = table[index] || {};
 
@@ -687,7 +668,6 @@ function updatePieChart(labels, data, table) {
       rp_percent: parts.persentase_rp || "0%",
     };
   });
-  console.log("Data Tabel: ", newData);
   echartDiagram.setOption({
     series: [
       {
@@ -784,7 +764,6 @@ document.getElementById("btn-bar").addEventListener("click", function (e) {
   formData.append("page", currentPage);
   formData.append("query_type", this.value);
   formData.append("filter", filter);
-  console.log("🔄 Mengirim data ke server:", Object.fromEntries(formData));
 
   $.ajax({
     url: `../../api/subdepartemen/post_data_sub_dept?filter=${filter}`,
@@ -793,13 +772,11 @@ document.getElementById("btn-bar").addEventListener("click", function (e) {
     processData: false,
     contentType: false,
     success: function (response) {
-      console.log("✅ Response dari server (RAW):", response);
       resetBarChart();
       let jsonResponse;
       try {
         jsonResponse =
           typeof response === "string" ? JSON.parse(response) : response;
-        console.log("📋 Parsed JSON Response:", jsonResponse);
       } catch (error) {
         console.error("❌ Gagal parsing JSON:", error, response);
         return;
@@ -807,7 +784,6 @@ document.getElementById("btn-bar").addEventListener("click", function (e) {
 
       if (jsonResponse && jsonResponse.status === "success") {
         if (jsonResponse.tableData) {
-          console.log("✅ Table Data Ditemukan:", jsonResponse.tableData);
           dataCharBar = localStorage.setItem(
             "chartBart",
             JSON.stringify(jsonResponse.tableData)
@@ -863,7 +839,6 @@ document.getElementById("btn-promo").addEventListener("click", function (e) {
   formData.append("page", currentPage);
   formData.append("query_type", this.value);
   formData.append("filter", filter);
-  console.log("🔄 Mengirim data ke server:", Object.fromEntries(formData));
 
   $.ajax({
     url: `../../api/subdepartemen/post_data_sub_dept?filter=${filter}`,
@@ -872,12 +847,10 @@ document.getElementById("btn-promo").addEventListener("click", function (e) {
     processData: false,
     contentType: false,
     success: function (response) {
-      console.log("✅ Response dari server (RAW):", response);
       let jsonResponse;
       try {
         jsonResponse =
           typeof response === "string" ? JSON.parse(response) : response;
-        console.log("📋 Parsed JSON Response:", jsonResponse);
       } catch (error) {
         console.error("❌ Gagal parsing JSON:", error, response);
         return;
@@ -886,7 +859,6 @@ document.getElementById("btn-promo").addEventListener("click", function (e) {
         if (jsonResponse.tableData) {
           tableDataCache = jsonResponse.tableData;
           totalPages = jsonResponse.totalPages ? jsonResponse.totalPages : 1;
-          console.log("📌 Total Pages Updated:", totalPages);
           localStorage.setItem(
             "salesTableOriginal",
             JSON.stringify(tableDataCache)
@@ -909,7 +881,6 @@ document.getElementById("btn-promo").addEventListener("click", function (e) {
 });
 
 function updateBarChart(labels, data, table) {
-  console.log("📊 Updating Bar Chart with Data:", labels, data, table);
   const currentSortBy = document.getElementById("sort-by1")?.value;
 
   var newData = labels.map((label, index) => ({
@@ -920,7 +891,6 @@ function updateBarChart(labels, data, table) {
     precentage: table[index]?.Percentage,
     rp_percent: table[index]?.persentase_rp,
   }));
-  console.log("Data Tabel: ", newData);
   // Ambil daftar unik tanggal dan promo
   var tanggal = newData.map((item) => item.tanggal);
   var promos = [...new Set(newData.map((item) => item.promo))];
@@ -1340,8 +1310,6 @@ function updateThead(trId) {
   const subdeptHead = subdeptElement.value.trim();
   const kodeSupHead = kodeSupElement.value.trim();
 
-  console.log("subdeptHead:", subdeptHead);
-  console.log("kodeSupHead:", kodeSupHead);
 
   if (isSubdeptActive && isPromo) {
     tableHead.textContent = "NAMA BARANG";
@@ -1764,30 +1732,22 @@ async function exportQuery(query) {
 }
 
 function exportToExcel() {
-  console.log("Nilai query parameter: ", activeQueryType);
   if (activeQueryType === "query1") {
-    console.log("query benarr 1");
     exportExcel(activeQueryType);
   } else if (activeQueryType === "query2") {
-    console.log("query benarr 2");
     exportExcel(activeQueryType);
   } else if (activeQueryType === "query4") {
-    console.log("query benar 3");
     exportExcel(activeQueryType);
   }
 }
 
 function exportToPDF() {
-  console.log("Nilai query parameter: ", activeQueryType);
 
   if (activeQueryType === "query1") {
-    console.log("query benarr 1");
     exportQuery(activeQueryType);
   } else if (activeQueryType === "query2") {
-    console.log("query benarr 2");
     exportQuery(activeQueryType);
   } else if (activeQueryType === "query4") {
-    console.log("query benarr 3");
     exportQuery(activeQueryType);
   }
 }
@@ -2433,7 +2393,6 @@ function searchTable(tableId) {
     JSON.parse(localStorage.getItem("salesTableOriginal")) || [];
   // Jika input kosong, reset ke data awal
   if (input === "") {
-    console.log(`🔄 Reset tabel ${tableId} ke data awal...`);
     updateTable(originalData, tableId);
     return;
   }
@@ -2465,14 +2424,12 @@ function searchTablePromo(tableId) {
     JSON.parse(localStorage.getItem("salesTableOriginal")) || [];
   // Jika input kosong, reset ke data awal
   if (input === "") {
-    console.log(`🔄 Reset tabel ${tableId} ke data awal...`);
     updateTable(originalData, tableId);
     return;
   }
 
   // Jika input kosong, reset ke data awal
   if (input === "") {
-    console.log(`🔄 Reset tabel ${tableId} ke data awal...`);
     updateTable(originalData, tableId);
     return;
   }
@@ -2506,14 +2463,12 @@ function searchTablePenjualan(tableId) {
     JSON.parse(localStorage.getItem("salesTableOriginal")) || [];
   // Jika input kosong, reset ke data awal
   if (input === "") {
-    console.log(`🔄 Reset tabel ${tableId} ke data awal...`);
     updateTable(originalData, tableId);
     return;
   }
 
   // Jika input kosong, reset ke data awal
   if (input === "") {
-    console.log(`🔄 Reset tabel ${tableId} ke data awal...`);
     updateTable(originalData, tableId);
     return;
   }
@@ -2547,14 +2502,12 @@ function searchTableSupplier(tableId) {
     JSON.parse(localStorage.getItem("salesTableOriginal")) || [];
   // Jika input kosong, reset ke data awal
   if (input === "") {
-    console.log(`🔄 Reset tabel ${tableId} ke data awal...`);
     updateTable(originalData, tableId);
     return;
   }
 
   // Jika input kosong, reset ke data awal
   if (input === "") {
-    console.log(`🔄 Reset tabel ${tableId} ke data awal...`);
     updateTable(originalData, tableId);
     return;
   }
