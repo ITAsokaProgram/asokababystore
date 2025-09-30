@@ -16,9 +16,7 @@ function completeProgressBar() {
         width: "100%",
         duration: 0.5,
         onComplete: () => {
-            setTimeout(() => {
-                document.getElementById("progressOverlay").classList.add("hidden");
-            }, 300); // delay dikit biar smooth
+            document.getElementById("progressOverlay").classList.add("hidden");
         }
     });
 }

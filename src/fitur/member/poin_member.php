@@ -43,6 +43,10 @@ $token = $menuHandler->getToken();
 
 
     <style>
+        .loading-glass {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(6px);
+        }
         .btn.active {
             background-color: transparent;
             /* background tidak diisi */
@@ -83,6 +87,15 @@ $token = $menuHandler->getToken();
 
 
     <main id="main-content" class="flex-1 p-6 ml-64">
+        <div id="progressOverlay"
+             class="fixed inset-0 loading-glass z-50 hidden flex flex-col items-center justify-center space-y-4 animate-fade-in-up">
+            <div class="text-lg font-semibold text-blue-700 animate-pulse flex items-center gap-2">
+                <i class="fa fa-spinner fa-spin"></i> Loading data...
+            </div>
+            <div class="w-64 h-4 bg-blue-100 rounded-full overflow-hidden">
+                <div id="progressBar" class="h-full bg-blue-500 w-0 rounded-full transition-all duration-500"></div>
+            </div>
+        </div>
         <!-- Enhanced Container with Gradient Background -->
         <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-6">
             <div class="max-w-7xl mx-auto">
@@ -288,6 +301,7 @@ $token = $menuHandler->getToken();
     <!-- AlpineJS -->
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <!-- Custom JS -->
+    <script src="../../js/loadingbar.js"></script> 
     <script src="../../js/middleware_auth.js"></script>
     <script type="module" src="/src/js/member_internal/poin.js"></script>
     <script>
