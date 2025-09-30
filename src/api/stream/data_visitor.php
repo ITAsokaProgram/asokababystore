@@ -73,7 +73,8 @@ while (true) {
                 COALESCE(SUBSTRING_INDEX(u.nama_lengkap, ' ', 1), 'Guest') AS nama
             FROM visitors v
             LEFT JOIN user_asoka u ON v.user_id = u.id_user
-            ORDER BY v.visit_time DESC";
+            ORDER BY v.visit_time DESC
+            LIMIT 10"; 
     $res = $conn->query($sql);
     $activities = [];
     while ($row = $res->fetch_assoc()) {
@@ -103,5 +104,5 @@ while (true) {
     echo "data: " . json_encode($payload) . "\n\n";
     flush();
 
-    sleep(5); // update tiap 5 detik
+    sleep(15); // update tiap 5 detik
 }

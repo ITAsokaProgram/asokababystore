@@ -320,65 +320,86 @@
 
     <script>
         const evtSource = new EventSource("/src/api/stream/data_visitor.php");
+        const MAX_ACTIVITIES = 10; 
+
+        function createActivityElement(act) {
+            const div = document.createElement('div');
+            div.className = 'activity-item page-view';
+            div.dataset.id = `${act.nama}-${act.page}-${act.time}`; 
+            div.innerHTML = `
+                <div class="activity-icon page-view"><i class="fas fa-eye"></i></div>
+                <div class="activity-details">
+                    <div class="activity-user">${act.nama}</div>
+                    <div class="activity-action">Mengunjungi: ${act.page}</div>
+                </div>
+                <div class="activity-time">${act.time}</div>`;
+            return div;
+        }
+
+        function createTrafficElement(pageData) {
+            const div = document.createElement('div');
+            div.className = 'page-item';
+            const totalViews = pageData.reduce((sum, p) => sum + p.views, 1); /
+            const width = (pageData[0].views / totalViews) * 100;
+
+            div.innerHTML = `
+                <div class="page-name">${pageData[0].page}</div>
+                <div class="page-views">${pageData[0].views}</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width:${width}%"></div>
+                </div>`;
+            return div;
+        }
+
 
         evtSource.onmessage = function(event) {
             try {
                 const data = JSON.parse(event.data);
 
-                // stats
-                document.getElementById('todayVisits').textContent =
-                    (data.today ?? 0).toLocaleString();
+                document.getElementById('todayVisits').textContent = (data.today ?? 0).toLocaleString();
+                document.getElementById('onlineCount').textContent = data.online ?? 0;
+                document.getElementById('avgSession').textContent = `${data.avg ?? 0} users`;
 
-                document.getElementById('onlineCount').textContent =
-                    data.online ?? 0;
-
-                document.getElementById('avgSession').textContent =
-                    (data.avg ?? 0) + " users";
-
-                // page traffic
-                const container = document.getElementById('pageTraffic');
-                container.innerHTML = '';
-                (data.pages ?? []).forEach(p => {
+                const trafficContainer = document.getElementById('pageTraffic');
+                trafficContainer.innerHTML = ''; 
+                (data.pages ?? []).forEach((p, index, arr) => {
+                    const totalViews = arr.reduce((sum, item) => sum + item.views, 1);
+                    const width = (p.views / totalViews) * 100;
                     const div = document.createElement('div');
                     div.className = 'page-item';
                     div.innerHTML = `
-                <div class="page-name">${p.page}</div>
-                <div class="page-views">${p.views}</div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width:${Math.min(p.views,100)}%"></div>
-                </div>
-            `;
-                    container.appendChild(div);
+                        <div class="page-name">${p.page}</div>
+                        <div class="page-views">${p.views}</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width:${width}%"></div>
+                        </div>`;
+                    trafficContainer.appendChild(div);
                 });
 
-                // recent activities
+
                 const actContainer = document.getElementById('activityList');
-                actContainer.innerHTML = '';
-                (data.activities ?? []).forEach(act => {
+                const existingIds = new Set([...actContainer.children].map(child => child.dataset.id));
 
-                    const div = document.createElement('div');
-                    div.className = 'activity-item page-view';
-                    div.innerHTML = `
-                <div class="activity-icon page-view">
-                    <i class="fas fa-eye"></i>
-                </div>
-                <div class="activity-details">
-                    <div class="activity-user">${act.nama}</div>
-                    <div class="activity-action">Mengunjungi: ${act.page}</div>
-                </div>
-                <div class="activity-time">${act.time}</div>
-            `;
-                    actContainer.appendChild(div);
+                (data.activities ?? []).reverse().forEach(act => {
+                    const newId = `${act.nama}-${act.page}-${act.time}`;
+                    if (!existingIds.has(newId)) {
+                        const newElement = createActivityElement(act);
+                        actContainer.prepend(newElement); 
+                    }
                 });
+
+                while (actContainer.children.length > MAX_ACTIVITIES) {
+                    actContainer.lastChild.remove();
+                }
+
             } catch (e) {
-                console.error("Failed parse SSE:", e, event.data);
+                console.error("Failed to parse SSE:", e, event.data);
             }
         };
 
         evtSource.onerror = function(err) {
             console.error("SSE error:", err);
         };
-
     </script>
 </body>
 
