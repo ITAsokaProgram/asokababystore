@@ -21,7 +21,6 @@ document.querySelectorAll("button[name='query_type']").forEach((button) => {
   button.addEventListener("click", function () {
     activeQueryType = this.value;
     sessionStorage.setItem("activeQueryType", activeQueryType);
-    console.log("Tombol ditekan, activeQueryType sekarang:", activeQueryType);
   });
 });
 
