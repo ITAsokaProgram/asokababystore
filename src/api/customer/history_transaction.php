@@ -26,17 +26,27 @@ if (!$verify) {
 
 $kode = $data['kode'];
 $sql = "SELECT 
-    no_faktur,
-    tanggal,
+    p.no_faktur,
+    p.tanggal,
+    p.jam,
     ks.Nm_Store,
-    belanja,
-    r.rating AS rating
+    p.belanja,
+    r.rating AS rating,
+    r.id AS review_id,
+    rd.review_id AS detail_review_id,
+    (SELECT COUNT(*) 
+     FROM review_conversation rc 
+     WHERE rc.review_id = r.id 
+       AND rc.sudah_dibaca = 0 
+       AND rc.pengirim_type = 'admin'
+    ) as unread_count 
     FROM pembayaran_b AS p
     LEFT JOIN user_asoka AS ua ON ua.no_hp = p.kd_cust
     LEFT JOIN kode_store AS ks ON ks.Kd_Store = p.kd_store
     LEFT JOIN review AS r ON r.id_user = ua.id_user AND r.no_bon = p.no_faktur
+    LEFT JOIN review_detail AS rd on rd.review_id = r.id
     WHERE ua.no_hp = ?
-    ORDER BY tanggal DESC , jam DESC
+    ORDER BY p.tanggal DESC , p.jam DESC
 ";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("s",$kode);

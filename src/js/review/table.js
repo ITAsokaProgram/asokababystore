@@ -3,22 +3,85 @@ export const renderTableReview = (data, offset) => {
   const tableLoading = document.getElementById("tableLoading");
   const table = document.querySelector("table");
 
-  // Show loading state
   if (tableLoading) tableLoading.classList.remove("hidden");
   if (table) table.classList.add("hidden");
 
-  // Simulate loading delay for better UX
   setTimeout(() => {
-    // Hide loading and show table
     if (tableLoading) tableLoading.classList.add("hidden");
     if (table) table.classList.remove("hidden");
 
     tableBody.innerHTML = "";
 
-    // Tampilkan ke dalam tabel
     data.forEach((item, index) => {
       const row = document.createElement("tr");
       row.className = "hover:bg-gray-50 transition-all duration-200 border-b border-gray-100 hover:-translate-y-0.5 hover:shadow-sm";
+      
+      let actionButton = '';
+      
+      if (!item.sudah_terpecahkan) {
+        actionButton = `
+          <button 
+            onclick="openIssueHandlingModal(${item.id}, ${JSON.stringify({
+              nama: item.nama,
+              handphone: item.hp,
+              rating: item.rating,
+              tanggal: new Date(item.tanggal).toLocaleDateString("id-ID"),
+              komentar: item.komentar,
+              no_bon: item.no_bon,
+              cabang: item.cabang,
+              nama_kasir: item.nama_kasir
+            }).replace(/"/g, '&quot;')})"
+            class="inline-flex items-center px-2 py-1 bg-gradient-to-r from-orange-500 to-yellow-500 text-white text-xs font-medium rounded-lg hover:from-orange-600 hover:to-yellow-600 transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-1"
+          >
+            <i class="fas fa-tools mr-1"></i>
+            Tangani
+          </button>
+        `;
+      } else if (item.detail_review_id != null) {
+        if (item.detail_status === 'resolved') {
+          actionButton = `
+            <button 
+              onclick="viewHandlingDetail(${item.id})"
+              class="inline-flex items-center px-3 py-2 bg-green-100 text-green-800 text-xs font-medium rounded-lg hover:bg-green-200 transition-all duration-200"
+            >
+              <i class="fas fa-check-circle mr-1"></i>
+              Tertangani
+            </button>
+          `;
+        } else {
+          actionButton = `
+            <button 
+              onclick="editIssueHandling(${item.id})"
+              class="inline-flex items-center px-2 py-1 bg-blue-500 text-white text-xs font-medium rounded-lg hover:bg-blue-600 transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-1"
+            >
+              <i class="fas fa-edit mr-1"></i>
+              Edit
+            </button>
+          `;
+        }
+      }
+      const unreadBadge = item.unread_count > 0
+        ? `<span class="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white ring-2 ring-white">${item.unread_count}</span>`
+        : '';
+      // Tombol Chat - selalu muncul
+      const chatButton = `
+        <button 
+          onclick="openChatModal(${item.id}, ${JSON.stringify({
+            nama: item.nama,
+            handphone: item.hp,
+            rating: item.rating,
+            tanggal: new Date(item.tanggal).toLocaleDateString("id-ID"),
+            komentar: item.komentar
+          }).replace(/"/g, '&quot;')})"
+          class="inline-flex items-center px-2 py-1 bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-xs font-medium rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-1"
+          title="Chat dengan Customer"
+        >
+          <i class="fas fa-comments mr-1"></i>
+          Chat
+          ${unreadBadge}
+        </button>
+      `;
+
       row.innerHTML = `
         <td class="px-4 py-3 text-sm text-gray-900 font-medium transition-all duration-200">${offset + index + 1}</td>
         <td class="px-4 py-3 text-sm text-gray-700 transition-all duration-200">${item.hp}</td>
@@ -69,31 +132,10 @@ export const renderTableReview = (data, offset) => {
             <img src="/src/api/customer/serve_image_review_in?path=${item.enpoint_foto}" alt="Foto" class="w-12 h-12 object-cover rounded-lg shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer hover:scale-105 hover:-translate-y-1" data-zoomable="true">
           </td>
         `}
-        <td class="px-4 py-3 text-sm transition-all duration-200">
+        <td class="px-4 py-3 text-sm transition-all duration-200 relative">
           <div class="flex items-center space-x-2">
-            ${!item.sudah_terpecahkan ? `
-              <button 
-                onclick="openIssueHandlingModal(${JSON.stringify({
-                  nama: item.nama,
-                  handphone: item.hp,
-                  rating: item.rating,
-                  tanggal: new Date(item.tanggal).toLocaleDateString("id-ID"),
-                  komentar: item.komentar,
-                  no_bon: item.no_bon,
-                  cabang: item.cabang,
-                  nama_kasir: item.nama_kasir
-                }).replace(/"/g, '&quot;')})"
-                class="inline-flex items-center px-2 py-1 bg-gradient-to-r from-orange-500 to-yellow-500 text-white text-xs font-medium rounded-lg hover:from-orange-600 hover:to-yellow-600 transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-1"
-              >
-                <i class="fas fa-tools mr-1"></i>
-                Tangani
-              </button>
-            ` : `
-              <span class="inline-flex items-center px-3 py-2 bg-green-100 text-green-800 text-xs font-medium rounded-lg">
-                <i class="fas fa-check-circle mr-1"></i>
-                Baik
-              </span>
-            `}
+            ${item.detail_review_id != null ? chatButton : ""}
+            ${actionButton}
           </div>
         </td>
       `;
@@ -101,19 +143,13 @@ export const renderTableReview = (data, offset) => {
       tableBody.appendChild(row);
     });
 
-    // Enhanced komentar cell click handler
     document.querySelectorAll(".komentar-cell").forEach((cell) => {
       cell.addEventListener("click", function () {
-        // Parse data from the data attribute
         const komentarData = JSON.parse(this.getAttribute('data-komentar'));
-        
-        // Show komentar detail modal
         showKomentarModal(komentarData);
       });
     });
 
-
-    // Manual click handler for images as fallback
     document.querySelectorAll('[data-zoomable="true"]').forEach((img) => {
       img.addEventListener('click', function() {
         const modal = document.getElementById('zoomModal');
@@ -124,12 +160,11 @@ export const renderTableReview = (data, offset) => {
         }
       });
     });
-  }, 300); // 300ms delay for loading effect
+  }, 300);
 };
 
-// Function to show komentar detail modal
+
 function showKomentarModal(data) {
-  // Create modal if it doesn't exist
   let modal = document.getElementById('komentarModal');
   if (!modal) {
     modal = document.createElement('div');
@@ -143,9 +178,7 @@ function showKomentarModal(data) {
             <i class="fas fa-times text-xl"></i>
           </button>
         </div>
-        <div class="p-6 space-y-4" id="komentarModalContent">
-          <!-- Content will be populated dynamically -->
-        </div>
+        <div class="p-6 space-y-4" id="komentarModalContent"></div>
         <div class="flex justify-end p-4 border-t border-gray-200">
           <button onclick="closeKomentarModal()" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors duration-200">
             Tutup
@@ -156,7 +189,6 @@ function showKomentarModal(data) {
     document.body.appendChild(modal);
   }
 
-  // Populate modal content
   const content = document.getElementById('komentarModalContent');
   content.innerHTML = `
     <div class="space-y-3">
@@ -165,13 +197,11 @@ function showKomentarModal(data) {
         <span class="font-medium text-gray-700">Nama:</span>
         <span class="text-gray-900">${data.nama}</span>
       </div>
-      
       <div class="flex items-center space-x-2">
         <i class="fas fa-phone text-green-500"></i>
         <span class="font-medium text-gray-700">Handphone:</span>
         <span class="text-gray-900">${data.handphone}</span>
       </div>
-      
       <div class="flex items-center space-x-2">
         <i class="fas fa-star text-yellow-500"></i>
         <span class="font-medium text-gray-700">Rating:</span>
@@ -180,13 +210,11 @@ function showKomentarModal(data) {
           <span class="text-sm text-gray-500 ml-1">(${data.rating})</span>
         </div>
       </div>
-      
       <div class="flex items-center space-x-2">
         <i class="fas fa-calendar text-purple-500"></i>
         <span class="font-medium text-gray-700">Tanggal:</span>
         <span class="text-gray-900">${data.tanggal}</span>
       </div>
-      
       <div class="space-y-2">
         <div class="flex items-center space-x-2">
           <i class="fas fa-comment text-orange-500"></i>
@@ -196,19 +224,16 @@ function showKomentarModal(data) {
           <p class="text-gray-800 whitespace-pre-wrap">${data.komentar || 'Tidak ada komentar'}</p>
         </div>
       </div>
-      
       <div class="flex items-center space-x-2">
         <i class="fas fa-receipt text-indigo-500"></i>
         <span class="font-medium text-gray-700">No. Bon:</span>
         <span class="text-gray-900 font-mono">${data.no_bon}</span>
       </div>
-      
       <div class="flex items-center space-x-2">
         <i class="fas fa-store text-red-500"></i>
         <span class="font-medium text-gray-700">Cabang:</span>
         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">${data.cabang}</span>
       </div>
-      
       <div class="flex items-center space-x-2">
         <i class="fas fa-user-tie text-teal-500"></i>
         <span class="font-medium text-gray-700">Nama Kasir:</span>
@@ -217,7 +242,6 @@ function showKomentarModal(data) {
     </div>
   `;
 
-  // Show modal with animation
   modal.classList.remove('hidden');
   setTimeout(() => {
     modal.querySelector('.bg-white').classList.remove('scale-95');
@@ -225,7 +249,6 @@ function showKomentarModal(data) {
   }, 10);
 }
 
-// Function to close komentar modal
 window.closeKomentarModal = function() {
   const modal = document.getElementById('komentarModal');
   if (modal) {
@@ -248,4 +271,5 @@ function renderStars(rating) {
 
   return stars;
 }
+
 export default { renderTableReview };

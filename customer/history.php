@@ -295,6 +295,44 @@ if ($token) {
 
     <!-- Review Modal -->
     <?php include "../src/fitur/pubs/review/view.php" ?>
+    <div id="chatModalCust" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl relative animate-fade-in-up max-h-[90vh] flex flex-col">
+            <div class="bg-gradient-to-r from-pink-500 to-purple-600 rounded-t-2xl p-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-comments text-white text-lg"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-bold text-white">Percakapan dengan Admin</h2>
+                            <p class="text-white/80 text-xs" id="chatBonCust">-</p>
+                        </div>
+                    </div>
+                    <button type="button" id="closeChatModalCust" class="text-white/80 hover:text-white">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="chatScrollContainerCust" class="p-4 space-y-4 overflow-y-auto flex-1">
+                <div id="chatConversationMessagesCust" class="space-y-3 p-2">
+                </div>
+            </div>
+            
+            <div class="p-4 border-t border-gray-200 bg-gray-50 rounded-b-2xl">
+                <div class="flex items-start space-x-3">
+                    <div class="flex-1">
+                        <textarea id="chatMessageInputCust" rows="2" placeholder="Ketik balasan Anda..."
+                            class="block w-full rounded-lg border border-gray-300 px-4 py-3 shadow-sm text-sm resize-none"></textarea>
+                    </div>
+                    <button type="button" id="sendChatMessageBtnCust"
+                        class="px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg hover:opacity-90 transition-all shadow-sm flex items-center h-full">
+                        <i class="fas fa-paper-plane mr-2"></i> Kirim
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 
     <script type="module">

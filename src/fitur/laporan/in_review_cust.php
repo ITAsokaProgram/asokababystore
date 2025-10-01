@@ -561,7 +561,6 @@ $token = $menuHandler->getToken();
                                         <option value="pending">⏳ Pending</option>
                                         <option value="in_progress">🔄 Sedang Diproses</option>
                                         <option value="resolved">✅ Selesai</option>
-                                        <option value="closed">🔒 Ditutup</option>
                                     </select>
                                 </div>
 
@@ -610,44 +609,98 @@ $token = $menuHandler->getToken();
                                     placeholder="Jelaskan langkah-langkah penanganan yang telah dilakukan..."
                                     class="block w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm transition-all duration-200 hover:border-orange-300 hover:-translate-y-0.5 focus:scale-105 resize-none"></textarea>
                             </div>
-
-                            <!-- Tindak Lanjut -->
-                            <div class="space-y-2">
-                                <label class="block text-sm font-semibold text-gray-700 flex items-center">
-                                    <i class="fas fa-forward mr-2 text-orange-500"></i>
-                                    Tindak Lanjut
-                                </label>
-                                <textarea id="followUp" name="followUp" rows="3"
-                                    placeholder="Rencana tindak lanjut atau catatan tambahan..."
-                                    class="block w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm transition-all duration-200 hover:border-orange-300 hover:-translate-y-0.5 focus:scale-105 resize-none"></textarea>
+                            <!-- Modal Footer -->
+                            <div class="">
+                                <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                                    <div class="flex items-center space-x-2 text-sm text-gray-600">
+                                        <i class="fas fa-info-circle text-orange-500"></i>
+                                        <span>Pastikan semua informasi telah diisi dengan benar</span>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <button type="button" id="cancelIssueHandling"
+                                            class="px-5 py-2.5 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-all duration-200 text-sm font-medium flex items-center hover:-translate-y-1 hover:shadow-lg">
+                                            <i class="fas fa-times mr-2"></i>
+                                            Batal
+                                        </button>
+                                        <button type="submit" form="issueHandlingForm"
+                                            class="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-yellow-500 text-white rounded-lg hover:from-orange-600 hover:to-yellow-600 transition-all duration-200 text-sm font-medium flex items-center shadow-sm hover:shadow-md hover:-translate-y-1">
+                                            <i class="fas fa-save mr-2"></i>
+                                            Simpan
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </form>
                     </div>
                 </div>
 
-                <!-- Modal Footer -->
-                <div class="bg-gradient-to-r from-gray-50 to-gray-100 rounded-b-2xl px-6 py-4 border-t border-gray-200">
-                    <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
-                        <div class="flex items-center space-x-2 text-sm text-gray-600">
-                            <i class="fas fa-info-circle text-orange-500"></i>
-                            <span>Pastikan semua informasi telah diisi dengan benar</span>
+                
+            </div>
+        </div>
+        <!-- Modal Chat dengan Customer -->
+         <div id="chatModal"
+            class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+            <div
+                class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-2xl relative animate-fade-in-up transition-all duration-300 border border-white/20 max-h-[90vh] flex flex-col">
+                <div class="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-t-2xl p-5">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-comments text-white text-lg"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-xl font-bold text-white">Chat dengan Customer</h2>
+                                <p class="text-white/80 text-sm" id="chatCustomerName">-</p>
+                            </div>
                         </div>
-                        <div class="flex items-center space-x-3">
-                            <button type="button" id="cancelIssueHandling"
-                                class="px-5 py-2.5 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-all duration-200 text-sm font-medium flex items-center hover:-translate-y-1 hover:shadow-lg">
-                                <i class="fas fa-times mr-2"></i>
-                                Batal
-                            </button>
-                            <button type="submit" form="issueHandlingForm"
-                                class="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-yellow-500 text-white rounded-lg hover:from-orange-600 hover:to-yellow-600 transition-all duration-200 text-sm font-medium flex items-center shadow-sm hover:shadow-md hover:-translate-y-1">
-                                <i class="fas fa-save mr-2"></i>
-                                Simpan
-                            </button>
+                        <button type="button" id="closeChatModal"
+                            class="text-white/80 hover:text-white transition-colors duration-200">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="chatScrollContainer" class="p-4 space-y-4 overflow-y-auto flex-1">
+                    <div class="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200">
+                        <div class="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <span class="text-gray-600">No. HP:</span>
+                                <span class="font-medium text-gray-800 ml-2" id="chatCustomerPhone">-</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-600">Rating:</span>
+                                <span class="font-medium text-gray-800 ml-2" id="chatCustomerRating">-</span>
+                            </div>
                         </div>
+                        <div class="mt-3">
+                            <span class="text-gray-600 text-sm">Komentar Awal:</span>
+                            <p class="text-gray-800 text-sm mt-1 italic" id="chatCustomerComment">-</p>
+                        </div>
+                    </div>
+
+                    <div id="chatConversationMessages" class="space-y-3 p-2">
+                        <div class="text-center text-gray-400 text-sm py-8">
+                            <i class="fas fa-comment-dots text-3xl mb-2"></i>
+                            <p>Mulai percakapan dengan customer.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 border-t border-gray-200 bg-gray-50 rounded-b-2xl">
+                    <div class="flex items-start space-x-3">
+                        <div class="flex-1">
+                            <textarea id="chatMessageInput" rows="2" placeholder="Ketik pesan untuk customer..."
+                                class="block w-full rounded-lg border border-gray-300 px-4 py-3 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm resize-none"></textarea>
+                        </div>
+                        <button type="button" id="sendChatMessageBtn"
+                            class="px-5 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 shadow-sm hover:shadow-md flex items-center h-full">
+                            <i class="fas fa-paper-plane mr-2"></i> Kirim
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
+
     </div>
     <!-- custom js file link  -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
@@ -656,117 +709,20 @@ $token = $menuHandler->getToken();
     <script src="../../js/middleware_auth.js"></script>
     <script src="../../js/review/main.js" type="module"></script>
     <script>
-        // Modal Issue Handling Control
-        const issueModal = document.getElementById('issueHandlingModal');
-        const closeIssueModal = document.getElementById('closeIssueModal');
-        const cancelIssueHandling = document.getElementById('cancelIssueHandling');
-        const issueHandlingForm = document.getElementById('issueHandlingForm');
-
-        // Function to open issue handling modal
-        function openIssueHandlingModal(reviewData) {
-            // Populate modal with review data
-            document.getElementById('customerName').textContent = reviewData.nama || '-';
-            document.getElementById('customerPhone').textContent = reviewData.handphone || '-';
-            document.getElementById('reviewRating').textContent = reviewData.rating ? `${reviewData.rating} ⭐` : '-';
-            document.getElementById('reviewDate').textContent = reviewData.tanggal || '-';
-            document.getElementById('reviewComment').textContent = reviewData.komentar || '-';
-
-            // Show modal
-            issueModal.classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        }
-
-        // Function to close issue handling modal
-        function closeIssueHandlingModal() {
-            issueModal.classList.add('hidden');
-            document.body.style.overflow = 'auto';
-            issueHandlingForm.reset();
-        }
-
-        // Event listeners for modal
-        closeIssueModal.addEventListener('click', closeIssueHandlingModal);
-        cancelIssueHandling.addEventListener('click', closeIssueHandlingModal);
-
-        // Close modal when clicking outside
-        issueModal.addEventListener('click', (e) => {
-            if (e.target === issueModal) {
-                closeIssueHandlingModal();
-            }
-        });
-
-        // Close modal with Escape key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && !issueModal.classList.contains('hidden')) {
-                closeIssueHandlingModal();
-            }
-        });
-
-        // Handle form submission
-        issueHandlingForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-
-            // Get form data
-            const formData = new FormData(issueHandlingForm);
-            const data = Object.fromEntries(formData);
-
-            // Basic validation
-            if (!data.status || !data.priority || !data.category || !data.description) {
-                Toastify({
-                    text: "Mohon lengkapi semua field yang diperlukan!",
-                    duration: 3000,
-                    gravity: "top",
-                    position: "right",
-                    backgroundColor: "#EF4444",
-                    stopOnFocus: true
-                }).showToast();
-                return;
-            }
-
-            // Show loading state
-            const submitBtn = issueHandlingForm.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menyimpan...';
-            submitBtn.disabled = true;
-
-            // Simulate API call
-            setTimeout(() => {
-                // Here you can add AJAX call to save the data
-                console.log('Issue handling data:', data);
-
-                // Show success message
-                Toastify({
-                    text: "Data penanganan masalah berhasil disimpan!",
-                    duration: 3000,
-                    gravity: "top",
-                    position: "right",
-                    backgroundColor: "#10B981",
-                    stopOnFocus: true
-                }).showToast();
-
-                // Reset button state
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-
-                // Close modal
-                closeIssueHandlingModal();
-            }, 1000);
-        });
-
-        // Make the function globally available
-        window.openIssueHandlingModal = openIssueHandlingModal;
-
-       
+        // Sidebar and UI controls only - form handling moved to main.js
         document.getElementById('toggle-sidebar').addEventListener('click', function () {
             document.getElementById('sidebar').classList.toggle('open');
         });
+        
         document.addEventListener("DOMContentLoaded", function () {
             const sidebar = document.getElementById("sidebar");
             const closeBtn = document.getElementById("closeSidebar");
 
             closeBtn.addEventListener("click", function () {
-                sidebar.classList.remove("open"); // Hilangkan class .open agar sidebar tertutup
+                sidebar.classList.remove("open");
             });
         });
+        
         document.getElementById("toggle-hide").addEventListener("click", function () {
             var sidebarTexts = document.querySelectorAll(".sidebar-text");
             let mainContent = document.getElementById("main-content");
@@ -775,26 +731,24 @@ $token = $menuHandler->getToken();
             var icon = toggleButton.querySelector("i");
 
             if (sidebar.classList.contains("w-64")) {
-                // Sidebar mengecil
                 sidebar.classList.remove("w-64", "px-5");
                 sidebar.classList.add("w-16", "px-2");
-                sidebarTexts.forEach(text => text.classList.add("hidden")); // Sembunyikan teks
+                sidebarTexts.forEach(text => text.classList.add("hidden"));
                 mainContent.classList.remove("ml-64");
-                mainContent.classList.add("ml-16"); // Main ikut mundur
-                toggleButton.classList.add("left-20"); // Geser tombol lebih dekat
+                mainContent.classList.add("ml-16");
+                toggleButton.classList.add("left-20");
                 toggleButton.classList.remove("left-64");
-                icon.classList.remove("fa-angle-left"); // Ubah ikon
+                icon.classList.remove("fa-angle-left");
                 icon.classList.add("fa-angle-right");
             } else {
-                // Sidebar membesar
                 sidebar.classList.remove("w-16", "px-2");
                 sidebar.classList.add("w-64", "px-5");
-                sidebarTexts.forEach(text => text.classList.remove("hidden")); // Tampilkan teks kembali
+                sidebarTexts.forEach(text => text.classList.remove("hidden"));
                 mainContent.classList.remove("ml-16");
                 mainContent.classList.add("ml-64");
-                toggleButton.classList.add("left-64"); // Geser tombol ke posisi awal
+                toggleButton.classList.add("left-64");
                 toggleButton.classList.remove("left-20");
-                icon.classList.remove("fa-angle-right"); // Ubah ikon
+                icon.classList.remove("fa-angle-right");
                 icon.classList.add("fa-angle-left");
             }
         });
@@ -808,7 +762,6 @@ $token = $menuHandler->getToken();
                 profileCard.classList.toggle("show");
             });
 
-            // Tutup profile-card jika klik di luar
             document.addEventListener("click", function (event) {
                 if (!profileCard.contains(event.target) && !profileImg.contains(event.target)) {
                     profileCard.classList.remove("show");

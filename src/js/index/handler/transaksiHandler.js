@@ -6,6 +6,8 @@ import {
 } from "../../customer_pubs/review.js";
 import fetchTransaksi from "../fetch/fetch_trans.js";
 import getCookie from "../utils/cookies.js";
+import { getReviewConversation, sendReviewMessage } from '../fetch/fetch_review_conv.js';
+
 
 const rupiah = (value) =>
   new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(
@@ -103,6 +105,25 @@ export const displayTransaksi = async () => {
                Beri Rating
            </button>`;
 
+      const unreadBadge = item.unread_count > 0 
+        ? `<span class="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white ring-2 ring-white/50">${item.unread_count}</span>` 
+        : '';
+
+      const chatButton = item.review_id
+        ? `
+        <button 
+            onclick="openChatModal(${item.review_id}, '${item.no_faktur}')"
+            class="group/btn flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600
+                    text-white px-4 py-2 rounded-lg font-medium text-sm
+                    shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105">
+            <i class="fas fa-comments group-hover/btn:animate-tada"></i>
+            Lihat Percakapan
+            ${unreadBadge}
+
+        </button>
+        `
+        : "";
+
       return `
     <div class="mb-6 group">
         <div class="flex items-center gap-3 mb-3">
@@ -161,18 +182,21 @@ export const displayTransaksi = async () => {
                     <span>Transaksi berhasil</span>
                 </div>
                 
-                <a href="/transaksi?kode=${item.no_faktur}&member=${kode}"
-                   id="struk"
-                   data-bon="${item.no_faktur}"
-                   target="_blank"
-                   class="group/btn flex items-center gap-2 bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700
-                          text-white px-4 py-2 rounded-lg font-medium text-sm
-                          shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105">
+                <div class="flex items-center gap-2"> 
+                    ${item.detail_review_id != null ? chatButton : ""}
+                    <a href="/transaksi?kode=${item.no_faktur}&member=${kode}"
+                    id="struk"
+                    data-bon="${item.no_faktur}"
+                    target="_blank"
+                    class="group/btn flex items-center gap-2 bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700
+                           text-white px-4 py-2 rounded-lg font-medium text-sm
+                           shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105">
                     <svg class="w-4 h-4 group-hover/btn:animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                     </svg>
                     Lihat Struk
                 </a>
+              </div>
             </div>
         </div>
     </div>
@@ -206,5 +230,129 @@ const generateStars = (count) => {
   }
   return html;
 };
+
+let currentChatReviewId = null;
+
+// Render tampilan chat
+const renderChatConversation = (messages) => {
+    const container = document.getElementById('chatConversationMessagesCust');
+    if (!messages || messages.length === 0) {
+        container.innerHTML = `<div class="text-center text-gray-400 py-8"><i class="fas fa-comment-slash text-3xl mb-2"></i><p>Belum ada percakapan.</p></div>`;
+        return;
+    }
+
+    container.innerHTML = messages.map(msg => {
+        const isCustomer = msg.pengirim_type === 'customer';
+        const alignClass = isCustomer ? 'justify-end' : 'justify-start';
+        const bgClass = isCustomer ? 'bg-pink-500 text-white' : 'bg-gray-200 text-gray-800';
+        const time = new Date(msg.dibuat_tgl).toLocaleString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+        return `
+            <div class="flex ${alignClass}">
+                <div class="max-w-[80%]">
+                    <div class="${bgClass} rounded-lg px-3 py-2 shadow-sm">
+                        <p class="text-xs font-semibold mb-1 ${isCustomer ? 'text-pink-100' : 'text-gray-600'}">
+                            ${isCustomer ? 'Anda' : msg.nama_pengirim}
+                        </p>
+                        <p class="text-sm">${msg.pesan}</p>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1 ${isCustomer ? 'text-right' : 'text-left'}">${time}</p>
+                </div>
+            </div>`;
+    }).join('');
+    scrollToBottomCust(); 
+
+    // setTimeout(() => { container.scrollTop = container.scrollHeight; }, 100);
+};
+
+// Memuat data percakapan dari API
+const loadChatConversation = async (reviewId) => {
+    try {
+        const result = await getReviewConversation(reviewId);
+        if (result.success) {
+            renderChatConversation(result.data);
+        } else {
+            document.getElementById('chatConversationMessagesCust').innerHTML = `<p class="text-red-500 text-center">${result.message}</p>`;
+        }
+    } catch (error) {
+        console.error('Gagal memuat percakapan:', error);
+    }
+};
+
+// Fungsi untuk membuka modal (dipanggil dari tombol `onclick`)
+window.openChatModal = function(reviewId, noBon) {
+    currentChatReviewId = reviewId;
+    document.getElementById('chatBonCust').textContent = `No. Bon: ${noBon}`;
+    document.getElementById('chatMessageInputCust').value = '';
+    loadChatConversation(reviewId);
+    document.getElementById('chatModalCust').classList.remove('hidden');
+};
+
+// Fungsi untuk menutup modal
+function closeChatModal() {
+    document.getElementById('chatModalCust').classList.add('hidden');
+     if (currentChatReviewId) {
+        const chatButton = document.querySelector(`button[data-review-id='${currentChatReviewId}']`);
+        if (chatButton) {
+            const badge = chatButton.querySelector('span.absolute');
+            if (badge) {
+                badge.remove();
+            }
+        }
+    }
+    currentChatReviewId = null;
+}
+
+// Event listener untuk tombol dan interaksi modal
+document.addEventListener('DOMContentLoaded', () => {
+    const chatModal = document.getElementById('chatModalCust');
+    const closeBtn = document.getElementById('closeChatModalCust');
+    const sendBtn = document.getElementById('sendChatMessageBtnCust');
+    const input = document.getElementById('chatMessageInputCust');
+
+    if (closeBtn) closeBtn.addEventListener('click', closeChatModal);
+    if (chatModal) chatModal.addEventListener('click', (e) => {
+        if (e.target === chatModal) closeChatModal();
+    });
+
+    const sendMessage = async () => {
+        const pesan = input.value.trim();
+        if (!pesan || !currentChatReviewId) return;
+
+        sendBtn.disabled = true;
+        sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        try {
+            const result = await sendReviewMessage(currentChatReviewId, pesan);
+            if (result.success) {
+                input.value = '';
+                await loadChatConversation(currentChatReviewId);
+            } else {
+                alert('Gagal mengirim pesan: ' + result.message);
+            }
+        } catch (error) {
+            alert('Terjadi kesalahan saat mengirim pesan.');
+        } finally {
+            sendBtn.disabled = false;
+            sendBtn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i> Kirim';
+        }
+    };
+
+    if (sendBtn) sendBtn.addEventListener('click', sendMessage);
+    if (input) input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+});
+
+const scrollToBottomCust = () => {
+    const container = document.getElementById('chatScrollContainerCust'); 
+    if (container) {
+        setTimeout(() => { container.scrollTop = container.scrollHeight; }, 100);
+    }
+};
+
 
 export default renderTransaksi;
