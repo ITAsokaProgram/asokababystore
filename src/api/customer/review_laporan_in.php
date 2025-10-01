@@ -15,18 +15,26 @@ if (!$token) {
     exit;
 }
 $verif = verify_token($token);
-
+$statsSql = "SELECT 
+                AVG(rating) as avg_rating, 
+                COUNT(id) as total_reviews, 
+                SUM(IF(sudah_terpecahkan = 0, 1, 0)) as pending_issues 
+             FROM review";
+$statsStmt = $conn->prepare($statsSql);
+$statsStmt->execute();
+$statsResult = $statsStmt->get_result()->fetch_assoc();
+$stats = [
+    'total_reviews' => (int)$statsResult['total_reviews'],
+    'avg_rating' => $statsResult['avg_rating'] ? number_format((float)$statsResult['avg_rating'], 1) : '0.0',
+    'pending_issues' => (int)$statsResult['pending_issues']
+];
+$statsStmt->close();
 $countsSql = "SELECT rating, COUNT(id) AS count FROM review GROUP BY rating";
 $countsStmt = $conn->prepare($countsSql);
 $countsStmt->execute();
 $countsResult = $countsStmt->get_result();
 $ratingCounts = [
-    'all' => 0,
-    '5' => 0,
-    '4' => 0,
-    '3' => 0,
-    '2' => 0,
-    '1' => 0
+    'all' => 0, '5' => 0, '4' => 0, '3' => 0, '2' => 0, '1' => 0
 ];
 while ($row = $countsResult->fetch_assoc()) {
     if (isset($ratingCounts[(string)$row['rating']])) {
@@ -35,7 +43,6 @@ while ($row = $countsResult->fetch_assoc()) {
     }
 }
 $countsStmt->close();
-
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
 $rating = isset($_GET['rating']) ? $_GET['rating'] : 'all';
@@ -60,7 +67,8 @@ $totalPages = $totalRecords > 0 ? ceil($totalRecords / $limit) : 1;
 $sql = "SELECT
     ua.id_user, ua.nama_lengkap AS nama, r.rating, r.komentar, r.kategori,
     r.no_bon AS bon, k.nm_alias AS cabang, r.dibuat_tgl AS tanggal,
-    ua.no_hp AS no_hp, t.nama_kasir, rf.path_file AS enpoint_foto
+    ua.no_hp AS no_hp, t.nama_kasir, rf.path_file AS enpoint_foto,
+    r.sudah_terpecahkan as sudah_terpecahkan
 FROM (
     SELECT * FROM review " . $whereClause . " ORDER BY dibuat_tgl DESC LIMIT ? OFFSET ?
 ) AS r
@@ -91,7 +99,8 @@ if ($result->num_rows > 0) {
             'id_user' => $item['id_user'], 'nama' => $item['nama'], 'hp' => $item['no_hp'],
             'rating' => $item['rating'], 'komentar' => $item['komentar'], 'kategori' => $item['kategori'],
             'no_bon' => $item['bon'], 'cabang' => $item['cabang'], 'nama_kasir' => $item['nama_kasir'],
-            'enpoint_foto' => $item['enpoint_foto'], 'tanggal' => $item['tanggal']
+            'enpoint_foto' => $item['enpoint_foto'], 'tanggal' => $item['tanggal'],
+            'sudah_terpecahkan' => (bool)$item['sudah_terpecahkan']
         ];
     }, $row);
     echo json_encode([
@@ -99,7 +108,8 @@ if ($result->num_rows > 0) {
         'pagination' => [
             'total_records' => (int)$totalRecords, 'total_pages' => $totalPages, 'current_page' => $page
         ],
-        'rating_counts' => $ratingCounts 
+        'rating_counts' => $ratingCounts,
+        'stats' => $stats 
     ], JSON_UNESCAPED_SLASHES);
 } else {
     http_response_code(200);
@@ -108,7 +118,8 @@ if ($result->num_rows > 0) {
         'pagination' => [
             'total_records' => (int)$totalRecords, 'total_pages' => $totalPages, 'current_page' => $page
         ],
-        'rating_counts' => $ratingCounts 
+        'rating_counts' => $ratingCounts,
+        'stats' => $stats 
     ]);
 }
 $stmt->close();

@@ -71,7 +71,7 @@ export const renderTableReview = (data, offset) => {
         `}
         <td class="px-4 py-3 text-sm transition-all duration-200">
           <div class="flex items-center space-x-2">
-            ${item.rating <= 4 ? `
+            ${!item.sudah_terpecahkan ? `
               <button 
                 onclick="openIssueHandlingModal(${JSON.stringify({
                   nama: item.nama,

@@ -6,13 +6,40 @@ let currentFilter = {
     page: 1,
     limit: 10
 };
+
+
+const updateHeaderStats = (stats) => {
+    const totalReviewsEl = document.getElementById("totalReviews");
+    const avgRatingEl = document.getElementById("avgRating");
+    const pendingIssuesEl = document.getElementById("pendingIssues");
+
+    if (stats) {
+        
+        totalReviewsEl.innerHTML = stats.total_reviews ?? '0';
+        avgRatingEl.innerHTML = stats.avg_rating ?? '0.0';
+        pendingIssuesEl.innerHTML = stats.pending_issues ?? '0';
+    } else {
+        totalReviewsEl.innerHTML = '-';
+        avgRatingEl.innerHTML = '-';
+        pendingIssuesEl.innerHTML = '-';
+    }
+};
+
+
 const fetchAndRenderPage = async (page = 1) => {
     currentFilter.page = page;
     try {
         document.getElementById("tableLoading").classList.remove("hidden");
         document.querySelector("table").classList.add("hidden");
         document.getElementById("paginationContainer").innerHTML = `<div class="animate-pulse h-8 bg-gray-200 rounded w-48"></div>`;
+
         const response = await getReviewData(currentFilter.page, currentFilter.limit, currentFilter.rating);
+
+        
+        if (response.stats) {
+            updateHeaderStats(response.stats);
+        }
+
         if (response.rating_counts) {
             updateRatingCardCounts(response.rating_counts);
         }
@@ -57,11 +84,11 @@ const init = async () => {
     setupRatingCardEvents();
     await fetchAndRenderPage(1);
     Toastify({
-      text: `Berhasil memuat halaman pertama`,
-      duration: 2000,
-      gravity: "top",
-      position: "right",
-      backgroundColor: "#10B981",
+        text: `Berhasil memuat halaman pertama`,
+        duration: 2000,
+        gravity: "top",
+        position: "right",
+        backgroundColor: "#10B981",
     }).showToast();
 };
 init();
