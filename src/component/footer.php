@@ -4,7 +4,6 @@
         <div class="flex flex-wrap text-left lg:text-left">
             <div class="w-full lg:w-6/12 px-4 mb-8 lg:mb-0">
                 <h4 class="text-3xl font-semibold text-blueGray-700 mb-2">Ayo tetap saling terhubung</h4>
-                <h5 class="text-lg mb-4 text-blueGray-600">Kontak kami, kami akan cepat respon.</h5>
                 <div class="flex gap-3 mt-6">
                     <a href="https://www.instagram.com/asokababyofficial/" target="_blank" aria-label="Instagram">
                         <button class="bg-white text-pink-500 shadow-lg font-normal h-10 w-10 flex items-center justify-center rounded-full outline-none focus:outline-none transition duration-300 hover:bg-gradient-to-tr hover:from-yellow-400 hover:via-pink-500 hover:to-purple-600 hover:text-white">
