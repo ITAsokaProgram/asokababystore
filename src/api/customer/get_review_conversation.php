@@ -57,8 +57,8 @@ try {
 
     $conn->begin_transaction();
     $update_sql = "UPDATE review_conversation 
-                   SET sudah_dibaca = 1 
-                   WHERE review_id = ? AND pengirim_type = ? AND sudah_dibaca = 0";
+                       SET sudah_dibaca = 1 
+                       WHERE review_id = ? AND pengirim_type = ? AND sudah_dibaca = 0";
     $update_stmt = $conn->prepare($update_sql);
     if (!$update_stmt) throw new Exception("Prepare Update Gagal: " . $conn->error);
     
@@ -68,7 +68,7 @@ try {
 
     
     $sql = "SELECT 
-                rc.id, rc.review_id, rc.pengirim_type, rc.pengirim_id,
+                rc.review_id, rc.pengirim_type, rc.pengirim_id,
                 rc.pesan, rc.dibuat_tgl, rc.sudah_dibaca,
                 CASE 
                     WHEN rc.pengirim_type = 'admin' THEN a.nama
@@ -91,7 +91,6 @@ try {
     
     while ($row = $result->fetch_assoc()) {
         $conversations[] = [
-            'id' => (int)$row['id'],
             'review_id' => (int)$row['review_id'],
             'pengirim_type' => $row['pengirim_type'],
             'pengirim_id' => (int)$row['pengirim_id'],

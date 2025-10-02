@@ -66,7 +66,6 @@ try {
         'success' => true, 
         'message' => 'Pesan berhasil dikirim',
         'data' => [
-            'id' => $conn->insert_id,
             'review_id' => $review_id,
             'pesan' => $pesan
         ]
