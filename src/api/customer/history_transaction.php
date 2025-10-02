@@ -29,6 +29,7 @@ $sql = "SELECT
     p.jam,
     ks.Nm_Store,
     p.belanja,
+    p.nama_kasir, 
     r.rating AS rating,
     r.id AS review_id,
     r.komentar as komentar,

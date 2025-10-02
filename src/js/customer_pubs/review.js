@@ -4,8 +4,10 @@ import { getCookie } from "/src/js/index/utils/cookies.js";
 // // Checking Direct Link Access
 const userObject = [];
 let currentBon = null;
-export const handleReviewClick = (bon) => {
+let currentKasir = null; 
+export const handleReviewClick = (bon, namaKasir) => {
   currentBon = bon;
+  currentKasir = namaKasir; 
   openReviewModal(bon, "reviewModal");
 };
 // // Checking Direct Link Access
@@ -122,6 +124,8 @@ for (let i = 1; i <= 5; i++) {
 function resetReviewForm(id) {
   const modal = document.getElementById(id);
   reviewForm.reset();
+  currentBon = null;
+  currentKasir = null;
   selectedRating = 0;
   selectedFiles = [];
   updateStars();
@@ -212,6 +216,7 @@ export const postFormReview = () => {
     formData.append("token", token);
     formData.append("user_id", userObject[0].id);
     formData.append("bon", currentBon);
+    formData.append("nama_kasir", currentKasir);
     selectedFiles.forEach((file) => {
       formData.append("photos[]", file);
     });

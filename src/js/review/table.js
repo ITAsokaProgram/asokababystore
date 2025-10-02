@@ -17,7 +17,6 @@ export const renderTableReview = (data, offset) => {
       row.className = "hover:bg-gray-50 transition-all duration-200 border-b border-gray-100 hover:-translate-y-0.5 hover:shadow-sm";
       
       let actionButton = '';
-      
       if (!item.sudah_terpecahkan) {
         actionButton = `
           <button 

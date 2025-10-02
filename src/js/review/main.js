@@ -535,7 +535,6 @@ if (issueHandlingForm) {
                 kategori_masalah: kategori_masalah,
                 deskripsi_penanganan: deskripsi_penanganan
             };
-            console.log('Submitting review handling data:', reviewData);
             const result = await submitReviewHandling(reviewData);
             if (result.success) {
                 const message = isEditMode ? "Data penanganan berhasil diperbarui!" : "Data penanganan berhasil disimpan!";

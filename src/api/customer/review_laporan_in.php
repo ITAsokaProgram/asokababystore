@@ -67,7 +67,8 @@ $totalPages = $totalRecords > 0 ? ceil($totalRecords / $limit) : 1;
 $sql = "SELECT
     r.id, ua.id_user, ua.nama_lengkap AS nama, r.rating, r.komentar, r.kategori,
     r.no_bon AS bon, k.nm_alias AS cabang, r.dibuat_tgl AS tanggal,
-    ua.no_hp AS no_hp, t.nama_kasir, rf.path_file AS enpoint_foto,
+    ua.no_hp AS no_hp, r.nama_kasir, 
+    rf.path_file AS enpoint_foto,
     r.sudah_terpecahkan as sudah_terpecahkan, rd.review_id AS detail_review_id,
     rd.status as detail_status,
     (SELECT COUNT(*) 
@@ -81,11 +82,11 @@ FROM (
 ) AS r
 LEFT JOIN user_asoka ua ON ua.id_user = r.id_user
 LEFT JOIN kode_store k ON k.kd_store = SUBSTRING(r.no_bon, 1, 4)
-LEFT JOIN trans_b t ON t.kode_kasir = SUBSTRING(r.no_bon, 6, 6)
 LEFT JOIN review_foto rf ON rf.review_id = r.id
 LEFT JOIN review_detail rd ON rd.review_id = r.id
 GROUP BY r.no_bon
 ORDER BY r.dibuat_tgl DESC";
+
 $stmt = $conn->prepare($sql);
 if (!$stmt) {
     http_response_code(500);

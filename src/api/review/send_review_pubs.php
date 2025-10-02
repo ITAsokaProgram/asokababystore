@@ -14,6 +14,7 @@ $tagsJson = $_POST['tags'] ?? '[]';
 $tags = json_decode($tagsJson, true);
 $tagsStr = implode(',', $tags);
 $bon = $_POST['bon'];
+$nama_kasir = $_POST['nama_kasir'] ?? '';
 $verify_token = verify_token($token);
 if (!$verify_token) {
     echo json_encode(['status' => 'error', 'message' => 'Token tidak valid.']);
@@ -68,9 +69,11 @@ function resizeImage($file, $destination, $maxDim = 1280, $quality = 80)
         move_uploaded_file($file, $destination);
     }
 }
-// Simpan review
-$stmt = $conn->prepare("INSERT INTO review (id_user,rating, komentar, dibuat_tgl, kategori, no_bon) VALUES (?,?, ?, ?,?,?)");
-$stmt->bind_param('iissss', $id, $rating, $comment, $date, $tagsStr, $bon);
+$sudah_terpecahkan = ($rating <= 3) ? 0 : 1; 
+
+$stmt = $conn->prepare("INSERT INTO review (id_user, rating, komentar, dibuat_tgl, kategori, no_bon, nama_kasir, sudah_terpecahkan) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+
+$stmt->bind_param('iisssssi', $id, $rating, $comment, $date, $tagsStr, $bon, $nama_kasir, $sudah_terpecahkan); 
 $stmt->execute();
 $review_id = $stmt->insert_id;
 $stmt->close();
@@ -80,7 +83,6 @@ if (isset($_FILES['photos'])) {
     $uploadDirBase = '/var/www/SvrvFT/review_pubs/';
     $userFolder = $uploadDirBase . 'user_id_' . $id . '/';
 
-    // Buat folder jika belum ada
     if (!is_dir($userFolder)) {
         mkdir($userFolder, 0777, true);
     }
