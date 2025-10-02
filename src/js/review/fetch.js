@@ -1,10 +1,11 @@
 import getCookie from "../index/utils/cookies.js";
 
-export const getReviewData = async (page = 1, limit = 10, rating = 'all') => {
+export const getReviewData = async (page = 1, limit = 10, rating = 'all', status = 'all') => { 
   try {
     const token = getCookie('token');
     
-    const url = `/src/api/customer/review_laporan_in?page=${page}&limit=${limit}&rating=${rating}`;
+    
+    const url = `/src/api/customer/review_laporan_in?page=${page}&limit=${limit}&rating=${rating}&status=${status}`; 
     
     const response = await fetch(url, {
       method: "GET",
@@ -27,6 +28,7 @@ export const getReviewData = async (page = 1, limit = 10, rating = 'all') => {
     throw error;
   }
 }
+
 
 
 export const submitReviewHandling = async (reviewData) => {

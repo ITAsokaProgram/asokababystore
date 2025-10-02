@@ -4,6 +4,7 @@ import { renderTableReview } from "./table.js";
 
 let currentFilter = {
     rating: "all",
+    status: "all", 
     page: 1,
     limit: 10
 };
@@ -24,14 +25,16 @@ const updateHeaderStats = (stats) => {
         pendingIssuesEl.innerHTML = '-';
     }
 };
-
 const fetchAndRenderPage = async (page = 1) => {
     currentFilter.page = page;
     try {
         document.getElementById("tableLoading").classList.remove("hidden");
         document.querySelector("table").classList.add("hidden");
         document.getElementById("paginationContainer").innerHTML = `<div class="animate-pulse h-8 bg-gray-200 rounded w-48"></div>`;
-        const response = await getReviewData(currentFilter.page, currentFilter.limit, currentFilter.rating);
+        
+        
+        const response = await getReviewData(currentFilter.page, currentFilter.limit, currentFilter.rating, currentFilter.status); 
+        
         if (response.stats) {
             updateHeaderStats(response.stats);
         }
@@ -46,6 +49,7 @@ const fetchAndRenderPage = async (page = 1) => {
         Toastify({ text: "Gagal memuat data review", backgroundColor: "#EF4444" }).showToast();
     }
 };
+
 
 const setupRatingCardEvents = () => {
     const container = document.getElementById("ratingCardContainer");
@@ -62,6 +66,17 @@ const setupRatingCardEvents = () => {
         });
     });
 };
+
+const setupStatusFilterEvent = () => {
+    const statusFilter = document.getElementById("statusFilter");
+    if (statusFilter) {
+        statusFilter.addEventListener("change", function() {
+            currentFilter.status = this.value;
+            fetchAndRenderPage(1); 
+        });
+    }
+};
+
 
 const updateRatingCardCounts = (counts) => {
     document.querySelectorAll(".rating-card").forEach(card => {
@@ -605,6 +620,7 @@ const scrollToBottomAdmin = () => {
 };
 const init = async () => {
     setupRatingCardEvents();
+    setupStatusFilterEvent(); 
     await fetchAndRenderPage(1);
     Toastify({
         text: `Berhasil memuat halaman pertama`,
@@ -614,4 +630,5 @@ const init = async () => {
         backgroundColor: "#10B981",
     }).showToast();
 };
+
 init();

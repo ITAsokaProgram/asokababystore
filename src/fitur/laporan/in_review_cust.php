@@ -181,60 +181,85 @@ $token = $menuHandler->getToken();
 
                 <!-- Enhanced Rating Filter -->
                 <div
-                    class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 p-6 mb-6 animate-fade-in-up hover:-translate-y-1 hover:shadow-2xl transition-all duration-300">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                    class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 p-6 mb-6 animate-fade-in-up hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 flex flex-col gap-4">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2 flex items-center">
                         <i class="fas fa-filter mr-2 text-orange-500"></i>
-                        Filter Rating
+                        Filter 
                     </h3>
-                    <div id="ratingCardContainer" class="flex flex-wrap gap-3">
-                        <div class="rating-card active cursor-pointer px-4 py-3 rounded-xl border border-gray-300 bg-gradient-to-r from-gray-100 to-gray-200 shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2 hover:-translate-y-2 hover:shadow-lg"
-                            data-rating="all">
-                            <div class="animate-pulse flex items-center space-x-2">
-                                <i class="fas fa-list text-gray-600"></i>
-                                <span class="font-medium">Semua</span>
-                                <span class="ml-1 text-xs text-gray-500">(-)</span>
+                    
+                    <div>
+                        <label class="block text-yellow-400 font-semibold mb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-star text-yellow-400"></i>
+                            <span class="text-black font-semibold">
+                                Rating
+                            </span>
+                        </label>
+                        <div id="ratingCardContainer" class="flex flex-wrap gap-3">
+                            <div class="rating-card active cursor-pointer px-4 py-3 rounded-xl border border-gray-300 bg-gradient-to-r from-gray-100 to-gray-200 shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2 hover:-translate-y-2 hover:shadow-lg"
+                                data-rating="all">
+                                <div class="animate-pulse flex items-center space-x-2">
+                                    <i class="fas fa-list text-gray-600"></i>
+                                    <span class="font-medium">Semua</span>
+                                    <span class="ml-1 text-xs text-gray-500">(-)</span>
+                                </div>
+                            </div>
+                            <div class="rating-card cursor-pointer px-4 py-3 rounded-xl border border-gray-300 bg-white hover:bg-yellow-50 shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2 hover:-translate-y-2 hover:shadow-lg"
+                                data-rating="5">
+                                <div class="animate-pulse flex items-center space-x-2">
+                                    <i class="fa fa-star text-yellow-400"></i>
+                                    <span class="font-medium">5 Bintang</span>
+                                    <span class="ml-1 text-xs text-gray-500">(-)</span>
+                                </div>
+                            </div>
+                            <div class="rating-card cursor-pointer px-4 py-3 rounded-xl border border-gray-300 bg-white hover:bg-yellow-50 shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2 hover:-translate-y-2 hover:shadow-lg"
+                                data-rating="4">
+                                <div class="animate-pulse flex items-center space-x-2">
+                                    <i class="fa fa-star text-yellow-400"></i>
+                                    <span class="font-medium">4 Bintang</span>
+                                    <span class="ml-1 text-xs text-gray-500">(-)</span>
+                                </div>
+                            </div>
+                            <div class="rating-card cursor-pointer px-4 py-3 rounded-xl border border-gray-300 bg-white hover:bg-yellow-50 shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2 hover:-translate-y-2 hover:shadow-lg"
+                                data-rating="3">
+                                <div class="animate-pulse flex items-center space-x-2">
+                                    <i class="fa fa-star text-yellow-400"></i>
+                                    <span class="font-medium">3 Bintang</span>
+                                    <span class="ml-1 text-xs text-gray-500">(-)</span>
+                                </div>
+                            </div>
+                            <div class="rating-card cursor-pointer px-4 py-3 rounded-xl border border-gray-300 bg-white hover:bg-yellow-50 shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2 hover:-translate-y-2 hover:shadow-lg"
+                                data-rating="2">
+                                <div class="animate-pulse flex items-center space-x-2">
+                                    <i class="fa fa-star text-yellow-400"></i>
+                                    <span class="font-medium">2 Bintang</span>
+                                    <span class="ml-1 text-xs text-gray-500">(-)</span>
+                                </div>
+                            </div>
+                            <div class="rating-card cursor-pointer px-4 py-3 rounded-xl border border-gray-300 bg-white hover:bg-yellow-50 shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2 hover:-translate-y-2 hover:shadow-lg"
+                                data-rating="1">
+                                <div class="animate-pulse flex items-center space-x-2">
+                                    <i class="fa fa-star text-yellow-400"></i>
+                                    <span class="font-medium">1 Bintang</span>
+                                    <span class="ml-1 text-xs text-gray-500">(-)</span>
+                                </div>
                             </div>
                         </div>
-                        <div class="rating-card cursor-pointer px-4 py-3 rounded-xl border border-gray-300 bg-white hover:bg-yellow-50 shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2 hover:-translate-y-2 hover:shadow-lg"
-                            data-rating="5">
-                            <div class="animate-pulse flex items-center space-x-2">
-                                <i class="fa fa-star text-yellow-400"></i>
-                                <span class="font-medium">5 Bintang</span>
-                                <span class="ml-1 text-xs text-gray-500">(-)</span>
-                            </div>
-                        </div>
-                        <div class="rating-card cursor-pointer px-4 py-3 rounded-xl border border-gray-300 bg-white hover:bg-yellow-50 shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2 hover:-translate-y-2 hover:shadow-lg"
-                            data-rating="4">
-                            <div class="animate-pulse flex items-center space-x-2">
-                                <i class="fa fa-star text-yellow-400"></i>
-                                <span class="font-medium">4 Bintang</span>
-                                <span class="ml-1 text-xs text-gray-500">(-)</span>
-                            </div>
-                        </div>
-                        <div class="rating-card cursor-pointer px-4 py-3 rounded-xl border border-gray-300 bg-white hover:bg-yellow-50 shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2 hover:-translate-y-2 hover:shadow-lg"
-                            data-rating="3">
-                            <div class="animate-pulse flex items-center space-x-2">
-                                <i class="fa fa-star text-yellow-400"></i>
-                                <span class="font-medium">3 Bintang</span>
-                                <span class="ml-1 text-xs text-gray-500">(-)</span>
-                            </div>
-                        </div>
-                        <div class="rating-card cursor-pointer px-4 py-3 rounded-xl border border-gray-300 bg-white hover:bg-yellow-50 shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2 hover:-translate-y-2 hover:shadow-lg"
-                            data-rating="2">
-                            <div class="animate-pulse flex items-center space-x-2">
-                                <i class="fa fa-star text-yellow-400"></i>
-                                <span class="font-medium">2 Bintang</span>
-                                <span class="ml-1 text-xs text-gray-500">(-)</span>
-                            </div>
-                        </div>
-                        <div class="rating-card cursor-pointer px-4 py-3 rounded-xl border border-gray-300 bg-white hover:bg-yellow-50 shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2 hover:-translate-y-2 hover:shadow-lg"
-                            data-rating="1">
-                            <div class="animate-pulse flex items-center space-x-2">
-                                <i class="fa fa-star text-yellow-400"></i>
-                                <span class="font-medium">1 Bintang</span>
-                                <span class="ml-1 text-xs text-gray-500">(-)</span>
-                            </div>
-                        </div>
+                    </div>
+                    
+                    <div>
+                        <label for="statusFilter" class="block text-yellow-700 font-semibold mb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-tasks text-orange-600"></i>
+                            <span class="text-black font-semibold">
+                                Status
+                            </span>
+                        </label>
+                        <select id="statusFilter"
+                            class="w-full px-4 py-3 rounded-lg shadow-sm  transition-all duration-200 bg-white/90 font-medium border border-gray-300 ">
+                            <option value="all">📋 Semua Status</option>
+                            <option value="pending">⏳ Belum Ditangani</option>
+                            <option value="in_progress">🔄 Sedang Ditangani</option>
+                            <option value="resolved">✅ Selesai Ditangani</option>
+                        </select>
                     </div>
                 </div>
 

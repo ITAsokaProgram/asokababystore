@@ -1,24 +1,31 @@
 <?php
 require_once __DIR__ . ("/../../../aa_kon_sett.php");
 require_once __DIR__ . ("/../../auth/middleware_login.php");
+
 header("Content-Type:application/json");
 header("Access-Control-Allow-Methods: GET");
+
 $headers = getallheaders();
-$authHeader = $headers['Authorization'];
+$authHeader = isset($headers['Authorization']) ? $headers['Authorization'] : '';
 $token = null;
+
 if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
     $token = $matches[1];
 }
+
 if (!$token) {
     http_response_code(401);
     echo json_encode(['status' => "Unauthenticated", 'message' => 'Request ditolak user tidak terdaftar']);
     exit;
 }
+
 $verif = verify_token($token);
+
+
 $statsSql = "SELECT 
                 AVG(rating) as avg_rating, 
                 COUNT(id) as total_reviews, 
-                SUM(IF(sudah_terpecahkan = 0, 1, 0)) as pending_issues 
+                (SELECT COUNT(r.id) FROM review r LEFT JOIN review_detail rd ON r.id = rd.review_id WHERE r.sudah_terpecahkan = 0 OR rd.status = 'pending') as pending_issues
              FROM review";
 $statsStmt = $conn->prepare($statsSql);
 $statsStmt->execute();
@@ -29,13 +36,13 @@ $stats = [
     'pending_issues' => (int)$statsResult['pending_issues']
 ];
 $statsStmt->close();
+
+
 $countsSql = "SELECT rating, COUNT(id) AS count FROM review GROUP BY rating";
 $countsStmt = $conn->prepare($countsSql);
 $countsStmt->execute();
 $countsResult = $countsStmt->get_result();
-$ratingCounts = [
-    'all' => 0, '5' => 0, '4' => 0, '3' => 0, '2' => 0, '1' => 0
-];
+$ratingCounts = ['all' => 0, '5' => 0, '4' => 0, '3' => 0, '2' => 0, '1' => 0];
 while ($row = $countsResult->fetch_assoc()) {
     if (isset($ratingCounts[(string)$row['rating']])) {
         $ratingCounts[(string)$row['rating']] = (int)$row['count'];
@@ -43,27 +50,58 @@ while ($row = $countsResult->fetch_assoc()) {
     }
 }
 $countsStmt->close();
+
+
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
 $rating = isset($_GET['rating']) ? $_GET['rating'] : 'all';
+$status = isset($_GET['status']) ? $_GET['status'] : 'all'; 
 $offset = ($page - 1) * $limit;
-$whereClause = "";
+
+
+$whereConditions = [];
 $params = [];
 $paramTypes = "";
+
+
 if ($rating !== 'all' && is_numeric($rating)) {
-    $whereClause = "WHERE rating = ?";
+    $whereConditions[] = "r.rating = ?";
     $params[] = (int)$rating;
     $paramTypes .= "i";
 }
-$totalSql = "SELECT COUNT(id) AS total FROM review " . $whereClause;
+
+
+if ($status !== 'all') {
+    if ($status === 'pending') {
+        
+        $whereConditions[] = "(rd.status = 'pending' OR r.sudah_terpecahkan = 0)";
+    } else if (in_array($status, ['in_progress', 'resolved', 'closed'])) {
+        $whereConditions[] = "rd.status = ?";
+        $params[] = $status;
+        $paramTypes .= "s";
+    }
+}
+
+$whereClause = "";
+if (!empty($whereConditions)) {
+    $whereClause = "WHERE " . implode(" AND ", $whereConditions);
+}
+
+
+$totalSql = "SELECT COUNT(DISTINCT r.id) AS total 
+             FROM review r 
+             LEFT JOIN review_detail rd ON rd.review_id = r.id 
+             $whereClause";
 $totalStmt = $conn->prepare($totalSql);
-if ($params) {
+if (!empty($params)) {
     $totalStmt->bind_param($paramTypes, ...$params);
 }
 $totalStmt->execute();
 $totalResult = $totalStmt->get_result()->fetch_assoc();
 $totalRecords = $totalResult['total'];
 $totalPages = $totalRecords > 0 ? ceil($totalRecords / $limit) : 1;
+
+
 $sql = "SELECT
     r.id, ua.id_user, ua.nama_lengkap AS nama, r.rating, r.komentar, r.kategori,
     r.no_bon AS bon, k.nm_alias AS cabang, r.dibuat_tgl AS tanggal,
@@ -77,15 +115,15 @@ $sql = "SELECT
        AND rc.sudah_dibaca = 0 
        AND rc.pengirim_type = 'customer'
     ) as unread_count 
-FROM (
-    SELECT * FROM review " . $whereClause . " ORDER BY dibuat_tgl DESC LIMIT ? OFFSET ?
-) AS r
+FROM review r
 LEFT JOIN user_asoka ua ON ua.id_user = r.id_user
 LEFT JOIN kode_store k ON k.kd_store = SUBSTRING(r.no_bon, 1, 4)
 LEFT JOIN review_foto rf ON rf.review_id = r.id
 LEFT JOIN review_detail rd ON rd.review_id = r.id
-GROUP BY r.no_bon
-ORDER BY r.dibuat_tgl DESC";
+$whereClause
+GROUP BY r.id -- Grup berdasarkan ID unik dari review untuk menghindari duplikasi
+ORDER BY r.dibuat_tgl DESC
+LIMIT ? OFFSET ?";
 
 $stmt = $conn->prepare($sql);
 if (!$stmt) {
@@ -93,43 +131,48 @@ if (!$stmt) {
     echo json_encode(["status" => "error", "message" => "Server Error: " . $conn->error]);
     exit;
 }
+
+
 $mainParams = $params;
 $mainParams[] = $limit;
 $mainParams[] = $offset;
 $mainParamTypes = $paramTypes . "ii";
+
 $stmt->bind_param($mainParamTypes, ...$mainParams);
 $stmt->execute();
 $result = $stmt->get_result();
+
 if ($result->num_rows > 0) {
     http_response_code(200);
-    $row = $result->fetch_all(MYSQLI_ASSOC);
+    $rows = $result->fetch_all(MYSQLI_ASSOC);
     $data = array_map(function ($item) {
         return [
             'id' => $item['id'],
-            'id_user' => $item['id_user'], 
-            'nama' => $item['nama'], 
+            'id_user' => $item['id_user'],
+            'nama' => $item['nama'],
             'hp' => $item['no_hp'],
-            'rating' => $item['rating'], 
-            'komentar' => $item['komentar'], 
+            'rating' => $item['rating'],
+            'komentar' => $item['komentar'],
             'kategori' => $item['kategori'],
-            'no_bon' => $item['bon'], 
-            'cabang' => $item['cabang'], 
+            'no_bon' => $item['bon'],
+            'cabang' => $item['cabang'],
             'nama_kasir' => $item['nama_kasir'],
-            'enpoint_foto' => $item['enpoint_foto'], 
+            'enpoint_foto' => $item['enpoint_foto'],
             'tanggal' => $item['tanggal'],
             'sudah_terpecahkan' => (bool)$item['sudah_terpecahkan'],
             'detail_review_id' => $item['detail_review_id'] ? (int)$item['detail_review_id'] : null,
             'detail_status' => $item['detail_status'] ?? null,
             'unread_count' => (int)$item['unread_count']
         ];
-    }, $row);
+    }, $rows);
+
     echo json_encode([
         'status' => 'success', 'data' => $data,
         'pagination' => [
             'total_records' => (int)$totalRecords, 'total_pages' => $totalPages, 'current_page' => $page
         ],
         'rating_counts' => $ratingCounts,
-        'stats' => $stats 
+        'stats' => $stats
     ], JSON_UNESCAPED_SLASHES);
 } else {
     http_response_code(200);
@@ -139,8 +182,9 @@ if ($result->num_rows > 0) {
             'total_records' => (int)$totalRecords, 'total_pages' => $totalPages, 'current_page' => $page
         ],
         'rating_counts' => $ratingCounts,
-        'stats' => $stats 
+        'stats' => $stats
     ]);
 }
+
 $stmt->close();
 $conn->close();
