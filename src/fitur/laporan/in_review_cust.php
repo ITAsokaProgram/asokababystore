@@ -687,7 +687,12 @@ $token = $menuHandler->getToken();
                 </div>
 
                 <div class="p-4 border-t border-gray-200 bg-gray-50 rounded-b-2xl">
-                    <div class="flex items-start space-x-3">
+                    <div id="chatResolvedMessage" class="hidden text-center text-sm text-gray-600 bg-yellow-100 p-3 rounded-lg mb-3">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        Kasus ini telah diselesaikan. Anda tidak dapat mengirim pesan lagi.
+                    </div>
+
+                    <div id="chatInputContainer" class="flex items-start space-x-3">
                         <div class="flex-1">
                             <textarea id="chatMessageInput" rows="2" placeholder="Ketik pesan untuk customer..."
                                 class="block w-full rounded-lg border border-gray-300 px-4 py-3 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm resize-none"></textarea>
@@ -698,6 +703,7 @@ $token = $menuHandler->getToken();
                         </button>
                     </div>
                 </div>
+
             </div>
         </div>
 

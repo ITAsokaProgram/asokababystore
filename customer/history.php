@@ -318,9 +318,13 @@ if ($token) {
                 <div id="chatConversationMessagesCust" class="space-y-3 p-2">
                 </div>
             </div>
-            
-            <div class="p-4 border-t border-gray-200 bg-gray-50 rounded-b-2xl">
-                <div class="flex items-start space-x-3">
+             <div class="p-4 border-t border-gray-200 bg-gray-50 rounded-b-2xl">
+                <div id="chatResolvedMessageCust" class="hidden text-center text-sm text-gray-600 bg-yellow-100 p-3 rounded-lg mb-3">
+                    <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                    Kasus ini telah diselesaikan. Percakapan ditutup.
+                </div>
+
+                <div id="chatInputContainerCust" class="flex items-start space-x-3">
                     <div class="flex-1">
                         <textarea id="chatMessageInputCust" rows="2" placeholder="Ketik balasan Anda..."
                             class="block w-full rounded-lg border border-gray-300 px-4 py-3 shadow-sm text-sm resize-none"></textarea>

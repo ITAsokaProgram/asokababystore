@@ -1,4 +1,3 @@
-// Form validation functions
 export function validateEmail(email) {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(email);
@@ -13,11 +12,8 @@ export function validateName(name) {
 }
 
 export function validatePhone(phone) {
-    // Remove any non-digit characters
-    const cleanPhone = phone.replace(/\D/g, '');
-    // Check if phone number is at least 10 digits
-
-    return cleanPhone.length >= 10;
+    const re = /^08\d{7,11}$/;
+    return re.test(phone);
 }
 
 export function onlyNumberInput(placeholder, maxLength) {

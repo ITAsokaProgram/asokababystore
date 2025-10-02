@@ -208,7 +208,7 @@ header("Pragma: no-cache");
                   class="w-full border-2 border-gray-200 pl-10 pr-4 py-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-300 text-lg" />
               </div>
               <div id="phoneError" class="hidden text-sm text-red-500 mt-1">
-                <i class="fas fa-exclamation-circle mr-1"></i>Nomor HP tidak valid (minimal 10 digit)
+                  <i class="fas fa-exclamation-circle mr-1"></i>Format No. HP harus diawali '08' dan total 10-13 digit.
               </div>
             </div>
 

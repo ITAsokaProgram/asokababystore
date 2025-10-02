@@ -304,12 +304,9 @@ const renderChatConversation = (messages) => {
         
         return `
             <div class="flex ${alignClass} animate-fade-in-up">
-                <div class="max-w-[75%]">
+                <div class="max-w-xs md:max-w-md lg:max-w-lg mb-4">
                     <div class="${bgClass} rounded-lg px-4 py-2 shadow-sm">
-                        <p class="text-xs font-semibold mb-1 ${isAdmin ? 'text-blue-100' : 'text-gray-600'}">
-                            ${msg.nama_pengirim} <span class="opacity-70">(${isAdmin ? 'Admin' : 'Customer'})</span>
-                        </p>
-                        <p class="text-sm whitespace-pre-wrap">${msg.pesan}</p>
+                        <p class="text-sm whitespace-pre-wrap break-words">${msg.pesan}</p>
                     </div>
                     <p class="text-xs text-gray-400 mt-1 ${isAdmin ? 'text-right' : 'text-left'}">
                         ${time}
@@ -320,9 +317,9 @@ const renderChatConversation = (messages) => {
     }).join('');
     scrollToBottomAdmin();
 
-    // setTimeout(() => {
-    //     container.scrollTop = container.scrollHeight;
-    // }, 100);
+    
+    
+    
 };
 
 const loadChatConversation = async (reviewId) => {
@@ -341,7 +338,7 @@ const loadChatConversation = async (reviewId) => {
     }
 };
 
-// Fungsi untuk membuka modal chat
+
 window.openChatModal = function(reviewId, reviewData) {
     currentChatReviewId = reviewId;
     
@@ -351,6 +348,17 @@ window.openChatModal = function(reviewId, reviewData) {
     document.getElementById('chatCustomerComment').textContent = reviewData.komentar || 'Tidak ada komentar';
     
     document.getElementById('chatMessageInput').value = '';
+
+    const chatInputContainer = document.getElementById('chatInputContainer');
+    const resolvedMessage = document.getElementById('chatResolvedMessage');
+
+    if (reviewData.detail_status === 'resolved') {
+        chatInputContainer.classList.add('hidden');
+        resolvedMessage.classList.remove('hidden');
+    } else {
+        chatInputContainer.classList.remove('hidden');
+        resolvedMessage.classList.add('hidden');
+    }
     
     loadChatConversation(reviewId);
     
@@ -367,7 +375,7 @@ function closeChatModal() {
     currentChatReviewId = null;
 }
 
-// Event listener untuk tombol kirim pesan di chat modal
+
 const sendChatMessageBtn = document.getElementById('sendChatMessageBtn');
 const chatMessageInput = document.getElementById('chatMessageInput');
 
@@ -423,7 +431,7 @@ if (sendChatMessageBtn && chatMessageInput) {
         }
     });
     
-    // Send message dengan Enter (Shift+Enter untuk newline)
+    
     chatMessageInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -432,7 +440,7 @@ if (sendChatMessageBtn && chatMessageInput) {
     });
 }
 
-// Event listeners untuk menutup chat modal
+
 const closeChatModalBtn = document.getElementById('closeChatModal');
 if (closeChatModalBtn) {
     closeChatModalBtn.addEventListener('click', closeChatModal);

@@ -3,7 +3,6 @@
 include "../../../aa_kon_sett.php";
 include "../../auth/middleware_login.php";
 header("Content-Type:application/json");
-// Ambil header Authorization
 $headers = getallheaders();
 $data = json_decode(file_get_contents("php://input"), true);
 
@@ -16,7 +15,6 @@ if (!isset($headers['Authorization'])) {
 $authHeader = $headers['Authorization'];
 $token = str_replace('Bearer ', '', $authHeader);
 
-// Verifikasi token
 $verify = verify_token($token);
 if (!$verify) {
     http_response_code(401);
@@ -33,7 +31,9 @@ $sql = "SELECT
     p.belanja,
     r.rating AS rating,
     r.id AS review_id,
+    r.komentar as komentar,
     rd.review_id AS detail_review_id,
+    rd.status AS detail_status, 
     (SELECT COUNT(*) 
      FROM review_conversation rc 
      WHERE rc.review_id = r.id 

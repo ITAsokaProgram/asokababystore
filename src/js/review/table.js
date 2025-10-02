@@ -63,24 +63,25 @@ export const renderTableReview = (data, offset) => {
       const unreadBadge = item.unread_count > 0
         ? `<span class="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white ring-2 ring-white">${item.unread_count}</span>`
         : '';
-      // Tombol Chat - selalu muncul
       const chatButton = `
-        <button 
+      <button 
           onclick="openChatModal(${item.id}, ${JSON.stringify({
-            nama: item.nama,
-            handphone: item.hp,
-            rating: item.rating,
-            tanggal: new Date(item.tanggal).toLocaleDateString("id-ID"),
-            komentar: item.komentar
+              nama: item.nama,
+              handphone: item.hp,
+              rating: item.rating,
+              tanggal: new Date(item.tanggal).toLocaleDateString("id-ID"),
+              komentar: item.komentar,
+              detail_status: item.detail_status 
           }).replace(/"/g, '&quot;')})"
-          class="inline-flex items-center px-2 py-1 bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-xs font-medium rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-1"
+          class="relative inline-flex items-center px-2 py-1 bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-xs font-medium rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-1"
           title="Chat dengan Customer"
-        >
+      >
           <i class="fas fa-comments mr-1"></i>
           Chat
           ${unreadBadge}
-        </button>
-      `;
+      </button>
+  `;
+
 
       row.innerHTML = `
         <td class="px-4 py-3 text-sm text-gray-900 font-medium transition-all duration-200">${offset + index + 1}</td>
