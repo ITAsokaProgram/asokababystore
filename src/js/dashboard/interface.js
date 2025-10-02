@@ -1,7 +1,7 @@
 import { fetchTopMember } from "../member_internal/product/fetch_product.js";
 import { getCookie } from "/src/js/index/utils/cookies.js";
 import { fetchMargin } from "/src/js/margin/fetch/get_margin.js";
-// Fungsi untuk memperbarui UI
+
 function updateUI(data) {
   const trans = data.trans_tertinggi[0];
   const gabungkan = data.jumlah_member_per_cabang.find(
@@ -49,13 +49,13 @@ function updateUI(data) {
   );
 }
 
-// Fungsi untuk mengubah teks pada elemen HTML
+
 function setText(id, text) {
   const el = document.getElementById(id);
   if (el) el.textContent = text;
 }
 
-// Function untuk mengambil data invalid transaksi
+
 async function loadInvalidTransaksi() {
   try {
     const token = getCookie("token");
@@ -116,17 +116,17 @@ async function loadInvalidTransaksi() {
   }
 }
 
-// Function untuk menampilkan data invalid transaksi (compact design)
+
 function displayInvalidTransaksi(data) {
   const container = document.getElementById("invalid-transaksi-container");
   if (!container) return;
   container.innerHTML = "";
 
-  // Top 3 data
+  
   const topData = data.slice(0, 3);
 
   topData.forEach((item, idx) => {
-    // Soft color per urutan
+    
     const bg =
       [
         "from-red-100 to-red-50",
@@ -194,7 +194,7 @@ function displayTop5margin(data) {
     container.appendChild(card);
   });
 }
-// Function untuk menampilkan pesan tidak ada data
+
 function displayNoData() {
   const container = document.getElementById("invalid-transaksi-container");
   if (container) {
@@ -215,9 +215,9 @@ function displayTop5Retur(data) {
   if (!container) return;
   container.innerHTML = "";
 
-  // Ambil hanya 3 data teratas
+  
   data.slice(0, 3).forEach((item, idx) => {
-    // Warna background dan border berbeda tiap urutan
+    
     const bg =
       [
         "from-purple-100 to-violet-50",
@@ -259,9 +259,9 @@ function displayTop5Activity(data) {
   if (!container) return;
   container.innerHTML = "";
 
-  // Ambil hanya 3 data teratas
+  
   data.slice(0, 3).forEach((item, idx) => {
-    // Warna background dan border berbeda tiap urutan
+    
     const bg =
       [
         "from-blue-100 to-blue-50",
@@ -297,7 +297,7 @@ function displayTop5Activity(data) {
     container.appendChild(card);
   });
 }
-// Function untuk menampilkan error
+
 function displayError(message) {
   const container = document.getElementById("invalid-transaksi-container");
   if (container) {
@@ -312,6 +312,170 @@ function displayError(message) {
       `;
   }
 }
+async function loadReviewData() {
+  try {
+    const token = getCookie("token");
+    const response = await fetch("/src/api/dashboard/get_review_summary", {
+      method: "GET",
+      headers: {
+        Authorization: "Bearer " + token,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      if (result.status === "success" && result.data) {
+        
+        displayReviewStats(result.data);
+        displayFeaturedReview(result.data.featured_review);
+        displayPendingReviews(result.data.pending_reviews);
+      } else {
+        displayNoReviews(); 
+      }
+    } else {
+      displayReviewError("Gagal mengambil data review");
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    displayReviewError("Terjadi kesalahan");
+  }
+}
+
+
+function displayReviewStats(data) {
+  setText("avg-rating", data.avg_rating || "0.0");
+  setText("total-reviews", data.total_reviews || "0");
+  setText("pending-count", data.pending_count || "0");
+}
+function displayPendingReviews(data) {
+  const container = document.getElementById("pending-reviews-container");
+  if (!container) return;
+  container.innerHTML = "";
+
+  if (!data || data.length === 0) {
+    container.innerHTML = `
+      <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-3 text-center border border-green-200">
+        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+          <i class="fa-solid fa-check-circle text-green-500 text-sm"></i>
+        </div>
+        <div class="text-xs font-semibold text-green-800">Semua review sudah terpecahkan!</div>
+      </div>
+    `;
+    return;
+  }
+}
+
+function displayReviewError(message) {
+  const container = document.getElementById("pending-reviews-container");
+  if (container) {
+    container.innerHTML = `
+      <div class="bg-gradient-to-br from-red-50 to-pink-50 rounded-xl p-3 text-center border border-red-200">
+        <i class="fa-solid fa-exclamation-triangle text-red-500 text-sm mb-1"></i>
+        <div class="text-xs font-semibold text-red-800">${message}</div>
+      </div>
+    `;
+  }
+}
+
+function displayNoReviews() {
+  const container = document.getElementById("pending-reviews-container");
+  if (container) {
+    container.innerHTML = `
+      <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-3 text-center border border-gray-200">
+        <i class="fa-solid fa-inbox text-gray-400 text-sm mb-1"></i>
+        <div class="text-xs text-gray-600">Belum ada review</div>
+      </div>
+    `;
+  }
+}
+
+
+function displayFeaturedReview(review) {
+    const container = document.getElementById("featured-review-container");
+    if (!container) return;
+
+    
+    if (!review) {
+        container.innerHTML = `
+            <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-3 text-center border border-gray-200">
+                <i class="fa-solid fa-inbox text-gray-400 text-sm mb-1"></i>
+                <div class="text-xs text-gray-600">Belum ada review untuk ditampilkan</div>
+            </div>`;
+        return;
+    }
+
+    
+    const statusStyles = {
+        'pending': {
+            bgColor: 'from-orange-50 to-red-50',
+            borderColor: 'border-orange-200',
+            spanClasses: 'text-orange-600 bg-orange-100/70' // Style untuk span
+        },
+        'in_progress': {
+            bgColor: 'from-blue-50 to-cyan-50',
+            borderColor: 'border-blue-200',
+            spanClasses: 'text-blue-600 bg-blue-100/70' // Style untuk span
+        },
+        'resolved': {
+            bgColor: 'from-green-50 to-emerald-50',
+            borderColor: 'border-green-200',
+            spanClasses: 'text-green-600 bg-green-100/70' // Style untuk span
+        },
+        // Style default jika status tidak dikenali
+        default: {
+            bgColor: 'from-gray-50 to-gray-100',
+            borderColor: 'border-gray-200',
+            spanClasses: 'text-gray-600 bg-gray-100/70'
+        }
+    };
+
+    const currentStatus = review.review_status || 'default';
+    const currentStyles = statusStyles[currentStatus] || statusStyles.default;
+
+    // Mapping untuk teks yang akan ditampilkan
+    const statusDisplayText = {
+      'pending': 'Pending',
+      'in_progress': 'In Progress',
+      'resolved': 'Resolved'
+    };
+    
+    // Teks untuk ditampilkan di span, fallback ke 'Baru' jika tidak ada
+    const displayText = statusDisplayText[review.review_status] || 'Baru';
+
+
+    
+    
+    let stars = '';
+    for (let i = 1; i <= 5; i++) {
+        stars += `<i class="fa-solid fa-star ${i <= review.rating ? 'text-yellow-400' : 'text-gray-300'}"></i>`;
+    }
+
+
+    const customerName = review.nama_customer || 'Customer';
+    const statusReview = {
+      'pending': 'Pending',
+      'in_progress': 'In Progress',
+      'resolved': 'Resolved'
+    }
+    
+
+    container.innerHTML = `
+        <div class="cursor-pointer bg-gradient-to-br ${currentStyles.bgColor} rounded-xl p-3 shadow-sm border ${currentStyles.borderColor} hover:shadow-lg transition-all duration-300 animate-fade-in-up" onclick="window.location.href='/src/fitur/laporan/in_review_cust'">
+            <div class="flex items-start justify-between mb-2">
+                <div class="flex flex-col">
+                    <span class="font-bold text-sm text-gray-800">${customerName}</span>
+                </div>
+                <span class="text-xs font-semibold px-2 py-0.5 rounded-full shadow ${currentStyles.spanClasses}">
+                    ${displayText}
+                </span>
+            </div>
+            <div class="flex text-xs">${stars}</div>
+        </div>
+    `;
+
+}
+
 
 export {
   updateUI,
@@ -321,4 +485,9 @@ export {
   displayTop5margin,
   displayNoData,
   displayError,
+  loadReviewData,
+  displayReviewStats,
+  displayPendingReviews,
+  displayReviewError,
+  displayNoReviews
 };

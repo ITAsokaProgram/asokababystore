@@ -359,9 +359,66 @@ $token = $menuHandler->getToken();
             <i class="fa-solid fa-spinner fa-spin mr-1"></i> Loading...
           </div>
         </div>
+      </div>  
     </section>
 
-    </div>
+    <section class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-3 gap-4 mb-8">
+      <div
+        class="dashboard-card bg-gradient-to-br from-yellow-50 via-white to-amber-100 rounded-2xl p-2 shadow border border-yellow-200/70 backdrop-blur-sm animate-fade-in-up">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-bold flex items-center gap-2 text-yellow-800">
+            <span class="w-6 h-6 flex items-center justify-center rounded-full bg-yellow-100 shadow">
+              <i class="fa-solid fa-star text-yellow-600 text-base"></i>
+            </span>
+            Review Customer
+          </h2>
+          <div class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+        </div>
+        
+        <div class="space-y-4">
+          <div id="featured-review-container">
+          </div>
+
+          <!-- Rating & Total Reviews Combined -->
+          <div
+            class="cursor-pointer bg-gradient-to-br from-white/90 to-yellow-50/80 rounded-xl p-1.5 shadow border border-yellow-100/60 hover:scale-105 hover:shadow-md transition-all duration-300 flex flex-col animate-fade-in-up"
+            onclick="window.location.href='/src/fitur/laporan/in_review_cust'">
+            <div class="flex items-center justify-between mb-1">
+              <div class="flex items-center gap-1" title="Rata-rata Rating">
+                <i class="fa-solid fa-star text-yellow-500 text-xs"></i>
+                <span class="font-semibold text-xs text-gray-800 whitespace-nowrap">Rating</span>
+              </div>
+              <div class="flex items-center gap-1" title="Total Reviews">
+                <i class="fa-solid fa-comments text-amber-600 text-xs"></i>
+                <span class="font-semibold text-xs text-gray-800 whitespace-nowrap">Total Review</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between text-xs text-gray-600">
+              <span id="avg-rating" class="whitespace-nowrap font-bold text-yellow-700">-</span>
+              <span id="total-reviews" class="whitespace-nowrap font-bold text-amber-700">-</span>
+            </div>
+          </div>
+          <!-- Pending Reviews -->
+          <div
+            class="cursor-pointer bg-gradient-to-br from-white/90 to-orange-50/80 rounded-xl p-1.5 shadow border border-orange-100/60 hover:scale-105 hover:shadow-md transition-all duration-300 flex flex-col animate-fade-in-up"
+            onclick="window.location.href='/src/fitur/laporan/in_review_cust'">
+            <div class="flex items-center justify-between mb-1">
+              <div class="flex items-center gap-2">
+                <div class="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
+                <span class="font-semibold text-xs text-gray-800 whitespace-nowrap" title="Review Pending">Review Pending</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between text-xs text-gray-600">
+              <div class="flex items-center gap-1 max-w-[100px]" title="Pending">
+                <i class="fa-solid fa-clock text-orange-600 text-xs"></i>
+                <span id="pending-count" class="whitespace-nowrap font-bold text-orange-700">-</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
 
     <!-- <section class="animate-fade-in-up "> -->
       <!-- WRAPPER yang selalu center -->
@@ -497,50 +554,15 @@ $token = $menuHandler->getToken();
         scale: 0.9
       });
 
-      // Animate cards in sequence
       gsap.timeline()
-        .to('.dashboard-card:nth-child(1)', {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          duration: 0.6,
-          ease: 'back.out(1.7)'
-        })
-        .to('.dashboard-card:nth-child(2)', {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          duration: 0.6,
-          ease: 'back.out(1.7)'
-        }, '-=0.3')
-        .to('.dashboard-card:nth-child(3)', {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          duration: 0.6,
-          ease: 'back.out(1.7)'
-        }, '-=0.3')
-        .to('.dashboard-card:nth-child(4)', {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          duration: 0.6,
-          ease: 'back.out(1.7)'
-        }, '-=0.3')
-        .to('.dashboard-card:nth-child(5)', {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          duration: 0.6,
-          ease: 'back.out(1.7)'
-        }, '-=0.3')
-        .to('.dashboard-card:nth-child(6)', {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          duration: 0.6,
-          ease: 'back.out(1.7)'
-        }, '-=0.3');
+      .to('.dashboard-card', { // Menargetkan semua kartu, termasuk "Review Customer"
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.6,
+        ease: 'back.out(1.7)',
+        stagger: 0.2 // Memberi jeda 0.2 detik antar animasi setiap kartu
+      });
 
       // Hover animations for cards
       const cards = document.querySelectorAll('.dashboard-card');
