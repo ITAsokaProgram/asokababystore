@@ -18,20 +18,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $email = $data['email'];
     $pass = $data['pass'];
-
     
+    
+    include __DIR__ . '/../../aa_kon_sett.php';
+
     $sql = "SELECT id_user, email, nama_lengkap, no_hp, password FROM user_asoka WHERE email = ?";
-    $result = checkUser($sql, $pass, $email);
-
     
+    $result = checkUser($conn, $sql, $pass, $email);
     
-      if (isset($result['status']) && $result['status'] === 'success') {
-        include __DIR__ . '/../../aa_kon_sett.php';
-        if (isset($conn)) {
-            $conn->close();
+    if (isset($result['status']) && $result['status'] === 'success') {
+        
+        if (isset($result['id_user'], $result['email'], $result['no_hp'])) {
+            
+            associateGuestMessages($conn, $result['id_user'], $result['email'], $result['no_hp']);
         }
     }
-
+    
+    
+    if (isset($conn)) {
+        $conn->close();
+    }
     
     echo json_encode(["User" => $result]);
 }

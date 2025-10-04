@@ -52,9 +52,8 @@ function check_token($jwt)
         return $decoded;
     }
 }
-function checkUser($sql, $pass, $email)
+function checkUser($conn, $sql, $pass, $email)
 {
-    include "../../aa_kon_sett.php";
     require_once __DIR__ . '/generate_token.php';
     $date = date('Y-m-d H:i:s');
     $ip = $_SERVER['REMOTE_ADDR'];
@@ -62,7 +61,6 @@ function checkUser($sql, $pass, $email)
     $browser = getBrowserName($userAgent);
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
-        $conn->close();
         return false;
     }
     $stmt->bind_param('s', $email);
@@ -98,7 +96,6 @@ function checkUser($sql, $pass, $email)
             ]);
         }
         $stmt->close();
-        $conn->close();
         if (isset($generatedToken)) {
             return [
                 'status' => 'success',
