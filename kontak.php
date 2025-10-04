@@ -198,20 +198,15 @@ if ($stmt->num_rows === 0) {
             </nav>
         </div>
     </header>
-
     <main>
-        <!-- Hero Section -->
         <section class="min-h-screen bg-gradient-to-br from-pink-50 via-white to-blue-50 flex items-center justify-center p-6 relative overflow-hidden">
-            <!-- Background Pattern -->
             <div class="absolute inset-0 opacity-5">
                 <div class="absolute top-20 left-20 w-72 h-72 bg-pink-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
                 <div class="absolute top-40 right-20 w-72 h-72 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-2000"></div>
                 <div class="absolute -bottom-8 left-40 w-72 h-72 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-4000"></div>
             </div>
 
-            <div class="relative z-10 max-w-6xl w-full">
-                <!-- Header Section -->
-                <div class="text-center mb-12" data-aos="fade-down" data-aos-duration="800">
+            <div class="relative z-10 max-w-4xl w-full py-12"> <div class="text-center mb-12" data-aos="fade-down" data-aos-duration="800">
                     <h1 class="text-4xl md:text-6xl font-bold text-gray-800 mb-4">
                         <span class="bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
                             Hubungi Kami
@@ -222,53 +217,10 @@ if ($stmt->num_rows === 0) {
                     </p>
                 </div>
 
-                <!-- Contact Cards Grid -->
-                <div class="grid md:grid-cols-2 gap-8 mb-12">
-                    <!-- Contact Info Card -->
+                <div class="grid grid-cols-1 gap-8 mb-12">
+
                     <div class="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border border-white/20 card-hover-effect transition-all duration-300"
-                        data-aos="fade-right" data-aos-duration="800" data-aos-delay="200">
-                        <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-                            <i class="fas fa-info-circle text-pink-500"></i>
-                            Informasi Kontak
-                        </h3>
-
-                        <div class="space-y-6">
-                            <div class="flex items-center gap-4 p-4 bg-gradient-to-r from-pink-50 to-purple-50 rounded-2xl hover:shadow-lg transition-all duration-300">
-                                <div class="w-12 h-12 bg-pink-500 rounded-full flex items-center justify-center text-white float-animation">
-                                    <i class="fas fa-phone"></i>
-                                </div>
-                                <div>
-                                    <p class="text-sm text-gray-600">Telepon</p>
-                                    <p class="font-semibold text-gray-800">0817-1712-1250</p>
-                                </div>
-                            </div>
-
-                            <div class="flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-2xl hover:shadow-lg transition-all duration-300">
-                                <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white float-animation" style="animation-delay: 0.5s;">
-                                    <i class="fab fa-instagram"></i>
-                                </div>
-                                <div>
-                                    <p class="text-sm text-gray-600">Instagram</p>
-                                    <p class="font-semibold text-gray-800">@asokababyofficial</p>
-                                </div>
-                            </div>
-
-                            <div class="flex items-center gap-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl hover:shadow-lg transition-all duration-300">
-                                <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white float-animation" style="animation-delay: 1s;">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                </div>
-                                <div>
-                                    <p class="text-sm text-gray-600">Lokasi</p>
-                                    <p class="font-semibold text-gray-800">Asoka Baby Store</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Contact Form Card -->
-                    <div class="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border border-white/20 card-hover-effect transition-all duration-300"
-                        data-aos="fade-left" data-aos-duration="800" data-aos-delay="400">
-                        <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+                        data-aos="fade-up" data-aos-duration="800" data-aos-delay="200"> <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
                             <i class="fas fa-envelope text-pink-500"></i>
                             Kirim Pesan
                         </h3>
@@ -335,9 +287,48 @@ if ($stmt->num_rows === 0) {
                             </div>
                         </form>
                     </div>
+
+                    <div class="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border border-white/20 card-hover-effect transition-all duration-300"
+                        data-aos="fade-up" data-aos-duration="800" data-aos-delay="400"> <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
+                            <i class="fas fa-info-circle text-pink-500"></i>
+                            Informasi Kontak
+                        </h3>
+
+                        <div class="space-y-6">
+                            <div class="flex items-center gap-4 p-4 bg-gradient-to-r from-pink-50 to-purple-50 rounded-2xl hover:shadow-lg transition-all duration-300">
+                                <div class="w-12 h-12 bg-pink-500 rounded-full flex items-center justify-center text-white float-animation">
+                                    <i class="fas fa-phone"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">Telepon</p>
+                                    <p class="font-semibold text-gray-800">0817-1712-1250</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-2xl hover:shadow-lg transition-all duration-300">
+                                <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white float-animation" style="animation-delay: 0.5s;">
+                                    <i class="fab fa-instagram"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">Instagram</p>
+                                    <p class="font-semibold text-gray-800">@asokababyofficial</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl hover:shadow-lg transition-all duration-300">
+                                <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white float-animation" style="animation-delay: 1s;">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">Lokasi</p>
+                                    <p class="font-semibold text-gray-800">Asoka Baby Store</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
 
-                <!-- Additional Info Section -->
                 <div class="text-center" data-aos="fade-up" data-aos-duration="800" data-aos-delay="600">
                     <div class="bg-white/60 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
                         <h4 class="text-xl font-semibold text-gray-800 mb-3">Mengapa Memilih Kami?</h4>

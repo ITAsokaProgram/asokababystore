@@ -109,21 +109,21 @@ export const displayTransaksi = async () => {
       const unreadBadge = item.unread_count > 0 
         ? `<span class="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white ring-2 ring-white/50">${item.unread_count}</span>` 
         : '';
+      const chatButton = ((item.review_id && item.conversation_started)  || item.detail_review_id)
+      ? `
+      <button 
+          onclick="window.openChatModal(${item.review_id}, '${item.no_faktur}', '${item.detail_status}')"
+          data-review-id="${item.review_id}"
+          class="relative group/btn flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600
+                 text-white px-4 py-2 rounded-lg font-medium text-sm
+                 shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105">
+          <i class="fas fa-comments group-hover/btn:animate-tada"></i>
+          Chat
+          ${unreadBadge}
+      </button>
+      `
+      : "";
 
-        const chatButton = item.review_id
-        ? `
-        <button 
-            onclick="window.openChatModal(${item.review_id}, '${item.no_faktur}', '${item.detail_status}')"
-            data-review-id="${item.review_id}"
-            class="relative group/btn flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600
-                    text-white px-4 py-2 rounded-lg font-medium text-sm
-                    shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105">
-            <i class="fas fa-comments group-hover/btn:animate-tada"></i>
-            Chat
-            ${unreadBadge}
-        </button>
-        `
-        : "";
 
          const commentSection = item.komentar
             ? `<div class="mt-4 p-4 bg-pink-50/70 border-l-4 border-pink-200 rounded-r-lg">
@@ -197,7 +197,7 @@ export const displayTransaksi = async () => {
                 </div>
                 
                 <div class="flex items-center gap-2"> 
-                    ${item.detail_review_id != null ? chatButton : ""}
+                    ${chatButton}
                     <a href="/transaksi?kode=${item.no_faktur}&member=${kode}"
                     id="struk"
                     data-bon="${item.no_faktur}"

@@ -40,7 +40,8 @@ $sql = "SELECT
      WHERE rc.review_id = r.id 
        AND rc.sudah_dibaca = 0 
        AND rc.pengirim_type = 'admin'
-    ) as unread_count 
+    ) as unread_count,
+    (SELECT COUNT(*) > 0 FROM review_conversation rc WHERE rc.review_id = r.id AND rc.pengirim_type = 'admin') as conversation_started
     FROM pembayaran_b AS p
     LEFT JOIN user_asoka AS ua ON ua.no_hp = p.kd_cust
     LEFT JOIN kode_store AS ks ON ks.Kd_Store = p.kd_store
@@ -54,7 +55,11 @@ $stmt->bind_param("s",$kode);
 $stmt->execute();
 $result = $stmt->get_result();
 $data = $result->fetch_all(MYSQLI_ASSOC);
+$formattedData = array_map(function($item) {
+    $item['conversation_started'] = (bool)$item['conversation_started'];
+    return $item;
+}, $data);
 http_response_code(200);
-echo json_encode(['status'=>'success','message'=>'Data berhasil fetch','data'=>$data]);
+echo json_encode(['status'=>'success','message'=>'Data berhasil fetch','data'=>$formattedData]);
 $stmt->close();
 $conn->close();

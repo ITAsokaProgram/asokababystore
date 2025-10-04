@@ -134,7 +134,7 @@ export const renderTableReview = (data, offset) => {
         `}
         <td class="px-4 py-3 text-sm transition-all duration-200 relative">
           <div class="flex items-center space-x-2">
-            ${item.detail_review_id != null ? chatButton : ""}
+            ${(item.rating >= 4 || item.detail_review_id != null) ? chatButton : ""}
             ${actionButton}
           </div>
         </td>
