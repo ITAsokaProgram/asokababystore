@@ -45,7 +45,31 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 try {
     if ($method === 'GET') {
-        $sql = sintaksQuery("SELECT id, no_hp, nama_lengkap, email, subject, message, status, dikirim FROM contact_us ORDER BY dikirim DESC");
+        $sql = sintaksQuery("
+            SELECT 
+                cu.id, 
+                cu.no_hp, 
+                cu.nama_lengkap, 
+                cu.email, 
+                cu.subject, 
+                cu.message, 
+                cu.status, 
+                cu.dikirim,
+                cu.id_user,
+                (SELECT COUNT(*) 
+                   FROM contact_us_conversation cuc 
+                   WHERE cuc.contact_us_id = cu.id 
+                     AND cuc.sudah_dibaca = 0 
+                     AND cuc.pengirim_type = 'customer'
+                ) as unread_count,
+                CASE 
+                    WHEN cu.id_user IS NOT NULL THEN 1
+                    WHEN EXISTS (SELECT 1 FROM user_asoka ua WHERE ua.email = cu.email OR ua.no_hp = cu.no_hp) THEN 1
+                    ELSE 0
+                END AS is_user_registered
+            FROM contact_us cu 
+            ORDER BY cu.dikirim DESC
+        ");
         $processQueryContact = getContact($conn, $sql);
         echo json_encode(['data' => $processQueryContact]);
     } elseif ($method === 'POST') {

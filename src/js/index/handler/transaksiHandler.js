@@ -119,7 +119,7 @@ export const displayTransaksi = async () => {
                     text-white px-4 py-2 rounded-lg font-medium text-sm
                     shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105">
             <i class="fas fa-comments group-hover/btn:animate-tada"></i>
-            Lihat Percakapan
+            Chat
             ${unreadBadge}
         </button>
         `

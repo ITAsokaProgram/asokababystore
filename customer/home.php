@@ -46,8 +46,6 @@ if ($token) {
     <meta name="color-scheme" content="light dark">
     <title>Ringkasan Poin dan Transaksi - Asoka Baby Store</title>
 
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
         integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="icon" type="image/png" href="/images/logo1.png">
@@ -347,19 +345,30 @@ if ($token) {
         </div>
     </div>
     <!-- Floating Button Produk + Tooltip -->
-    <div class="fixed bottom-20 right-5 md:bottom-20 md:right-1/4  z-50 group">
-        <a href="/customer/produk"
-            class="bg-gradient-to-r from-pink-500 to-purple-600 
-            hover:from-pink-600 hover:to-purple-700
-            text-white rounded-full w-14 h-14 md:w-16 md:h-16 
-            flex items-center justify-center shadow-xl 
-            hover:scale-110 transition-transform duration-300">
-            <i class="fas fa-box-open text-2xl"></i>
-        </a>
-        <span class="absolute right-20 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 
-               bg-gray-800 text-white text-xs rounded-lg px-2 py-1 shadow-md transition">
-            Lihat Produk
-        </span>
+    <div id="fab-container" class="fixed bottom-20 right-5 z-50 flex flex-col-reverse items-center gap-4">
+    
+        <div id="fab-menu" class="hidden flex flex-col-reverse items-center gap-4 transition-all duration-300 ease-in-out">
+            
+            <div>
+                <a href="/customer/asoka_chat"
+                class="bg-orange-500 hover:bg-orange-600 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg transform transition-transform duration-300 hover:scale-110">
+                    <i class="fas fa-headset text-2xl"></i>
+                </a>
+            </div>
+
+            <div>
+                <a href="/customer/produk"
+                class="bg-blue-500 hover:bg-blue-600 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg transform transition-transform duration-300 hover:scale-110">
+                    <i class="fas fa-box-open text-xl"></i>
+                </a>
+            </div>
+
+        </div>
+
+        <button id="options-fab" 
+                class="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-xl transform transition-transform duration-300 hover:scale-110 focus:outline-none">
+            <i id="fab-icon" class="fas fa-ellipsis-h text-2xl transition-transform duration-300"></i>
+        </button>
     </div>
     <!-- Bottom Navigation (reusable) -->
     <?php include "../src/component/bottom_navigation_user.php" ?>
@@ -398,6 +407,43 @@ if ($token) {
             cards.forEach((card, index) => {
                 card.style.animationDelay = `${index * 0.1}s`;
                 card.classList.add('animate-fade-in');
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const optionsFab = document.getElementById('options-fab');
+            const fabMenu = document.getElementById('fab-menu');
+            const fabIcon = document.getElementById('fab-icon');
+            const fabContainer = document.getElementById('fab-container');
+
+            // Fungsi untuk membuka/menutup menu
+            const toggleMenu = () => {
+                fabMenu.classList.toggle('hidden');
+                fabMenu.classList.toggle('flex');
+                
+                // Animasi & perubahan ikon
+                fabIcon.classList.toggle('rotate-90');
+                if (fabIcon.classList.contains('fa-ellipsis-h')) {
+                    fabIcon.classList.remove('fa-ellipsis-h');
+                    fabIcon.classList.add('fa-times');
+                } else {
+                    fabIcon.classList.remove('fa-times');
+                    fabIcon.classList.add('fa-ellipsis-h');
+                }
+            };
+
+            // Event listener untuk tombol utama
+            optionsFab.addEventListener('click', (event) => {
+                event.stopPropagation(); // Mencegah event 'click' menyebar ke window
+                toggleMenu();
+            });
+
+            // Event listener untuk menutup menu saat klik di luar area FAB
+            window.addEventListener('click', function(e) {
+                if (!fabContainer.contains(e.target) && !fabMenu.classList.contains('hidden')) {
+                    toggleMenu();
+                }
             });
         });
     </script>

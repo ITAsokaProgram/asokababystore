@@ -52,7 +52,6 @@ function check_token($jwt)
         return $decoded;
     }
 }
-
 function checkUser($sql, $pass, $email)
 {
     include "../../aa_kon_sett.php";
@@ -70,17 +69,19 @@ function checkUser($sql, $pass, $email)
     $stmt->execute();
     $stmt->store_result();
     if ($stmt->num_rows > 0) {
-        $stmt->bind_result($id, $email, $nama, $no_hp,$hashed);
+        // Variabel $id, $email, $nama, $no_hp diisi dari database
+        $stmt->bind_result($id, $emailDb, $nama, $no_hp, $hashed);
         $stmt->fetch();
         if (password_verify($pass, $hashed)) {
             $generatedToken = generate_token_with_custom_expiration(
                 [
                     'id' => $id,
-                    'email' => $email,
+                    'email' => $emailDb,
                     'nama' => $nama,
                     'no_hp' => $no_hp,
                 ]
             );
+            // ... (kode untuk insert login_logs dan setcookie tetap sama)
             $device = getDevice();
             $sqlLogin = "INSERT INTO login_logs (user_id, device, browser, ip_address, login_time) VALUES (?, ?, ?, ?, ?)";
             $stmtLogin = $conn->prepare($sqlLogin);
@@ -91,9 +92,9 @@ function checkUser($sql, $pass, $email)
                 'expires' => $generatedToken['expiresAt'],
                 'path' => '/',
                 'domain' => $_SERVER['HTTP_HOST'],
-                'secure' => true, // Hanya kirim cookie melalui HTTPS
+                'secure' => true,
                 'httponly' => false,
-                'samesite' => 'Strict' // Mencegah pengiriman cookie dalam permintaan lintas situs
+                'samesite' => 'Strict'
             ]);
         }
         $stmt->close();
@@ -103,8 +104,11 @@ function checkUser($sql, $pass, $email)
                 'status' => 'success',
                 'message' => 'Token Berhasil Disimpan',
                 'token' => $generatedToken['token'],
+                'id_user' => $id,
+                'email' => $emailDb,
+                'no_hp' => $no_hp,
                 'user' => [
-                    'email' => $email,
+                    'email' => $emailDb,
                     'nama' => $nama,
                     'created_at' => date('Y-m-d H:i:s', $generatedToken['issuedAt']),
                     'expires_at' => date('Y-m-d H:i:s', $generatedToken['expiresAt'])
@@ -119,6 +123,7 @@ function checkUser($sql, $pass, $email)
     }
     return ['status' => 'error', 'message' => 'Email tidak ditemukan.'];
 }
+
 
 function checkUserPhone($sql, $phone)
 {

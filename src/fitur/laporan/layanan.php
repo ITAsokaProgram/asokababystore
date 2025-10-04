@@ -776,13 +776,18 @@ $token = $menuHandler->getToken();
                 <div class="modal-body">
                     <div class="detail-grid">
                         <div class="detail-item">
-                            <span class="detail-label">No. Handphone</span>
-                            <div class="detail-value" id="modalKode"></div>
+                            <span class="detail-label">Email</span>
+                            <div class="detail-value" id="modalEmail"></div>
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">Nama</span>
                             <div class="detail-value" id="modalNama"></div>
                         </div>
+                        <div class="detail-item">
+                            <span class="detail-label">No. Handphone</span>
+                            <div class="detail-value" id="modalKode"></div>
+                        </div>
+
                         <div class="detail-item">
                             <span class="detail-label">Kategori</span>
                             <div class="detail-value" id="modalKategori"></div>
@@ -827,6 +832,67 @@ $token = $menuHandler->getToken();
                         <i class="fas fa-check"></i>
                         Selesai
                     </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="chatModal"
+            class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+            <div
+                class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-2xl relative animate-fade-in-up transition-all duration-300 border border-white/20 max-h-[90vh] flex flex-col">
+                <div class="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-t-2xl p-5">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-comments text-white text-lg"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-xl font-bold text-white">Chat dengan Customer</h2>
+                                <p class="text-white/80 text-sm" id="chatCustomerName">-</p>
+                            </div>
+                        </div>
+                        <button type="button" id="closeChatModal"
+                            class="text-white/80 hover:text-white transition-colors duration-200">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="chatScrollContainer" class="p-4 space-y-4 overflow-y-auto flex-1">
+                    <div class="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200 text-sm">
+                        <div>
+                            <span class="text-gray-600">No. HP:</span>
+                            <span class="font-medium text-gray-800 ml-2" id="chatCustomerPhone">-</span>
+                        </div>
+                        <div class="mt-2">
+                            <span class="text-gray-600">Subjek Awal:</span>
+                            <p class="text-gray-800 text-sm mt-1 italic" id="chatCustomerSubject">-</p>
+                        </div>
+                        <div class="mt-2">
+                            <span class="text-gray-600">Pesan Awal:</span>
+                            <p class="text-gray-800 text-sm mt-1 italic" id="chatCustomerMessage">-</p>
+                        </div>
+                    </div>
+
+                    <div id="chatConversationMessages" class="space-y-3 p-2">
+                        <div class="text-center text-gray-400 text-sm py-8">
+                            <i class="fas fa-comment-dots text-3xl mb-2"></i>
+                            <p>Mulai percakapan dengan customer.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 border-t border-gray-200 bg-gray-50 rounded-b-2xl">
+                    <div id="chatInputContainer" class="flex items-start space-x-3">
+                        <div class="flex-1">
+                            <textarea id="chatMessageInput" rows="2" placeholder="Ketik pesan untuk customer..."
+                                class="block w-full rounded-lg border border-gray-300 px-4 py-3 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm resize-none"></textarea>
+                        </div>
+                        <button type="button" id="sendChatMessageBtn"
+                            class="px-5 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 shadow-sm hover:shadow-md flex items-center h-full">
+                            <i class="fas fa-paper-plane mr-2"></i> Kirim
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

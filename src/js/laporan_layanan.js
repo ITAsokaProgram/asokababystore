@@ -1,23 +1,40 @@
 let dataTableInstance;
+let laporanTerpilih = null; 
+let currentChatContactId = null; 
 
 function fetchData() {
     const token = localStorage.getItem('token');
     fetch("/src/api/customer/laporan_layanan", {
         method: "GET",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` }
-    }).then(res => res.json())
-        .then(data => {
-            renderLaporan(data)
-            updateCountStatus(data)
-        }).catch(error => {
-            console.log("Message Error", error)
-        })
+    })
+    .then(res => {
+        if (!res.ok) {
+            throw new Error('Gagal mengambil data dari server');
+        }
+        return res.json();
+    })
+    .then(responseObject => {
+        
+        if (responseObject && responseObject.data) {
+            renderLaporan(responseObject.data); 
+            updateCountStatus(responseObject.data); 
+        } else {
+            console.error("Format data tidak sesuai:", responseObject);
+        }
+    })
+    .catch(error => {
+        console.error("Message Error:", error);
+        
+        Swal.fire('Error', 'Gagal memuat data laporan: ' + error.message, 'error');
+    });
 }
+
 
 function customizeDataTableLayout(tableId) {
     const $wrapper = $(`#${tableId}`).closest('.dataTables_wrapper');
 
-    // Hanya tambahkan jika belum ada
+    
     if ($wrapper.find('.dt-detail-top').length === 0) {
         const $length = $wrapper.find('.dataTables_length');
         const $search = $wrapper.find('.dataTables_filter');
@@ -30,7 +47,7 @@ function customizeDataTableLayout(tableId) {
         createBottomWrapper($wrapper, $info, $paginate);
     }
 
-    // Styling tetap dijalankan setiap draw
+    
     styleInputElements($wrapper.find('.dataTables_length'), $wrapper.find('.dataTables_filter'));
     stylePaginationButtons();
 }
@@ -39,7 +56,7 @@ function createTopWrapper($wrapper, $length, $search) {
     const $top = $('<div class="dt-detail-top flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4 mt-4 pl-3 pr-3"></div>');
 
 
-    // Menambahkan komponen length dan search di bagian atas
+    
     $top.append($length.addClass('order-1 font-medium text-sm'));
     $top.append($search.addClass('order-2 justify-self-end mt-2 md:mt-0'));
 
@@ -54,7 +71,7 @@ function createBottomWrapper($wrapper, $info, $paginate) {
 }
 
 function styleInputElements($length, $search) {
-    // Styling input select dan search box
+    
     $length.find('select').addClass('ml-2 px-2 py-1 border rounded-md focus:ring-2 focus:ring-blue-500');
     $search.find('input[type="search"]').addClass('ml-2 px-2 py-1 border rounded-md focus:ring-2 focus:ring-blue-500');
 }
@@ -70,37 +87,44 @@ function stylePaginationButtons() {
     $('#tableLaporan thead th').addClass('text-center');
 }
 function formatTanggal(tanggalStr) {
-    if (!tanggalStr) return ''; // Cek null, undefined, atau string kosong
+    if (!tanggalStr) return ''; 
     const date = new Date(tanggalStr);
-    if (isNaN(date.getTime())) return '-'; // Cek jika tanggal invalid
+    if (isNaN(date.getTime())) return '-'; 
     const day = date.getDate();
     const month = date.getMonth() + 1;
     const year = date.getFullYear();
     return `${day}-${month}-${year}`;
 }
-// Render data laporan
-function renderLaporan(data) {
-    // Clear dulu datanya
+function renderLaporan(data) { 
     dataTableInstance.clear();
 
-    // Loop dan masukkan ke DataTables
-    data.data.forEach(laporan => {
+    
+    data.forEach(laporan => {
         const dikirim = formatTanggal(laporan.dikirim);
         const no_hp = laporan.no_hp || '-';
         const nama_lengkap = laporan.nama_lengkap || '-';
         const subject = laporan.subject || '-';
         const status = laporan.status || 'open';
         const message = laporan.message || '-';
-        const shortMessage = message ? message.substring(0, 50) + '...' : '-';
-        const statusHTML = `
-            <span class="px-3 py-1 rounded-full text-xs font-semibold ${getStatusClass(status)}">
-                ${status.replace('_', ' ')}
-            </span>`;
+        const shortMessage = message.length > 50 ? message.substring(0, 50) + '...' : message;
+        const statusHTML = `<span class="px-3 py-1 rounded-full text-xs font-semibold ${getStatusClass(status)}">${mapStatusToText(status)}</span>`;
 
-        const actionButton = `<span class="inline-block bg-blue-100 text-blue-700 text-md rounded-full font-semibold mr-2 px-2.5 py-0.5 cursor-pointer hover:bg-blue-300 hover:text-blue-900"
-      onclick='openModal(${JSON.stringify(laporan)})'>
-  Detail
-</span>`;
+        const detailButton = `<button class="btn-action" onclick='openModal(${JSON.stringify(laporan)})'>Detail</button>`;
+
+        let chatButton = '';
+        
+        if (laporan.is_user_registered) {
+            const unreadBadge = laporan.unread_count > 0 ? `<span class="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white ring-2 ring-white">${laporan.unread_count}</span>` : '';
+            chatButton = `
+                <button 
+                    onclick='openChatModal(${laporan.id}, ${JSON.stringify({nama: laporan.nama_lengkap, handphone: laporan.no_hp, subject: laporan.subject, message: laporan.message}).replace(/"/g, '&quot;')})'
+                    class="relative btn-action bg-indigo-500 hover:bg-indigo-600"
+                    title="Chat dengan Customer">
+                    <i class="fas fa-comments"></i> Chat
+                    ${unreadBadge}
+                </button>
+            `;
+        }
 
         dataTableInstance.row.add([
             dikirim,
@@ -109,25 +133,132 @@ function renderLaporan(data) {
             subject,
             `<span class="max-w-lg truncate cursor-pointer" data-tippy-content="${message}">${shortMessage}</span>`,
             statusHTML,
-            `<div class="text-center">${actionButton}</div>`
+            `<div class="flex items-center justify-center gap-2">${detailButton} ${chatButton}</div>`
         ]);
     });
-
-    // Apply perubahan
-
+    
     dataTableInstance.on("draw", () => {
-        tippy('[data-tippy-content]', {
-            placement: 'top',
-            animation: 'fade',
-            duration: [200, 150],
-            theme: 'light-border'
-        });
-        stylePaginationButtons()
-    })
+        tippy('[data-tippy-content]');
+        stylePaginationButtons();
+    });
     dataTableInstance.order([]).draw();
 }
 
-// Fungsi status dengan kelas dinamis
+function openChatModal(contactId, contactData) {
+    currentChatContactId = contactId;
+    console.log("Membuka chat untuk contactId:", contactId, contactData);
+    document.getElementById('chatCustomerName').textContent = contactData.nama || '-';
+    document.getElementById('chatCustomerPhone').textContent = contactData.handphone || '-';
+    document.getElementById('chatCustomerSubject').textContent = contactData.subject || '-';
+    document.getElementById('chatCustomerMessage').textContent = contactData.message || '-';
+    
+    document.getElementById('chatMessageInput').value = '';
+    
+    loadChatConversation(contactId);
+    
+    document.getElementById('chatModal').classList.remove('hidden');
+}
+
+function closeChatModal() {
+    document.getElementById('chatModal').classList.add('hidden');
+    currentChatContactId = null;
+}
+
+
+async function loadChatConversation(contactId) {
+    const container = document.getElementById('chatConversationMessages');
+    container.innerHTML = `<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-blue-500"></i></div>`;
+
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/src/api/customer/contact_us/get_contact_us_conversation.php?contact_us_id=${contactId}`, {
+             headers: { "Authorization": `Bearer ${token}` }
+        });
+        const result = await response.json();
+
+        if (result.success) {
+            renderChatConversation(result.data);
+            fetchData(); 
+        } else {
+            throw new Error(result.message);
+        }
+    } catch (error) {
+        container.innerHTML = `<div class="text-center text-red-500 py-8">${error.message}</div>`;
+    }
+}
+
+
+function renderChatConversation(messages) {
+    const container = document.getElementById('chatConversationMessages');
+    if (!messages || messages.length === 0) {
+        container.innerHTML = `<div class="text-center text-gray-400 py-8"><p>Belum ada percakapan.</p></div>`;
+        return;
+    }
+    container.innerHTML = messages.map(msg => {
+        const isAdmin = msg.pengirim_type === 'admin';
+        const align = isAdmin ? 'justify-end' : 'justify-start';
+        const bubbleColor = isAdmin ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800';
+        const time = new Date(msg.dibuat_tgl).toLocaleString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+        return `
+            <div class="flex ${align}">
+                <div class="max-w-xs md:max-w-md">
+                    <div class="${bubbleColor} rounded-lg px-3 py-2 shadow-sm">
+                        <p class="text-sm whitespace-pre-wrap break-words">${msg.pesan}</p>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1 ${isAdmin ? 'text-right' : 'text-left'}">${time}</p>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    
+    const scrollContainer = document.getElementById('chatScrollContainer');
+    if(scrollContainer) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+    }
+}
+
+
+async function sendChatMessage() {
+    const input = document.getElementById('chatMessageInput');
+    const message = input.value.trim();
+    if (!message || !currentChatContactId) return;
+
+    const sendBtn = document.getElementById('sendChatMessageBtn');
+    sendBtn.disabled = true;
+    sendBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i>`;
+
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/src/api/customer/contact_us/send_contact_us_message.php`, {
+            method: 'POST',
+            headers: { 
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                contact_us_id: currentChatContactId,
+                pesan: message
+            })
+        });
+        const result = await response.json();
+
+        if (result.success) {
+            input.value = '';
+            loadChatConversation(currentChatContactId); 
+        } else {
+            throw new Error(result.message);
+        }
+    } catch (error) {
+        Swal.fire('Error', error.message, 'error');
+    } finally {
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = `<i class="fas fa-paper-plane mr-2"></i> Kirim`;
+    }
+}
+
+
 function getStatusClass(status) {
     switch (status) {
         case 'selesai':
@@ -138,24 +269,35 @@ function getStatusClass(status) {
             return 'bg-red-100 text-red-700';
     }
 }
-function openModal(laporan) {
-    laporanTerpilih = laporan; // Simpan data laporan ke variabel global
+function mapStatusToText(status) {
+    const statusMap = {
+        'open': 'Dibuka',
+        'in_progress': 'Diproses',
+        'selesai': 'Selesai'
+    };
+    return statusMap[status] || status;
+}
 
-    // Isi modal dengan data laporan
+function openModal(laporan) {
+    laporanTerpilih = laporan; 
+    console.log(laporan);
+
+    
     document.getElementById('modalKode').textContent = laporan.no_hp || '-';
     document.getElementById('modalNama').textContent = laporan.nama_lengkap || '-';
     document.getElementById('modalKategori').textContent = laporan.subject || '-';
     document.getElementById('modalDeskripsi').textContent = laporan.message || '-';
     document.getElementById('modalTanggal').textContent = formatTanggal(laporan.dikirim);
     document.getElementById('modalStatus').textContent = laporan.status || 'open';
-    document.getElementById('pesan_balasan').value = ''; // Kosongkan textarea
+    document.getElementById('modalEmail').textContent = laporan.email || '-';
+    document.getElementById('pesan_balasan').value = ''; 
 
-    // Tombol Kirim dan Selesai
+    
     const kirimBtn = document.getElementById('kirimEmailButton');
     const selesaiBtn = document.getElementById('selesaiButton');
     const balasanTextarea = document.getElementById('pesan_balasan');
 
-    // Atur visibilitas tombol berdasarkan status
+    
     if (laporan.status === 'selesai') {
         kirimBtn.classList.add('hidden');
         selesaiBtn.classList.add('hidden');
@@ -164,16 +306,16 @@ function openModal(laporan) {
         kirimBtn.classList.add('hidden');
         selesaiBtn.classList.remove('hidden');
         balasanTextarea.disabled = false;
-    } else { // status 'open'
+    } else { 
         kirimBtn.classList.remove('hidden');
         selesaiBtn.classList.add('hidden');
         balasanTextarea.disabled = false;
     }
 
-    // Tampilkan modal detail
+    
     document.getElementById('modalDetail').classList.remove('hidden');
 }
-// Fungsi untuk menandai laporan selesai
+
 function selesaiLaporan() {
     if (!laporanTerpilih) return;
 
@@ -200,7 +342,7 @@ function selesaiLaporan() {
 
 function closeModal() {
     document.getElementById('modalDetail').classList.add('hidden');
-    laporanTerpilih = null; // Reset variabel global
+    laporanTerpilih = null; 
 }
 
 function kirimWhatsApp() {
@@ -214,21 +356,21 @@ function kirimWhatsApp() {
     const pesan = `Membalas pesan terkait *${kategori}* dari customer *${nama}* no hp *${kode}* pesannya: *${deskripsi}* \n \n ${balasPesan}`;
     const encoded = encodeURIComponent(pesan);
     window.open(`https://wa.me/+62${nomor}?text=${encoded}`, '_blank');
-    // Update status to 'in progress'
+    
     updateStatusInProgress(nomor);
 }
-function updateCountStatus(data) {
-    const countOpen = data.data.filter(laporan => laporan.status === 'open').length;
-    const countInProgress = data.data.filter(laporan => laporan.status === 'in_progress').length;
-    const countSelesai = data.data.filter(laporan => laporan.status === 'selesai').length;
+function updateCountStatus(data) { 
+    const countOpen = data.filter(laporan => laporan.status === 'open').length;
+    const countInProgress = data.filter(laporan => laporan.status === 'in_progress').length;
+    const countSelesai = data.filter(laporan => laporan.status === 'selesai').length;
 
-    // Update angka di elemen span
     document.getElementById('countOpen').textContent = countOpen;
     document.getElementById('countInProgress').textContent = countInProgress;
     document.getElementById('countSelesai').textContent = countSelesai;
 }
+
 function updateStatusInProgress(noHp) {
-    const laporan = window.laporanTerpilih; // Pastikan laporan ini diset saat openModal
+    const laporan = window.laporanTerpilih; 
     fetch(`../../api/customer/laporan_layanan`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -246,7 +388,7 @@ function updateStatusInProgress(noHp) {
             }
         });
 }
-// Setup DataTable dengan custom styling
+
 document.addEventListener('DOMContentLoaded', function () {
     dataTableInstance = $('#tabelLaporan').DataTable({
         responsive: true,
@@ -277,6 +419,15 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     fetchData();
+    document.getElementById('closeChatModal').addEventListener('click', closeChatModal);
+    document.getElementById('sendChatMessageBtn').addEventListener('click', sendChatMessage);
+    document.getElementById('chatMessageInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendChatMessage();
+        }
+    });
+
 });
 document.getElementById("toggle-sidebar").addEventListener("click", function () {
     document.getElementById("sidebar").classList.toggle("open");
@@ -286,7 +437,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const closeBtn = document.getElementById("closeSidebar");
 
     closeBtn.addEventListener("click", function () {
-        sidebar.classList.remove("open"); // Hilangkan class .open agar sidebar tertutup
+        sidebar.classList.remove("open"); 
     });
 });
 document.getElementById("toggle-hide").addEventListener("click", function () {
@@ -297,26 +448,26 @@ document.getElementById("toggle-hide").addEventListener("click", function () {
     var icon = toggleButton.querySelector("i");
 
     if (sidebar.classList.contains("w-64")) {
-        // Sidebar mengecil
+        
         sidebar.classList.remove("w-64", "px-5");
         sidebar.classList.add("w-16", "px-2");
-        sidebarTexts.forEach((text) => text.classList.add("hidden")); // Sembunyikan teks
+        sidebarTexts.forEach((text) => text.classList.add("hidden")); 
         mainContent.classList.remove("ml-64");
-        mainContent.classList.add("ml-16"); // Main ikut mundur
-        toggleButton.classList.add("left-20"); // Geser tombol lebih dekat
+        mainContent.classList.add("ml-16"); 
+        toggleButton.classList.add("left-20"); 
         toggleButton.classList.remove("left-64");
-        icon.classList.remove("fa-angle-left"); // Ubah ikon
+        icon.classList.remove("fa-angle-left"); 
         icon.classList.add("fa-angle-right");
     } else {
-        // Sidebar membesar
+        
         sidebar.classList.remove("w-16", "px-2");
         sidebar.classList.add("w-64", "px-5");
-        sidebarTexts.forEach((text) => text.classList.remove("hidden")); // Tampilkan teks kembali
+        sidebarTexts.forEach((text) => text.classList.remove("hidden")); 
         mainContent.classList.remove("ml-16");
         mainContent.classList.add("ml-64");
-        toggleButton.classList.add("left-64"); // Geser tombol ke posisi awal
+        toggleButton.classList.add("left-64"); 
         toggleButton.classList.remove("left-20");
-        icon.classList.remove("fa-angle-right"); // Ubah ikon
+        icon.classList.remove("fa-angle-right"); 
         icon.classList.add("fa-angle-left");
     }
 });
@@ -329,7 +480,7 @@ document.addEventListener("DOMContentLoaded", function () {
         profileCard.classList.toggle("show");
     });
 
-    // Tutup profile-card jika klik di luar
+    
     document.addEventListener("click", function (event) {
         if (!profileCard.contains(event.target) && !profileImg.contains(event.target)) {
             profileCard.classList.remove("show");
@@ -349,7 +500,7 @@ async function kirimBalasanEmail() {
     button.disabled = true;
     button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim...';
 
-    let responseText = ''; // Simpan respons teks untuk debug
+    let responseText = ''; 
     try {
         const response = await fetch('/src/api/customer/laporan_layanan.php', {
             method: 'POST',
@@ -365,8 +516,8 @@ async function kirimBalasanEmail() {
             }),
         });
         
-        responseText = await response.text(); // Baca sebagai teks dulu
-        const result = JSON.parse(responseText); // Coba parse sebagai JSON
+        responseText = await response.text(); 
+        const result = JSON.parse(responseText); 
 
         if (response.ok && result.success) {
             await Swal.fire({
@@ -384,12 +535,12 @@ async function kirimBalasanEmail() {
 
     } catch (error) {
         console.error('Error:', error);
-        // Jika error karena parsing JSON gagal
+        
         if (error instanceof SyntaxError) {
              console.error("Respons Server (bukan JSON):", responseText);
              await Swal.fire('Error Kritis', 'Server memberikan respons yang tidak valid. Cek console untuk detail.', 'error');
         } else {
-             // Untuk error lainnya
+             
              await Swal.fire('Oops...', error.message, 'error');
         }
     } finally {
