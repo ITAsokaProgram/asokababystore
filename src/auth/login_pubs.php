@@ -5,20 +5,6 @@ header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json");
 
 
-function associateGuestMessages($conn, $userId, $email, $noHp) {
-    if (empty($userId) || (empty($email) && empty($noHp))) {
-        return;
-    }
-
-    $sql = "UPDATE contact_us SET id_user = ? WHERE id_user IS NULL AND (email = ? OR no_hp = ?)";
-    $stmt = $conn->prepare($sql);
-    if ($stmt) {
-        
-        $stmt->bind_param('iss', $userId, $email, $noHp);
-        $stmt->execute();
-        $stmt->close();
-    }
-}
 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -41,11 +27,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
       if (isset($result['status']) && $result['status'] === 'success') {
         include __DIR__ . '/../../aa_kon_sett.php';
-
-        if (isset($result['id_user'], $result['email'], $result['no_hp'])) {
-            associateGuestMessages($conn, $result['id_user'], $result['email'], $result['no_hp']);
-        }
-        
         if (isset($conn)) {
             $conn->close();
         }
