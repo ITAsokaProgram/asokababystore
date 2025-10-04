@@ -31,6 +31,33 @@ if ($token) {
         $stmt->bind_param("issss", $userId, $ip, $ua, $page, $pageName);
         $stmt->execute();
     }
+    // --- [TAMBAHKAN KODE INI] ---
+    $totalUnreadCount = 0; // Inisialisasi variabel unread count
+
+    // Query untuk mengambil total pesan yang belum dibaca oleh admin
+    $stmtUnread = $conn->prepare("
+        SELECT SUM(unread_count) AS total_unread
+        FROM (
+            SELECT
+                (SELECT COUNT(*)
+                FROM contact_us_conversation cuc
+                WHERE cuc.contact_us_id = cu.id
+                AND cuc.sudah_dibaca = 0
+                AND cuc.pengirim_type = 'admin'
+                ) AS unread_count
+            FROM contact_us cu
+            WHERE cu.id_user = ?
+        ) AS unread_counts
+    ");
+    if ($stmtUnread) {
+        $stmtUnread->bind_param("i", $userId);
+        $stmtUnread->execute();
+        $resultUnread = $stmtUnread->get_result();
+        if ($row = $resultUnread->fetch_assoc()) {
+            $totalUnreadCount = (int)($row['total_unread'] ?? 0);
+        }
+        $stmtUnread->close();
+    }
 } else {
     header("Location:/log_in");
 }
@@ -346,15 +373,21 @@ if ($token) {
     </div>
     <!-- Floating Button Produk + Tooltip -->
     <div id="fab-container" class="fixed bottom-20 right-5 z-50 flex flex-col-reverse items-center gap-4">
-    
-        <div id="fab-menu" class="hidden flex flex-col-reverse items-center gap-4 transition-all duration-300 ease-in-out">
+
+    <div id="fab-menu" class="hidden flex flex-col-reverse items-center gap-4 transition-all duration-300 ease-in-out">
+
+        <div class="relative">
+            <a href="/customer/asoka_chat"
+            class="bg-orange-500 hover:bg-orange-600 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg transform transition-transform duration-300 hover:scale-110">
+                <i class="fas fa-headset text-2xl"></i>
+            </a>
             
-            <div>
-                <a href="/customer/asoka_chat"
-                class="bg-orange-500 hover:bg-orange-600 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg transform transition-transform duration-300 hover:scale-110">
-                    <i class="fas fa-headset text-2xl"></i>
-                </a>
-            </div>
+            <?php if ($totalUnreadCount > 0): ?>
+                <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center border-2 border-white animate-pulse">
+                    <?php echo $totalUnreadCount; ?>
+                </span>
+            <?php endif; ?>
+        </div>
 
             <div>
                 <a href="/customer/produk"
@@ -365,10 +398,19 @@ if ($token) {
 
         </div>
 
-        <button id="options-fab" 
-                class="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-xl transform transition-transform duration-300 hover:scale-110 focus:outline-none">
-            <i id="fab-icon" class="fas fa-ellipsis-h text-2xl transition-transform duration-300"></i>
-        </button>
+        <div class="relative">
+            <button id="options-fab"
+                    class="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-xl transform transition-transform duration-300 hover:scale-110 focus:outline-none">
+                <i id="fab-icon" class="fas fa-ellipsis-h text-2xl transition-transform duration-300"></i>
+            </button>
+            
+            <?php if ($totalUnreadCount > 0): ?>
+                <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center border-2 border-white animate-pulse">
+                    <?php echo $totalUnreadCount; ?>
+                </span>
+            <?php endif; ?>
+        </div>
+
     </div>
     <!-- Bottom Navigation (reusable) -->
     <?php include "../src/component/bottom_navigation_user.php" ?>

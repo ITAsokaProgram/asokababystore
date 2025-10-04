@@ -35,13 +35,17 @@ export const renderTransaksi = (data) => {
         : `<button class="btn-review text-pink-500 hover:underline text-md" data-bon="${item.no_faktur}"        data-kasir="${item.nama_kasir || ''}">
                 Beri review
             </button>`;
+        const unreadBadge = item.unread_count > 0
+        ? `<span class="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">${item.unread_count}</span>`
+        : '';
 
       return `
         <h3 class="text-sm font-semibold text-gray-600 mb-0">
             ${formatTanggal(item.tanggal)}
         </h3>
         <a href="/customer/history" class="block">
-        <div class="bg-pink-50 border border-pink-100 rounded-xl p-4 shadow-sm hover:shadow-md transition">
+        <div class="relative bg-pink-50 border border-pink-100 rounded-xl p-4 shadow-sm hover:shadow-md transition">
+            ${unreadBadge}
             <div class="flex justify-between items-center mb-2">
                 <div>
                     <p class="font-medium text-gray-800">${item.no_faktur}</p>
