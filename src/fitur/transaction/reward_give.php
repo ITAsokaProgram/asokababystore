@@ -247,7 +247,12 @@ $token = $menuHandler->getToken();
                         <button onclick="window.location.href='/src/fitur/transaction/rewards/management_reward'"
                             class="px-8 py-4 success-gradient text-white rounded-xl hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-3 shadow-md cursor-pointer font-semibold hover:scale-105 whitespace-nowrap">
                             <i class="fas fa-bars-progress text-lg"></i>
-                            <span>Kelola Penerimaan</span>
+                            <span>Histori Penukaran Hadiah</span>
+                        </button>
+                        <button onclick="window.location.href='/src/fitur/transaction/rewards/management_reward'"
+                            class="px-8 py-4 success-gradient text-white rounded-xl hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-3 shadow-md cursor-pointer font-semibold hover:scale-105 whitespace-nowrap">
+                            <i class="fas fa-bars-progress text-lg"></i>
+                            <span>Histori Penerimaan Barang</span>
                         </button>
                     </div>
                 </div>

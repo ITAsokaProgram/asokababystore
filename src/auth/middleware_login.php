@@ -164,26 +164,27 @@ function checkUserPhone($sql, $phone)
     }
     return ['status' => 'error', 'message' => 'Nomor telepon tidak ditemukan.'];
 }
+
 function regisUser($conn, $sql, ...$params)
 {
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
-        // Gagal prepare statement
         return [
             'status' => 'error',
             'message' => isset($conn) && is_object($conn) ? 'Query error: ' . $conn->error : 'Query error: Database connection failed.'
         ];
     }
-    $types = str_repeat('s', count($params)); // jadi "ssss"
+    $types = str_repeat('s', count($params)); 
     $stmt->bind_param($types, ...array_map('htmlspecialchars', $params));
     $stmt->execute();
 
     if ($stmt->affected_rows > 0) {
+        $newUserId = $conn->insert_id;
         $stmt->close();
-        $conn->close();
         return [
             'status' => 'success',
-            'message' => 'Pengguna Berhasil Mendaftar.'
+            'message' => 'Pengguna Berhasil Mendaftar.',
+            'id_user' => $newUserId // Kembalikan ID user baru
         ];
     } else {
         $errorMsg = $stmt->error ?: 'No rows affected.';
@@ -195,6 +196,7 @@ function regisUser($conn, $sql, ...$params)
         ];
     }
 }
+
 function checkUserGoogle($email)
 {
     include "../../aa_kon_sett.php";
@@ -261,6 +263,31 @@ function checkUserGoogle($email)
     }
 }
 
+
+function associateGuestMessages($conn, $userId, $email, $noHp = null) {
+    if (empty($userId) || empty($email)) {
+        return;
+    }
+
+    $sql = "UPDATE contact_us SET id_user = ? WHERE id_user IS NULL AND (email = ?";
+    $params = [$userId, $email];
+    $types = 'is';
+
+    if (!empty($noHp)) {
+        $sql .= " OR no_hp = ?";
+        $params[] = $noHp;
+        $types .= 's';
+    }
+
+    $sql .= ")"; 
+
+    $stmt = $conn->prepare($sql);
+    if ($stmt) {
+        $stmt->bind_param($types, ...$params);
+        $stmt->execute();
+        $stmt->close();
+    }
+}
 function handleGoogleLogin($conn)
 {
     $date = date('Y-m-d H:i:s');
@@ -294,24 +321,28 @@ function handleGoogleLogin($conn)
     $nama = $userInfo->name;
 
     // Cek apakah user sudah ada di database
-
     $result = checkUserGoogle($email);
 
     if ($result['status'] === 'success') {
+        // [IMPLEMENTASI] Panggil associateGuestMessages untuk user yang sudah ada
+        // checkUserGoogle menutup koneksi, jadi kita buka lagi
+        include __DIR__ . '/../../aa_kon_sett.php';
+        associateGuestMessages($conn, $result['user']['id'], $email);
+        $conn->close();
+
         $token = generate_token_with_custom_expiration([
             'id' => $result['user']['id'],
             'email' => $email,
             'nama' => $result['user']['nama'],
             'no_hp' => $result['user']['no_hp'],
-            
         ]);
         setcookie('token', $token['token'], [
             'expires' => $token['expiresAt'],
             'path' => '/',
             'domain' => $_SERVER['HTTP_HOST'],
-            'secure' => true, // Hanya kirim cookie melalui HTTPS
+            'secure' => true,
             'httponly' => false,
-            'samesite' => 'Strict' // Mencegah pengiriman cookie dalam permintaan lintas situs
+            'samesite' => 'Strict'
         ]);
         return [
             'status' => 'success',
@@ -331,10 +362,20 @@ function handleGoogleLogin($conn)
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
         $sql = "INSERT INTO user_asoka (email, nama_lengkap, password, provider, tgl_pembuatan) VALUES (?, ?, ?, ?, ?)";
         $params = [$email, $nama, $hashedPassword, 'google', $date];
-        $result = regisUser($conn, $sql, ...$params);
+        
+        // regisUser akan menggunakan koneksi $conn yang di-pass ke handleGoogleLogin
+        $registrationResult = regisUser($conn, $sql, ...$params);
 
-        if ($result['status'] === 'success') {
+        if ($registrationResult['status'] === 'success') {
+            $newUserId = $registrationResult['id_user'];
+
+            // [IMPLEMENTASI] Panggil associateGuestMessages untuk user baru
+            // Koneksi masih terbuka dari regisUser
+            associateGuestMessages($conn, $newUserId, $email);
+            $conn->close(); // Tutup koneksi setelah selesai
+
             $token = generate_token_with_custom_expiration([
+                'id' => $newUserId, // Gunakan ID baru
                 'email' => $email,
                 'nama' => $nama
             ]);
@@ -342,14 +383,15 @@ function handleGoogleLogin($conn)
                 'expires' => $token['expiresAt'],
                 'path' => '/',
                 'domain' => $_SERVER['HTTP_HOST'],
-                'secure' => true, // Hanya kirim cookie melalui HTTPS
+                'secure' => true,
                 'httponly' => false,
-                'samesite' => 'Strict' // Mencegah pengiriman cookie dalam permintaan lintas situs
+                'samesite' => 'Strict'
             ]);
             return [
                 'status' => 'success',
                 'token' => $token['token'],
                 'user' => [
+                    'id' => $newUserId,
                     'email' => $email,
                     'nama' => $nama,
                     'provider' => 'google'
@@ -362,6 +404,7 @@ function handleGoogleLogin($conn)
         }
     }
 }
+
 function checkEmail($conn, $email)
 {
     $sql = "SELECT email FROM user_asoka WHERE email = ?";

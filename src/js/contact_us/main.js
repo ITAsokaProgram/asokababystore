@@ -96,9 +96,8 @@ const scrollToBottom = () => {
 };
 const openChatModal = async (item) => {
     currentContactId = item.id;
-    
-    
     document.getElementById('chatSubject').textContent = item.subject;
+    document.getElementById('chatMessage').textContent = item.message;
     
     
     

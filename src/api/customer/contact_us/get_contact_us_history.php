@@ -26,6 +26,7 @@ try {
                 cu.id,
                 cu.subject,
                 cu.status,
+                cu.message,
                 cu.dikirim,
                 (SELECT COUNT(*) 
                  FROM contact_us_conversation cuc 

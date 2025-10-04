@@ -110,12 +110,15 @@ if ($token) {
             <div class="bg-gradient-to-r from-pink-500 to-purple-600 rounded-t-2xl p-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                        <div class="w-10 h-10 bg-white/20 rounded-lg sm:flex items-center justify-center hidden">
                             <i class="fas fa-comments text-white text-lg"></i>
                         </div>
-                        <div>
+                        <div class="break-words"
+                            style="max-width: 260px;"
+                        >
                             <h2 class="text-lg font-bold text-white">Percakapan dengan Admin</h2>
                             <p class="text-white/80 text-xs" id="chatSubject">-</p>
+                            <p class="text-white/80 text-xs" id="chatMessage">-</p>
                         </div>
                     </div>
                     <button type="button" id="closeChatModal" class="text-white/80 hover:text-white">
