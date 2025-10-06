@@ -84,7 +84,9 @@ header("Pragma: no-cache");
         <div class="text-center space-y-3">
           <div class="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto float-animation">
             <!-- <i class="fas fa-baby text-white text-4xl"></i> -->
-             <img src="public/images/LOGO Asoka k.png" class="w-[70px]" alt="asoka">
+             <a href="/">
+               <img src="public/images/LOGO Asoka k.png" class="w-[70px]" alt="asoka">
+             </a>
           </div>
           <h1 class="text-xl lg:text-xl font-bold">ASOKA Baby Store</h1>
           <div class="flex items-center justify-center space-x-4 mt-8">

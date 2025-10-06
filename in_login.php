@@ -208,7 +208,9 @@ if (isset($_SESSION['username'])) {
 <body class="dark active">
    <!-- Enhanced Header -->
    <header class="enhanced-header text-gray-800 py-4 px-6 flex items-center shadow-xl fixed top-0 w-full z-10 justify-between">
-      <img src="images/logo.png" alt="Logo" class="h-12 logo-glow transition-all duration-300 hover:scale-110">
+      <a href="/">
+         <img src="images/logo.png" alt="Logo" class="h-12 logo-glow transition-all duration-300 hover:scale-110">   
+      </a>
       <div class="hidden md:flex items-center space-x-2 text-sm font-semibold text-gray-600">
          <i class="fas fa-shield-alt text-pink-500"></i>
          <span>Management System</span>

@@ -73,7 +73,6 @@ if ($stmt->num_rows === 0) {
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
     <link rel="stylesheet" href="/src/output2.css">
 
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
@@ -177,8 +176,9 @@ if ($stmt->num_rows === 0) {
     <!-- Header -->
     <header class="bg-white shadow-md sticky top-0 z-50">
         <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-            <img src="public/images/logo.png" alt="Logo Asoka Baby Store" class="w-25 h-8" />
-
+            <a href="/">
+                <img src="public/images/logo.png" alt="Logo Asoka Baby Store" class="w-25 h-8" />
+            </a>
             <button id="menu-toogle" class="md:hidden text-2xl text-pink-600 focus-outline-none">
                 <i class="fas fa-bars"></i>
             </button>

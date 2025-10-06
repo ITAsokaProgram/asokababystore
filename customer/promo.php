@@ -45,7 +45,6 @@ if ($token) {
     <title>Promo Spesial - Asoka Baby Store</title>
 
     <!-- Tailwind CSS CDN -->
-    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
         integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="icon" type="image/png" href="/images/logo1.png">

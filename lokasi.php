@@ -7,7 +7,8 @@
     <title>Lokasi ASOKA Baby Store</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/src/output2.css">
+
     <style>
         #map {
             height: 100vh;

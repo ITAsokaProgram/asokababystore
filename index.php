@@ -76,7 +76,6 @@ if ($stmt->num_rows === 0) {
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://unpkg.com/splitting/dist/splitting.min.js"></script>
@@ -224,7 +223,9 @@ if ($stmt->num_rows === 0) {
     <header class="bg-white/95 backdrop-blur-md shadow-lg sticky top-0 z-50 border-b border-pink-100">
         <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
             <div class="flex items-center gap-2">
-                <img src="public/images/logo.png" alt="Logo Asoka Baby Store" class="w-25 h-8 hover:scale-105 transition-transform duration-300" />
+                <a href="/">
+                    <img src="public/images/logo.png" alt="Logo Asoka Baby Store" class="w-25 h-8 hover:scale-105 transition-transform duration-300" />
+                </a>
             </div>
 
             <nav id="menu-mobile" class="grid grid-cols-1 text-center gap-2 p-8
@@ -254,10 +255,10 @@ if ($stmt->num_rows === 0) {
                     Member
                     <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-500 transition-all duration-300 group-hover:w-full"></span>
                 </a>
-                <a href="/produk" class="hover:text-pink-500 transition-colors duration-300 relative group">
+                <!-- <a href="/produk" class="hover:text-pink-500 transition-colors duration-300 relative group">
                     Produk
                     <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-500 transition-all duration-300 group-hover:w-full"></span>
-                </a>
+                </a> -->
                 <a href="/kontak" class="hover:text-pink-500 transition-colors duration-300 relative group">
                     Lapor
                     <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-500 transition-all duration-300 group-hover:w-full"></span>
