@@ -146,7 +146,6 @@ function renderLaporan(data) {
 
 function openChatModal(contactId, contactData) {
     currentChatContactId = contactId;
-    console.log("Membuka chat untuk contactId:", contactId, contactData);
     document.getElementById('chatCustomerName').textContent = contactData.nama || '-';
     document.getElementById('chatCustomerPhone').textContent = contactData.handphone || '-';
     document.getElementById('chatCustomerSubject').textContent = contactData.subject || '-';
@@ -280,7 +279,6 @@ function mapStatusToText(status) {
 
 function openModal(laporan) {
     laporanTerpilih = laporan; 
-    console.log(laporan);
 
     
     document.getElementById('modalKode').textContent = laporan.no_hp || '-';
