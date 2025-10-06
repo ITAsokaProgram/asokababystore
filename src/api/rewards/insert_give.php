@@ -12,7 +12,7 @@ use Cloudinary\Transformation\Gravity;
 use Cloudinary\Transformation\FocusOn;
 use Cloudinary\Transformation\Quality;
 
-$env = parse_ini_file(__DIR__ . '/../../../config.env');
+$env = parse_ini_file(__DIR__ . '/../../../.env');
 
 
 

@@ -1,5 +1,5 @@
 <?php
-require_once '/var/www/asokababystore.com/vendor/autoload.php';
+require_once 'vendor/autoload.php';
 require_once 'aa_kon_sett.php';
 
 date_default_timezone_set('Asia/Jakarta');

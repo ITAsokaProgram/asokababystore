@@ -20,7 +20,7 @@ if (!$verif) {
 }
 
 // Configure Cloudinary
-$env = parse_ini_file(__DIR__ . '/../../../config.env');
+$env = parse_ini_file(__DIR__ . '/../../../.env');
 $cloudinary = new \Cloudinary\Cloudinary([
     'cloud' => [
         'cloud_name' => $env['CLOUDINARY_NAME'],

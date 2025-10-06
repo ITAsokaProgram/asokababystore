@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: application/json');
-include "/var/www/asokababystore.com/aa_kon_sett.php";
+require_once __DIR__ . ("/../../../aa_kon_sett.php");
 require_once __DIR__ . '/../../auth/middleware_login.php';
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);

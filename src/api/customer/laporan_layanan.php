@@ -1,7 +1,7 @@
 <?php
 include '../../../aa_kon_sett.php';
 require_once __DIR__ . '/../../../vendor/autoload.php';
-require_once __DIR__ . '/../../../.env.php';
+$env = parse_ini_file(__DIR__ . '/../../../.env');
 
 use PHPMailer\PHPMailer\OAuth;
 use PHPMailer\PHPMailer\PHPMailer;
@@ -57,10 +57,10 @@ try {
                 cu.dikirim,
                 cu.id_user,
                 (SELECT COUNT(*) 
-                   FROM contact_us_conversation cuc 
-                   WHERE cuc.contact_us_id = cu.id 
-                     AND cuc.sudah_dibaca = 0 
-                     AND cuc.pengirim_type = 'customer'
+                    FROM contact_us_conversation cuc 
+                    WHERE cuc.contact_us_id = cu.id 
+                        AND cuc.sudah_dibaca = 0 
+                        AND cuc.pengirim_type = 'customer'
                 ) as unread_count,
                 CASE 
                     WHEN cu.id_user IS NOT NULL THEN 1
@@ -99,15 +99,15 @@ try {
             $mail->SMTPAuth = true;
             $mail->AuthType = 'XOAUTH2';
 
-            $emailSender = GOOGLE_SENDER_MAIL;
-            $clientId = GOOGLE_CLIENT_ID;
-            $clientSecret = GOOGLE_CLIENT_SECRET;
-            $refreshToken = GOOGLE_REFRESH_TOKEN;
+            $emailSender = $env['GOOGLE_SENDER_MAIL'];
+            $clientId = $env['GOOGLE_CLIENT_ID'];
+            $clientSecret = $env['GOOGLE_CLIENT_SECRET'];
+            $refreshToken = $env['GOOGLE_REFRESH_TOKEN'];
 
             $provider = new Google(['clientId' => $clientId, 'clientSecret' => $clientSecret]);
             $mail->setOAuth(new OAuth(['provider' => $provider, 'clientId' => $clientId, 'clientSecret' => $clientSecret, 'refreshToken' => $refreshToken, 'userName' => $emailSender]));
 
-        $htmlContent = file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/template/email/balasan_laporan.html');
+            $htmlContent = file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/template/email/balasan_laporan.html');
             if ($htmlContent === false) {
                 throw new Exception("Template email tidak ditemukan.");
             }

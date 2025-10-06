@@ -9,7 +9,7 @@ use Cloudinary\Api\Upload\UploadApi;
 header("Content-Type: application/json");
 header("Access-Control-Allow-Methods: POST");
 date_default_timezone_set('Asia/Jakarta');
-$env = parse_ini_file(__DIR__ . '/../../../config.env');
+$env = parse_ini_file(__DIR__ . '/../../../.env');
 // ================== Config Cloudinary ==================
 Configuration::instance([
     'cloud' => [

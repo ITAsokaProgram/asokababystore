@@ -1,5 +1,5 @@
 <?php
-$env = parse_ini_file('/var/www/asokababystore.com/config.env');
+$env = parse_ini_file('.env');
 
 $conn = mysqli_connect(
     $env['DB_HOST'],

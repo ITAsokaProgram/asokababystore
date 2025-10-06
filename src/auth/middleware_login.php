@@ -2,7 +2,6 @@
 require_once __DIR__ . '/../config/JWT/JWT.php';
 require_once __DIR__ . '/../config/JWT/Key.php';
 require_once __DIR__ . '/../config/JWT/config.php';
-include __DIR__ . '/../../.env.php';
 require_once __DIR__ . '/../../vendor/autoload.php';
 require_once __DIR__ . '/rate_limiter.php';
 use Firebase\JWT\JWT;
@@ -287,11 +286,14 @@ function associateGuestMessages($conn, $userId, $email, $noHp = null) {
 }
 function handleGoogleLogin($conn)
 {
+    $env = parse_ini_file(__DIR__ . '/../../.env');
+
     $date = date('Y-m-d H:i:s');
     $client = new Google_Client();
-    $client->setClientId(GOOGLE_CLIENT_ID);
-    $client->setClientSecret(GOOGLE_CLIENT_SECRET);
-    $client->setRedirectUri(GOOGLE_REDIRECT_URI);
+    
+    $client->setClientId($env['GOOGLE_CLIENT_ID']);
+    $client->setClientSecret($env['GOOGLE_CLIENT_SECRET']);
+    $client->setRedirectUri($env['GOOGLE_REDIRECT_URI']);
     $client->addScope("email");
     $client->addScope("profile");
 
@@ -401,6 +403,7 @@ function handleGoogleLogin($conn)
         }
     }
 }
+
 
 function checkEmail($conn, $email)
 {

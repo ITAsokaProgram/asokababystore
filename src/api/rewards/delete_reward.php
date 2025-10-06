@@ -5,7 +5,7 @@ require_once __DIR__ . "/../../auth/middleware_login.php";
 // Cloudinary SDK
 require_once __DIR__ . '/../../../vendor/autoload.php';
 // load env for cloudinary
-$env = parse_ini_file(__DIR__ . '/../../../config.env');
+$env = parse_ini_file(__DIR__ . '/../../../.env');
 \Cloudinary\Configuration\Configuration::instance([
     'cloud' => [
         'cloud_name' => $env['CLOUDINARY_NAME'] ?? '',

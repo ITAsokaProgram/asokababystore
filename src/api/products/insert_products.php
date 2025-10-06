@@ -9,7 +9,7 @@ date_default_timezone_set('Asia/Jakarta');
 
 use Cloudinary\Cloudinary;
 
-$env = parse_ini_file(__DIR__ . '/../../../config.env');
+$env = parse_ini_file(__DIR__ . '/../../../.env');
 
 $token = $_COOKIE['token'] ?? null;
 if (!$token) {

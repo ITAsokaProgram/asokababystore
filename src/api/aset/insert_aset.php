@@ -5,7 +5,7 @@ header("Access-Control-Allow-Methods: POST");
 header('Content-Type: application/json');
 date_default_timezone_set('Asia/Jakarta');
 use Cloudinary\Cloudinary;
-$env = parse_ini_file(__DIR__ . '/../../../config.env');
+$env = parse_ini_file(__DIR__ . '/../../../.env');
 // Get token from Authorization header
 $headers = getallheaders();
 $auth_header = $headers['Authorization'] ?? '';

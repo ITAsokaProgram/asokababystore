@@ -2,7 +2,7 @@
 
 require_once __DIR__ . '/../../../vendor/autoload.php';
 require_once __DIR__ . '/../../../aa_kon_sett.php';
-require_once __DIR__ . '/../../../.env.php';
+$env = parse_ini_file(__DIR__ . '/../../../.env');
 require_once __DIR__ . '/../../auth/middleware_login.php';
 
 header("Access-Control-Allow-Origin: *");
@@ -37,10 +37,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $mail->SMTPAuth = true;
     $mail->AuthType = 'XOAUTH2';
 
-    $emailSender = GOOGLE_SENDER_MAIL;
-    $clientId = GOOGLE_CLIENT_ID;
-    $clientSecret = GOOGLE_CLIENT_SECRET;
-    $refreshToken = GOOGLE_REFRESH_TOKEN;
+    // Ganti konstanta dengan variabel dari $env
+    $emailSender = $env['GOOGLE_SENDER_MAIL'];
+    $clientId = $env['GOOGLE_CLIENT_ID'];
+    $clientSecret = $env['GOOGLE_CLIENT_SECRET'];
+    $refreshToken = $env['GOOGLE_REFRESH_TOKEN'];
 
     $provider = new Google(
         [
@@ -154,5 +155,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'message' => 'Metode HTTP tidak diizinkan.'
     ]);
 }
-
-
