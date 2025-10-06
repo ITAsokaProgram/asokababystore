@@ -50,8 +50,6 @@ class SalesRatioApp {
      */
     async initialize() {
         try {
-            console.log('🚀 Starting Sales Ratio Report Application...');
-            console.log('📊 Version:', APP_CONFIG.VERSION);
             
             // Check browser compatibility
             if (!this._checkBrowserCompatibility()) {
@@ -71,8 +69,6 @@ class SalesRatioApp {
             this.isInitialized = true;
             stateManager.set('app.initialized', true);
             
-            console.log('✅ Sales Ratio Report Application initialized successfully');
-            console.log('🎯 Application ready for user interaction');
             
             // Show welcome message
             this._showWelcomeMessage();
@@ -118,7 +114,6 @@ class SalesRatioApp {
             return false;
         }
 
-        console.log('✅ Browser compatibility check passed');
         return true;
     }
 
@@ -147,7 +142,6 @@ class SalesRatioApp {
             }
 
             try {
-                console.log(`🔧 Initializing ${componentName}...`);
                 
                 // Initialize component
                 const success = await component.initialize();
@@ -159,7 +153,6 @@ class SalesRatioApp {
                 // Store component reference
                 this.components.set(componentName, component);
                 
-                console.log(`✅ ${componentName} initialized successfully`);
                 
                 // Add small delay to prevent blocking
                 await this._sleep(10);
@@ -177,23 +170,19 @@ class SalesRatioApp {
      */
     async _loadInitialData() {
         try {
-            console.log('📡 Loading initial data...');
             
             // Show loading indicator
             uiManager.showLoading(ELEMENT_IDS.FORM, 'Loading application data...');
             
             // Load branches
-            console.log('🏢 Loading branches...');
             await branchService.populateBranches();
             
             // Check if we have saved state to restore
             const savedBranch = stateManager.get('form.selectedBranch');
             if (savedBranch) {
-                console.log('🔄 Restoring saved state...');
                 await this._restoreSavedState();
             }
             
-            console.log('✅ Initial data loaded successfully');
             
         } catch (error) {
             console.error('❌ Error loading initial data:', error);
@@ -249,7 +238,6 @@ class SalesRatioApp {
             }
         }
         
-        console.log('🔄 Saved state restored');
     }
 
     /**
@@ -263,7 +251,6 @@ class SalesRatioApp {
         });
         
         stateManager.subscribe('form', (formData, oldData, path) => {
-            console.log(`📝 Form data changed: ${path}`);
         });
         
         // Setup periodic cache cleanup
@@ -274,7 +261,6 @@ class SalesRatioApp {
         // Setup auto-save for form data
         this._setupAutoSave();
         
-        console.log('📊 Application state setup complete');
     }
 
     /**
@@ -379,7 +365,6 @@ class SalesRatioApp {
     _cleanupExpiredCache() {
         // This is handled by stateManager's cache mechanism
         // Just log the cleanup
-        console.log('🧹 Periodic cache cleanup executed');
     }
 
     /**
@@ -445,7 +430,6 @@ class SalesRatioApp {
      * Restart application
      */
     async restart() {
-        console.log('🔄 Restarting application...');
         
         // Cleanup existing components
         await this.cleanup();
@@ -461,7 +445,6 @@ class SalesRatioApp {
      */
     async cleanup() {
         try {
-            console.log('🧹 Cleaning up application...');
             
             // Cleanup components in reverse order
             const reverseOrder = [...this.initializationOrder].reverse();
@@ -471,7 +454,6 @@ class SalesRatioApp {
                 if (component && typeof component.cleanup === 'function') {
                     try {
                         await component.cleanup();
-                        console.log(`✅ ${componentName} cleaned up`);
                     } catch (error) {
                         console.error(`❌ Error cleaning up ${componentName}:`, error);
                     }
@@ -484,7 +466,6 @@ class SalesRatioApp {
             // Reset state
             this.isInitialized = false;
             
-            console.log('✅ Application cleanup completed');
             
         } catch (error) {
             console.error('❌ Error during cleanup:', error);
@@ -513,17 +494,8 @@ class SalesRatioApp {
      * Debug method to inspect application state
      */
     debug() {
-        console.log('🔍 Sales Ratio App Debug Info:');
-        console.log('- Initialized:', this.isInitialized);
-        console.log('- Components:', Array.from(this.components.keys()));
-        console.log('- Browser:', navigator.userAgent);
-        console.log('- State:', stateManager.getSnapshot());
-        
-        // Component status
-        console.log('- Component Status:');
         for (const [name, component] of this.components) {
             const isReady = typeof component.isReady === 'function' ? component.isReady() : 'unknown';
-            console.log(`  - ${name}: ${isReady}`);
         }
     }
 }

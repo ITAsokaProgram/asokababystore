@@ -354,7 +354,6 @@ function sendKodeSupp1(page, filter) {
   formDataToTable.append("page", page);
   formDataToTable.append("filter", filter);
   // for (var pair of formDataToTable.entries()) {
-  //   console.log(pair[0] + ": " + pair[1]);
   // }
   $.ajax({
     url: `/src/api/ratio/in_sales_ratio_proses_table?filter=${filter}`,

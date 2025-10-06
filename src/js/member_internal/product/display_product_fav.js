@@ -76,13 +76,11 @@ const setupDateFilterListeners = () => {
     const endDate = endDateInput.value;
 
     if (!startDate || !endDate) {
-      console.log("Missing date values");
       showToast("Pilih tanggal awal dan akhir", "warning");
       return;
     }
 
     if (new Date(startDate) > new Date(endDate)) {
-      console.log("Start date is greater than end date");
       showToast(
         "Tanggal awal tidak boleh lebih besar dari tanggal akhir",
         "warning"

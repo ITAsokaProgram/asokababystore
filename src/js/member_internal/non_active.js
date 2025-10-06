@@ -31,7 +31,7 @@ export const loadDataFetchNon = async () => {
             belumTrans.textContent = response.data.total_non_active?.[0]?.belum_pernah_transaksi ?? '0'
             seluruh.textContent = total
         } else {
-            console.log("data tidak ada")
+            console.warn("data tidak ada")
         }
     } catch (error) {
         console.log(error)

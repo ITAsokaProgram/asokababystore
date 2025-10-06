@@ -74,7 +74,7 @@ class StateManager {
      */
     initialize() {
         try {
-            console.log('📦 Initializing State Manager...');
+            
             
             // Load state from storage
             this._loadFromStorage();
@@ -83,7 +83,7 @@ class StateManager {
             this._setupStorageListener();
             
             this.isInitialized = true;
-            console.log('✅ State Manager initialized successfully');
+            
             return true;
             
         } catch (error) {
@@ -102,7 +102,7 @@ class StateManager {
             if (saved) {
                 const parsedState = JSON.parse(saved);
                 this.state = { ...this.state, ...parsedState };
-                console.log('📦 State loaded from storage');
+                
             }
         } catch (error) {
             console.warn('⚠️ Error loading state from storage:', error);
@@ -128,7 +128,7 @@ class StateManager {
             };
             
             localStorage.setItem(STORAGE_KEYS.APP_STATE, JSON.stringify(stateToSave));
-            console.log('💾 State saved to storage');
+            
         } catch (error) {
             console.warn('⚠️ Error saving state to storage:', error);
         }
@@ -204,7 +204,7 @@ class StateManager {
             this._debouncedSave();
         }
         
-        console.log(`📦 State updated: ${path} =`, value);
+        
     }
 
     /**
@@ -237,7 +237,7 @@ class StateManager {
             this._notifyListeners('reset', this.state);
         }
         
-        console.log(`🔄 State reset${path ? ` for ${path}` : ''}`);
+        
     }
 
     /**
@@ -322,7 +322,7 @@ class StateManager {
             console.warn('⚠️ Error storing cache in sessionStorage:', error);
         }
         
-        console.log(`💾 Data cached: ${key}`);
+        
     }
 
     /**
@@ -384,7 +384,7 @@ class StateManager {
                 console.warn('⚠️ Error clearing cache from sessionStorage:', error);
             }
             
-            console.log(`🗑️ Cache cleared: ${key}`);
+            
         } else {
             this.set('cache', {}, false);
             
@@ -402,7 +402,7 @@ class StateManager {
                 console.warn('⚠️ Error clearing cache from sessionStorage:', error);
             }
             
-            console.log('🗑️ All cache cleared');
+            
         }
     }
 
@@ -429,7 +429,7 @@ class StateManager {
         this._saveToStorage();
         this._notifyListeners('import', this.state);
         
-        console.log('📥 State imported');
+        
     }
 
     /**
@@ -456,7 +456,7 @@ class StateManager {
         const updatedHistory = [requestWithTimestamp, ...history].slice(0, 50);
         this.set('app.requestHistory', updatedHistory);
         
-        console.log('📋 Request added to history');
+        
     }
 
     /**
@@ -474,7 +474,7 @@ class StateManager {
      */
     clearHistory() {
         this.set('app.requestHistory', []);
-        console.log('🗑️ Request history cleared');
+        
     }
 
     /**
@@ -495,16 +495,16 @@ class StateManager {
         // Save final state
         this._saveToStorage();
         
-        console.log('🧹 State Manager cleaned up');
+        
     }
 
     /**
      * Debug helper - log current state
      */
     debug() {
-        console.log('🔍 Current State:', this.state);
-        console.log('🔍 Listeners:', this.listeners);
-        console.log('🔍 Cache Status:', Object.keys(this.state.cache || {}));
+        
+        
+        
     }
 }
 

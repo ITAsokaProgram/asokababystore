@@ -18,8 +18,8 @@ class ApiService {
      */
     async fetchSubdeptData(formData, filter = '') {
         try {
-            console.log('📡 Mengirim request ke API subdepartemen...');
-            console.log('🔄 Data yang dikirim:', Object.fromEntries(formData));
+            
+            
 
             const url = filter 
                 ? `${API_ENDPOINTS.SUBDEPT_DATA}?filter=${encodeURIComponent(filter)}`
@@ -38,7 +38,7 @@ class ApiService {
             }
 
             const data = await response.json();
-            console.log('✅ Response dari server:', data);
+            
 
             return this._validateResponse(data);
 
@@ -58,8 +58,8 @@ class ApiService {
     async fetchDataWithAjax(formData, filter = '', queryType = 'query1') {
         return new Promise((resolve, reject) => {
             try {
-                console.log('📡 Mengirim AJAX request ke API...');
-                console.log('🔄 Data yang dikirim:', Object.fromEntries(formData));
+                
+                
 
                 // Tambahkan query_type ke formData
                 formData.append('query_type', queryType);
@@ -75,14 +75,14 @@ class ApiService {
                     processData: false,
                     contentType: false,
                     success: (response) => {
-                        console.log('✅ AJAX Response (RAW):', response);
+                        
                         
                         let jsonResponse;
                         try {
                             jsonResponse = typeof response === 'string' 
                                 ? JSON.parse(response) 
                                 : response;
-                            console.log('📋 Parsed JSON Response:', jsonResponse);
+                            
                         } catch (error) {
                             console.error('❌ Gagal parsing JSON:', error, response);
                             reject(new Error('Invalid JSON response'));

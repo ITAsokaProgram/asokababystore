@@ -25,11 +25,9 @@ export const memberDataHandler = {
   // Load member data from API
   async loadMemberData(page = 1) {
     try {
-      console.log("Loading member data for page:", page);
       this.showLoading();
 
       const response = await api.getMemberData(page, 15);
-      console.log("API Response:", response);
 
       if (response.success) {
         // Pastikan data array ada dan tidak undefined
@@ -41,12 +39,6 @@ export const memberDataHandler = {
         this.currentData = response.data; // Use data directly from Redis API
         this.currentPage = response.page || page;
         this.totalPages = response.total_pages || 1;
-
-        console.log("Data loaded successfully:", {
-          currentPage: this.currentPage,
-          totalPages: this.totalPages,
-          dataCount: this.currentData.length,
-        });
 
         this.renderMemberList();
         this.updatePagination();
@@ -253,10 +245,6 @@ export const memberDataHandler = {
 
   // Render pagination
   renderPagination() {
-    console.log("Rendering pagination:", {
-      currentPage: this.currentPage,
-      totalPages: this.totalPages,
-    });
 
     if (this.totalPages <= 1) {
       return '<div class="text-sm text-gray-600">Hanya 1 halaman</div>';

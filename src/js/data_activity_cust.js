@@ -21,7 +21,6 @@ function fetchDataRangeDate(range, selectId, cabang) {
     fetch(`../../api/customer/get_activity_customer?range=${selectId}&tanggal=${range}&cabang=${cabang}`)
         .then(res => res.json())
         .then(data => {
-            console.log(data)
             loadTable(data);
             document.getElementById('loadingTable').style.display = 'none';
         })
@@ -648,7 +647,6 @@ $(document).ready(function () {
                 previewArea.appendChild(fileItem);
             }
         }
-        console.log(selectedFiles)
         // Reset input agar bisa pilih file yang sama lagi nanti
         this.value = '';
     });
@@ -777,7 +775,6 @@ $(document).ready(function () {
                 deleteBtn.addEventListener('click', () => {
                     selectedFiles.splice(index, 1);
                     fileItem.remove();
-                    console.log('File removed:', file.name);
                 });
 
                 fileItem.appendChild(fileName);
@@ -785,7 +782,6 @@ $(document).ready(function () {
                 previewArea.appendChild(fileItem);
             }
         }
-        console.log(selectedFiles)
         this.value = ''; // Reset input agar bisa pilih file yang sama lagi nanti
     });
 

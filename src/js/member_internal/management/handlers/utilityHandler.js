@@ -312,7 +312,6 @@ class UtilityHandler {
       setTimeout(() => {
         // In real implementation, this would call the actual export API
         // and potentially trigger file download
-        console.log(`Exporting ${exportType} to ${format}`);
         resolve();
       }, 2000);
     });
@@ -394,15 +393,6 @@ class UtilityHandler {
     if (!dateFrom || !dateTo) return;
 
     if (dateFrom.value && dateTo.value) {
-      console.log(
-        "Filtering members from",
-        dateFrom.value,
-        "to",
-        dateTo.value,
-        "based on",
-        filterType?.value || "join"
-      );
-
       // Close dropdown
       const dropdown = document.getElementById("dateRangeDropdown");
       if (dropdown) {

@@ -142,7 +142,6 @@ $(document).ready(() => {
             search: params.term || '',
           }),
           processResults: (data) => {
-            console.log("response data:", data);
             return {
               results: data.map(item => ({
                 id: item.kode_supp,
@@ -185,7 +184,6 @@ document.getElementById("laporanForm").addEventListener("submit", function (e) {
     contentType: false,
     data: formData ,
     success: (data)=>{
-          console.log("Response data: ", data)
     },
     error: (xhr, status, error)=>{
       console.log("Error : ", status, error);

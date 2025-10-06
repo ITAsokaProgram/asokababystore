@@ -25,13 +25,13 @@ class TableManager {
      */
     initialize() {
         try {
-            console.log('📋 Initializing Table Manager...');
+            
             
             // Setup table event listeners
             this._setupTableEvents();
             
             this.isInitialized = true;
-            console.log('✅ Table Manager initialized successfully');
+            
             return true;
             
         } catch (error) {
@@ -71,7 +71,7 @@ class TableManager {
                 return;
             }
 
-            console.log('📋 Updating table with', tableData.length, 'rows');
+            
             
             // Process and sort data
             const processedData = this._processTableData(tableData, sortBy);
@@ -85,7 +85,7 @@ class TableManager {
             // Show table container
             this.show();
             
-            console.log('✅ Table updated successfully');
+            
             
         } catch (error) {
             console.error('❌ Error updating table:', error);
@@ -454,7 +454,7 @@ class TableManager {
                 return;
             }
 
-            console.log('📊 Exporting to Excel...');
+            
 
             // Show loading state
             const exportBtn = document.getElementById(ELEMENT_IDS.EXPORT_EXCEL);
@@ -506,7 +506,7 @@ class TableManager {
             link.click();
             window.URL.revokeObjectURL(url);
 
-            console.log('✅ Excel export completed');
+            
 
             // Restore button state
             exportBtn.innerHTML = originalText;
@@ -540,7 +540,7 @@ class TableManager {
                 return;
             }
 
-            console.log('📄 Exporting to PDF...');
+            
 
             // Show loading state
             const exportBtn = document.getElementById(ELEMENT_IDS.EXPORT_PDF);
@@ -596,7 +596,7 @@ class TableManager {
             // Save PDF
             doc.save(this._generateFileName('pdf'));
 
-            console.log('✅ PDF export completed');
+            
 
             // Restore button state
             exportBtn.innerHTML = originalText;
@@ -635,7 +635,7 @@ class TableManager {
         }
         this.currentData = null;
         this.sortState = { column: null, direction: 'asc' };
-        console.log('🗑️ Table cleared');
+        
     }
 
     /**

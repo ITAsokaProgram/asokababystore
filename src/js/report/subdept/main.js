@@ -40,47 +40,47 @@ class SubDeptApp {
      */
     async initialize() {
         try {
-            console.log('🚀 Initializing Sub Department Application...');
-            console.log('📊 Components to initialize:', Object.keys(this.components));
+            
+            
 
             // Load branch data untuk store codes dinamis
-            console.log('🌿 Loading branch data...');
+            
             await this.components.branch.initialize();
-            console.log('✅ Branch data loaded successfully');
+            
 
             // Populate branch options to select dropdown
             await this._populateBranchOptions();
 
             // Initialize State Manager first
-            console.log('🎯 Initializing State Manager...');
+            
             // State manager tidak perlu explicit initialization, sudah auto-init
 
             // Initialize UI Manager 
-            console.log('🎨 Initializing UI Manager...');
+            
             if (!this.components.ui.initialize()) {
                 throw new Error('Failed to initialize UI Manager');
             }
 
             // Initialize Date Picker Manager
-            console.log('📅 Initializing Date Picker Manager...');
+            
             if (!this.components.datePicker.initialize()) {
                 console.warn('⚠️ Date Picker Manager initialization failed, continuing...');
             }
 
             // Initialize Chart Manager
-            console.log('📊 Initializing Chart Manager...');
+            
             if (!this.components.chart.initialize()) {
                 throw new Error('Failed to initialize Chart Manager');
             }
 
             // Initialize Table Manager
-            console.log('📋 Initializing Table Manager...');
+            
             if (!this.components.table.initialize()) {
                 console.warn('⚠️ Table Manager initialization failed, continuing...');
             }
 
             // Initialize Event Handlers (must be last)
-            console.log('🎯 Initializing Event Handlers...');
+            
             this.components.events.setDateManager(this.components.datePicker);
             if (!this.components.events.initialize()) {
                 throw new Error('Failed to initialize Event Handlers');
@@ -90,8 +90,8 @@ class SubDeptApp {
             this._finalSetup();
             this.isInitialized = true;
 
-            console.log('✅ Sub Department Application initialized successfully');
-            console.log('📈 Application ready for use');
+            
+            
             
             return true;
 
@@ -115,7 +115,7 @@ class SubDeptApp {
      */
     async _populateBranchOptions() {
         try {
-            console.log('🏢 Populating branch options...');
+            
             
             // Get branch options dari branchService
             const branchOptions = await this.components.branch.getSelectOptions(true);
@@ -123,7 +123,7 @@ class SubDeptApp {
             // Populate ke cabang select menggunakan ELEMENT_IDS
             this.components.ui.populateSelectOptions(ELEMENT_IDS.CABANG, branchOptions, true);
             
-            console.log('✅ Branch options populated:', branchOptions.length, 'options');
+            
 
         } catch (error) {
             console.warn('⚠️ Failed to populate branch options:', error.message);
@@ -151,7 +151,7 @@ class SubDeptApp {
             window.appStatus = () => this.getStatus();
         }
 
-        console.log('🔧 Final setup completed');
+        
     }
 
     /**
@@ -188,7 +188,7 @@ class SubDeptApp {
      */
     async restart() {
         try {
-            console.log('🔄 Restarting Sub Department Application...');
+            
             
             // Cleanup existing instance
             this.cleanup();
@@ -196,7 +196,7 @@ class SubDeptApp {
             // Re-initialize
             await this.initialize();
             
-            console.log('✅ Application restarted successfully');
+            
             
         } catch (error) {
             console.error('❌ Failed to restart application:', error);
@@ -208,7 +208,7 @@ class SubDeptApp {
      */
     cleanup() {
         try {
-            console.log('🧹 Cleaning up Sub Department Application...');
+            
 
             // Cleanup event handlers
             if (this.components.events.isReady()) {
@@ -227,7 +227,7 @@ class SubDeptApp {
             this.components.branch.clearCache();
 
             this.isInitialized = false;
-            console.log('✅ Cleanup completed');
+            
 
         } catch (error) {
             console.error('❌ Error during cleanup:', error);
@@ -260,13 +260,13 @@ class SubDeptApp {
  */
 async function initializeApp() {
     try {
-        console.log('🌟 DOM Content Loaded - Starting Sub Department App...');
+        
         
         const app = new SubDeptApp();
         const success = await app.initialize();
         
         if (success) {
-            console.log('🎉 Sub Department Application started successfully!');
+            
         } else {
             console.error('💥 Sub Department Application failed to start');
         }

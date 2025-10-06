@@ -229,8 +229,6 @@ const sendNumberPhone = () => {
                 return response.json().then(data => ({ statusCode, data })); // Gabungkan status + data
             })
             .then(({ statusCode, data }) => {
-                console.log("code", statusCode)
-                console.log("response", data)
                 if (statusCode === 200) {
                     closeModalPhone();
                     document.getElementById('numberPhoneContainer').textContent = noHp;

@@ -24,13 +24,13 @@ class ChartManager {
      */
     initialize() {
         try {
-            console.log('🎨 Initializing Chart Manager...');
+            
 
             // Initialize bar chart
             const barElement = document.getElementById(ELEMENT_IDS.BAR_CHART);
             if (barElement) {
                 this.barChart = echarts.init(barElement);
-                console.log('📊 Bar chart initialized');
+                
             } else {
                 console.warn('⚠️ Bar chart element tidak ditemukan');
             }
@@ -39,7 +39,7 @@ class ChartManager {
             const pieElement = document.getElementById(ELEMENT_IDS.PIE_CHART);
             if (pieElement) {
                 this.pieChart = echarts.init(pieElement);
-                console.log('🥧 Pie chart initialized');
+                
             } else {
                 console.warn('⚠️ Pie chart element tidak ditemukan');
             }
@@ -90,7 +90,7 @@ class ChartManager {
         }
 
         try {
-            console.log('🥧 Updating pie chart...');
+            
 
             // Prepare data untuk pie chart
             const chartData = this._preparePieChartData(labels, data, tableData);
@@ -156,7 +156,7 @@ class ChartManager {
             // Setup click handler
             this._setupPieChartClickHandler();
 
-            console.log('✅ Pie chart updated successfully');
+            
 
         } catch (error) {
             console.error('❌ Error updating pie chart:', error);
@@ -176,7 +176,7 @@ class ChartManager {
         }
 
         try {
-            console.log('📊 Updating bar chart...');
+            
 
             const option = {
                 title: {
@@ -255,7 +255,7 @@ class ChartManager {
             };
 
             this.barChart.setOption(option);
-            console.log('✅ Bar chart updated successfully');
+            
 
         } catch (error) {
             console.error('❌ Error updating bar chart:', error);
@@ -312,7 +312,7 @@ class ChartManager {
         this.pieChart.off('click'); // Remove existing handlers
         
         this.pieChart.on('click', (params) => {
-            console.log('🖱️ Pie chart clicked:', params.name);
+            
             
             // Trigger custom event untuk komunikasi dengan komponen lain
             const event = new CustomEvent('pieChartClick', {
@@ -334,7 +334,7 @@ class ChartManager {
 
         try {
             this.pieChart.clear();
-            console.log('🔄 Pie chart reset');
+            
         } catch (error) {
             console.error('❌ Error resetting pie chart:', error);
         }
@@ -348,7 +348,7 @@ class ChartManager {
 
         try {
             this.barChart.clear();
-            console.log('🔄 Bar chart reset');
+            
         } catch (error) {
             console.error('❌ Error resetting bar chart:', error);
         }
@@ -365,7 +365,7 @@ class ChartManager {
             if (this.barChart) {
                 this.barChart.resize();
             }
-            console.log('📏 Charts resized');
+            
         }, 200);
     }
 
@@ -383,7 +383,7 @@ class ChartManager {
                 this.pieChart = null;
             }
             this.isInitialized = false;
-            console.log('🗑️ Chart Manager disposed');
+            
         } catch (error) {
             console.error('❌ Error disposing Chart Manager:', error);
         }

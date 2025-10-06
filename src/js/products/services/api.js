@@ -35,7 +35,6 @@ export async function sendData() {
     const data = await response.json();
     Swal.close();
     if (data.status === true) {
-      console.log("Product inserted successfully");
       // reset UI: tutup modal, reset form, reset preview
       if (el.modal) el.modal.classList.add("hidden");
       form.reset();
@@ -221,7 +220,6 @@ export const api = {
       const data = await response.json();
 
       if (data.success) {
-        console.log("Product updated successfully");
         if (el.modal) el.modal.classList.add("hidden");
         form.reset();
         if (el.preview) {

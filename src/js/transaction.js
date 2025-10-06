@@ -33,7 +33,6 @@ function fetchDataTotalTrans(store, startDate, endDate) {
             return res.json(); // ubah jadi text dulu biar bisa dicek manual
         })
         .then(data => {
-            console.log(data);
             updateCharts(data);
             loadBarangTable(data);
         })

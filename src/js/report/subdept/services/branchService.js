@@ -40,7 +40,7 @@ class BranchService {
      */
     async _fetchStoreCodes() {
         try {
-            console.log('📡 Fetching store codes from API...');
+            
 
             // Get token saat method dipanggil, bukan saat import
             const token = this._getAuthToken();
@@ -51,7 +51,7 @@ class BranchService {
             // Add authorization header jika token tersedia
             if (token) {
                 headers.Authorization = `Bearer ${token}`;
-                console.log('🔐 Using authorization token');
+                
             } else {
                 console.warn('⚠️ No authorization token found, proceeding without auth');
             }
@@ -94,7 +94,7 @@ class BranchService {
                 throw new Error('No valid store codes found in API response');
             }
 
-            console.log('✅ Store codes loaded from API:', storeCodesMapping);
+            
             return storeCodesMapping;
 
         } catch (error) {
@@ -136,7 +136,7 @@ class BranchService {
             this.allBranchCodes = Object.values(this.storeCodes);
             this.isLoaded = true;
 
-            console.log('📍 Store codes loaded from API successfully');
+            
             return this.storeCodes;
 
         } catch (error) {
@@ -211,7 +211,7 @@ class BranchService {
      * @returns {Promise<Object>} Updated store codes
      */
     async refreshFromAPI() {
-        console.log('🔄 Refreshing store codes from API...');
+        
         return await this.loadStoreCodes(true);
     }
 
@@ -252,7 +252,7 @@ class BranchService {
         this.allBranchCodes = null;
         this.isLoaded = false;
         this.loadPromise = null;
-        console.log('🗑️ Branch service cache cleared');
+        
     }
 
     /**
@@ -291,9 +291,9 @@ class BranchService {
      */
     async initialize() {
         try {
-            console.log('🌿 Initializing Branch Service for SubDept...');
+            
             await this.loadStoreCodes();
-            console.log('✅ Branch Service initialized successfully');
+            
             return true;
         } catch (error) {
             console.warn('⚠️ Branch Service initialization failed:', error.message);

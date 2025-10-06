@@ -109,7 +109,6 @@ function setFullCache({ chartMode, labels, chartData, tableMode, tableData }) {
         tableData
     });
 
-    console.log("✅ Full state cached:", chartHistoryStack);
 }
 function getFullCache() {
     const last = chartHistoryStack[chartHistoryStack.length - 1];
@@ -155,11 +154,9 @@ function restoreChartFromCache() {
     // Restore table
     renderTableWithData(tableMode, tableData);
 
-    console.log("🔁 Restored full state:", previousState);
 }
 
 function renderTableWithData(mode, data) {
-    console.log(`🔄 Render ulang tabel untuk mode: ${mode}`);
     renderTableFromData(data);
 }
 function sendDataFromBody(tanggalAwal, tanggalAkhir, query, kodeStore) {
@@ -174,7 +171,6 @@ function sendDataFromBody(tanggalAwal, tanggalAkhir, query, kodeStore) {
 
 
 
-    console.log("Data yang dikirim:", jsonData);
 
     fetch("/src/api/category/post_data_sales_category", {
         method: "POST",
@@ -232,7 +228,6 @@ function sendCategory(tanggalAwal, tanggalAkhir, query, kodeStore, filter) {
         filter: filter
     };
 
-    console.log("Data yang dikirim:", jsonData);
 
     fetch(`/src/api/category/post_data_sales_category?filter=${filter}`, {
         method: "POST",
@@ -248,7 +243,6 @@ function sendCategory(tanggalAwal, tanggalAkhir, query, kodeStore, filter) {
             return response.json();
         })
         .then(data => {
-            console.log("Berhasil post data", data);
             // Mengecek apakah status "success" dan data ada
             if (data.status === "success" && data.data.length > 0) {
                 // Ambil label dan nilai (value, persentase) dari data
@@ -268,7 +262,6 @@ function sendCategory(tanggalAwal, tanggalAkhir, query, kodeStore, filter) {
                     persen_qty: item.persentase,
                     persen_rp: item.persentase_rp
                 }));
-                console.log("cek fetch data baby", values)
                 completeProgressBar()
                 renderTableFromData(formatted)
                 updateChartCat(labels, values)
@@ -309,7 +302,6 @@ function sendKodeSupp(tanggalAwal, tanggalAkhir, kodeSupp, kodeStore, kategori, 
 
 
 
-    console.log("Data yang dikirim:", jsonData);
 
     fetch(`/src/api/category/post_data_sales_category?filter=${filter}`, {
         method: "POST",
@@ -325,7 +317,6 @@ function sendKodeSupp(tanggalAwal, tanggalAkhir, kodeSupp, kodeStore, kategori, 
             return response.json();
         })
         .then(data => {
-            console.log("Berhasil post data", data);
             const sortBy = $("#sort-by1").val()
             // Mengecek apakah status "success" dan data ada
             if (data.status === "success" && data.data.length > 0) {
@@ -461,7 +452,6 @@ function updateChartCat(labels, data) {
     var startDateInput = $("#date").val();
     var endDateInput = $("#date1").val();
 
-    console.log("data chart category", newData);
 
     if (!echartDiagram) {
         echartDiagram = echarts.init(document.getElementById("chartDiagram"));
@@ -513,7 +503,6 @@ function updateChartCat(labels, data) {
         let supplier = params.data.kode;
         let kategori = params.data.kategori;
 
-        console.log("selected kategori", kategori);
         sendKodeSupp(startDateInput, endDateInput, supplier, storeCode, kategori, valueFilter);
     });
 
@@ -540,7 +529,6 @@ function updateChartDetailCatSup(labels, data, sortBy) {
             total: data[index].total
         };
     });
-    console.log("data chart category", newData)
     // Pastikan echartDiagram tidak undefined
     if (!echartDiagram) {
         echartDiagram = echarts.init(document.getElementById("chartDiagram"));
@@ -591,7 +579,6 @@ function updateChartDetailCatSup(labels, data, sortBy) {
             name: sortBy === "total" ? "Rp" : "Qty",  // Misalnya untuk menampilkan "Rp"
             axisLabel: {
                 formatter: function (value) {
-                    console.log("Debug value axisLabel:", value);
                     return typeof value === "number" ? value.toLocaleString() : value;
                 }
             }

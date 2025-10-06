@@ -22,7 +22,7 @@ class UIManager {
      */
     initialize() {
         try {
-            console.log('🎨 Initializing UI Manager...');
+            
             
             // Setup UI event listeners
             this._setupUIEvents();
@@ -34,7 +34,7 @@ class UIManager {
             this._setupResponsiveHandlers();
             
             this.isInitialized = true;
-            console.log('✅ UI Manager initialized successfully');
+            
             return true;
             
         } catch (error) {
@@ -157,7 +157,7 @@ class UIManager {
             `;
         }
 
-        console.log(`🔄 Loading state applied to ${elementId}`);
+        
     }
 
     /**
@@ -181,7 +181,7 @@ class UIManager {
         // Clean up stored state
         this.loadingStates.delete(elementId);
 
-        console.log(`✅ Loading state removed from ${elementId}`);
+        
     }
 
     /**
@@ -260,7 +260,7 @@ class UIManager {
             alert(`${type.toUpperCase()}: ${message}`);
         }
 
-        console.log(`📢 ${type.toUpperCase()}: ${message}`);
+        
     }
 
     /**
@@ -320,7 +320,7 @@ class UIManager {
                 this._saveSidebarState();
             }
             
-            console.log('📂 Sidebar opened');
+            
         }
     }
 
@@ -345,7 +345,7 @@ class UIManager {
                 this._saveSidebarState();
             }
             
-            console.log('📁 Sidebar closed');
+            
         }
     }
 
@@ -537,7 +537,7 @@ class UIManager {
         for (const [elementId] of this.loadingStates) {
             this.hideLoading(elementId);
         }
-        console.log('🧹 All loading states cleared');
+        
     }
 
     /**
@@ -555,7 +555,7 @@ class UIManager {
                 select.dispatchEvent(new Event('change'));
             });
             
-            console.log('📝 Form reset');
+            
         }
     }
 
@@ -621,7 +621,7 @@ class UIManager {
         // Remove event listeners
         window.removeEventListener('resize', this._handleResize);
         
-        console.log('🧹 UI Manager cleaned up');
+        
     }
 }
 

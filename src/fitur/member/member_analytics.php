@@ -1062,27 +1062,22 @@
         }
 
         function zoomIn() {
-            console.log('Zoom in functionality');
             // Implement zoom in logic
         }
 
         function zoomOut() {
-            console.log('Zoom out functionality');
             // Implement zoom out logic
         }
 
         function exportLocationData() {
-            console.log('Export location data');
             // Implement export functionality
         }
 
         function analyzeTraffic() {
-            console.log('Analyze traffic pattern');
             // Implement traffic analysis
         }
 
         function generateReport() {
-            console.log('Generate full report');
             // Implement report generation
         }
 

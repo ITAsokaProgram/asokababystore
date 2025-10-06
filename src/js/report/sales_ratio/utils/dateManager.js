@@ -26,7 +26,7 @@ class DateManager {
      */
     initialize() {
         try {
-            console.log('📅 Initializing Date Manager...');
+            
             
             // Check if Flatpickr is available
             if (typeof flatpickr === 'undefined') {
@@ -43,7 +43,7 @@ class DateManager {
             this._setDefaultDates();
             
             this.isInitialized = true;
-            console.log('✅ Date Manager initialized successfully');
+            
             return true;
             
         } catch (error) {
@@ -65,7 +65,7 @@ class DateManager {
         minDate.setFullYear(minDate.getFullYear() - 1);
         this.dateConstraints.minDate = minDate;
         
-        console.log('📅 Date constraints set:', this.dateConstraints);
+        
     }
 
     /**
@@ -114,7 +114,7 @@ class DateManager {
             const instance = flatpickr(element, finalOptions);
             this.flatpickrInstances.set(elementId, instance);
             
-            console.log(`📅 Date picker initialized for ${elementId}`);
+            
         } catch (error) {
             console.error(`❌ Error initializing date picker for ${elementId}:`, error);
         }
@@ -143,7 +143,7 @@ class DateManager {
                 }
             }
             
-            console.log('📅 Start date changed to:', formatDate(startDate));
+            
         }
     }
 
@@ -170,7 +170,7 @@ class DateManager {
                 }
             }
             
-            console.log('📅 End date changed to:', formatDate(endDate));
+            
         }
     }
 
@@ -183,7 +183,7 @@ class DateManager {
         
         this.setDateRange(defaultRange.startDate, defaultRange.endDate);
         
-        console.log('📅 Default dates set:', defaultRange);
+        
     }
 
     /**
@@ -363,7 +363,7 @@ class DateManager {
         }
 
         this.setDateRange(startDate, endDate);
-        console.log(`📅 Preset range set: ${preset}`, { startDate, endDate });
+        
     }
 
     /**
@@ -381,7 +381,7 @@ class DateManager {
             endPicker.clear();
         }
 
-        console.log('📅 Date range cleared');
+        
     }
 
     /**
@@ -389,7 +389,7 @@ class DateManager {
      */
     resetToDefault() {
         this._setDefaultDates();
-        console.log('📅 Reset to default date range');
+        
     }
 
     /**
@@ -473,7 +473,7 @@ class DateManager {
         for (const [elementId, instance] of this.flatpickrInstances) {
             try {
                 instance.destroy();
-                console.log(`📅 Date picker destroyed for ${elementId}`);
+                
             } catch (error) {
                 console.error(`❌ Error destroying date picker for ${elementId}:`, error);
             }
@@ -482,7 +482,7 @@ class DateManager {
         this.flatpickrInstances.clear();
         this.isInitialized = false;
         
-        console.log('📅 Date Manager destroyed');
+        
     }
 
     /**
@@ -513,7 +513,7 @@ class DateManager {
             instance.set('maxDate', this.dateConstraints.maxDate);
         }
 
-        console.log('📅 Date constraints updated:', this.dateConstraints);
+        
     }
 }
 

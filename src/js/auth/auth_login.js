@@ -68,8 +68,6 @@ export const pubsLoginByPhone = async (phone) => {
 
     const data = await response.json();
     if (response.ok && data.status === 'success') {
-      console.log('Login by phone successful:', data);
-      // Tampilkan notifikasi sukses jika Swal tersedia
       await Swal.fire({
         icon: 'success',
         title: 'Login Berhasil',

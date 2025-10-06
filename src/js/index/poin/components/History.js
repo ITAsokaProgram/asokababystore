@@ -69,7 +69,6 @@ export const closeHistoryModal = () => {
 const loadMoreHistoryData = async () => {
   if (isLoading || !hasMoreData) return;
 
-  console.log(`Loading page ${currentPage} with limit 10...`);
 
   isLoading = true;
   showLoadingSpinner();

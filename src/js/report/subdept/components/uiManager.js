@@ -21,7 +21,7 @@ class UIManager {
      */
     initialize() {
         try {
-            console.log('🎨 Initializing UI Manager...');
+            
 
             // Setup initial UI state
             this._setupInitialState();
@@ -30,7 +30,7 @@ class UIManager {
             this._setupSidebar();
 
             this.isInitialized = true;
-            console.log('✅ UI Manager initialized successfully');
+            
             return true;
 
         } catch (error) {
@@ -50,7 +50,7 @@ class UIManager {
         this.hideElement(ELEMENT_IDS.BTN_BACK);
         this.hideElement(ELEMENT_IDS.CONTAINER_TABLE);
 
-        console.log('🔧 Initial UI state configured');
+        
     }
 
     /**
@@ -64,7 +64,7 @@ class UIManager {
         if (sidebar && closeBtn) {
             closeBtn.addEventListener('click', () => {
                 sidebar.classList.remove('open');
-                console.log('📱 Sidebar closed');
+                
             });
         }
     }
@@ -88,7 +88,7 @@ class UIManager {
                     Swal.showLoading();
                 }
             });
-            console.log('⏳ Loading indicator shown');
+            
         } else {
             console.warn('⚠️ SweetAlert2 tidak tersedia');
         }
@@ -101,7 +101,7 @@ class UIManager {
         if (typeof Swal !== 'undefined' && this.loadingState) {
             Swal.close();
             this.loadingState = false;
-            console.log('✅ Loading indicator hidden');
+            
         }
     }
 
@@ -119,7 +119,7 @@ class UIManager {
                 timer: 3000,
                 timerProgressBar: true
             });
-            console.log('✅ Success notification shown');
+            
         }
     }
 
@@ -136,7 +136,7 @@ class UIManager {
                 text: text,
                 confirmButtonText: 'OK'
             });
-            console.log('❌ Error notification shown');
+            
         }
     }
 
@@ -153,7 +153,7 @@ class UIManager {
                 text: text,
                 confirmButtonText: 'OK'
             });
-            console.log('⚠️ Warning notification shown');
+            
         }
     }
 
@@ -176,7 +176,7 @@ class UIManager {
                 cancelButtonColor: '#d33'
             });
 
-            console.log('🤔 Confirmation dialog result:', result.isConfirmed);
+            
             return result.isConfirmed;
         }
         return false;
@@ -190,7 +190,7 @@ class UIManager {
         const element = document.getElementById(elementId);
         if (element) {
             element.style.display = 'block';
-            console.log(`👁️ Element ${elementId} shown`);
+            
         } else {
             console.warn(`⚠️ Element dengan ID '${elementId}' tidak ditemukan`);
         }
@@ -204,7 +204,7 @@ class UIManager {
         const element = document.getElementById(elementId);
         if (element) {
             element.style.display = 'none';
-            console.log(`🙈 Element ${elementId} hidden`);
+            
         } else {
             console.warn(`⚠️ Element dengan ID '${elementId}' tidak ditemukan`);
         }
@@ -219,7 +219,7 @@ class UIManager {
         if (element) {
             const isHidden = element.style.display === 'none';
             element.style.display = isHidden ? 'block' : 'none';
-            console.log(`🔄 Element ${elementId} toggled: ${isHidden ? 'shown' : 'hidden'}`);
+            
         } else {
             console.warn(`⚠️ Element dengan ID '${elementId}' tidak ditemukan`);
         }
@@ -246,7 +246,7 @@ class UIManager {
         const headerElement = document.getElementById(headerId);
         if (headerElement) {
             headerElement.innerHTML = headerText;
-            console.log(`📋 Report header updated: ${headerType}`);
+            
         } else if (headerId) {
             console.warn(`⚠️ Header element dengan ID '${headerId}' tidak ditemukan`);
         }
@@ -259,7 +259,7 @@ class UIManager {
         this.showElement(ELEMENT_IDS.CONTAINER_BAR);
         this.showElement(ELEMENT_IDS.CONTAINER_PIE);
         this.showElement(ELEMENT_IDS.CONTAINER_TABLE);
-        console.log('🏢 UI prepared for subdept mode');
+        
     }
 
     /**
@@ -268,7 +268,7 @@ class UIManager {
     preparePromoMode() {
         this.showElement(ELEMENT_IDS.BTN_BACK);
         this.showElement(ELEMENT_IDS.CONTAINER_TABLE);
-        console.log('🎁 UI prepared for promo mode');
+        
     }
 
     /**
@@ -279,7 +279,7 @@ class UIManager {
         this.hideElement(ELEMENT_IDS.CONTAINER_PIE);
         this.hideElement(ELEMENT_IDS.BTN_BACK);
         this.hideElement(ELEMENT_IDS.CONTAINER_TABLE);
-        console.log('🔄 UI reset to initial state');
+        
     }
 
     /**
@@ -296,7 +296,7 @@ class UIManager {
             } else {
                 button.classList.remove('disabled');
             }
-            console.log(`🔘 Button ${buttonId} ${disabled ? 'disabled' : 'enabled'}`);
+            
         }
     }
 
@@ -309,7 +309,7 @@ class UIManager {
         const button = document.getElementById(buttonId);
         if (button) {
             button.textContent = text;
-            console.log(`📝 Button ${buttonId} text updated: ${text}`);
+            
         }
     }
 
@@ -323,7 +323,7 @@ class UIManager {
             const originalText = button.textContent;
             button.innerHTML = `<span class="spinner-border spinner-border-sm" role="status"></span> ${originalText}`;
             button.disabled = true;
-            console.log(`⏳ Loading spinner added to button ${buttonId}`);
+            
         }
     }
 
@@ -337,7 +337,7 @@ class UIManager {
         if (button) {
             button.textContent = originalText;
             button.disabled = false;
-            console.log(`✅ Loading spinner removed from button ${buttonId}`);
+            
         }
     }
 
@@ -377,7 +377,7 @@ class UIManager {
                 selectElement.appendChild(optionElement);
             });
 
-            console.log(`📋 Select ${selectId} populated with ${options.length} options`);
+            
 
         } catch (error) {
             console.error(`❌ Error populating select ${selectId}:`, error);
@@ -399,12 +399,12 @@ class UIManager {
 
             if (branchName === 'SEMUA CABANG' || !branchName) {
                 storeCodeElement.value = '';
-                console.log('🏪 Store code cleared (semua cabang)');
+                
             } else {
                 const storeCode = storeCodes[branchName];
                 if (storeCode) {
                     storeCodeElement.value = storeCode;
-                    console.log(`🏪 Store code updated: ${branchName} → ${storeCode}`);
+                    
                 } else {
                     console.warn(`⚠️ Store code tidak ditemukan untuk cabang: ${branchName}`);
                 }
@@ -438,7 +438,7 @@ class UIManager {
         const element = document.getElementById(elementId);
         if (element) {
             element.value = value;
-            console.log(`📝 Element ${elementId} value set: ${value}`);
+            
         } else {
             console.warn(`⚠️ Element dengan ID '${elementId}' tidak ditemukan`);
         }

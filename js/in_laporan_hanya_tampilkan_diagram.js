@@ -32,7 +32,6 @@ document.getElementById('laporanForm').addEventListener('submit', function (even
   xhr.onload = function () {
     if (xhr.status === 200) {
       var response = JSON.parse(xhr.responseText);
-      console.log(response); // Tambahkan logging di sini untuk memeriksa respons
       if (response.status === 'success') {
         var labels = response.labels;
         var chartData = response.data;

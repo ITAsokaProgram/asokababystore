@@ -116,7 +116,6 @@ export const googleLogin = () => {
       if (!popup || popup.closed) {
         clearInterval(popupChecker);
         sessionStorage.removeItem("googleLoginProsess")
-        console.log('Popup ditutup');
         location.reload();
       }
     }, 500);

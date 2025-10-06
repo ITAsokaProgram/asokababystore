@@ -77,7 +77,6 @@ export const displayEditUserModal = (userData) => {
   form.querySelector("#editPosition").value = userData.hak;
   form.querySelector("#editCabang").value = userData.kode_cabang;
 
-  console.log(userData);
   // Reset semua checkbox
   const checkboxes = form.querySelectorAll("#editMenus input[type='checkbox']");
   checkboxes.forEach((cb) => (cb.checked = false));

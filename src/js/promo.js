@@ -364,17 +364,11 @@ function attachCheckboxListeners(containerId, cbId, btnId) {
     const semuaCabangCheckbox = container.querySelector('.cabangCheckbox[value="all"]');
     const storeCheckboxes = Array.from(checkboxes).filter(cb => cb.value !== "all");
 
-    console.log('Initial checkboxes:', {
-        semuaCabang: semuaCabangCheckbox,
-        storeCheckboxes: storeCheckboxes.map(cb => ({ value: cb.value, checked: cb.checked }))
-    });
+
 
     // Handle "SEMUA CABANG" checkbox
     semuaCabangCheckbox.addEventListener('change', () => {
-        console.log('SEMUA CABANG checkbox changed:', {
-            checked: semuaCabangCheckbox.checked,
-            value: semuaCabangCheckbox.value
-        });
+       
 
         if (semuaCabangCheckbox.checked) {
             // Uncheck and disable all other checkboxes
@@ -401,10 +395,7 @@ function attachCheckboxListeners(containerId, cbId, btnId) {
     // Handle individual store checkboxes
     storeCheckboxes.forEach(checkbox => {
         checkbox.addEventListener('change', () => {
-            console.log('Store checkbox changed:', {
-                value: checkbox.value,
-                checked: checkbox.checked
-            });
+      
 
             // If any store is checked, uncheck "SEMUA CABANG"
             if (checkbox.checked) {
@@ -604,7 +595,6 @@ $(document).ready(function () {
                     });
             } else {
                 // User membatalkan
-                console.log('User membatalkan penyimpanan.');
             }
         });
     });
@@ -651,7 +641,6 @@ $(document).ready(function () {
             status_digunakan: $("#status_edit_penggunaan").val(),
             barang: barangToSend
         };
-        console.log("request data", formData);
 
         // Validate form
         if (!formData.kode_promo || !formData.nama_supplier || !formData.kd_store || !formData.start || !formData.end || dataTable.length === 0) {
@@ -747,7 +736,6 @@ $(document).ready(function () {
                     });
             } else {
                 // User membatalkan
-                console.log('User membatalkan penyimpanan.');
             }
         });
     });
@@ -1103,7 +1091,6 @@ function applyValueToCells({ inputEl, targetSelector, type = 'diskon' }) {
         allDiskonInputEdit.disabled = true;
     }
 
-    console.log(`${type}`, targetCells);
 }
 function renderTableDisOrPot(dataBarang, tbodyId) {
     if (!Array.isArray(dataBarang)) {
@@ -1149,7 +1136,6 @@ function renderTableDisOrPotEd(dataBarang, tbodyId) {
     const tbody = document.getElementById(tbodyId);
     tbody.innerHTML = '';
     dataBarang.forEach(barang => {
-        console.log(barang.diskon)
         const tr = document.createElement('tr');
         tr.innerHTML = `
                         <td contenteditable="false" class="w-1/4 border border-pink-200 p-1 text-sm">${barang.plu}</td>
@@ -1368,7 +1354,6 @@ function editPromo(kode_promo, kode_supplier) {
                 const hasilFilter = data.data_promo.filter(b => {
                     return String(b.plu).toLowerCase().includes(keyword) || String(b.descp).toLowerCase().includes(keyword);
                 })
-                console.log(hasilFilter)
                 renderTableDisOrPotEd(hasilFilter, 'tbody-barang-edit');
             })
         })

@@ -85,7 +85,6 @@ class FilterHandler {
         window.totalPages = result.totalPages;
         window.totalRecords = result.total;
         window.currentPageSize = result.pageSize;
-        console.log("Filtered Result:", result);
         
         this.updateTable(result.data);
         this.updatePagination(result);

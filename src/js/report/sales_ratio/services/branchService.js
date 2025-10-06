@@ -34,7 +34,6 @@ class BranchService {
      */
     setCurrentStoreCode(branchName) {
         this.currentStoreCode = this.getStoreCode(branchName);
-        console.log('🏪 Store code set to:', this.currentStoreCode);
     }
 
     /**
@@ -128,7 +127,6 @@ class BranchService {
      */
     initialize(defaultBranch = 'SEMUA CABANG') {
         this.setCurrentStoreCode(defaultBranch);
-        console.log('🌿 Branch service initialized with default:', defaultBranch);
     }
 
     /**

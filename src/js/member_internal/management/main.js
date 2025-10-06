@@ -23,7 +23,6 @@ const init = async () => {
     // Initialize animations
     animationHandler.addHoverAnimations();
 
-    console.log("Member management module initialized successfully");
   } catch (error) {
     console.error("Error initializing member management module:", error);
     animationHandler.showNotification("Gagal menginisialisasi modul", "error");

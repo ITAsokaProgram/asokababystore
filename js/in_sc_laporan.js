@@ -46,7 +46,6 @@ function loadPage(page) {
   formData.append("ajax", "true"); // Pastikan flag ajax ditambahkan
   formData.append("page", page); // Tambahkan nomor halaman ke data form
   for (var pair of formData.entries()) {
-    console.log(pair[0] + ": " + pair[1]);
   }
   var xhr = new XMLHttpRequest();
   xhr.open("POST", "http://localhost/asoka-id/in_laporan.php?ajax=1", true); // Gunakan URL absolut dan query string
@@ -54,7 +53,6 @@ function loadPage(page) {
   xhr.onload = function () {
     if (xhr.status === 200) {
       var response = JSON.parse(xhr.responseText);
-      console.log(response); // Tambahkan logging di sini untuk memeriksa respons
       if (response.status === "success") {
         var labels = response.labels;
         var chartData = response.data;

@@ -17,8 +17,6 @@ export const resetPassword = async (email) => {
 
         const data = await response.json();
         if (response.ok && data.status === 'success') {
-            console.log('Reset password request successful:', data);
-            // Tampilkan notifikasi sukses jika Swal tersedia
             await Swal.fire({
                 icon: 'success',
                 title: 'Permintaan Reset Password Berhasil',

@@ -74,7 +74,6 @@ function sendDataFromBody(code, tanggalAwal, tanggalAkhir, query, page) {
     formData.append("query", query)
     formData.append("page", page)
     for (var pair of formData.entries()) {
-        console.log(pair[0] + ": " + pair[1]);
     }
     $.ajax({
         type: "POST",
@@ -83,7 +82,6 @@ function sendDataFromBody(code, tanggalAwal, tanggalAkhir, query, page) {
         processData: false,  // Tambahkan ini
         contentType: false,   // Tambahkan ini
         success: function (response) {
-            console.log("berhasil post data", response)
             updateChart(response.labels, response.data, response.tableData)
         }
     });
@@ -97,7 +95,6 @@ function sendDataSupermarket(code, tanggalAwal, tanggalAkhir, query, page) {
     formData.append("query", query)
     formData.append("page", page)
     for (var pair of formData.entries()) {
-        console.log(pair[0] + ": " + pair[1]);
     }
     $.ajax({
         type: "POST",
@@ -106,7 +103,6 @@ function sendDataSupermarket(code, tanggalAwal, tanggalAkhir, query, page) {
         processData: false,  // Tambahkan ini
         contentType: false,   // Tambahkan ini
         success: function (response) {
-            console.log("berhasil post data", response)
         }
     });
 }
@@ -118,7 +114,6 @@ function sendDataBabyStore(code, tanggalAwal, tanggalAkhir, query, page) {
     formData.append("query", query)
     formData.append("page", page)
     for (var pair of formData.entries()) {
-        console.log(pair[0] + ": " + pair[1]);
     }
     $.ajax({
         type: "POST",
@@ -127,7 +122,6 @@ function sendDataBabyStore(code, tanggalAwal, tanggalAkhir, query, page) {
         processData: false,  // Tambahkan ini
         contentType: false,   // Tambahkan ini
         success: function (response) {
-            console.log("berhasil post data", response)
         }
     });
 }

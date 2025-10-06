@@ -62,7 +62,7 @@ class ApiService {
      */
     async fetchSuppliers(storeCode) {
         try {
-            console.log('📡 Fetching suppliers for store:', storeCode);
+            
             
             const response = await fetch(`${API_ENDPOINTS.GET_SUPPLIERS}?kode=${storeCode}`, {
                 method: 'GET',
@@ -78,7 +78,7 @@ class ApiService {
             // Transform data to only include kode_supp
             const suppliers = data.map(item => item.kode_supp.trim());
             
-            console.log('✅ Suppliers loaded:', suppliers.length, 'items');
+            
             return suppliers;
             
         } catch (error) {
@@ -95,7 +95,7 @@ class ApiService {
      */
     async sendBarChartData(chartData, filter) {
         try {
-            console.log('📊 Sending bar chart data...');
+            
             
             const formData = this._createFormData({
                 kode_supp1: chartData.kode_supp1 || '',
@@ -120,7 +120,7 @@ class ApiService {
 
             const data = await response.json();
             
-            console.log('✅ Bar chart data received');
+            
             return data;
             
         } catch (error) {
@@ -138,7 +138,7 @@ class ApiService {
      */
     async sendTableData(tableData, page = 1, filter = 'Total') {
         try {
-            console.log('📋 Sending table data for page:', page);
+            
             
             const formData = this._createFormData({
                 selectKode: tableData.selectKode,
@@ -160,7 +160,7 @@ class ApiService {
 
             const data = await response.json();
             
-            console.log('✅ Table data received');
+            
             return data;
             
         } catch (error) {

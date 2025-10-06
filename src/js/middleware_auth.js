@@ -43,7 +43,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     const result = await response.json();
     sessionStorage.setItem("userName", result.data.nama);
     if (result.status !== "success") {
-      console.log("Token invalid atau expired", result);
       document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
       await Swal.fire({
         icon: "warning",

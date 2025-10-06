@@ -29,7 +29,7 @@ class EventHandlers {
      */
     setDateManager(dateManager) {
         this.dateManager = dateManager;
-        console.log('📅 DateManager reference set in EventHandlers');
+        
     }
 
     /**
@@ -62,7 +62,7 @@ class EventHandlers {
      */
     initialize() {
         try {
-            console.log('🎯 Initializing Event Handlers...');
+            
 
             // Setup all event handlers
             this._setupQueryTypeButtons();
@@ -76,7 +76,7 @@ class EventHandlers {
             this._setupCustomEventHandlers();
 
             this.isInitialized = true;
-            console.log('✅ Event Handlers initialized successfully');
+            
             return true;
 
         } catch (error) {
@@ -96,13 +96,13 @@ class EventHandlers {
             const handler = () => {
                 const queryType = button.value;
                 stateManager.setActiveQueryType(queryType);
-                console.log('🔄 Query type changed to:', queryType);
+                
             };
 
             this._addEventListener(button, 'click', handler);
         });
 
-        console.log('🔘 Query type buttons configured');
+        
     }
 
     /**
@@ -118,7 +118,7 @@ class EventHandlers {
             
             try {
                 const filter = uiManager.getElementValue(ELEMENT_IDS.SORT_BY);
-                console.log('📊 Submit button clicked with filter:', filter);
+                
 
                 // Reset state
                 stateManager.updatePagination(1, 1);
@@ -133,7 +133,7 @@ class EventHandlers {
         };
 
         this._addEventListener(submitBtn, 'click', handler);
-        console.log('✅ Submit button configured');
+        
     }
 
     /**
@@ -149,7 +149,7 @@ class EventHandlers {
             
             try {
                 const filter = uiManager.getElementValue(ELEMENT_IDS.SORT_BY);
-                console.log('🏪 Sub button clicked with filter:', filter);
+                
 
                 // Reset state
                 stateManager.updatePagination(1, 1);
@@ -167,7 +167,7 @@ class EventHandlers {
         };
 
         this._addEventListener(subBtn, 'click', handler);
-        console.log('✅ Sub button configured');
+        
     }
 
     /**
@@ -198,7 +198,7 @@ class EventHandlers {
             this._addEventListener(seePromoBtn, 'click', handler);
         }
 
-        console.log('🎁 Promo buttons configured');
+        
     }
 
     /**
@@ -213,7 +213,7 @@ class EventHandlers {
             e.preventDefault();
             
             try {
-                console.log('⬅️ Back button clicked');
+                
                 
                 // Reset UI state
                 uiManager.resetToInitialState();
@@ -226,7 +226,7 @@ class EventHandlers {
                 chartManager.resetPieChart();
                 chartManager.resetBarChart();
                 
-                console.log('🔄 Returned to initial state');
+                
 
             } catch (error) {
                 console.error('❌ Error in back handler:', error);
@@ -234,7 +234,7 @@ class EventHandlers {
         };
 
         this._addEventListener(backBtn, 'click', handler);
-        console.log('⬅️ Back button configured');
+        
     }
 
     /**
@@ -260,7 +260,7 @@ class EventHandlers {
             this._addEventListener(sortBy1, 'change', handler);
         }
 
-        console.log('🔢 Sort handlers configured');
+        
     }
 
     /**
@@ -274,7 +274,7 @@ class EventHandlers {
         const handler = async (e) => {
             try {
                 const selectedBranch = e.target.value;
-                console.log('🏢 Branch changed to:', selectedBranch);
+                
 
                 // Get store codes mapping
                 const storeCodes = await branchService.getStoreCodes();
@@ -288,7 +288,7 @@ class EventHandlers {
         };
 
         this._addEventListener(cabangSelect, 'change', handler);
-        console.log('🏢 Branch change handler configured');
+        
     }
 
     /**
@@ -308,7 +308,7 @@ class EventHandlers {
         };
 
         this._addEventListener(document.body, 'click', handler);
-        console.log('👆 Body click handler configured');
+        
     }
 
     /**
@@ -319,13 +319,13 @@ class EventHandlers {
         // Handler untuk pie chart click
         const handler = (e) => {
             const { name, value, data } = e.detail;
-            console.log('🥧 Pie chart clicked:', { name, value });
+            
             
             // Bisa ditambahkan logic untuk drill-down atau detail view
         };
 
         this._addEventListener(document, 'pieChartClick', handler);
-        console.log('🎯 Custom event handlers configured');
+        
     }
 
     /**
@@ -337,7 +337,7 @@ class EventHandlers {
     _handleSortChange(sortElementId, dataType) {
         try {
             const selected = uiManager.getElementValue(sortElementId);
-            console.log(`🔢 Sort changed for ${dataType}:`, selected);
+            
 
             if (dataType === 'subdept') {
                 this._handleSubdeptSort(selected);
@@ -443,7 +443,7 @@ class EventHandlers {
             const startDate = this._getStartDate();
             const endDate = this._getEndDate();
             
-            console.log('📅 Using dates:', { startDate, endDate });
+            
             uiManager.updateReportHeader(cabang, startDate, endDate);
 
             // Fetch data
@@ -457,7 +457,7 @@ class EventHandlers {
                 stateManager.updateTableCache(tableData);
                 tableManager.updateTable(tableData, ELEMENT_IDS.SALES_TABLE, 'subdept');
                 
-                console.log('✅ Page data loaded successfully');
+                
             }
 
         } catch (error) {
@@ -493,7 +493,7 @@ class EventHandlers {
                 stateManager.updateTableCache(tableData);
                 tableManager.updateTable(tableData, ELEMENT_IDS.SALES_TABLE_SUPPLIER, 'supplier');
                 
-                console.log('✅ Supplier data loaded successfully');
+                
             }
 
         } catch (error) {
@@ -547,7 +547,7 @@ class EventHandlers {
                 tableManager.updateTable(response.tableData, ELEMENT_IDS.SALES_TABLE_PROMO, 'promo');
                 tableManager.updatePromoTableHeader(ELEMENT_IDS.TH_HEAD_PROMO);
                 
-                console.log('✅ Promo data loaded successfully');
+                
             }
 
         } catch (error) {
@@ -585,7 +585,7 @@ class EventHandlers {
         
         this.eventListeners.clear();
         this.isInitialized = false;
-        console.log('🧹 Event handlers cleaned up');
+        
     }
 
     /**

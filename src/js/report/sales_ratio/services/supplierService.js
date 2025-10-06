@@ -27,7 +27,7 @@ class SupplierService {
         try {
             // Check cache first if useCache is true
             if (useCache && this.supplierCache.has(storeCode)) {
-                console.log('📦 Using cached suppliers for store:', storeCode);
+                
                 return this.supplierCache.get(storeCode);
             }
 
@@ -71,7 +71,7 @@ class SupplierService {
             inputField.data('loaded', true);
             inputField.data('suppliers', suppliers);
             
-            console.log('✅ Suppliers loaded for input:', inputId);
+            
             return suppliers;
             
         } catch (error) {
@@ -218,7 +218,7 @@ class SupplierService {
             }
         });
         
-        console.log('📋 Supplier dropdown updated with', values.length, 'options');
+        
     }
 
     /**
@@ -244,7 +244,7 @@ class SupplierService {
         $('[id^="kode_supp"]').hide();
         
         if (isNaN(ratioNumber) || ratioNumber < 1) {
-            console.log('🔒 All supplier inputs hidden');
+            
             return;
         }
         
@@ -256,7 +256,7 @@ class SupplierService {
             }
         }
         
-        console.log('👁️ Showing', ratioNumber, 'supplier inputs');
+        
     }
 
     /**
@@ -266,11 +266,11 @@ class SupplierService {
     clearCache(storeCode = null) {
         if (storeCode) {
             this.supplierCache.delete(storeCode);
-            console.log('🗑️ Cleared cache for store:', storeCode);
+            
         } else {
             this.supplierCache.clear();
             this.loadedInputs.clear();
-            console.log('🗑️ Cleared all supplier cache');
+            
         }
     }
 
@@ -287,7 +287,7 @@ class SupplierService {
             $input.removeData('suppliers');
         });
         
-        console.log('🔄 Reset loaded inputs status');
+        
     }
 
     /**

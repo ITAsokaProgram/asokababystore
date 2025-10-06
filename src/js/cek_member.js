@@ -56,7 +56,6 @@ export function getDataToMember(kode) {
         })
         .catch(error => {
             completeProgressBar();
-            console.log("Error", error)
         })
 }
 
@@ -750,7 +749,6 @@ function loadKotaDomisili() {
                 const kotaSelect = document.getElementById("kota_domisili");
                 const kotaArray = response.data;
                 kotaSelect.innerHTML = '<option value="">Pilih Kota</option>';
-                console.log("Kota", kotaArray)
                 kotaArray.forEach(kota => {
                     const option = document.createElement("option");
                     option.value = kota.code;
@@ -772,7 +770,6 @@ function loadKecDomisili() {
                 const kecSelect = document.getElementById("kecamatan_domisili");
                 const kecArray = response.data;
                 kecSelect.innerHTML = "<option value=''>Pilih Kecamatan</option>";
-                console.log("Kecamatan", kecArray)
                 kecArray.forEach(kec => {
                     const option = document.createElement("option");
                     option.value = kec.code;
@@ -794,7 +791,6 @@ function loadKelDomisili() {
                 const kelSelect = document.getElementById("kelurahan_domisili");
                 const kelArray = response.data;
                 kelSelect.innerHTML = "<option value=''>Pilih Kelurahan</option>";
-                console.log("Kelurahan", kelArray)
                 kelArray.forEach(kel => {
                     const option = document.createElement("option");
                     option.value = kel.code;

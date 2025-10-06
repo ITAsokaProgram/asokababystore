@@ -10,7 +10,6 @@ document.getElementById("btn-bar").addEventListener("click", function (e) {
     formData.append("kode_supp", document.querySelector("#kode_supp").value);
     formData.append("query_type", this.value);
   
-    console.log("🔄 Mengirim data ke server:", Object.fromEntries(formData));
   
     $.ajax({
       url: "http://localhost/asoka-id/in_laporan_sub_dept.php?ajax=1",
@@ -19,12 +18,10 @@ document.getElementById("btn-bar").addEventListener("click", function (e) {
       processData: false,
       contentType: false,
       success: function (response) {
-        console.log("✅ Response dari server (RAW):", response);
         let jsonResponse;
         try {
           jsonResponse =
             typeof response === "string" ? JSON.parse(response) : response;
-          console.log("📋 Parsed JSON Response:", jsonResponse);
         } catch (error) {
           console.error("❌ Gagal parsing JSON:", error, response);
           return;
@@ -32,7 +29,6 @@ document.getElementById("btn-bar").addEventListener("click", function (e) {
   
         if (jsonResponse && jsonResponse.status === "success") {
           if (jsonResponse.tableData) {
-            console.log("✅ Table Data Ditemukan:", jsonResponse.tableData);
           } else {
             console.warn(
               "⚠️ Table Data Tidak Ditemukan di Response:",
@@ -50,14 +46,12 @@ document.getElementById("btn-bar").addEventListener("click", function (e) {
   });
 
 function updateBarChart(labels, data,table){
-    console.log("📊 Updating Bar Chart with Data:", labels, data,table);
     
     var newData = labels.map((label, index) => ({
       promo: label,
       Qty: Number(data[index]),
       tanggal: String(table[index]?.periode)
     }));
-    console.log("Data Tabel: ", newData);
     var promo = newData.map(item => item.promo);
     var tanggal = newData.map(item => item.tanggal); // Ambil tanggal
     var qty = newData.map(item => item.Qty); // Ambil qty dalam bentuk angka

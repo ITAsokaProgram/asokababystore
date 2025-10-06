@@ -18,7 +18,7 @@ $token = $menuHandler->getToken();
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Poin</title>
+    <title>Poin Member</title>
 
     <!-- font awesome cdn link  -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
@@ -99,57 +99,59 @@ $token = $menuHandler->getToken();
         <!-- Enhanced Container with Gradient Background -->
         <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-6">
             <div class="max-w-7xl mx-auto">
-                <!-- Header Section with Glass Effect -->
-                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 mb-8 animate-fade-in-up hover:-translate-y-1 hover:shadow-2xl transition-all duration-300">
-                    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+               <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6 md:p-8 mb-8 animate-fade-in-up hover:-translate-y-1 hover:shadow-2xl transition-all duration-300">
+    
+                    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-y-8 lg:gap-x-6">
+                        
                         <div class="flex items-center space-x-4">
-                            <div class="relative">
-                                <div class="w-12 h-12 bg-gradient-to-r from-blue-400 to-indigo-400 rounded-xl flex items-center justify-center shadow-lg">
-                                    <i class="fas fa-id-card text-white text-xl"></i>
+                            <div class="relative shrink-0">
+                                <div class="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg">
+                                    <i class="fas fa-id-card text-white text-2xl"></i>
                                 </div>
                                 <div class="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white animate-pulse"></div>
                             </div>
                             <div>
                                 <h2 class="text-2xl font-bold text-gray-800">Data Member Poin</h2>
                                 <p class="text-gray-600 text-sm">Kelola dan monitor poin member</p>
-                                <div class="flex items-center space-x-2 mt-1">
+                                <div class="flex items-center space-x-2 mt-1.5">
                                     <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                                     <span class="text-xs text-green-600 font-medium">Sistem Aktif</span>
                                 </div>
                             </div>
                         </div>
                         
-                        <!-- Stats Section -->
-                        <div class="flex items-center space-x-6 mt-4 lg:mt-0">
-                            <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg text-center hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
-                                <div class="text-lg font-bold" id="totalMembers">0</div>
-                                <div class="text-xs opacity-90">Total Members</div>
-                            </div>
-                            <div class="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg text-center hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
-                                <div class="text-lg font-bold" id="activeMembers">0</div>
-                                <div class="text-xs opacity-90">Active</div>
-                            </div>
-
-                            <div class="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg text-center hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
-                                <div class="text-lg font-bold" id="totalNonActive">0</div>
-                                <div class="text-xs opacity-90">Non Active</div>
-                            </div>
-                        </div>
-                        
-                        <!-- Search Section -->
-                        <div class="flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-4">
-                            <div class="relative group">
-                                <input type="text" id="search" placeholder="Cari berdasarkan nama atau no HP..." 
-                                       class="pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm w-80 bg-white/90 backdrop-blur-sm shadow-sm transition-all duration-300 group-hover:shadow-md">
-                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <i class="fas fa-search text-gray-400 group-hover:text-blue-500 transition-colors duration-200"></i>
+                        <div class="flex flex-col md:flex-row items-stretch md:items-center gap-6 w-full lg:w-auto">
+                            
+                            <div class="flex items-center space-x-3 sm:space-x-4 shrink-0">
+                                <div class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg text-center hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
+                                    <div class="text-lg font-bold" id="totalMembers">0</div>
+                                    <div class="text-xs opacity-90">Total</div>
+                                </div>
+                                <div class="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg text-center hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
+                                    <div class="text-lg font-bold" id="activeMembers">0</div>
+                                    <div class="text-xs opacity-90">Aktif</div>
+                                </div>
+                                <div class="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg text-center hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
+                                    <div class="text-lg font-bold" id="totalNonActive">0</div>
+                                    <div class="text-xs opacity-90">Nonaktif</div>
                                 </div>
                             </div>
-                            <select id="status" class="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white/90 backdrop-blur-sm shadow-sm transition-all duration-300">
-                                <option value="allStatus">Semua Status</option>
-                                <option value="aktif">Aktif</option>
-                                <option value="nonaktif">Nonaktif</option>
-                            </select>
+                            
+                            <div class="flex flex-col sm:flex-row items-center gap-3 w-full">
+                                <div class="relative group w-full">
+                                    <input type="text" id="search" placeholder="Cari nama atau no HP..." 
+                                        class="pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm w-full bg-white/90 backdrop-blur-sm shadow-sm transition-all duration-300 group-hover:shadow-md sm:min-w-[280px]">
+                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <i class="fas fa-search text-gray-400 group-hover:text-blue-500 transition-colors duration-200"></i>
+                                    </div>
+                                </div>
+                                <select id="status" class="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white/90 backdrop-blur-sm shadow-sm transition-all duration-300 w-full sm:w-auto">
+                                    <option value="allStatus">Semua Status</option>
+                                    <option value="aktif">Aktif</option>
+                                    <option value="nonaktif">Nonaktif</option>
+                                </select>
+                            </div>
+
                         </div>
                     </div>
                 </div>

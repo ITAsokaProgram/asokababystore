@@ -21,7 +21,6 @@ export async function getRewardTrade(options = {}) {
     
     // Jika sedang dalam mode date filter, jangan gunakan API normal
     if (currentFilter === "date_filtered" && dateFilter) {
-      console.log("Currently in date filter mode, use applyDateFilter instead");
       return;
     }
     

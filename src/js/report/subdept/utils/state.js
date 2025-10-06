@@ -41,7 +41,7 @@ class StateManager {
         // Active query type
         this.activeQueryType = this.getStoredQueryType();
         
-        console.log('🎯 State Manager initialized');
+        
     }
 
     /**
@@ -59,7 +59,7 @@ class StateManager {
     setActiveQueryType(queryType) {
         this.activeQueryType = queryType;
         sessionStorage.setItem(STORAGE_KEYS.ACTIVE_QUERY_TYPE, queryType);
-        console.log('📝 Active query type updated:', queryType);
+        
     }
 
     /**
@@ -80,7 +80,7 @@ class StateManager {
         // Simpan ke localStorage untuk persistence
         localStorage.setItem(STORAGE_KEYS.SALES_TABLE_ORIGINAL, JSON.stringify(this.tableDataCache));
         
-        console.log('💾 Table cache updated:', this.tableDataCache.length, 'items');
+        
     }
 
     /**
@@ -107,7 +107,7 @@ class StateManager {
      */
     updateChartCache(data) {
         this.chartDataGlobal = Array.isArray(data) ? deepClone(data) : [];
-        console.log('📊 Chart cache updated:', this.chartDataGlobal.length, 'items');
+        
     }
 
     /**
@@ -128,7 +128,7 @@ class StateManager {
         // Simpan ke localStorage untuk bar chart
         localStorage.setItem(STORAGE_KEYS.CHART_BART, JSON.stringify(this.dataCharBar));
         
-        console.log('📈 Bar chart cache updated:', this.dataCharBar.length, 'items');
+        
     }
 
     /**
@@ -158,10 +158,7 @@ class StateManager {
         this.currentPage = current || DEFAULTS.CURRENT_PAGE;
         this.totalPages = total || DEFAULTS.TOTAL_PAGES;
         
-        console.log('📄 Pagination updated:', {
-            current: this.currentPage,
-            total: this.totalPages
-        });
+     
     }
 
     /**
@@ -181,7 +178,7 @@ class StateManager {
      */
     setSubdeptActive(active) {
         this.isSubdeptActive = !!active;
-        console.log('🏢 Subdept active status:', this.isSubdeptActive);
+        
     }
 
     /**
@@ -198,7 +195,7 @@ class StateManager {
      */
     setPromoStatus(active) {
         this.isPromo = !!active;
-        console.log('🎁 Promo status:', this.isPromo);
+        
     }
 
     /**
@@ -224,7 +221,7 @@ class StateManager {
             this.chartInstance = instances.chartInstance;
         }
         
-        console.log('📊 Chart instances updated');
+        
     }
 
     /**
@@ -257,7 +254,7 @@ class StateManager {
         localStorage.removeItem(STORAGE_KEYS.CHART_BART);
         sessionStorage.removeItem(STORAGE_KEYS.ACTIVE_QUERY_TYPE);
         
-        console.log('🔄 State reset to defaults');
+        
     }
 
     /**

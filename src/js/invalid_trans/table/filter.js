@@ -153,7 +153,6 @@ export const filterByTanggal = () => {
       data.jam,
       data.cabang
     );
-    console.log(ket.data[0].ket_cek);
     showInformation.classList.remove("hidden");
     namaPIC.textContent = ket.data[0].nama_cek;
     keterangan.textContent = ket.data[0].ket_cek;

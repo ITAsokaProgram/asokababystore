@@ -78,7 +78,6 @@ const createMultiSelectDropdown = (originalSelect, cabangData) => {
 
   // Fungsi untuk update tampilan button
   const updateButtonText = () => {
-    console.log('Updating button text with selectedValues:', [...selectedValues]);
     const selectedText = dropdownButton.querySelector('.selected-text');
     if (selectedValues.length === 0) {
       selectedText.textContent = "Pilih Cabang";
@@ -143,18 +142,15 @@ const createMultiSelectDropdown = (originalSelect, cabangData) => {
         if (e.target.checked) {
           if (!selectedValues.includes(value)) {
             selectedValues.push(value);
-            console.log('Added value:', value, 'Selected values:', [...selectedValues]);
           }
           // Hapus 'all' jika ada saat memilih individual
           if (selectedValues.includes('all')) {
             selectedValues = selectedValues.filter(v => v !== 'all');
             selectAllCheckbox.checked = false;
-            console.log('Removed "all" from selected values');
           }
         } else {
           selectedValues = selectedValues.filter(v => v !== value);
           selectAllCheckbox.checked = false;
-          console.log('Removed value:', value, 'Selected values:', [...selectedValues]);
         }
 
         // Jika semua cabang individual dipilih, check "Semua Cabang"
@@ -164,7 +160,6 @@ const createMultiSelectDropdown = (originalSelect, cabangData) => {
         if (checkedIndividual.length === individualCheckboxes.length && individualCheckboxes.length > 0) {
           selectAllCheckbox.checked = true;
           selectedValues = ['all'];
-          console.log('All branches selected, setting to ["all"]');
         }
       }
 
@@ -268,7 +263,6 @@ const createMultiSelectDropdown = (originalSelect, cabangData) => {
       hiddenInput.type = 'hidden';
       hiddenInput.name = 'cabang';
       hiddenInput.value = combinedValue;
-      console.log('Selected branches:', hiddenInput.value);
       container.appendChild(hiddenInput);
       
       // Tambahkan ke dropdown untuk tampilan (opsional)

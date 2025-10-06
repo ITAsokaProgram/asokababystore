@@ -166,7 +166,6 @@ class MemberDetailHandler {
           this.currentMember = apiResponse.member.kode_member;
           // Render with API data
           this.renderMemberDetail(detailPanel, mappedData);
-          console.log(this.currentMember);
         } else {
           throw new Error("API response invalid");
         }
@@ -772,7 +771,6 @@ class MemberDetailHandler {
       icon: "info",
       confirmButtonColor: "#3b82f6",
     });
-    console.log("Edit member:", memberId);
   }
 
   // Method to contact member
@@ -784,7 +782,6 @@ class MemberDetailHandler {
       icon: "info",
       confirmButtonColor: "#3b82f6",
     });
-    console.log("Contact member:", memberId, memberName);
   }
 
   // Method to hide member detail panel

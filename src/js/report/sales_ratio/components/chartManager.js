@@ -22,7 +22,6 @@ class ChartManager {
      */
     initialize() {
         try {
-            console.log('📊 Initializing Chart Manager...');
             
             // Check if echarts is available
             if (typeof echarts === 'undefined') {
@@ -36,7 +35,6 @@ class ChartManager {
             this._setupResizeListener();
             
             this.isInitialized = true;
-            console.log('✅ Chart Manager initialized successfully');
             return true;
             
         } catch (error) {
@@ -56,7 +54,6 @@ class ChartManager {
         }
 
         this.barChart = echarts.init(barElement);
-        console.log('📊 Bar chart instance created');
     }
 
     /**
@@ -83,7 +80,6 @@ class ChartManager {
                 return;
             }
 
-            console.log('📊 Updating bar chart with', tableData.length, 'items');
             
             // Process and sort data
             const processedData = this._processChartData(tableData, sortBy);
@@ -102,7 +98,6 @@ class ChartManager {
                 this.barChart.resize();
             }, CHART_CONFIG.ANIMATION_DURATION);
             
-            console.log('✅ Bar chart updated successfully');
             
         } catch (error) {
             console.error('❌ Error updating bar chart:', error);
@@ -301,7 +296,6 @@ class ChartManager {
         if (this.barChart) {
             this.barChart.clear();
             this.barChart.resize();
-            console.log('🔄 Bar chart reset');
         }
     }
 
@@ -364,7 +358,6 @@ class ChartManager {
         if (this.barChart) {
             this.barChart.dispose();
             this.barChart = null;
-            console.log('🗑️ Chart instance disposed');
         }
         this.isInitialized = false;
         this.currentData = null;

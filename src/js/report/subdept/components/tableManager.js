@@ -21,7 +21,7 @@ class TableManager {
      */
     initialize() {
         try {
-            console.log('📋 Initializing Table Manager...');
+            
             this.isInitialized = true;
             return true;
         } catch (error) {
@@ -38,7 +38,7 @@ class TableManager {
      */
     updateTable(data, tableId, tableType = 'subdept') {
         try {
-            console.log(`📊 Updating table ${tableId} with`, data.length, 'items');
+            
 
             const tableElement = document.getElementById(tableId);
             if (!tableElement) {
@@ -64,7 +64,7 @@ class TableManager {
             // Append to container
             tableElement.appendChild(table);
 
-            console.log(`✅ Table ${tableId} updated successfully`);
+            
 
         } catch (error) {
             console.error(`❌ Error updating table ${tableId}:`, error);
@@ -234,7 +234,7 @@ class TableManager {
             });
 
             headerElement.appendChild(tr);
-            console.log(`✅ Promo table header updated: ${headerId}`);
+            
 
         } catch (error) {
             console.error(`❌ Error updating promo table header:`, error);
@@ -333,7 +333,7 @@ class TableManager {
             const tableElement = document.getElementById(tableId);
             if (tableElement) {
                 tableElement.innerHTML = '';
-                console.log(`🗑️ Table ${tableId} cleared`);
+                
             }
         } catch (error) {
             console.error(`❌ Error clearing table ${tableId}:`, error);

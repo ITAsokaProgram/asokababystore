@@ -29,7 +29,7 @@ class EventHandlers {
      */
     initialize() {
         try {
-            console.log('🎯 Initializing Event Handlers...');
+            
             
             // Setup all event handlers
             this._setupFormHandlers();
@@ -37,7 +37,7 @@ class EventHandlers {
             this._setupKeyboardHandlers();
             
             this.isInitialized = true;
-            console.log('✅ Event Handlers initialized successfully');
+            
             return true;
             
         } catch (error) {
@@ -156,7 +156,7 @@ class EventHandlers {
      */
     async handleFormSubmit() {
         try {
-            console.log('📤 Form submission started');
+            
 
             // Validate form
             const validation = this._validateForm();
@@ -212,14 +212,14 @@ class EventHandlers {
                 uiManager.showSuccess('Data berhasil dimuat!');
                 stateManager.set('ui.activeView', 'results');
 
-                console.log('✅ Form submission completed successfully');
+                
             } else {
                 throw new Error(response.message || 'Failed to load data');
             }
 
         } catch (error) {
             if (error.name === 'AbortError') {
-                console.log('🚫 Request aborted');
+                
                 return;
             }
 
@@ -247,7 +247,7 @@ class EventHandlers {
      */
     async handleBranchChange(branchValue) {
         try {
-            console.log('🏢 Branch changed to:', branchValue);
+            
 
             if (!branchValue) {
                 // Clear suppliers when no branch selected
@@ -270,7 +270,7 @@ class EventHandlers {
             // Update state
             stateManager.set('form.selectedBranch', branchValue);
 
-            console.log('✅ Branch change handled successfully');
+            
 
         } catch (error) {
             console.error('❌ Branch change error:', error);
@@ -286,7 +286,7 @@ class EventHandlers {
      * @param {string} supplierValue - Selected supplier value
      */
     handleSupplierChange(supplierValue) {
-        console.log('📦 Supplier changed to:', supplierValue);
+        
 
         // Update state with current supplier selection
         const currentSuppliers = stateManager.get('form.selectedSuppliers') || [];
@@ -298,7 +298,7 @@ class EventHandlers {
             
             stateManager.set('form.selectedSuppliers', selectedValues);
             
-            console.log('📦 Selected suppliers:', selectedValues);
+            
         }
     }
 
@@ -307,7 +307,7 @@ class EventHandlers {
      * @param {string} sortValue - Selected sort value
      */
     handleSortChange(sortValue) {
-        console.log('🔄 Sort changed to:', sortValue);
+        
 
         // Update state
         stateManager.set('form.sortBy', sortValue);
@@ -335,7 +335,7 @@ class EventHandlers {
 
             if (!confirmed) return;
 
-            console.log('🔄 Form reset started');
+            
 
             // Reset date manager
             dateManager.resetToDefault();
@@ -358,7 +358,7 @@ class EventHandlers {
             supplierService.clearSuppliers();
 
             uiManager.showSuccess('Form has been reset');
-            console.log('✅ Form reset completed');
+            
 
         } catch (error) {
             console.error('❌ Form reset error:', error);
@@ -380,7 +380,7 @@ class EventHandlers {
             stateManager.set('ui.sidebarOpen', true);
         }
 
-        console.log('📂 Sidebar toggled:', !isOpen);
+        
     }
 
     /**
@@ -400,7 +400,7 @@ class EventHandlers {
             uiManager.closeSidebar(false); // Don't save state for mobile
         }
 
-        console.log('📱 Window resized, mobile mode:', isMobile);
+        
     }
 
     /**
@@ -553,7 +553,7 @@ class EventHandlers {
                 return;
             }
 
-            console.log(`📄 Exporting to ${format}...`);
+            
 
             if (format === 'excel') {
                 await tableManager.exportToExcel();
@@ -591,7 +591,7 @@ class EventHandlers {
         // For now, since we're using addEventListener directly, 
         // they'll be cleaned up when the page unloads
 
-        console.log('🧹 Event Handlers cleaned up');
+        
         this.isInitialized = false;
     }
 }

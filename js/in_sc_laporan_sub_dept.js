@@ -4,7 +4,6 @@ let totalPages = 1;
 const form = document.getElementById("laporanForm");
 document.getElementById("btn-submit").addEventListener('click', ((e)=>{
     e.preventDefault();
-    console.log("test");
     currentPage = 1;
     loadPage(currentPage);
 }));
@@ -31,7 +30,6 @@ function loadPage(page) {
   formData.append("ajax", "true"); // Pastikan flag ajax ditambahkan
   formData.append("page", page); // Tambahkan nomor halaman ke data form
   for (var pair of formData.entries()) {
-    console.log(pair[0] + ": " + pair[1]);
   }
   var xhr = new XMLHttpRequest();
   xhr.open(
@@ -43,7 +41,6 @@ function loadPage(page) {
   xhr.onload = function () {
     if (xhr.status === 200) {
       var response = JSON.parse(xhr.responseText);
-      console.log(response); // Tambahkan logging di sini untuk memeriksa respons
       if (response.status === "success") {
         var labels = response.labels;
         var chartData = response.data;
@@ -135,7 +132,6 @@ if (startDateInput && endDateInput) {
 
 // echart js
 function updateTable(data) {
-  console.log("📋 Updating Table with Data:", data);
   var tableBody = document.querySelector("#salesTable tbody");
   tableBody.innerHTML = "";
 
@@ -150,7 +146,6 @@ function updateTable(data) {
 
   data.forEach((row, index) => {
     var newRow = tableBody.insertRow();
-    console.log("📋 Updating Table with Data:", row);
     newRow.insertCell(0).textContent = index + 1;
     newRow.insertCell(1).textContent = row.kode_supp ||  row.nama_subdept;
     newRow.insertCell(2).textContent = row.Qty;
@@ -211,8 +206,6 @@ echartDiagram.on("click", function (params) {
       subdept: subdept,
     },
     success: function (response) {
-        console.log("data sub: ",subdept);
-        console.log("✅ Response dari server:", response);
     },
     error: function (xhr, status, error) {
       console.error("❌ AJAX Error:", error);
@@ -222,12 +215,10 @@ echartDiagram.on("click", function (params) {
 });
 
 function updateChart(labels, data) {
-  console.log("📊 Updating Chart with Data:", labels, data);
   var newData = labels.map((label, index) => ({
     name: label,
     value: String(data[index]),
   }));
-  console.log("Data Tabel: ", newData);
   echartDiagram.setOption({
     series: [
       {
