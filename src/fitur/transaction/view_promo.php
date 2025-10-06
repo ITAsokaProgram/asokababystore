@@ -79,38 +79,39 @@ $token = $menuHandler->getToken();
 
   <main id="main-content" class="flex-1 p-6 transition-all duration-300 ml-64">
     <div class="w-full mx-auto px-4 py-8">
-      <!-- Header Section -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6 fade-in">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-              <i class="fas fa-tags text-blue-600 text-lg"></i>
-            </div>
-            <div>
-              <h1 class="text-2xl font-semibold text-gray-900">Manajemen Promo</h1>
-              <p class="text-gray-500 text-sm">Kelola dan pantau semua promo yang aktif</p>
-            </div>
+      
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6 fade-in">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+            <i class="fas fa-tags text-blue-600 text-lg"></i>
           </div>
-
-          <!-- Action Buttons -->
-          <div class="flex items-center space-x-3">
-            <div class="relative">
-              <input
-                type="text"
-                id="searchInput"
-                placeholder="Cari promo..."
-                class="pl-10 pr-4 py-2.5 w-64 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200" />
-              <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
-            </div>
-            <button
-              onclick="tambahPromo()"
-              class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 flex items-center space-x-2 hover-lift shadow-sm">
-              <i class="fas fa-plus text-sm"></i>
-              <span class="font-medium">Tambah Promo</span>
-            </button>
+          <div>
+            <h1 class="text-2xl font-semibold text-gray-900">Manajemen Promo</h1>
+            <p class="text-gray-500 text-sm">Kelola dan pantau semua promo yang aktif</p>
           </div>
         </div>
+
+        <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+          <div class="relative w-full">
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Cari promo..."
+              class="pl-10 pr-4 py-2.5 w-full rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200" />
+            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
+          </div>
+          <button
+            onclick="tambahPromo()"
+            class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 hover-lift shadow-sm w-full sm:w-auto flex-shrink-0">
+            <i class="fas fa-plus text-sm"></i>
+            <span class="font-medium">Tambah Promo</span>
+          </button>
+        </div>
+
       </div>
+    </div>
 
       <!-- Table Container -->
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden fade-in">
