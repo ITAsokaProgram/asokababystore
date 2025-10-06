@@ -208,11 +208,11 @@ $token = $menuHandler->getToken();
         </div>
         
         <!-- Floating Action Button -->
-        <div class="fixed bottom-8 right-8 z-50">
+        <!-- <div class="fixed bottom-8 right-8 z-50">
             <button class="w-14 h-14 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-full shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300 flex items-center justify-center">
                 <i class="fas fa-plus text-xl"></i>
             </button>
-        </div>
+        </div> -->
         
     </main>
     <!-- Enhanced Modal Wrapper -->
