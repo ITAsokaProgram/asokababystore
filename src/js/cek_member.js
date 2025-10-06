@@ -476,7 +476,6 @@ function btnClickCheck(btnId, inputId) {
         e.preventDefault();
         const inputElement = document.querySelector(inputId);
         if (!inputElement) {
-            console.warn(`Input element not found: ${inputId}`);
             return;
         }
         
@@ -499,7 +498,6 @@ function btnClickCheck(btnId, inputId) {
 function onlyNumberInput(placeholder, maxLength) {
     const input = document.querySelector(placeholder);
     if (!input) {
-        console.warn(`Input element not found: ${placeholder}`);
         return;
     }
     input.addEventListener("input", () => {
@@ -510,7 +508,6 @@ function onlyNumberInput(placeholder, maxLength) {
 function onlyAlphabetInput(placeholder, maxLength) {
     const input = document.querySelector(placeholder);
     if (!input) {
-        console.warn(`Input element not found: ${placeholder}`);
         return;
     }
     input.addEventListener("input", () => {
@@ -521,7 +518,6 @@ function onlyAlphabetInput(placeholder, maxLength) {
 function onlyAlphaAndNumberInput(placeholder, maxLength) {
     const input = document.querySelector(placeholder);
     if (!input) {
-        console.warn(`Input element not found: ${placeholder}`);
         return;
     }
     input.addEventListener("input", () => {

@@ -7,7 +7,6 @@ export const toogleLoginDropdown = (login, name = '') => {
 
     // Check if elements exist
     if (!logginDropdown || !profileDropdown || !userBtn) {
-        console.warn('Dropdown elements not found');
         return;
     }
 
