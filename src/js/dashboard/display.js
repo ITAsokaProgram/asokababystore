@@ -6,11 +6,16 @@ window.addEventListener("DOMContentLoaded", () => {
   // Fetch transaction data
   fetch(API_URL)
     .then((res) => {
-      if (!res.ok) throw new Error("Network response was not ok");
-      return res.json();
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    if (res.status === 204) {
+      return null;
+    }      
+    return res.json();
     })
     .then((data) => {
-      updateUI(data.data);
+      updateUI(data ? data.data : null); 
     })
     .catch((err) => {
       console.error("Gagal fetch data:", err);

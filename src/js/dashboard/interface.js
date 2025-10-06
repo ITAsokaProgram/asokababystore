@@ -3,6 +3,22 @@ import { getCookie } from "/src/js/index/utils/cookies.js";
 import { fetchMargin } from "/src/js/margin/fetch/get_margin.js";
 
 function updateUI(data) {
+  if (!data) {
+    setText("total_trans", "-");
+    setText("total_trans_member", "-");
+    setText("total_trans_non", "-");
+    setText("cabang-t", "-");
+    setText("trans_tertinggi_total", "-");
+    setText("trans_tertinggi_member", "-");
+    setText("trans_tertinggi_non", "-");
+    setText("cabang-tr", "-");
+    setText("trans_terendah_total", "-");
+    setText("trans_terendah_member", "-");
+    setText("trans_terendah_non", "-");
+    setText("top_sales_member", "-");
+    setText("top_sales_product_member", "-");
+    return;
+  }
   const trans = data.trans_tertinggi[0];
   const gabungkan = data.jumlah_member_per_cabang.find(
     (item) => item.cabang === trans.cabang
