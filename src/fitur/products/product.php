@@ -8,21 +8,7 @@
     <!-- Tailwind via CDN -->
     <link rel="stylesheet" href="../../output2.css">
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: {
-                            50: '#f0f9ff',
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            700: '#1d4ed8',
-                            900: '#1e3a8a'
-                        }
-                    }
-                }
-            }
-        }
+       
     </script>
     <link rel="stylesheet" href="../../style/header.css">
     <link rel="stylesheet" href="../../style/sidebar.css">

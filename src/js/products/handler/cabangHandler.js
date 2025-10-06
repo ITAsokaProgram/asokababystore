@@ -4,7 +4,6 @@ export const cabangHandler = {
   selectCabang: async (cabangId) => {
     try {
       const response = await cabang.getCabangData();
-      console.log("Cabang API Response:", response); // Debug log
 
       cabangId.innerHTML = ""; // Clear existing options
 

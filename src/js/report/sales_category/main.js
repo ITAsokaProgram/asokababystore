@@ -220,7 +220,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const success = await window.salesCategoryApp.initialize();
     
     if (success) {
-        console.log('Sales Category Application is ready!');
     } else {
         console.error('Failed to start Sales Category Application');
     }
