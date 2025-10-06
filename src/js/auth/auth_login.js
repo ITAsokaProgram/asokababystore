@@ -13,7 +13,6 @@ export const pubsLogin = async (email, password) => {
 
     const data = await response.json();
     if (response.ok && data.User.status === 'success') {
-      console.log('Login successful:', data);
       // Tampilkan notifikasi sukses jika Swal tersedia
       await Swal.fire({
         icon: 'success',

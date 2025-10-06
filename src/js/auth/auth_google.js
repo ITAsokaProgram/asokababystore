@@ -47,7 +47,6 @@ export const googleLogin = () => {
     // if (event.origin !== window.location.origin) return;
 
     const data = event.data;
-    console.log('Message received:', data);
 
     if (data && data.status === 'success') {
       if (window.Swal) {
@@ -128,7 +127,6 @@ export const googleLogin = () => {
 
 window.addEventListener("DOMContentLoaded", () => {
   const nav = performance.getEntriesByType("navigation")[0];
-  console.log(nav)
   if (nav && nav.type === "reload") sessionStorage.removeItem("googleLoginProsess");
 })
 
