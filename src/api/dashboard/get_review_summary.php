@@ -27,27 +27,37 @@ FROM review";
 
 
 
-
 $sqlFeatured = "
 SELECT
     r.id,
     r.rating,
     ua.nama_lengkap AS nama_customer,
-    r.sudah_terpecahkan,
     k.nm_alias AS cabang,
-    rd.status AS review_status,
+    COALESCE(rd.status, 'pending') AS review_status, 
     r.dibuat_tgl
 FROM
     review r
-LEFT JOIN user_asoka ua ON r.id_user = ua.id_user
-LEFT JOIN kode_store k ON k.kd_store = SUBSTRING(r.no_bon, 1, 4)
-LEFT JOIN review_detail rd ON r.id = rd.review_id
+LEFT JOIN
+    user_asoka ua ON r.id_user = ua.id_user
+LEFT JOIN
+    kode_store k ON k.kd_store = SUBSTRING(r.no_bon, 1, 4)
+LEFT JOIN
+    review_detail rd ON r.id = rd.review_id
+WHERE
+    r.rating <= 3 
 ORDER BY
-    COALESCE(r.sudah_terpecahkan, 0) ASC,
-    CASE WHEN rd.review_id IS NULL THEN 0 ELSE 1 END ASC,
+    
+    CASE
+        WHEN rd.status IS NULL OR rd.status = 'pending' THEN 1 
+        WHEN rd.status = 'in_progress' THEN 2 
+        WHEN rd.status = 'resolved' THEN 3 
+        ELSE 4 
+    END ASC,
+    
     r.dibuat_tgl DESC
 LIMIT 1;
 ";
+
 
 try {
     
