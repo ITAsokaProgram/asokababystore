@@ -15,6 +15,7 @@ export const fetchUserPoints = async () => {
     const data = await response.json();
 
     if (response.status === 200) {
+      console.log("user points", data);
       return data.data;
     } else {
       console.log(data.message);
@@ -37,6 +38,7 @@ export const fetchHistoryPoints = async () => {
         const data = await response.json();
     
         if (response.status === 200) {
+        console.log("history points", data);
         return data.data;
         } else {
         console.log(data.message);

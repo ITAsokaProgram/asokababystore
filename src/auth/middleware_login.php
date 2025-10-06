@@ -473,3 +473,22 @@ function getBrowserName($userAgent)
         return 'Unknown';
     }
 }
+
+
+function getAuthenticatedUser()
+{
+    if (!isset($_COOKIE['token']) || empty($_COOKIE['token'])) {
+        header("Location: /log_in");
+        exit();
+    }
+
+    $token = $_COOKIE['token'];
+    $decodedData = verify_token($token); 
+
+    if (is_array($decodedData) && isset($decodedData['status']) && $decodedData['status'] === 'error') {
+        header("Location: /log_in");
+        exit();
+    }
+
+    return $decodedData;
+}

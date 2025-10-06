@@ -1,21 +1,24 @@
 // Format tanggal
-export const formatDate = (dateString) => {
-  const date = new Date(dateString);
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-
-  if (date.toDateString() === today.toDateString()) {
-    return "Hari ini";
-  } else if (date.toDateString() === yesterday.toDateString()) {
-    return "Kemarin";
-  } else {
-    const options = {
+export const formatDate = (dateStr) => {
+  if (!dateStr || dateStr === "00-00-0000") {
+    return "Tanggal tidak valid"; 
+  }
+  const parts = dateStr.split('-');
+  const isoDateStr = `${parts[2]}-${parts[1]}-${parts[0]}`;
+  
+  try {
+    const date = new Date(isoDateStr);
+    if (isNaN(date.getTime())) {
+        return "Tanggal tidak valid";
+    }
+    return date.toLocaleDateString("id-ID", {
+      weekday: "short",
       day: "numeric",
-      month: "long",
+      month: "short",
       year: "numeric",
-    };
-    return date.toLocaleDateString("id-ID", options);
+    });
+  } catch {
+    return dateStr; // Fallback
   }
 };
 
@@ -63,10 +66,19 @@ export const renderPointsList = (data) => {
         }
       };
 
-      // Format tanggal lebih baik
       const formatDate = (dateStr) => {
+        if (!dateStr || dateStr === "00-00-0000") {
+          return "Tanggal tidak valid"; 
+        }
+
+        const parts = dateStr.split('-');
+        const isoDateStr = `${parts[2]}-${parts[1]}-${parts[0]}`;
+        
         try {
-          const date = new Date(dateStr);
+          const date = new Date(isoDateStr);
+          if (isNaN(date.getTime())) {
+              return "Tanggal tidak valid";
+          }
           return date.toLocaleDateString("id-ID", {
             weekday: "short",
             day: "numeric",
@@ -74,7 +86,7 @@ export const renderPointsList = (data) => {
             year: "numeric",
           });
         } catch {
-          return dateStr;
+          return dateStr; 
         }
       };
 

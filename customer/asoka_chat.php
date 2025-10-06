@@ -2,20 +2,9 @@
 require_once __DIR__ . '/../aa_kon_sett.php';
 require_once __DIR__ . '/../src/auth/middleware_login.php';
 
-$token = $_COOKIE['token'];
-$userId = null;
-if ($token) {
-    $verify = verify_token($token);
-    if ($verify) {
-        $userId = $verify->id;
-    } else {
-        header("Location:/log_in");
-        exit;
-    }
-} else {
-    header("Location:/log_in");
-    exit;
-}
+$user = getAuthenticatedUser();
+
+$userId = $user->id; 
 ?>
 <!DOCTYPE html>
 <html lang="id">

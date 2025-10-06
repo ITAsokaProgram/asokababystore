@@ -1,39 +1,12 @@
 <?php
 require_once __DIR__ . '/../../../../../aa_kon_sett.php';
 require_once __DIR__ . '/../../../../../src/auth/middleware_login.php';
+require_once __DIR__ . '/../../../../../src/helpers/visitor_helper.php'; 
 
-$token = $_COOKIE['token'];
-$userId = null;
-$ip = $_SERVER['REMOTE_ADDR'];
-$ua = $_SERVER['HTTP_USER_AGENT'];
-$page = $_SERVER['REQUEST_URI'];
-$verify = verify_token($token);
-$pageName = "Customer Profile";
-if ($token) {
-    $userId = $verify->id;
-    // Cek apakah sudah ada record dalam 5 menit terakhir
-    $stmt = $conn->prepare("
-    SELECT id FROM visitors
-    WHERE COALESCE(user_id, ip) = COALESCE(?, ?)
-      AND page = ?
-      AND visit_time >= (NOW() - INTERVAL 5 MINUTE)
-    LIMIT 1
-");
-    $stmt->bind_param("sss", $userId, $ip, $page);
-    $stmt->execute();
-    $stmt->store_result();
+$user = getAuthenticatedUser();
 
-    if ($stmt->num_rows === 0) {
-        $stmt = $conn->prepare("
-        INSERT INTO visitors (user_id, ip, user_agent, page, page_name) 
-        VALUES (?, ?, ?, ?, ?)
-    ");
-        $stmt->bind_param("issss", $userId, $ip, $ua, $page, $pageName);
-        $stmt->execute();
-    }
-} else {
-    header("Location:/log_in");
-}
+logVisitor($conn, $user->id, "Customer Profile");
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -149,7 +122,7 @@ if ($token) {
                             <i class="fas fa-user-circle text-3xl"></i>
                         </div>
                         <div>
-                            <h2 class="text-2xl font-bold mb-1"><?= isset($verify->nama) ? htmlspecialchars($verify->nama) : "User" ?></h2>
+                            <h2 class="text-2xl font-bold mb-1"><?= isset($user->nama) ? htmlspecialchars($user->nama) : "User" ?></h2>
                             <p id="status" class="text-pink-100 text-sm">Member Asoka Baby Store</p>
                             <div class="flex items-center gap-2 mt-2">
                                 <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
@@ -174,7 +147,7 @@ if ($token) {
                     <div class="flex-1">
                         <p class="text-xs text-gray-500 font-medium">Email</p>
                         <p class="text-gray-800 font-semibold break-words" id="email">
-                            <?= isset($verify->email) ? htmlspecialchars($verify->email) : "-" ?>
+                            <?= isset($user->email) ? htmlspecialchars($user->email) : "-" ?>
                         </p>
                     </div>
                 </div>
@@ -493,7 +466,7 @@ if ($token) {
                             <input type="email" readonly required id="member-email" name="email" placeholder="Email Aktif"
                                 autocomplete="on"
                                 class="w-full border-2 border-gray-200 rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-300"
-                                value="<?= isset($verify->email) ? htmlspecialchars($verify->email) : "-" ?>" />
+                                value="<?= isset($user->email) ? htmlspecialchars($user->email) : "-" ?>" />
                         </div>
                     </div>
 

@@ -1,39 +1,11 @@
 <?php
 require_once __DIR__ . '/../aa_kon_sett.php';
 require_once __DIR__ . '/../src/auth/middleware_login.php';
+require_once __DIR__ . '/../src/helpers/visitor_helper.php';
 
-$token = $_COOKIE['token'];
-$userId = null;
-$ip = $_SERVER['REMOTE_ADDR'];
-$ua = $_SERVER['HTTP_USER_AGENT'];
-$page = $_SERVER['REQUEST_URI'];
-$verify = verify_token($token);
-$pageName = "Customer Produk";
-if ($token) {
-    $userId = $verify->id;
-    // Cek apakah sudah ada record dalam 5 menit terakhir
-    $stmt = $conn->prepare("
-    SELECT id FROM visitors
-    WHERE COALESCE(user_id, ip) = COALESCE(?, ?)
-      AND page = ?
-      AND visit_time >= (NOW() - INTERVAL 5 MINUTE)
-    LIMIT 1
-");
-    $stmt->bind_param("sss", $userId, $ip, $page);
-    $stmt->execute();
-    $stmt->store_result();
+$user = getAuthenticatedUser();
 
-    if ($stmt->num_rows === 0) {
-        $stmt = $conn->prepare("
-        INSERT INTO visitors (user_id, ip, user_agent, page, page_name) 
-        VALUES (?, ?, ?, ?, ?)
-    ");
-        $stmt->bind_param("issss", $userId, $ip, $ua, $page, $pageName);
-        $stmt->execute();
-    }
-} else {
-    header("Location:/log_in");
-}
+logVisitor($conn, $user->id, "Customer Produk");
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -196,15 +168,15 @@ if ($token) {
                             <div class="w-8 h-8 bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] rounded-full flex items-center justify-center">
                                 <i class="fas fa-user text-white text-sm"></i>
                             </div>
-                            <span class="hidden md:inline text-sm text-gray-700"><?php echo $verify->nama; ?></span>
+                            <span class="hidden md:inline text-sm text-gray-700"><?php echo $user->nama; ?></span>
                             <i class="fas fa-chevron-down text-xs text-gray-500"></i>
                         </button>
 
                         <!-- Dropdown Menu -->
                         <div id="userDropdownMenu" class="dropdown-menu absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-200 py-2">
                             <div class="px-4 py-3 border-b border-gray-100">
-                                <p class="text-sm font-semibold text-gray-800"><?php echo $verify->nama; ?></p>
-                                <p class="text-xs text-gray-500"><?php echo $verify->email; ?></p>
+                                <p class="text-sm font-semibold text-gray-800"><?php echo $user->nama; ?></p>
+                                <p class="text-xs text-gray-500"><?php echo $user->email; ?></p>
                             </div>
                             <div class="py-2">
                                 <a href="/customer/home" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors">

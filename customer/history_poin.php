@@ -1,39 +1,11 @@
 <?php
 require_once __DIR__ . '/../aa_kon_sett.php';
 require_once __DIR__ . '/../src/auth/middleware_login.php';
+require_once __DIR__ . '/../src/helpers/visitor_helper.php';
 
-$token = $_COOKIE['token'];
-$userId = null;
-$ip = $_SERVER['REMOTE_ADDR'];
-$ua = $_SERVER['HTTP_USER_AGENT'];
-$page = $_SERVER['REQUEST_URI'];
-$pageName = "History Poin";
-if ($token) {
-    $verify = verify_token($token);
-    $userId = $verify->id;
-    // Cek apakah sudah ada record dalam 5 menit terakhir
-    $stmt = $conn->prepare("
-    SELECT id FROM visitors
-    WHERE COALESCE(user_id, ip) = COALESCE(?, ?)
-      AND page = ?
-      AND visit_time >= (NOW() - INTERVAL 5 MINUTE)
-    LIMIT 1
-");
-    $stmt->bind_param("sss", $userId, $ip, $page);
-    $stmt->execute();
-    $stmt->store_result();
+$user = getAuthenticatedUser();
 
-    if ($stmt->num_rows === 0) {
-        $stmt = $conn->prepare("
-        INSERT INTO visitors (user_id, ip, user_agent, page, page_name) 
-        VALUES (?, ?, ?, ?, ?)
-    ");
-        $stmt->bind_param("issss", $userId, $ip, $ua, $page, $pageName);
-        $stmt->execute();
-    }
-} else {
-    header("Location:/log_in");
-}
+logVisitor($conn, $user->id, "History Poin");
 ?>
 <!DOCTYPE html>
 <html lang="id">

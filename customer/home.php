@@ -1,68 +1,36 @@
 <?php
 require_once __DIR__ . '/../aa_kon_sett.php';
 require_once __DIR__ . '/../src/auth/middleware_login.php';
+require_once __DIR__ . '/../src/helpers/visitor_helper.php';
 
-$token = $_COOKIE['token'];
-$userId = null;
-$ip = $_SERVER['REMOTE_ADDR'];
-$ua = $_SERVER['HTTP_USER_AGENT'];
-$page = $_SERVER['REQUEST_URI'];
-$pageName = "Dashboard Customer";
-if ($token) {
-    $verify = verify_token($token);
-    $userId = $verify->id;
-    // Cek apakah sudah ada record dalam 5 menit terakhir
-    $stmt = $conn->prepare("
-    SELECT id FROM visitors
-    WHERE COALESCE(user_id, ip) = COALESCE(?, ?)
-      AND page = ?
-      AND visit_time >= (NOW() - INTERVAL 5 MINUTE)
-    LIMIT 1
+$user = getAuthenticatedUser();
+logVisitor($conn, $user->id, "Dashboard Customer");
+
+$totalUnreadCount = 0; 
+
+$stmtUnread = $conn->prepare("
+    SELECT SUM(unread_count) AS total_unread
+    FROM (
+        SELECT
+            (SELECT COUNT(*)
+            FROM contact_us_conversation cuc
+            WHERE cuc.contact_us_id = cu.id
+            AND cuc.sudah_dibaca = 0
+            AND cuc.pengirim_type = 'admin'
+            ) AS unread_count
+        FROM contact_us cu
+        WHERE cu.id_user = ?
+    ) AS unread_counts
 ");
-    $stmt->bind_param("sss", $userId, $ip, $page);
-    $stmt->execute();
-    $stmt->store_result();
-
-    if ($stmt->num_rows === 0) {
-        $stmt = $conn->prepare("
-        INSERT INTO visitors (user_id, ip, user_agent, page, page_name) 
-        VALUES (?, ?, ?, ?, ?)
-    ");
-        $stmt->bind_param("issss", $userId, $ip, $ua, $page, $pageName);
-        $stmt->execute();
+if ($stmtUnread) {
+    $stmtUnread->bind_param("i", $user->id);
+    $stmtUnread->execute();
+    $resultUnread = $stmtUnread->get_result();
+    if ($row = $resultUnread->fetch_assoc()) {
+        $totalUnreadCount = (int)($row['total_unread'] ?? 0);
     }
-    // --- [TAMBAHKAN KODE INI] ---
-    $totalUnreadCount = 0; // Inisialisasi variabel unread count
-
-    // Query untuk mengambil total pesan yang belum dibaca oleh admin
-    $stmtUnread = $conn->prepare("
-        SELECT SUM(unread_count) AS total_unread
-        FROM (
-            SELECT
-                (SELECT COUNT(*)
-                FROM contact_us_conversation cuc
-                WHERE cuc.contact_us_id = cu.id
-                AND cuc.sudah_dibaca = 0
-                AND cuc.pengirim_type = 'admin'
-                ) AS unread_count
-            FROM contact_us cu
-            WHERE cu.id_user = ?
-        ) AS unread_counts
-    ");
-    if ($stmtUnread) {
-        $stmtUnread->bind_param("i", $userId);
-        $stmtUnread->execute();
-        $resultUnread = $stmtUnread->get_result();
-        if ($row = $resultUnread->fetch_assoc()) {
-            $totalUnreadCount = (int)($row['total_unread'] ?? 0);
-        }
-        $stmtUnread->close();
-    }
-} else {
-    header("Location:/log_in");
+    $stmtUnread->close();
 }
-
-
 ?>
 <!DOCTYPE html>
 <html lang="id">
