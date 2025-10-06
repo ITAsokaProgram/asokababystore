@@ -237,7 +237,7 @@ $token = $menuHandler->getToken();
                 <!-- Action Buttons -->
                 <div class="flex flex-col sm:flex-row justify-between items-center gap-6 mb-10">
                     <!-- Button Group -->
-                    <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+                    <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto flex-wrap">
                         <button onclick="tambahHadiah()"
                             class="px-8 py-4 primary-gradient text-white rounded-xl hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-3 shadow-md cursor-pointer font-semibold hover:scale-105 whitespace-nowrap">
                             <i class="fas fa-plus text-lg"></i>
@@ -249,10 +249,10 @@ $token = $menuHandler->getToken();
                             <i class="fas fa-bars-progress text-lg"></i>
                             <span>Histori Penukaran Hadiah</span>
                         </button>
-                        <button onclick="window.location.href='/src/fitur/transaction/rewards/management_reward'"
-                            class="px-8 py-4 success-gradient text-white rounded-xl hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-3 shadow-md cursor-pointer font-semibold hover:scale-105 whitespace-nowrap">
-                            <i class="fas fa-bars-progress text-lg"></i>
-                            <span>Histori Penerimaan Barang</span>
+                        <button onclick="window.location.href='/src/fitur/transaction/rewards/histori_penerimaan_hadiah.php'"
+                            class="px-8 py-4 warning-gradient text-white rounded-xl hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-3 shadow-md cursor-pointer font-semibold hover:scale-105 whitespace-nowrap">
+                            <i class="fas fa-history text-lg"></i>
+                            <span>Histori Penerimaan Hadiah</span>
                         </button>
                     </div>
                 </div>
@@ -342,7 +342,7 @@ $token = $menuHandler->getToken();
                 </div>
 
                 <!-- Pagination -->
-                <div class="mt-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 pagination-container rounded-xl p-6 shadow-sm">
+                <div class="mt-10 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6 pagination-container rounded-xl p-6 shadow-sm">
                     <div class="flex items-center gap-4">
                         <label for="pageSize" class="text-sm font-semibold text-gray-700 whitespace-nowrap">Tampilkan:</label>
                         <select id="pageSize" class="px-4 py-2 rounded-lg border border-gray-300 text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 text-sm bg-white shadow-sm">
@@ -356,7 +356,7 @@ $token = $menuHandler->getToken();
                     <div class="text-sm text-gray-600 font-medium" id="dataInfo">Menampilkan data...</div>
 
                     <div class="flex items-center justify-center lg:justify-end">
-                        <div class="flex items-center gap-1 bg-white rounded-lg shadow-sm border border-gray-200 p-1" id="paginationContainer">
+                        <div class="flex items-center gap-1 bg-white rounded-lg shadow-sm border border-gray-200 p-1 flex-wrap" id="paginationContainer">
                             <button id="firstPage" class="p-3 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200" title="Halaman pertama">
                                 <i class="fas fa-angle-double-left text-gray-600 text-sm"></i>
                             </button>
@@ -364,7 +364,6 @@ $token = $menuHandler->getToken();
                                 <i class="fas fa-angle-left text-gray-600 text-sm"></i>
                             </button>
                             <div class="flex items-center gap-1 mx-3" id="pageNumbers">
-                                <!-- Page numbers will be inserted here by JavaScript -->
                             </div>
                             <button id="nextPage" class="p-3 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200" title="Selanjutnya">
                                 <i class="fas fa-angle-right text-gray-600 text-sm"></i>

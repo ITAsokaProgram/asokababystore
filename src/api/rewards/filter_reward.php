@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     exit;
 }
 
-// --- Cek Token ---
+
 $headers = getallheaders();
 $authHeader = $headers['Authorization'] ?? null;
 if (!$authHeader || !preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
@@ -23,14 +23,14 @@ if (!$authHeader || !preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
 $token = $matches[1];
 $verif = verify_token($token);
 
-// --- Pagination ---
+
 $pageSize = isset($_GET['pageSize']) ? (int)$_GET['pageSize'] : 10;
 $page     = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $pageSize = max(1, min(100, $pageSize));
 $page     = max(1, $page);
 $offset   = ($page - 1) * $pageSize;
 
-// --- Filter ---
+
 $branch = isset($_GET['branch']) ? trim($_GET['branch']) : '';
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
@@ -38,14 +38,14 @@ $where = "WHERE 1=1";
 $params = [];
 $types  = "";
 
-// filter cabang
+
 if ($branch !== '') {
     $where .= " AND FIND_IN_SET(?, h.kd_store)";
     $params[] = $branch;
     $types   .= "s";
 }
 
-// filter search
+
 if ($search !== '') {
     $where .= " AND (h.nama_hadiah LIKE ? OR h.plu LIKE ? OR h.nama_karyawan LIKE ?)";
     $searchLike = "%".$search."%";
@@ -55,7 +55,7 @@ if ($search !== '') {
     $types   .= "sss";
 }
 
-// --- Query Total ---
+
 $countSql = "SELECT COUNT(*) as total FROM hadiah h $where";
 $countStmt = $conn->prepare($countSql);
 if (!empty($params)) {
@@ -66,7 +66,7 @@ $countResult = $countStmt->get_result();
 $total = $countResult->fetch_assoc()['total'] ?? 0;
 $countStmt->close();
 
-// --- Query Data ---
+
 $sql = "SELECT 
     h.id_hadiah,
     h.kode_karyawan,
@@ -75,6 +75,7 @@ $sql = "SELECT
     h.nama_hadiah,
     h.poin,
     h.qty,
+    h.kd_store,
     h.tanggal_dibuat,
     h.tanggal_diubah,
     CASE 
@@ -108,7 +109,7 @@ $data = $result->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 $conn->close();
 
-// --- Response ---
+
 http_response_code(200);
 echo json_encode([
     'success'     => true,

@@ -10,45 +10,47 @@ import {
 } from "./fetch.js";
 import CabangHandler from "./cabangHandler.js";
 import FilterHandler from "./filterHandler.js";
-// Global Variabel State
+import { getCookie } from "../index/utils/cookies.js";
+
+
 let idReward = null;
 let filterHandler = null;
 
-// Initialize the application
+
 const init = async () => {
-    // Initialize FilterHandler
+    
     filterHandler = new FilterHandler();
   try {
-    // Fetch stats
+    
     const stats = await fetchCount();
-    // Initialize stats
+    
     const totalHadiah = document.getElementById("totalHadiah");
     totalHadiah.textContent = stats.total;
 
-    // Initialize token and cabang
-    // await kodeCabang("cabang");
+    
+    
     await cabangSelective("cabang");
     const cabang = new CabangHandler;
     cabang.selectCabang();
 
-    // Initialize handlers
+    
     const imageHandler = createImageHandler(
       "gambar_hadiah",
       "imagePreview",
       "uploadContent"
     );
 
-    // Initialize form handler
+    
     const formHandler = createFormHandler("formTambahHadiah", "submitBtn");
     
-    // Initial table load dengan filter handler
+    
     if (filterHandler) {
         await filterHandler.applyFilters();
     } else {
         await renderTableRewards();
     }
 
-    // Set up remove button handler
+    
     const removeBtn = document.getElementById("removeImageBtn");
     if (removeBtn) {
       removeBtn.addEventListener("click", () => {
@@ -61,18 +63,19 @@ const init = async () => {
       });
     }
 
-    // Event listener for edit and delete buttons
+    
     document.addEventListener("click", async (e) => {
       const editButton = e.target.closest("button.edit-btn[data-id]");
       const deleteButton = e.target.closest("button.delete-btn[data-id]");
       const editFilterButton = e.target.closest("button.edit-filter[data-id]");
       const deleteFilterButton = e.target.closest("button.delete-filter[data-id]");
+
       if (editButton || editFilterButton) {
         try {
           const id = editButton?.dataset?.id || editFilterButton?.dataset?.id;
           idReward = id;
 
-          // Show loading state
+          
           Swal.fire({
             title: "Memuat Data",
             text: "Sedang mengambil data hadiah...",
@@ -82,12 +85,12 @@ const init = async () => {
             },
           });
 
-          // Fetch reward data
+          
           const response = await fetchRewardById(id);
           Swal.close();
 
           if (response && response.success && response.data) {
-            // Show SweetAlert with input
+            
             const { value: formValues } = await Swal.fire({
               title: "Edit Hadiah",
               html:
@@ -162,7 +165,7 @@ const init = async () => {
                     Swal.showLoading();
                   },
                 });
-                // Kirim via FormData karena ada file
+                
                 const fd = new FormData();
                 fd.append("id", id);
                 fd.append("nama_hadiah", formValues.nama_hadiah);
@@ -181,12 +184,12 @@ const init = async () => {
                     confirmButtonColor: "#ec4899",
                     confirmButtonText: "Mengerti",
                   });
-                  // Refresh table
+                  
                   if (filterHandler && (filterHandler.hasActiveFilters())) {
-                    // Jika ada filter aktif, gunakan filter
+                    
                     await filterHandler.applyFilters();
                   } else {
-                    // Jika tidak ada filter, gunakan render biasa
+                    
                     await renderTableRewards();
                   }
                 } else {
@@ -247,12 +250,12 @@ const init = async () => {
                 confirmButtonColor: "#ec4899",
                 confirmButtonText: "Mengerti",
               });
-              // Refresh table
+              
               if (filterHandler && (filterHandler.hasActiveFilters())) {
-                // Jika ada filter aktif, gunakan filter
+                
                 await filterHandler.applyFilters();
               } else {
-                // Jika tidak ada filter, gunakan render biasa
+                
                 await renderTableRewards();
               }
             } else {
@@ -269,9 +272,73 @@ const init = async () => {
           });
         }
       }
+      
+      const receiveStockBtn = e.target.closest("button.receive-stock-btn");
+      const updatePointBtn = e.target.closest("button.update-point-btn");
+
+      
+      if (receiveStockBtn) {
+        
+        const { plu, kd_store, nama_hadiah } = receiveStockBtn.dataset;
+        
+        const { value: qty } = await Swal.fire({
+            title: 'Terima Stok Hadiah',
+            html: `Masukkan jumlah stok yang diterima untuk:<br><b>${nama_hadiah}</b> (PLU: ${plu})`, 
+            input: 'number',
+            inputPlaceholder: 'Contoh: 50',
+            showCancelButton: true,
+            confirmButtonText: 'Simpan',
+            cancelButtonText: 'Batal',
+            inputValidator: (value) => {
+                if (!value || parseInt(value) <= 0) {
+                    return 'Jumlah harus lebih besar dari 0!';
+                }
+            }
+        });
+
+        if (qty) {
+            handleApiCall(
+                '/src/api/rewards/terima_hadiah.php', 
+                
+                { plu, kd_store, nama_hadiah, qty_rec: qty }, 
+                'Menambahkan stok...'
+            );
+        }
+    }
+
+      
+      if (updatePointBtn) {
+        
+        const { plu, kd_store, nama_hadiah } = updatePointBtn.dataset; 
+        
+        const { value: poin } = await Swal.fire({
+            title: 'Update Poin Hadiah',
+            html: `Masukkan nilai poin baru untuk:<br><b>${nama_hadiah}</b> (PLU: ${plu})`, 
+            input: 'number',
+            inputPlaceholder: 'Contoh: 150',
+            showCancelButton: true,
+            confirmButtonText: 'Update',
+            cancelButtonText: 'Batal',
+            inputValidator: (value) => {
+                if (!value || parseInt(value) < 0) {
+                    return 'Nilai poin tidak boleh kosong atau negatif!';
+                }
+            }
+        });
+
+        if (poin) {
+            handleApiCall(
+                '/src/api/rewards/update_poin_hadiah.php', 
+                
+                { plu, kd_store, nama_hadiah, new_poin: poin }, 
+                'Memperbarui poin...'
+            );
+        }
+    }
+
     });
 
-    // Edit functionality now handled directly in the click event
+    
   } catch (error) {
     Swal.fire({
       icon: "error",
@@ -283,5 +350,59 @@ const init = async () => {
   }
 };
 
-// Run initialization when DOM is fully loaded
+async function handleApiCall(url, data, loadingMessage) {
+    const token = getCookie("token"); 
+    const formData = new FormData();
+    for (const key in data) {
+        formData.append(key, data[key]);
+    }
+
+    Swal.fire({
+        title: loadingMessage,
+        didOpen: () => Swal.showLoading(),
+        allowOutsideClick: false
+    });
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            await Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: result.message,
+            });
+            
+            if (filterHandler && (filterHandler.hasActiveFilters())) {
+                await filterHandler.applyFilters();
+            } else {
+                await renderTableRewards();
+            }
+        } else {
+            throw new Error(result.message || 'Terjadi kesalahan pada server.');
+        }
+
+    } catch (error) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Gagal!',
+            text: error.message,
+        });
+    }
+}
+
+
+
+
+
+
+
+
+
 document.addEventListener("DOMContentLoaded", init);

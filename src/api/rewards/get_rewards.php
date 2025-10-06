@@ -22,7 +22,7 @@ if (!$authHeader) {
 }
 $token = null;
 if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-    $token = $matches[1]; // ini yang aman dan baku
+    $token = $matches[1]; 
 }
 if (!$token) {
     http_response_code(401);
@@ -31,21 +31,22 @@ if (!$token) {
 }
 $verif = verify_token($token);
 
-// Page Size
+
 $pageSize = isset($_GET['pageSize']) ? (int)$_GET['pageSize'] : 10;
 $offset = isset($_GET['offset']) ? (int)$_GET['offset'] : 0;
 
-// Validate Input Page
+
 $pageSize = max(1, min(100, $pageSize));
 $offset = max(0, $offset);
 
-// Query View Data
+
 $sql = "SELECT 
     h.id_hadiah,
     h.kode_karyawan,
     h.nama_karyawan,
     h.plu,
     h.nama_hadiah,
+    h.kd_store,
     h.poin,
     h.qty,
     h.tanggal_dibuat,
@@ -74,7 +75,7 @@ $stmt->execute();
 
 $result = $stmt->get_result();
 
-// Query Count Data
+
 $countSql = "SELECT COUNT(*) as total FROM hadiah";
 $countStmt = $conn->prepare($countSql);
 $countStmt->execute();

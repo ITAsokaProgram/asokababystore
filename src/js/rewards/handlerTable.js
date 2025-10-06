@@ -1,6 +1,6 @@
 import { fetchRewards } from "./fetch.js";
 import FilterHandler from "./filterHandler.js";
-//  Function Format Date
+
 const formatDate = (dateString) => {
     if (!dateString) return '';
     const options = { 
@@ -13,7 +13,7 @@ const formatDate = (dateString) => {
     return new Date(dateString).toLocaleString('id-ID', options);
 };
 
-// Global pagination state
+
 let currentPageSize = 10;
 let currentOffset = 0;
 let totalRecords = 0;
@@ -31,22 +31,22 @@ const updatePaginationUI = () => {
     
     if (!paginationContainer) return;
 
-    // Calculate total pages
+    
     totalPages = Math.ceil(totalRecords / currentPageSize);
     currentPage = Math.floor(currentOffset / currentPageSize) + 1;
 
-    // Update data info text
+    
     const startItem = totalRecords > 0 ? currentOffset + 1 : 0;
     const endItem = Math.min(currentOffset + currentPageSize, totalRecords);
     dataInfo.textContent = `Menampilkan ${startItem}-${endItem || 0} dari ${totalRecords || 0} hadiah`;
 
-    // Update pagination buttons state
+    
     firstPageBtn.disabled = currentPage === 1;
     prevPageBtn.disabled = currentPage === 1;
     nextPageBtn.disabled = currentPage >= totalPages;
     lastPageBtn.disabled = currentPage >= totalPages;
 
-    // Generate page numbers
+    
     pageNumbers.innerHTML = '';
     const maxPagesToShow = 5;
     let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
@@ -56,7 +56,7 @@ const updatePaginationUI = () => {
         startPage = Math.max(1, endPage - maxPagesToShow + 1);
     }
 
-    // Add page numbers
+    
     for (let i = startPage; i <= endPage; i++) {
         const pageBtn = document.createElement('button');
         pageBtn.textContent = i;
@@ -73,20 +73,20 @@ const updatePaginationUI = () => {
     }
 };
 
-// Initialize pagination event listeners
+
 const initPagination = () => {
-    // Page size change handler
+    
     const pageSizeSelect = document.getElementById('pageSize');
     if (pageSizeSelect) {
         pageSizeSelect.value = currentPageSize;
         pageSizeSelect.addEventListener('change', (e) => {
             currentPageSize = parseInt(e.target.value);
-            currentOffset = 0; // Reset to first page
+            currentOffset = 0; 
             renderTableRewards();
         });
     }
 
-    // Navigation buttons
+    
     document.getElementById('firstPage')?.addEventListener('click', () => {
         if (currentPage > 1) {
             currentOffset = 0;
@@ -116,7 +116,7 @@ const initPagination = () => {
     });
 };
 
-// Update renderTableRewards to include pagination update
+
 const renderTableRewards = async () => {
     const rewards = await fetchRewards(currentPageSize, currentOffset);
     totalRecords = rewards.total;
@@ -171,6 +171,14 @@ const renderTableRewards = async () => {
                                     data-id="${reward.id_hadiah}" title="Hapus">
                                 <i class="fas fa-trash w-4 h-4"></i>
                             </button>
+                             <span class="border-l h-5 border-gray-300"></span> <button class="receive-stock-btn text-green-600 hover:text-green-800 p-1 rounded-full hover:bg-green-50" 
+                                    data-plu="${reward.plu}" data-kd_store="${reward.kd_store}" title="Terima Stok">
+                                <i class="fas fa-plus-circle w-4 h-4"></i>
+                            </button>
+                            <button class="update-point-btn text-yellow-600 hover:text-yellow-800 p-1 rounded-full hover:bg-yellow-50" 
+                                    data-plu="${reward.plu}" data-kd_store="${reward.kd_store}" title="Update Poin">
+                                <i class="fas fa-coins w-4 h-4"></i>
+                            </button>
                         </div>
                     </td>
                 `;
@@ -189,12 +197,12 @@ const formatAlias = (alias) => {
     if(aliasArr.length <= 3) return aliasArr.join(", ");
     return aliasArr.slice(0, 3).join(', ') + '...';
 }
-// Initialize when DOM is loaded
-// Initialize FilterHandler
+
+
 const filterHandler = new FilterHandler;
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize page size select
+    
     const pageSizeSelect = document.getElementById('pageSize');
     if (pageSizeSelect) {
         pageSizeSelect.addEventListener('change', (e) => {
@@ -202,7 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Initialize navigation buttons
+    
     document.getElementById('firstPage')?.addEventListener('click', () => {
         filterHandler.goToPage(1);
     });
@@ -219,7 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
         filterHandler.goToPage(window.totalPages);
     });
 
-    // Initial load
+    
     filterHandler.applyFilters();
 });
 

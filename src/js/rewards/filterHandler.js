@@ -10,7 +10,7 @@ class FilterHandler {
   }
 
   initializeFilters() {
-    // Initialize search filter
+    
     const searchInput = document.getElementById("filterSearch");
     if (searchInput) {
       let debounceTimer;
@@ -18,18 +18,18 @@ class FilterHandler {
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => {
           this.currentFilters.search = e.target.value.trim();
-          this.currentFilters.page = 1; // Reset to first page on new search
+          this.currentFilters.page = 1; 
           this.applyFilters();
         }, 300);
       });
     }
 
-    // Initialize branch filter
+    
     const branchSelect = document.getElementById("filterCabang");
     if (branchSelect) {
       branchSelect.addEventListener("change", (e) => {
         this.currentFilters.branch = e.target.value;
-        this.currentFilters.page = 1; // Reset to first page on branch change
+        this.currentFilters.page = 1; 
         this.applyFilters();
       });
     }
@@ -37,7 +37,7 @@ class FilterHandler {
 
   async applyFilters() {
     try {
-      // Show loading state
+      
       const tableBody = document.getElementById("tableBody");
       if (tableBody) {
         tableBody.innerHTML = `
@@ -80,13 +80,13 @@ class FilterHandler {
       const result = await response.json();
 
       if (result.success) {
-        // Update global pagination variables
+        
         window.currentPage = result.page;
         window.totalPages = result.totalPages;
         window.totalRecords = result.total;
         window.currentPageSize = result.pageSize;
-
-        // Update table and pagination
+        console.log("Filtered Result:", result);
+        
         this.updateTable(result.data);
         this.updatePagination(result);
       } else {
@@ -94,7 +94,7 @@ class FilterHandler {
       }
     } catch (error) {
       console.error("Error applying filters:", error);
-      // Show error message to user
+      
       const tableBody = document.getElementById("tableBody");
       if (tableBody) {
         tableBody.innerHTML = `
@@ -153,7 +153,7 @@ class FilterHandler {
     data.forEach((reward, index) => {
       const row = document.createElement("tr");
       row.className = "hover:bg-amber-50 transition-colors duration-200";
-      // Menghitung nomor urut berdasarkan halaman dan ukuran halaman
+      
       const rowNumber =
         (this.currentFilters.page - 1) * this.currentFilters.pageSize +
         index +
@@ -207,6 +207,19 @@ class FilterHandler {
                                     data-id="${reward.id_hadiah}" title="Hapus">
                                 <i class="fas fa-trash w-4 h-4"></i>
                             </button>
+                            <span class="border-l h-5 border-gray-300"></span> <button class="receive-stock-btn text-green-600 hover:text-green-800 p-1 rounded-full hover:bg-green-50" 
+                                    data-plu="${reward.plu}" data-kd_store="${reward.kd_store}" 
+                                    data-nama_hadiah="${reward.nama_hadiah}" 
+                                    title="Terima Stok">
+                                <i class="fas fa-plus-circle w-4 h-4"></i>
+                            </button>
+                            <button class="update-point-btn text-yellow-600 hover:text-yellow-800 p-1 rounded-full hover:bg-yellow-50" 
+                                    data-plu="${reward.plu}" data-kd_store="${reward.kd_store}" 
+                                    data-nama_hadiah="${reward.nama_hadiah}"
+
+                                    title="Update Poin">
+                                <i class="fas fa-coins w-4 h-4"></i>
+                            </button>
                         </div>
                     </td>
                 `;
@@ -237,7 +250,7 @@ class FilterHandler {
     const paginationContainer = document.getElementById("paginationContainer");
     if (!paginationContainer) return;
 
-    // Update data info
+    
     const dataInfo = document.getElementById("dataInfo");
     if (dataInfo) {
       const startItem = (result.page - 1) * result.pageSize + 1;
@@ -245,7 +258,7 @@ class FilterHandler {
       dataInfo.textContent = `Menampilkan ${startItem}-${endItem} dari ${result.total} hadiah`;
     }
 
-    // Update page numbers
+    
     const pageNumbers = document.getElementById("pageNumbers");
     if (pageNumbers) {
       pageNumbers.innerHTML = "";
@@ -274,7 +287,7 @@ class FilterHandler {
       }
     }
 
-    // Update navigation buttons
+    
     const firstPageBtn = document.getElementById("firstPage");
     const prevPageBtn = document.getElementById("prevPage");
     const nextPageBtn = document.getElementById("nextPage");
@@ -297,7 +310,7 @@ class FilterHandler {
         this.applyFilters();
     }
 
-    // Cek apakah ada filter yang aktif
+    
     hasActiveFilters() {
         return (
             this.currentFilters.search.trim() !== '' || 
