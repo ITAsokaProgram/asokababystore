@@ -32,15 +32,12 @@ SELECT
     r.id,
     r.rating,
     ua.nama_lengkap AS nama_customer,
-    k.nm_alias AS cabang,
     COALESCE(rd.status, 'pending') AS review_status, 
     r.dibuat_tgl
 FROM
     review r
 LEFT JOIN
     user_asoka ua ON r.id_user = ua.id_user
-LEFT JOIN
-    kode_store k ON k.kd_store = SUBSTRING(r.no_bon, 1, 4)
 LEFT JOIN
     review_detail rd ON r.id = rd.review_id
 WHERE
