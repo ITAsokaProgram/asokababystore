@@ -59,7 +59,15 @@ try {
     if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
         $upload = $cloudinary->uploadApi()->upload(
             $_FILES['image']['tmp_name'],
-            ['folder' => 'aset_barang']
+            [
+                'folder' => 'aset_barang',
+                'transformation' => [
+                    // Batasi lebar gambar maksimal 1024px, tinggi akan menyesuaikan secara proporsional
+                    ['width' => 1024, 'crop' => 'limit'],
+                    // Terapkan kualitas otomatis untuk mendapatkan ukuran file sekecil mungkin dengan visual yang tetap baik
+                    ['quality' => 'auto:good']
+                ]
+            ]
         );
         $image_url = $upload['secure_url'];
     }

@@ -2,22 +2,34 @@ import getCookie from "../../index/utils/cookies.js";
 import { api } from "../services/api.js";
 
 export const formInsertHandler = () => {
-  const form = document.getElementById("assetForm");
+ const form = document.getElementById("assetForm");
   const imageInput = form.querySelector("#image");
   const imagePreview = form.querySelector("#imagePreview");
   const previewImg = imagePreview.querySelector("img");
-  const hiddenId = form.querySelector("#idhistory_aset");
 
-  // Handle image preview
   imagePreview.classList.add("hidden");
   imageInput.addEventListener("change", (e) => {
     if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const MAX_SIZE_MB = 10; 
+
+      if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Ukuran File Terlalu Besar',
+          text: `Ukuran file maksimal adalah ${MAX_SIZE_MB} MB.`,
+        });
+        e.target.value = ''; 
+        imagePreview.classList.add("hidden");
+        return; 
+      }
+
       const reader = new FileReader();
       reader.onload = (e) => {
         previewImg.src = e.target.result;
         imagePreview.classList.remove("hidden");
       };
-      reader.readAsDataURL(e.target.files[0]);
+      reader.readAsDataURL(file);
     }
   });
 

@@ -1,4 +1,19 @@
 export const api = {
+  async getStores(token) {
+    try {
+      const response = await fetch('/src/api/aset/get_stores.php', {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const result = await response.json();
+      if (!result.status) throw new Error(result.message || 'Gagal mengambil data toko');
+      return result.data;
+    } catch (err) {
+      console.error("Error fetching stores:", err);
+      throw err;
+    }
+  },
+
   async insertDataAset(token, data) {
     try {
       const modal = document.getElementById('addAssetModal');

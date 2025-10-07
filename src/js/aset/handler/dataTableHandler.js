@@ -34,6 +34,16 @@ function debounce(fn, wait = 300) {
   };
 }
 
+function generateCloudinaryThumbnail(originalUrl) {
+  if (!originalUrl || !originalUrl.includes('/upload/')) {
+    return originalUrl;
+  }
+
+  const transformations = 'w_160,h_160,c_thumb,q_auto:good,f_auto';
+
+  return originalUrl.replace('/upload/', `/upload/${transformations}/`);
+}
+
 async function fetchData() {
   const url = new URL('/src/api/aset/get_data_aset.php', window.location.origin);
   url.searchParams.set('page', state.page);
@@ -68,11 +78,14 @@ function renderRows(items) {
     tr.className = 'table-row';
     const statusHtml = renderStatusBadge(it.status || '');
     const no = startIndex + idx + 1;
-  const imageCell = (it.image_url && it.image_url.trim())
-    ? `<a href="#" class="image-link text-indigo-600 underline" data-url="${escapeHtml(it.image_url)}">
-      <img src="${escapeHtml(it.image_url)}" alt="Image" class="inline-block w-20 h-20 object-cover rounded" />
-    </a>`
-    : `<span class="text-gray-500">Tidak ada gambar</span>`;
+    const thumbnailUrl = generateCloudinaryThumbnail(it.image_url);
+
+    const imageCell = (it.image_url && it.image_url.trim())
+      ? `<a href="#" class="image-link" data-url="${escapeHtml(it.image_url)}">
+          <img src="${escapeHtml(thumbnailUrl)}" alt="Image" class="inline-block w-20 h-20 object-cover rounded" loading="lazy" />
+        </a>`
+      : `<span class="text-gray-500">Tidak ada gambar</span>`;
+
 
   tr.innerHTML = `
       <td class="px-4 py-4 align-top text-sm font-medium text-center">${no}</td>
