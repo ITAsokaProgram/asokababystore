@@ -118,10 +118,10 @@ const initPagination = () => {
 
 
 const renderTableRewards = async () => {
+    console.log("TEST")
     const rewards = await fetchRewards(currentPageSize, currentOffset);
     totalRecords = rewards.total;
     const tableBody = document.getElementById('tableBody');
-    
     if (tableBody) {
         tableBody.innerHTML = '';
         

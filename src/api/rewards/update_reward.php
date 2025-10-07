@@ -48,7 +48,6 @@ if (!$token || !verify_token($token)) {
 // ================== Ambil Data ==================
 $id = $_POST['id'] ?? 0;
 $nama_hadiah = trim($_POST['nama_hadiah'] ?? '');
-$poin = trim($_POST['poin'] ?? 0);
 $tanggal_diubah = date("Y-m-d H:i:s");
 
 if (!$id) {
@@ -69,59 +68,17 @@ $oldImage = $old['image_url'] ?? '';
 $oldfileId = $old['file_id'] ?? null;
 $stmt->close();
 
-// ================== Handle File Upload ==================
-$newImageUrl = null;
-$newfileId = null;
-$uniqId = uniqid(); // contoh: 68abd40086c91
-$customPublicId = "rewards/reward_" . $uniqId;
-if (isset($_FILES['img']) && $_FILES['img']['tmp_name']) {
-    try {
-        // 1. Hapus gambar lama kalau ada
-        if ($oldfileId) {
-            (new UploadApi())->destroy($oldfileId);
-        }
-
-        // 2. Upload gambar baru ke folder rewards
-        $uploadResult = (new UploadApi())->upload($_FILES['img']['tmp_name'], [
-            "folder" => "rewards",
-            "public_id" => $customPublicId,
-            "resource_type" => "image"
-        ]);
-
-        $newImageUrl = $uploadResult['secure_url'];   // URL gambar baru
-        $newfileId = $uploadResult['public_id'];    // file_id baru
-    } catch (Exception $e) {
-        http_response_code(500);
-        echo json_encode(['success' => false, 'message' => 'Upload gagal: ' . $e->getMessage()]);
-        exit;
-    }
-}
-
 // ================== Update Database ==================
-if ($newImageUrl && $newfileId) {
-    // Update semua termasuk image
-    $sql = "UPDATE hadiah 
-            SET nama_hadiah=?, tanggal_diubah=?, poin=?, image_url=?, file_id=? 
-            WHERE id_hadiah=?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ssissi", $nama_hadiah, $tanggal_diubah, $poin, $newImageUrl, $newfileId, $id);
-} else {
-    // Tidak ada upload baru → update teks & poin saja
-    $sql = "UPDATE hadiah 
-            SET nama_hadiah=?, tanggal_diubah=?, poin=? 
-            WHERE id_hadiah=?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ssii", $nama_hadiah, $tanggal_diubah, $poin, $id);
-}
+$sql = "UPDATE hadiah 
+        SET nama_hadiah=?, tanggal_diubah=? 
+        WHERE id_hadiah=?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("ssi", $nama_hadiah, $tanggal_diubah, $id);
 
 $executed = null;
 // determine which fields will change (compare posted vs existing)
 $changes = [];
 if ($nama_hadiah !== $oldNama) $changes[] = 'nama_hadiah';
-if ((string)$poin !== (string)$oldPoin) $changes[] = 'poin';
-// image/file change detection: if newImageUrl is set it means upload happened
-if (!empty($newImageUrl) && $newImageUrl !== $oldImage) $changes[] = 'image';
-if (!empty($newfileId) && $newfileId !== $oldfileId) $changes[] = 'file_id';
 
 $executed = $stmt->execute();
 

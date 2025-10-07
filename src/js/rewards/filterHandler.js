@@ -157,6 +157,7 @@ class FilterHandler {
         (this.currentFilters.page - 1) * this.currentFilters.pageSize +
         index +
         1;
+      const userRole = window.USER_ROLE || "ADMIN"
       row.innerHTML = `
                     <td class="px-4 py-3 text-sm text-gray-700">${
                       rowNumber
@@ -202,10 +203,16 @@ class FilterHandler {
                                     data-id="${reward.id_hadiah}" title="Edit">
                                 <i class="fas fa-edit w-4 h-4"></i>
                             </button>
-                            <button class="delete-btn text-red-600 hover:text-red-800 transition-colors p-1 rounded-full hover:bg-red-50" 
+                            ${
+                              userRole === "IT"
+                                ? `
+                                  <button class="delete-btn text-red-600 hover:text-red-800 transition-colors p-1 rounded-full hover:bg-red-50" 
                                     data-id="${reward.id_hadiah}" title="Hapus">
-                                <i class="fas fa-trash w-4 h-4"></i>
-                            </button>
+                                      <i class="fas fa-trash w-4 h-4"></i>
+                                  </button>
+                                `
+                                : ""
+                            }
                             <span class="border-l h-5 border-gray-300"></span> <button class="receive-stock-btn text-green-600 hover:text-green-800 p-1 rounded-full hover:bg-green-50" 
                                     data-plu="${reward.plu}" data-kd_store="${reward.kd_store}" 
                                     data-nama_hadiah="${reward.nama_hadiah}" 

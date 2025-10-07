@@ -26,24 +26,40 @@ if ($_SERVER['REQUEST_METHOD'] !== 'DELETE') {
 }
 
 $headers = getallheaders();
-$authHeader = $headers['Authorization'];
+$authHeader = $headers['Authorization'] ?? null;
 if (!$authHeader) {
     http_response_code(401);
-    echo json_encode(['status' => "Unauthenticated", 'message' => 'Request ditolak user tidak terdaftar']);
+    echo json_encode(['status' => "Unauthenticated", 'message' => 'Request ditolak, token tidak ditemukan']);
     exit;
 }
 $token = null;
 if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-    $token = $matches[1]; // ini yang aman dan baku
+    $token = $matches[1];
 }
 if (!$token) {
     http_response_code(401);
-    echo json_encode(['status' => "Unauthenticated", 'message' => 'Request ditolak user tidak terdaftar']);
+    echo json_encode(['status' => "Unauthenticated", 'message' => 'Format token tidak valid.']);
     exit;
 }
+
 $verif = verify_token($token);
 
-$id = trim($_GET['id']) ?? 0;
+// [MODIFIKASI] Verifikasi token dan otorisasi role
+if (!is_object($verif) || !isset($verif->role)) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'Otentikasi gagal. Token tidak valid atau tidak lengkap.']);
+    exit;
+}
+
+// Otorisasi: hanya role 'IT' yang boleh menghapus
+if ($verif->role !== 'IT') {
+    http_response_code(403); // 403 Forbidden
+    echo json_encode(['success' => false, 'message' => 'Akses ditolak. Hanya akun IT yang memiliki izin untuk menghapus data.']);
+    exit;
+}
+// [AKHIR MODIFIKASI]
+
+$id = trim($_GET['id'] ?? 0);
 
 if ($id == 0) {
     http_response_code(400);
@@ -113,7 +129,7 @@ if (!empty($imageUrl)) {
 $conn->autocommit(FALSE);
 try {
     // 1) insert log while parent still exists
-    $id_user = $verif->id ?? $verif->kode ?? '';
+    $id_user = $verif->kode ?? null; // Menggunakan 'kode' dari token
     $logActivity = 'DELETE';
     $logTime = date('Y-m-d H:i:s');
 
@@ -133,6 +149,7 @@ try {
     $delStmt = $conn->prepare($delSql);
     if (!$delStmt) throw new Exception('delete prepare failed: ' . $conn->error);
     // ensure integer binding
+    $idInt = (int)$id;
     $delStmt->bind_param('i', $idInt);
     if (!$delStmt->execute()) {
         $err = $delStmt->error ?: $conn->error;

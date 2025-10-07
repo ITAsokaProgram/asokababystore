@@ -459,15 +459,7 @@ $token = $menuHandler->getToken();
                                         placeholder="100" />
                                     <p class="text-xs text-gray-500">Jumlah poin yang harus dikumpulkan member</p>
                                 </div>
-                                <div class="space-y-3">
-                                    <label for="qty_hadiah" class="block text-sm font-semibold text-gray-700">
-                                        Qty Hadiah <span class="text-red-500">*</span>
-                                    </label>
-                                    <input type="number" name="qty_hadiah" id="qty_hadiah" required min="1"
-                                        class="reward-input w-full rounded-xl px-4 py-3 text-base shadow-sm focus:outline-none transition-all duration-200"
-                                        placeholder="100" />
-                                    <p class="text-xs text-gray-500">Jumlah hadiah yang tersedia</p>
-                                </div>
+                                
                             </div>
                         </div>
 

@@ -16,9 +16,32 @@ import { getCookie } from "../index/utils/cookies.js";
 let idReward = null;
 let filterHandler = null;
 
+async function fetchCurrentUser() {
+    const token = getCookie("token");
+    if (!token) return null;
+
+    try {
+        const response = await fetch('/src/auth/decode_token.php', {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        });
+        const data = await response.json();
+        if (data.status === 'success') {
+            return data.data; 
+        }
+        return null;
+    } catch (error) {
+        console.error("Gagal mengambil data user:", error);
+        return null;
+    }
+}
 
 const init = async () => {
-    
+    const currentUser = await fetchCurrentUser();
+    window.USER_ROLE = currentUser ? currentUser.role : null;
+
     filterHandler = new FilterHandler();
   try {
     
@@ -93,65 +116,22 @@ const init = async () => {
             
             const { value: formValues } = await Swal.fire({
               title: "Edit Hadiah",
-              html:
-                `<span class="text-sm text-gray-500 mb-2">Ubah data hadiah berikut:</span>` +
-                `<label class="block text-sm font-medium text-gray-700">Nama Hadiah</label>` +
-                `<input id="swal-input1" class="swal2-input" placeholder="Nama Hadiah" value="${
-                  response.data.nama_hadiah || ""
-                }">` +
-                `<label class="block text-sm font-medium text-gray-700">Stok</label>` +
-                `<input id="swal-input2" type="number" class="swal2-input" placeholder="Stok" value="${
-                  response.data.qty || ""
-                }">` +
-                `<label class="block text-sm font-medium text-gray-700">Poin</label>` +
-                `<input id="swal-input3" type="number" class="swal2-input" placeholder="Poin" value="${
-                  response.data.poin || ""
-                }">` +
-                `<label class="block text-sm font-medium text-gray-700">Gambar</label>` +
-                `<input id="swal-input4" type="file" class="swal2-file">` +
-                (response.data.img
-                  ? `<div class="mt-2"><img src="${response.data.img}" alt="preview" class="max-h-24 rounded border"/></div>`
-                  : ""),
+              html: `<span class="text-sm text-gray-500 mb-2">Ubah nama hadiah berikut:</span>` +
+                    `<input id="swal-input1" class="swal2-input" placeholder="Nama Hadiah" value="${
+                    response.data.nama_hadiah || ""
+                    }">`,
               focusConfirm: false,
               showCancelButton: true,
               confirmButtonText: "Simpan",
               cancelButtonText: "Batal",
               confirmButtonColor: "#ec4899",
               preConfirm: () => {
-                const nama = document
-                  .getElementById("swal-input1")
-                  .value.trim();
-                const stok = document
-                  .getElementById("swal-input2")
-                  .value.trim();
-                const poin = document
-                  .getElementById("swal-input3")
-                  .value.trim();
-                const fileInput = document.getElementById("swal-input4");
-                const imgFile = fileInput.files[0] || null;
-
+                const nama = document.getElementById("swal-input1").value.trim();
                 if (!nama) {
                   Swal.showValidationMessage("Nama hadiah tidak boleh kosong");
                   return false;
                 }
-                if (!stok) {
-                  Swal.showValidationMessage("Stok tidak boleh kosong");
-                  return false;
-                }
-                if (!poin) {
-                  Swal.showValidationMessage("Poin tidak boleh kosong");
-                  return false;
-                }
-                if (
-                  imgFile &&
-                  !["image/jpeg", "image/png"].includes(imgFile.type)
-                ) {
-                  Swal.showValidationMessage(
-                    "Format gambar harus JPG atau PNG"
-                  );
-                  return false;
-                }
-                return { nama_hadiah: nama, stok, poin, img: imgFile };
+                return { nama_hadiah: nama };
               },
             });
 
@@ -169,11 +149,7 @@ const init = async () => {
                 const fd = new FormData();
                 fd.append("id", id);
                 fd.append("nama_hadiah", formValues.nama_hadiah);
-                fd.append("stok", formValues.stok);
-                fd.append("poin", formValues.poin);
-                if (formValues.img) {
-                  fd.append("img", formValues.img);
-                }
+
 
                 const updateResponse = await updateReward(id, fd);
                 if (updateResponse.success) {

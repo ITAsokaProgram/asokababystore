@@ -41,7 +41,7 @@ if (!$token) {
 $verif = verify_token($token);
 
 // Validate required fields
-$requiredFields = ['nama_hadiah', 'plu', 'poin_dibutuhkan', 'qty_hadiah', 'cabang'];
+$requiredFields = ['nama_hadiah', 'plu', 'poin_dibutuhkan', 'cabang'];
 $missingFields = [];
 
 foreach ($requiredFields as $field) {
@@ -63,15 +63,15 @@ if (!empty($missingFields)) {
 $nama_hadiah = trim($_POST['nama_hadiah']);
 $plu = trim($_POST['plu']);
 $poin_dibutuhkan = (int) $_POST['poin_dibutuhkan'];
-$qty_hadiah = (int) $_POST['qty_hadiah'];
+$qty_hadiah = (int) ($_POST['qty_hadiah'] ?? 0);
 $cabang = $_POST['cabang'];
 $createdAt = date('Y-m-d H:i:s');
 // Validate numeric values
-if ($poin_dibutuhkan <= 0 || $qty_hadiah <= 0 || $cabang <= 0) {
+if ($poin_dibutuhkan <= 0 || $cabang <= 0) {
     http_response_code(400);
     echo json_encode([
         'success' => false,
-        'message' => 'Poin, qty, dan cabang harus berupa angka positif'
+        'message' => 'Poin dan cabang harus berupa angka positif'
     ]);
     exit;
 }
