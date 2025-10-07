@@ -4,6 +4,8 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 use Monolog\Logger as MonologLogger;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Formatter\LineFormatter;
+use DateTimeZone;
+
 
 class AppLogger {
     private $logger;
@@ -24,7 +26,7 @@ class AppLogger {
             
             try {
                 // Create Monolog logger with proper configuration
-                $this->logger = new MonologLogger('AppLogger');
+                $this->logger = new MonologLogger('AppLogger', [], [], new DateTimeZone('Asia/Jakarta'));
                 
                 // Add rotating file handler (keeps logs for 30 days, max 10 files)
                 $handler = new RotatingFileHandler($logPath, 30, MonologLogger::DEBUG, true, 0664);
