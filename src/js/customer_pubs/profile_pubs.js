@@ -79,6 +79,7 @@ const isiFormProfile = (data) => {
     document.getElementById('nama_lengkap').value = data.nama_lengkap ?? '';
     document.getElementById('alamat_ktp').value = data.alamat ?? '';
     document.getElementById('alamat_domisili').value = data.domisili_alamat ?? '';
+    document.getElementById('no_nik').value = data.nik ?? ''; 
     document.getElementById('tanggal_lahir').value = data.tanggal_lahir ?? '';
     // document.getElementById('member-email').value = data.email ?? '';
 

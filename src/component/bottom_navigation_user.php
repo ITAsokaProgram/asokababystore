@@ -50,7 +50,7 @@
 
             
             <!-- Akun -->
-            <a href="/src/fitur/pubs/user/profile/view" class="flex flex-col items-center py-2 px-1 sm:py-3 sm:px-2 relative group transition-all duration-300 hover:bg-green-50 active:bg-green-100 flex-1 min-w-0">
+            <a href="/customer/profile" class="flex flex-col items-center py-2 px-1 sm:py-3 sm:px-2 relative group transition-all duration-300 hover:bg-green-50 active:bg-green-100 flex-1 min-w-0">
                 <div class="relative">
                     <i class="fas fa-user text-lg sm:text-xl mb-1 text-gray-600 group-hover:text-green-500 transition-colors duration-300"></i>
                     <div class="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>

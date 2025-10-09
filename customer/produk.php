@@ -183,7 +183,7 @@ logVisitor($conn, $user->id, "Customer Produk");
                                     <i class="fas fa-user-circle mr-3 text-gray-400"></i>
                                     Dashboard
                                 </a>
-                                <a href="/src/fitur/pubs/user/profile/view" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                <a href="/customer/profile" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                                     <i class="fas fa-shopping-bag mr-3 text-gray-400"></i>
                                     Profile Saya
                                 </a>

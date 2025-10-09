@@ -24,7 +24,7 @@ export const statusCustomerHandler = async () => {
           "bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded",
       },
     }).then(() => {
-      window.location.href = "/src/fitur/pubs/user/profile/view";
+      window.location.href = "/customer/profile";
     });
   }
 
@@ -35,7 +35,7 @@ export const statusCustomerHandler = async () => {
       text: 'Data diri anda belum di isi yuk isi dulu',
       showConfirmButton: true
     }).then(() => {
-      window.location.href = "/src/fitur/pubs/user/profile/view";
+      window.location.href = "/customer/profile";
     });
   }
 
