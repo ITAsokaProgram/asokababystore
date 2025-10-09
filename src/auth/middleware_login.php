@@ -91,7 +91,7 @@ function checkUser($conn, $sql, $pass, $email)
                 'domain' => $_SERVER['HTTP_HOST'],
                 'secure' => true,
                 'httponly' => false,
-                'samesite' => 'Strict'
+                'samesite' => 'Lax'
             ]);
         }
         $stmt->close();
@@ -235,7 +235,7 @@ function checkUserGoogle($email)
             'domain' => $_SERVER['HTTP_HOST'],
             'secure' => true, // Hanya kirim cookie melalui HTTPS
             'httponly' => false, // Hanya dapat diakses melalui HTTP, tidak melalui JavaScript
-            'samesite' => 'Strict' // Mencegah pengiriman cookie dalam permintaan lintas situs
+            'samesite' => 'Lax' // Mencegah pengiriman cookie dalam permintaan lintas situs
         ]);
         $stmt->fetch();
         $stmt->close();
@@ -341,7 +341,7 @@ function handleGoogleLogin($conn)
             'domain' => $_SERVER['HTTP_HOST'],
             'secure' => true,
             'httponly' => false,
-            'samesite' => 'Strict'
+            'samesite' => 'Lax'
         ]);
         return [
             'status' => 'success',
@@ -384,7 +384,7 @@ function handleGoogleLogin($conn)
                 'domain' => $_SERVER['HTTP_HOST'],
                 'secure' => true,
                 'httponly' => false,
-                'samesite' => 'Strict'
+                'samesite' => 'Lax'
             ]);
             return [
                 'status' => 'success',

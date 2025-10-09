@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'domain' => $_SERVER['HTTP_HOST'],
                 'secure' => true, 
                 'httponly' => false,
-                'samesite' => 'Strict'
+                'samesite' => 'Lax'
             ]);
 
             // Kirim response JSON

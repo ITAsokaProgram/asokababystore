@@ -7,7 +7,7 @@ $options = [
     'path' => '/',
     'secure' => true,
     'httponly' => false, 
-    'samesite' => 'Strict'
+    'samesite' => 'Lax'
 ];
 setcookie('token', '', array_merge($options, ['domain' => $domain]));
 setcookie('token', '', array_merge($options, ['domain' => $baseDomain]));
