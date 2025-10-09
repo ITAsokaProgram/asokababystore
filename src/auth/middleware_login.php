@@ -51,7 +51,7 @@ function check_token($jwt)
         return $decoded;
     }
 }
-function checkUser($conn, $sql, $pass, $email)
+function checkUser($conn, $sql, $pass, $identifier)
 {
     require_once __DIR__ . '/generate_token.php';
     $date = date('Y-m-d H:i:s');
@@ -62,11 +62,10 @@ function checkUser($conn, $sql, $pass, $email)
     if (!$stmt) {
         return false;
     }
-    $stmt->bind_param('s', $email);
+    $stmt->bind_param('ss', $identifier, $identifier);
     $stmt->execute();
     $stmt->store_result();
     if ($stmt->num_rows > 0) {
-        // Variabel $id, $email, $nama, $no_hp diisi dari database
         $stmt->bind_result($id, $emailDb, $nama, $no_hp, $hashed);
         $stmt->fetch();
         if (password_verify($pass, $hashed)) {
@@ -78,7 +77,7 @@ function checkUser($conn, $sql, $pass, $email)
                     'no_hp' => $no_hp,
                 ]
             );
-            // ... (kode untuk insert login_logs dan setcookie tetap sama)
+
             $device = getDevice();
             $sqlLogin = "INSERT INTO login_logs (user_id, device, browser, ip_address, login_time) VALUES (?, ?, ?, ?, ?)";
             $stmtLogin = $conn->prepare($sqlLogin);

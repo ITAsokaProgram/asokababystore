@@ -132,14 +132,14 @@ header("Pragma: no-cache");
           <!-- Login Form -->
           <form id="loginForm" method="POST" class="space-y-5">
             <div class="space-y-2">
-              <label for="loginEmail" class="block text-sm font-medium text-gray-700">Email</label>
+              <label for="loginIdentifier" class="block text-sm font-medium text-gray-700">Email atau Nomor HP</label>
               <div class="relative">
-                <i class="fas fa-envelope absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                <input type="email" name="email" id="loginEmail" placeholder="Masukkan email Anda"
+                <i class="fas fa-user absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                <input type="text" name="identifier" id="loginIdentifier" placeholder="Masukkan email atau nomor HP Anda"
                   class="w-full border-2 border-gray-200 pl-10 pr-4 py-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-300 text-lg" />
               </div>
-              <div id="emailError" class="hidden text-sm text-red-500 mt-1">
-                <i class="fas fa-exclamation-circle mr-1"></i>Email tidak valid
+              <div id="identifierError" class="hidden text-sm text-red-500 mt-1">
+                <i class="fas fa-exclamation-circle mr-1"></i>Email atau No. HP tidak valid
               </div>
             </div>
 

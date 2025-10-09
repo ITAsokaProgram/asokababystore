@@ -1,16 +1,18 @@
-import { validateEmail, validatePassword, showError, hideError } from "./validation.js";
+import { validateEmail, validatePassword, validatePhone, showError, hideError } from "./validation.js";
 
 export const validationUiLogin = () => {
     let isValid = true;
-    const email = document.querySelector("#loginEmail");
+    const identifier = document.querySelector("#loginIdentifier"); 
     const password = document.querySelector("#loginPassword");
+    const identifierError = document.querySelector("#identifierError"); 
 
-    if (!validateEmail(email.value)) {
-        showError(email, document.querySelector("#emailError"));
+    if (!validateEmail(identifier.value) && !validatePhone(identifier.value)) {
+        showError(identifier, identifierError);
         isValid = false;
     } else {
-        hideError(email, document.querySelector("#emailError"));
+        hideError(identifier, identifierError);
     }
+
     if (!validatePassword(password.value)) {
         showError(password, document.querySelector("#passwordError"));
         isValid = false;
@@ -19,6 +21,7 @@ export const validationUiLogin = () => {
     }
     return isValid;
 }
+
 
 export const switchPageLogin = () => {
     const loginPage = document.querySelector("#login-form");

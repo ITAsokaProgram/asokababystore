@@ -28,17 +28,17 @@ const initValidationUi = () => {
     // Initialize validation for the login form
     const loginForm = document.querySelector("#login-form");
     if (loginForm) {
-
         loginForm.addEventListener("submit", (event) => {
             event.preventDefault();
             if (validationUiLogin()) {
-                const email = document.getElementById('loginEmail').value;
+                const identifier = document.getElementById('loginIdentifier').value; 
                 const password = document.getElementById('loginPassword').value;
-                pubsLogin(email, password);
+                pubsLogin(identifier, password); 
             }
         });
         switchPageLogin();
     }
+
 
     // Initialize validation for the forgot password form
     const forgotForm = document.querySelector("#forgot-form");

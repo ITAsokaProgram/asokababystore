@@ -6,25 +6,24 @@ header("Content-Type: application/json");
 
 
 
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $inputJSON = file_get_contents("php://input");
     $data = json_decode($inputJSON, true);
 
-    if (!isset($data['email']) || !isset($data['pass'])) {
+    if (!isset($data['identifier']) || !isset($data['pass'])) {
         echo json_encode(['status' => 'error', 'message' => 'Data tidak lengkap.']);
         exit;
     }
 
-    $email = $data['email'];
+    $identifier = $data['identifier'];
     $pass = $data['pass'];
-    
     
     include __DIR__ . '/../../aa_kon_sett.php';
 
-    $sql = "SELECT id_user, email, nama_lengkap, no_hp, password FROM user_asoka WHERE email = ?";
+    $sql = "SELECT id_user, email, nama_lengkap, no_hp, password FROM user_asoka WHERE email = ? OR no_hp = ?";
     
-    $result = checkUser($conn, $sql, $pass, $email);
+    $result = checkUser($conn, $sql, $pass, $identifier);
+
     
     if (isset($result['status']) && $result['status'] === 'success') {
         

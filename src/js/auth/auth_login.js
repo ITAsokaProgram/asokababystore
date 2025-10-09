@@ -1,6 +1,5 @@
 import { closeLoadingScreen, showLoadingScreen } from "../validation_ui/loading_screen_login.js";
-
-export const pubsLogin = async (email, password) => {
+export const pubsLogin = async (identifier, password) => { 
   try {
     showLoadingScreen();
     const response = await fetch('/src/auth/login_pubs', {
@@ -8,12 +7,12 @@ export const pubsLogin = async (email, password) => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ email: email, pass: password }),
+      body: JSON.stringify({ identifier: identifier, pass: password }), 
     });
+
 
     const data = await response.json();
     if (response.ok && data.User.status === 'success') {
-      // Tampilkan notifikasi sukses jika Swal tersedia
       await Swal.fire({
         icon: 'success',
         title: 'Login Berhasil',

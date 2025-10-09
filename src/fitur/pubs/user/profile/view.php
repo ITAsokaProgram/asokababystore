@@ -217,6 +217,11 @@ logVisitor($conn, $user->id, "Customer Profile");
                 <i class="fas fa-edit text-lg"></i>
                 <span>Isi Data Diri</span>
             </button>
+            
+            <button class="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3" id="sendEdit">
+                <i class="fas fa-edit text-lg"></i>
+                <span>Tambah Password</span>
+            </button>
 
             <!-- Logout Button -->
             <button class="w-full bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white font-semibold py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 flex items-center justify-center gap-3" id="logout">
