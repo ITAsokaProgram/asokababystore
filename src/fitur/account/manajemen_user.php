@@ -320,6 +320,18 @@ $token = $menuHandler->getToken();
                             </label>
                         </div>
 
+                        <div class="bg-white rounded-xl p-4 shadow-sm border border-orange-100 hover:shadow-md transition-shadow duration-200">
+                            <div class="flex items-center mb-3">
+                                <i class="fas fa-shopping-bag text-orange-500 mr-2"></i>
+                                <p class="font-semibold text-gray-800">🛍️ Shopee</p>
+                            </div>
+                            <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-orange-50 transition-colors duration-200">
+                                <input type="checkbox" name="menus[]" value="shopee_dashboard"
+                                    class="w-4 h-4 text-orange-600 rounded focus:ring-orange-500" />
+                                <span class="text-sm">Dashboard Shopee</span>
+                            </label>
+                        </div>
+
                         <!-- Group: Laporan - Penjualan -->
                         <div
                             class="bg-white rounded-xl p-4 shadow-sm border border-green-100 hover:shadow-md transition-shadow duration-200">

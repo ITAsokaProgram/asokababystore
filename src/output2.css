@@ -8523,3 +8523,10 @@ video {
     border-color: rgb(75 85 99 / var(--tw-border-opacity, 1));
   }
 }
+
+.btn.active {
+  background-color: transparent;
+  color: #ec4899;
+  outline: 2px solid #ec4899;
+  outline-offset: 1px;
+}

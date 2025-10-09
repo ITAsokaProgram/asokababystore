@@ -167,6 +167,14 @@ $token = $menuHandler->getToken();
                         class="scale-110 focus:ring focus:ring-blue-300" /> Dashboard
                     </label>
                   </div>
+                  
+                  <div class="bg-white/70 border border-white/40 rounded-xl shadow p-4 mb-2">
+                    <p class="text-lg font-bold text-gray-800 mb-2">Shopee</p>
+                    <label class="flex items-center gap-2 text-sm">
+                      <input type="checkbox" name="menus[]" value="shopee_dashboard"
+                        class="scale-110 focus:ring focus:ring-orange-300" /> Dashboard Shopee
+                    </label>
+                  </div>
 
                   <!-- Group: Laporan - Penjualan -->
                   <div class="bg-white/70 border border-white/40 rounded-xl shadow p-4 mb-2">
