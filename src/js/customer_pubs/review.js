@@ -221,6 +221,7 @@ export const postFormReview = () => {
       formData.append("photos[]", file);
     });
     showLoading();
+    console.log("SUCCESS")
     fetch("/src/api/review/send_review_pubs.php", {
       method: "POST",
       body: formData,

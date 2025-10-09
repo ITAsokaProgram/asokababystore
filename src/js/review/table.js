@@ -81,7 +81,6 @@ export const renderTableReview = (data, offset) => {
       </button>
   `;
 
-
       row.innerHTML = `
         <td class="px-4 py-3 text-sm text-gray-900 font-medium transition-all duration-200">${offset + index + 1}</td>
         <td class="px-4 py-3 text-sm text-gray-700 transition-all duration-200">${item.hp}</td>
@@ -129,7 +128,7 @@ export const renderTableReview = (data, offset) => {
           </td>
         ` : `
           <td class="px-4 py-3 text-sm transition-all duration-200">
-            <img src="/src/api/customer/serve_image_review_in?path=${item.enpoint_foto}" alt="Foto" class="w-12 h-12 object-cover rounded-lg shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer hover:scale-105 hover:-translate-y-1" data-zoomable="true">
+            <img src="${item.enpoint_foto}" alt="Foto" class="w-12 h-12 object-cover rounded-lg shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer hover:scale-105 hover:-translate-y-1" data-zoomable="true">
           </td>
         `}
         <td class="px-4 py-3 text-sm transition-all duration-200 relative">

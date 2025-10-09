@@ -2,128 +2,115 @@
 header('Content-Type: application/json');
 require_once __DIR__ . ("/../../../aa_kon_sett.php");
 require_once __DIR__ . '/../../auth/middleware_login.php';
+
+// Memuat Cloudinary SDK dan file .env
+use Cloudinary\Cloudinary;
+$env = parse_ini_file(__DIR__ . '/../../../.env');
+
+// Pastikan autoloader composer sudah di-require di file koneksi Anda (aa_kon_sett.php) atau di sini
+// require_once __DIR__ . '/../../../vendor/autoload.php'; 
+
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
-$date = date('Y-m-d H:i:s');
-$rating = $_POST['rating'] ?? 0;
-$comment = $_POST['comment'] ?? '';
-$token = $_POST['token'] ?? '';
-$id = $_POST['user_id'] ?? 0;
-$tagsJson = $_POST['tags'] ?? '[]';
-$tags = json_decode($tagsJson, true);
-$tagsStr = implode(',', $tags);
-$bon = $_POST['bon'];
-$nama_kasir = $_POST['nama_kasir'] ?? '';
-$verify_token = verify_token($token);
-if (!$verify_token) {
-    echo json_encode(['status' => 'error', 'message' => 'Token tidak valid.']);
-    exit;
-}
 
-// Validasi token
-if (empty($token)) {
-    echo json_encode(['status' => 'error', 'message' => 'Sesi tidak valid. Silakan masuk kembali.']);
-    exit;
-}
+// Konfigurasi Cloudinary
+$cloudinary = new Cloudinary([
+    'cloud' => [
+        'cloud_name' => $env['CLOUDINARY_NAME'],
+        'api_key'    => $env['CLOUDINARY_KEY'],
+        'api_secret' => $env['CLOUDINARY_SECRET'],
+    ],
+]);
 
-if ($rating < 1 || $rating > 5) {
-    echo json_encode(['status' => 'error', 'message' => 'Rating Harus Di Klik']);
-    exit;
-}
-// resize
-function resizeImage($file, $destination, $maxDim = 1280, $quality = 80)
-{
-    list($width, $height, $type) = getimagesize($file);
+try {
+    // Mengambil data dari POST request
+    $date = date('Y-m-d H:i:s');
+    $rating = $_POST['rating'] ?? 0;
+    $comment = $_POST['comment'] ?? '';
+    $token = $_POST['token'] ?? '';
+    $id = $_POST['user_id'] ?? 0;
+    $tagsJson = $_POST['tags'] ?? '[]';
+    $tags = json_decode($tagsJson, true);
+    $tagsStr = implode(',', $tags);
+    $bon = $_POST['bon'] ?? null;
+    $nama_kasir = $_POST['nama_kasir'] ?? '';
 
-    if ($width > $maxDim || $height > $maxDim) {
-        $ratio = $width / $height;
-        if ($ratio > 1) {
-            $newWidth = $maxDim;
-            $newHeight = $maxDim / $ratio;
-        } else {
-            $newHeight = $maxDim;
-            $newWidth = $maxDim * $ratio;
-        }
-
-        if ($type == IMAGETYPE_JPEG) {
-            $src = imagecreatefromjpeg($file);
-        } elseif ($type == IMAGETYPE_PNG) {
-            $src = imagecreatefrompng($file);
-        } else {
-            return false; // unsupported type
-        }
-
-        $dst = imagecreatetruecolor($newWidth, $newHeight);
-        imagecopyresampled($dst, $src, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
-
-        if ($type == IMAGETYPE_JPEG) {
-            imagejpeg($dst, $destination, $quality);
-        } elseif ($type == IMAGETYPE_PNG) {
-            imagepng($dst, $destination, 6);
-        }
-
-        imagedestroy($src);
-        imagedestroy($dst);
-    } else {
-        move_uploaded_file($file, $destination);
+    // Validasi token dan input dasar
+    if (empty($token) || !verify_token($token)) {
+        throw new Exception('Token tidak valid atau sesi telah kedaluwarsa.');
     }
-}
-$sudah_terpecahkan = ($rating <= 3) ? 0 : 1; 
-
-$stmt = $conn->prepare("INSERT INTO review (id_user, rating, komentar, dibuat_tgl, kategori, no_bon, nama_kasir, sudah_terpecahkan) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-
-$stmt->bind_param('iisssssi', $id, $rating, $comment, $date, $tagsStr, $bon, $nama_kasir, $sudah_terpecahkan); 
-$stmt->execute();
-$review_id = $stmt->insert_id;
-$stmt->close();
-
-$uploaded = [];
-if (isset($_FILES['photos'])) {
-    $uploadDirBase = '/var/www/SvrvFT/review_pubs/';
-    $userFolder = $uploadDirBase . 'user_id_' . $id . '/';
-
-    if (!is_dir($userFolder)) {
-        mkdir($userFolder, 0777, true);
+    if ($rating < 1 || $rating > 5) {
+        throw new Exception('Rating harus dipilih (1-5 bintang).');
+    }
+    if (!$bon) {
+        throw new Exception('Nomor Bon tidak ditemukan.');
     }
 
-    foreach ($_FILES['photos']['tmp_name'] as $i => $tmp) {
-        $originalName = basename($_FILES['photos']['name'][$i]);
+    $sudah_terpecahkan = ($rating <= 3) ? 0 : 1;
 
-        // Buat nama unik untuk file agar tidak tertimpa
-        $ext = pathinfo($originalName, PATHINFO_EXTENSION);
-        $newName = uniqid('review_', true) . '.' . $ext;
+    // 1. Masukkan data review utama ke dalam tabel 'review'
+    $stmt = $conn->prepare("INSERT INTO review (id_user, rating, komentar, dibuat_tgl, kategori, no_bon, nama_kasir, sudah_terpecahkan) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+    if (!$stmt) {
+        throw new Exception("Database error (prepare): " . $conn->error);
+    }
+    $stmt->bind_param('iisssssi', $id, $rating, $comment, $date, $tagsStr, $bon, $nama_kasir, $sudah_terpecahkan);
+    if (!$stmt->execute()) {
+        throw new Exception("Gagal menyimpan data review: " . $stmt->error);
+    }
+    $review_id = $stmt->insert_id;
+    $stmt->close();
 
-        $destination = $userFolder . $newName;
+    // 2. Proses unggah foto ke Cloudinary jika ada
+    $uploaded_urls = [];
+    
+    // KONDISI UTAMA DIPERBAIKI DI SINI
+    if (isset($_FILES['photos'])) {
+        foreach ($_FILES['photos']['tmp_name'] as $i => $tmp_name) {
+            // VALIDASI DIPINDAHKAN KE DALAM LOOP untuk setiap file
+            // Hanya proses file yang punya tmp_name, tidak ada error, dan merupakan file upload yang sah
+            if (!empty($tmp_name) && $_FILES['photos']['error'][$i] === 0 && is_uploaded_file($tmp_name)) {
+                
+                $uploadResult = $cloudinary->uploadApi()->upload($tmp_name, [
+                    'folder' => 'review_photos',
+                    'transformation' => [
+                        ['width' => 1280, 'crop' => 'limit'],
+                        ['quality' => 'auto:good']
+                    ]
+                ]);
+                
+                $secure_url = $uploadResult['secure_url'];
+                $public_id = $uploadResult['public_id'];
 
-        // Kompres dan resize dengan GD
-        if (in_array($ext, ['jpg', 'jpeg', 'png'])) {
-            $success = resizeImage($tmp, $destination, 1280, 80); // Resize maksimal 1280px dan kualitas 80%
-        } else {
-            // Fallback jika bukan format yang didukung
-            $success = move_uploaded_file($tmp, $destination);
-        }
-        // Pindahkan file ke folder VPS
-        if (move_uploaded_file($tmp, $destination)) {
-            // Simpan nama file dan path ke database (tanpa blob)
-            $stmt = $conn->prepare("INSERT INTO review_foto (review_id, nama_file, path_file) VALUES (?, ?, ?)");
-            $stmt->bind_param('iss', $review_id, $originalName, $destination);
-            $stmt->execute();
-            $stmt->close();
+                $stmtFoto = $conn->prepare("INSERT INTO review_foto (review_id, nama_file, path_file) VALUES (?, ?, ?)");
+                if (!$stmtFoto) {
+                    throw new Exception("Database error (prepare foto): " . $conn->error);
+                }
+                $stmtFoto->bind_param('iss', $review_id, $public_id, $secure_url);
+                $stmtFoto->execute();
+                $stmtFoto->close();
 
-            $uploaded[] = $newName;
+                $uploaded_urls[] = $secure_url;
+            }
         }
     }
 
+    // 3. Kirim respons sukses
     echo json_encode([
         'status' => 'success',
-        'message' => 'Review berhasil disimpan.',
-        'photos_uploaded' => $uploaded
+        'message' => 'Terima kasih! Review Anda berhasil dikirim.',
+        'review_id' => $review_id,
+        'photos_uploaded' => $uploaded_urls
     ]);
-} else {
-    http_response_code(400);
-    echo json_encode(['status' => 'error', 'message' => 'Tidak ada foto yang diunggah.']);
-    exit;
-}
 
-$conn->close();
+} catch (Exception $e) {
+    http_response_code(400);
+    echo json_encode([
+        'status' => 'error',
+        'message' => $e->getMessage()
+    ]);
+} finally {
+    if (isset($conn)) {
+        $conn->close();
+    }
+}
