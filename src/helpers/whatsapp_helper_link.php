@@ -12,7 +12,7 @@ function kirimLinkKonfirmasiWA($nomorPenerima, $linkKonfirmasi) {
         $nomorPenerima = '62' . substr($nomorPenerima, 1);
     }
 
-    $url = "https://graph.facebook.com/v18.0/{$phoneNumberId}/messages";
+    $url = "https://graph.facebook.com/v24.0/{$phoneNumberId}/messages";
     
     $pesanBody = "Satu langkah lagi! Klik link di bawah ini untuk menyelesaikan proses penggantian nomor HP Anda. Link ini hanya berlaku selama 15 menit.\n\n" . $linkKonfirmasi;
 
