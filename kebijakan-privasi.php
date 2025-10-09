@@ -142,27 +142,11 @@
                 </div>
             </div>
 
-            <!-- Section 4 -->
-            <div class="mb-8">
-                <div class="flex items-start mb-4">
-                    <div class="w-10 h-10 bg-pink-500 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                        <span class="text-white font-bold">4</span>
-                    </div>
-                    <h2 class="text-2xl font-bold text-gray-800">Berbagi Informasi</h2>
-                </div>
-                <div class="ml-14">
-                    <div class="bg-blue-50 border-l-4 border-blue-500 p-5 rounded-r-lg">
-                        <p class="text-gray-700 mb-3"><strong>Kami tidak menjual atau menyewakan informasi pribadi Anda kepada pihak ketiga.</strong></p>
-                        <p class="text-gray-700">Kami hanya dapat membagikan informasi Anda kepada mitra tepercaya (misalnya, perusahaan logistik untuk pengiriman barang) yang diperlukan untuk menjalankan layanan kami.</p>
-                    </div>
-                </div>
-            </div>
-
             <!-- Section 5 -->
             <div class="mb-8">
                 <div class="flex items-start mb-4">
                     <div class="w-10 h-10 bg-pink-500 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                        <span class="text-white font-bold">5</span>
+                        <span class="text-white font-bold">4</span>
                     </div>
                     <h2 class="text-2xl font-bold text-gray-800">Hak Anda</h2>
                 </div>
@@ -183,7 +167,7 @@
             <div class="mb-8">
                 <div class="flex items-start mb-4">
                     <div class="w-10 h-10 bg-pink-500 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                        <span class="text-white font-bold">6</span>
+                        <span class="text-white font-bold">5</span>
                     </div>
                     <h2 class="text-2xl font-bold text-gray-800">Kontak Kami</h2>
                 </div>
@@ -192,7 +176,7 @@
                         <p class="text-gray-700 mb-3">Jika Anda memiliki pertanyaan mengenai Kebijakan Privasi ini, silakan hubungi kami di:</p>
                         <div class="flex items-center gap-2">
                             <i class="fas fa-envelope text-green-600"></i>
-                            <a href="mailto:dukungan@asoka.co.id" class="text-green-600 font-semibold hover:underline">dukungan@asoka.co.id</a>
+                            <a href="mailto:info@asokababystore.com" class="text-green-600 font-semibold hover:underline">info@asokababystore.com</a>
                         </div>
                     </div>
                 </div>

@@ -5,7 +5,7 @@ setcookie('token', '', [
     'domain' => $_SERVER['HTTP_HOST'],
     'secure' => true,
     'httponly' => false,
-    'samesite' => 'Strict'
+    'samesite' => 'Lax'
 ]);
 http_response_code(200);
 echo json_encode(['status' => 'success', 'message' => 'Berhasil logout']);

@@ -47,7 +47,7 @@
                         <ul class="list-disc list-inside text-red-700 text-sm space-y-1 ml-4">
                             <li>Anda akan kehilangan status keanggotaan Asoka</li>
                             <li>Semua poin member yang tersisa akan hangus</li>
-                            <li>Seluruh riwayat transaksi Anda akan dihapus dari dasbor Anda</li>
+                            <li>Seluruh riwayat transaksi Anda tidak akan bisa diakses lagi</li>
                             <li>Anda tidak lagi dapat mengakses keuntungan eksklusif member</li>
                         </ul>
                     </div>
@@ -83,7 +83,7 @@
                             <li class="flex items-start">
                                 <i class="fas fa-id-card text-blue-500 mt-1 mr-3 w-4 text-center"></i>
                                 <div>
-                                    <strong class="text-gray-800">3. Nomor telepon yang terdaftar di Web Asoka Babystore</strong>
+                                    <strong class="text-gray-800">3. Nomor telepon yang terdaftar di web Asoka Baby Store</strong>
                                      <p class="text-gray-700">Verifikasi nomor telepon yang terdaftar di akun Anda.</p>
                                 </div>
                             </li>
