@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . "/../../aa_kon_sett.php";
+require_once __DIR__ . "/../aa_kon_sett.php";
 
 $token = $_GET['token'] ?? '';
 
@@ -79,7 +79,7 @@ try {
         <?php endif; ?>
         
         <p class="text-gray-600 mb-8"><?php echo $pesanTampilan; ?></p>
-        <a href="/customer/profile" class="px-8 py-3 bg-pink-500 text-white font-semibold rounded-lg shadow-md hover:bg-pink-600">
+        <a href="/src/fitur/pubs/user/profile/view" class="px-8 py-3 bg-pink-500 text-white font-semibold rounded-lg shadow-md hover:bg-pink-600">
             Kembali ke Profil
         </a>
     </div>
