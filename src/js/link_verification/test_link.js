@@ -9,6 +9,27 @@ const showToast = (message, isSuccess = true) => {
     }).showToast();
 };
 
+// Fungsi untuk mengecek nomor HP
+const checkPhoneNumberExists = async (noHp) => {
+    try {
+        const response = await fetch('/src/api/user/check_phone_api.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ no_hp: noHp })
+        });
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Gagal memeriksa nomor HP.');
+        }
+        const result = await response.json();
+        return result.exists;
+    } catch (error) {
+        // Jika terjadi error, kita anggap pengecekan gagal dan lempar error
+        throw error;
+    }
+};
+
+
 document.addEventListener('DOMContentLoaded', () => {
     const btnUbahNoHp = document.getElementById('btnUbahNoHp');
     const modalInputNoHp = document.getElementById('modalInputNoHp');
@@ -29,8 +50,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const noHp = inputNoHp.value.trim();
         errorNoHp.classList.add('hidden');
 
+        // 1. Validasi Format
         if (!/^08\d{8,11}$/.test(noHp)) {
-            errorNoHp.textContent = 'Format nomor HP tidak valid.';
+            errorNoHp.textContent = 'Format nomor HP tidak valid (Contoh: 081234567890).';
             errorNoHp.classList.remove('hidden');
             return;
         }
@@ -39,9 +61,16 @@ document.addEventListener('DOMContentLoaded', () => {
         btnKirimLink.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...`;
 
         try {
+            // 2. Cek apakah nomor sudah terdaftar
+            const isExists = await checkPhoneNumberExists(noHp);
+            if (isExists) {
+                throw new Error('Nomor HP ini sudah digunakan oleh akun lain.');
+            }
+
+            // 3. Jika aman, lanjutkan request link WA
             const response = await fetch('/src/api/user/request_link_api.php', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' }, // Token otentikasi akan dihandle oleh cookie di backend
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ no_hp: noHp })
             });
 
@@ -51,11 +80,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(result.message || 'Gagal membuat link verifikasi.');
             }
             
-            // Sembunyikan modal dan tampilkan notifikasi
             modalInputNoHp.classList.add('hidden');
             showToast('Anda akan diarahkan ke WhatsApp. Silakan kirim pesan yang telah disiapkan.', true);
 
-            // Redirect ke WhatsApp setelah beberapa saat
             setTimeout(() => {
                 window.location.href = result.data.whatsapp_url;
             }, 2000);
