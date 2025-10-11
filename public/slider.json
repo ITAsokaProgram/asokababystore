@@ -165,14 +165,6 @@
         "promo_name": ""
     },
     {
-        "filename": "WhatsApp Image 2025-10-06 at 162352_68e627203bfc1.jpeg",
-        "original_name": "WhatsApp Image 2025-10-06 at 16.23.52.jpeg",
-        "path": "\/public\/images\/promo\/WhatsApp Image 2025-10-06 at 162352_68e627203bfc1.jpeg",
-        "tanggal_mulai": "2025-10-01",
-        "tanggal_selesai": "2025-10-31",
-        "promo_name": ""
-    },
-    {
         "filename": "WhatsApp Image 2025-10-06 at 161120_68e627203c12d.jpeg",
         "original_name": "WhatsApp Image 2025-10-06 at 16.11.20.jpeg",
         "path": "\/public\/images\/promo\/WhatsApp Image 2025-10-06 at 161120_68e627203c12d.jpeg",
@@ -184,6 +176,102 @@
         "filename": "WhatsApp Image 2025-10-06 at 083752_68e627203c272.jpeg",
         "original_name": "WhatsApp Image 2025-10-06 at 08.37.52.jpeg",
         "path": "\/public\/images\/promo\/WhatsApp Image 2025-10-06 at 083752_68e627203c272.jpeg",
+        "tanggal_mulai": "2025-10-01",
+        "tanggal_selesai": "2025-10-31",
+        "promo_name": ""
+    },
+    {
+        "filename": "WhatsApp Image 2025-10-10 at 152032_68e8d293530f7.jpeg",
+        "original_name": "WhatsApp Image 2025-10-10 at 15.20.32.jpeg",
+        "path": "\/public\/images\/promo\/WhatsApp Image 2025-10-10 at 152032_68e8d293530f7.jpeg",
+        "tanggal_mulai": "2025-10-01",
+        "tanggal_selesai": "2025-10-25",
+        "promo_name": ""
+    },
+    {
+        "filename": "WhatsApp Image 2025-10-10 at 141713_68e8d29353545.jpeg",
+        "original_name": "WhatsApp Image 2025-10-10 at 14.17.13.jpeg",
+        "path": "\/public\/images\/promo\/WhatsApp Image 2025-10-10 at 141713_68e8d29353545.jpeg",
+        "tanggal_mulai": "2025-10-01",
+        "tanggal_selesai": "2025-10-31",
+        "promo_name": ""
+    },
+    {
+        "filename": "WhatsApp Image 2025-10-09 at 161442_68e8d29353876.jpeg",
+        "original_name": "WhatsApp Image 2025-10-09 at 16.14.42.jpeg",
+        "path": "\/public\/images\/promo\/WhatsApp Image 2025-10-09 at 161442_68e8d29353876.jpeg",
+        "tanggal_mulai": "2025-10-01",
+        "tanggal_selesai": "2025-10-31",
+        "promo_name": ""
+    },
+    {
+        "filename": "WhatsApp Image 2025-10-09 at 161435 1_68e8d29353c28.jpeg",
+        "original_name": "WhatsApp Image 2025-10-09 at 16.14.35 (1).jpeg",
+        "path": "\/public\/images\/promo\/WhatsApp Image 2025-10-09 at 161435 1_68e8d29353c28.jpeg",
+        "tanggal_mulai": "2025-10-01",
+        "tanggal_selesai": "2025-10-15",
+        "promo_name": ""
+    },
+    {
+        "filename": "WhatsApp Image 2025-10-09 at 161435_68e8d29353d99.jpeg",
+        "original_name": "WhatsApp Image 2025-10-09 at 16.14.35.jpeg",
+        "path": "\/public\/images\/promo\/WhatsApp Image 2025-10-09 at 161435_68e8d29353d99.jpeg",
+        "tanggal_mulai": "2025-10-01",
+        "tanggal_selesai": "2025-10-15",
+        "promo_name": ""
+    },
+    {
+        "filename": "WhatsApp Image 2025-10-09 at 161209 1_68e8d293540b2.jpeg",
+        "original_name": "WhatsApp Image 2025-10-09 at 16.12.09 (1).jpeg",
+        "path": "\/public\/images\/promo\/WhatsApp Image 2025-10-09 at 161209 1_68e8d293540b2.jpeg",
+        "tanggal_mulai": "2025-10-01",
+        "tanggal_selesai": "2025-10-31",
+        "promo_name": ""
+    },
+    {
+        "filename": "WhatsApp Image 2025-10-09 at 161209_68e8d29354181.jpeg",
+        "original_name": "WhatsApp Image 2025-10-09 at 16.12.09.jpeg",
+        "path": "\/public\/images\/promo\/WhatsApp Image 2025-10-09 at 161209_68e8d29354181.jpeg",
+        "tanggal_mulai": "2025-10-01",
+        "tanggal_selesai": "2025-10-31",
+        "promo_name": ""
+    },
+    {
+        "filename": "WhatsApp Image 2025-10-09 at 161141 1_68e8d29354272.jpeg",
+        "original_name": "WhatsApp Image 2025-10-09 at 16.11.41 (1).jpeg",
+        "path": "\/public\/images\/promo\/WhatsApp Image 2025-10-09 at 161141 1_68e8d29354272.jpeg",
+        "tanggal_mulai": "2025-10-01",
+        "tanggal_selesai": "2025-10-15",
+        "promo_name": ""
+    },
+    {
+        "filename": "WhatsApp Image 2025-10-09 at 161141_68e8d293545a4.jpeg",
+        "original_name": "WhatsApp Image 2025-10-09 at 16.11.41.jpeg",
+        "path": "\/public\/images\/promo\/WhatsApp Image 2025-10-09 at 161141_68e8d293545a4.jpeg",
+        "tanggal_mulai": "2025-10-01",
+        "tanggal_selesai": "2025-10-15",
+        "promo_name": ""
+    },
+    {
+        "filename": "WhatsApp Image 2025-10-09 at 141938_68e8d29354677.jpeg",
+        "original_name": "WhatsApp Image 2025-10-09 at 14.19.38.jpeg",
+        "path": "\/public\/images\/promo\/WhatsApp Image 2025-10-09 at 141938_68e8d29354677.jpeg",
+        "tanggal_mulai": "2025-10-01",
+        "tanggal_selesai": "2025-10-31",
+        "promo_name": ""
+    },
+    {
+        "filename": "WhatsApp Image 2025-10-09 at 111438_68e8d2935493b.jpeg",
+        "original_name": "WhatsApp Image 2025-10-09 at 11.14.38.jpeg",
+        "path": "\/public\/images\/promo\/WhatsApp Image 2025-10-09 at 111438_68e8d2935493b.jpeg",
+        "tanggal_mulai": "2025-10-09",
+        "tanggal_selesai": "2025-10-12",
+        "promo_name": ""
+    },
+    {
+        "filename": "WhatsApp Image 2025-10-08 at 160636_68e8d29354c8e.jpeg",
+        "original_name": "WhatsApp Image 2025-10-08 at 16.06.36.jpeg",
+        "path": "\/public\/images\/promo\/WhatsApp Image 2025-10-08 at 160636_68e8d29354c8e.jpeg",
         "tanggal_mulai": "2025-10-01",
         "tanggal_selesai": "2025-10-31",
         "promo_name": ""
