@@ -19,6 +19,13 @@
             </div>
             <span class="sidebar-text ml-3 font-medium transition-all duration-300 group-hover:translate-x-1">Shopee</span>
         </a>
+        <!-- <a href="/src/fitur/whatsapp_cs/dashboard_whatsapp" id="whatsappLink" data-menu="whatsapp_dashboard"
+            class="group flex items-center py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-orange-100 hover:to-red-200 hover:text-orange-700 hover:shadow-lg transition-all duration-300 mb-4 border border-transparent hover:border-orange-300">
+            <div class="w-8 flex justify-center">
+                <i class="fa-brands fa-whatsapp  text-xl text-orange-600 group-hover:text-orange-700 transition-all duration-300 group-hover:scale-125 group-hover:-rotate-12 group-hover:drop-shadow-lg"></i>
+            </div>
+            <span class="sidebar-text ml-3 font-medium transition-all duration-300 group-hover:translate-x-1">WhatsApp CS</span>
+        </a> -->
 
         <!-- Laporan Section -->
         <div x-data="{ open: false, nestedOpenPenjualan: false, nestedOpenPelanggan: false }" class="relative mb-4">

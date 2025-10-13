@@ -55,4 +55,25 @@ class ConversationService {
         $stmt->execute();
         $stmt->close();
     }
+    public function startLiveChat($phoneNumber) {
+        $stmt = $this->conn->prepare("UPDATE percakapan_whatsapp SET status_percakapan = 'live_chat', terakhir_interaksi_pada = NOW() WHERE nomor_telepon = ?");
+        $stmt->bind_param("s", $phoneNumber);
+        $stmt->execute();
+        $stmt->close();
+        $this->logger->info("Live chat dimulai untuk: " . $phoneNumber);
+    }
+
+    public function saveMessage($conversationId, $senderType, $messageBody) {
+        $stmt = $this->conn->prepare("INSERT INTO pesan_whatsapp (percakapan_id, pengirim, isi_pesan) VALUES (?, ?, ?)");
+        $stmt->bind_param("iss", $conversationId, $senderType, $messageBody);
+        $stmt->execute();
+        $stmt->close();
+    }
+     public function closeConversation($phoneNumber) {
+        $stmt = $this->conn->prepare("UPDATE percakapan_whatsapp SET status_percakapan = 'closed', menu_utama_terkirim = 0 WHERE nomor_telepon = ?");
+        $stmt->bind_param("s", $phoneNumber);
+        $stmt->execute();
+        $stmt->close();
+        $this->logger->info("Percakapan ditutup untuk: " . $phoneNumber);
+    }
 }

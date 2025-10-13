@@ -41,6 +41,40 @@ class WebhookHandler {
             }
         }
         $conversation = $this->conversationService->getOrCreateConversation($nomorPengirim);
+        if ($conversation['status_percakapan'] === 'live_chat' && date('H:i') >= '23:55') {
+            $this->conversationService->closeConversation($nomorPengirim);
+            kirimPesanTeks(
+                $nomorPengirim,
+                "Mohon maaf, sesi live chat telah berakhir karena telah melewati jam operasional kami (23:55). Silakan hubungi kami kembali esok hari. Terima kasih."
+            );
+            $this->logger->info("Live chat untuk {$nomorPengirim} ditutup otomatis karena melewati jam operasional.");
+            return; // Hentikan proses
+        }
+        
+        if ($message['type'] === 'interactive' && isset($message['interactive']['type']) && $message['interactive']['type'] === 'button_reply') {
+            $buttonId = $message['interactive']['button_reply']['id'];
+            if ($buttonId === 'END_LIVE_CHAT') {
+                $this->logger->info("User {$nomorPengirim} mengkonfirmasi untuk mengakhiri live chat.");
+                $this->conversationService->closeConversation($nomorPengirim);
+                $this->sendWelcomeMessage($nomorPengirim); 
+                $this->conversationService->openConversation($nomorPengirim); 
+                return;
+            }
+        }
+        if ($conversation['status_percakapan'] === 'live_chat' && $message['type'] === 'text') {
+            $textBody = $message['text']['body'];
+            
+            $this->conversationService->saveMessage($conversation['id'], 'user', $textBody);
+
+            
+            $this->notifyWebSocketServer([
+                'event' => 'new_message',
+                'conversation_id' => $conversation['id'],
+                'phone' => $nomorPengirim,
+                'message' => $textBody
+            ]);
+            return; 
+        }
         if ($conversation['status_percakapan'] === 'closed') {
             $this->sendWelcomeMessage($nomorPengirim);
             $this->conversationService->openConversation($nomorPengirim);
@@ -126,6 +160,14 @@ class WebhookHandler {
             case 'LOKASI_DAFTAR_BELITUNG':
                 $this->sendBranchListByRegion($nomorPengirim, 'belitung', 1, 'lokasi');
                 break;
+            case 'CHAT_CS':
+                $this->conversationService->startLiveChat($nomorPengirim);
+                kirimPesanTeks(
+                    $nomorPengirim,
+                    "Anda sekarang terhubung dengan Customer Service kami. Silakan sampaikan pertanyaan Anda."
+                );
+                $this->notifyWebSocketServer(['event' => 'new_live_chat', 'phone' => $nomorPengirim]);
+                break;
             default:
                 if (strpos($selectedId, 'LOKASI_') === 0) {
                     $branchKey = substr($selectedId, 7);
@@ -187,4 +229,32 @@ class WebhookHandler {
             $sections
         );
     }
+
+   private function notifyWebSocketServer($data) {
+        $ws_url = 'http://127.0.0.1:8081/notify'; 
+        $payload = json_encode($data);
+
+        $ch = curl_init($ws_url);
+
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json',
+            'Content-Length: ' . strlen($payload)
+        ]);
+        
+        curl_setopt($ch, CURLOPT_TIMEOUT_MS, 100); 
+        curl_setopt($ch, CURLOPT_NOSIGNAL, 1);     
+
+        curl_exec($ch);
+
+        if (curl_errno($ch)) {
+            $this->logger->error('cURL Error to WebSocket server: ' . curl_error($ch));
+        }
+
+        curl_close($ch);
+    }
+
+
 }

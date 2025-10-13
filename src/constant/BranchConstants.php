@@ -142,8 +142,6 @@ class BranchConstants {
             'rows' => [
                 ['id' => 'DAFTAR_NOMOR', 'title' => 'Kontak CS Cabang'],
                 ['id' => 'DAFTAR_LOKASI', 'title' => 'Lokasi Toko Fisik'],
-                ['id' => 'PROMO', 'title' => 'Promo Terbaru'],
-                ['id' => 'KRITIK_SARAN', 'title' => 'Kritik & Saran'],
                 ['id' => 'CHAT_CS', 'title' => 'Chat dengan CS Pusat']
             ]
         ]

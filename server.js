@@ -44,7 +44,7 @@ wss.on('connection', (ws) => {
   });
 
   // Mengirim pesan sambutan kepada klien yang baru terhubung
-  ws.send('Welcome to WebSocket server');
+  ws.send('Test');
 });
 
 // Interval untuk memeriksa koneksi hidup dan mengirim ping
