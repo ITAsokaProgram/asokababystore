@@ -1,22 +1,16 @@
 <?php
-
-
 require_once __DIR__ . '/../constant/BranchConstants.php';
-
-
+require_once __DIR__ . '/../service/ConversationService.php'; 
 use Asoka\Constant\BranchConstants;
-
 class WebhookHandler {
     private $logger;
     private $verificationService;
-    
-
-    public function __construct(VerificationService $verificationService, $logger) {
+    private $conversationService; 
+    public function __construct(VerificationService $verificationService, ConversationService $conversationService, $logger) {
         $this->verificationService = $verificationService;
+        $this->conversationService = $conversationService; 
         $this->logger = $logger;
-        
     }
-    
     public function handleVerification() {
         $verify_token = Config::get('WHATSAPP_VERIFY_TOKEN');
         if (isset($_GET['hub_mode']) && $_GET['hub_mode'] === 'subscribe' && $_GET['hub_verify_token'] === $verify_token) {
@@ -29,29 +23,43 @@ class WebhookHandler {
             $this->logger->warning("Webhook verification failed. Invalid token.");
         }
     }
-
     public function handleIncomingMessage($body) {
         $this->logger->info("Webhook received data: " . json_encode($body));
         $message = $body['entry'][0]['changes'][0]['value']['messages'][0] ?? null;
-
         if (!$message) {
             return;
         }
-        
-        if ($message['type'] === 'interactive' && isset($message['interactive']['type']) && $message['interactive']['type'] === 'list_reply') {
-            $this->processListReplyMessage($message);
-        } elseif ($message['type'] === 'text') {
-            $this->processTextMessage($message);
+        $nomorPengirim = $message['from'];
+        if ($message['type'] === 'text') {
+            $textBody = $message['text']['body'];
+            $pattern = '/https:\/\/asokababystore\.com\/verifikasi-wa\?token=([a-f0-9]{64})/';
+            if (preg_match($pattern, $textBody, $matches)) {
+                $token = $matches[1];
+                $this->logger->info("Link verifikasi terdeteksi dari {$nomorPengirim}. Memproses token: {$token}");
+                $this->verificationService->processToken($token);
+                return;
+            }
+        }
+        $conversation = $this->conversationService->getOrCreateConversation($nomorPengirim);
+        if ($conversation['status_percakapan'] === 'closed') {
+            $this->sendWelcomeMessage($nomorPengirim);
+            $this->conversationService->openConversation($nomorPengirim);
+        } else {
+            if ($message['type'] === 'text') {
+                if ($conversation['menu_utama_terkirim'] == 0) {
+                    $this->processTextMessage($message);
+                    $this->conversationService->setMenuSent($nomorPengirim);
+                } else {
+                    $this->logger->info("Mengabaikan pesan teks dari {$nomorPengirim} karena menu utama sudah terkirim (bukan link verifikasi).");
+                }
+            } elseif ($message['type'] === 'interactive' && $message['interactive']['type'] === 'list_reply') {
+                $this->processListReplyMessage($message);
+            }
         }
     }
-    
-    private function processTextMessage($message) {
-        $nomorPengirim = $message['from'];
-        $this->logger->info("User {$nomorPengirim} sent a text message, triggering Main Menu List.");
-
-        
+    private function sendWelcomeMessage($nomorPengirim) {
+        $this->logger->info("User {$nomorPengirim} memulai percakapan baru, mengirim Welcome Menu.");
         $sections = BranchConstants::MAIN_MENU_SECTIONS;
-
         kirimPesanList(
             $nomorPengirim,
             "Selamat Datang di Asoka!",
@@ -61,13 +69,23 @@ class WebhookHandler {
             $sections
         );
     }
-    
+    private function processTextMessage($message) {
+        $nomorPengirim = $message['from'];
+        $this->logger->info("User {$nomorPengirim} mengirim pesan teks dalam sesi aktif, memicu Main Menu.");
+        $sections = BranchConstants::MAIN_MENU_SECTIONS;
+        kirimPesanList(
+            $nomorPengirim,
+            "Menu Utama", 
+            "Silakan pilih lagi dari menu di bawah ini.", 
+            "ASOKA Baby Store",
+            "Lihat Pilihan Menu",
+            $sections
+        );
+    }
     private function processListReplyMessage($message) {
         $nomorPengirim = $message['from'];
         $selectedId = $message['interactive']['list_reply']['id'];
         $this->logger->info("Received List reply from {$nomorPengirim}. Selected ID: {$selectedId}");
-
-        
         if (preg_match('/^(JABODETABEK|BELITUNG|LOKASI_JABODETABEK|LOKASI_BELITUNG)_PAGE_(\d+)$/', $selectedId, $matches)) {
             $region = (strpos($matches[1], 'JABODETABEK') !== false) ? 'jabodetabek' : 'belitung';
             $type = (strpos($matches[1], 'LOKASI') !== false) ? 'lokasi' : 'kontak';
@@ -75,8 +93,6 @@ class WebhookHandler {
             $this->sendBranchListByRegion($nomorPengirim, $region, $page, $type);
             return;
         }
-
-        
         switch ($selectedId) {
             case 'DAFTAR_NOMOR':
                 kirimPesanList(
@@ -88,15 +104,12 @@ class WebhookHandler {
                     BranchConstants::REGION_SELECTION_MENU
                 );
                 break;
-
             case 'DAFTAR_JABODETABEK':
                 $this->sendBranchListByRegion($nomorPengirim, 'jabodetabek', 1, 'kontak');
                 break;
-
             case 'DAFTAR_BELITUNG':
                 $this->sendBranchListByRegion($nomorPengirim, 'belitung', 1, 'kontak');
                 break;
-
             case 'DAFTAR_LOKASI':
                 kirimPesanList(
                     $nomorPengirim,
@@ -107,17 +120,13 @@ class WebhookHandler {
                     BranchConstants::REGION_SELECTION_MENU_LOKASI
                 );
                 break;
-
             case 'LOKASI_DAFTAR_JABODETABEK':
                 $this->sendBranchListByRegion($nomorPengirim, 'jabodetabek', 1, 'lokasi');
                 break;
-
             case 'LOKASI_DAFTAR_BELITUNG':
                 $this->sendBranchListByRegion($nomorPengirim, 'belitung', 1, 'lokasi');
                 break;
-
             default:
-                
                 if (strpos($selectedId, 'LOKASI_') === 0) {
                     $branchKey = substr($selectedId, 7);
                     if (isset(BranchConstants::ALL_LOKASI_CABANG[$branchKey])) {
@@ -127,13 +136,11 @@ class WebhookHandler {
                         kirimPesanTeks($nomorPengirim, "Maaf, data lokasi untuk cabang {$branchKey} saat ini belum tersedia.");
                     }
                 } 
-                
                 elseif (array_key_exists($selectedId, BranchConstants::ALL_NOMOR_TELEPON)) {
                     $namaKontak = "Asoka " . $selectedId;
                     $nomorUntukDikirim = BranchConstants::ALL_NOMOR_TELEPON[$selectedId];
                     kirimPesanKontak($nomorPengirim, $namaKontak, $nomorUntukDikirim);
                 } 
-                
                 else {
                     $this->logger->warning("Received unhandled List reply ID: {$selectedId}");
                     kirimPesanTeks($nomorPengirim, "Maaf, pilihan Anda tidak valid. Silakan coba lagi.");
@@ -141,19 +148,13 @@ class WebhookHandler {
                 break;
         }
     }
-
-
-    
     private function sendBranchListByRegion($nomorPengirim, $region, $page = 1, $type = 'kontak') {
         $this->logger->info("Sending {$type} list for region {$region} page {$page} to {$nomorPengirim}.");
-
         $all_cities = ($region === 'jabodetabek') ? BranchConstants::CITIES_JABODETABEK : BranchConstants::CITIES_BELITUNG;
         $all_locations = ($region === 'jabodetabek') ? BranchConstants::LOKASI_JABODETABEK : BranchConstants::LOKASI_BELITUNG;
-
         $items_per_page = 8;
         $offset = ($page - 1) * $items_per_page;
         $cities_to_show_raw = array_slice($all_cities, $offset, $items_per_page);
-
         $cities_to_show = [];
         foreach ($cities_to_show_raw as $city) {
             if ($type === 'lokasi') {
@@ -164,25 +165,19 @@ class WebhookHandler {
                 $cities_to_show[] = $city;
             }
         }
-        
         $region_prefix = strtoupper($region); 
         $page_prefix = ($type === 'lokasi') ? "LOKASI_{$region_prefix}" : $region_prefix;
-
         if (count($all_cities) > $offset + $items_per_page) {
             $next_page = $page + 1;
             $cities_to_show[] = ['id' => "{$page_prefix}_PAGE_{$next_page}", 'title' => '➡️ Halaman Berikutnya'];
         }
-
         if ($page > 1) {
             $prev_page = $page - 1;
             $cities_to_show[] = ['id' => "{$page_prefix}_PAGE_{$prev_page}", 'title' => '⬅️ Halaman Sebelumnya'];
         }
-
         $title = "PILIH CABANG (Hal {$page})";
         $header = ($region === 'jabodetabek') ? "Asoka Baby Store Jabodetabek" : "Asoka Baby Store Bangka & Belitung";
-
         $sections = [['title' => $title, 'rows' => $cities_to_show]];
-
         kirimPesanList(
             $nomorPengirim,
             "Pilih Cabang",
@@ -192,5 +187,4 @@ class WebhookHandler {
             $sections
         );
     }
-
 }
