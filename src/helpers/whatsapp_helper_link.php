@@ -204,3 +204,30 @@ function kirimPesanLokasi($nomorPenerima, $latitude, $longitude, $namaLokasi, $a
         return ['success' => false];
     }
 }
+
+function kirimPesanMedia($nomorPenerima, $mediaUrl, $mediaType, $caption = null) {
+    $logger = new AppLogger('whatsapp_media_message.log');
+    $nomorPenerima = normalizePhoneNumber($nomorPenerima);
+
+    $mediaObject = ['link' => $mediaUrl];
+    if ($caption) {
+        $mediaObject['caption'] = $caption;
+    }
+
+    $data = [
+        'messaging_product' => 'whatsapp',
+        'to' => $nomorPenerima,
+        'type' => $mediaType, 
+        $mediaType => $mediaObject
+    ];
+
+    $result = sendWhatsAppMessage($data);
+
+    if ($result['httpcode'] >= 200 && $result['httpcode'] < 300) {
+        $logger->success("Pesan media ({$mediaType}) berhasil dikirim ke {$nomorPenerima}.");
+        return ['success' => true];
+    } else {
+        $logger->error("Gagal kirim pesan media ({$mediaType}) ke {$nomorPenerima}. HTTP: {$result['httpcode']}. Response: {$result['response']}");
+        return ['success' => false];
+    }
+}

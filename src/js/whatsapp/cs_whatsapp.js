@@ -1,3 +1,5 @@
+let selectedMediaFile = null; 
+
 const getToken = () => {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; token=`);
@@ -23,19 +25,46 @@ document.addEventListener('DOMContentLoaded', () => {
     const conversationListContainer = document.getElementById('conversation-list-container');
     const activeChat = document.getElementById('active-chat');
     const chatPlaceholder = document.getElementById('chat-placeholder');
+    const mediaInput = document.getElementById('media-input');
+    const mediaPreviewContainer = document.getElementById('media-preview-container');
+    const mediaPreviewImage = document.getElementById('media-preview-image');
+    const mediaPreviewVideo = document.getElementById('media-preview-video');
+    const removeMediaButton = document.getElementById('remove-media-button');
+
+    mediaInput.addEventListener('change', () => {
+        const file = mediaInput.files[0];
+        if (!file) return;
+        
+        selectedMediaFile = file;
+        const fileURL = URL.createObjectURL(file);
+
+        mediaPreviewImage.classList.add('hidden');
+        mediaPreviewVideo.classList.add('hidden');
+
+        if (file.type.startsWith('image/')) {
+            mediaPreviewImage.src = fileURL;
+            mediaPreviewImage.classList.remove('hidden');
+        } else if (file.type.startsWith('video/')) {
+            mediaPreviewVideo.src = fileURL;
+            mediaPreviewVideo.classList.remove('hidden');
+        }
+        
+        mediaPreviewContainer.classList.remove('hidden');
+    });
+
+    removeMediaButton.addEventListener('click', () => {
+        mediaInput.value = ''; 
+        selectedMediaFile = null;
+        mediaPreviewContainer.classList.add('hidden');
+        mediaPreviewImage.src = '';
+        mediaPreviewVideo.src = '';
+    });
     
-    if (mobileShowList) {
-        mobileShowList.addEventListener('click', () => {
-            conversationListContainer.classList.add('mobile-show');
-            // Tampilkan tombol "X" saat daftar dibuka
-            mobileCloseList.classList.remove('hidden'); 
-        });
-    }
+ 
 
     if (mobileCloseList) {
         mobileCloseList.addEventListener('click', () => {
             conversationListContainer.classList.remove('mobile-show');
-            // Sembunyikan lagi tombol "X" saat daftar ditutup
             mobileCloseList.classList.add('hidden');
         });
     }
@@ -55,7 +84,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatLayout = document.getElementById('chat-layout');
 
     if (toggleButton) {
-        // Load saved state from localStorage
         const isCollapsed = localStorage.getItem('conversationListCollapsed') === 'true';
         if (isCollapsed) {
             conversationListContainer.classList.add('collapsed');
@@ -105,10 +133,12 @@ document.addEventListener('DOMContentLoaded', () => {
 function initWebSocket() {
     ws = new WebSocket('wss://asokababystore.com/ws');
 
-    ws.onopen = () => console.log('WebSocket connection established.');
+    ws.onopen = () => {
+        // console.log('WebSocket connection established.')
+    }
 
     ws.onmessage = (event) => {
-        console.log('WebSocket message received:', event.data);
+        // console.log('WebSocket message received:', event.data);
         try {
             const data = JSON.parse(event.data);
 
@@ -150,7 +180,7 @@ function initWebSocket() {
 
 
         } catch (e) {
-            console.log('Received a non-JSON message, likely a welcome message:', event.data);
+            // console.log('Received a non-JSON message, likely a welcome message:', event.data);
         }
     };
 
@@ -350,7 +380,6 @@ function appendMessage(msg) {
     });
 }
 
-
 async function sendMessage() {
     if (currentConversationStatus !== 'live_chat') {
         Swal.fire({
@@ -365,42 +394,73 @@ async function sendMessage() {
     const messageInput = document.getElementById('message-input');
     const sendButton = document.getElementById('send-button');
     const message = messageInput.value.trim();
+    
+    // Validasi: harus ada pesan teks atau file media
+    if (!message && !selectedMediaFile) return;
+    if (!currentConversationId) return;
 
-    if (!message || !currentConversationId) return;
+    // Tampilkan pesan/media di UI secara langsung
+    if (selectedMediaFile) {
+        const fileURL = URL.createObjectURL(selectedMediaFile);
+        const mediaType = selectedMediaFile.type.startsWith('image/') ? 'image' : 'video';
+        appendMessage({
+            pengirim: 'admin',
+            isi_pesan: fileURL, // Gunakan URL lokal untuk pratinjau
+            tipe_pesan: mediaType,
+            timestamp: new Date().toISOString()
+        });
+        if (message) { // Jika ada caption, tampilkan juga sebagai pesan terpisah (opsional) atau gabungkan
+             appendMessage({ pengirim: 'admin', isi_pesan: message, tipe_pesan: 'text', timestamp: new Date().toISOString() });
+        }
+    } else if (message) {
+        appendMessage({
+            pengirim: 'admin',
+            isi_pesan: message,
+            tipe_pesan: 'text',
+            timestamp: new Date().toISOString()
+        });
+    }
 
-    appendMessage({
-        pengirim: 'admin',
-        isi_pesan: message,
-        tipe_pesan: 'text',
-        timestamp: new Date().toISOString() 
-    });    messageInput.value = '';
-    messageInput.style.height = 'auto'; 
     sendButton.disabled = true;
     sendButton.innerHTML = '<div class="loading-spinner"></div>';
+
+    // Persiapkan data untuk dikirim
+    const formData = new FormData();
+    formData.append('conversation_id', currentConversationId);
+    if (message) {
+        formData.append('message', message);
+    }
+    if (selectedMediaFile) {
+        formData.append('media', selectedMediaFile);
+    }
+
+    // Reset input setelah data disiapkan
+    messageInput.value = '';
+    messageInput.style.height = 'auto';
+    document.getElementById('remove-media-button').click(); // Panggil klik untuk mereset UI media
 
     try {
         const response = await fetch('/src/api/whatsapp/send_admin_reply.php', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                // Hapus 'Content-Type', browser akan set otomatis untuk FormData
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({
-                conversation_id: currentConversationId,
-                message: message
-            })
+            body: formData
         });
 
         const result = await response.json();
-        if (!result.success) {
-            throw new Error('Gagal mengirim balasan.');
+        if (!response.ok || !result.success) {
+            throw new Error(result.message || 'Gagal mengirim balasan.');
         }
-        
+
+        // Muat ulang daftar percakapan untuk update 'terakhir interaksi'
         fetchAndRenderConversations();
 
     } catch (error) {
         console.error(error);
         Swal.fire('Error', error.message, 'error');
+    // TODO: Tambahkan logika untuk menandai pesan yang gagal terkirim di UI
     } finally {
         sendButton.disabled = false;
         sendButton.innerHTML = '<i class="fas fa-paper-plane"></i>';

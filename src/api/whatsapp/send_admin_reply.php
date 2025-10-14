@@ -3,11 +3,14 @@
 require_once __DIR__ . '/../../../aa_kon_sett.php';
 require_once __DIR__ . '/../../helpers/whatsapp_helper_link.php';
 require_once __DIR__ . '/../../service/ConversationService.php';
-require_once __DIR__ . '/../../auth/middleware_login.php'; 
+require_once __DIR__ . '/../../auth/middleware_login.php';
+
+use Cloudinary\Cloudinary;
+$env = parse_ini_file(__DIR__ . '/../../../.env');
 
 header('Content-Type: application/json');
 
-
+// 1. Verifikasi Token (sama seperti sebelumnya)
 try {
     $headers = getallheaders();
     if (!isset($headers['Authorization']) || !preg_match('/^Bearer\s(\S+)$/', $headers['Authorization'], $matches)) {
@@ -15,23 +18,13 @@ try {
         echo json_encode(['success' => false, 'message' => 'Token tidak ditemukan atau format salah.']);
         exit;
     }
-    
     $token = $matches[1];
     $decoded = verify_token($token);
-
-    
-    $isTokenValidAdmin = false;
-    if (is_object($decoded) && isset($decoded->kode)) {
-        
-        $isTokenValidAdmin = true;
-    } elseif (is_array($decoded) && isset($decoded['status']) && $decoded['status'] === 'error') {
-        
-        $isTokenValidAdmin = false;
-    }
+    $isTokenValidAdmin = is_object($decoded) && isset($decoded->kode);
 
     if (!$isTokenValidAdmin) {
         http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'Token tidak valid atau bukan token admin.']);
+        echo json_encode(['success' => false, 'message' => 'Token tidak valid.']);
         exit;
     }
 } catch (Exception $e) {
@@ -40,45 +33,78 @@ try {
     exit;
 }
 
-
-
-$data = json_decode(file_get_contents('php://input'), true);
-
-
-if (!$data || !isset($data['conversation_id']) || !isset($data['message'])) {
+// 2. Validasi Input dari $_POST karena menggunakan FormData
+if (!isset($_POST['conversation_id']) || (empty($_POST['message']) && empty($_FILES['media']))) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Input tidak valid.']);
+    echo json_encode(['success' => false, 'message' => 'Input tidak valid. Diperlukan conversation_id dan message atau media.']);
     exit;
 }
 
-$conversationId = $data['conversation_id'];
-$message = $data['message'];
+$conversationId = $_POST['conversation_id'];
+$messageText = $_POST['message'] ?? null; // Pesan teks bisa menjadi caption
 $logger = new AppLogger('send_admin_reply.log');
-
 $conversationService = new ConversationService($conn, $logger);
 
-$conversationService->saveMessage($conversationId, 'admin', 'text', $message);
+try {
+    // 3. Ambil nomor telepon dari ID percakapan
+    $stmt = $conn->prepare("SELECT nomor_telepon FROM percakapan_whatsapp WHERE id = ?");
+    $stmt->bind_param("i", $conversationId);
+    $stmt->execute();
+    $result = $stmt->get_result()->fetch_assoc();
+    $phoneNumber = $result['nomor_telepon'] ?? null;
+    $stmt->close();
 
-$stmt = $conn->prepare("SELECT nomor_telepon FROM percakapan_whatsapp WHERE id = ?");
-$stmt->bind_param("i", $conversationId);
-$stmt->execute();
-$result = $stmt->get_result()->fetch_assoc();
-$phoneNumber = $result['nomor_telepon'];
-$stmt->close();
-
-if ($phoneNumber) {
+    if (!$phoneNumber) {
+        throw new Exception("Conversation with ID {$conversationId} not found.");
+    }
     
-    kirimPesanTeks($phoneNumber, $message);
-} else {
-    
-    $logger->warning("Gagal mengirim balasan: conversation_id $conversationId tidak ditemukan.");
-}
+    // 4. Proses Upload Media jika ada
+    if (isset($_FILES['media']) && $_FILES['media']['error'] === UPLOAD_ERR_OK) {
+        $cloudinary = new Cloudinary([
+            'cloud' => [
+                'cloud_name' => $env['CLOUDINARY_NAME'],
+                'api_key'    => $env['CLOUDINARY_KEY'],
+                'api_secret' => $env['CLOUDINARY_SECRET'],
+            ],
+        ]);
 
+        $file = $_FILES['media'];
+        $resourceType = strpos($file['type'], 'video') === 0 ? 'video' : 'image';
 
-echo json_encode(['success' => true]);
+        $uploadResult = $cloudinary->uploadApi()->upload($file['tmp_name'], [
+            'folder' => 'whatsapp_cs_media',
+            'resource_type' => $resourceType
+        ]);
+        
+        $mediaUrl = $uploadResult['secure_url'];
+        
+        // Kirim media ke WhatsApp
+        kirimPesanMedia($phoneNumber, $mediaUrl, $resourceType, $messageText);
+        
+        // Simpan pesan media ke database
+        $conversationService->saveMessage($conversationId, 'admin', $resourceType, $mediaUrl);
+        // Jika ada caption, simpan juga sebagai pesan teks terpisah
+        if ($messageText) {
+             $conversationService->saveMessage($conversationId, 'admin', 'text', $messageText);
+        }
 
+    } elseif ($messageText) {
+        // 5. Kirim pesan teks jika tidak ada media
+        kirimPesanTeks($phoneNumber, $messageText);
+        
+        // Simpan pesan teks ke database
+        $conversationService->saveMessage($conversationId, 'admin', 'text', $messageText);
+    }
 
-if (isset($conn)) {
-    $conn->close();
+    echo json_encode(['success' => true]);
+
+} catch (Exception $e) {
+    http_response_code(500);
+    $logger->error("Error sending reply: " . $e->getMessage());
+    echo json_encode(['success' => false, 'message' => 'Terjadi kesalahan: ' . $e->getMessage()]);
+} finally {
+    if (isset($conn)) {
+        $conn->close();
+    }
 }
 ?>

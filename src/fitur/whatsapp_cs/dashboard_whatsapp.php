@@ -24,7 +24,6 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
   <link rel="stylesheet" href="../../output2.css">
   <link rel="icon" type="image/png" href="../../../public/images/logo1.png">
   <style>
-    /* Layout Improvements */
     #chat-layout {
       display: grid;
       grid-template-columns: 320px 1fr;
@@ -33,7 +32,6 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
       overflow: hidden;
     }
     
-    /* Responsive Layout */
     @media (max-width: 1024px) {
       #chat-layout {
         grid-template-columns: 280px 1fr;
@@ -63,7 +61,6 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
       }
     }
     
-    /* Conversation List Styling */
     #conversation-list-container {
       border-right: 1px solid #e5e7eb;
       display: flex;
@@ -91,7 +88,6 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
       border-left-color: #2563eb;
     }
     
-    /* Chat Window */
     #chat-window {
       display: flex;
       flex-direction: column;
@@ -120,7 +116,6 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
       color: white;
     }
 
-    /* Message Container */
     #message-container {
       flex: 1;
       overflow-y: auto;
@@ -148,7 +143,6 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
       background: #94a3b8;
     }
 
-    /* Message Bubbles */
     .message-bubble {
       max-width: 100%;
       word-wrap: break-word;
@@ -187,7 +181,6 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
       margin-left: auto;
     }
     
-    /* Input Area */
     #message-input-area {
       background: white;
       border-top: 1px solid #e5e7eb;
@@ -227,7 +220,6 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
       cursor: not-allowed;
     }
     
-    /* Placeholder */
     #chat-placeholder {
       background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
     }
@@ -236,7 +228,6 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
       color: #cbd5e1;
     }
     
-    /* End Chat Button */
     #end-chat-button {
       font-size: 0.875rem;
       padding: 0.5rem 1rem;
@@ -248,7 +239,6 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
       box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
     }
     
-    /* Mobile Back Button */
     #mobile-back-button {
       display: none;
     }
@@ -281,7 +271,6 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
       }
     }
     
-    /* Loading State */
     .loading-spinner {
       display: inline-block;
       width: 20px;
@@ -296,7 +285,6 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
       to { transform: rotate(360deg); }
     }
     
-    /* Badge Styling */
     .live-badge {
       display: inline-flex;
       align-items: center;
@@ -523,8 +511,6 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
         }
         
         .text-content {
-            padding: 0.65rem 0.85rem;
-            padding-bottom: 1.4rem;
         }
     }
     
@@ -581,9 +567,6 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
           <i class="fas fa-comments text-4xl md:text-5xl mb-3"></i>
           <p class="text-base md:text-lg font-medium">Pilih percakapan untuk memulai</p>
           <p class="text-xs md:text-sm text-gray-400 mt-1">Pesan akan muncul di sini</p>
-          <button id="mobile-show-list" class="md:hidden mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
-            <i class="fas fa-list mr-2"></i>Lihat Percakapan
-          </button>
         </div>
 
         <div id="active-chat" class="hidden flex-col h-full">
@@ -605,8 +588,18 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
           </div>
 
           <div id="message-input-area" class="hidden">
+            <div id="media-preview-container" class="hidden mb-2 p-2 border rounded-lg relative w-fit">
+                <button id="remove-media-button" class="absolute -top-2 -right-2 bg-gray-600 text-white rounded-full h-5 w-5 flex items-center justify-center text-xs z-10 hover:bg-red-500 transition-colors" title="Hapus Media">&times;</button>
+                <img id="media-preview-image" class="hidden max-h-28 rounded">
+                <video id="media-preview-video" class="hidden max-h-28 rounded" controls></video>
+            </div>
             <div class="flex items-end gap-2 md:gap-3">
-              <textarea id="message-input" rows="1" placeholder="Ketik balasan Anda..." class="flex-1 p-2.5 md:p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-sm md:text-base px-4 py-3"></textarea>
+              <label for="media-input" class="cursor-pointer p-3 text-gray-500 hover:text-blue-500 transition-colors">
+                  <i class="fas fa-paperclip text-lg"></i>
+              </label>
+              <input type="file" id="media-input" class="hidden" accept="image/*,video/*">
+              
+              <textarea id="message-input" rows="1" placeholder="Ketik balasan" class="flex-1 p-2.5 md:p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-sm md:text-base px-4 py-3"></textarea>
               <button id="send-button" class="bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow-sm disabled:bg-gray-400">
                 <i class="fas fa-paper-plane"></i>
               </button>
