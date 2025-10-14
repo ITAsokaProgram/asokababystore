@@ -143,6 +143,19 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
       background: #94a3b8;
     }
 
+    .date-separator {
+        text-align: center;
+        margin: 1.5rem auto;
+        padding: 4px 12px;
+        background-color: #e2e8f0;
+        color: #475569;
+        border-radius: 12px;
+        font-size: 0.75rem; 
+        font-weight: 500;
+        width: fit-content;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
     .message-bubble {
       max-width: 100%;
       word-wrap: break-word;

@@ -323,16 +323,40 @@ function renderMessages(messages) {
 }
 function appendMessage(msg) {
     const messageContainer = document.getElementById('message-container');
-    const bubble = document.createElement('div');
-    const isUser = msg.pengirim === 'user';
-    
     const placeholder = messageContainer.querySelector('.no-message-placeholder');
     if (placeholder) {
         placeholder.remove();
     }
 
-    bubble.className = `message-bubble ${isUser ? 'user-bubble' : 'admin-bubble'}`;
+    // --- LOGIKA PENAMBAHAN PEMISAH TANGGAL ---
+    const lastBubble = messageContainer.querySelector('.message-bubble:last-child');
+    const lastTimestamp = lastBubble ? lastBubble.dataset.timestamp : null;
+
+    let needsSeparator = false;
+    if (!lastTimestamp) {
+        needsSeparator = true; // Selalu tambahkan untuk pesan pertama
+    } else {
+        const lastDate = new Date(lastTimestamp).toDateString();
+        const newDate = new Date(msg.timestamp).toDateString();
+        if (newDate !== lastDate) {
+            needsSeparator = true;
+        }
+    }
+
+    if (needsSeparator) {
+        const separator = document.createElement('div');
+        separator.className = 'date-separator';
+        separator.textContent = formatDateSeparator(msg.timestamp);
+        messageContainer.appendChild(separator);
+    }
+    // --- AKHIR LOGIKA ---
+
+    const bubble = document.createElement('div');
+    const isUser = msg.pengirim === 'user';
     
+    bubble.className = `message-bubble ${isUser ? 'user-bubble' : 'admin-bubble'}`;
+    bubble.dataset.timestamp = msg.timestamp; // Penting untuk pemeriksaan selanjutnya
+
     const messageType = msg.tipe_pesan || 'text';
     let contentHTML = '';
 
@@ -379,7 +403,6 @@ function appendMessage(msg) {
         messageContainer.scrollTop = messageContainer.scrollHeight;
     });
 }
-
 async function sendMessage() {
     if (currentConversationStatus !== 'live_chat') {
         Swal.fire({
@@ -522,4 +545,26 @@ function formatTimestamp(dateString) {
     const hours = date.getHours().toString().padStart(2, '0');
     const minutes = date.getMinutes().toString().padStart(2, '0');
     return `${hours}:${minutes}`;
+}
+
+function formatDateSeparator(dateString) {
+    const date = new Date(dateString);
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const options = {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+    };
+
+    if (date.toDateString() === today.toDateString()) {
+        return 'Hari ini';
+    }
+    if (date.toDateString() === yesterday.toDateString()) {
+        return 'Kemarin';
+    }
+    return date.toLocaleDateString('id-ID', options);
 }
