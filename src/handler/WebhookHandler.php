@@ -103,6 +103,7 @@ class WebhookHandler {
                     break;
 
                 default:
+                // TODO: saat kondisi live chat terus user milih menu akan muncul button suggestion akhiri chat.
                     $this->logger->info("Menerima tipe pesan '{$messageType}' yang belum didukung saat live chat.");
                     kirimPesanTeks($nomorPengirim, "Maaf, saat ini kami hanya mendukung pesan teks, gambar, video, dan pesan suara dalam sesi live chat.");
                     return;
@@ -229,7 +230,7 @@ class WebhookHandler {
                     }
                 } 
                 elseif (array_key_exists($selectedId, BranchConstants::ALL_NOMOR_TELEPON)) {
-                    $namaKontak = "Asoka " . $selectedId;
+                    $namaKontak = "Asoka Baby Store " . $selectedId;
                     $nomorUntukDikirim = BranchConstants::ALL_NOMOR_TELEPON[$selectedId];
                     kirimPesanKontak($nomorPengirim, $namaKontak, $nomorUntukDikirim);
                 } 
