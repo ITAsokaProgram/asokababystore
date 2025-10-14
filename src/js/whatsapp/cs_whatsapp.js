@@ -349,13 +349,12 @@ function appendMessage(msg) {
         separator.textContent = formatDateSeparator(msg.timestamp);
         messageContainer.appendChild(separator);
     }
-    // --- AKHIR LOGIKA ---
 
     const bubble = document.createElement('div');
     const isUser = msg.pengirim === 'user';
     
     bubble.className = `message-bubble ${isUser ? 'user-bubble' : 'admin-bubble'}`;
-    bubble.dataset.timestamp = msg.timestamp; // Penting untuk pemeriksaan selanjutnya
+    bubble.dataset.timestamp = msg.timestamp; 
 
     const messageType = msg.tipe_pesan || 'text';
     let contentHTML = '';
