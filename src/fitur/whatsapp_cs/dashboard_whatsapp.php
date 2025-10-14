@@ -358,6 +358,24 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
       transform: rotate(180deg);
     }
 
+    .media-bubble {
+        padding: 0.5rem !important;
+        background: transparent !important;
+        box-shadow: none !important; 
+    }
+
+    .media-bubble img,
+    .media-bubble video {
+        max-width: 280px; 
+        height: auto;
+        border-radius: 0.75rem;
+        border: 1px solid #e5e7eb; 
+    }
+
+    .admin-bubble.media-bubble {
+        margin-left: auto;
+    }
+
 
   </style>
 </head>

@@ -135,7 +135,15 @@ function initWebSocket() {
                 fetchAndRenderConversations();
 
                 if (data.conversation_id === currentConversationId) {
-                    appendMessage({ pengirim: 'user', isi_pesan: data.message });
+                    const messagePayload = data.message;
+                    const messageType = typeof messagePayload === 'object' ? messagePayload.type : 'text';
+                    const messageContent = typeof messagePayload === 'object' ? messagePayload.url : messagePayload;
+                    
+                    appendMessage({
+                        pengirim: 'user',
+                        tipe_pesan: messageType,
+                        isi_pesan: messageContent
+                    });
                 }
             }
 
@@ -274,7 +282,7 @@ function renderMessages(messages) {
     messageContainer.innerHTML = '';
     
     if (messages.length === 0) {
-        messageContainer.innerHTML = '<div class="flex items-center justify-center h-full text-center text-gray-400"><div><i class="fas fa-comment-slash text-4xl mb-2"></i><p class="text-sm">Belum ada pesan</p></div></div>';
+        messageContainer.innerHTML = '<div class="no-message-placeholder flex items-center justify-center h-full text-center text-gray-400"><div><i class="fas fa-comment-slash text-4xl mb-2"></i><p class="text-sm">Belum ada pesan</p></div></div>';
         return;
     }
     
@@ -287,12 +295,37 @@ function appendMessage(msg) {
     const bubble = document.createElement('div');
     const isUser = msg.pengirim === 'user';
     
+    const placeholder = messageContainer.querySelector('.no-message-placeholder');
+    if (placeholder) {
+        placeholder.remove();
+    }
+
     bubble.className = `message-bubble ${isUser ? 'user-bubble' : 'admin-bubble'}`;
-    bubble.textContent = msg.isi_pesan;
+    
+    const messageType = msg.tipe_pesan || 'text'; 
+
+    switch (messageType) {
+        case 'image':
+            bubble.classList.add('media-bubble'); 
+            bubble.innerHTML = `
+                <a href="${msg.isi_pesan}" target="_blank" rel="noopener noreferrer">
+                    <img src="${msg.isi_pesan}" alt="Gambar" class="max-w-full rounded-lg cursor-pointer">
+                </a>`;
+            break;
+        case 'video':
+            bubble.classList.add('media-bubble');
+            bubble.innerHTML = `<video src="${msg.isi_pesan}" controls class="max-w-full rounded-lg"></video>`;
+            break;
+        default: 
+            const p = document.createElement('p');
+            p.style.whiteSpace = 'pre-wrap'; 
+            p.innerText = msg.isi_pesan;
+            bubble.appendChild(p);
+            break;
+    }
     
     messageContainer.appendChild(bubble);
     
-    // Smooth scroll to bottom
     requestAnimationFrame(() => {
         messageContainer.scrollTop = messageContainer.scrollHeight;
     });

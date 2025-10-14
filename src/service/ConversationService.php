@@ -63,9 +63,9 @@ class ConversationService {
         $this->logger->info("Live chat dimulai untuk: " . $phoneNumber);
     }
 
-    public function saveMessage($conversationId, $senderType, $messageBody) {
-        $stmt = $this->conn->prepare("INSERT INTO pesan_whatsapp (percakapan_id, pengirim, isi_pesan) VALUES (?, ?, ?)");
-        $stmt->bind_param("iss", $conversationId, $senderType, $messageBody);
+    public function saveMessage($conversationId, $senderType, $messageType, $messageContent) {
+        $stmt = $this->conn->prepare("INSERT INTO pesan_whatsapp (percakapan_id, pengirim, tipe_pesan, isi_pesan) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("isss", $conversationId, $senderType, $messageType, $messageContent);
         $stmt->execute();
         $stmt->close();
     }

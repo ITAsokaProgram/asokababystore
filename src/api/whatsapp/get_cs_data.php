@@ -51,21 +51,18 @@ try {
             exit;
         }
 
-        // Ambil pesan
-        $stmt_msgs = $conn->prepare("SELECT pengirim, isi_pesan, timestamp FROM pesan_whatsapp WHERE percakapan_id = ? ORDER BY timestamp ASC");
+        $stmt_msgs = $conn->prepare("SELECT pengirim, isi_pesan, tipe_pesan, timestamp FROM pesan_whatsapp WHERE percakapan_id = ? ORDER BY timestamp ASC");
         $stmt_msgs->bind_param("i", $id);
         $stmt_msgs->execute();
         $result_msgs = $stmt_msgs->get_result();
         $messages = $result_msgs->fetch_all(MYSQLI_ASSOC);
         $stmt_msgs->close();
 
-        // Gabungkan dalam satu objek respons
         $data = [
             'details' => $conversation_details,
             'messages' => $messages
         ];
     } else {
-        // Logika untuk mengambil semua daftar percakapan (tidak berubah)
         $sql = "
             SELECT id, nomor_telepon, status_percakapan, terakhir_interaksi_pada
             FROM percakapan_whatsapp

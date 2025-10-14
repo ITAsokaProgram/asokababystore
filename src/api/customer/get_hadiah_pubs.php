@@ -51,7 +51,6 @@ try {
     echo json_encode(['status' => false, 'message' => 'Token tidak valid']);
     exit;
 }
-$logger->info('Token validated for user_id: ' . $user_id);
 
 $sql = "SELECT 
     h.id_hadiah AS id,

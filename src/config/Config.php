@@ -13,4 +13,12 @@ class Config {
         self::load();
         return self::$config[$key] ?? $default;
     }
+    public static function getMultiple($keys) {
+        self::load();
+        $result = [];
+        foreach ($keys as $key) {
+            $result[$key] = self::$config[$key] ?? null;
+        }
+        return $result;
+    }
 }

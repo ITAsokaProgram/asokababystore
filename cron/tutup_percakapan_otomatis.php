@@ -5,7 +5,6 @@ require_once __DIR__ . "/../src/helpers/whatsapp_helper_link.php";
 require_once __DIR__ . "/../src/utils/Logger.php";
 
 $logger = new AppLogger('tutup_percakapan_otomatis.log');
-$logger->info("Cron job dimulai...");
 
 $timeoutDuration = '10 SECOND'; 
 // $timeoutDuration = '30 MINUTE'; 

@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/../constant/BranchConstants.php';
 require_once __DIR__ . '/../service/ConversationService.php'; 
+require_once __DIR__ . '/../service/MediaService.php'; 
+require_once __DIR__ . '/../config/Config.php';
 use Asoka\Constant\BranchConstants;
 class WebhookHandler {
     private $logger;
@@ -29,8 +31,12 @@ class WebhookHandler {
         if (!$message) {
             return;
         }
+        
         $nomorPengirim = $message['from'];
-        if ($message['type'] === 'text') {
+        $messageType = $message['type'];
+
+        // Cek link verifikasi terlebih dahulu
+        if ($messageType === 'text') {
             $textBody = $message['text']['body'];
             $pattern = '/https:\/\/asokababystore\.com\/verifikasi-wa\?token=([a-f0-9]{64})/';
             if (preg_match($pattern, $textBody, $matches)) {
@@ -40,16 +46,8 @@ class WebhookHandler {
                 return;
             }
         }
+
         $conversation = $this->conversationService->getOrCreateConversation($nomorPengirim);
-        if ($conversation['status_percakapan'] === 'live_chat' && date('H:i') >= '23:55') {
-            $this->conversationService->closeConversation($nomorPengirim);
-            kirimPesanTeks(
-                $nomorPengirim,
-                "Mohon maaf, sesi live chat telah berakhir karena telah melewati jam operasional kami (23:55). Silakan hubungi kami kembali esok hari. Terima kasih."
-            );
-            $this->logger->info("Live chat untuk {$nomorPengirim} ditutup otomatis karena melewati jam operasional.");
-            return; // Hentikan proses
-        }
         
         if ($message['type'] === 'interactive' && isset($message['interactive']['type']) && $message['interactive']['type'] === 'button_reply') {
             $buttonId = $message['interactive']['button_reply']['id'];
@@ -61,20 +59,55 @@ class WebhookHandler {
                 return;
             }
         }
-        if ($conversation['status_percakapan'] === 'live_chat' && $message['type'] === 'text') {
-            $textBody = $message['text']['body'];
-            
-            $this->conversationService->saveMessage($conversation['id'], 'user', $textBody);
+        if ($conversation['status_percakapan'] === 'live_chat') {
+            $messageContent = null;
+            $notificationPayload = null;
 
+            switch ($messageType) {
+                case 'text':
+                    $messageContent = $message['text']['body'];
+                    $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $messageContent);
+                    $notificationPayload = $messageContent;
+                    break;
+
+                case 'image':
+                case 'video':
+                    
+                    $mediaService = new MediaService($this->logger);
+                    $mediaId = $message[$messageType]['id'];
+                    $this->logger->info("Menerima pesan media ({$messageType}) dari {$nomorPengirim} dalam sesi live chat.");
+                    $result = $mediaService->downloadAndUpload($mediaId, $messageType);
+
+                    if (isset($result['url'])) {
+                        $messageContent = $result['url'];
+                        $this->conversationService->saveMessage($conversation['id'], 'user', $messageType, $messageContent);
+                        $notificationPayload = ['type' => $messageType, 'url' => $messageContent];
+                    } else {
+                        $limit = $result['limit'] ?? 'yang ditentukan';
+                        $mediaName = ($messageType === 'image') ? 'gambar' : 'video';
+                        kirimPesanTeks($nomorPengirim, "Maaf, {$mediaName} yang Anda kirim melebihi batas maksimal {$limit}.");
+                        return; 
+                    }
+                    break;
+
+                default:
+                    $this->logger->info("Menerima tipe pesan '{$messageType}' yang belum didukung saat live chat.");
+                    kirimPesanTeks($nomorPengirim, "Maaf, saat ini kami hanya mendukung pesan teks, gambar, dan video dalam sesi live chat.");
+                    return;
+            }
             
-            $this->notifyWebSocketServer([
-                'event' => 'new_message',
-                'conversation_id' => $conversation['id'],
-                'phone' => $nomorPengirim,
-                'message' => $textBody
-            ]);
-            return; 
+            if ($notificationPayload) {
+                $this->notifyWebSocketServer([
+                    'event' => 'new_message',
+                    'conversation_id' => $conversation['id'],
+                    'phone' => $nomorPengirim,
+                    'message' => $notificationPayload
+                ]);
+            }
+            return;
         }
+
+
         if ($conversation['status_percakapan'] === 'closed') {
             $this->sendWelcomeMessage($nomorPengirim);
             $this->conversationService->openConversation($nomorPengirim);

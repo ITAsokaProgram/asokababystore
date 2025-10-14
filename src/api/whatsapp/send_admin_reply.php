@@ -57,9 +57,7 @@ $logger = new AppLogger('send_admin_reply.log');
 
 $conversationService = new ConversationService($conn, $logger);
 
-
-$conversationService->saveMessage($conversationId, 'admin', $message);
-
+$conversationService->saveMessage($conversationId, 'admin', 'text', $message);
 
 $stmt = $conn->prepare("SELECT nomor_telepon FROM percakapan_whatsapp WHERE id = ?");
 $stmt->bind_param("i", $conversationId);
