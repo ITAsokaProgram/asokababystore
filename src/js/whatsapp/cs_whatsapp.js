@@ -8,7 +8,7 @@ const getToken = () => {
 const token = getToken();
 let ws;
 let currentConversationId = null;
-let currentConversationStatus = null; // Variabel global untuk status
+let currentConversationStatus = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     if (!token) {
@@ -17,12 +17,74 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
+    const mobileShowList = document.getElementById('mobile-show-list');
+    const mobileCloseList = document.getElementById('mobile-close-list');
+    const mobileBackButton = document.getElementById('mobile-back-button');
+    const conversationListContainer = document.getElementById('conversation-list-container');
+    const activeChat = document.getElementById('active-chat');
+    const chatPlaceholder = document.getElementById('chat-placeholder');
+    
+    if (mobileShowList) {
+        mobileShowList.addEventListener('click', () => {
+            conversationListContainer.classList.add('mobile-show');
+            // Tampilkan tombol "X" saat daftar dibuka
+            mobileCloseList.classList.remove('hidden'); 
+        });
+    }
+
+    if (mobileCloseList) {
+        mobileCloseList.addEventListener('click', () => {
+            conversationListContainer.classList.remove('mobile-show');
+            // Sembunyikan lagi tombol "X" saat daftar ditutup
+            mobileCloseList.classList.add('hidden');
+        });
+    }
+    
+    if (mobileBackButton) {
+        mobileBackButton.addEventListener('click', () => {
+            console.log('Mobile back button clicked');
+            if (window.innerWidth <= 768) {
+                activeChat.classList.add('hidden');
+                chatPlaceholder.classList.remove('hidden');
+                conversationListContainer.classList.add('mobile-show');
+            }
+        });
+    }
+
+    const toggleButton = document.getElementById('toggle-conversation-list');
+    const chatLayout = document.getElementById('chat-layout');
+
+    if (toggleButton) {
+        // Load saved state from localStorage
+        const isCollapsed = localStorage.getItem('conversationListCollapsed') === 'true';
+        if (isCollapsed) {
+            conversationListContainer.classList.add('collapsed');
+            chatLayout.classList.add('list-collapsed');
+        }
+
+        toggleButton.addEventListener('click', () => {
+            const isCurrentlyCollapsed = conversationListContainer.classList.contains('collapsed');
+            
+            if (isCurrentlyCollapsed) {
+                conversationListContainer.classList.remove('collapsed');
+                chatLayout.classList.remove('list-collapsed');
+                localStorage.setItem('conversationListCollapsed', 'false');
+            } else {
+                conversationListContainer.classList.add('collapsed');
+                chatLayout.classList.add('list-collapsed');
+                localStorage.setItem('conversationListCollapsed', 'true');
+            }
+        });
+    }
+
+
+
     initWebSocket();
     fetchAndRenderConversations();
 
     const sendButton = document.getElementById('send-button');
     const messageInput = document.getElementById('message-input');
-    const endChatButton = document.getElementById('end-chat-button'); // Tombol baru
+    const endChatButton = document.getElementById('end-chat-button');
 
     sendButton.addEventListener('click', sendMessage);
     messageInput.addEventListener('keydown', (e) => {
@@ -32,12 +94,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // Event listener untuk tombol akhiri percakapan
     endChatButton.addEventListener('click', endConversation);
     
     messageInput.addEventListener('input', () => {
         messageInput.style.height = 'auto';
-        messageInput.style.height = (messageInput.scrollHeight) + 'px';
+        messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + 'px';
     });
 });
 
@@ -83,7 +144,6 @@ function initWebSocket() {
         }
     };
 
-
     ws.onclose = () => {
         console.log('WebSocket connection closed. Attempting to reconnect...');
         setTimeout(initWebSocket, 5000);
@@ -105,32 +165,60 @@ async function fetchAndRenderConversations() {
         listElement.innerHTML = ''; 
 
         if (conversations.length === 0) {
-            listElement.innerHTML = '<p class="text-center text-gray-500 p-4">Tidak ada percakapan.</p>';
+            listElement.innerHTML = '<div class="p-8 text-center text-gray-500"><i class="fas fa-inbox text-4xl mb-3 opacity-50"></i><p class="text-sm">Tidak ada percakapan aktif</p></div>';
             return;
         }
 
         conversations.forEach(convo => {
             const item = document.createElement('div');
-            item.className = 'conversation-item p-4 border-b border-gray-200 cursor-pointer hover:bg-gray-100';
+            item.className = 'conversation-item p-3 md:p-4 border-b border-gray-200 cursor-pointer hover:bg-gray-100 transition-all duration-200';
             if (convo.id === currentConversationId) {
                 item.classList.add('active');
             }
             
+            const lastInteraction = new Date(convo.terakhir_interaksi_pada);
+            const timeAgo = getTimeAgo(lastInteraction);
+            
             item.innerHTML = `
-                <div class="flex justify-between items-center">
-                    <p class="font-semibold text-gray-800">${convo.nomor_telepon}</p>
-                    ${convo.status_percakapan === 'live_chat' ? '<span class="px-2 py-0.5 text-xs font-semibold text-red-800 bg-red-200 rounded-full">Live</span>' : ''}
+                <div class="flex justify-between items-start mb-1">
+                    <div class="flex items-center gap-2 flex-1 min-w-0">
+                        <i class="fas fa-user-circle text-gray-400 text-lg flex-shrink-0"></i>
+                        <p class="font-semibold text-gray-800 text-sm md:text-base truncate">${convo.nomor_telepon}</p>
+                    </div>
+                    ${convo.status_percakapan === 'live_chat' ? '<span class="live-badge px-2 py-0.5 text-xs font-semibold text-red-800 bg-red-200 rounded-full flex-shrink-0">Live</span>' : ''}
                 </div>
-                <p class="text-sm text-gray-500 truncate">Terakhir interaksi: ${new Date(convo.terakhir_interaksi_pada).toLocaleString('id-ID')}</p>
+                <p class="text-xs text-gray-500 ml-7">${timeAgo}</p>
             `;
-            item.addEventListener('click', () => selectConversation(convo.id));
+            item.addEventListener('click', () => {
+                selectConversation(convo.id);
+                // Close mobile list view when conversation selected
+                if (window.innerWidth <= 768) {
+                    document.getElementById('conversation-list-container').classList.remove('mobile-show');
+                }
+            });
             listElement.appendChild(item);
         });
 
     } catch (error) {
         console.error(error);
+        const listElement = document.getElementById('conversation-list');
+        listElement.innerHTML = '<div class="p-8 text-center text-red-500"><i class="fas fa-exclamation-circle text-3xl mb-2"></i><p class="text-sm">Gagal memuat percakapan</p></div>';
         Swal.fire('Error', error.message, 'error');
     }
+}
+
+function getTimeAgo(date) {
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    if (diffMins < 1) return 'Baru saja';
+    if (diffMins < 60) return `${diffMins} menit lalu`;
+    if (diffHours < 24) return `${diffHours} jam lalu`;
+    if (diffDays < 7) return `${diffDays} hari lalu`;
+    return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
 }
 
 async function selectConversation(conversationId) {
@@ -141,8 +229,8 @@ async function selectConversation(conversationId) {
     document.getElementById('active-chat').classList.add('flex');
     
     const messageContainer = document.getElementById('message-container');
-    messageContainer.innerHTML = '<p class="text-center text-gray-500">Memuat pesan...</p>';
-    updateChatUI(null); // Sembunyikan kontrol saat memuat
+    messageContainer.innerHTML = '<div class="flex items-center justify-center h-full"><div class="loading-spinner" style="border-color: #cbd5e1; border-top-color: #3b82f6; width: 40px; height: 40px;"></div></div>';
+    updateChatUI(null);
 
     try {
         const response = await fetch(`/src/api/whatsapp/get_cs_data.php?conversation_id=${conversationId}`, {
@@ -158,14 +246,13 @@ async function selectConversation(conversationId) {
         document.getElementById('chat-with-phone').textContent = details.nomor_telepon;
         
         renderMessages(messages);
-        updateChatUI(currentConversationStatus); // Update UI berdasarkan status
-
-        fetchAndRenderConversations(); // Refresh list untuk menyorot item aktif
+        updateChatUI(currentConversationStatus);
+        fetchAndRenderConversations();
 
     } catch (error) {
         console.error(error);
-        messageContainer.innerHTML = `<p class="text-center text-red-500">${error.message}</p>`;
-        updateChatUI(null); // Reset UI jika error
+        messageContainer.innerHTML = `<div class="flex items-center justify-center h-full text-center p-4"><div><i class="fas fa-exclamation-circle text-red-500 text-3xl mb-2"></i><p class="text-red-500 text-sm">${error.message}</p></div></div>`;
+        updateChatUI(null);
     }
 }
 
@@ -185,7 +272,14 @@ function updateChatUI(status) {
 function renderMessages(messages) {
     const messageContainer = document.getElementById('message-container');
     messageContainer.innerHTML = '';
+    
+    if (messages.length === 0) {
+        messageContainer.innerHTML = '<div class="flex items-center justify-center h-full text-center text-gray-400"><div><i class="fas fa-comment-slash text-4xl mb-2"></i><p class="text-sm">Belum ada pesan</p></div></div>';
+        return;
+    }
+    
     messages.forEach(msg => appendMessage(msg));
+    messageContainer.scrollTop = messageContainer.scrollHeight;
 }
 
 function appendMessage(msg) {
@@ -193,17 +287,25 @@ function appendMessage(msg) {
     const bubble = document.createElement('div');
     const isUser = msg.pengirim === 'user';
     
-    bubble.className = `message-bubble p-3 rounded-lg my-1 ${isUser ? 'user-bubble' : 'admin-bubble'}`;
+    bubble.className = `message-bubble ${isUser ? 'user-bubble' : 'admin-bubble'}`;
     bubble.textContent = msg.isi_pesan;
     
     messageContainer.appendChild(bubble);
-    messageContainer.scrollTop = messageContainer.scrollHeight;
+    
+    // Smooth scroll to bottom
+    requestAnimationFrame(() => {
+        messageContainer.scrollTop = messageContainer.scrollHeight;
+    });
 }
 
 async function sendMessage() {
-    // Cek apakah status percakapan adalah live_chat
     if (currentConversationStatus !== 'live_chat') {
-        Swal.fire('Info', 'Anda hanya bisa mengirim pesan pada percakapan live chat.', 'info');
+        Swal.fire({
+            icon: 'info',
+            title: 'Tidak dapat mengirim',
+            text: 'Anda hanya bisa mengirim pesan pada percakapan live chat.',
+            confirmButtonColor: '#3b82f6'
+        });
         return;
     }
 
@@ -217,6 +319,7 @@ async function sendMessage() {
     messageInput.value = '';
     messageInput.style.height = 'auto'; 
     sendButton.disabled = true;
+    sendButton.innerHTML = '<div class="loading-spinner"></div>';
 
     try {
         const response = await fetch('/src/api/whatsapp/send_admin_reply.php', {
@@ -243,6 +346,7 @@ async function sendMessage() {
         Swal.fire('Error', error.message, 'error');
     } finally {
         sendButton.disabled = false;
+        sendButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
     }
 }
 
@@ -254,8 +358,8 @@ async function endConversation() {
         text: "Anda yakin ingin mengakhiri sesi live chat ini?",
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6b7280',
         confirmButtonText: 'Ya, akhiri!',
         cancelButtonText: 'Batal'
     });
@@ -276,11 +380,16 @@ async function endConversation() {
                 throw new Error(result.message || 'Gagal mengakhiri percakapan.');
             }
             
-            Swal.fire('Berhasil!', 'Percakapan telah diakhiri.', 'success');
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: 'Percakapan telah diakhiri.',
+                confirmButtonColor: '#10b981'
+            });
             
-            currentConversationStatus = 'open'; // Update status lokal
-            updateChatUI(currentConversationStatus); // Update UI
-            fetchAndRenderConversations(); // Refresh daftar percakapan
+            currentConversationStatus = 'open';
+            updateChatUI(currentConversationStatus);
+            fetchAndRenderConversations();
 
         } catch (error) {
             console.error(error);
