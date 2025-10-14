@@ -87,7 +87,7 @@ class WebhookHandler {
                     $this->logger->info("Mengabaikan pesan teks dari {$nomorPengirim} karena menu utama sudah terkirim (bukan link verifikasi).");
                 }
             } elseif ($message['type'] === 'interactive' && $message['interactive']['type'] === 'list_reply') {
-                $this->processListReplyMessage($message);
+                $this->processListReplyMessage($message, $conversation);
             }
         }
     }
@@ -116,7 +116,7 @@ class WebhookHandler {
             $sections
         );
     }
-    private function processListReplyMessage($message) {
+    private function processListReplyMessage($message, $conversation) {
         $nomorPengirim = $message['from'];
         $selectedId = $message['interactive']['list_reply']['id'];
         $this->logger->info("Received List reply from {$nomorPengirim}. Selected ID: {$selectedId}");
@@ -160,13 +160,17 @@ class WebhookHandler {
             case 'LOKASI_DAFTAR_BELITUNG':
                 $this->sendBranchListByRegion($nomorPengirim, 'belitung', 1, 'lokasi');
                 break;
-            case 'CHAT_CS':
+             case 'CHAT_CS':
                 $this->conversationService->startLiveChat($nomorPengirim);
                 kirimPesanTeks(
                     $nomorPengirim,
                     "Anda sekarang terhubung dengan Customer Service kami. Silakan sampaikan pertanyaan Anda."
                 );
-                $this->notifyWebSocketServer(['event' => 'new_live_chat', 'phone' => $nomorPengirim]);
+                $this->notifyWebSocketServer([
+                    'event' => 'new_live_chat', 
+                    'phone' => $nomorPengirim,
+                    'conversation_id' => $conversation['id'] 
+                ]);
                 break;
             default:
                 if (strpos($selectedId, 'LOKASI_') === 0) {

@@ -1,10 +1,10 @@
 <?php
 
-require_once __DIR__ . "/aa_kon_sett.php";
-require_once __DIR__ . "/src/helpers/whatsapp_helper_link.php";
-require_once __DIR__ . "/src/utils/Logger.php";
+require_once __DIR__ . "/../aa_kon_sett.php";
+require_once __DIR__ . "/../src/helpers/whatsapp_helper_link.php";
+require_once __DIR__ . "/../src/utils/Logger.php";
 
-$logger = new AppLogger('cron_job.log');
+$logger = new AppLogger('tutup_percakapan_otomatis.log');
 $logger->info("Cron job dimulai...");
 
 $timeoutDuration = '10 SECOND'; 
@@ -31,7 +31,7 @@ while ($row = mysqli_fetch_assoc($result)) {
 
     kirimPesanTeks($nomorTelepon, $pesanPenutup);
 
-    $updateStmt = $conn->prepare("UPDATE percakapan_whatsapp SET status_percakapan = 'closed' WHERE nomor_telepon = ?");
+    $updateStmt = $conn->prepare("UPDATE percakapan_whatsapp SET status_percakapan = 'closed', menu_utama_terkirim = 0 WHERE nomor_telepon = ?");
     $updateStmt->bind_param("s", $nomorTelepon);
     $updateStmt->execute();
     $updateStmt->close();

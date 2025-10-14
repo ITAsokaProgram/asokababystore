@@ -1,4 +1,3 @@
-
 const getToken = () => {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; token=`);
@@ -9,6 +8,7 @@ const getToken = () => {
 const token = getToken();
 let ws;
 let currentConversationId = null;
+let currentConversationStatus = null; // Variabel global untuk status
 
 document.addEventListener('DOMContentLoaded', () => {
     if (!token) {
@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const sendButton = document.getElementById('send-button');
     const messageInput = document.getElementById('message-input');
+    const endChatButton = document.getElementById('end-chat-button'); // Tombol baru
 
     sendButton.addEventListener('click', sendMessage);
     messageInput.addEventListener('keydown', (e) => {
@@ -30,7 +31,9 @@ document.addEventListener('DOMContentLoaded', () => {
             sendMessage();
         }
     });
-
+    
+    // Event listener untuk tombol akhiri percakapan
+    endChatButton.addEventListener('click', endConversation);
     
     messageInput.addEventListener('input', () => {
         messageInput.style.height = 'auto';
@@ -39,21 +42,15 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initWebSocket() {
-    
     ws = new WebSocket('wss://asokababystore.com/ws');
 
-    ws.onopen = () => {
-        console.log('WebSocket connection established.');
-        
-        
-    };
+    ws.onopen = () => console.log('WebSocket connection established.');
 
     ws.onmessage = (event) => {
         console.log('WebSocket message received:', event.data);
         try {
             const data = JSON.parse(event.data);
 
-            
             if (data.event === 'new_live_chat' || data.event === 'new_message') {
                 Swal.fire({
                     toast: true,
@@ -64,29 +61,35 @@ function initWebSocket() {
                     timer: 3000,
                     timerProgressBar: true,
                 });
+            }
+
+            if (data.event === 'new_live_chat') {
                 fetchAndRenderConversations();
                 
-                
-                if (data.event === 'new_message' && data.conversation_id === currentConversationId) {
+                if (data.conversation_id) {
+                    selectConversation(data.conversation_id);
+                }
+
+            } else if (data.event === 'new_message') {
+                fetchAndRenderConversations();
+
+                if (data.conversation_id === currentConversationId) {
                     appendMessage({ pengirim: 'user', isi_pesan: data.message });
                 }
             }
+
         } catch (e) {
-            
-            
             console.log('Received a non-JSON message, likely a welcome message:', event.data);
         }
     };
 
+
     ws.onclose = () => {
         console.log('WebSocket connection closed. Attempting to reconnect...');
-        
         setTimeout(initWebSocket, 5000);
     };
 
-    ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
-    };
+    ws.onerror = (error) => console.error('WebSocket error:', error);
 }
 
 async function fetchAndRenderConversations() {
@@ -120,7 +123,7 @@ async function fetchAndRenderConversations() {
                 </div>
                 <p class="text-sm text-gray-500 truncate">Terakhir interaksi: ${new Date(convo.terakhir_interaksi_pada).toLocaleString('id-ID')}</p>
             `;
-            item.addEventListener('click', () => selectConversation(convo.id, convo.nomor_telepon));
+            item.addEventListener('click', () => selectConversation(convo.id));
             listElement.appendChild(item);
         });
 
@@ -130,24 +133,16 @@ async function fetchAndRenderConversations() {
     }
 }
 
-async function selectConversation(conversationId, phoneNumber) {
+async function selectConversation(conversationId) {
     currentConversationId = conversationId;
 
-    
     document.getElementById('chat-placeholder').classList.add('hidden');
     document.getElementById('active-chat').classList.remove('hidden');
     document.getElementById('active-chat').classList.add('flex');
-
     
-    document.getElementById('chat-with-phone').textContent = phoneNumber;
-    
-    
-    document.querySelectorAll('.conversation-item').forEach(el => el.classList.remove('active'));
-    document.querySelector(`div[onclick="selectConversation(${conversationId}, '${phoneNumber}')"]`)?.classList.add('active');
-
-
     const messageContainer = document.getElementById('message-container');
     messageContainer.innerHTML = '<p class="text-center text-gray-500">Memuat pesan...</p>';
+    updateChatUI(null); // Sembunyikan kontrol saat memuat
 
     try {
         const response = await fetch(`/src/api/whatsapp/get_cs_data.php?conversation_id=${conversationId}`, {
@@ -156,12 +151,34 @@ async function selectConversation(conversationId, phoneNumber) {
 
         if (!response.ok) throw new Error('Gagal memuat riwayat pesan.');
 
-        const messages = await response.json();
+        const data = await response.json();
+        const { details, messages } = data;
+        
+        currentConversationStatus = details.status_percakapan;
+        document.getElementById('chat-with-phone').textContent = details.nomor_telepon;
+        
         renderMessages(messages);
+        updateChatUI(currentConversationStatus); // Update UI berdasarkan status
+
+        fetchAndRenderConversations(); // Refresh list untuk menyorot item aktif
 
     } catch (error) {
         console.error(error);
         messageContainer.innerHTML = `<p class="text-center text-red-500">${error.message}</p>`;
+        updateChatUI(null); // Reset UI jika error
+    }
+}
+
+function updateChatUI(status) {
+    const endChatButton = document.getElementById('end-chat-button');
+    const messageInputArea = document.getElementById('message-input-area');
+
+    if (status === 'live_chat') {
+        endChatButton.classList.remove('hidden');
+        messageInputArea.classList.remove('hidden');
+    } else {
+        endChatButton.classList.add('hidden');
+        messageInputArea.classList.add('hidden');
     }
 }
 
@@ -176,26 +193,29 @@ function appendMessage(msg) {
     const bubble = document.createElement('div');
     const isUser = msg.pengirim === 'user';
     
-    bubble.className = `message-bubble p-3 rounded-lg ${isUser ? 'user-bubble' : 'admin-bubble'}`;
+    bubble.className = `message-bubble p-3 rounded-lg my-1 ${isUser ? 'user-bubble' : 'admin-bubble'}`;
     bubble.textContent = msg.isi_pesan;
     
     messageContainer.appendChild(bubble);
-    
     messageContainer.scrollTop = messageContainer.scrollHeight;
 }
 
 async function sendMessage() {
+    // Cek apakah status percakapan adalah live_chat
+    if (currentConversationStatus !== 'live_chat') {
+        Swal.fire('Info', 'Anda hanya bisa mengirim pesan pada percakapan live chat.', 'info');
+        return;
+    }
+
     const messageInput = document.getElementById('message-input');
     const sendButton = document.getElementById('send-button');
     const message = messageInput.value.trim();
 
     if (!message || !currentConversationId) return;
 
-    
     appendMessage({ pengirim: 'admin', isi_pesan: message });
     messageInput.value = '';
     messageInput.style.height = 'auto'; 
-
     sendButton.disabled = true;
 
     try {
@@ -216,14 +236,55 @@ async function sendMessage() {
             throw new Error('Gagal mengirim balasan.');
         }
         
-        
         fetchAndRenderConversations();
 
     } catch (error) {
         console.error(error);
         Swal.fire('Error', error.message, 'error');
-        
     } finally {
         sendButton.disabled = false;
+    }
+}
+
+async function endConversation() {
+    if (!currentConversationId) return;
+
+    const confirmation = await Swal.fire({
+        title: 'Akhiri Percakapan?',
+        text: "Anda yakin ingin mengakhiri sesi live chat ini?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, akhiri!',
+        cancelButtonText: 'Batal'
+    });
+
+    if (confirmation.isConfirmed) {
+        try {
+            const response = await fetch('/src/api/whatsapp/end_conversation.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ conversation_id: currentConversationId })
+            });
+
+            const result = await response.json();
+            if (!response.ok || !result.success) {
+                throw new Error(result.message || 'Gagal mengakhiri percakapan.');
+            }
+            
+            Swal.fire('Berhasil!', 'Percakapan telah diakhiri.', 'success');
+            
+            currentConversationStatus = 'open'; // Update status lokal
+            updateChatUI(currentConversationStatus); // Update UI
+            fetchAndRenderConversations(); // Refresh daftar percakapan
+
+        } catch (error) {
+            console.error(error);
+            Swal.fire('Error', error.message, 'error');
+        }
     }
 }

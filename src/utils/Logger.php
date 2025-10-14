@@ -4,7 +4,6 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 use Monolog\Logger as MonologLogger;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Formatter\LineFormatter;
-use DateTimeZone;
 
 
 class AppLogger {

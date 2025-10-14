@@ -4,7 +4,6 @@ require_once __DIR__ . '/../../auth/middleware_login.php';
 
 header('Content-Type: application/json');
 
-
 try {
     $headers = getallheaders();
     if (!isset($headers['Authorization']) || !preg_match('/^Bearer\s(\S+)$/', $headers['Authorization'], $matches)) {
@@ -16,15 +15,7 @@ try {
     $token = $matches[1];
     $decoded = verify_token($token);
 
-    
-    $isTokenValidAdmin = false;
-    if (is_object($decoded) && isset($decoded->kode)) {
-        
-        $isTokenValidAdmin = true;
-    } elseif (is_array($decoded) && isset($decoded['status']) && $decoded['status'] === 'error') {
-        
-        $isTokenValidAdmin = false;
-    }
+    $isTokenValidAdmin = (is_object($decoded) && isset($decoded->kode));
 
     if (!$isTokenValidAdmin) {
         http_response_code(403);
@@ -37,9 +28,7 @@ try {
     exit;
 }
 
-
 try {
-    
     if (isset($_GET['conversation_id'])) {
         $id = filter_var($_GET['conversation_id'], FILTER_VALIDATE_INT);
         if ($id === false) {
@@ -48,15 +37,35 @@ try {
             exit;
         }
 
-        $sql = "SELECT pengirim, isi_pesan, timestamp FROM pesan_whatsapp WHERE percakapan_id = ? ORDER BY timestamp ASC";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("i", $id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $data = $result->fetch_all(MYSQLI_ASSOC);
-        $stmt->close();
+        // Ambil detail percakapan
+        $stmt_convo = $conn->prepare("SELECT id, nomor_telepon, status_percakapan FROM percakapan_whatsapp WHERE id = ?");
+        $stmt_convo->bind_param("i", $id);
+        $stmt_convo->execute();
+        $result_convo = $stmt_convo->get_result();
+        $conversation_details = $result_convo->fetch_assoc();
+        $stmt_convo->close();
+
+        if (!$conversation_details) {
+            http_response_code(404);
+            echo json_encode(['success' => false, 'message' => 'Conversation not found.']);
+            exit;
+        }
+
+        // Ambil pesan
+        $stmt_msgs = $conn->prepare("SELECT pengirim, isi_pesan, timestamp FROM pesan_whatsapp WHERE percakapan_id = ? ORDER BY timestamp ASC");
+        $stmt_msgs->bind_param("i", $id);
+        $stmt_msgs->execute();
+        $result_msgs = $stmt_msgs->get_result();
+        $messages = $result_msgs->fetch_all(MYSQLI_ASSOC);
+        $stmt_msgs->close();
+
+        // Gabungkan dalam satu objek respons
+        $data = [
+            'details' => $conversation_details,
+            'messages' => $messages
+        ];
     } else {
-        
+        // Logika untuk mengambil semua daftar percakapan (tidak berubah)
         $sql = "
             SELECT id, nomor_telepon, status_percakapan, terakhir_interaksi_pada
             FROM percakapan_whatsapp
@@ -74,7 +83,6 @@ try {
         $data = $result->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
     }
-    
     
     echo json_encode($data);
 

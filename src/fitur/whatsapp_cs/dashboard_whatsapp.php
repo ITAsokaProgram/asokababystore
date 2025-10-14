@@ -1,8 +1,6 @@
 <?php
 session_start();
 include '../../../aa_kon_sett.php';
-// Anda mungkin perlu menyertakan middleware untuk memastikan hanya admin yang bisa mengakses halaman ini.
-// Contoh: include '../../auth/middleware_admin.php'; 
 
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
@@ -108,15 +106,20 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
         </div>
 
         <div id="active-chat" class="hidden flex-col h-full">
-          <div id="chat-header" class="p-4 border-b border-gray-200 flex items-center">
-            <i class="fas fa-user-circle text-2xl text-gray-500 mr-3"></i>
-            <span id="chat-with-phone" class="font-semibold text-gray-800"></span>
+          <div id="chat-header" class="p-4 border-b border-gray-200 flex justify-between items-center">
+             <div class="flex items-center">
+                <i class="fas fa-user-circle text-2xl text-gray-500 mr-3"></i>
+                <span id="chat-with-phone" class="font-semibold text-gray-800"></span>
+             </div>
+             <button id="end-chat-button" class="hidden px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors shadow-sm text-sm">
+                 <i class="fas fa-times-circle mr-2"></i>Akhiri Percakapan
+             </button>
           </div>
 
           <div id="message-container" class="flex-1 p-4 overflow-y-auto flex flex-col space-y-4 chat-messages">
           </div>
 
-          <div class="p-4 border-t border-gray-200 bg-gray-50">
+          <div id="message-input-area" class="p-4 border-t border-gray-200 bg-gray-50 hidden">
             <div class="flex items-center space-x-3">
               <textarea id="message-input" rows="1" placeholder="Ketik balasan Anda..." class="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
               <button id="send-button" class="px-5 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow-sm disabled:bg-gray-400">
@@ -132,5 +135,7 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
   <script src="/src/js/middleware_auth.js"></script>
   <script src="/src/js/whatsapp/cs_whatsapp.js" type="module"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
 </body>
 </html>
