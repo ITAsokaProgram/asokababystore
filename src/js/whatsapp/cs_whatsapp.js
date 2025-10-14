@@ -142,11 +142,11 @@ function initWebSocket() {
                     appendMessage({
                         pengirim: 'user',
                         tipe_pesan: messageType,
-                        isi_pesan: messageContent
+                        isi_pesan: messageContent,
+                        timestamp: data.timestamp 
                     });
                 }
             }
-
         } catch (e) {
             console.log('Received a non-JSON message, likely a welcome message:', event.data);
         }
@@ -302,27 +302,48 @@ function appendMessage(msg) {
 
     bubble.className = `message-bubble ${isUser ? 'user-bubble' : 'admin-bubble'}`;
     
+    let contentHTML = '';
     const messageType = msg.tipe_pesan || 'text'; 
 
     switch (messageType) {
         case 'image':
-            bubble.classList.add('media-bubble'); 
-            bubble.innerHTML = `
+            contentHTML = `
                 <a href="${msg.isi_pesan}" target="_blank" rel="noopener noreferrer">
-                    <img src="${msg.isi_pesan}" alt="Gambar" class="max-w-full rounded-lg cursor-pointer">
+                    <img src="${msg.isi_pesan}" alt="Gambar" style="max-width: 100%; border-radius: 0.5rem; display: block;">
                 </a>`;
             break;
         case 'video':
-            bubble.classList.add('media-bubble');
-            bubble.innerHTML = `<video src="${msg.isi_pesan}" controls class="max-w-full rounded-lg"></video>`;
+            contentHTML = `<video src="${msg.isi_pesan}" controls style="max-width: 100%; border-radius: 0.5rem; display: block;"></video>`;
+            break;
+        case 'audio': 
+            contentHTML = `<audio src="${msg.isi_pesan}" controls style="width: 100%; min-width: 250px;"></audio>`;
             break;
         default: 
             const p = document.createElement('p');
-            p.style.whiteSpace = 'pre-wrap'; 
+            p.style.whiteSpace = 'pre-wrap';
+            p.style.margin = '0'; 
             p.innerText = msg.isi_pesan;
-            bubble.appendChild(p);
+            contentHTML = p.outerHTML;
             break;
     }
+
+    let timestampHTML = '';
+    if (msg.timestamp) {
+        const time = new Date(msg.timestamp);
+        const formattedTime = time.toLocaleTimeString('id-ID', { 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            timeZone: 'Asia/Jakarta' 
+        });
+        
+        const timestampColor = isUser ? '#6B7280' : '#E5E7EB'; 
+        timestampHTML = `
+            <div style="font-size: 0.7rem; color: ${timestampColor}; margin-top: 5px; text-align: right;">
+                ${formattedTime}
+            </div>`;
+    }
+
+    bubble.innerHTML = contentHTML + timestampHTML;
     
     messageContainer.appendChild(bubble);
     
@@ -348,8 +369,12 @@ async function sendMessage() {
 
     if (!message || !currentConversationId) return;
 
-    appendMessage({ pengirim: 'admin', isi_pesan: message });
-    messageInput.value = '';
+    appendMessage({ 
+        pengirim: 'admin', 
+        isi_pesan: message, 
+        tipe_pesan: 'text', 
+        timestamp: new Date().toISOString() 
+    });    messageInput.value = '';
     messageInput.style.height = 'auto'; 
     sendButton.disabled = true;
     sendButton.innerHTML = '<div class="loading-spinner"></div>';

@@ -62,17 +62,17 @@ class WebhookHandler {
         if ($conversation['status_percakapan'] === 'live_chat') {
             $messageContent = null;
             $notificationPayload = null;
-
+            $savedMessage = null;
             switch ($messageType) {
                 case 'text':
                     $messageContent = $message['text']['body'];
-                    $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $messageContent);
+                    $savedMessage = $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $messageContent);
                     $notificationPayload = $messageContent;
                     break;
 
                 case 'image':
                 case 'video':
-                    
+                case 'audio': 
                     $mediaService = new MediaService($this->logger);
                     $mediaId = $message[$messageType]['id'];
                     $this->logger->info("Menerima pesan media ({$messageType}) dari {$nomorPengirim} dalam sesi live chat.");
@@ -84,7 +84,19 @@ class WebhookHandler {
                         $notificationPayload = ['type' => $messageType, 'url' => $messageContent];
                     } else {
                         $limit = $result['limit'] ?? 'yang ditentukan';
-                        $mediaName = ($messageType === 'image') ? 'gambar' : 'video';
+                        // Logika untuk nama media yang lebih baik
+                        $mediaName = 'file';
+                        switch ($messageType) {
+                            case 'image':
+                                $mediaName = 'gambar';
+                                break;
+                            case 'video':
+                                $mediaName = 'video';
+                                break;
+                            case 'audio':
+                                $mediaName = 'pesan suara';
+                                break;
+                        }
                         kirimPesanTeks($nomorPengirim, "Maaf, {$mediaName} yang Anda kirim melebihi batas maksimal {$limit}.");
                         return; 
                     }
@@ -92,16 +104,17 @@ class WebhookHandler {
 
                 default:
                     $this->logger->info("Menerima tipe pesan '{$messageType}' yang belum didukung saat live chat.");
-                    kirimPesanTeks($nomorPengirim, "Maaf, saat ini kami hanya mendukung pesan teks, gambar, dan video dalam sesi live chat.");
+                    kirimPesanTeks($nomorPengirim, "Maaf, saat ini kami hanya mendukung pesan teks, gambar, video, dan pesan suara dalam sesi live chat.");
                     return;
             }
             
-            if ($notificationPayload) {
+            if ($notificationPayload && $savedMessage) {
                 $this->notifyWebSocketServer([
                     'event' => 'new_message',
                     'conversation_id' => $conversation['id'],
                     'phone' => $nomorPengirim,
-                    'message' => $notificationPayload
+                    'message' => $notificationPayload,
+                    'timestamp' => $savedMessage['timestamp'] 
                 ]);
             }
             return;
@@ -282,7 +295,7 @@ class WebhookHandler {
         ]);
         
         curl_setopt($ch, CURLOPT_TIMEOUT_MS, 100); 
-        curl_setopt($ch, CURLOPT_NOSIGNAL, 1);     
+        curl_setopt($ch, CURLOPT_NOSIGNAL, 1);      
 
         curl_exec($ch);
 

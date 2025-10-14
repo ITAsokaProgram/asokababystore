@@ -67,7 +67,21 @@ class ConversationService {
         $stmt = $this->conn->prepare("INSERT INTO pesan_whatsapp (percakapan_id, pengirim, tipe_pesan, isi_pesan) VALUES (?, ?, ?, ?)");
         $stmt->bind_param("isss", $conversationId, $senderType, $messageType, $messageContent);
         $stmt->execute();
+        
+        $lastId = $stmt->insert_id;
         $stmt->close();
+
+        if ($lastId > 0) {
+            $stmt = $this->conn->prepare("SELECT * FROM pesan_whatsapp WHERE id = ?");
+            $stmt->bind_param("i", $lastId);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $savedMessage = $result->fetch_assoc();
+            $stmt->close();
+            return $savedMessage; 
+        }
+
+        return null; 
     }
      public function closeConversation($phoneNumber) {
         $stmt = $this->conn->prepare("UPDATE percakapan_whatsapp SET status_percakapan = 'closed', menu_utama_terkirim = 0 WHERE nomor_telepon = ?");

@@ -63,6 +63,9 @@ class MediaService {
         if ($mediaType === 'video' && $fileSize > 50 * 1024 * 1024) { 
             return ['error' => 'file_too_large', 'limit' => '50 MB'];
         }
+        if ($mediaType === 'audio' && $fileSize > 10 * 1024 * 1024) { 
+            return ['error' => 'file_too_large', 'limit' => '10 MB'];
+        }
 
         
         try {

@@ -150,7 +150,7 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
     /* Message Bubbles */
     .message-bubble {
-      max-width: 75%;
+      max-width: 100%;
       word-wrap: break-word;
       padding: 0.75rem 1rem;
       border-radius: 1rem;
@@ -375,6 +375,7 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
     .admin-bubble.media-bubble {
         margin-left: auto;
     }
+    
 
 
   </style>
