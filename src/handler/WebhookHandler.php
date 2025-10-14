@@ -62,17 +62,18 @@ class WebhookHandler {
         if ($conversation['status_percakapan'] === 'live_chat') {
             $messageContent = null;
             $notificationPayload = null;
-            $savedMessage = null;
+
             switch ($messageType) {
                 case 'text':
-                    $messageContent = $message['text']['body'];
-                    $savedMessage = $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $messageContent);
-                    $notificationPayload = $messageContent;
-                    break;
+                     $messageContent = $message['text']['body'];
+                     $savedMessage = $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $messageContent);
+                     $notificationPayload = $messageContent;
+                     break;
 
                 case 'image':
                 case 'video':
-                case 'audio': 
+                case 'audio': // Tambahkan case untuk audio
+                    
                     $mediaService = new MediaService($this->logger);
                     $mediaId = $message[$messageType]['id'];
                     $this->logger->info("Menerima pesan media ({$messageType}) dari {$nomorPengirim} dalam sesi live chat.");
@@ -80,11 +81,10 @@ class WebhookHandler {
 
                     if (isset($result['url'])) {
                         $messageContent = $result['url'];
-                        $this->conversationService->saveMessage($conversation['id'], 'user', $messageType, $messageContent);
+                        $savedMessage = $this->conversationService->saveMessage($conversation['id'], 'user', $messageType, $messageContent);
                         $notificationPayload = ['type' => $messageType, 'url' => $messageContent];
                     } else {
                         $limit = $result['limit'] ?? 'yang ditentukan';
-                        // Logika untuk nama media yang lebih baik
                         $mediaName = 'file';
                         switch ($messageType) {
                             case 'image':
@@ -108,7 +108,7 @@ class WebhookHandler {
                     return;
             }
             
-            if ($notificationPayload && $savedMessage) {
+            if ($notificationPayload) {
                 $this->notifyWebSocketServer([
                     'event' => 'new_message',
                     'conversation_id' => $conversation['id'],

@@ -147,6 +147,8 @@ function initWebSocket() {
                     });
                 }
             }
+
+
         } catch (e) {
             console.log('Received a non-JSON message, likely a welcome message:', event.data);
         }
@@ -289,7 +291,6 @@ function renderMessages(messages) {
     messages.forEach(msg => appendMessage(msg));
     messageContainer.scrollTop = messageContainer.scrollHeight;
 }
-
 function appendMessage(msg) {
     const messageContainer = document.getElementById('message-container');
     const bubble = document.createElement('div');
@@ -302,48 +303,45 @@ function appendMessage(msg) {
 
     bubble.className = `message-bubble ${isUser ? 'user-bubble' : 'admin-bubble'}`;
     
+    const messageType = msg.tipe_pesan || 'text';
     let contentHTML = '';
-    const messageType = msg.tipe_pesan || 'text'; 
 
     switch (messageType) {
         case 'image':
+            bubble.classList.add('media-bubble');
             contentHTML = `
-                <a href="${msg.isi_pesan}" target="_blank" rel="noopener noreferrer">
-                    <img src="${msg.isi_pesan}" alt="Gambar" style="max-width: 100%; border-radius: 0.5rem; display: block;">
-                </a>`;
+                <div class="message-content media-content">
+                    <a href="${msg.isi_pesan}" target="_blank" rel="noopener noreferrer">
+                        <img src="${msg.isi_pesan}" alt="Gambar" class="media-item">
+                    </a>
+                </div>`;
             break;
         case 'video':
-            contentHTML = `<video src="${msg.isi_pesan}" controls style="max-width: 100%; border-radius: 0.5rem; display: block;"></video>`;
+            bubble.classList.add('media-bubble');
+            contentHTML = `
+                <div class="message-content media-content">
+                    <video src="${msg.isi_pesan}" controls class="media-item"></video>
+                </div>`;
             break;
-        case 'audio': 
-            contentHTML = `<audio src="${msg.isi_pesan}" controls style="width: 100%; min-width: 250px;"></audio>`;
+        case 'audio':
+            contentHTML = `
+                <div class="message-content audio-content">
+                    <audio src="${msg.isi_pesan}" controls class="audio-player"></audio>
+                </div>`;
             break;
-        default: 
+        default:
             const p = document.createElement('p');
             p.style.whiteSpace = 'pre-wrap';
-            p.style.margin = '0'; 
-            p.innerText = msg.isi_pesan;
-            contentHTML = p.outerHTML;
+            p.style.marginBottom = '0';
+            p.appendChild(document.createTextNode(msg.isi_pesan));
+            contentHTML = `<div class="message-content text-content">${p.outerHTML}</div>`;
             break;
     }
 
-    let timestampHTML = '';
-    if (msg.timestamp) {
-        const time = new Date(msg.timestamp);
-        const formattedTime = time.toLocaleTimeString('id-ID', { 
-            hour: '2-digit', 
-            minute: '2-digit', 
-            timeZone: 'Asia/Jakarta' 
-        });
-        
-        const timestampColor = isUser ? '#6B7280' : '#E5E7EB'; 
-        timestampHTML = `
-            <div style="font-size: 0.7rem; color: ${timestampColor}; margin-top: 5px; text-align: right;">
-                ${formattedTime}
-            </div>`;
-    }
-
-    bubble.innerHTML = contentHTML + timestampHTML;
+    bubble.innerHTML = `
+        ${contentHTML}
+        <span class="message-time">${formatTimestamp(msg.timestamp)}</span>
+    `;
     
     messageContainer.appendChild(bubble);
     
@@ -351,6 +349,7 @@ function appendMessage(msg) {
         messageContainer.scrollTop = messageContainer.scrollHeight;
     });
 }
+
 
 async function sendMessage() {
     if (currentConversationStatus !== 'live_chat') {
@@ -369,10 +368,10 @@ async function sendMessage() {
 
     if (!message || !currentConversationId) return;
 
-    appendMessage({ 
-        pengirim: 'admin', 
-        isi_pesan: message, 
-        tipe_pesan: 'text', 
+    appendMessage({
+        pengirim: 'admin',
+        isi_pesan: message,
+        tipe_pesan: 'text',
         timestamp: new Date().toISOString() 
     });    messageInput.value = '';
     messageInput.style.height = 'auto'; 
@@ -454,4 +453,13 @@ async function endConversation() {
             Swal.fire('Error', error.message, 'error');
         }
     }
+}
+
+
+function formatTimestamp(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
 }
