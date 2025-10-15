@@ -138,7 +138,7 @@ function initWebSocket() {
     }
 
     ws.onmessage = (event) => {
-        // console.log('WebSocket message received:', event.data);
+        console.log('WebSocket message received:', event.data);
         try {
             const data = JSON.parse(event.data);
 
@@ -165,16 +165,7 @@ function initWebSocket() {
                 fetchAndRenderConversations();
 
                 if (data.conversation_id === currentConversationId) {
-                    const messagePayload = data.message;
-                    const messageType = typeof messagePayload === 'object' ? messagePayload.type : 'text';
-                    const messageContent = typeof messagePayload === 'object' ? messagePayload.url : messagePayload;
-                    
-                    appendMessage({
-                        pengirim: 'user',
-                        tipe_pesan: messageType,
-                        isi_pesan: messageContent,
-                        timestamp: data.timestamp 
-                    });
+                    appendMessage(data.message);
                 }
             }
 

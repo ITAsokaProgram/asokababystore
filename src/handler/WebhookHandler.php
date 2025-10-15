@@ -35,7 +35,7 @@ class WebhookHandler {
         $nomorPengirim = $message['from'];
         $messageType = $message['type'];
 
-        // Cek link verifikasi terlebih dahulu
+        
         if ($messageType === 'text') {
             $textBody = $message['text']['body'];
             $pattern = '/https:\/\/asokababystore\.com\/verifikasi-wa\?token=([a-f0-9]{64})/';
@@ -59,21 +59,20 @@ class WebhookHandler {
                 return;
             }
         }
+        
         if ($conversation['status_percakapan'] === 'live_chat') {
-            $messageContent = null;
-            $notificationPayload = null;
+            $savedMessage = null; 
 
             switch ($messageType) {
                 case 'text':
-                     $messageContent = $message['text']['body'];
-                     $savedMessage = $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $messageContent);
-                     $notificationPayload = $messageContent;
-                     break;
+                    $messageContent = $message['text']['body'];
+                    
+                    $savedMessage = $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $messageContent);
+                    break;
 
                 case 'image':
                 case 'video':
-                case 'audio': // Tambahkan case untuk audio
-                    
+                case 'audio':
                     $mediaService = new MediaService($this->logger);
                     $mediaId = $message[$messageType]['id'];
                     $this->logger->info("Menerima pesan media ({$messageType}) dari {$nomorPengirim} dalam sesi live chat.");
@@ -81,41 +80,36 @@ class WebhookHandler {
 
                     if (isset($result['url'])) {
                         $messageContent = $result['url'];
+                        
                         $savedMessage = $this->conversationService->saveMessage($conversation['id'], 'user', $messageType, $messageContent);
-                        $notificationPayload = ['type' => $messageType, 'url' => $messageContent];
                     } else {
+                        
                         $limit = $result['limit'] ?? 'yang ditentukan';
                         $mediaName = 'file';
                         switch ($messageType) {
-                            case 'image':
-                                $mediaName = 'gambar';
-                                break;
-                            case 'video':
-                                $mediaName = 'video';
-                                break;
-                            case 'audio':
-                                $mediaName = 'pesan suara';
-                                break;
+                            case 'image': $mediaName = 'gambar'; break;
+                            case 'video': $mediaName = 'video'; break;
+                            case 'audio': $mediaName = 'pesan suara'; break;
                         }
                         kirimPesanTeks($nomorPengirim, "Maaf, {$mediaName} yang Anda kirim melebihi batas maksimal {$limit}.");
-                        return; 
+                        return;
                     }
                     break;
 
                 default:
-                // TODO: saat kondisi live chat terus user milih menu akan muncul button suggestion akhiri chat.
                     $this->logger->info("Menerima tipe pesan '{$messageType}' yang belum didukung saat live chat.");
                     kirimPesanTeks($nomorPengirim, "Maaf, saat ini kami hanya mendukung pesan teks, gambar, video, dan pesan suara dalam sesi live chat.");
                     return;
             }
             
-            if ($notificationPayload) {
+            
+            if ($savedMessage) {
                 $this->notifyWebSocketServer([
                     'event' => 'new_message',
                     'conversation_id' => $conversation['id'],
                     'phone' => $nomorPengirim,
-                    'message' => $notificationPayload,
-                    'timestamp' => $savedMessage['timestamp'] 
+                    
+                    'message' => $savedMessage 
                 ]);
             }
             return;
@@ -168,8 +162,19 @@ class WebhookHandler {
         $selectedId = $message['interactive']['list_reply']['id'];
         $selectedTitle = $message['interactive']['list_reply']['title']; 
 
-        $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $selectedTitle); 
+        $savedUserMessage = $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $selectedTitle);
 
+        $this->notifyWebSocketServer([
+            'event' => 'new_message',
+            'conversation_id' => $conversation['id'],
+            'phone' => $nomorPengirim,
+            'message' => [
+                'pengirim' => $savedUserMessage['pengirim'],
+                'tipe_pesan' => $savedUserMessage['tipe_pesan'],
+                'isi_pesan' => $savedUserMessage['isi_pesan'],
+                'timestamp' => $savedUserMessage['timestamp']
+            ]
+        ]);
         $this->logger->info("Received List reply from {$nomorPengirim}. Selected ID: {$selectedId}, Title: {$selectedTitle}"); 
         if (preg_match('/^(JABODETABEK|BELITUNG|LOKASI_JABODETABEK|LOKASI_BELITUNG)_PAGE_(\d+)$/', $selectedId, $matches)) {
             $region = (strpos($matches[1], 'JABODETABEK') !== false) ? 'jabodetabek' : 'belitung';
@@ -181,7 +186,7 @@ class WebhookHandler {
         switch ($selectedId) {
             case 'DAFTAR_NOMOR':
                 $pesanBody = "Silakan pilih wilayah cabang yang ingin Anda hubungi.";
-                $this->saveAdminReply($conversation['id'], $pesanBody); 
+                $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody); 
                 kirimPesanList(
                     $nomorPengirim,
                     "Pilih Wilayah Cabang",
@@ -199,7 +204,7 @@ class WebhookHandler {
                 break;
             case 'DAFTAR_LOKASI':
                 $pesanBody = "Silakan pilih wilayah toko fisik yang ingin Anda lihat lokasinya.";
-                $this->saveAdminReply($conversation['id'], $pesanBody); 
+                $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody); 
                 kirimPesanList(
                     $nomorPengirim,
                     "Pilih Wilayah Toko",
@@ -218,7 +223,7 @@ class WebhookHandler {
              case 'CHAT_CS':
                 $this->conversationService->startLiveChat($nomorPengirim);
                 $pesanBody = "Anda sekarang terhubung dengan Customer Service kami. Silakan sampaikan pertanyaan Anda.";
-                $this->saveAdminReply($conversation['id'], $pesanBody); 
+                $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody); 
 
                 kirimPesanTeks(
                     $nomorPengirim,
@@ -237,12 +242,12 @@ class WebhookHandler {
                     if (isset(BranchConstants::ALL_LOKASI_CABANG[$branchKey])) {
                         $lokasi = BranchConstants::ALL_LOKASI_CABANG[$branchKey];
                         $pesanLokasi = "Mengirimkan lokasi: {$lokasi['name']}";
-                        $this->saveAdminReply($conversation['id'], $pesanLokasi, 'location'); 
+                        $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanLokasi); 
 
                         kirimPesanLokasi($nomorPengirim, $lokasi['latitude'], $lokasi['longitude'], $lokasi['name'], $lokasi['address']);
                     } else {
                         $pesanError = "Maaf, data lokasi untuk cabang {$branchKey} saat ini belum tersedia.";
-                        $this->saveAdminReply($conversation['id'], $pesanError); 
+                        $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanError); 
                         kirimPesanTeks($nomorPengirim, $pesanError);
                     }
                 } 
@@ -251,12 +256,12 @@ class WebhookHandler {
                     $nomorUntukDikirim = BranchConstants::ALL_NOMOR_TELEPON[$selectedId];
                     
                     $pesanKontak = "Mengirimkan kontak: {$namaKontak} ({$nomorUntukDikirim})";
-                    $this->saveAdminReply($conversation['id'], $pesanKontak, 'contact'); 
+                    $this->saveAdminReply($conversation['id'], $pesanKontak, $pesanKontak); 
                     kirimPesanKontak($nomorPengirim, $namaKontak, $nomorUntukDikirim);
                 } 
                 else {
                     $pesanError = "Maaf, pilihan Anda tidak valid. Silakan coba lagi.";
-                    $this->saveAdminReply($conversation['id'], $pesanError); 
+                    $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanError);
                     kirimPesanTeks($nomorPengirim, $pesanError);
                 }
                 break;
@@ -294,7 +299,7 @@ class WebhookHandler {
         $sections = [['title' => $title, 'rows' => $cities_to_show]];
         $pesanBody = "Silakan pilih cabang yang Anda tuju.";
         $conversation = $this->conversationService->getOrCreateConversation($nomorPengirim);
-        $this->saveAdminReply($conversation['id'], $pesanBody);
+        $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody); 
         kirimPesanList(
             $nomorPengirim,
             "Pilih Cabang",
@@ -332,7 +337,21 @@ class WebhookHandler {
         curl_close($ch);
     }
 
-     private function saveAdminReply($conversationId, $messageContent, $messageType = 'text') {
-        $this->conversationService->saveMessage($conversationId, 'admin', $messageType, $messageContent);
+     private function saveAdminReply($conversationId, $nomorPengirim, $messageContent, $messageType = 'text') {
+        $savedMessage = $this->conversationService->saveMessage($conversationId, 'admin', $messageType, $messageContent);
+        
+        if ($savedMessage) {
+            $this->notifyWebSocketServer([
+                'event' => 'new_message',
+                'conversation_id' => $conversationId,
+                'phone' => $nomorPengirim,
+                'message' => [
+                    'pengirim' => 'admin',
+                    'tipe_pesan' => $savedMessage['tipe_pesan'],
+                    'isi_pesan' => $savedMessage['isi_pesan'],
+                    'timestamp' => $savedMessage['timestamp']
+                ]
+            ]);
+        }
     }
 }

@@ -527,6 +527,7 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
         }
     }
     
+    
 
 
   </style>
@@ -603,8 +604,8 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
           <div id="message-input-area" class="hidden">
             <div id="media-preview-container" class="hidden mb-2 p-2 border rounded-lg relative w-fit">
                 <button id="remove-media-button" class="absolute -top-2 -right-2 bg-gray-600 text-white rounded-full h-5 w-5 flex items-center justify-center text-xs z-10 hover:bg-red-500 transition-colors" title="Hapus Media">&times;</button>
-                <img id="media-preview-image" class="hidden max-h-28 rounded">
-                <video id="media-preview-video" class="hidden max-h-28 rounded" controls></video>
+                <img id="media-preview-image" class="hidden max-h-28 rounded" style="max-height: 200px;">
+                <video id="media-preview-video" class="hidden max-h-28 rounded" controls style="max-height: 200px;"></video>
             </div>
             <div class="flex items-end gap-2 md:gap-3">
               <label for="media-input" class="cursor-pointer p-3 text-gray-500 hover:text-blue-500 transition-colors">
