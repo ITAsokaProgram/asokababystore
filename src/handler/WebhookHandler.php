@@ -145,7 +145,7 @@ class WebhookHandler {
                     $this->conversationService->setMenuSent($nomorPengirim);
                 } else {
                     $this->logger->info("Mengabaikan pesan teks dari {$nomorPengirim} karena menu utama sudah terkirim (bukan link verifikasi).");
-                }
+                } 
             } elseif ($message['type'] === 'interactive' && $message['interactive']['type'] === 'list_reply') {
                 $this->processListReplyMessage($message, $conversation);
             }
@@ -153,20 +153,27 @@ class WebhookHandler {
     }
     private function sendWelcomeMessage($nomorPengirim, $conversationId) {
         $this->logger->info("User {$nomorPengirim} memulai percakapan baru, mengirim Welcome Menu.");
-        $bodyText = "Halo Kak! Ada yang bisa kami bantu? Silakan pilih menu di bawah ini ya.";
         $sections = BranchConstants::MAIN_MENU_SECTIONS;
-        
-        // Kirim pesan list ke user
+        $judulHeader = "Asoka Baby Store"; 
+
+        $bodyText = "Terimakasih telah menghubungi Asoka Baby Store.\n\n" .
+                    "Jam Operasional:\n" .
+                    "- Senin - Sabtu: 08.30 - 16.30 WIB\n" .
+                    "- Hari Minggu dan Tanggal Merah: Tutup\n" .
+                    "- Pesan yang masuk setelah pukul 16.30 WIB akan dibalas pada hari kerja berikutnya.\n\n" .
+                    "Untuk informasi lainnya bisa diakses di website kami:\n" .
+                    "asokababystore.com\n\n" .
+                    "Silakan pilih menu di bawah ini untuk melanjutkan.";
+
         kirimPesanList(
             $nomorPengirim,
-            "Selamat Datang di Asoka!",
+            $judulHeader,
             $bodyText,
-            "ASOKA Baby Store",
+            "",
             "Lihat Pilihan Menu",
             $sections
         );
 
-        // Simpan pesan yang baru saja dikirim ke DB dan notifikasi via websocket
         $this->saveAdminReply($conversationId, $nomorPengirim, $bodyText);
     }
     private function processTextMessage($message) {

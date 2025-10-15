@@ -6,8 +6,7 @@ require_once __DIR__ . "/../src/utils/Logger.php";
 
 $logger = new AppLogger('tutup_percakapan_otomatis.log');
 
-$timeoutDuration = '10 SECOND'; 
-// $timeoutDuration = '30 MINUTE'; 
+$timeoutDuration = '5 MINUTE'; 
 
 $sql = "SELECT nomor_telepon FROM percakapan_whatsapp 
         WHERE status_percakapan = 'open' 
@@ -20,7 +19,7 @@ if (!$result) {
     exit;
 }
 
-$pesanPenutup = "Mohon maaf Bapak/Ibu karena tidak ada respon yang Kami terima sampai dengan saat ini, maka chat ini akan kami akhiri. Jika ada hal lain yang ingin ditanyakan, Bapak/Ibu dapat menghubungi kami kembali. Dengan senang hati kami akan membantu. Terima kasih";
+$pesanPenutup = "Mohon maaf Ayah/Bunda karena tidak ada respon yang Kami terima sampai dengan saat ini, maka chat ini akan kami akhiri. Jika ada hal lain yang ingin ditanyakan, Bapak/Ibu dapat menghubungi kami kembali. Dengan senang hati kami akan membantu. Terima kasih";
 
 $count = 0;
 while ($row = mysqli_fetch_assoc($result)) {
