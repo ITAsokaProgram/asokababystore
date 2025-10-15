@@ -63,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $placeholders = [
             '{{reset_link}}' => $resetLink,
             '{{email}}'      => htmlspecialchars($email),
-            '{{store_name}}' => 'ASOKA Baby Store',
+            '{{store_name}}' => 'Asoka Baby Store',
             '{{store_url}}'  => 'https://asokababystore.com',
             '{{store_logo}}' => $logoUrl,
         ];
