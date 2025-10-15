@@ -3,7 +3,7 @@ import { validateEmail } from "./validation.js";
 // Function to validate the forgot password form
 export const validateForgotPasswordForm = () => {
     const emailInput = document.getElementById('forgotEmail');
-    const emailError = document.getElementById('emailError');
+    const emailError = document.getElementById('forgotEmailError');
     let isValid = true;
 
     // Validate email
