@@ -54,7 +54,7 @@ class WebhookHandler {
             if ($buttonId === 'END_LIVE_CHAT') {
                 $this->logger->info("User {$nomorPengirim} mengkonfirmasi untuk mengakhiri live chat.");
                 $this->conversationService->closeConversation($nomorPengirim);
-                $this->sendWelcomeMessage($nomorPengirim); 
+                $this->sendWelcomeMessage($nomorPengirim, $conversation['id']); 
                 $this->conversationService->openConversation($nomorPengirim); 
                 return;
             }
@@ -117,7 +117,26 @@ class WebhookHandler {
 
 
         if ($conversation['status_percakapan'] === 'closed') {
-            $this->sendWelcomeMessage($nomorPengirim);
+            $savedUserMessage = null;
+            if ($messageType === 'text') {
+                $messageContent = $message['text']['body'];
+                $savedUserMessage = $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $messageContent);
+            } else {
+                kirimPesanTeks($nomorPengirim, "Halo Kak! Untuk memulai percakapan, silakan kirim pesan dalam bentuk teks ya.");
+                return;
+            }
+
+            if ($savedUserMessage) {
+                $this->notifyWebSocketServer([
+                    'event' => 'new_message',
+                    'conversation_id' => $conversation['id'],
+                    'phone' => $nomorPengirim,
+                    'message' => $savedUserMessage
+                ]);
+            }
+
+            $this->sendWelcomeMessage($nomorPengirim, $conversation['id']);
+            
             $this->conversationService->openConversation($nomorPengirim);
         } else {
             if ($message['type'] === 'text') {
@@ -132,17 +151,23 @@ class WebhookHandler {
             }
         }
     }
-    private function sendWelcomeMessage($nomorPengirim) {
+    private function sendWelcomeMessage($nomorPengirim, $conversationId) {
         $this->logger->info("User {$nomorPengirim} memulai percakapan baru, mengirim Welcome Menu.");
+        $bodyText = "Halo Kak! Ada yang bisa kami bantu? Silakan pilih menu di bawah ini ya.";
         $sections = BranchConstants::MAIN_MENU_SECTIONS;
+        
+        // Kirim pesan list ke user
         kirimPesanList(
             $nomorPengirim,
             "Selamat Datang di Asoka!",
-            "Halo Kak! Ada yang bisa kami bantu? Silakan pilih menu di bawah ini ya.",
+            $bodyText,
             "ASOKA Baby Store",
             "Lihat Pilihan Menu",
             $sections
         );
+
+        // Simpan pesan yang baru saja dikirim ke DB dan notifikasi via websocket
+        $this->saveAdminReply($conversationId, $nomorPengirim, $bodyText);
     }
     private function processTextMessage($message) {
         $nomorPengirim = $message['from'];
