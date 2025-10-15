@@ -8,20 +8,21 @@ function forSelectQuery($queries, $conn)
   $response = [];
 
   foreach ($queries as $queryName => $query) {
-    $sql = $conn->prepare($query);
-    if (!$sql) {
-      throw new Exception("Prepare failed: " . $conn->error);
+    echo "Mencoba menjalankan query: '$queryName'...\n";
+
+    $result = $conn->query($query); 
+
+    if ($result === false) {
+      echo "===================================================\n";
+      echo "ERROR: Query '$queryName' GAGAL!\n";
+      echo "Pesan Error MySQL: " . $conn->error . "\n";
+      echo "===================================================\n";
+      die(); 
     }
-    if (!$sql->execute()) {
-      throw new Exception("Execute failed: " . $sql->error);
-    }
-    if ($sql->error) {
-      throw new Exception("SQL Error: " . $sql->error);
-    }
-    $result = $sql->get_result();
+
+    echo "Query '$queryName' SUKSES.\n";
     $data = $result->fetch_all(MYSQLI_ASSOC);
     $response[$queryName] = $data;
-    $sql->close();
   }
   return $response;
 }
@@ -109,14 +110,18 @@ GROUP BY plu ORDER BY total_qty DESC limit 1";
 
 $sqlJumlahMemberPerCabang = "SELECT 
   ks.Nm_Alias AS cabang,
-  COUNT(DISTINCT CASE 
-    WHEN tr.kd_cust IS NOT NULL 
-      AND TRIM(tr.kd_cust) NOT IN ('', '898989',  '999999999') 
-    THEN tr.kd_cust 
-  END) AS jumlah_member
-FROM trans_b tr
-LEFT JOIN kode_store ks ON ks.kd_store = tr.kd_store
-GROUP BY tr.kd_store, ks.Nm_Alias
+  COUNT(mc.kd_cust) AS jumlah_member
+FROM (
+  SELECT 
+    kd_store,
+    kd_cust
+  FROM trans_b
+  WHERE kd_cust IS NOT NULL
+    AND TRIM(kd_cust) NOT IN ('', '898989', '999999999')
+  GROUP BY kd_store, kd_cust
+) AS mc
+LEFT JOIN kode_store ks ON ks.kd_store = mc.kd_store
+GROUP BY mc.kd_store, ks.Nm_Alias
 ORDER BY ks.Nm_Alias";
 
 $queries = [

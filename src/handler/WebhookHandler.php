@@ -166,7 +166,11 @@ class WebhookHandler {
     private function processListReplyMessage($message, $conversation) {
         $nomorPengirim = $message['from'];
         $selectedId = $message['interactive']['list_reply']['id'];
-        $this->logger->info("Received List reply from {$nomorPengirim}. Selected ID: {$selectedId}");
+        $selectedTitle = $message['interactive']['list_reply']['title']; 
+
+        $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $selectedTitle); 
+
+        $this->logger->info("Received List reply from {$nomorPengirim}. Selected ID: {$selectedId}, Title: {$selectedTitle}"); 
         if (preg_match('/^(JABODETABEK|BELITUNG|LOKASI_JABODETABEK|LOKASI_BELITUNG)_PAGE_(\d+)$/', $selectedId, $matches)) {
             $region = (strpos($matches[1], 'JABODETABEK') !== false) ? 'jabodetabek' : 'belitung';
             $type = (strpos($matches[1], 'LOKASI') !== false) ? 'lokasi' : 'kontak';
@@ -176,10 +180,12 @@ class WebhookHandler {
         }
         switch ($selectedId) {
             case 'DAFTAR_NOMOR':
+                $pesanBody = "Silakan pilih wilayah cabang yang ingin Anda hubungi.";
+                $this->saveAdminReply($conversation['id'], $pesanBody); 
                 kirimPesanList(
                     $nomorPengirim,
                     "Pilih Wilayah Cabang",
-                    "Silakan pilih wilayah cabang yang ingin Anda hubungi.",
+                    $pesanBody,
                     "Pilihan Wilayah",
                     "Lihat Wilayah",
                     BranchConstants::REGION_SELECTION_MENU
@@ -192,10 +198,12 @@ class WebhookHandler {
                 $this->sendBranchListByRegion($nomorPengirim, 'belitung', 1, 'kontak');
                 break;
             case 'DAFTAR_LOKASI':
+                $pesanBody = "Silakan pilih wilayah toko fisik yang ingin Anda lihat lokasinya.";
+                $this->saveAdminReply($conversation['id'], $pesanBody); 
                 kirimPesanList(
                     $nomorPengirim,
                     "Pilih Wilayah Toko",
-                    "Silakan pilih wilayah toko fisik yang ingin Anda lihat lokasinya.",
+                    $pesanBody,
                     "Pilihan Wilayah",
                     "Lihat Wilayah",
                     BranchConstants::REGION_SELECTION_MENU_LOKASI
@@ -209,10 +217,14 @@ class WebhookHandler {
                 break;
              case 'CHAT_CS':
                 $this->conversationService->startLiveChat($nomorPengirim);
+                $pesanBody = "Anda sekarang terhubung dengan Customer Service kami. Silakan sampaikan pertanyaan Anda.";
+                $this->saveAdminReply($conversation['id'], $pesanBody); 
+
                 kirimPesanTeks(
                     $nomorPengirim,
-                    "Anda sekarang terhubung dengan Customer Service kami. Silakan sampaikan pertanyaan Anda."
+                    $pesanBody
                 );
+
                 $this->notifyWebSocketServer([
                     'event' => 'new_live_chat', 
                     'phone' => $nomorPengirim,
@@ -224,19 +236,28 @@ class WebhookHandler {
                     $branchKey = substr($selectedId, 7);
                     if (isset(BranchConstants::ALL_LOKASI_CABANG[$branchKey])) {
                         $lokasi = BranchConstants::ALL_LOKASI_CABANG[$branchKey];
+                        $pesanLokasi = "Mengirimkan lokasi: {$lokasi['name']}";
+                        $this->saveAdminReply($conversation['id'], $pesanLokasi, 'location'); 
+
                         kirimPesanLokasi($nomorPengirim, $lokasi['latitude'], $lokasi['longitude'], $lokasi['name'], $lokasi['address']);
                     } else {
-                        kirimPesanTeks($nomorPengirim, "Maaf, data lokasi untuk cabang {$branchKey} saat ini belum tersedia.");
+                        $pesanError = "Maaf, data lokasi untuk cabang {$branchKey} saat ini belum tersedia.";
+                        $this->saveAdminReply($conversation['id'], $pesanError); 
+                        kirimPesanTeks($nomorPengirim, $pesanError);
                     }
                 } 
                 elseif (array_key_exists($selectedId, BranchConstants::ALL_NOMOR_TELEPON)) {
                     $namaKontak = "Asoka Baby Store " . $selectedId;
                     $nomorUntukDikirim = BranchConstants::ALL_NOMOR_TELEPON[$selectedId];
+                    
+                    $pesanKontak = "Mengirimkan kontak: {$namaKontak} ({$nomorUntukDikirim})";
+                    $this->saveAdminReply($conversation['id'], $pesanKontak, 'contact'); 
                     kirimPesanKontak($nomorPengirim, $namaKontak, $nomorUntukDikirim);
                 } 
                 else {
-                    $this->logger->warning("Received unhandled List reply ID: {$selectedId}");
-                    kirimPesanTeks($nomorPengirim, "Maaf, pilihan Anda tidak valid. Silakan coba lagi.");
+                    $pesanError = "Maaf, pilihan Anda tidak valid. Silakan coba lagi.";
+                    $this->saveAdminReply($conversation['id'], $pesanError); 
+                    kirimPesanTeks($nomorPengirim, $pesanError);
                 }
                 break;
         }
@@ -271,14 +292,18 @@ class WebhookHandler {
         $title = "PILIH CABANG (Hal {$page})";
         $header = ($region === 'jabodetabek') ? "Asoka Baby Store Jabodetabek" : "Asoka Baby Store Bangka & Belitung";
         $sections = [['title' => $title, 'rows' => $cities_to_show]];
+        $pesanBody = "Silakan pilih cabang yang Anda tuju.";
+        $conversation = $this->conversationService->getOrCreateConversation($nomorPengirim);
+        $this->saveAdminReply($conversation['id'], $pesanBody);
         kirimPesanList(
             $nomorPengirim,
             "Pilih Cabang",
-            "Silakan pilih cabang yang Anda tuju.",
+            $pesanBody,
             $header,
             "Pilih Cabang",
             $sections
         );
+
     }
 
    private function notifyWebSocketServer($data) {
@@ -307,5 +332,7 @@ class WebhookHandler {
         curl_close($ch);
     }
 
-
+     private function saveAdminReply($conversationId, $messageContent, $messageType = 'text') {
+        $this->conversationService->saveMessage($conversationId, 'admin', $messageType, $messageContent);
+    }
 }

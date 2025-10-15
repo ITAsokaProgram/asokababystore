@@ -16,7 +16,7 @@ function sendWhatsAppMessage($data) {
     $response = curl_exec($ch);
     $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
-
+    
     return ['httpcode' => $httpcode, 'response' => $response];
 }
 
