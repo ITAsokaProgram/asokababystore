@@ -5,6 +5,16 @@ namespace Asoka\Constant;
 class BranchConstants {
 
     
+    public const REGION_SELECTION_BUTTONS = [
+        ['id' => 'DAFTAR_JABODETABEK', 'title' => 'Jabodetabek'],
+        ['id' => 'DAFTAR_BELITUNG', 'title' => 'Bangka & Belitung'],
+    ];
+
+    public const REGION_SELECTION_BUTTONS_LOKASI = [
+        ['id' => 'LOKASI_DAFTAR_JABODETABEK', 'title' => 'Jabodetabek'],
+        ['id' => 'LOKASI_DAFTAR_BELITUNG', 'title' => 'Bangka & Belitung'],
+    ];
+
     public const REGION_SELECTION_MENU = [
         [
             'title' => 'PILIH WILAYAH',

@@ -51,12 +51,32 @@ class WebhookHandler {
         
         if ($message['type'] === 'interactive' && isset($message['interactive']['type']) && $message['interactive']['type'] === 'button_reply') {
             $buttonId = $message['interactive']['button_reply']['id'];
-            if ($buttonId === 'END_LIVE_CHAT') {
-                $this->logger->info("User {$nomorPengirim} mengkonfirmasi untuk mengakhiri live chat.");
-                $this->conversationService->closeConversation($nomorPengirim);
-                $this->sendWelcomeMessage($nomorPengirim, $conversation['id']); 
-                $this->conversationService->openConversation($nomorPengirim); 
-                return;
+            $buttonTitle = $message['interactive']['button_reply']['title'];
+
+            $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $buttonTitle);
+
+            switch ($buttonId) {
+                case 'END_LIVE_CHAT':
+                    $this->conversationService->closeConversation($nomorPengirim);
+                    $this->sendWelcomeMessage($nomorPengirim, $conversation['id']); 
+                    $this->conversationService->openConversation($nomorPengirim); 
+                    return;
+
+                case 'DAFTAR_JABODETABEK':
+                    $this->sendBranchListByRegion($nomorPengirim, 'jabodetabek', 1, 'kontak');
+                    return;
+
+                case 'DAFTAR_BELITUNG':
+                    $this->sendBranchListByRegion($nomorPengirim, 'belitung', 1, 'kontak');
+                    return;
+
+                case 'LOKASI_DAFTAR_JABODETABEK':
+                    $this->sendBranchListByRegion($nomorPengirim, 'jabodetabek', 1, 'lokasi');
+                    return;
+                
+                case 'LOKASI_DAFTAR_BELITUNG':
+                    $this->sendBranchListByRegion($nomorPengirim, 'belitung', 1, 'lokasi');
+                    return;
             }
         }
         
@@ -219,31 +239,25 @@ class WebhookHandler {
             case 'DAFTAR_NOMOR':
                 $pesanBody = "Silakan pilih wilayah cabang yang ingin Anda hubungi.";
                 $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody); 
-                kirimPesanList(
+                
+                kirimPesanButton(
                     $nomorPengirim,
-                    "Pilih Wilayah Cabang",
                     $pesanBody,
-                    "Pilihan Wilayah",
-                    "Lihat Wilayah",
-                    BranchConstants::REGION_SELECTION_MENU
+                    BranchConstants::REGION_SELECTION_BUTTONS,
+                    "Pilih Wilayah Cabang", 
+                    ""     
                 );
-                break;
-            case 'DAFTAR_JABODETABEK':
-                $this->sendBranchListByRegion($nomorPengirim, 'jabodetabek', 1, 'kontak');
-                break;
-            case 'DAFTAR_BELITUNG':
-                $this->sendBranchListByRegion($nomorPengirim, 'belitung', 1, 'kontak');
                 break;
             case 'DAFTAR_LOKASI':
                 $pesanBody = "Silakan pilih wilayah toko fisik yang ingin Anda lihat lokasinya.";
                 $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody); 
-                kirimPesanList(
+                
+                kirimPesanButton(
                     $nomorPengirim,
-                    "Pilih Wilayah Toko",
                     $pesanBody,
-                    "Pilihan Wilayah",
-                    "Lihat Wilayah",
-                    BranchConstants::REGION_SELECTION_MENU_LOKASI
+                    BranchConstants::REGION_SELECTION_BUTTONS_LOKASI,
+                    "Pilih Wilayah Toko", 
+                    ""     
                 );
                 break;
             case 'LOKASI_DAFTAR_JABODETABEK':
@@ -252,22 +266,43 @@ class WebhookHandler {
             case 'LOKASI_DAFTAR_BELITUNG':
                 $this->sendBranchListByRegion($nomorPengirim, 'belitung', 1, 'lokasi');
                 break;
-             case 'CHAT_CS':
-                $this->conversationService->startLiveChat($nomorPengirim);
-                $pesanBody = "Anda sekarang terhubung dengan Customer Service kami. Silakan sampaikan pertanyaan Anda.";
-                $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody); 
+            case 'CHAT_CS':
+                    date_default_timezone_set('Asia/Jakarta');
+                    $currentHour = (int)date('H');
+                    $currentMinute = (int)date('i');
 
-                kirimPesanTeks(
-                    $nomorPengirim,
-                    $pesanBody
-                );
+                    $isOutsideOperationalHours = ($currentHour < 9 || $currentHour > 16 || ($currentHour == 16 && $currentMinute > 30));
 
-                $this->notifyWebSocketServer([
-                    'event' => 'new_live_chat', 
-                    'phone' => $nomorPengirim,
-                    'conversation_id' => $conversation['id'] 
-                ]);
-                break;
+                    if ($isOutsideOperationalHours) {
+                        $pesanBody = "Maaf Ayah/Bunda, Customer Service kami sedang di luar jam operasional (Senin - Sabtu, 09:00 - 16:30).\n\nPesan Anda akan kami terima dan akan kami balas pada jam operasional berikutnya. Terima kasih.";
+                        
+                        $this->conversationService->startLiveChat($nomorPengirim);
+                        
+                        kirimPesanTeks($nomorPengirim, $pesanBody);
+                        
+                        $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody);
+
+                        $this->notifyWebSocketServer([
+                            'event' => 'new_live_chat',
+                            'phone' => $nomorPengirim,
+                            'conversation_id' => $conversation['id']
+                        ]);
+
+                    } else {
+                        $this->conversationService->startLiveChat($nomorPengirim);
+                        $pesanBody = "Anda sekarang terhubung dengan Customer Service kami. Silakan sampaikan pertanyaan Anda.";
+                        
+                        kirimPesanTeks($nomorPengirim, $pesanBody);
+                        
+                        $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody);
+
+                        $this->notifyWebSocketServer([
+                            'event' => 'new_live_chat',
+                            'phone' => $nomorPengirim,
+                            'conversation_id' => $conversation['id']
+                        ]);
+                    }
+                    break;
             default:
                 if (strpos($selectedId, 'LOKASI_') === 0) {
                     $branchKey = substr($selectedId, 7);
