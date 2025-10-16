@@ -2,7 +2,7 @@ let selectedMediaFile = null;
 
 const getToken = () => {
     const value = `; ${document.cookie}`;
-    const parts = value.split(`; token=`);
+    const parts = value.split(`; admin_token=`);
     if (parts.length === 2) return parts.pop().split(";").shift();
     return null;
 }

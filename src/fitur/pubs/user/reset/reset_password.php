@@ -14,7 +14,6 @@
         <h2 class="text-2xl font-bold text-center text-gray-800">Reset Password</h2>
 
         <form id="resetPasswordForm" method="POST" class="space-y-4">
-            <!-- New Password -->
             <div>
                 <label for="newPassword" class="block text-sm font-medium text-gray-700 mb-1">Password Baru</label>
                 <div class="relative">
@@ -30,7 +29,6 @@
                 <p class="mt-1 text-xs text-gray-500">Minimal 8 karakter, kombinasi huruf dan angka</p>
             </div>
 
-            <!-- Confirm New Password -->
             <div>
                 <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-1">Konfirmasi Password
                     Baru</label>
@@ -46,7 +44,6 @@
                 </div>
             </div>
 
-            <!-- Submit Button -->
             <button type="submit" id="submitResetPassword"
                 class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition-colors">
                 <span class="inline-flex items-center justify-center">

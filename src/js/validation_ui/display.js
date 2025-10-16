@@ -1,4 +1,4 @@
-import { validateForgotPasswordForm, switchPageForgot } from "./forgot_ui.js";
+import {  switchPageForgot,validateForgotEmailForm,validateForgotHpForm } from "./forgot_ui.js";
 import { validationUiLogin, switchPageLogin } from "./login_ui.js";
 import { validateRegistrationForm, switchPageRegister } from "./register_ui.js";
 import { phoneLoginUI, switchPagePhoneLogin } from "./phone_login_ui.js";
@@ -40,19 +40,28 @@ const initValidationUi = () => {
     }
 
 
-    // Initialize validation for the forgot password form
-    const forgotForm = document.querySelector("#forgot-form");
-    if (forgotForm) {
-        forgotForm.addEventListener("submit", (event) => {
+    const forgotFormEmail = document.querySelector("#forgotFormEmail");
+    const forgotFormHp = document.querySelector("#forgotFormHp");
+
+    if (forgotFormEmail && forgotFormHp) {
+        forgotFormEmail.addEventListener("submit", (event) => {
             event.preventDefault();
-            if (validateForgotPasswordForm()) {
+            if (validateForgotEmailForm()) { 
                 const email = document.getElementById('forgotEmail').value;
-                resetPassword(email);
+                resetPassword({ method: 'email', value: email });
             }
         });
+        forgotFormHp.addEventListener("submit", (event) => {
+            event.preventDefault();
+            if (validateForgotHpForm()) { 
+                const noHp = document.getElementById('forgotHp').value;
+                resetPassword({ method: 'hp', value: noHp });
+            }
+        });
+        
+        // Panggil fungsi switchPageForgot yang sudah dimodifikasi
         switchPageForgot();
     }
-
     // const phoneForm = document.querySelector("#numberPhoneForm");
     // if (phoneForm) {
     //     if(phoneLoginUI()){

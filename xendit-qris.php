@@ -27,6 +27,7 @@ $amount = $data['amount'] ?? 0;
 // Simpan log ke file untuk debugging
 file_put_contents(__DIR__ . '/xendit-webhook.log', date('Y-m-d H:i:s') . " | REF=$ref_id | STATUS=$status | QR=$qr_id | AMOUNT=$amount\n", FILE_APPEND);
 
+
 // Update database kalau status SUCCEEDED
 if ($status === 'SUCCEEDED') {
     // Contoh update ke MySQL

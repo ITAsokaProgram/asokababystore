@@ -265,7 +265,7 @@ header("Pragma: no-cache");
         </div>
 
         <!-- Forgot Password Form -->
-        <div id="forgot-form" class="w-full hidden space-y-6">
+        <!-- <div id="forgot-form" class="w-full hidden space-y-6">
           <div class="text-center mb-8">
             <h2 class="text-3xl lg:text-4xl font-bold gradient-text mb-2">Reset Password</h2>
             <p class="text-gray-600">Masukkan email untuk reset password</p>
@@ -308,7 +308,57 @@ header("Pragma: no-cache");
               <i class="fas fa-arrow-left mr-1"></i>Kembali ke Login
             </button>
           </div>
-        </div>
+        </div> -->
+
+        <div id="forgot-form" class="w-full hidden space-y-6">
+          <div class="text-center mb-6">
+              <h2 class="text-3xl lg:text-4xl font-bold gradient-text mb-2">Reset Password</h2>
+              <p class="text-gray-600">Pilih metode reset password Anda</p>
+          </div>
+
+          <div class="flex border-b border-gray-200">
+              <button id="tab-email" class="flex-1 py-3 px-4 text-center font-semibold text-pink-600 border-b-2 border-pink-600 focus:outline-none">
+                  <i class="fas fa-envelope mr-2"></i> Via Email
+              </button>
+              <button id="tab-hp" class="flex-1 py-3 px-4 text-center font-semibold text-gray-500 focus:outline-none">
+                  <i class="fab fa-whatsapp mr-2"></i> Via No. HP
+              </button>
+          </div>
+
+          <form id="forgotFormEmail" method="POST" class="space-y-5">
+              <div class="space-y-2">
+                  <label for="forgotEmail" class="block text-sm font-medium text-gray-700">Email Terdaftar</label>
+                  <div class="relative">
+                      <i class="fas fa-envelope absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                      <input type="email" name="email" id="forgotEmail" placeholder="Masukkan email Anda" class="w-full border-2 border-gray-200 pl-10 pr-4 py-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all text-lg" />
+                  </div>
+                  <div id="forgotEmailError" class="hidden text-sm text-red-500 mt-1"><i class="fas fa-exclamation-circle mr-1"></i>Email tidak valid</div>
+              </div>
+              <button type="submit" class="w-full bg-gradient-to-r from-red-500 to-pink-600 hover:opacity-90 transition-all text-white py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 relative" id="resetButtonEmail">
+                  <span class="button-text"><i class="fas fa-paper-plane mr-2"></i>Kirim Link Reset</span>
+              </button>
+          </form>
+
+          <form id="forgotFormHp" method="POST" class="space-y-5 hidden">
+              <div class="space-y-2">
+                  <label for="forgotHp" class="block text-sm font-medium text-gray-700">Nomor HP Terdaftar</label>
+                  <div class="relative">
+                      <i class="fas fa-phone absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                      <input type="tel" name="no_hp" id="forgotHp" placeholder="Contoh: 081234567890" class="w-full border-2 border-gray-200 pl-10 pr-4 py-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all text-lg" />
+                  </div>
+                  <div id="forgotHpError" class="hidden text-sm text-red-500 mt-1"><i class="fas fa-exclamation-circle mr-1"></i>Format nomor HP tidak valid</div>
+              </div>
+              <button type="submit" class="w-full bg-gradient-to-r from-green-500 to-teal-600 hover:opacity-90 transition-all text-white py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 relative" id="resetButtonHp">
+                  <span class="button-text"><i class="fab fa-whatsapp mr-2"></i>Lanjutkan ke WhatsApp</span>
+              </button>
+          </form>
+
+          <div class="text-center">
+              <button id="show-login2" class="text-pink-600 font-semibold hover:text-pink-700 hover:underline transition-colors">
+                  <i class="fas fa-arrow-left mr-1"></i>Kembali ke Login
+              </button>
+          </div>
+      </div>
 
         <!-- Phone Login Form -->
         <div id="number-phone" class="w-full hidden space-y-6">

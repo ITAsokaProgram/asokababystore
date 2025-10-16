@@ -11,21 +11,18 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
-    // Autentikasi user dari cookie/token
     $user = getAuthenticatedUser();
     $userId = $user->id;
 
     $data = json_decode(file_get_contents('php://input'), true);
     $noHpBaru = $data['no_hp'] ?? '';
 
-    // Validasi nomor HP
     if (!preg_match('/^08\d{8,11}$/', $noHpBaru)) {
         http_response_code(400);
         echo json_encode(['success' => false, 'message' => 'Format nomor HP tidak valid. Contoh: 081234567890.']);
         exit;
     }
 
-    // Cek apakah nomor HP baru sudah dipakai orang lain
     $stmt = $conn->prepare("SELECT id_user FROM user_asoka WHERE no_hp = ? AND id_user != ?");
     $stmt->bind_param("si", $noHpBaru, $userId);
     $stmt->execute();
@@ -36,11 +33,9 @@ try {
     }
     $stmt->close();
     
-    // Buat token unik yang akan dikirim oleh user
     $tokenKirimUser = bin2hex(random_bytes(32));
     $kedaluwarsa = (new DateTime())->modify('+15 minutes')->format('Y-m-d H:i:s');
 
-    // Simpan data permintaan ke tabel verifikasi
     $sql = "INSERT INTO verifikasi_nomor_hp (id_user, nomor_hp_baru, token_kirim_user, kedaluwarsa_pada) VALUES (?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("isss", $userId, $noHpBaru, $tokenKirimUser, $kedaluwarsa);
@@ -50,12 +45,9 @@ try {
     }
     $stmt->close();
 
-    // Buat link yang akan dimasukkan ke dalam pesan WhatsApp
-    // PENTING: Gunakan domain asli Anda
     $linkInternal = "https://asokababystore.com/verifikasi-wa?token=" . $tokenKirimUser;
 
-    // Buat link whatsapp:// untuk redirect user
-    $nomorTujuan = "6287722752786"; // Nomor WA Bisnis Anda
+    $nomorTujuan = "6287722752786";
     $pesanWA = "Halo Asoka, saya ingin verifikasi penggantian nomor HP. Link verifikasi saya: " . $linkInternal;
     $whatsappUrl = "https://wa.me/" . $nomorTujuan . "?text=" . urlencode($pesanWA);
 

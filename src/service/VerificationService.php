@@ -45,4 +45,63 @@ class VerificationService {
         }
         $stmtUpdate->close();
     }
+    public function processPasswordResetToken($token, $nomorPengirim) {
+        try {
+            $stmt = $this->conn->prepare("SELECT no_hp, kadaluarsa, used FROM reset_token WHERE token = ?");
+            $stmt->bind_param("s", $token);
+            $stmt->execute();
+            $result = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+
+            if (!$result) {
+                $this->logger->warning("Token reset password tidak valid diterima: {$token}");
+                kirimPesanTeks($nomorPengirim, "Maaf, token untuk reset password tidak valid. Silakan ulangi permintaan dari website.");
+                return;
+            }
+
+            if ($result['used'] == 1) {
+                kirimPesanTeks($nomorPengirim, "Maaf, token ini sudah pernah digunakan.");
+                return;
+            }
+
+            if (new DateTime() > new DateTime($result['kadaluarsa'])) {
+                kirimPesanTeks($nomorPengirim, "Maaf, token Anda sudah kedaluwarsa. Silakan ajukan permintaan baru di website.");
+                return;
+            }
+            
+            $noHpTerdaftar = $result['no_hp'];
+            
+            $nomorPengirimNormalized = '0' . substr($nomorPengirim, 2);
+
+            if ($noHpTerdaftar !== $nomorPengirimNormalized) {
+                 $this->logger->error("SECURITY ALERT: Token reset untuk {$noHpTerdaftar} coba digunakan oleh {$nomorPengirimNormalized}.");
+                 kirimPesanTeks($nomorPengirim, "Terjadi kesalahan keamanan. Permintaan dibatalkan.");
+                 return;
+            }
+
+            $stmtUpdate = $this->conn->prepare("UPDATE reset_token SET used = 1 WHERE token = ?");
+            $stmtUpdate->bind_param("s", $token);
+            $stmtUpdate->execute();
+            $stmtUpdate->close();
+
+            $finalResetToken = bin2hex(random_bytes(32));
+            $createdAt = date('Y-m-d H:i:s');
+            $expiredAt = date('Y-m-d H:i:s', strtotime('+30 minutes'));
+
+            $stmtInsert = $this->conn->prepare("INSERT INTO reset_token (no_hp, token, dibuat_tgl, kadaluarsa, used) VALUES (?, ?, ?, ?, 0)");
+            $stmtInsert->bind_param("ssss", $noHpTerdaftar, $finalResetToken, $createdAt, $expiredAt);
+            $stmtInsert->execute();
+            $stmtInsert->close();
+            
+            $resetLink = "https://asokababystore.com/reset-password-final.php?token=" . $finalResetToken; 
+            $pesanBalasan = "Verifikasi berhasil! 👍\n\nKlik link di bawah ini untuk membuat password baru Anda. Link ini hanya berlaku 30 menit.\n\n" . $resetLink;
+
+            kirimPesanTeks($nomorPengirim, $pesanBalasan);
+            $this->logger->success("Link reset password final berhasil dikirim ke {$nomorPengirim}.");
+
+        } catch (Exception $e) {
+            $this->logger->error("Error saat proses token reset password: " . $e->getMessage());
+            kirimPesanTeks($nomorPengirim, "Terjadi kesalahan internal. Silakan coba lagi nanti.");
+        }
+    }
 }

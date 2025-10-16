@@ -38,11 +38,20 @@ class WebhookHandler {
         
         if ($messageType === 'text') {
             $textBody = $message['text']['body'];
-            $pattern = '/https:\/\/asokababystore\.com\/verifikasi-wa\?token=([a-f0-9]{64})/';
-            if (preg_match($pattern, $textBody, $matches)) {
+
+            $patternGantiHp = '/https:\/\/asokababystore\.com\/verifikasi-wa\?token=([a-f0-9]{64})/';
+            if (preg_match($patternGantiHp, $textBody, $matches)) {
                 $token = $matches[1];
-                $this->logger->info("Link verifikasi terdeteksi dari {$nomorPengirim}. Memproses token: {$token}");
-                $this->verificationService->processToken($token);
+                $this->logger->info("Link verifikasi ganti nomor HP terdeteksi. Token: {$token}");
+                $this->verificationService->processToken($token); // Metode lama Anda
+                return;
+            }
+
+            $patternResetPw = '/Token saya: (resetpw_[a-f0-9]{60})/';
+            if (preg_match($patternResetPw, $textBody, $matches)) {
+                $token = $matches[1];
+                $this->logger->info("Token reset password terdeteksi. Token: {$token}");
+                $this->verificationService->processPasswordResetToken($token, $nomorPengirim);
                 return;
             }
         }
