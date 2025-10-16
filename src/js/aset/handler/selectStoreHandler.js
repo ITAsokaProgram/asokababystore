@@ -18,7 +18,7 @@ const populateStoreSelect = (selectElement, stores) => {
 
 const initSelectStore = async () => {
     try {
-        const token = getCookie("token");
+        const token = getCookie("admin_token");
         if (!token) return;
 
         const stores = await api.getStores(token);

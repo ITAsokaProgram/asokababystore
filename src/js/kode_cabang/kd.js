@@ -1,7 +1,7 @@
 import getCookie from "./../index/utils/cookies.js";
 export const kodeCabang = async (selectId) => {
   try {
-    const token = getCookie("token");
+    const token = getCookie("admin_token");
     const select = document.getElementById(selectId);
     const response = await fetch("/src/api/cabang/get_kode", {
       method: "GET",

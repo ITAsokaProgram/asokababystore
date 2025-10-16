@@ -1,7 +1,7 @@
 import { paginationDetail } from "../table/pagination.js";
 import getCookie from "./../../index/utils/cookies.js";
 export const fetchAllKategori = async () => {
-  const token = getCookie("token");
+  const token = getCookie("admin_token");
   try {
     const response = await fetch("/src/api/invalid/all_kategori", {
       method: "GET",
@@ -76,7 +76,7 @@ export const fetchDetailKategori = async (
   start = null,
   end = null
 ) => {
-  const token = getCookie("token");
+  const token = getCookie("admin_token");
   try {
     const response = await fetch(
       `/src/api/invalid/detail_kategori?kategori=${kategori}&kode=${kode}&start=${start}&end=${end}`,
@@ -155,7 +155,7 @@ export const fetchKategoriByTgl = async (
   periode,
   cabang
 ) => {
-  const token = getCookie("token");
+  const token = getCookie("admin_token");
   try {
     const response = await fetch(
       `/src/api/invalid/filter_tgl_kat?start=${start}&end=${end}&kategori=${kategori}&periode=${periode}&cabang=${cabang}`,
@@ -234,7 +234,7 @@ export const fetchCekData = async (
   startDate,
   endDate
 ) => {
-  const token = getCookie("token");
+  const token = getCookie("admin_token");
   Swal.fire({
     title: "Masukkan Keterangan",
     input: "text",
@@ -289,7 +289,7 @@ export const fetchCekData = async (
 };
 
 export const fetchKeterangan = async (plu, kasir, tgl , jam , store) => {
-  const token = getCookie("token");
+  const token = getCookie("admin_token");
 
   try {
     const response = await fetch(
@@ -351,7 +351,7 @@ export const fetchKeterangan = async (plu, kasir, tgl , jam , store) => {
 };
 
 export const fetchTopInvalid = async () => {
-  const token = getCookie("token");
+  const token = getCookie("admin_token");
   try {
     const response = await fetch("/src/api/invalid/top_invalid", {
       method: "GET",
@@ -379,7 +379,7 @@ export const fetchTopInvalid = async () => {
 };
 
 export const fetchTopRetur = async () => {
-  const token = getCookie("token");
+  const token = getCookie("admin_token");
   try {
     const response = await fetch("/src/api/invalid/top_retur", {
       method: "GET",

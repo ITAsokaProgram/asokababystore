@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  const token = getCookie("token");
+  const token = getCookie("admin_token");
   const currentPath = window.location.pathname;
 
   // Kalau halaman login

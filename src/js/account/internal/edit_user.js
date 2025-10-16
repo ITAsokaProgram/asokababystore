@@ -1,7 +1,7 @@
 import getCookie from "../../index/utils/cookies.js";
 
 export const editUser = async (kode, formData) => {
-  const token = getCookie("token");
+  const token = getCookie("admin_token");
   try {
     const response = await fetch(`/src/api/user/edit_user_in?kode=${kode}`, {
       method: "POST",
@@ -32,7 +32,7 @@ export const editUser = async (kode, formData) => {
 };
 
 export const resetPassword = async (data) => {
-  const token = getCookie("token");
+  const token = getCookie("admin_token");
   try {
     const response = await fetch("/src/api/user/reset_password_user_in", {
       method: "PUT",

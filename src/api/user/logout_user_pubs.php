@@ -9,12 +9,12 @@ $options = [
     'httponly' => false, 
     'samesite' => 'Lax'
 ];
-setcookie('token', '', array_merge($options, ['domain' => $domain]));
-setcookie('token', '', array_merge($options, ['domain' => $baseDomain]));
-setcookie('token', '', array_merge($options, ['domain' => '.' . $baseDomain]));
+setcookie('customer_token', '', array_merge($options, ['domain' => $domain]));
+setcookie('customer_token', '', array_merge($options, ['domain' => $baseDomain]));
+setcookie('customer_token', '', array_merge($options, ['domain' => '.' . $baseDomain]));
 unset($options['domain']);
-setcookie('token', '', $options);
-if (isset($_COOKIE['token'])) {
+setcookie('customer_token', '', $options);
+if (isset($_COOKIE['customer_token'])) {
     echo json_encode(['status' => 'success', 'message' => 'Logout berhasil']);
 } else {
     echo json_encode(['status' => 'success', 'message' => 'Sesi berhasil diakhiri.']);

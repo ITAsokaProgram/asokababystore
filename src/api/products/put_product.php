@@ -6,7 +6,7 @@ require_once __DIR__ . '/../../auth/middleware_login.php';
 header("Content-Type:application/json");
 header("Access-Control-Allow-Methods: POST, PUT");
 
-$token = $_COOKIE['token'] ?? null;
+$token = $_COOKIE['customer_token'] ?? null;
 if (!$token) {
     http_response_code(401);
     echo json_encode(['success' => false, 'error' => 'Unauthorized']);

@@ -84,7 +84,7 @@ function checkUser($conn, $sql, $pass, $identifier)
             $stmtLogin->bind_param('issss', $id, $device, $browser, $ip, $date);
             $stmtLogin->execute();
             $stmtLogin->close();
-            setcookie('token', $generatedToken['token'], [
+            setcookie('customer_token', $generatedToken['token'], [
                 'expires' => $generatedToken['expiresAt'],
                 'path' => '/',
                 'domain' => $_SERVER['HTTP_HOST'],
@@ -228,7 +228,7 @@ function checkUserGoogle($email)
         $stmtLogin->bind_param('issss', $id, $device, $browser, $ip, $date);
         $stmtLogin->execute();
         $stmtLogin->close();
-        setcookie('token', $generatedToken['token'], [
+        setcookie('customer_token', $generatedToken['token'], [
             'expires' => $generatedToken['expiresAt'],
             'path' => '/',
             'domain' => $_SERVER['HTTP_HOST'],
@@ -334,7 +334,7 @@ function handleGoogleLogin($conn)
             'nama' => $result['user']['nama'],
             'no_hp' => $result['user']['no_hp'],
         ]);
-        setcookie('token', $token['token'], [
+        setcookie('customer_token', $token['token'], [
             'expires' => $token['expiresAt'],
             'path' => '/',
             'domain' => $_SERVER['HTTP_HOST'],
@@ -377,7 +377,7 @@ function handleGoogleLogin($conn)
                 'email' => $email,
                 'nama' => $nama
             ]);
-            setcookie('token', $token['token'], [
+            setcookie('customer_token', $token['token'], [
                 'expires' => $token['expiresAt'],
                 'path' => '/',
                 'domain' => $_SERVER['HTTP_HOST'],
@@ -476,12 +476,12 @@ function getBrowserName($userAgent)
 
 function getAuthenticatedUser()
 {
-    if (!isset($_COOKIE['token']) || empty($_COOKIE['token'])) {
+    if (!isset($_COOKIE['customer_token']) || empty($_COOKIE['customer_token'])) {
         header("Location: /log_in");
         exit();
     }
 
-    $token = $_COOKIE['token'];
+    $token = $_COOKIE['customer_token'];
     $decodedData = verify_token($token); 
 
     if (is_array($decodedData) && isset($decodedData['status']) && $decodedData['status'] === 'error') {

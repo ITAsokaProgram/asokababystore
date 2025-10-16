@@ -4,7 +4,7 @@ function getCookie(name) {
     return null;
 }
 
-const token = getCookie('token') || localStorage.getItem('token');
+const token = getCookie('admin_token') || localStorage.getItem('token');
 
 if (token) {
     fetch('/src/auth/decode_token', {

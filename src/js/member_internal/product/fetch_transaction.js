@@ -9,7 +9,7 @@ import getCookie from "../../index/utils/cookies.js";
  * @returns {Promise<Object|null>} - Response JSON or null on error
  */
 export const fetchTransaction = async ({ member = "", cabang = "", no_trans = "" } = {}) => {
-  const token = getCookie("token");
+  const token = getCookie("admin_token");
   try {
     let url = "";
     if (member && cabang) {

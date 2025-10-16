@@ -150,7 +150,7 @@ function renderRows(items) {
           return;
         }
 
-        const token = getCookie('token');
+        const token = getCookie('admin_token');
         await api.deleteDataAset(token, id);
         await Swal.fire({ icon: 'success', title: 'Terhapus', text: 'Aset berhasil dihapus.' });
         // refresh table after deletion
@@ -422,7 +422,7 @@ async function openEditModal(id) {
 // History modal fetch & render helper
 async function openHistoryModal(id) {
   try {
-    const token = getCookie('token');
+    const token = getCookie('admin_token');
     const url = new URL('/src/api/aset/get_history_log.php', window.location.origin);
     url.searchParams.set('idhistory_aset', id);
     const res = await fetch(url.toString(), { method: 'GET', headers: { 'Authorization': 'Bearer ' + token } });

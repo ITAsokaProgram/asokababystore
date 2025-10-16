@@ -1,7 +1,7 @@
 import getCookie from "../../index/utils/cookies.js";
 
 export const fetchMargin = async () => {
-  const token = getCookie("token");
+  const token = getCookie("admin_token");
   const response = await fetch("/src/api/margin/margin_minus", {
     method: "GET",
     headers: {
@@ -58,7 +58,7 @@ export const fetchMargin = async () => {
 };
 
 export const fetchFilterMargin = async (start, end, cabang) => {
-  const token = getCookie("token");
+  const token = getCookie("admin_token");
   const response = await fetch(
     `/src/api/margin/filter_margin?start=${start}&end=${end}&cabang=${cabang}`,
     {

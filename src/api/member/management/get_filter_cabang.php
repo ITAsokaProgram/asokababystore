@@ -5,7 +5,7 @@ require_once __DIR__ . '/../../../auth/middleware_login.php';
 header("Content-Type: application/json");
 
 // cek token dari cookie
-$token = $_COOKIE['token'] ?? null;
+$token = $_COOKIE['admin_token'] ?? null;
 if (!$token) {
     http_response_code(401);
     echo json_encode(['status' => false, "message" => "Unauthorize user cannot be used"]);

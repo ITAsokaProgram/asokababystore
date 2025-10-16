@@ -7,7 +7,7 @@ import { initSearch, getFilteredData } from "./search.js";
 import { areaCabang } from "./../../kode_cabang/cabang_area.js";
 
 export const init = async () => {
-  const token = getCookie("token");
+  const token = getCookie("admin_token");
   const response = await getUser();
   let passwordConfirm;
   // Initialize search functionality

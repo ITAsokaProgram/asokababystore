@@ -145,7 +145,7 @@ $token = $menuHandler->getToken();
         import { renderTop3Minus, renderMinusMarginCards, renderDetailMargin } from '/src/js/margin/table/render.js';
         import { getCookie } from '/src/js/index/utils/cookies.js';
 
-        const token = getCookie('token');
+        const token = getCookie('admin_token');
         const data = await getTopMargin(token);
         renderTop3Minus(data.data);
         renderMinusMarginCards(data.data);

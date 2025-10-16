@@ -1,5 +1,5 @@
 export const deleteUser = async (kode) => {
-  const token = getCookie("token");
+  const token = getCookie("admin_token");
   try {
     const response = await fetch(`/src/api/user/delete_user_in`, {
       method: "DELETE",

@@ -4,7 +4,7 @@ import getCookie from "../index/utils/cookies.js";
 import { openModal, closeModalProfile } from "../index/ui/modal_interaction.js";
 import checkTerms from "../index/ui/terms_condition.js";
 
-const token = getCookie("token");
+const token = getCookie("customer_token");
 const statusMember = document.getElementById('status');
 const addressCustomer = document.getElementById('addres');
 const fetchProfile = async (token) => {

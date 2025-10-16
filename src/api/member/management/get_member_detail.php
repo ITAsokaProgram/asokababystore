@@ -3,7 +3,7 @@ header('Content-Type: application/json');
 require_once __DIR__ . ("/../../../../aa_kon_sett.php");
 require_once __DIR__ . ("/../../../auth/middleware_login.php");
 
-$token = $_COOKIE['token'] ?? null;
+$token = $_COOKIE['admin_token'] ?? null;
 if (!$token) {
     http_response_code(401);
     echo json_encode(['status' => "Unauthenticated", 'message' => 'Request ditolak user tidak terdaftar']);

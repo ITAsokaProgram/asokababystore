@@ -41,7 +41,7 @@ export const handleExchange = (reward) => {
  * @param {Function} renderRewardsCallback - Callback to render rewards
  */
 export const confirmExchange = async (updatePointsCallback, renderRewardsCallback) => {
-  const token = getCookie("token");
+  const token = getCookie("customer_token");
   const reward = state.pendingReward;
   if (!reward) return;
 

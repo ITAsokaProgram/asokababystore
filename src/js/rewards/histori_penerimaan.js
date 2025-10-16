@@ -23,7 +23,7 @@ async function fetchAndRenderHistory() {
     state.isLoading = true;
     showLoadingState();
 
-    const token = getCookie("token");
+    const token = getCookie("admin_token");
     const { search, kd_store, tanggal_mulai, tanggal_selesai } = state.filters;
     const { page, pageSize } = state.pagination;
 
@@ -220,7 +220,7 @@ function initialize() {
 
 async function loadCabangOptions() {
     try {
-        const token = getCookie("token");
+        const token = getCookie("admin_token");
         const response = await fetch('/src/api/cabang/get_kode', {
             headers: { 'Authorization': `Bearer ${token}` }
         });

@@ -62,7 +62,7 @@ export const formInsertHandler = () => {
       }
 
       const formData = new FormData(form);
-      const token = getCookie("token");
+      const token = getCookie("admin_token");
 
       if (!token) {
         throw new Error("Sesi login tidak valid");

@@ -377,7 +377,7 @@ header("Pragma: no-cache");
   <script type="module">
     import { getCookie } from "/src/js/index/utils/cookies.js"
     window.addEventListener("pageshow", function(event) {
-      const token = getCookie("token");
+      const token = getCookie("customer_token");
       if (token) {
         Swal.fire({
           icon: "success",

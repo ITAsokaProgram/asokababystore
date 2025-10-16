@@ -3,7 +3,7 @@ import { paginationMargin } from "../table/pagination.js";
 import { fetchMargin, fetchFilterMargin } from "./get_margin.js";
 
 export const fetchUpdateMargin = (data, start, end , cabang) => {
-  const token = getCookie("token");
+  const token = getCookie("admin_token");
 
   Swal.fire({
     title: "Masukkan Keterangan",

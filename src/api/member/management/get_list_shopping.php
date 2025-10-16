@@ -4,7 +4,7 @@ header("Content-Type:application/json");
 require_once __DIR__ . "/../../../../aa_kon_sett.php";
 require_once __DIR__ . "/../../../auth/middleware_login.php";
 
-$token = $_COOKIE['token'];
+$token = $_COOKIE['admin_token'];
 if (!$token) {
     http_response_code(401);
     echo json_encode(['status' => false, "message" => "Unauthorize user cannot access"]);

@@ -1,6 +1,6 @@
 import getCookie from "../../index/utils/cookies.js";
 export const fetchProductFav = async () => {
-  const token = getCookie("token");
+  const token = getCookie("admin_token");
   try {
     const response = await fetch("/src/api/member/product/get_product_fav", {
       method: "GET",
@@ -70,7 +70,7 @@ export const fetchProductFav = async () => {
 };
 
 export const filterProductFav = async (startDate, endDate) => {
-  const token = getCookie("token");
+  const token = getCookie("admin_token");
   try {
     const response = await fetch(`/src/api/member/product/get_product_fav?start_date=${startDate}&end_date=${endDate}`, {
       method: "GET",
@@ -90,7 +90,7 @@ export const filterProductFav = async (startDate, endDate) => {
 };
   
 export const fetchTopSales = async () => {
-  const token = getCookie("token");
+  const token = getCookie("admin_token");
   try {
     const response = await fetch("/src/api/member/product/get_top_sales", {
       method: "GET",
@@ -111,7 +111,7 @@ export const fetchTopSales = async () => {
 
 
 export const fetchTopMember = async () => {
-  const token = getCookie("token");
+  const token = getCookie("admin_token");
   try {
     const response = await fetch("/src/api/member/product/get_top_member", {
       method: "GET",
@@ -131,7 +131,7 @@ export const fetchTopMember = async () => {
 };
 
 export const fetchTrendOmzet = async () => {
-  const token = getCookie("token");
+  const token = getCookie("admin_token");
   try {
     const response = await fetch("/src/api/member/product/get_trend_omzet", {
       method: "GET",
@@ -151,7 +151,7 @@ export const fetchTrendOmzet = async () => {
 };
 
 export const fetchOmzetSummary = async () => {
-  const token = getCookie("token");
+  const token = getCookie("admin_token");
   try {
     const response = await fetch("/src/api/member/product/get_omzet", {
       method: "GET",

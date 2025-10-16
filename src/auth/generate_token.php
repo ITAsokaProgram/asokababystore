@@ -2,12 +2,11 @@
 
 require_once '../config/JWT/JWT.php';
 require_once '../config/JWT/Key.php';
-
+require_once __DIR__ . '/../config/JWT/config.php'; 
 
 use Firebase\JWT\JWT;
 
 
-require "../config/JWT/config.php";
 
 function generate_token($payload) {
     $issuedAt = time();

@@ -1,7 +1,7 @@
 import { getCookie } from "../index/utils/cookies.js";
 export const getTransCabang = async () => {
   try {
-    const token = getCookie("token");
+    const token = getCookie("admin_token");
     const response = await fetch("/src/api/transaction/get_transaction_branch", {
       method: "GET",
       headers: {
@@ -69,7 +69,7 @@ export const getTransCabang = async () => {
 };
 export const getTransCabangDetail = async (cabang) => {
   try {
-    const token = getCookie("token");
+    const token = getCookie("admin_token");
     const response = await fetch(`/src/api/transaction/get_transaction_branch_detail?cabang=${cabang}`, {
       method: "GET",
       headers: {
@@ -137,7 +137,7 @@ export const getTransCabangDetail = async (cabang) => {
 };
 export const getTransDashboard = async () => {
   try {
-    const token = getCookie("token");
+    const token = getCookie("admin_token");
     const response = await fetch("/src/api/dashboard/get_data_transaction", {
       method: "GET",
       headers: {

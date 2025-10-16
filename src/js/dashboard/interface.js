@@ -74,7 +74,7 @@ function setText(id, text) {
 
 async function loadInvalidTransaksi() {
   try {
-    const token = getCookie("token");
+    const token = getCookie("admin_token");
     const response = await fetch("/src/api/invalid/view_invalid_top", {
       method: "GET",
       headers: {
@@ -330,7 +330,7 @@ function displayError(message) {
 }
 async function loadReviewData() {
   try {
-    const token = getCookie("token");
+    const token = getCookie("admin_token");
     const response = await fetch("/src/api/dashboard/get_review_summary", {
       method: "GET",
       headers: {

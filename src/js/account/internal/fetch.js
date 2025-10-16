@@ -1,6 +1,6 @@
 import getCookie from "../../index/utils/cookies.js";
 export const getUser = async () => {
-  const token = getCookie("token");
+  const token = getCookie("admin_token");
   try {
     const response = await fetch("/src/api/user/get_user_in", {
       method: "GET",
@@ -59,7 +59,7 @@ export const getUser = async () => {
 };
 
 export const insertUser = async (data) => {
-  const token = getCookie("token");
+  const token = getCookie("admin_token");
   try {
     const response = await fetch("/src/api/user/post_new_user", {
       method: "POST",
@@ -103,7 +103,7 @@ export const insertUser = async (data) => {
 };
 
 export const menuAccess = async () => {
-  const token = getCookie("token");
+  const token = getCookie("admin_token");
   try {
     const response = await fetch("/src/api/user/menu_access", {
       method: "GET",
@@ -122,7 +122,7 @@ export const menuAccess = async () => {
 };
 
 export const getUserEdit = async (kode) => {
-  const token = getCookie("token");
+  const token = getCookie("admin_token");
   try {
     const response = await fetch(`/src/api/user/get_user_edit_in?kode=${kode}`, {
       method: "GET",

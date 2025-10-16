@@ -1,7 +1,7 @@
 // Format tanggal
 export const formatDate = (dateStr) => {
   if (!dateStr || dateStr === "00-00-0000") {
-    return "Tanggal tidak valid"; 
+    return "-"; 
   }
   const parts = dateStr.split('-');
   const isoDateStr = `${parts[2]}-${parts[1]}-${parts[0]}`;
@@ -9,7 +9,7 @@ export const formatDate = (dateStr) => {
   try {
     const date = new Date(isoDateStr);
     if (isNaN(date.getTime())) {
-        return "Tanggal tidak valid";
+        return "-";
     }
     return date.toLocaleDateString("id-ID", {
       weekday: "short",
@@ -68,7 +68,7 @@ export const renderPointsList = (data) => {
 
       const formatDate = (dateStr) => {
         if (!dateStr || dateStr === "00-00-0000") {
-          return "Tanggal tidak valid"; 
+          return "-"; 
         }
 
         const parts = dateStr.split('-');
@@ -77,7 +77,7 @@ export const renderPointsList = (data) => {
         try {
           const date = new Date(isoDateStr);
           if (isNaN(date.getTime())) {
-              return "Tanggal tidak valid";
+              return "-";
           }
           return date.toLocaleDateString("id-ID", {
             weekday: "short",
@@ -89,7 +89,6 @@ export const renderPointsList = (data) => {
           return dateStr; 
         }
       };
-
       return `
         <div class="group relative bg-gradient-to-r ${bgGradient} rounded-2xl p-6 mb-4 border border-slate-200/60 hover:border-slate-300/80 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] cursor-pointer animate-fadeIn" style="animation-delay: ${
         index * 50

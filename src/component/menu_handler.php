@@ -20,7 +20,7 @@ class MenuHandler {
         global $conn;
         $this->conn = $conn;
         $this->menu_code = $menu_code;
-        $this->token = $_COOKIE['token'] ?? "";
+        $this->token = $_COOKIE['admin_token'] ?? "";
         $this->message = "";
         
         // Create logger instance for this menu

@@ -11,7 +11,7 @@ export const handleReviewClick = (bon, namaKasir) => {
   openReviewModal(bon, "reviewModal");
 };
 // // Checking Direct Link Access
-const token = getCookie("token");
+const token = getCookie("customer_token");
 if (!token) {
   Swal.fire({
     icon: "error",

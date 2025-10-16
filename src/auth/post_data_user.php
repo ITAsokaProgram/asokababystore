@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->bind_param("sssi", $token, $expires_at, $created_at, $kode);
             $stmt->execute();
 
-            setcookie('token', $tokenData['token'], [
+            setcookie('admin_token', $tokenData['token'], [
                 'expires' => $tokenData['expiresAt'],
                 'path' => '/',
                 'domain' => $_SERVER['HTTP_HOST'],

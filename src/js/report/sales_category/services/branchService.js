@@ -23,7 +23,7 @@ class BranchService {
   _getAuthToken() {
     try {
       // Dynamic import getCookie function untuk menghindari DOM ready issue
-      const value = document.cookie.match('(^|;)\\s*token\\s*=\\s*([^;]+)');
+      const value = document.cookie.match('(^|;)\\s*admin_token\\s*=\\s*([^;]+)');
       return value ? value[2] : null;
     } catch (error) {
       console.warn("⚠️ Cannot access cookies:", error.message);

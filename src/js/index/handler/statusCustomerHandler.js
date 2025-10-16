@@ -2,7 +2,7 @@ import fetchTransaksi from "../fetch/fetch_trans.js";
 import { fetchStatusUser, fetchPointUser } from "../fetch/fetch_user.js";
 import { getCookie } from "../utils/cookies.js";
 import renderTransaksi from "./transaksiHandler.js";
-const token = getCookie("token");
+const token = getCookie("customer_token");
 
 export const statusCustomerHandler = async () => {
   const response = await fetchStatusUser(token);

@@ -90,7 +90,7 @@ export async function sendData() {
 export const cabang = {
   getCabangData: async () => {
     try {
-      const token = getCookie("token");
+      const token = getCookie("admin_token");
       const response = await fetch("/src/api/cabang/get_kode", {
         method: "GET",
         headers: {

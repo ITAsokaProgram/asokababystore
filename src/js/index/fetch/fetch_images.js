@@ -1,7 +1,7 @@
 import getCookie from "../utils/cookies.js";
 
 export const imagePromo = async () => {
-    const token = getCookie('token');
+    const token = getCookie('customer_token');
     if(!token){
         Swal.fire({
             icon: "error",

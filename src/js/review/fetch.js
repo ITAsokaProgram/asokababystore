@@ -2,7 +2,7 @@ import getCookie from "../index/utils/cookies.js";
 
 export const getReviewData = async (page = 1, limit = 10, rating = 'all', status = 'all') => { 
   try {
-    const token = getCookie('token');
+    const token = getCookie('admin_token');
     
     
     const url = `/src/api/customer/review_laporan_in?page=${page}&limit=${limit}&rating=${rating}&status=${status}`; 
@@ -33,7 +33,7 @@ export const getReviewData = async (page = 1, limit = 10, rating = 'all', status
 
 export const submitReviewHandling = async (reviewData) => {
   try {
-    const token = getCookie('token');
+    const token = getCookie('admin_token');
     
     const response = await fetch('/src/api/customer/save_review_detail.php', {
       method: 'POST',
@@ -61,7 +61,7 @@ export const submitReviewHandling = async (reviewData) => {
 
 export const getReviewDetail = async (reviewId) => {
     try {
-        const token = getCookie('token');
+        const token = getCookie('admin_token');
         
         
         const response = await fetch(`/src/api/customer/get_review_detail.php?review_id=${reviewId}`, {
@@ -85,7 +85,7 @@ export const getReviewDetail = async (reviewId) => {
 }
 export const getReviewConversation = async (reviewId) => {
     try {
-        const token = getCookie('token');
+        const token = getCookie('admin_token');
         
         const response = await fetch(`/src/api/customer/get_review_conversation.php?review_id=${reviewId}`, {
             method: 'GET',
@@ -105,7 +105,7 @@ export const getReviewConversation = async (reviewId) => {
 
 export const sendReviewMessage = async (reviewId, pesan) => {
     try {
-        const token = getCookie('token');
+        const token = getCookie('admin_token');
         
         const response = await fetch('/src/api/customer/send_review_message.php', {
             method: 'POST',

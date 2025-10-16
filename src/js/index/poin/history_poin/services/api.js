@@ -4,7 +4,7 @@ const API_HISTORY = "/src/api/member/member_poin_pubs";
 
 export const fetchUserPoints = async () => {
   try {
-    const token = getCookie("token");
+    const token = getCookie("customer_token");
     const response = await fetch(API_POINT, {
       method: "GET",
       headers: {
@@ -26,7 +26,7 @@ export const fetchUserPoints = async () => {
 
 export const fetchHistoryPoints = async () => {
     try {
-        const token = getCookie("token");
+        const token = getCookie("customer_token");
         const response = await fetch(API_HISTORY, {
         method: "GET",
         headers: {

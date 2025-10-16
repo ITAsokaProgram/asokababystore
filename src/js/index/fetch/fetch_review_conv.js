@@ -1,6 +1,6 @@
 import getCookie from "../utils/cookies.js";
 
-const token = getCookie('token');
+const token = getCookie('customer_token');
 
 export const getReviewConversation = async (reviewId) => {
     try {

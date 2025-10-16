@@ -18,7 +18,7 @@ const formatTanggal = (tgl) => {
   const options = { day: "2-digit", month: "long", year: "numeric" };
   return new Date(tgl).toLocaleDateString("id-ID", options);
 };
-const token = getCookie("token");
+const token = getCookie("customer_token");
 
 /* Render kecil (preview) - light mode only */
 export const renderTransaksi = (data) => {

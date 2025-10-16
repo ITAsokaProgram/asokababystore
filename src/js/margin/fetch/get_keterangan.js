@@ -1,7 +1,7 @@
 import getCookie from "../../index/utils/cookies.js";
 
 export const getKeterangan = async (plu, bon, kode) => {
-  const token = getCookie("token");
+  const token = getCookie("admin_token");
 
   try {
     const response = await fetch(

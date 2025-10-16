@@ -1,6 +1,6 @@
 import getCookie from "../index/utils/cookies.js";
 
-const token = getCookie('token');
+const token = getCookie('customer_token');
 
 const handleResponse = async (response) => {
     if (!response.ok) {

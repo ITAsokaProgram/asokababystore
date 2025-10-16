@@ -11,7 +11,7 @@ use Cloudinary\Cloudinary;
 
 $env = parse_ini_file(__DIR__ . '/../../../.env');
 
-$token = $_COOKIE['token'] ?? null;
+$token = $_COOKIE['admin_token'] ?? null;
 if (!$token) {
     http_response_code(401);
     echo json_encode(['status' => false, 'message' => 'Unauthorized']);

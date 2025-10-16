@@ -8,7 +8,7 @@ export const api = {
 
   async getRewardTrade(options = {}) {
     const { limit = 10, offset = 0, status = "" } = options;
-    const token = getCookie("token");
+    const token = getCookie("admin_token");
     const params = new URLSearchParams({
       limit: limit.toString(),
       offset: offset.toString(),
@@ -38,7 +38,7 @@ export const api = {
   },
 
   async getStatusCard() {
-    const token = getCookie("token");
+    const token = getCookie("admin_token");
     const response = await fetch(`/src/api/rewards/management/get_status_card`, {
       headers: {
         Accept: "application/json",
@@ -57,7 +57,7 @@ export const api = {
   },
 
   async getDataByFilter(filterOptions = {}) {
-    const token = getCookie("token");
+    const token = getCookie("admin_token");
     const { 
       start, 
       end, 
@@ -96,7 +96,7 @@ export const api = {
 
   async getDataCabang() {
     try{
-      const token = getCookie("token");
+      const token = getCookie("admin_token");
       const response = await fetch('/src/api/cabang/get_kode_cabang_pubs', {
         headers: {
           'Content-Type': 'application/json',

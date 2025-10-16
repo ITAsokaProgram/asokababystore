@@ -376,7 +376,7 @@ class FormHandler {
       }
 
       // Submit form data
-      const token = getCookie("token");
+      const token = getCookie("admin_token");
       const response = await fetch(IMAGE_CONFIG.saveEndpoint, {
         method: 'POST',
         headers: {

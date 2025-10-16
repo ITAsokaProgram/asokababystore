@@ -9,7 +9,7 @@ export async function initSelectCabang() {
   // clear existing options
   sel.innerHTML = '';
 
-  const token = getCookie('token');
+  const token = getCookie('admin_token');
   const url = '/src/api/cabang/get_kode.php';
   try {
     const res = await fetch(url, {

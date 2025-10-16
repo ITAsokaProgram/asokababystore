@@ -6,7 +6,6 @@ import { getDataToMember, openModal } from '../cek_member.js';
 
 // Wait for DOM to be ready
 document.addEventListener('DOMContentLoaded', () => {
-const cookies = getCookie('token');
 const menu = document.getElementById('openModalBottom');
 const menuWeb = document.getElementById('openModal');
 const label = document.getElementById('memberLabelMobile');

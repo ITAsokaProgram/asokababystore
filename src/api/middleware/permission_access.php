@@ -141,9 +141,9 @@ class PermissionAccess {
             
             // Try to get user_id from token if available
             $user_id = 'Unknown';
-            if (isset($_COOKIE['token'])) {
+            if (isset($_COOKIE['admin_token'])) {
                 try {
-                    $token = $_COOKIE['token'];
+                    $token = $_COOKIE['admin_token'];
                     $user = verify_token($token);
                     if ($user && isset($user->kode)) {
                         $user_id = $user->kode;

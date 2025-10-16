@@ -8,7 +8,7 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 $kd_tr = $_GET['kode'];
 $kd_cust = $_GET['member'];
-$token = $_COOKIE['token'];
+$token = $_COOKIE['customer_token'];
 $verify = verify_token($token);
 if(!$token) {
     http_response_code(401);

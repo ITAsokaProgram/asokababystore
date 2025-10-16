@@ -1,5 +1,5 @@
 <?php
-setcookie('token', '', [
+setcookie('admin_token', '', [
     'expires' => time() - 3600, // waktu di masa lalu
     'path' => '/',
     'domain' => $_SERVER['HTTP_HOST'],

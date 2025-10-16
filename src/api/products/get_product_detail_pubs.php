@@ -5,7 +5,7 @@ require_once __DIR__ . '/../../../aa_kon_sett.php';
 header("Content-Type:application/json");
 header("Access-Control-Allow-Methods: GET");
 
-$token = $_COOKIE['token'] ?? null;
+$token = $_COOKIE['admin_token'] ?? null;
 $guest = !$token;
 $id = $_GET['id'] ?? null;
 if (!$id) {

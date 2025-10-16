@@ -59,11 +59,11 @@
 
                         <!-- Profile Actions -->
                         <div class="p-2">
-                            <a href="/in_beranda" 
+                            <!-- <a href="/in_beranda" 
                                class="flex items-center space-x-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-200">
                                 <i class="fas fa-user text-gray-400 w-4"></i>
                                 <span>Lihat Profil</span>
-                            </a>
+                            </a> -->
                             <hr class="my-2 border-gray-100">
                             <button type="button" id="logout-btn" 
                                     class="flex items-center space-x-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200 w-full text-left">

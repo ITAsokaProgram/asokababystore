@@ -1,7 +1,7 @@
 import { getCookie } from "../index/utils/cookies.js";
 const fetchRewards = async (pageSize = 10, offset = 0) => {
   try {
-    const token = getCookie("token");
+    const token = getCookie("admin_token");
     const url = `/src/api/rewards/get_rewards?pageSize=${pageSize}&offset=${offset}`;
     const response = await fetch(url, {
       method: "GET",
@@ -48,7 +48,7 @@ const fetchRewards = async (pageSize = 10, offset = 0) => {
 
 const fetchCount = async () => {
   try {
-    const token = getCookie("token");
+    const token = getCookie("admin_token");
     const url = `/src/api/rewards/get_count`;
     const response = await fetch(url, {
       method: "GET",
@@ -71,7 +71,7 @@ const fetchCount = async () => {
 
 const fetchRewardById = async (id) => {
   try {
-    const token = getCookie("token");
+    const token = getCookie("admin_token");
     const url = `/src/api/rewards/get_reward_by_id?id=${id}`;
     const response = await fetch(url, {
       method: "GET",
@@ -105,7 +105,7 @@ const fetchRewardById = async (id) => {
 
 const updateReward = async (id, fd) => {
   try {
-    const token = getCookie("token");
+    const token = getCookie("admin_token");
     const url = `/src/api/rewards/update_reward`;
     const response = await fetch(url, {
       method: "POST",
@@ -139,7 +139,7 @@ const updateReward = async (id, fd) => {
 
 const deleteReward = async (id) => {
     try {
-        const token = getCookie("token");
+        const token = getCookie("admin_token");
         const url = `/src/api/rewards/delete_reward?id=${id}`;
         const response = await fetch(url, {
             method: "DELETE",

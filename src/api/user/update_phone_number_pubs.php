@@ -48,7 +48,7 @@ function updateNumber($conn, $sql, $email, $no)
         ]);
     }
 }
-$cookie = $_COOKIE['token'];
+$cookie = $_COOKIE['customer_token'];
 $generate = verify_token($cookie);
 if (!$generate || !isset($generate->email)) {
     http_response_code(401);

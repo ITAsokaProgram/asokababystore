@@ -2,7 +2,7 @@ import getCookie from "./../index/utils/cookies.js";
 
 export const cabangSelective = async (selectId) => {
   try {
-    const token = getCookie("token");
+    const token = getCookie("admin_token");
     const originalSelect = document.getElementById(selectId);
     const response = await fetch("/src/api/cabang/get_kode", {
       method: "GET",

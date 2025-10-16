@@ -357,12 +357,12 @@ if ($stmtUnread) {
             <?php endif; ?>
         </div>
 
-            <div>
+            <!-- <div>
                 <a href="/customer/produk"
                 class="bg-blue-500 hover:bg-blue-600 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg transform transition-transform duration-300 hover:scale-110">
                     <i class="fas fa-box-open text-xl"></i>
                 </a>
-            </div>
+            </div> -->
 
         </div>
 

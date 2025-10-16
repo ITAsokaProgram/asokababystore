@@ -17,7 +17,7 @@ let idReward = null;
 let filterHandler = null;
 
 async function fetchCurrentUser() {
-    const token = getCookie("token");
+    const token = getCookie("admin_token");
     if (!token) return null;
 
     try {
@@ -327,7 +327,7 @@ const init = async () => {
 };
 
 async function handleApiCall(url, data, loadingMessage) {
-    const token = getCookie("token"); 
+    const token = getCookie("admin_token"); 
     const formData = new FormData();
     for (const key in data) {
         formData.append(key, data[key]);

@@ -1,6 +1,6 @@
 window.onload = function () {
   
-  const token = getCookie("token");
+  const token = getCookie("customer_token");
   if (!token) {
     Swal.fire({
       icon: 'error',
