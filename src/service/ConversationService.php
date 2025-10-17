@@ -10,7 +10,7 @@ class ConversationService {
     }
 
     public function getOrCreateConversation($phoneNumber) {
-        $stmt = $this->conn->prepare("SELECT * FROM percakapan_whatsapp WHERE nomor_telepon = ?");
+        $stmt = $this->conn->prepare("SELECT * FROM wa_percakapan WHERE nomor_telepon = ?");
         $stmt->bind_param("s", $phoneNumber);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -23,7 +23,7 @@ class ConversationService {
             }
             return $conversation;
         } else {
-            $stmt = $this->conn->prepare("INSERT INTO percakapan_whatsapp (nomor_telepon, status_percakapan) VALUES (?, 'closed')");
+            $stmt = $this->conn->prepare("INSERT INTO wa_percakapan (nomor_telepon, status_percakapan) VALUES (?, 'closed')");
             $stmt->bind_param("s", $phoneNumber);
             $stmt->execute();
             $stmt->close();
@@ -34,7 +34,7 @@ class ConversationService {
     }
 
     public function openConversation($phoneNumber) {
-        $stmt = $this->conn->prepare("UPDATE percakapan_whatsapp SET status_percakapan = 'open', terakhir_interaksi_pada = NOW(), menu_utama_terkirim = 0 WHERE nomor_telepon = ?");
+        $stmt = $this->conn->prepare("UPDATE wa_percakapan SET status_percakapan = 'open', terakhir_interaksi_pada = NOW(), menu_utama_terkirim = 0 WHERE nomor_telepon = ?");
         $stmt->bind_param("s", $phoneNumber);
         $stmt->execute();
         $stmt->close();
@@ -42,7 +42,7 @@ class ConversationService {
     }
 
     public function setMenuSent($phoneNumber) {
-        $stmt = $this->conn->prepare("UPDATE percakapan_whatsapp SET menu_utama_terkirim = 1 WHERE nomor_telepon = ?");
+        $stmt = $this->conn->prepare("UPDATE wa_percakapan SET menu_utama_terkirim = 1 WHERE nomor_telepon = ?");
         $stmt->bind_param("s", $phoneNumber);
         $stmt->execute();
         $stmt->close();
@@ -50,26 +50,26 @@ class ConversationService {
     }
     
     private function updateInteractionTimestamp($phoneNumber) {
-        $stmt = $this->conn->prepare("UPDATE percakapan_whatsapp SET terakhir_interaksi_pada = NOW() WHERE nomor_telepon = ?");
+        $stmt = $this->conn->prepare("UPDATE wa_percakapan SET terakhir_interaksi_pada = NOW() WHERE nomor_telepon = ?");
         $stmt->bind_param("s", $phoneNumber);
         $stmt->execute();
         $stmt->close();
     }
     public function startLiveChat($phoneNumber) {
-        $stmt = $this->conn->prepare("UPDATE percakapan_whatsapp SET status_percakapan = 'live_chat', terakhir_interaksi_pada = NOW() WHERE nomor_telepon = ?");
+        $stmt = $this->conn->prepare("UPDATE wa_percakapan SET status_percakapan = 'live_chat', terakhir_interaksi_pada = NOW() WHERE nomor_telepon = ?");
         $stmt->bind_param("s", $phoneNumber);
         $stmt->execute();
         $stmt->close();
         $this->logger->info("Live chat dimulai untuk: " . $phoneNumber);
     }
     public function saveMessage($conversationId, $senderType, $messageType, $messageContent) {
-        $stmt = $this->conn->prepare("INSERT INTO pesan_whatsapp (percakapan_id, pengirim, tipe_pesan, isi_pesan) VALUES (?, ?, ?, ?)");
+        $stmt = $this->conn->prepare("INSERT INTO wa_pesan (percakapan_id, pengirim, tipe_pesan, isi_pesan) VALUES (?, ?, ?, ?)");
         $stmt->bind_param("isss", $conversationId, $senderType, $messageType, $messageContent);
         $stmt->execute();
         $newId = $stmt->insert_id; 
         $stmt->close();
 
-        $stmt = $this->conn->prepare("SELECT * FROM pesan_whatsapp WHERE id = ?");
+        $stmt = $this->conn->prepare("SELECT * FROM wa_pesan WHERE id = ?");
         $stmt->bind_param("i", $newId);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -79,7 +79,7 @@ class ConversationService {
         return $newMessage; 
     }
      public function closeConversation($phoneNumber) {
-        $stmt = $this->conn->prepare("UPDATE percakapan_whatsapp SET status_percakapan = 'closed', menu_utama_terkirim = 0 WHERE nomor_telepon = ?");
+        $stmt = $this->conn->prepare("UPDATE wa_percakapan SET status_percakapan = 'closed', menu_utama_terkirim = 0 WHERE nomor_telepon = ?");
         $stmt->bind_param("s", $phoneNumber);
         $stmt->execute();
         $stmt->close();

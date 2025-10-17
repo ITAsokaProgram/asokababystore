@@ -47,7 +47,7 @@ if ($conversationId === false) {
 }
 
 try {
-    $stmt_get = $conn->prepare("SELECT nomor_telepon FROM percakapan_whatsapp WHERE id = ? AND status_percakapan = 'live_chat'");
+    $stmt_get = $conn->prepare("SELECT nomor_telepon FROM wa_percakapan WHERE id = ? AND status_percakapan = 'live_chat'");
     $stmt_get->bind_param("i", $conversationId);
     $stmt_get->execute();
     $result = $stmt_get->get_result();
@@ -55,7 +55,7 @@ try {
     $stmt_get->close();
 
     if ($conversation) {
-        $stmt_update = $conn->prepare("UPDATE percakapan_whatsapp SET status_percakapan = 'open', menu_utama_terkirim = 0 WHERE id = ?");
+        $stmt_update = $conn->prepare("UPDATE wa_percakapan SET status_percakapan = 'open', menu_utama_terkirim = 0 WHERE id = ?");
         $stmt_update->bind_param("i", $conversationId);
         $stmt_update->execute();
 

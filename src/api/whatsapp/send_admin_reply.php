@@ -47,7 +47,7 @@ $conversationService = new ConversationService($conn, $logger);
 
 try {
     // 3. Ambil nomor telepon dari ID percakapan
-    $stmt = $conn->prepare("SELECT nomor_telepon FROM percakapan_whatsapp WHERE id = ?");
+    $stmt = $conn->prepare("SELECT nomor_telepon FROM wa_percakapan WHERE id = ?");
     $stmt->bind_param("i", $conversationId);
     $stmt->execute();
     $result = $stmt->get_result()->fetch_assoc();

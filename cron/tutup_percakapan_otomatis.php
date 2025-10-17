@@ -8,7 +8,7 @@ $logger = new AppLogger('tutup_percakapan_otomatis.log');
 
 $timeoutDuration = '5 MINUTE'; 
 
-$sql = "SELECT nomor_telepon FROM percakapan_whatsapp 
+$sql = "SELECT nomor_telepon FROM wa_percakapan 
         WHERE status_percakapan = 'open' 
         AND terakhir_interaksi_pada < NOW() - INTERVAL $timeoutDuration";
 
@@ -29,7 +29,7 @@ while ($row = mysqli_fetch_assoc($result)) {
 
     kirimPesanTeks($nomorTelepon, $pesanPenutup);
 
-    $updateStmt = $conn->prepare("UPDATE percakapan_whatsapp SET status_percakapan = 'closed', menu_utama_terkirim = 0 WHERE nomor_telepon = ?");
+    $updateStmt = $conn->prepare("UPDATE wa_percakapan SET status_percakapan = 'closed', menu_utama_terkirim = 0 WHERE nomor_telepon = ?");
     $updateStmt->bind_param("s", $nomorTelepon);
     $updateStmt->execute();
     $updateStmt->close();

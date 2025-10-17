@@ -162,7 +162,7 @@ class BranchConstants {
         [
             'title' => 'BANTUAN LANGSUNG',
             'rows' => [
-                ['id' => 'CHAT_CS', 'title' => 'Chat dengan CS Pusat']
+                ['id' => 'CHAT_CS', 'title' => 'Chat dengan CS']
             ]
         ]
     ];

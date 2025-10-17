@@ -5,7 +5,7 @@ require_once __DIR__ . "/../src/utils/Logger.php";
 date_default_timezone_set('Asia/Jakarta');
 $logger = new AppLogger('cron_live_chat_closer.log');
 $logger->info("Cron job penutup live chat dimulai...");
-$sql = "SELECT nomor_telepon FROM percakapan_whatsapp WHERE status_percakapan = 'live_chat'";
+$sql = "SELECT nomor_telepon FROM wa_percakapan WHERE status_percakapan = 'live_chat'";
 $result = mysqli_query($conn, $sql);
 if (!$result) {
     $logger->error("Error query: " . mysqli_error($conn));
@@ -17,7 +17,7 @@ while ($row = mysqli_fetch_assoc($result)) {
     $nomorTelepon = $row['nomor_telepon'];
     $logger->info("Menutup sesi live chat untuk nomor: " . $nomorTelepon);
     kirimPesanTeks($nomorTelepon, $pesanPenutup);
-    $updateStmt = $conn->prepare("UPDATE percakapan_whatsapp SET status_percakapan = 'closed', menu_utama_terkirim = 0 WHERE nomor_telepon = ?");
+    $updateStmt = $conn->prepare("UPDATE wa_percakapan SET status_percakapan = 'closed', menu_utama_terkirim = 0 WHERE nomor_telepon = ?");
     $updateStmt->bind_param("s", $nomorTelepon);
     $updateStmt->execute();
     $updateStmt->close();

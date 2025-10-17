@@ -38,7 +38,7 @@ try {
         }
 
         // Ambil detail percakapan
-        $stmt_convo = $conn->prepare("SELECT id, nomor_telepon, status_percakapan FROM percakapan_whatsapp WHERE id = ?");
+        $stmt_convo = $conn->prepare("SELECT id, nomor_telepon, status_percakapan FROM wa_percakapan WHERE id = ?");
         $stmt_convo->bind_param("i", $id);
         $stmt_convo->execute();
         $result_convo = $stmt_convo->get_result();
@@ -51,7 +51,7 @@ try {
             exit;
         }
 
-        $stmt_msgs = $conn->prepare("SELECT pengirim, isi_pesan, tipe_pesan, timestamp FROM pesan_whatsapp WHERE percakapan_id = ? ORDER BY timestamp ASC");
+        $stmt_msgs = $conn->prepare("SELECT pengirim, isi_pesan, tipe_pesan, timestamp FROM wa_pesan WHERE percakapan_id = ? ORDER BY timestamp ASC");
         $stmt_msgs->bind_param("i", $id);
         $stmt_msgs->execute();
         $result_msgs = $stmt_msgs->get_result();
@@ -65,7 +65,7 @@ try {
     } else {
         $sql = "
             SELECT id, nomor_telepon, status_percakapan, terakhir_interaksi_pada
-            FROM percakapan_whatsapp
+            FROM wa_percakapan
             ORDER BY
                 CASE status_percakapan
                     WHEN 'live_chat' THEN 1

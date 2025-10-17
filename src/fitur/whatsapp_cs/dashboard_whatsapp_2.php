@@ -76,8 +76,8 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
     }
 
     #conversation-list-container.collapsed {
-      width: 64px;
-      min-width: 64px;
+      width: 32px;
+      min-width: 32px;
     }
 
     #conversation-list-container.collapsed #conversation-list,
@@ -85,8 +85,13 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
       display: none;
     }
 
+    #conversation-list-container.collapsed .p-4 {
+      padding: 0.5rem;
+      justify-content: center;
+    }
+
     #chat-layout.list-collapsed {
-      grid-template-columns: 64px 1fr;
+      grid-template-columns: 32px 1fr;
     }
 
     #toggle-conversation-list {

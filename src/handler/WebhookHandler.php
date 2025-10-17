@@ -227,7 +227,12 @@ class WebhookHandler {
         $selectedId = $message['interactive']['list_reply']['id'];
         $selectedTitle = $message['interactive']['list_reply']['title'];
 
-        $savedUserMessage = $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $selectedTitle);
+        $messageToSave = $selectedTitle;
+        if ($selectedId === 'CHAT_CS') {
+            $messageToSave = 'Chat dengan customer service:';
+        }
+
+        $savedUserMessage = $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $messageToSave);
 
         $this->notifyWebSocketServer([
             'event' => 'new_message',
