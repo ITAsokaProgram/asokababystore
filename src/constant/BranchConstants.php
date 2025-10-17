@@ -150,8 +150,13 @@ class BranchConstants {
         [
             'title' => 'PILIHAN MENU UTAMA',
             'rows' => [
-                ['id' => 'DAFTAR_NOMOR', 'title' => 'Kontak CS Cabang'],
-                ['id' => 'DAFTAR_LOKASI', 'title' => 'Lokasi Toko Fisik'],
+                ['id' => 'DAFTAR_NOMOR', 'title' => 'Nomor Telepon Cabang'],
+                ['id' => 'DAFTAR_LOKASI', 'title' => 'Alamat Cabang Asoka'],
+                ['id' => 'ORDER_VIA_WA', 'title' => 'Order via WA'],
+                ['id' => 'PROMO', 'title' => 'Promo Menarik'],
+                ['id' => 'KRITIK_SARAN', 'title' => 'Kritik & Saran'],
+                ['id' => 'RIWAYAT_POIN', 'title' => 'Riwayat Struk / Point'],
+                ['id' => 'INFO_JAM_BUKA', 'title' => 'Info Buka & Tutup Store'],
                 ['id' => 'CHAT_CS', 'title' => 'Chat dengan CS Pusat']
             ]
         ]
