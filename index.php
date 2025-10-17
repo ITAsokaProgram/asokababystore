@@ -243,7 +243,7 @@ if ($stmt->num_rows === 0) {
                     Galeri
                     <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-500 transition-all duration-300 group-hover:w-full"></span>
                 </a>
-                <a href="/pesan_sekarang" class="hover:text-pink-500 transition-colors duration-300 relative group">
+                <a href="/pesan_sekarang#kontak" class="hover:text-pink-500 transition-colors duration-300 relative group">
                     Kontak
                     <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-500 transition-all duration-300 group-hover:w-full"></span>
                 </a>
@@ -255,10 +255,7 @@ if ($stmt->num_rows === 0) {
                     Member
                     <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-500 transition-all duration-300 group-hover:w-full"></span>
                 </a>
-                <!-- <a href="/produk" class="hover:text-pink-500 transition-colors duration-300 relative group">
-                    Produk
-                    <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-500 transition-all duration-300 group-hover:w-full"></span>
-                </a> -->
+
                 <a href="/kontak" class="hover:text-pink-500 transition-colors duration-300 relative group">
                     Lapor
                     <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-500 transition-all duration-300 group-hover:w-full"></span>
@@ -267,20 +264,9 @@ if ($stmt->num_rows === 0) {
 
             <div class="flex items-center gap-4">
                 <div class="relative" id="userMenu">
-                    <!-- Icon User -->
-                    <!-- <button id="userButton" class="text-2xl text-pink-600 focus:outline-none md:hidden hover:scale-110 transition-transform duration-300">
-                        <i class="fas fa-user-circle"></i>
-                    </button> -->
-                    <!-- Nama user saat login -->
-                    <span id="userName" class="ml-2 font-medium text-sm user-name cursor-pointer hover:text-pink-500 transition-colors duration-300"></span>
-                    <!-- Dropdown saat belum login -->
-                    <!-- <div id="loginDropdown"
-                        class="absolute right-0 mt-2 w-40 bg-white/95 backdrop-blur-md shadow-lg rounded-xl py-2 hidden z-50 border border-pink-100">
-                        <a href="/log_in" id="loginBtn" class="block px-4 py-2 text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-colors duration-300"
-                            id="link_login">Login</a>
-                    </div> -->
 
-                    <!-- Dropdown saat sudah login -->
+                    <span id="userName" class="ml-2 font-medium text-sm user-name cursor-pointer hover:text-pink-500 transition-colors duration-300"></span>
+
                     <div id="profileDropdown"
                         class="absolute right-0 mt-2 w-40 bg-white/95 backdrop-blur-md shadow-lg rounded-xl py-2 hidden z-50 border border-pink-100">
                         <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-colors duration-300" id="profileBtn">Profile</a>

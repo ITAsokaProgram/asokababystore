@@ -12,7 +12,7 @@ $userId = null;
 $ip = $_SERVER['REMOTE_ADDR'];
 $ua = $_SERVER['HTTP_USER_AGENT'];
 $page = $_SERVER['REQUEST_URI'];
-$pageName = "Nomor Cabang";
+$pageName = "Cara Pesan & Kontak WA"; // Nama halaman diupdate
 
 // Cek apakah sudah ada record dalam 5 menit terakhir
 $stmt = $conn->prepare("
@@ -42,43 +42,26 @@ if ($stmt->num_rows === 0) {
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Hubungi Kami - Asoka Baby Store</title>
-    <meta name="description"
-        content="Temukan perlengkapan bayi dan anak berkualitas di Asoka Baby Store. Aman, nyaman, dan terpercaya untuk si kecil usia 0-8 tahun." />
-    <meta name="keywords"
-        content="perlengkapan bayi, toko bayi, kebutuhan anak, stroller, pakaian bayi, mainan anak, Asoka Baby Store" />
+    <title>Cara Pesan & Kontak WhatsApp - Asoka Baby Store</title>
+    <meta name="description" content="Ikuti cara pemesanan mudah via WhatsApp dan hubungi cabang Asoka Baby Store terdekat untuk memulai belanja perlengkapan bayi Anda." />
+    <meta name="keywords" content="cara pesan, kontak whatsapp, toko bayi, asoka baby store" />
     <meta name="author" content="Asoka Baby Store" />
 
-    <!-- Open Graph / Facebook -->
-    <meta property="og:title" content="Asoka Baby Store - Toko Perlengkapan Bayi & Anak" />
-    <meta property="og:description"
-        content="Toko perlengkapan bayi & anak usia 0-8 tahun. Kualitas terbaik, harga bersahabat." />
+    <meta property="og:title" content="Cara Pesan & Kontak WhatsApp - Asoka Baby Store" />
+    <meta property="og:description" content="Langkah mudah memesan via WhatsApp dan daftar lengkap kontak cabang kami." />
     <meta property="og:image" content="https://asokababystore.com/images/logo1.png" />
-    <meta property="og:url" content="https://asokababystore.com/home" />
+    <meta property="og:url" content="https://asokababystore.com/pesan_sekarang" />
     <meta property="og:type" content="website" />
 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="icon" type="image/png" href="/images/logo1.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-        integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link href="https://unpkg.com/splitting/dist/splitting.css" rel="stylesheet" />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
-        rel="stylesheet">
-    <!-- Swiper CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/src/output2.css">
-
+    
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://unpkg.com/splitting/dist/splitting.min.js"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         * {
@@ -89,11 +72,24 @@ if ($stmt->num_rows === 0) {
         html {
             scroll-behavior: smooth;
         }
+        
+        @keyframes gradient-shift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .gradient-text {
+            background: linear-gradient(-45deg, #ec4899, #8b5cf6, #3b82f6, #ec4899);
+            background-size: 400% 400%;
+            animation: gradient-shift 3s ease infinite;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
     </style>
 </head>
 
 <body class="bg-white text-gray-800 overflow-x-hidden w-full">
-    <!-- Header -->
     <header class="bg-white shadow-md sticky top-0 z-50">
         <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
             <a href="/">
@@ -120,37 +116,85 @@ if ($stmt->num_rows === 0) {
     </header>
 
     <main>
-        <!-- Hero Section -->
-        <section class="min-h-screen bg-gradient-to-br from-green-50 via-white to-pink-50 flex items-center justify-center p-6 relative overflow-hidden">
-            <!-- Background Pattern -->
+        <section id="cara-pesan" class="py-20 bg-gradient-to-br from-pink-50 via-white to-purple-50">
+            <div class="max-w-6xl mx-auto px-5">
+                
+                <div class="text-center mb-12" data-aos="fade-down">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-4 gradient-text">Cara Pemesanan via WhatsApp</h2>
+                    <p class="text-lg text-gray-600 max-w-3xl mx-auto">Ikuti langkah mudah ini untuk memesan produk favorit Anda.</p>
+                </div>
+
+                <div class="max-w-3xl mx-auto bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-6 md:p-8 border border-pink-100" data-aos="fade-up" data-aos-delay="100">
+                    <div class="space-y-6">
+                        <div class="flex items-start gap-4">
+                            <div class="flex-shrink-0 w-10 h-10 bg-gradient-to-r from-pink-500 to-purple-600 text-white text-lg font-bold rounded-full flex items-center justify-center shadow-md">1</div>
+                            <div>
+                                <h3 class="font-bold text-gray-800">Hubungi & Pesan Barang</h3>
+                                <p class="text-gray-600 text-sm">Pilih cabang terdekat dari daftar di bawah, lalu kirimkan daftar pesanan Anda via chat.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="flex-shrink-0 w-10 h-10 bg-gradient-to-r from-pink-500 to-purple-600 text-white text-lg font-bold rounded-full flex items-center justify-center shadow-md">2</div>
+                            <div>
+                                <h3 class="font-bold text-gray-800">Terima Struk & Lakukan Pembayaran</h3>
+                                <p class="text-gray-600 text-sm">Anda akan menerima foto struk. Lakukan pembayaran sesuai nominal ke rekening kami.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="flex-shrink-0 w-10 h-10 bg-gradient-to-r from-pink-500 to-purple-600 text-white text-lg font-bold rounded-full flex items-center justify-center shadow-md">3</div>
+                            <div>
+                                <h3 class="font-bold text-gray-800">Kirim Bukti & Barang Disiapkan</h3>
+                                <p class="text-gray-600 text-sm">Kirim bukti transfer. Setelah konfirmasi, kami akan langsung menyiapkan pesanan Anda.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                           <div class="flex-shrink-0 w-10 h-10 bg-gradient-to-r from-pink-500 to-purple-600 text-white text-lg font-bold rounded-full flex items-center justify-center shadow-md">4</div>
+                            <div>
+                                <h3 class="font-bold text-gray-800">Pesan Ojek Online</h3>
+                                <p class="text-gray-600 text-sm">Setelah kami konfirmasi barang siap, Anda bisa memesan GoSend / Grab Express untuk pengambilan.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-12" data-aos="fade-up" data-aos-delay="200">
+                    <a href="#kontak" aria-label="Scroll ke daftar kontak" class="inline-block text-pink-500 text-4xl animate-bounce">
+                        <i class="fas fa-chevron-down"></i>
+                    </a>
+                </div>
+                </div>
+        </section>
+
+        <section id="kontak" class="py-20 bg-gradient-to-br from-green-50 via-white to-blue-50 relative overflow-hidden">
             <div class="absolute inset-0 opacity-10 pointer-events-none select-none">
                 <div class="absolute top-24 left-24 w-72 h-72 bg-green-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
                 <div class="absolute top-40 right-24 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-2000"></div>
-                <div class="absolute -bottom-8 left-40 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-4000"></div>
             </div>
-            <div class="relative z-20 w-full max-w-4xl mx-auto">
-                <div class="text-center mb-10" data-aos="fade-down" data-aos-duration="800">
-                    <h2 class="text-4xl md:text-5xl font-bold mb-2 bg-gradient-to-r from-green-500 via-pink-500 to-blue-500 bg-clip-text text-transparent">
-                        Pesan Sekarang
+            <div class="relative z-10 w-full max-w-5xl mx-auto px-5">
+                <div class="text-center mb-12" data-aos="fade-down">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-green-500 via-pink-500 to-blue-500 bg-clip-text text-transparent">
+                        Pilih Cabang Terdekat Anda
                     </h2>
-                    <p class="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
-                        Cek barang dan harga lewat WhatsApp kami. Pilih cabang terdekat dari daftar berikut:
+                    <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                        Klik pada nomor untuk langsung memulai chat WhatsApp dengan cabang pilihan Anda.
                     </p>
                 </div>
-                <div id="container-wa" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-                    <!-- Card WhatsApp akan diisi oleh JS -->
+                <div id="container-wa" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- Bottom Navigation Component -->
     <?php include 'src/component/bottom_navigation_other.php'; ?>
 
-    <!-- Footer -->
     <?php include 'src/component/footer.php'; ?>
+    
     <script>
-        AOS.init();
+        AOS.init({
+            once: true,
+            duration: 800,
+        });
+
         const dataCabang = [
             { number: '081808174105', label: 'Daan Mogot Baru', kota: 'Jakarta Barat' },
             { number: '087739974652', label: 'Condet', kota: 'Jakarta Timur' },
@@ -175,42 +219,21 @@ if ($stmt->num_rows === 0) {
         const containerWA = document.getElementById("container-wa");
         dataCabang.forEach((contact, idx) => {
             const html = `
-                <div class="flex flex-col items-center justify-center bg-white/80 rounded-2xl shadow-xl border border-green-100 p-6 transition-all duration-300 hover:scale-105 hover:shadow-2xl" data-aos="fade-up" data-aos-delay="${100 + idx * 50}" data-aos-duration="700">
-                    <div class="w-16 h-16 flex items-center justify-center rounded-full bg-green-500 mb-3 shadow-lg animate-pulse">
+                <div class="flex flex-col items-center justify-center bg-white/80 rounded-2xl shadow-xl border border-green-100 p-5 transition-all duration-300 hover:scale-105 hover:shadow-2xl" data-aos="fade-up" data-aos-delay="${100 + idx * 50}">
+                    <div class="w-16 h-16 flex items-center justify-center rounded-full bg-green-500 mb-3 shadow-lg">
                         <i class="fa-brands fa-whatsapp text-white text-3xl"></i>
                     </div>
-                    <div class="text-center mb-2">
+                    <div class="text-center mb-3">
                         <div class="font-bold text-lg text-gray-800">${contact.label}</div>
                         <div class="text-sm text-gray-500">${contact.kota}</div>
                     </div>
-                    <a href="https://wa.me/+62${contact.number}" target="_blank"
-                        class="inline-flex justify-center items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-semibold transition">
+                    <a href="https://wa.me/62${contact.number.substring(1)}" target="_blank"
+                        class="inline-flex justify-center items-center gap-2 w-full px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-semibold transition">
                         <i class="fa-brands fa-whatsapp"></i>
-                        ${contact.number}
+                        <span>Chat Sekarang</span>
                     </a>
                 </div>`
             containerWA.insertAdjacentHTML("beforeend", html);
-        });
-
-        // Menu Toggle Functionality
-        const menuToogle = document.getElementById("menu-toogle");
-        const menuMobile = document.getElementById("menu-mobile");
-
-        menuToogle.addEventListener('click', () => {
-            menuToogle.querySelector('i').classList.toggle('fa-bars');
-            menuToogle.querySelector('i').classList.toggle('fa-xmark');
-            if (menuMobile.classList.contains("scale-y-0")) {
-                menuMobile.classList.remove("hidden");
-                menuMobile.offsetWidth;
-                menuMobile.classList.remove("scale-y-0", "opacity-0")
-                menuMobile.classList.add("scale-y-100", "opacity-100")
-            } else {
-                menuMobile.classList.remove("scale-y-100", "opacity-100");
-                menuMobile.classList.add("scale-y-0", "opacity-0");
-                setTimeout(() => {
-                    menuMobile.classList.add("hidden");
-                }, 300)
-            }
         });
     </script>
 </body>

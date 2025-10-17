@@ -43,12 +43,12 @@ $is_active = function ($link) use ($current_page) {
             <i class="fas fa-user text-lg" id="memberIconMobile"></i>
             <span class="text-[10px] mt-0.5" id="memberLabelMobile">Member</span>
         </a>
-        <a href="/produk"
+        <!-- <a href="/produk"
             class="nav-link flex flex-col items-center justify-center w-full h-full <?php echo $is_active('/produk') ? 'text-pink-500' : 'text-gray-600 hover:text-pink-500 hover:bg-pink-50'; ?>"
             data-section="produk">
             <i class="fas fa-box text-lg"></i>
             <span class="text-[10px] mt-0.5">Produk</span>
-        </a>
+        </a> -->
         
         <a href="/kontak"
             class="nav-link flex flex-col items-center justify-center w-full h-full <?php echo $is_active('/kontak') ? 'text-pink-500' : 'text-gray-600 hover:text-pink-500 hover:bg-pink-50'; ?>"

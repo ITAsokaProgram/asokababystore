@@ -19,7 +19,7 @@ if (!$result) {
     exit;
 }
 
-$pesanPenutup = "Mohon maaf Ayah/Bunda karena tidak ada respon yang Kami terima sampai dengan saat ini, maka chat ini akan kami akhiri. Jika ada hal lain yang ingin ditanyakan, Bapak/Ibu dapat menghubungi kami kembali. Dengan senang hati kami akan membantu. Terima kasih";
+$pesanPenutup = "Mohon maaf Ayah/Bunda karena tidak ada respon yang Kami terima sampai dengan saat ini, maka chat ini akan kami akhiri. Jika ada hal lain yang ingin ditanyakan, Ayah/Bunda dapat menghubungi kami kembali. Dengan senang hati kami akan membantu. Terima kasih";
 
 $count = 0;
 while ($row = mysqli_fetch_assoc($result)) {

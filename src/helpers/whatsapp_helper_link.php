@@ -231,3 +231,44 @@ function kirimPesanMedia($nomorPenerima, $mediaUrl, $mediaType, $caption = null)
         return ['success' => false];
     }
 }
+
+function kirimPesanCtaUrl($nomorPenerima, $pesanBody, $displayText, $url, $pesanHeader = null, $pesanFooter = null) {
+    $logger = new AppLogger('whatsapp_cta_url_message.log');
+    $nomorPenerima = normalizePhoneNumber($nomorPenerima);
+
+    $interactiveData = [
+        'type' => 'cta_url',
+        'body' => ['text' => $pesanBody],
+        'action' => [
+            'name' => 'cta_url',
+            'parameters' => [
+                'display_text' => substr($displayText, 0, 20), 
+                'url' => $url
+            ]
+        ]
+    ];
+
+    if ($pesanHeader) {
+        $interactiveData['header'] = ['type' => 'text', 'text' => substr($pesanHeader, 0, 60)];
+    }
+    if ($pesanFooter) {
+        $interactiveData['footer'] = ['text' => substr($pesanFooter, 0, 60)];
+    }
+    
+    $data = [
+        'messaging_product' => 'whatsapp',
+        'to' => $nomorPenerima,
+        'type' => 'interactive',
+        'interactive' => $interactiveData
+    ];
+
+    $result = sendWhatsAppMessage($data);
+
+    if ($result['httpcode'] >= 200 && $result['httpcode'] < 300) {
+        $logger->success("Pesan CTA URL '{$displayText}' berhasil dikirim ke {$nomorPenerima}.");
+        return ['success' => true];
+    } else {
+        $logger->error("Gagal kirim pesan CTA URL ke {$nomorPenerima}. HTTP: {$result['httpcode']}. Response: {$result['response']}");
+        return ['success' => false];
+    }
+}

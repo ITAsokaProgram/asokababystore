@@ -197,9 +197,7 @@ function createLocationItem(loc, index) {
                         <a href="https://wa.me/62${loc.phone}" class="text-sm text-gray-700 font-semibold hover:text-green-600 transition-colors">0${loc.phone}</a>
                     </div>
                 </div>
-                <div class="ml-4 flex-shrink-0"> 
-                    <img src="${loc.image}" alt="logo" class="w-20 h-8 object-contain rounded">
-                </div>
+                
             </div>
             
             <div class="flex gap-2 mt-3">

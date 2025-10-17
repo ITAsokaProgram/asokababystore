@@ -1,12 +1,12 @@
 <?php
 require_once __DIR__ . '/../constant/BranchConstants.php';
-require_once __DIR__ . '/../constant/WhatsappConstants.php'; // Ditambahkan
+require_once __DIR__ . '/../constant/WhatsappConstants.php'; 
 require_once __DIR__ . '/../service/ConversationService.php';
 require_once __DIR__ . '/../service/MediaService.php';
 require_once __DIR__ . '/../config/Config.php';
 
 use Asoka\Constant\BranchConstants;
-use Asoka\Constant\WhatsappConstants; // Ditambahkan
+use Asoka\Constant\WhatsappConstants; 
 
 class WebhookHandler {
     private $logger;
@@ -62,40 +62,29 @@ class WebhookHandler {
 
         $conversation = $this->conversationService->getOrCreateConversation($nomorPengirim);
 
-        if ($message['type'] === 'interactive' && isset($message['interactive']['type']) && $message['interactive']['type'] === 'button_reply') {
-            $buttonId = $message['interactive']['button_reply']['id'];
-            $buttonTitle = $message['interactive']['button_reply']['title'];
-
-            $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $buttonTitle);
-
-            switch ($buttonId) {
-                case 'END_LIVE_CHAT':
-                    $this->conversationService->closeConversation($nomorPengirim);
-                    $this->sendWelcomeMessage($nomorPengirim, $conversation['id']);
-                    $this->conversationService->openConversation($nomorPengirim);
-                    return;
-
-                case 'DAFTAR_JABODETABEK':
-                    $this->sendBranchListByRegion($nomorPengirim, 'jabodetabek', 1, 'kontak');
-                    return;
-
-                case 'DAFTAR_BELITUNG':
-                    $this->sendBranchListByRegion($nomorPengirim, 'belitung', 1, 'kontak');
-                    return;
-
-                case 'LOKASI_DAFTAR_JABODETABEK':
-                    $this->sendBranchListByRegion($nomorPengirim, 'jabodetabek', 1, 'lokasi');
-                    return;
-
-                case 'LOKASI_DAFTAR_BELITUNG':
-                    $this->sendBranchListByRegion($nomorPengirim, 'belitung', 1, 'lokasi');
-                    return;
-            }
-        }
-
         if ($conversation['status_percakapan'] === 'live_chat') {
-            $savedMessage = null;
+            if ($messageType === 'interactive' &&
+                isset($message['interactive']['type']) &&
+                $message['interactive']['type'] === 'button_reply' &&
+                $message['interactive']['button_reply']['id'] === 'END_LIVE_CHAT') {
 
+                $buttonTitle = $message['interactive']['button_reply']['title'];
+                $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $buttonTitle);
+                $this->conversationService->closeConversation($nomorPengirim);
+                $this->sendWelcomeMessage($nomorPengirim, $conversation['id']);
+                $this->conversationService->openConversation($nomorPengirim);
+                return;
+            }
+
+            if ($messageType === 'interactive') {
+                $this->logger->info("User {$nomorPengirim} mencoba memilih menu saat live chat. Mengirim pesan untuk mengakhiri chat.");
+                $buttons = [['id' => 'END_LIVE_CHAT', 'title' => 'Akhiri Chat']];
+                kirimPesanButton($nomorPengirim, WhatsappConstants::LIVE_CHAT_MENU_PROMPT, $buttons);
+                $this->saveAdminReply($conversation['id'], $nomorPengirim, WhatsappConstants::LIVE_CHAT_MENU_PROMPT);
+                return;
+            }
+
+            $savedMessage = null;
             switch ($messageType) {
                 case 'text':
                     $messageContent = $message['text']['body'];
@@ -140,7 +129,33 @@ class WebhookHandler {
                     'message' => $savedMessage
                 ]);
             }
-            return;
+            return; 
+        }
+
+
+        if ($message['type'] === 'interactive' && isset($message['interactive']['type']) && $message['interactive']['type'] === 'button_reply') {
+            $buttonId = $message['interactive']['button_reply']['id'];
+            $buttonTitle = $message['interactive']['button_reply']['title'];
+
+            $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $buttonTitle);
+
+            switch ($buttonId) {
+                case 'DAFTAR_JABODETABEK':
+                    $this->sendBranchListByRegion($nomorPengirim, 'jabodetabek', 1, 'kontak');
+                    return;
+
+                case 'DAFTAR_BELITUNG':
+                    $this->sendBranchListByRegion($nomorPengirim, 'belitung', 1, 'kontak');
+                    return;
+
+                case 'LOKASI_DAFTAR_JABODETABEK':
+                    $this->sendBranchListByRegion($nomorPengirim, 'jabodetabek', 1, 'lokasi');
+                    return;
+
+                case 'LOKASI_DAFTAR_BELITUNG':
+                    $this->sendBranchListByRegion($nomorPengirim, 'belitung', 1, 'lokasi');
+                    return;
+            }
         }
 
         if ($conversation['status_percakapan'] === 'closed') {
@@ -164,7 +179,8 @@ class WebhookHandler {
 
             $this->sendWelcomeMessage($nomorPengirim, $conversation['id']);
             $this->conversationService->openConversation($nomorPengirim);
-        } else {
+        }
+        else {
             if ($message['type'] === 'text') {
                 if ($conversation['menu_utama_terkirim'] == 0) {
                     $this->processTextMessage($message);
@@ -242,24 +258,55 @@ class WebhookHandler {
                 kirimPesanButton($nomorPengirim, $pesanBody, BranchConstants::REGION_SELECTION_BUTTONS_LOKASI, "Pilih Wilayah Toko", "");
                 break;
             case 'ORDER_VIA_WA':
-                $pesanBody = WhatsappConstants::HOW_TO_ORDER_WA;
+                $pesanHeader = WhatsappConstants::HOW_TO_ORDER_WA_HEADER;
+                $pesanBody = WhatsappConstants::HOW_TO_ORDER_WA_BODY;
                 $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody);
-                kirimPesanTeks($nomorPengirim, $pesanBody);
+                kirimPesanCtaUrl(
+                    $nomorPengirim,
+                    $pesanBody,
+                    WhatsappConstants::HOW_TO_ORDER_WA_BUTTON,
+                    WhatsappConstants::HOW_TO_ORDER_WA_URL,
+                    $pesanHeader
+                );
                 break;
+
             case 'PROMO':
-                $pesanBody = WhatsappConstants::PROMO_INFO;
+                $pesanHeader = WhatsappConstants::PROMO_INFO_HEADER;
+                $pesanBody = WhatsappConstants::PROMO_INFO_BODY;
                 $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody);
-                kirimPesanTeks($nomorPengirim, $pesanBody);
+                kirimPesanCtaUrl(
+                    $nomorPengirim,
+                    $pesanBody,
+                    WhatsappConstants::PROMO_INFO_BUTTON,
+                    WhatsappConstants::PROMO_INFO_URL,
+                    $pesanHeader
+                );
                 break;
+
             case 'KRITIK_SARAN':
-                $pesanBody = WhatsappConstants::FEEDBACK_INFO;
+                $pesanHeader = WhatsappConstants::FEEDBACK_INFO_HEADER;
+                $pesanBody = WhatsappConstants::FEEDBACK_INFO_BODY;
                 $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody);
-                kirimPesanTeks($nomorPengirim, $pesanBody);
+                kirimPesanCtaUrl(
+                    $nomorPengirim,
+                    $pesanBody,
+                    WhatsappConstants::FEEDBACK_INFO_BUTTON,
+                    WhatsappConstants::FEEDBACK_INFO_URL,
+                    $pesanHeader
+                );
                 break;
+
             case 'RIWAYAT_POIN':
-                $pesanBody = WhatsappConstants::POINT_HISTORY_INFO;
+                $pesanHeader = WhatsappConstants::POINT_HISTORY_INFO_HEADER;
+                $pesanBody = WhatsappConstants::POINT_HISTORY_INFO_BODY;
                 $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody);
-                kirimPesanTeks($nomorPengirim, $pesanBody);
+                kirimPesanCtaUrl(
+                    $nomorPengirim,
+                    $pesanBody,
+                    WhatsappConstants::POINT_HISTORY_INFO_BUTTON,
+                    WhatsappConstants::POINT_HISTORY_INFO_URL,
+                    $pesanHeader
+                );
                 break;
             case 'INFO_JAM_BUKA':
                 $pesanBody = WhatsappConstants::OPERATIONAL_HOURS_INFO;

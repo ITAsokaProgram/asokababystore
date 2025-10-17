@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../../../aa_kon_sett.php';
 require_once __DIR__ . '/../../auth/middleware_login.php';
+require_once __DIR__ . '/../../helpers/whatsapp_helper_link.php'; 
 
 header('Content-Type: application/json');
 
@@ -46,17 +47,34 @@ if ($conversationId === false) {
 }
 
 try {
-    $stmt = $conn->prepare("UPDATE percakapan_whatsapp SET status_percakapan = 'open', menu_utama_terkirim = 0 WHERE id = ? AND status_percakapan = 'live_chat'");
-    $stmt->bind_param("i", $conversationId);
-    $stmt->execute();
+    $stmt_get = $conn->prepare("SELECT nomor_telepon FROM percakapan_whatsapp WHERE id = ? AND status_percakapan = 'live_chat'");
+    $stmt_get->bind_param("i", $conversationId);
+    $stmt_get->execute();
+    $result = $stmt_get->get_result();
+    $conversation = $result->fetch_assoc();
+    $stmt_get->close();
 
-    if ($stmt->affected_rows > 0) {
-        echo json_encode(['success' => true, 'message' => 'Percakapan berhasil diakhiri.']);
+    if ($conversation) {
+        $stmt_update = $conn->prepare("UPDATE percakapan_whatsapp SET status_percakapan = 'open', menu_utama_terkirim = 0 WHERE id = ?");
+        $stmt_update->bind_param("i", $conversationId);
+        $stmt_update->execute();
+
+        if ($stmt_update->affected_rows > 0) {
+            $nomorTelepon = $conversation['nomor_telepon'];
+            $pesanTerimaKasih = "Terima kasih telah menghubungi Asoka Baby Store. Jika Ayah/Bunda memiliki pertanyaan lain, jangan ragu untuk menghubungi kami kembali. 😊";
+            
+            kirimPesanTeks($nomorTelepon, $pesanTerimaKasih);
+
+            echo json_encode(['success' => true, 'message' => 'Percakapan berhasil diakhiri.']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Gagal memperbarui status percakapan.']);
+        }
+        $stmt_update->close();
+
     } else {
         echo json_encode(['success' => false, 'message' => 'Percakapan tidak ditemukan atau statusnya bukan live chat.']);
     }
     
-    $stmt->close();
     $conn->close();
 
 } catch (Exception $e) {

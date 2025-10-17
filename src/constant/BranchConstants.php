@@ -157,6 +157,11 @@ class BranchConstants {
                 ['id' => 'KRITIK_SARAN', 'title' => 'Kritik & Saran'],
                 ['id' => 'RIWAYAT_POIN', 'title' => 'Riwayat Struk / Point'],
                 ['id' => 'INFO_JAM_BUKA', 'title' => 'Info Buka & Tutup Store'],
+            ]
+        ],
+        [
+            'title' => 'BANTUAN LANGSUNG',
+            'rows' => [
                 ['id' => 'CHAT_CS', 'title' => 'Chat dengan CS Pusat']
             ]
         ]
