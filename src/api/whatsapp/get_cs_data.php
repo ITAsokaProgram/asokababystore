@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../../../aa_kon_sett.php';
-require_once __DIR__ . '/../../auth/middleware_login.php'; 
+require_once __DIR__ . '/../../auth/middleware_login.php';
 
 header('Content-Type: application/json');
 
@@ -37,6 +37,17 @@ try {
             exit;
         }
 
+        // BARU: Update status_baca untuk pesan dari 'user' menjadi 1 (terbaca)
+        try {
+            $stmt_update = $conn->prepare("UPDATE wa_pesan SET status_baca = 1 WHERE percakapan_id = ? AND pengirim = 'user' AND status_baca = 0");
+            $stmt_update->bind_param("i", $id);
+            $stmt_update->execute();
+            $stmt_update->close();
+        } catch (Exception $e) {
+            // Abaikan error jika gagal update, proses select tetap berjalan
+        }
+        // AKHIR BARU
+
         // Ambil detail percakapan
         $stmt_convo = $conn->prepare("SELECT id, nomor_telepon, status_percakapan FROM wa_percakapan WHERE id = ?");
         $stmt_convo->bind_param("i", $id);
@@ -51,7 +62,8 @@ try {
             exit;
         }
 
-        $stmt_msgs = $conn->prepare("SELECT pengirim, isi_pesan, tipe_pesan, timestamp FROM wa_pesan WHERE percakapan_id = ? ORDER BY timestamp ASC");
+        // DIUBAH: Tambahkan `status_baca`
+        $stmt_msgs = $conn->prepare("SELECT pengirim, isi_pesan, tipe_pesan, timestamp, status_baca FROM wa_pesan WHERE percakapan_id = ? ORDER BY timestamp ASC");
         $stmt_msgs->bind_param("i", $id);
         $stmt_msgs->execute();
         $result_msgs = $stmt_msgs->get_result();

@@ -189,7 +189,6 @@ function initWebSocket() {
 
     ws.onerror = (error) => console.error('WebSocket error:', error);
 }
-
 async function fetchAndRenderConversations() {
     try {
         const response = await fetch(`/src/api/whatsapp/get_cs_data.php?filter=${currentFilter}`, {
@@ -204,7 +203,7 @@ async function fetchAndRenderConversations() {
 
         if (conversations.length === 0) {
             listElement.innerHTML = `
-                <div class="flex flex-col items-center justify-center p-12 text-gray-400">
+                <div class="flex flex-col items-center justify-center p-12 text-gray-400 text-center">
                     <i class="fas fa-inbox text-5xl mb-4 opacity-40"></i>
                     <p class="text-sm font-medium">Tidak ada percakapan</p>
                     <p class="text-xs mt-1 opacity-75">Percakapan baru akan muncul di sini</p>
@@ -234,7 +233,15 @@ async function fetchAndRenderConversations() {
                                 '<span class="live-badge px-2 py-0.5 text-xs font-semibold text-red-700 bg-red-100 rounded-full flex-shrink-0 shadow-sm">Live</span>' : 
                                 ''}
                         </div>
-                        <p class="text-xs text-gray-500">${timeAgo}</p>
+                        
+                        <div class="flex justify-between items-center">
+                            <p class="text-xs text-gray-500">${timeAgo}</p>
+                            ${convo.jumlah_belum_terbaca > 0 ? 
+                                `<span class="unread-badge bg-blue-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-md">
+                                    ${convo.jumlah_belum_terbaca}
+                                 </span>` : 
+                                ''}
+                        </div>
                     </div>
                 </div>
             `;
@@ -243,7 +250,7 @@ async function fetchAndRenderConversations() {
                 selectConversation(convo.id);
                 
                 if (window.innerWidth <= 768) {
-                    const conversationListContainer = document.getElementById('conversation-list-container');                    
+                    const conversationListContainer = document.getElementById('conversation-list-container');                     
                     conversationListContainer.classList.remove('mobile-show');
                 }
             });
@@ -333,7 +340,6 @@ async function selectConversation(conversationId) {
 function updateChatUI(status) {
     const endChatButton = document.getElementById('end-chat-button');
     const messageInputArea = document.getElementById('message-input-area');
-    console.log("status:", status);
     if (status === 'live_chat') {
         endChatButton.classList.remove('hidden');
         messageInputArea.classList.remove('hidden');
@@ -432,6 +438,8 @@ function appendMessage(msg) {
             break;
     }
 
+
+
     bubble.innerHTML = `
         ${contentHTML}
         <span class="message-time">${formatTimestamp(msg.timestamp)}</span>
@@ -469,17 +477,25 @@ async function sendMessage() {
             pengirim: 'admin',
             isi_pesan: fileURL,
             tipe_pesan: mediaType,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            status_baca: 0 
         });
         if (message) {
-             appendMessage({ pengirim: 'admin', isi_pesan: message, tipe_pesan: 'text', timestamp: new Date().toISOString() });
+             appendMessage({ 
+                 pengirim: 'admin', 
+                 isi_pesan: message, 
+                 tipe_pesan: 'text', 
+                 timestamp: new Date().toISOString(), 
+                 status_baca: 0 
+             });
         }
     } else if (message) {
         appendMessage({
             pengirim: 'admin',
             isi_pesan: message,
             tipe_pesan: 'text',
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            status_baca: 0
         });
     }
 
