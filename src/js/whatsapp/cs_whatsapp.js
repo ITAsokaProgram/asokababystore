@@ -11,6 +11,7 @@ const token = getToken();
 let ws;
 let currentConversationId = null;
 let currentConversationStatus = null;
+let currentFilter = 'semua';
 
 document.addEventListener('DOMContentLoaded', () => {
     if (!token) {
@@ -107,6 +108,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const statusFilter = document.getElementById('status-filter');
+    if (statusFilter) {
+        statusFilter.addEventListener('change', () => {
+            currentFilter = statusFilter.value;
+            fetchAndRenderConversations();
+        });
+    }
+
     initWebSocket();
     fetchAndRenderConversations();
 
@@ -183,7 +192,7 @@ function initWebSocket() {
 
 async function fetchAndRenderConversations() {
     try {
-        const response = await fetch('/src/api/whatsapp/get_cs_data.php', {
+        const response = await fetch(`/src/api/whatsapp/get_cs_data.php?filter=${currentFilter}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -324,7 +333,7 @@ async function selectConversation(conversationId) {
 function updateChatUI(status) {
     const endChatButton = document.getElementById('end-chat-button');
     const messageInputArea = document.getElementById('message-input-area');
-
+    console.log("status:", status);
     if (status === 'live_chat') {
         endChatButton.classList.remove('hidden');
         messageInputArea.classList.remove('hidden');

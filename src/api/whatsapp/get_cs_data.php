@@ -63,9 +63,23 @@ try {
             'messages' => $messages
         ];
     } else {
+        $filter = $_GET['filter'] ?? 'semua';
+        
         $sql = "
             SELECT id, nomor_telepon, status_percakapan, terakhir_interaksi_pada
             FROM wa_percakapan
+        ";
+
+        $whereClause = "";
+        if ($filter === 'live_chat') {
+            $whereClause = " WHERE status_percakapan = 'live_chat'";
+        } elseif ($filter === 'umum') {
+            $whereClause = " WHERE status_percakapan IN ('open', 'closed')";
+        }
+
+        $sql .= $whereClause;
+
+        $sql .= "
             ORDER BY
                 CASE status_percakapan
                     WHEN 'live_chat' THEN 1
@@ -74,13 +88,13 @@ try {
                 END,
                 terakhir_interaksi_pada DESC
         ";
+        
         $stmt = $conn->prepare($sql);
         $stmt->execute();
         $result = $stmt->get_result();
         $data = $result->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
-    }
-    
+    }    
     echo json_encode($data);
 
 } catch (Exception $e) {

@@ -545,7 +545,14 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
         </div>
       </div>
     </div>
-
+    <div class="p-3 border-b border-gray-200 bg-gray-50/50">
+          <select id="status-filter" 
+          class="w-full p-2 border border-gray-300 rounded-md text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500 transition duration-150">
+              <option value="semua">Semua Percakapan</option>
+              <option value="live_chat">Live Chat</option>
+              <option value="umum">Umum</option>
+          </select>
+      </div>
     <div id="chat-layout" class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200">
       <div id="conversation-list-container" class="flex flex-col">
         <div class="p-4 border-b border-gray-200 flex items-center justify-between bg-gradient-to-r from-gray-50 to-white">
@@ -592,7 +599,7 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
           <p class="text-xs md:text-sm text-gray-400">Pesan akan muncul di sini</p>
         </div>
 
-        <div id="active-chat" class="hidden flex-col h-full">
+        <div id="active-chat" class="hidden flex-col flex-1 min-h-0">
           <div id="message-container" class="flex-1 overflow-y-auto flex flex-col">
           </div>
 
