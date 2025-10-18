@@ -144,64 +144,72 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
-
 function initWebSocket() {
-    ws = new WebSocket('wss://asokababystore.com/ws');
+    ws = new WebSocket('wss://asokababystore.com/ws');
 
-    ws.onopen = () => {
-        console.log('WebSocket connected');
-    }
+    ws.onopen = () => {
+        console.log('WebSocket connected');
+    }
 
-    ws.onmessage = (event) => {
-        try {
-            const data = JSON.parse(event.data);
+    ws.onmessage = (event) => {
+        try {
+            const data = JSON.parse(event.data);
 
-            if (data.event === 'new_live_chat' || data.event === 'new_message') {
-                Swal.fire({
-                    toast: true,
-                    position: 'top-end',
-                    icon: 'info',
-                    title: data.event === 'new_live_chat' ? `Live chat baru dari ${data.phone}` : `Pesan baru dari ${data.phone}`,
-                    showConfirmButton: false,
-                    timer: 3000,
-                    timerProgressBar: true,
-                });
-            }
+            if ((data.event === 'new_live_chat' || data.event === 'new_message') && data.conversation_id !== currentConversationId) {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'info',
+                    title: data.event === 'new_live_chat' ? `Live chat baru dari ${data.phone}` : `Pesan baru dari ${data.phone}`,
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                });
+            }
 
-            if (data.event === 'new_live_chat') {
-                fetchAndRenderConversations();
-                
-                if (data.conversation_id) {
-                    selectConversation(data.conversation_id);
-                }
+            if (data.event === 'new_live_chat') {
+                fetchAndRenderConversations();
+                
+                if (data.conversation_id) {
+                    selectConversation(data.conversation_id);
+                }
+                
+                if (data.total_unread_count !== undefined) {
+                    updateTotalUnreadBadge(data.total_unread_count);
+                }
 
-            } else if (data.event === 'new_message') {
-                fetchAndRenderConversations();
+            } else if (data.event === 'new_message') {
+                
+                if (data.conversation_id === currentConversationId) {
+                    appendMessage(data.message);
+                    
+                    fetch(`/src/api/whatsapp/get_cs_data.php?conversation_id=${data.conversation_id}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    }).catch(err => console.error("Gagal menandai pesan sebagai terbaca:", err));
 
-                if (data.conversation_id === currentConversationId) {
-                    appendMessage(data.message);
-                }
-            }
+                } else {
+                    fetchAndRenderConversations();
+                    
+                    if (data.total_unread_count !== undefined) {
+                        updateTotalUnreadBadge(data.total_unread_count);
+                    }
+                }
+            
+            } else if (data.event === 'unread_count_update') {
+                updateTotalUnreadBadge(data.total_unread_count);
+                fetchAndRenderConversations(); 
+            }
 
-            if (data.total_unread_count !== undefined) {
-                updateTotalUnreadBadge(data.total_unread_count);
-            }
-            
-            if (data.event === 'unread_count_update') {
-                updateTotalUnreadBadge(data.total_unread_count);
-                fetchAndRenderConversations(); 
-            }
+        } catch (e) {
+        }
+    };
 
-        } catch (e) {
-        }
-    };
+    ws.onclose = () => {
+        console.log('WebSocket closed. Reconnecting...');
+        setTimeout(initWebSocket, 5000);
+    };
 
-    ws.onclose = () => {
-        console.log('WebSocket closed. Reconnecting...');
-        setTimeout(initWebSocket, 5000);
-    };
-
-    ws.onerror = (error) => console.error('WebSocket error:', error);
+    ws.onerror = (error) => console.error('WebSocket error:', error);
 }
 async function fetchAndRenderConversations(isInitialLoad = false) {
     try {
