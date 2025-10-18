@@ -103,8 +103,7 @@ function getPriceRange($models) {
                 <img src="../../../public/images/logo/shopee.png" alt="Shopee Logo" class="h-10 w-10">
               </div>
               <div>
-                <h1 class="text-2xl font-bold text-gray-800 mb-1">Shopee Dashboard</h1>
-                <p class="text-sm text-gray-600">Dashboard</p>
+                <h1 class="text-2xl font-bold text-gray-800 mb-1">Order Shopee</h1>
               </div>
             </div>
             

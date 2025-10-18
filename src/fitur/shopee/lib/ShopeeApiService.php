@@ -97,7 +97,6 @@ class ShopeeApiService {
         return json_decode($response_str, true);
     }
     
-    // --- Specific API Methods ---
     public function getProductList($params) {
         return $this->call("/api/v2/product/get_item_list", 'GET', $params);
     }
