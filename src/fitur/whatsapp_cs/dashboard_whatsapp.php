@@ -540,8 +540,10 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
           <i class="fab fa-whatsapp text-2xl md:text-3xl text-green-600"></i>
         </div>
         <div>
-          <h1 class="text-xl md:text-2xl font-bold text-gray-800 mb-1">Live Chat WhatsApp</h1>
-          <p class="text-xs md:text-sm text-gray-600">Kelola percakapan pelanggan secara real-time</p>
+          <h1 class="text-xl md:text-2xl font-bold text-gray-800 mb-1 flex items-center gap-2">
+               <span>Live Chat WhatsApp</span>
+               <span id="total-unread-badge" class="hidden text-sm font-bold bg-red-500 text-white px-2.5 py-0.5 rounded-full">0</span>
+           </h1>
         </div>
       </div>
     </div>

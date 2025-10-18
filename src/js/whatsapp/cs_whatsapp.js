@@ -117,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     initWebSocket();
-    fetchAndRenderConversations();
+    fetchAndRenderConversations(true);
 
     const sendButton = document.getElementById('send-button');
     const messageInput = document.getElementById('message-input');
@@ -136,6 +136,12 @@ document.addEventListener('DOMContentLoaded', () => {
     messageInput.addEventListener('input', () => {
         messageInput.style.height = 'auto';
         messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + 'px';
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' || e.key === 'Esc') { 
+            e.preventDefault(); 
+            clearActiveConversation();
+        }
     });
 });
 
@@ -177,8 +183,16 @@ function initWebSocket() {
                 }
             }
 
+            if (data.total_unread_count !== undefined) {
+                updateTotalUnreadBadge(data.total_unread_count);
+            }
+            
+            if (data.event === 'unread_count_update') {
+                updateTotalUnreadBadge(data.total_unread_count);
+                fetchAndRenderConversations(); 
+            }
+
         } catch (e) {
-            // Non-JSON message
         }
     };
 
@@ -189,7 +203,7 @@ function initWebSocket() {
 
     ws.onerror = (error) => console.error('WebSocket error:', error);
 }
-async function fetchAndRenderConversations() {
+async function fetchAndRenderConversations(isInitialLoad = false) {
     try {
         const response = await fetch(`/src/api/whatsapp/get_cs_data.php?filter=${currentFilter}`, {
             headers: { 'Authorization': `Bearer ${token}` }
@@ -200,6 +214,16 @@ async function fetchAndRenderConversations() {
         const conversations = await response.json();
         const listElement = document.getElementById('conversation-list');
         listElement.innerHTML = ''; 
+
+        if (isInitialLoad) {
+             let totalUnread = 0;
+             if (Array.isArray(conversations)) {
+                 totalUnread = conversations.reduce((sum, convo) => {
+                     return sum + (parseInt(convo.jumlah_belum_terbaca) || 0);
+                 }, 0);
+             }
+             updateTotalUnreadBadge(totalUnread);
+         }
 
         if (conversations.length === 0) {
             listElement.innerHTML = `
@@ -346,6 +370,34 @@ function updateChatUI(status) {
     } else {
         endChatButton.classList.add('hidden');
         messageInputArea.classList.add('hidden');
+    }
+}
+
+function clearActiveConversation() {
+    if (!currentConversationId) {
+        return;
+    }
+
+    currentConversationId = null;
+    currentConversationStatus = null;
+
+    const activeChat = document.getElementById('active-chat');
+    const chatPlaceholder = document.getElementById('chat-placeholder');
+    const chatHeader = document.getElementById('chat-header');
+    const chatWithPhone = document.getElementById('chat-with-phone');
+
+    activeChat.classList.add('hidden');
+    activeChat.classList.remove('flex');
+    chatPlaceholder.classList.remove('hidden');
+
+    chatHeader.classList.remove('show');
+    chatWithPhone.textContent = ''; 
+
+    updateChatUI(null);
+
+    const activeItem = document.querySelector('.conversation-item.active');
+    if (activeItem) {
+        activeItem.classList.remove('active', 'bg-blue-50');
     }
 }
 
@@ -616,4 +668,20 @@ function formatDateSeparator(dateString) {
         return 'Kemarin';
     }
     return date.toLocaleDateString('id-ID', options);
+}
+function updateTotalUnreadBadge(count) {
+    const badge = document.getElementById('total-unread-badge');
+    const title = document.querySelector('title');
+    
+    if (!badge) return;
+
+    if (count > 0) {
+        badge.textContent = count;
+        badge.classList.remove('hidden');
+        title.textContent = `(${count}) Dashboard CS WhatsApp`;
+    } else {
+        badge.textContent = '0';
+        badge.classList.add('hidden');
+        title.textContent = 'Dashboard CS WhatsApp';
+    }
 }

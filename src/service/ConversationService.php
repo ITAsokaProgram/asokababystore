@@ -85,4 +85,14 @@ class ConversationService {
         $stmt->close();
         $this->logger->info("Percakapan ditutup untuk: " . $phoneNumber);
     }
+
+    public function getTotalUnreadCount() {
+        $sql = "SELECT COUNT(id) AS total_unread FROM wa_pesan WHERE pengirim = 'user' AND status_baca = 0";
+        $result = $this->conn->query($sql);
+        if ($result) {
+            $row = $result->fetch_assoc();
+            return (int)$row['total_unread'];
+        }
+        return 0;
+    }
 }

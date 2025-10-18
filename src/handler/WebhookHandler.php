@@ -122,11 +122,13 @@ class WebhookHandler {
             }
 
             if ($savedMessage) {
+                $totalUnread = $this->conversationService->getTotalUnreadCount(); 
                 $this->notifyWebSocketServer([
                     'event' => 'new_message',
                     'conversation_id' => $conversation['id'],
                     'phone' => $nomorPengirim,
-                    'message' => $savedMessage
+                    'message' => $savedMessage,
+                    'total_unread_count' => $totalUnread 
                 ]);
             }
             return; 
@@ -140,6 +142,13 @@ class WebhookHandler {
             $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $buttonTitle);
 
             switch ($buttonId) {
+                case 'BUKA_MENU_UTAMA': // <-- TAMBAHKAN INI
+                    $this->sendMainMenuAsList($nomorPengirim, $conversation['id']);
+                    return;
+                
+                case 'CHAT_CS': // <-- TAMBAHKAN INI
+                    $this->triggerLiveChat($nomorPengirim, $conversation);
+                    return;
                 case 'DAFTAR_JABODETABEK':
                     $this->sendBranchListByRegion($nomorPengirim, 'jabodetabek', 1, 'kontak');
                     return;
@@ -169,11 +178,13 @@ class WebhookHandler {
             }
 
             if ($savedUserMessage) {
+                $totalUnread = $this->conversationService->getTotalUnreadCount(); 
                 $this->notifyWebSocketServer([
                     'event' => 'new_message',
                     'conversation_id' => $conversation['id'],
                     'phone' => $nomorPengirim,
-                    'message' => $savedUserMessage
+                    'message' => $savedUserMessage,
+                    'total_unread_count' => $totalUnread 
                 ]);
             }
 
@@ -182,8 +193,20 @@ class WebhookHandler {
         }
         else {
             if ($message['type'] === 'text') {
+                $messageContent = $message['text']['body'];
+                $savedUserMessage = $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $messageContent);
+                if ($savedUserMessage) {
+                    $totalUnread = $this->conversationService->getTotalUnreadCount();
+                    $this->notifyWebSocketServer([
+                        'event' => 'new_message',
+                        'conversation_id' => $conversation['id'],
+                        'phone' => $nomorPengirim,
+                        'message' => $savedUserMessage,
+                        'total_unread_count' => $totalUnread 
+                    ]);
+                }
                 if ($conversation['menu_utama_terkirim'] == 0) {
-                    $this->processTextMessage($message);
+                    $this->processTextMessage($message, $conversation); 
                     $this->conversationService->setMenuSent($nomorPengirim);
                 } else {
                     $this->logger->info("Mengabaikan pesan teks dari {$nomorPengirim} karena menu utama sudah terkirim (bukan link verifikasi).");
@@ -209,17 +232,26 @@ class WebhookHandler {
         $this->saveAdminReply($conversationId, $nomorPengirim, WhatsappConstants::WELCOME_BODY);
     }
 
-    private function processTextMessage($message) {
+    private function processTextMessage($message, $conversation) { 
         $nomorPengirim = $message['from'];
-        $this->logger->info("User {$nomorPengirim} mengirim pesan teks dalam sesi aktif, memicu Main Menu.");
-        kirimPesanList(
+        $this->logger->info("User {$nomorPengirim} mengirim pesan teks dalam sesi aktif, memicu Main Menu (Button).");
+
+        $buttons = [
+            ['id' => 'BUKA_MENU_UTAMA', 'title' => 'Buka Menu Utama'],
+            ['id' => 'CHAT_CS', 'title' => 'Live Chat CS']
+        ];
+        
+        $pesanBody = "Silakan pilih lagi dari menu di bawah ini.";
+        $pesanHeader = "Menu Utama";
+
+        kirimPesanButton(
             $nomorPengirim,
-            "Menu Utama",
-            "Silakan pilih lagi dari menu di bawah ini.",
-            "ASOKA Baby Store",
-            WhatsappConstants::WELCOME_BUTTON_TEXT,
-            BranchConstants::MAIN_MENU_SECTIONS
+            $pesanBody,
+            $buttons,
+            $pesanHeader
         );
+
+        $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody);
     }
 
     private function processListReplyMessage($message, $conversation) {
@@ -233,12 +265,15 @@ class WebhookHandler {
         }
 
         $savedUserMessage = $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $messageToSave);
+        
+        $totalUnread = $this->conversationService->getTotalUnreadCount(); 
 
         $this->notifyWebSocketServer([
             'event' => 'new_message',
             'conversation_id' => $conversation['id'],
             'phone' => $nomorPengirim,
-            'message' => $savedUserMessage
+            'message' => $savedUserMessage,
+            'total_unread_count' => $totalUnread 
         ]);
         
         $this->logger->info("Received List reply from {$nomorPengirim}. Selected ID: {$selectedId}, Title: {$selectedTitle}");
@@ -319,22 +354,8 @@ class WebhookHandler {
                 kirimPesanTeks($nomorPengirim, $pesanBody);
                 break;
             case 'CHAT_CS':
-                date_default_timezone_set('Asia/Jakarta');
-                $currentHour = (int)date('H');
-                $currentMinute = (int)date('i');
-                $isOutsideOperationalHours = ($currentHour < 9 || $currentHour > 16 || ($currentHour == 16 && $currentMinute > 30));
-
-                if ($isOutsideOperationalHours) {
-                    $pesanBody = WhatsappConstants::CS_OUTSIDE_HOURS;
-                } else {
-                    $pesanBody = WhatsappConstants::CS_CONNECT_SUCCESS;
-                }
-                
-                $this->conversationService->startLiveChat($nomorPengirim);
-                kirimPesanTeks($nomorPengirim, $pesanBody);
-                $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody);
-                $this->notifyWebSocketServer(['event' => 'new_live_chat', 'phone' => $nomorPengirim, 'conversation_id' => $conversation['id']]);
-                break;
+                    $this->triggerLiveChat($nomorPengirim, $conversation);
+                 break;
             default:
                 if (strpos($selectedId, 'LOKASI_') === 0) {
                     $branchKey = substr($selectedId, 7);
@@ -443,5 +464,49 @@ class WebhookHandler {
                 'message' => $savedMessage
             ]);
         }
+    }
+    private function sendMainMenuAsList($nomorPengirim, $conversationId) {
+        $this->logger->info("Sending Main Menu (List) to {$nomorPengirim}.");
+        
+        $pesanBody = WhatsappConstants::WELCOME_BODY;
+        $pesanHeader = WhatsappConstants::WELCOME_HEADER;
+        
+        kirimPesanList(
+            $nomorPengirim,
+            $pesanHeader,
+            $pesanBody,
+            "", // footer
+            WhatsappConstants::WELCOME_BUTTON_TEXT,
+            BranchConstants::MAIN_MENU_SECTIONS
+        );
+
+        $this->saveAdminReply($conversationId, $nomorPengirim, $pesanBody);
+    }
+
+    private function triggerLiveChat($nomorPengirim, $conversation) {
+        $this->logger->info("Triggering live chat for {$nomorPengirim}.");
+        date_default_timezone_set('Asia/Jakarta');
+        $currentHour = (int)date('H');
+        $currentMinute = (int)date('i');
+        $isOutsideOperationalHours = ($currentHour < 9 || $currentHour > 16 || ($currentHour == 16 && $currentMinute > 30));
+
+        if ($isOutsideOperationalHours) {
+            $pesanBody = WhatsappConstants::CS_OUTSIDE_HOURS;
+        } else {
+            $pesanBody = WhatsappConstants::CS_CONNECT_SUCCESS;
+        }
+        
+        $this->conversationService->startLiveChat($nomorPengirim);
+            kirimPesanTeks($nomorPengirim, $pesanBody);
+            $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody);
+            
+            $totalUnread = $this->conversationService->getTotalUnreadCount(); 
+            
+            $this->notifyWebSocketServer([
+                'event' => 'new_live_chat', 
+                'phone' => $nomorPengirim, 
+                'conversation_id' => $conversation['id'],
+                'total_unread_count' => $totalUnread 
+            ]);
     }
 }

@@ -37,18 +37,41 @@ try {
             exit;
         }
 
-        // BARU: Update status_baca untuk pesan dari 'user' menjadi 1 (terbaca)
         try {
             $stmt_update = $conn->prepare("UPDATE wa_pesan SET status_baca = 1 WHERE percakapan_id = ? AND pengirim = 'user' AND status_baca = 0");
             $stmt_update->bind_param("i", $id);
             $stmt_update->execute();
             $stmt_update->close();
-        } catch (Exception $e) {
-            // Abaikan error jika gagal update, proses select tetap berjalan
-        }
-        // AKHIR BARU
 
-        // Ambil detail percakapan
+            $totalUnread = 0;
+            $sql_count = "SELECT COUNT(id) AS total_unread FROM wa_pesan WHERE pengirim = 'user' AND status_baca = 0";
+            $result_count = $conn->query($sql_count);
+            if ($result_count) {
+                $row_count = $result_count->fetch_assoc();
+                $totalUnread = (int)$row_count['total_unread'];
+            }
+            
+            $ws_url = 'http://127.0.0.1:8081/notify';
+            $payload = json_encode([
+                'event' => 'unread_count_update',
+                'total_unread_count' => $totalUnread
+            ]);
+            
+            $ch = curl_init($ws_url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Content-Type: application/json',
+                'Content-Length: ' . strlen($payload)
+            ]);
+            curl_setopt($ch, CURLOPT_TIMEOUT_MS, 100);
+            curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
+            curl_exec($ch);
+            curl_close($ch);
+        } catch (Exception $e) {
+        }
+
         $stmt_convo = $conn->prepare("SELECT id, nomor_telepon, status_percakapan FROM wa_percakapan WHERE id = ?");
         $stmt_convo->bind_param("i", $id);
         $stmt_convo->execute();
@@ -62,7 +85,6 @@ try {
             exit;
         }
 
-        // DIUBAH: Tambahkan `status_baca`
         $stmt_msgs = $conn->prepare("SELECT pengirim, isi_pesan, tipe_pesan, timestamp, status_baca FROM wa_pesan WHERE percakapan_id = ? ORDER BY timestamp ASC");
         $stmt_msgs->bind_param("i", $id);
         $stmt_msgs->execute();
@@ -75,31 +97,43 @@ try {
             'messages' => $messages
         ];
     } else {
+        
         $filter = $_GET['filter'] ?? 'semua';
         
         $sql = "
-            SELECT id, nomor_telepon, status_percakapan, terakhir_interaksi_pada
-            FROM wa_percakapan
+            SELECT
+                p.id,
+                p.nomor_telepon,
+                p.status_percakapan,
+                p.terakhir_interaksi_pada,
+                COUNT(m.id) AS jumlah_belum_terbaca
+            FROM
+                wa_percakapan p
+            LEFT JOIN
+                wa_pesan m ON p.id = m.percakapan_id AND m.pengirim = 'user' AND m.status_baca = 0
         ";
 
         $whereClause = "";
         if ($filter === 'live_chat') {
-            $whereClause = " WHERE status_percakapan = 'live_chat'";
+            $whereClause = " WHERE p.status_percakapan = 'live_chat'";
         } elseif ($filter === 'umum') {
-            $whereClause = " WHERE status_percakapan IN ('open', 'closed')";
+            $whereClause = " WHERE p.status_percakapan IN ('open', 'closed')";
         }
 
         $sql .= $whereClause;
 
+        $sql .= " GROUP BY p.id, p.nomor_telepon, p.status_percakapan, p.terakhir_interaksi_pada ";
+
         $sql .= "
             ORDER BY
-                CASE status_percakapan
+                CASE p.status_percakapan
                     WHEN 'live_chat' THEN 1
                     WHEN 'open' THEN 2
                     ELSE 3
                 END,
-                terakhir_interaksi_pada DESC
+                p.terakhir_interaksi_pada DESC
         ";
+        
         
         $stmt = $conn->prepare($sql);
         $stmt->execute();
