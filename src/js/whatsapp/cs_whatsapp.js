@@ -57,6 +57,20 @@ document.addEventListener('DOMContentLoaded', () => {
         mediaPreviewImage.src = '';
         mediaPreviewVideo.src = '';
     });
+
+    const mobileListToggle = document.getElementById('mobile-list-toggle');
+    if (mobileListToggle) {
+        mobileListToggle.addEventListener('click', () => {
+            conversationListContainer.classList.toggle('mobile-show');
+        });
+    }
+
+    const mobileCloseListButton = document.getElementById('mobile-close-list');
+        if (mobileCloseListButton) {
+            mobileCloseListButton.addEventListener('click', () => {
+            conversationListContainer.classList.remove('mobile-show');
+            });
+        }   
     
     if (mobileBackButton) {
         mobileBackButton.addEventListener('click', () => {
@@ -220,11 +234,8 @@ async function fetchAndRenderConversations() {
                 selectConversation(convo.id);
                 
                 if (window.innerWidth <= 768) {
-                    const conversationListContainer = document.getElementById('conversation-list-container');
-                    const chatLayout = document.getElementById('chat-layout');
-                    
-                    conversationListContainer.classList.add('collapsed');
-                    chatLayout.classList.add('list-collapsed');
+                    const conversationListContainer = document.getElementById('conversation-list-container');                    
+                    conversationListContainer.classList.remove('mobile-show');
                 }
             });
             listElement.appendChild(item);

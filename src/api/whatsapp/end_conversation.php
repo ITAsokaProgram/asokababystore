@@ -55,7 +55,7 @@ try {
     $stmt_get->close();
 
     if ($conversation) {
-        $stmt_update = $conn->prepare("UPDATE wa_percakapan SET status_percakapan = 'open', menu_utama_terkirim = 0 WHERE id = ?");
+        $stmt_update = $conn->prepare("UPDATE wa_percakapan SET status_percakapan = 'closed', menu_utama_terkirim = 0 WHERE id = ?");
         $stmt_update->bind_param("i", $conversationId);
         $stmt_update->execute();
 

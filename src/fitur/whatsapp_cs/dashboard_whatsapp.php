@@ -40,8 +40,12 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
     
     @media (max-width: 1024px) {
       #chat-layout {
-        grid-template-columns: 280px 1fr;
-        height: calc(100vh - 160px);
+          grid-template-columns: 280px 1fr;
+          height: calc(100vh - 160px);
+      }
+      #conversation-list-container {
+          width: 280px;
+          min-width: 280px;
       }
     }
     
@@ -52,11 +56,11 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
       }
       
       #conversation-list-container {
-        display: none;
+        display: none !important;
       }
       
       #conversation-list-container.mobile-show {
-        display: flex;
+        display: flex !important;
         position: fixed;
         top: 64px;
         left: 0;
@@ -68,6 +72,8 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
     }
     
     #conversation-list-container {
+      width: 340px;
+      min-width: 340px;
       border-right: 1px solid #e5e7eb;
       display: flex;
       flex-direction: column;
@@ -552,16 +558,19 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
     <div id="chat-layout" class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200">
       <div id="conversation-list-container" class="flex flex-col">
         <div class="p-4 border-b border-gray-200 flex items-center justify-between bg-gradient-to-r from-gray-50 to-white">
+          <button id="mobile-close-list" class="block md:hidden text-gray-600 hover:text-gray-900 transition-all p-2 rounded-lg -ml-2" title="Kembali ke Chat">
+            <i class="fas fa-arrow-left h-5 w-5"></i>
+          </button>
           <h2 class="text-base md:text-lg font-semibold text-gray-700 flex items-center gap-2">
             <i class="fas fa-comments text-blue-500"></i>
             Percakapan
           </h2>
-          <button id="toggle-conversation-list" class="text-gray-600 hover:text-gray-900 transition-all p-2 rounded-lg" title="Collapse/Expand">
+          <button id="toggle-conversation-list" class="hidden md:block text-gray-600 hover:text-gray-900 transition-all p-2 rounded-lg" title="Collapse/Expand">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+              <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
             </svg>
           </button>
-        </div>
+        </div>
         <div id="conversation-list" class="overflow-y-auto flex-1 bg-white">
           <div class="p-8 text-center text-gray-500">
             <div class="loading-spinner mx-auto" style="border-color: #cbd5e1; border-top-color: #3b82f6;"></div>
@@ -580,9 +589,9 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
         <div id="active-chat" class="hidden flex-col h-full">
           <div id="chat-header" class="flex justify-between items-center">
              <div class="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
-                <!-- <button id="mobile-back-button" class="text-white hover:bg-white hover:bg-opacity-20 transition-all p-2 rounded-lg">
-                  <i class="fas fa-arrow-left text-lg"></i>
-                </button> -->
+                <button id="mobile-list-toggle" class="block md:hidden text-white hover:bg-white hover:bg-opacity-20 transition-all p-2 rounded-lg mr-1" title="Tampilkan Daftar Obrolan">
+                  <i class="fas fa-bars text-lg"></i>
+                </button>
                 <div class="w-10 h-10 rounded-full bg-white bg-opacity-20 flex items-center justify-center">
                   <i class="fas fa-user text-lg"></i>
                 </div>
@@ -621,7 +630,7 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
   </main>
   
   <script src="/src/js/middleware_auth.js"></script>
-  <script src="/src/js/whatsapp/cs_whatsapp_2.js" type="module"></script>
+  <script src="/src/js/whatsapp/cs_whatsapp.js" type="module"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
