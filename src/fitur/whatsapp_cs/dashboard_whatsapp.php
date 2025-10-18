@@ -31,22 +31,11 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
     #chat-layout {
       display: grid;
-      grid-template-columns: 340px 1fr;
+      grid-template-columns: 280px 1fr;
       height: calc(100vh - 180px);
       gap: 0;
       overflow: hidden;
       transition: grid-template-columns 0.3s ease;
-    }
-    
-    @media (max-width: 1024px) {
-      #chat-layout {
-          grid-template-columns: 280px 1fr;
-          height: calc(100vh - 160px);
-      }
-      #conversation-list-container {
-          width: 280px;
-          min-width: 280px;
-      }
     }
     
     @media (max-width: 768px) {
@@ -72,8 +61,6 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
     }
     
     #conversation-list-container {
-      width: 340px;
-      min-width: 340px;
       border-right: 1px solid #e5e7eb;
       display: flex;
       flex-direction: column;
@@ -164,6 +151,10 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
       padding: 1.25rem 1.5rem;
       box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    #chat-header.show {
+      display: flex; 
     }
     
     #chat-header i {
@@ -578,8 +569,23 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
           </div>
         </div>
       </div>
-
       <div id="chat-window" class="flex flex-col">
+        <div id="chat-header" class="flex justify-between items-center">
+          <div class="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
+              <button id="mobile-list-toggle" class="block md:hidden text-white hover:bg-white hover:bg-opacity-20 transition-all p-2 rounded-lg mr-1" title="Tampilkan Daftar Obrolan">
+                <i class="fas fa-bars text-lg"></i>
+              </button>
+              <div class="w-10 h-10 rounded-full bg-white bg-opacity-20 flex items-center justify-center">
+                <i class="fas fa-user text-lg"></i>
+              </div>
+              <span id="chat-with-phone" class="font-semibold text-sm md:text-base truncate"></span>
+          </div>
+          <button id="end-chat-button" class="hidden bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all flex items-center gap-1.5">
+              <i class="fas fa-times-circle"></i>
+              <span class="hidden sm:inline">Akhiri</span>
+          </button>
+        </div>
+
         <div id="chat-placeholder" class="flex flex-col items-center justify-center h-full text-gray-500 p-4">
           <i class="fas fa-comments text-5xl md:text-6xl mb-4"></i>
           <p class="text-base md:text-lg font-semibold mb-1">Pilih percakapan untuk memulai</p>
@@ -587,22 +593,6 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
         </div>
 
         <div id="active-chat" class="hidden flex-col h-full">
-          <div id="chat-header" class="flex justify-between items-center">
-             <div class="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
-                <button id="mobile-list-toggle" class="block md:hidden text-white hover:bg-white hover:bg-opacity-20 transition-all p-2 rounded-lg mr-1" title="Tampilkan Daftar Obrolan">
-                  <i class="fas fa-bars text-lg"></i>
-                </button>
-                <div class="w-10 h-10 rounded-full bg-white bg-opacity-20 flex items-center justify-center">
-                  <i class="fas fa-user text-lg"></i>
-                </div>
-                <span id="chat-with-phone" class="font-semibold text-sm md:text-base truncate"></span>
-             </div>
-             <button id="end-chat-button" class="hidden bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all flex items-center gap-1.5">
-                 <i class="fas fa-times-circle"></i>
-                 <span class="hidden sm:inline">Akhiri</span>
-             </button>
-          </div>
-
           <div id="message-container" class="flex-1 overflow-y-auto flex flex-col">
           </div>
 

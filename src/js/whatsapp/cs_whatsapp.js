@@ -273,6 +273,8 @@ async function selectConversation(conversationId) {
     currentConversationId = conversationId;
 
     document.getElementById('chat-placeholder').classList.add('hidden');
+    document.getElementById('chat-header').classList.add('show'); 
+
     document.getElementById('active-chat').classList.remove('hidden');
     document.getElementById('active-chat').classList.add('flex');
     
