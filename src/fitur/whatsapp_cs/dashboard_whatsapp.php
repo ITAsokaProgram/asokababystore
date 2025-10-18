@@ -547,30 +547,24 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
         </div>
       </div>
     </div>
-    <div class="p-3 border-b border-gray-200 bg-gray-50/50">
-          <select id="status-filter" 
-          class="w-full p-2 border border-gray-300 rounded-md text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500 transition duration-150">
-              <option value="semua">Semua Percakapan</option>
-              <option value="live_chat">Live Chat</option>
-              <option value="umum">Umum</option>
-          </select>
-      </div>
     <div id="chat-layout" class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200">
       <div id="conversation-list-container" class="flex flex-col">
-        <div class="p-4 border-b border-gray-200 flex items-center justify-between bg-gradient-to-r from-gray-50 to-white">
-          <button id="mobile-close-list" class="block md:hidden text-gray-600 hover:text-gray-900 transition-all p-2 rounded-lg -ml-2" title="Kembali ke Chat">
-            <i class="fas fa-arrow-left h-5 w-5"></i>
-          </button>
-          <h2 class="text-base md:text-lg font-semibold text-gray-700 flex items-center gap-2">
-            <i class="fas fa-comments text-blue-500"></i>
-            Percakapan
-          </h2>
-          <button id="toggle-conversation-list" class="hidden md:block text-gray-600 hover:text-gray-900 transition-all p-2 rounded-lg" title="Collapse/Expand">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-            </svg>
-          </button>
-        </div>
+        <div class="p-4 border-b border-gray-200 flex items-center md:justify-between  gap-3 bg-gradient-to-r from-gray-50 to-white">
+            <button id="mobile-close-list" class="block md:hidden text-gray-600 hover:text-gray-900 transition-all p-2 rounded-lg -ml-2" title="Kembali ke Chat">
+                <i class="fas fa-arrow-left h-5 w-5"></i>
+            </button>
+            
+            <div id="status-filter-buttons" class="flex items-center gap-2 flex-wrap">
+                <button data-filter="semua" class="filter-button active px-3 py-1 rounded-full text-xs font-medium bg-blue-500 text-white transition-all shadow-sm">Semua</button>
+                <button data-filter="live_chat" class="filter-button px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all">Live Chat</button>
+                <button data-filter="umum" class="filter-button px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all">Umum</button>
+            </div>
+            <button id="toggle-conversation-list" class="hidden md:block text-gray-600 hover:text-gray-900 transition-all p-2 rounded-lg" title="Collapse/Expand">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                </svg>
+            </button>
+        </div>
         <div id="conversation-list" class="overflow-y-auto flex-1 bg-white">
           <div class="p-8 text-center text-gray-500">
             <div class="loading-spinner mx-auto" style="border-color: #cbd5e1; border-top-color: #3b82f6;"></div>
@@ -632,6 +626,62 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
   <script src="/src/js/whatsapp/cs_whatsapp.js" type="module"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+      document.getElementById("toggle-sidebar").addEventListener("click", function () {
+        document.getElementById("sidebar").classList.toggle("open");
+      });
+      document.addEventListener("DOMContentLoaded", function () {
+        const sidebar = document.getElementById("sidebar");
+        const closeBtn = document.getElementById("closeSidebar");
 
+        closeBtn.addEventListener("click", function () {
+          sidebar.classList.remove("open"); 
+        });
+      });
+      document.getElementById("toggle-hide").addEventListener("click", function () {
+        var sidebarTexts = document.querySelectorAll(".sidebar-text");
+        let mainContent = document.getElementById("main-content");
+        let sidebar = document.getElementById("sidebar");
+        var toggleButton = document.getElementById("toggle-hide");
+        var icon = toggleButton.querySelector("i");
+
+        if (sidebar.classList.contains("w-64")) {
+          sidebar.classList.remove("w-64", "px-5");
+          sidebar.classList.add("w-16", "px-2");
+          sidebarTexts.forEach((text) => text.classList.add("hidden")); 
+          mainContent.classList.remove("ml-64");
+          mainContent.classList.add("ml-16"); 
+          toggleButton.classList.add("left-20"); 
+          toggleButton.classList.remove("left-64");
+          icon.classList.remove("fa-angle-left"); 
+          icon.classList.add("fa-angle-right");
+        } else {
+          sidebar.classList.remove("w-16", "px-2");
+          sidebar.classList.add("w-64", "px-5");
+          sidebarTexts.forEach((text) => text.classList.remove("hidden")); 
+          mainContent.classList.remove("ml-16");
+          mainContent.classList.add("ml-64");
+          toggleButton.classList.add("left-64"); 
+          toggleButton.classList.remove("left-20");
+          icon.classList.remove("fa-angle-right"); 
+          icon.classList.add("fa-angle-left");
+        }
+      });
+      document.addEventListener("DOMContentLoaded", function () {
+        const profileImg = document.getElementById("profile-img");
+        const profileCard = document.getElementById("profile-card");
+
+        profileImg.addEventListener("click", function (event) {
+          event.preventDefault();
+          profileCard.classList.toggle("show");
+        });
+
+        document.addEventListener("click", function (event) {
+          if (!profileCard.contains(event.target) && !profileImg.contains(event.target)) {
+            profileCard.classList.remove("show");
+          }
+        });
+      });
+  </script>
 </body>
 </html>

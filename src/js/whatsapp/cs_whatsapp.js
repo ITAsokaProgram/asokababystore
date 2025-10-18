@@ -14,6 +14,9 @@ let currentConversationStatus = null;
 let currentFilter = 'semua';
 
 document.addEventListener('DOMContentLoaded', () => {
+    if (window.innerWidth <= 768) {
+        document.getElementById('conversation-list-container').classList.add('mobile-show');
+    }
     if (!token) {
         console.error("Token admin tidak ditemukan. Harap login kembali.");
         Swal.fire('Error', 'Token tidak ditemukan, harap login kembali.', 'error');
@@ -108,10 +111,22 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    const statusFilter = document.getElementById('status-filter');
-    if (statusFilter) {
-        statusFilter.addEventListener('change', () => {
-            currentFilter = statusFilter.value;
+    const filterButtonsContainer = document.getElementById('status-filter-buttons');
+    if (filterButtonsContainer) {
+        filterButtonsContainer.addEventListener('click', (e) => {
+            const button = e.target.closest('.filter-button');
+            if (!button) return;
+
+            currentFilter = button.dataset.filter;
+            
+            filterButtonsContainer.querySelectorAll('.filter-button').forEach(btn => {
+                btn.classList.remove('active', 'bg-blue-500', 'text-white', 'shadow-sm');
+                btn.classList.add('bg-gray-100', 'text-gray-600', 'hover:bg-gray-200');
+            });
+            
+            button.classList.add('active', 'bg-blue-500', 'text-white', 'shadow-sm');
+            button.classList.remove('bg-gray-100', 'text-gray-600', 'hover:bg-gray-200');
+
             fetchAndRenderConversations();
         });
     }
@@ -396,7 +411,13 @@ function clearActiveConversation() {
 
     activeChat.classList.add('hidden');
     activeChat.classList.remove('flex');
-    chatPlaceholder.classList.remove('hidden');
+    
+    if (window.innerWidth <= 768) {
+        document.getElementById('conversation-list-container').classList.add('mobile-show');
+        chatPlaceholder.classList.add('hidden');
+    } else {
+        chatPlaceholder.classList.remove('hidden');
+    }
 
     chatHeader.classList.remove('show');
     chatWithPhone.textContent = ''; 
