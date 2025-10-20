@@ -81,6 +81,50 @@ if ($shopeeService->isConnected()) {
             $error_message = $detail_response['message']; 
         } elseif (isset($detail_response['response']['order_list'])) {
             $order_details_list = $detail_response['response']['order_list'];
+
+            // === TAMBAHAN KODE: MULAI ===
+            // Cek stok untuk menentukan "Ambil Di"
+            if (!empty($order_details_list) && isset($conn)) { // $conn dari aa_kon_sett.php
+                
+                // Siapkan statement SQL di luar loop
+                $stmt_stock = $conn->prepare("SELECT qty FROM s_barang WHERE kd_store = 3190 AND item_n = ?");
+                
+                if ($stmt_stock) {
+                    // Loop menggunakan referensi (&) agar bisa memodifikasi array aslinya
+                    foreach ($order_details_list as &$order) { 
+                        if (isset($order['item_list']) && is_array($order['item_list'])) {
+                            foreach ($order['item_list'] as &$item) { 
+                                
+                                // Tentukan SKU (logic disamakan dgn JS: model_sku > item_sku)
+                                $sku = trim($item['model_sku'] ?: ($item['item_sku'] ?: ''));
+                                $order_qty = (int)$item['model_quantity_purchased'];
+                                
+                                // Set nilai default
+                                $item['ambil_di'] = ''; 
+
+                                if (!empty($sku)) {
+                                    $stmt_stock->bind_param('s', $sku);
+                                    $stmt_stock->execute();
+                                    $result_stock = $stmt_stock->get_result();
+                                    
+                                    if ($row_stock = $result_stock->fetch_assoc()) {
+                                        $s_barang_qty = (int)$row_stock['qty'];
+                                        
+                                        // Terapkan logika
+                                        if ($order_qty <= $s_barang_qty) {
+                                            $item['ambil_di'] = 'ADMB';
+                                        }
+                                    }
+                                    // Jika $row_stock tidak ada, 'ambil_di' tetap empty string
+                                }
+                            }
+                            unset($item); // Hapus referensi item
+                        }
+                    }
+                    unset($order); // Hapus referensi order
+                    $stmt_stock->close();
+                }
+            }
         }
 
     } 
@@ -331,7 +375,7 @@ if ($shopeeService->isConnected()) {
 
                 const headers = [
                     "Order SN", "Tanggal Order", "SKU", "Nama Barang", "Variasi",
-                    "Qty", "Harga Satuan", "Total Pesanan"
+                    "Qty", "Ambil Di", "Harga Satuan", "Total Pesanan"
                 ];
 
                 const dataRows = [];
@@ -353,6 +397,7 @@ if ($shopeeService->isConnected()) {
                         const variasi = item.model_name || '';
                         const qty = item.model_quantity_purchased;
                         const hargaSatuan = item.model_discounted_price;
+                        const ambilDi = item.ambil_di || '';
 
                         dataRows.push([
                             itemIndex === 0 ? orderSN : "",
@@ -361,8 +406,10 @@ if ($shopeeService->isConnected()) {
                             namaBarang,
                             variasi,
                             qty,
+                            ambilDi,
                             hargaSatuan,
                             itemIndex === 0 ? totalPesanan : "",
+                            
                         ]);
                     });
 
@@ -371,7 +418,7 @@ if ($shopeeService->isConnected()) {
                         const endRow = currentRowIndex + numItems - 1;
                         merges.push({ s: { r: startRow, c: 0 }, e: { r: endRow, c: 0 } }); 
                         merges.push({ s: { r: startRow, c: 1 }, e: { r: endRow, c: 1 } }); 
-                        merges.push({ s: { r: startRow, c: 7 }, e: { r: endRow, c: 7 } }); 
+                        merges.push({ s: { r: startRow, c: 8 }, e: { r: endRow, c: 8 } });
                     }
                     
                     currentRowIndex += numItems;
@@ -420,7 +467,7 @@ if ($shopeeService->isConnected()) {
                         if (C === 5) { 
                             ws[cellRef].t = 'n';
                         }
-                        if (C === 6 || C === 7) { 
+                        if (C === 7 || C === 8) { 
                             if (ws[cellRef].v) { 
                                 ws[cellRef].t = 'n';
                                 ws[cellRef].s.numFmt = "#,##0";
