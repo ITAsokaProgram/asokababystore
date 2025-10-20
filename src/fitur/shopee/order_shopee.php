@@ -1,7 +1,8 @@
 <?php
+date_default_timezone_set('UTC');
 session_start();
 include '../../../aa_kon_sett.php';
-require_once __DIR__ . '/lib/ShopeeApiService.php'; 
+require_once __DIR__ . '/lib/ShopeeApiService.php';
 
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
@@ -28,118 +29,280 @@ if (!$menuHandler->initialize()) {
     exit();
 }
 
-$detailed_products = [];
-$product_list_response = null;
+$order_list_response = null;
+$order_details_list = [];
 $auth_url = null;
+$error_message = null; 
 
 if ($shopeeService->isConnected()) {
-  $product_list_response = $shopeeService->getProductList(['offset' => 0, 'page_size' => 20, 'item_status' => 'NORMAL']);
-    
-    if (isset($product_list_response['error']) && 
-        ($product_list_response['error'] === 'invalid_acceess_token' || $product_list_response['error'] === 'invalid_access_token')) {
+    $time_to = time();
+    $time_from = $time_to - (14 * 24 * 60 * 60); 
+
+    $order_list_params = [
+        'time_range_field' => 'create_time',
+        'time_from' => $time_from,
+        'time_to' => $time_to,
+        'page_size' => 20,
+        'order_status' => 'READY_TO_SHIP',
+        'response_optional_fields' => 'order_status',
+        'request_order_status_pending' => true,
+        'logistics_channel_id' => 91007 
+    ];
+
+    $order_list_response = $shopeeService->getOrderList($order_list_params);
+
+    // ddd($order_list_response);
+    // die();
+    if (isset($order_list_response['error']) &&
+        ($order_list_response['error'] === 'invalid_acceess_token' || $order_list_response['error'] === 'invalid_access_token')) {
         
         $shopeeService->disconnect();
-        
         $_SESSION['shopee_flash_message'] = 'Sesi Shopee Anda telah habis (expired). Silakan hubungkan kembali.';
-        
         header('Location: ' . strtok($redirect_uri, '?'));
         exit();
     }
 
-  $detailed_products = $shopeeService->getDetailedProductInfo($product_list_response);
-} else {
-  $auth_url = $shopeeService->getAuthUrl($redirect_uri);
-}
+    if (!empty($order_list_response['error'])) {
+        $error_message = $order_list_response['message'];
+    }
 
-function getPriceRange($models) {
-    if (empty($models)) return null;
-    $prices = array_column(array_column($models, 'price_info'), 0);
-    $original_prices = array_column($prices, 'original_price');
-    if (empty($original_prices)) return null;
-    
-    $minPrice = min($original_prices);
-    $maxPrice = max($original_prices);
-    
-    return ($minPrice == $maxPrice)
-        ? number_format($minPrice, 0, ',', '.')
-        : number_format($minPrice, 0, ',', '.') . ' - ' . number_format($maxPrice, 0, ',', '.');
+    if (empty($error_message) && isset($order_list_response['response']['order_list']) && !empty($order_list_response['response']['order_list'])) {
+        $order_sn_list = array_column($order_list_response['response']['order_list'], 'order_sn');
+        
+        $order_detail_params = [
+            'order_sn_list' => implode(',', $order_sn_list),
+            'response_optional_fields' => 'item_list,shipping_carrier,total_amount,cod,create_time,order_status',
+            'request_order_status_pending' => true
+        ];
+
+        $detail_response = $shopeeService->getOrderDetail($order_detail_params);
+        
+        if (!empty($detail_response['error'])) {
+            $error_message = $detail_response['message']; 
+        } elseif (isset($detail_response['response']['order_list'])) {
+            $order_details_list = $detail_response['response']['order_list'];
+        }
+
+    } 
+
+} else {
+    $auth_url = $shopeeService->getAuthUrl($redirect_uri);
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Shopee</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
-  <link rel="stylesheet" href="../../style/header.css">
-  <link rel="stylesheet" href="../../style/sidebar.css">
-  <link rel="stylesheet" href="../../style/animation-fade-in.css">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../../style/default-font.css">
-  <link rel="stylesheet" href="../../output2.css">
-  <link rel="stylesheet" href="../../style/shopee/shopee.css">
-  <link rel="icon" type="image/png" href="../../../public/images/logo1.png">
-  <style>
-   
-  </style>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Shopee - Order</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
+    <link rel="stylesheet" href="../../style/header.css">
+    <link rel="stylesheet" href="../../style/sidebar.css">
+    <link rel="stylesheet" href="../../style/animation-fade-in.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../style/default-font.css">
+    <link rel="stylesheet" href="../../output2.css">
+    <link rel="stylesheet" href="../../style/shopee/shopee.css">
+    <link rel="icon" type="image/png" href="../../../public/images/logo1.png">
+    <style>
+        .badge-status-ready_to_ship {
+            background-color: #fef3c7; 
+            color: #b45309; 
+            font-weight: 600;
+        }
+        .badge-cod {
+            background-color: #dbeafe; 
+            color: #1e40af; 
+            font-weight: 600;
+        }
+        .badge-price {
+            background-color: #dcfce7; 
+            color: #15803d; 
+            font-weight: 600;
+        }
+    </style>
 </head>
 
 <body class="bg-gray-50 overflow-auto">
 
-  <?php include '../../component/navigation_report.php' ?>
-  <?php include '../../component/sidebar_report.php' ?>
-  
-  <main id="main-content" class="flex-1 p-6 ml-64">
-    <section class="min-h-[85vh] px-2 md:px-6">
-      <div class="w-full max-w-7xl mx-auto">
-        
-        <div class="header-card p-6 rounded-2xl mb-6">
-          <div class="flex items-center justify-between flex-wrap gap-4">
-            <div class="flex items-center gap-4">
-              <div class="icon-wrapper">
-                <img src="../../../public/images/logo/shopee.png" alt="Shopee Logo" class="h-10 w-10">
-              </div>
-              <div>
-                <h1 class="text-2xl font-bold text-gray-800 mb-1">Order Shopee</h1>
-              </div>
+    <?php include '../../component/navigation_report.php' ?>
+    <?php include '../../component/sidebar_report.php' ?>
+
+    <main id="main-content" class="flex-1 p-6 ml-64">
+        <section class="min-h-[85vh] px-2 md:px-6">
+            <div class="w-full max-w-7xl mx-auto">
+
+                <div class="header-card p-6 rounded-2xl mb-6">
+                    <div class="flex items-center justify-between flex-wrap gap-4">
+                        <div class="flex items-center gap-4">
+                            <div class="icon-wrapper">
+                                <img src="../../../public/images/logo/shopee.png" alt="Shopee Logo" class="h-10 w-10">
+                            </div>
+                            <div>
+                                <h1 class="text-2xl font-bold text-gray-800 mb-1">Daftar Pesanan</h1>
+                                <p class="text-sm text-gray-600">Kelola pesanan yang masuk</p>
+                            </div>
+                        </div>
+                        <?php if ($shopeeService->isConnected()): ?>
+                            <a href="?action=disconnect" class="inline-flex items-center gap-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold py-3 px-6 rounded-xl transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                                <i class="fas fa-unlink"></i>
+                                <span>Disconnect</span>
+                            </a>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <?php if ($shopeeService->isConnected()): ?>
+                    <div class="section-card rounded-2xl overflow-hidden">
+                        <div class="section-header p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h2 class="text-xl font-bold text-gray-800 mb-1">Daftar Order</h2>
+                                    <p class="text-sm text-gray-600">Pesanan yang siap dikirim (READY_TO_SHIP) - 14 hari terakhir</p>
+                                </div>
+                                <div class="stats-badge" style="background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); color: #0369a1; border: 1px solid #7dd3fc;">
+                                    <i class="fas fa-receipt"></i>
+                                    <span><?php echo count($order_details_list); ?> Pesanan</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <?php if (!empty($error_message)): ?>
+                            <div class="p-6">
+                                <div class="bg-red-50 border-2 border-red-200 text-red-700 px-6 py-4 rounded-xl" role="alert">
+                                    <div class="flex items-center gap-3">
+                                        <i class="fas fa-exclamation-circle text-2xl"></i>
+                                        <div>
+                                            <strong class="font-bold text-lg">Error API!</strong>
+                                            <p class="text-sm mt-1"><?php echo htmlspecialchars($error_message); ?></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        <?php elseif (!empty($order_details_list)): ?>
+                            <div class="divide-y divide-gray-100">
+                                <?php foreach ($order_details_list as $order): ?>
+                                    <div class="order-card p-6 hover:bg-gray-50 transition">
+                                        <div class="flex flex-wrap items-center justify-between gap-4 mb-5">
+                                            <div>
+                                                <h3 class="font-bold text-gray-900 text-lg">
+                                                    Nomor Pesanan: <?php echo htmlspecialchars($order['order_sn']); ?>
+                                                </h3>
+                                                <p class="text-sm text-gray-500">
+                                                    <i class="fas fa-clock mr-1"></i>
+                                                    <?php echo date('d M Y, H:i', $order['create_time']); ?>
+                                                </p>
+                                            </div>
+                                            <div class="flex flex-wrap gap-2">
+                                                <span class="stats-badge badge-price">
+                                                    <i class="fas fa-tag"></i>
+                                                    <span>Rp <?php echo number_format($order['total_amount'], 0, ',', '.'); ?></span>
+                                                </span>
+                                                <span class="stats-badge badge-status-<?php echo strtolower($order['order_status']); ?>">
+                                                    <?php echo htmlspecialchars($order['order_status']); ?>
+                                                </span>
+                                                <?php if ($order['cod']): ?>
+                                                    <span class="stats-badge badge-cod">
+                                                        <i class="fas fa-hand-holding-usd"></i>
+                                                        <span>COD</span>
+                                                    </span>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                        
+                                        <p class="text-sm text-gray-700 mb-4 font-medium">
+                                            <i class="fas fa-truck mr-2 text-gray-500"></i>
+                                            <?php echo htmlspecialchars($order['shipping_carrier']); ?>
+                                        </p>
+
+                                        <div class="space-y-4">
+                                            <?php foreach ($order['item_list'] as $item): ?>
+                                                <div class="flex items-center gap-4 p-4 bg-white rounded-lg border border-gray-200">
+                                                    <div class="flex-shrink-0">
+                                                        <img src="<?php echo htmlspecialchars($item['image_info']['image_url'] ?? 'https://placehold.co/80x80'); ?>" 
+                                                             alt="<?php echo htmlspecialchars($item['item_name']); ?>"
+                                                             class="w-16 h-16 object-cover rounded-lg bg-gray-100 border border-gray-200">
+                                                    </div>
+                                                    <div class="flex-grow min-w-0">
+                                                        <p class="font-semibold text-gray-800 line-clamp-2"><?php echo htmlspecialchars($item['item_name']); ?></p>
+                                                        <?php if (!empty($item['model_name'])): ?>
+                                                            <p class="text-sm text-gray-500">Variasi: <?php echo htmlspecialchars($item['model_name']); ?></p>
+                                                        <?php endif; ?>
+                                                        <p class="text-sm text-gray-500">SKU: <?php echo htmlspecialchars(trim($item['model_sku']) ?: ($item['item_sku'] ?: 'N/A')); ?></p>
+                                                    </div>
+                                                    <div class="flex-shrink-0 text-right">
+                                                        <p class="font-semibold text-gray-900">
+                                                            <?php echo $item['model_quantity_purchased']; ?>x 
+                                                            <span class="text-green-700">Rp <?php echo number_format($item['model_discounted_price'], 0, ',', '.'); ?></span>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+
+                        <?php else: ?>
+                            <div class="p-8 text-center">
+                                <i class="fas fa-receipt text-6xl text-gray-300 mb-4"></i>
+                                <p class="text-gray-500 text-lg font-medium">Tidak ada pesanan ditemukan</p>
+                                <p class="text-gray-400 text-sm mt-2">Pesanan (Ready to Ship) akan muncul di sini</p>
+                            </div>
+                        <?php endif; ?>
+                        </div>
+
+                <?php else: ?>
+                    <div class="connect-card p-16 rounded-2xl">
+                        <div class="max-w-md mx-auto text-center py-4">
+                            <div class="icon-wrapper w-24 h-24 mx-auto mb-8 flex items-center justify-center">
+                                <img src="../../../public/images/logo/shopee.png" alt="Shopee" class="h-12 w-12">
+                            </div>
+                            <h2 class="text-3xl font-bold text-gray-800 mb-4">Hubungkan Toko Shopee</h2>
+                            <p class="text-gray-600 mb-8 text-lg leading-relaxed">Kelola pesanan Shopee Anda dengan mudah dari satu dashboard yang terintegrasi</p>
+                            
+                            <?php if(isset($auth_url)): ?>
+                                <a href="<?php echo htmlspecialchars($auth_url); ?>" 
+                                   class="inline-flex items-center justify-center gap-3 w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-4 px-8 rounded-xl text-lg transition shadow-xl hover:shadow-2xl transform hover:-translate-y-1">
+                                    <i class="fas fa-link text-xl"></i>
+                                    <span>Hubungkan Sekarang</span>
+                                </a>
+                            <?php else: ?>
+                                <div class="bg-red-50 border-2 border-red-200 text-red-700 px-6 py-4 rounded-xl">
+                                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                                    <span class="font-semibold">Gagal membuat URL autentikasi</span>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
             </div>
-            
-            <?php if ($shopeeService->isConnected()): ?>
-              <a href="?action=disconnect" class="inline-flex items-center gap-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold py-3 px-6 rounded-xl transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
-                <i class="fas fa-unlink"></i>
-                <span>Disconnect</span>
-              </a>
-            <?php endif; ?>
-          </div>
-        </div>
+        </section>
+    </main>
 
-      </div>
-    </section>
-  </main>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const profileImg = document.getElementById("profile-img");
+            const profileCard = document.getElementById("profile-card");
 
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-  <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const profileImg = document.getElementById("profile-img");
-        const profileCard = document.getElementById("profile-card");
+            if (profileImg && profileCard) {
+                profileImg.addEventListener("click", function (event) {
+                    event.preventDefault();
+                    profileCard.classList.toggle("show");
+                });
 
-        if (profileImg && profileCard) {
-          profileImg.addEventListener("click", function (event) {
-            event.preventDefault();
-            profileCard.classList.toggle("show");
-          });
-
-          document.addEventListener("click", function (event) {
-            if (!profileCard.contains(event.target) && !profileImg.contains(event.target)) {
-              profileCard.classList.remove("show");
+                document.addEventListener("click", function (event) {
+                    if (!profileCard.contains(event.target) && !profileImg.contains(event.target)) {
+                        profileCard.classList.remove("show");
+                    }
+                });
             }
-          });
-        }
-    });
-  </script>
+        });
+    </script>
 </body>
 </html>

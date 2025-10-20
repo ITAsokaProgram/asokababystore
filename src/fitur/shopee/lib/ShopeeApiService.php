@@ -171,4 +171,13 @@ class ShopeeApiService {
         ];
         return $this->call("/api/v2/product/update_price", 'POST', $body);
     }
+
+    // ini order yh bang
+    public function getOrderList($params) {
+        return $this->call("/api/v2/order/get_order_list", 'GET', $params);
+    }
+
+    public function getOrderDetail($params) {
+        return $this->call("/api/v2/order/get_order_detail", 'GET', $params);
+    }
 }
