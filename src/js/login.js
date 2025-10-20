@@ -34,9 +34,18 @@ document.getElementById("login").addEventListener("submit", async (e) => {
       });
       localStorage.setItem("token", data.token);
       // Redirect jika login berhasil
-      setTimeout(() => {
-        window.location.href = "/in_beranda";
-      }, 1200); // Tambah delay 200ms setelah toast selesai
+      if(data.user.username !== "shopee") {
+        setTimeout(() => {
+          if(data.user.username === "shopee") {
+            window.location.href = "/src/fitur/shopee/produk_shopee";
+          }
+          window.location.href = "/in_beranda";
+        }, 200); // Tambah delay 200ms setelah toast selesai
+      }else {
+          setTimeout(() => {
+              window.location.href = "/src/fitur/shopee/produk_shopee";
+          }, 200); // Tambah delay 200ms setelah toast selesai
+      }
     } else {
       const Toast = Swal.mixin({
         toast: true,

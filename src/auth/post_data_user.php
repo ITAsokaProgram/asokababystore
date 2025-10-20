@@ -53,7 +53,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'message' => 'Token Berhasil Disimpan',
                 'token' => $token,
                 'created_at' => $created_at,
-                'expires_at' => $expires_at
+                'expires_at' => $expires_at,
+                'user' => [
+                    'nama' => $nama,
+                    'username' => $inisial,
+                ]
             ]);
         } else {
             echo json_encode(['status' => 'error', 'message' => 'Nama pengguna atau kata sandi salah.']);

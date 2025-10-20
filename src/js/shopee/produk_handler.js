@@ -1,5 +1,5 @@
+import { updateStock, updatePrice, syncStock, syncAllStock } from './api_service.js';
 
-import { updateStock, updatePrice, syncStock } from './api_service.js';
 const updatePriceRange = (form) => {
     const productCard = form.closest('.update-form-wrapper');
     if (!productCard) return;
@@ -49,154 +49,607 @@ const updateTotalStock = (form) => {
     }
 };
 
-document.addEventListener('DOMContentLoaded', () => {
 
-    const handleFormSubmit = async (event, form, apiFunction) => {
-        event.preventDefault();
-        const submitButton = form.querySelector('button[type="submit"]');
-        const originalButtonText = submitButton.innerHTML;
-        
-        submitButton.innerHTML = '<span class="loading-spinner"></span>';
-        submitButton.disabled = true;
-        submitButton.style.opacity = '0.7';
-        submitButton.style.cursor = 'not-allowed';
-
-        try {
-            const formData = new FormData(form);
-            const data = await apiFunction(formData);
-
-            if (data.success) {
-                submitButton.innerHTML = '<i class="fas fa-check"></i> Berhasil!';
-                submitButton.style.opacity = '1';
+const initializeSearchAndFilter = () => {
+    const searchInput = document.getElementById('product-search');
+    const productCards = document.querySelectorAll('.product-card');
+    
+    if (!searchInput) return;
+    
+    
+    let searchTimeout;
+    searchInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            const searchTerm = e.target.value.toLowerCase().trim();
+            
+            productCards.forEach(card => {
+                const productName = card.querySelector('h3')?.textContent.toLowerCase() || '';
+                const productId = card.querySelector('.badge-id')?.textContent.toLowerCase() || '';
+                const matchesSearch = productName.includes(searchTerm) || productId.includes(searchTerm);
                 
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil!',
-                    text: data.message,
-                    timer: 1500,
-                    showConfirmButton: false,
-                    toast: true,
-                    position: 'top-end',
-                    timerProgressBar: true
-                });
-
-                const inputField = form.querySelector('input[type="number"]');
-                if (inputField) {
-                    inputField.value = '';
-                    inputField.blur();
+                if (matchesSearch) {
+                    card.classList.remove('hidden');
+                    card.style.display = '';
+                } else {
+                    card.classList.add('hidden');
+                    card.style.display = 'none';
                 }
-                
-                const modelId = form.dataset.modelId;
-                const itemId = form.dataset.itemId;
-                const uniqueId = modelId || itemId;
+            });
+            
+            updateProductCount();
+        }, 300);
+    });
+    
+    
+    const clearSearchBtn = document.getElementById('clear-search');
+    if (clearSearchBtn) {
+        clearSearchBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            searchInput.dispatchEvent(new Event('input'));
+            searchInput.focus();
+        });
+    }
+};
 
-                if (data.hasOwnProperty('new_stock')) {
-                    const stockDisplay = document.getElementById(`stock-display-${uniqueId}`);
-                    if (stockDisplay) {
-                        stockDisplay.style.transition = 'all 0.3s ease';
-                        stockDisplay.style.transform = 'scale(1.2)';
-                        stockDisplay.style.color = '#1e40af';
-                        stockDisplay.innerText = data.new_stock;
-                        
-                        setTimeout(() => {
-                            stockDisplay.style.transform = 'scale(1)';
-                        }, 300);
-                    }
-                    
-                    if (form.dataset.modelId) {
-                        updateTotalStock(form);
-                    }
-                }
-                
-                if (data.hasOwnProperty('new_price')) {
-                    const formattedPrice = new Intl.NumberFormat('id-ID').format(data.new_price);
-                    const priceDisplay = document.getElementById(`price-display-${uniqueId}`);
-                    if (priceDisplay) {
-                        priceDisplay.style.transition = 'all 0.3s ease';
-                        priceDisplay.style.transform = 'scale(1.2)';
-                        priceDisplay.style.color = '#15803d';
-                        priceDisplay.innerText = formattedPrice;
-                        
-                        setTimeout(() => {
-                            priceDisplay.style.transform = 'scale(1)';
-                        }, 300);
-                    }
-                    
-                    if(form.dataset.modelId) { 
-                        updatePriceRange(form);
-                    }
-                }
-                
-                setTimeout(() => {
-                    submitButton.innerHTML = originalButtonText;
-                }, 1500);
-                
-            } else {
-                throw new Error(data.message);
+const updateProductCount = () => {
+    const visibleProducts = document.querySelectorAll('.product-card:not(.hidden)').length;
+    const countElement = document.querySelector('.stats-badge span');
+    if (countElement) {
+        countElement.textContent = `${visibleProducts} Produk`;
+    }
+};
+
+
+const initializeKeyboardShortcuts = () => {
+    const shortcuts = {
+        'ctrl+k': () => document.getElementById('product-search')?.focus(),
+        'esc': () => {
+            const searchInput = document.getElementById('product-search');
+            if (searchInput && document.activeElement === searchInput) {
+                searchInput.value = '';
+                searchInput.dispatchEvent(new Event('input'));
+                searchInput.blur();
             }
-        } catch (error) {
-            submitButton.innerHTML = '<i class="fas fa-times"></i> Gagal';
+        }
+    };
+    
+    document.addEventListener('keydown', (e) => {
+        const key = (e.ctrlKey || e.metaKey ? 'ctrl+' : '') + e.key.toLowerCase();
+        
+        if (shortcuts[key]) {
+            e.preventDefault();
+            shortcuts[key]();
+        }
+    });
+};
+
+
+const handleFormSubmit = async (event, form, apiFunction, actionType) => {
+    event.preventDefault();
+    const submitButton = form.querySelector('button[type="submit"]');
+    const originalButtonText = submitButton.innerHTML;
+    const inputField = form.querySelector('input[type="number"]');
+    
+    
+    if (inputField && (inputField.value === '' || inputField.value < 0)) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Input Tidak Valid',
+            text: 'Mohon masukkan nilai yang valid (minimal 0)',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2000,
+            timerProgressBar: true
+        });
+        inputField.focus();
+        return;
+    }
+    
+    
+    submitButton.innerHTML = '<span class="loading-spinner"></span>';
+    submitButton.disabled = true;
+    submitButton.style.opacity = '0.7';
+    submitButton.style.cursor = 'not-allowed';
+
+    try {
+        const formData = new FormData(form);
+        const data = await apiFunction(formData);
+
+        if (data.success) {
+            
+            submitButton.innerHTML = '<i class="fas fa-check"></i> Berhasil!';
+            submitButton.classList.add('success');
             submitButton.style.opacity = '1';
             
-            const errorMessage = error.message || 'Terjadi kesalahan. Silakan coba lagi.';
             
-            const parts = errorMessage.split('\n\nPesan Teknis:');
-            const mainMessage = parts[0].replace(/\n/g, '<br>'); 
-            const technicalDetails = parts.length > 1 ? parts[1] : '';
-
-            let alertHtml = `<div class="text-left text-gray-700">${mainMessage}</div>`;
-            if (technicalDetails) {
-                alertHtml += `
-                    <div class="mt-4 text-left">
-                        <pre class="bg-gray-100 p-3 rounded-lg text-xs text-gray-600" style="white-space: pre-wrap; word-break: break-all;"><code>${technicalDetails.trim()}</code></pre>
-                    </div>
-                `;
-            }
-            console.error("error:", error);
-
             Swal.fire({
-                icon: 'error',
-                title: 'Update Gagal!', 
-                html: alertHtml,       
-                confirmButtonColor: '#ef4444',
-                confirmButtonText: 'Tutup'
+                icon: 'success',
+                title: 'Berhasil!',
+                text: data.message,
+                timer: 2000,
+                showConfirmButton: false,
+                toast: true,
+                position: 'top-end',
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer);
+                    toast.addEventListener('mouseleave', Swal.resumeTimer);
+                }
             });
+
+            
+            if (inputField) {
+                inputField.style.transition = 'all 0.3s ease';
+                inputField.style.transform = 'scale(0.95)';
+                inputField.style.opacity = '0.5';
+                setTimeout(() => {
+                    inputField.value = '';
+                    inputField.style.transform = 'scale(1)';
+                    inputField.style.opacity = '1';
+                }, 200);
+                inputField.blur();
+            }
+            
+            const modelId = form.dataset.modelId;
+            const itemId = form.dataset.itemId;
+            const uniqueId = modelId || itemId;
+
+            
+            if (data.hasOwnProperty('new_stock')) {
+                const stockDisplay = document.getElementById(`stock-display-${uniqueId}`);
+                if (stockDisplay) {
+                    stockDisplay.style.transition = 'all 0.3s ease';
+                    stockDisplay.style.transform = 'scale(1.3)';
+                    stockDisplay.style.color = '#1e40af';
+                    stockDisplay.style.fontWeight = '700';
+                    
+                    setTimeout(() => {
+                        stockDisplay.innerText = data.new_stock;
+                        
+                        if (form.dataset.modelId) {
+                            updateTotalStock(form);
+                        }
+                    }, 150);
+                    
+                    setTimeout(() => {
+                        stockDisplay.style.transform = 'scale(1)';
+                        stockDisplay.style.fontWeight = '600';
+                    }, 300);
+                }
+            
+            }
+            
+            
+            if (data.hasOwnProperty('new_price')) {
+                const formattedPrice = new Intl.NumberFormat('id-ID').format(data.new_price);
+                const priceDisplay = document.getElementById(`price-display-${uniqueId}`);
+                if (priceDisplay) {
+                    priceDisplay.style.transition = 'all 0.3s ease';
+                    priceDisplay.style.transform = 'scale(1.3)';
+                    priceDisplay.style.color = '#15803d';
+                    priceDisplay.style.fontWeight = '700';
+                    
+                    setTimeout(() => {
+                        priceDisplay.innerText = formattedPrice;
+                    }, 150);
+                    
+                    setTimeout(() => {
+                        priceDisplay.style.transform = 'scale(1)';
+                        priceDisplay.style.fontWeight = '600';
+                    }, 300);
+                }
+                
+                if(form.dataset.modelId) { 
+                    updatePriceRange(form);
+                }
+            }
+            
             
             setTimeout(() => {
                 submitButton.innerHTML = originalButtonText;
+                submitButton.classList.remove('success');
             }, 2000);
-        } finally {
-            setTimeout(() => {
-                submitButton.disabled = false;
-                submitButton.style.opacity = '1';
-                submitButton.style.cursor = 'pointer';
-            }, 1500);
+            
+        } else {
+            throw new Error(data.message || 'Terjadi kesalahan');
         }
-    };
+    } catch (error) {
+        
+        submitButton.innerHTML = '<i class="fas fa-times"></i> Gagal';
+        submitButton.classList.add('error');
+        submitButton.style.opacity = '1';
+        
+        const errorMessage = error.message || 'Terjadi kesalahan. Silakan coba lagi.';
+        
+        
+        const parts = errorMessage.split('\n\nPesan Teknis:');
+        const mainMessage = parts[0].replace(/\n/g, '<br>'); 
+        const technicalDetails = parts.length > 1 ? parts[1] : '';
 
-    document.querySelectorAll('.update-stock-form').forEach(form => {
-        form.addEventListener('submit', (event) => handleFormSubmit(event, form, updateStock));
-    });
+        let alertHtml = `<div class="text-left text-gray-700">${mainMessage}</div>`;
+        if (technicalDetails) {
+            alertHtml += `
+                <details class="mt-4">
+                    <summary class="cursor-pointer text-sm font-semibold text-gray-600 hover:text-gray-800">
+                        <i class="fas fa-code mr-1"></i> Detail Teknis
+                    </summary>
+                    <pre class="mt-2 bg-gray-100 p-3 rounded-lg text-xs text-gray-600 overflow-auto" style="white-space: pre-wrap; word-break: break-all;"><code>${technicalDetails.trim()}</code></pre>
+                </details>
+            `;
+        }
+        
+        console.error("Error:", error);
 
-    document.querySelectorAll('.update-price-form').forEach(form => {
-        form.addEventListener('submit', (event) => handleFormSubmit(event, form, updatePrice));
-    });
+        Swal.fire({
+            icon: 'error',
+            title: 'Update Gagal!', 
+            html: alertHtml,       
+            confirmButtonColor: '#ef4444',
+            confirmButtonText: 'Tutup',
+            showClass: {
+                popup: 'animate__animated animate__shakeX'
+            }
+        });
+        
+        
+        if (inputField) {
+            inputField.style.animation = 'shake 0.5s';
+            setTimeout(() => {
+                inputField.style.animation = '';
+            }, 500);
+        }
+        
+        
+        setTimeout(() => {
+            submitButton.innerHTML = originalButtonText;
+            submitButton.classList.remove('error');
+        }, 2500);
+    } finally {
+        setTimeout(() => {
+            submitButton.disabled = false;
+            submitButton.style.opacity = '1';
+            submitButton.style.cursor = 'pointer';
+        }, 2000);
+    }
+};
 
-    document.querySelectorAll('.sync-stock-form').forEach(form => {
-        form.addEventListener('submit', (event) => handleFormSubmit(event, form, syncStock));
+
+const handleSyncWithConfirmation = async (event, form) => {
+    event.preventDefault();
+    
+    const sku = form.querySelector('input[name="sku"]').value;
+    
+    const result = await Swal.fire({
+        title: 'Konfirmasi Sync Stok',
+        html: `
+            <div class="text-left text-gray-700">
+                <p class="mb-2">Anda akan menyamakan stok Shopee dengan stok database untuk:</p>
+                <div class="bg-gray-100 p-3 rounded-lg mt-3">
+                    <p class="font-mono text-sm"><strong>SKU:</strong> ${sku}</p>
+                </div>
+                <p class="mt-3 text-sm text-gray-600">
+                    <i class="fas fa-info-circle mr-1"></i> Stok di Shopee akan diubah mengikuti stok di database.
+                </p>
+            </div>
+        `,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#8b5cf6',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: '<i class="fas fa-sync-alt mr-1"></i> Ya, Sync Sekarang',
+        cancelButtonText: 'Batal',
+        reverseButtons: true
     });
     
+    if (result.isConfirmed) {
+        await handleFormSubmit(event, form, syncStock, 'sync');
+    }
+};
+const scrapeProductDataForSync = () => {
+  const productsToSync = [];
+  document.querySelectorAll('.sync-stock-form').forEach(form => {
+    const itemId = form.querySelector('input[name="item_id"]')?.value;
+    const modelId = form.querySelector('input[name="model_id"]')?.value;
+    const sku = form.querySelector('input[name="sku"]')?.value;
+
+    if (itemId && modelId && sku) {
+      productsToSync.push({
+        item_id: parseInt(itemId),
+        model_id: parseInt(modelId), 
+        sku: sku
+      });
+    }
+  });
+  return productsToSync;
+};
+
+const handleSyncAllClick = async (event) => {
+  const btn = event.currentTarget;
+  const originalHtml = btn.innerHTML;
+  const productsToSync = scrapeProductDataForSync();
+
+  if (productsToSync.length === 0) {
+    Swal.fire('Tidak Ada Produk', 'Tidak ada produk yang valid (dengan SKU) untuk disinkronkan.', 'info');
+    return;
+  }
+
+  const result = await Swal.fire({
+    title: `Konfirmasi Sync Total`,
+    html: `Anda akan menyinkronkan stok untuk <strong>${productsToSync.length}</strong> produk/variasi.<br><br>Stok di Shopee akan di-update massal sesuai dengan stok di database (berdasarkan SKU). Proses ini mungkin memakan waktu.`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#4f46e5',
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: '<i class="fas fa-sync-alt mr-1"></i> Ya, Sync Semuanya!',
+    cancelButtonText: 'Batal',
+    reverseButtons: true
+  });
+
+  if (!result.isConfirmed) return;
+
+  btn.innerHTML = '<span class="loading-spinner"></span> Menyinkronkan...';
+  btn.disabled = true;
+  
+  Swal.fire({
+    title: 'Sinkronisasi Dimulai...',
+    html: `Memproses ${productsToSync.length} item. Harap tunggu...<br><br>Jangan tutup halaman ini.`,
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    }
+  });
+
+  try {
+    const data = { products: productsToSync };
+    const response = await syncAllStock(data);
+
+    if (response.success) {
+      let failedDetailsHtml = '';
+      if (response.failed > 0 && response.failed_details.length > 0) {
+          failedDetailsHtml = `
+            <details class="mt-4">
+              <summary class="cursor-pointer text-sm font-semibold text-gray-600 hover:text-gray-800">
+                <i class="fas fa-code mr-1"></i> Lihat Detail Kegagalan
+              </summary>
+              <pre class="mt-2 bg-gray-100 p-3 rounded-lg text-xs text-left text-gray-600 overflow-auto" style="white-space: pre-wrap; word-break: break-all; max-height: 150px;"><code>${response.failed_details.join('\n')}</code></pre>
+            </details>
+          `;
+      }
+
+      let skippedDetailsHtml = ''; 
+      if (response.skipped > 0 && response.skipped_details && response.skipped_details.length > 0) {
+        skippedDetailsHtml = `
+          <details class="mt-4">
+            <summary class="cursor-pointer text-sm font-semibold text-gray-600 hover:text-gray-800">
+              <i class="fas fa-code mr-1"></i> Lihat Detail Item Dilewati
+            </summary>
+            <pre class="mt-2 bg-gray-100 p-3 rounded-lg text-xs text-left text-gray-600 overflow-auto" style="white-space: pre-wrap; word-break: break-all; max-height: 150px;"><code>${response.skipped_details.join('\n')}</code></pre>
+          </details>
+        `;
+      }
+      
+      Swal.fire({
+        title: 'Sinkronisasi Selesai!',
+        html: `
+          <div class="text-left space-y-2">
+            <p><strong><i class="fas fa-check-circle text-green-500"></i> Berhasil disinkronkan:</strong> ${response.synced} item</p>
+            <p><strong><i class="fas fa-times-circle text-red-500"></i> Gagal disinkronkan:</strong> ${response.failed} item</p>
+            <p><strong><i class="fas fa-minus-circle text-gray-500"></i> Dilewati (SKU N/A / tidak ada di DB):</strong> ${response.skipped} item</p>
+          </div>
+          ${skippedDetailsHtml}  
+          ${failedDetailsHtml}   
+          <p class="mt-4">Halaman akan dimuat ulang untuk menampilkan stok terbaru...</p>
+        `,
+        icon: 'success',
+        allowOutsideClick: false,
+        confirmButtonText: 'Muat Ulang Halaman',
+      }).then(() => {
+        location.reload();
+      });
+    } else {
+      throw new Error(response.message || 'Gagal menyinkronkan data.');
+    }
+
+  } catch (error) {
+    console.error('Sync All Error:', error);
+    Swal.fire({
+      title: 'Error!',
+      text: `Terjadi kesalahan: ${error.message}`,
+      icon: 'error'
+    });
+  } finally {
+    btn.innerHTML = originalHtml;
+    btn.disabled = false;
+  }
+};
+
+const enhanceInputFields = () => {
     document.querySelectorAll('input[type="number"]').forEach(input => {
+        
         input.addEventListener('input', function() {
             if (this.value < 0) this.value = 0;
         });
         
+        
         input.addEventListener('focus', function() {
             this.parentElement.style.transform = 'scale(1.01)';
+            this.parentElement.style.transition = 'transform 0.2s ease';
         });
         
         input.addEventListener('blur', function() {
             this.parentElement.style.transform = 'scale(1)';
         });
+        
+        
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const submitBtn = this.closest('form').querySelector('button[type="submit"]');
+                if (submitBtn && !submitBtn.disabled) {
+                    submitBtn.click();
+                }
+            }
+        });
+        
+        
+        input.addEventListener('blur', function() {
+            if (this.value !== '') {
+                const val = parseInt(this.value);
+                if (!isNaN(val)) {
+                    this.value = val;
+                }
+            }
+        });
     });
+};
+
+
+const showKeyboardHint = (message) => {
+    const existingHint = document.querySelector('.keyboard-hint');
+    if (existingHint) existingHint.remove();
+    
+    const hint = document.createElement('div');
+    hint.className = 'keyboard-hint';
+    hint.innerHTML = `<i class="fas fa-keyboard mr-1"></i> ${message}`;
+    document.body.appendChild(hint);
+    
+    setTimeout(() => hint.classList.add('show'), 10);
+    
+    setTimeout(() => {
+        hint.classList.remove('show');
+        setTimeout(() => hint.remove(), 300);
+    }, 2000);
+};
+
+
+const scrollToElement = (element) => {
+    if (!element) return;
+    
+    const yOffset = -100;
+    const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+    
+    window.scrollTo({
+        top: y,
+        behavior: 'smooth'
+    });
+};
+
+
+const initializeAutosave = () => {
+    const forms = document.querySelectorAll('.update-stock-form, .update-price-form');
+    
+    forms.forEach(form => {
+        const input = form.querySelector('input[type="number"]');
+        if (!input) return;
+        
+        const formId = form.dataset.modelId || form.dataset.itemId;
+        const formType = form.classList.contains('update-stock-form') ? 'stock' : 'price';
+        const storageKey = `shopee_draft_${formType}_${formId}`;
+        
+        
+        const savedValue = sessionStorage.getItem(storageKey);
+        if (savedValue) {
+            input.value = savedValue;
+            input.style.background = '#fef3c7';
+            setTimeout(() => {
+                input.style.background = 'white';
+            }, 1000);
+        }
+        
+        
+        input.addEventListener('input', () => {
+            if (input.value) {
+                sessionStorage.setItem(storageKey, input.value);
+            } else {
+                sessionStorage.removeItem(storageKey);
+            }
+        });
+        
+        
+        form.addEventListener('submit', () => {
+            setTimeout(() => {
+                sessionStorage.removeItem(storageKey);
+            }, 1000);
+        });
+    });
+};
+
+
+const addShakeAnimation = () => {
+    if (!document.getElementById('shake-animation-style')) {
+        const style = document.createElement('style');
+        style.id = 'shake-animation-style';
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+                20%, 40%, 60%, 80% { transform: translateX(5px); }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+};
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    
+    addShakeAnimation();
+    
+    
+    initializeSearchAndFilter();
+    
+    
+    initializeKeyboardShortcuts();
+    
+    
+    setTimeout(() => {
+        showKeyboardHint('Tekan Ctrl+K untuk mencari produk');
+    }, 1000);
+    
+    
+    enhanceInputFields();
+    
+    
+    initializeAutosave();
+
+    
+    document.querySelectorAll('.update-stock-form').forEach(form => {
+        form.addEventListener('submit', (event) => handleFormSubmit(event, form, updateStock, 'stock'));
+    });
+
+    
+    document.querySelectorAll('.update-price-form').forEach(form => {
+        form.addEventListener('submit', (event) => handleFormSubmit(event, form, updatePrice, 'price'));
+    });
+
+    
+    document.querySelectorAll('.sync-stock-form').forEach(form => {
+        form.addEventListener('submit', (event) => handleSyncWithConfirmation(event, form));
+    });
+    
+    const syncAllBtn = document.getElementById('sync-all-stock-btn');
+    if (syncAllBtn) {
+        syncAllBtn.addEventListener('click', handleSyncAllClick);
+    }
+    
+    const profileImg = document.getElementById("profile-img");
+    const profileCard = document.getElementById("profile-card");
+
+    if (profileImg && profileCard) {
+        profileImg.addEventListener("click", function (event) {
+            event.preventDefault();
+            profileCard.classList.toggle("show");
+        });
+
+        document.addEventListener("click", function (event) {
+            if (!profileCard.contains(event.target) && !profileImg.contains(event.target)) {
+                profileCard.classList.remove("show");
+            }
+        });
+    }
+    
+    
+    document.body.classList.add('loaded');
 });

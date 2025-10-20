@@ -123,7 +123,41 @@ function getPriceRange($models) {
   <link rel="stylesheet" href="../../style/shopee/shopee.css">
   <link rel="icon" type="image/png" href="../../../public/images/logo1.png">
   <style>
-    
+    .skeleton-loader {
+        display: none;
+    }
+    .skeleton-loader.active {
+        display: block;
+    }
+    kbd {
+      background-color: #f3f4f6;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      display: inline-block;
+      font-family: 'Courier New', monospace;
+      font-size: 0.875em;
+      font-weight: 600;
+      line-height: 1;
+      padding: 0.25rem 0.5rem;
+      color: #374151;
+    }
+    @media (max-width: 640px) {
+      .product-card .flex {
+        flex-direction: column;
+      }
+      
+      .product-card .product-image {
+        width: 100%;
+        max-width: 200px;
+        margin: 0 auto;
+      }
+      
+      .product-card .product-image img {
+        width: 100%;
+        height: auto;
+      }
+    }
   </style>
 </head>
 
@@ -158,6 +192,27 @@ function getPriceRange($models) {
         </div>
 
         <?php if ($shopeeService->isConnected()): ?>
+           <div class="search-filter-section">
+            <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
+              <div class="search-box w-full md:w-auto">
+                <i class="fas fa-search"></i>
+                <input 
+                  type="text" 
+                  id="product-search" 
+                  placeholder="Cari produk berdasarkan nama atau ID..." 
+                  autocomplete="off"
+                  aria-label="Cari produk"
+                >
+                <button id="clear-search" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              <button id="sync-all-stock-btn" class="">
+                <i class="fas fa-sync-alt"></i>
+                <span>Sync Semua Stok ke DB</span>
+             </button>
+            </div>
+          </div>
           <div class="section-card rounded-2xl overflow-hidden">
             <div class="section-header p-6">
               <div class="flex items-center justify-between">
@@ -195,16 +250,16 @@ function getPriceRange($models) {
                           </span>
                           <span class="stats-badge badge-stock">
                             <i class="fas fa-boxes"></i>
-                            <span>Stok: <strong id="stock-display-<?php echo $item['item_id']; ?>"><?php echo htmlspecialchars($item['calculated_total_stock'] ?? $item['stock_info_v2']['summary_info']['total_available_stock'] ?? $item['stock_info'][0]['seller_stock'] ?? 'N/A'); ?></strong></span>
+                            <span>Stok Shopee: <strong id="stock-display-<?php echo $item['item_id']; ?>"><?php echo htmlspecialchars($item['calculated_total_stock'] ?? $item['stock_info_v2']['summary_info']['total_available_stock'] ?? $item['stock_info'][0]['seller_stock'] ?? ''); ?></strong></span>
                           </span>
                           <?php if (!(isset($item['has_model']) && $item['has_model'] === true && !empty($item['models']))): ?>
                               <?php
                                 $item_sku = $item['item_sku'] ?? null;
-                                $db_stock = $sku_stock_map[$item_sku] ?? 'N/A';
+                                $db_stock = $sku_stock_map[$item_sku] ?? '';
                               ?>
                               <span class="stats-badge" style="background-color: #f3e8ff; color: #581c87; border-color: #e9d5ff;">
                                 <i class="fas fa-database fa-fw"></i>
-                                <span>Stok DB: <strong><?php echo $db_stock; ?></strong></span>
+                                <span>Stok Sistem: <strong><?php echo $db_stock; ?></strong></span>
                               </span>
                           <?php endif; ?>
                         </div>
@@ -213,7 +268,7 @@ function getPriceRange($models) {
                           <span class="badge-id">ID: <?php echo htmlspecialchars($item['item_id']); ?></span>
                           
                           <?php if (!(isset($item['has_model']) && $item['has_model'] === true && !empty($item['models']))): ?>
-                            <span class="badge-id">SKU: <?php echo htmlspecialchars($item['item_sku'] ?? 'N/A'); ?></span>
+                            <span class="badge-id">SKU: <?php echo htmlspecialchars($item['item_sku'] ?? ''); ?></span>
                           <?php endif; ?>
                           </div>
                       </div>
@@ -236,79 +291,85 @@ function getPriceRange($models) {
                                       💰 Rp <span id="price-display-<?php echo $model['model_id']; ?>" class="variant-price"><?php echo number_format($model['price_info'][0]['original_price'] ?? 0, 0, ',', '.'); ?></span>
                                     </span>
                                     <span class="text-xs" style="background: #e0e7ff; color: #3730a3; padding: 4px 8px; border-radius: 6px; font-weight: 600;">
-                                      SKU: <strong><?php echo htmlspecialchars($model['model_sku'] ?? 'N/A'); ?></strong>
+                                      SKU: <strong><?php echo htmlspecialchars($model['model_sku'] ?? ''); ?></strong>
                                     </span>
                                     <span class="text-xs" style="background: #dbeafe; color: #1e40af; padding: 4px 8px; border-radius: 6px; font-weight: 600;">
-                                      📦 Stok: <strong id="stock-display-<?php echo $model['model_id']; ?>" class="variant-stock"><?php echo htmlspecialchars($model['stock_info_v2']['summary_info']['total_available_stock'] ?? $model['stock_info'][0]['seller_stock'] ?? 'N/A'); ?></strong>
+                                      📦 Stok Shopee: <strong id="stock-display-<?php echo $model['model_id']; ?>" class="variant-stock"><?php echo htmlspecialchars($model['stock_info_v2']['summary_info']['total_available_stock'] ?? $model['stock_info'][0]['seller_stock'] ?? ''); ?></strong>
                                     </span>
-
                                     <?php
-                                        $model_sku = $model['model_sku'] ?? null;
-                                        $db_stock = $sku_stock_map[$model_sku] ?? 'N/A';
-                                      ?>
-                                      <span class="text-xs" style="background: #f3e8ff; color: #581c87; padding: 4px 8px; border-radius: 6px; font-weight: 600;">
-                                        <i class="fas fa-database fa-fw"></i> Stok DB: <strong><?php echo $db_stock; ?></strong>
-                                      </span>
-                                    
-                                    </div>
+                                      $model_sku = $model['model_sku'] ?? null;
+                                      $db_stock = $sku_stock_map[trim($model_sku)] ?? '';             
+                                    ?>
+                                    <span class="text-xs" style="background: #f3e8ff; color: #581c87; padding: 4px 8px; border-radius: 6px; font-weight: 600;">
+                                      <i class="fas fa-database fa-fw"></i> Stok Sistem: <strong><?php echo $db_stock; ?></strong>
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
 
-                              <div class="form-row">
+                              <div class="flex md:items-center justify-between md:flex-row flex-col flex-wrap gap-4">
                                 <form class="update-stock-form form-group" data-model-id="<?php echo $model['model_id']; ?>">
                                   <input type="hidden" name="item_id" value="<?php echo htmlspecialchars($item['item_id']); ?>">
                                   <input type="hidden" name="model_id" value="<?php echo htmlspecialchars($model['model_id']); ?>">
-                                  <label class="text-sm font-semibold text-gray-700 whitespace-nowrap">
-                                      Stok Baru:
+                                  <label class="text-sm font-semibold text-gray-700 whitespace-nowrap w-28">
+                                    <i class="fas fa-box mr-1"></i> Stok Baru:
                                   </label>
                                   <input type="number" name="new_stock" placeholder="0" class="input-field flex-1" required>
                                   <button type="submit" class="btn-action btn-stock rounded-xl whitespace-nowrap">
-                                    <i class="fas fa-check mr-1"></i> Update Stok
+                                    Update
                                   </button>
                                 </form>
-                                
-                                <div class="divider"></div>
                                 
                                 <form class="update-price-form form-group" data-model-id="<?php echo $model['model_id']; ?>">
                                   <input type="hidden" name="item_id" value="<?php echo htmlspecialchars($item['item_id']); ?>">
                                   <input type="hidden" name="model_id" value="<?php echo htmlspecialchars($model['model_id']); ?>">
-                                  <label class="text-sm font-semibold text-gray-700 whitespace-nowrap">
-                                      Harga Baru:
+                                  <label class="text-sm font-semibold text-gray-700 whitespace-nowrap w-28">
+                                    <i class="fas fa-tag mr-1"></i> Harga Baru:
                                   </label>
                                   <input type="number" name="new_price" placeholder="0" class="input-field flex-1" required>
                                   <button type="submit" class="btn-action btn-price rounded-xl whitespace-nowrap">
-                                    <i class="fas fa-check mr-1"></i> Update Harga
+                                    Update
                                   </button>
                                 </form>
-                                <div class="divider"></div>
+                                
                                 <form class="sync-stock-form" data-item-id="<?php echo htmlspecialchars($item['item_id']); ?>" data-model-id="<?php echo htmlspecialchars($model['model_id']); ?>">
-                                <input type="hidden" name="item_id" value="<?php echo htmlspecialchars($item['item_id']); ?>">
-                                <input type="hidden" name="model_id" value="<?php echo htmlspecialchars($model['model_id']); ?>">
-                                <input type="hidden" name="sku" value="<?php echo htmlspecialchars($model['model_sku']); ?>">
-                                <button type="submit" class="btn-action btn-sync rounded-xl whitespace-nowrap" 
+                                  <input type="hidden" name="item_id" value="<?php echo htmlspecialchars($item['item_id']); ?>">
+                                  <input type="hidden" name="model_id" value="<?php echo htmlspecialchars($model['model_id']); ?>">
+                                  <input type="hidden" name="sku" value="<?php echo htmlspecialchars($model['model_sku']); ?>">
+                                  <button type="submit" class="btn-action btn-sync rounded-xl whitespace-nowrap" 
                                     title="Samakan stok Shopee dengan stok database (SKU: <?php echo htmlspecialchars($model['model_sku']); ?>)">
-                                    <i class="fas fa-sync-alt mr-1"></i> Sync Stok
-                                </button>
-                            </form>
+                                    Sinkronisasi Stok
+                                  </button>
+                                </form>
                               </div>
                             </div>
                           <?php endforeach; ?>
                         </div>
                       <?php else: ?>
-                        <?php 
-                          if (isset($_SESSION['shopee_flash_message'])): 
-                          ?>
-                              <div class="mb-6 p-4 rounded-xl bg-yellow-50 border-2 border-yellow-200 text-yellow-800" role="alert">
-                                  <div class="flex items-center gap-3">
-                                      <i class="fas fa-exclamation-triangle text-xl"></i>
-                                      <span class="font-medium"><?php echo $_SESSION['shopee_flash_message']; ?></span>
-                                  </div>
-                              </div>
+                        <?php if (isset($_SESSION['shopee_flash_message'])): ?>
+                          <script>
+                            document.addEventListener('DOMContentLoaded', () => {
+                              Swal.fire({
+                                icon: 'warning',
+                                title: 'Perhatian',
+                                text: '<?php echo addslashes($_SESSION['shopee_flash_message']); ?>',
+                                toast: true,
+                                position: 'top-end',
+                                showConfirmButton: false,
+                                timer: 4000,
+                                timerProgressBar: true,
+                                didOpen: (toast) => {
+                                  toast.addEventListener('mouseenter', Swal.stopTimer);
+                                  toast.addEventListener('mouseleave', Swal.resumeTimer);
+                                }
+                              });
+                            });
+                          </script>
                           <?php 
-                              unset($_SESSION['shopee_flash_message']); // Hapus pesan setelah ditampilkan
+                            unset($_SESSION['shopee_flash_message']);
                           endif; 
                           ?>
-                        <div class="space-y-4">
+                        <div class="flex md:items-center justify-between md:flex-row flex-col flex-wrap gap-4">
                           <form class="update-stock-form form-group" data-item-id="<?php echo $item['item_id']; ?>">
                             <input type="hidden" name="item_id" value="<?php echo htmlspecialchars($item['item_id']); ?>">
                             <label class="text-sm font-semibold text-gray-700 whitespace-nowrap w-28">
@@ -316,11 +377,9 @@ function getPriceRange($models) {
                             </label>
                             <input type="number" name="new_stock" placeholder="0" class="input-field flex-1" required>
                             <button type="submit" class="btn-action btn-stock rounded-xl whitespace-nowrap">
-                              <i class="fas fa-check mr-1"></i> Update
+                               Update
                             </button>
                           </form>
-                          
-                          <div class="divider"></div>
                           
                           <form class="update-price-form form-group" data-item-id="<?php echo $item['item_id']; ?>">
                             <input type="hidden" name="item_id" value="<?php echo htmlspecialchars($item['item_id']); ?>">
@@ -329,16 +388,15 @@ function getPriceRange($models) {
                             </label>
                             <input type="number" name="new_price" placeholder="0" class="input-field flex-1" required>
                             <button type="submit" class="btn-action btn-price rounded-xl whitespace-nowrap">
-                              <i class="fas fa-check mr-1"></i> Update
+                               Update
                             </button>
                           </form>
-                          <div class="divider"></div>
                           <form class="sync-stock-form" data-item-id="<?php echo htmlspecialchars($item['item_id']); ?>">
                             <input type="hidden" name="item_id" value="<?php echo htmlspecialchars($item['item_id']); ?>">
                             <input type="hidden" name="model_id" value="0"> <input type="hidden" name="sku" value="<?php echo htmlspecialchars($item['item_sku']); ?>">
                             <button type="submit" class="btn-action btn-sync rounded-xl whitespace-nowrap" 
                             title="Samakan stok Shopee dengan stok database (SKU: <?php echo htmlspecialchars($item['item_sku']); ?>)">
-                              <i class="fas fa-sync-alt mr-1"></i> Sync Stok
+                              Sinkronisasi Stok
                             </button>
                           </form>
                         </div>
@@ -414,6 +472,19 @@ function getPriceRange($models) {
           document.addEventListener("click", function (event) {
             if (!profileCard.contains(event.target) && !profileImg.contains(event.target)) {
               profileCard.classList.remove("show");
+            }
+          });
+        }
+
+        const searchInput = document.getElementById('product-search');
+        const clearBtn = document.getElementById('clear-search');
+        
+        if (searchInput && clearBtn) {
+          searchInput.addEventListener('input', (e) => {
+            if (e.target.value.length > 0) {
+              clearBtn.classList.remove('hidden');
+            } else {
+              clearBtn.classList.add('hidden');
             }
           });
         }

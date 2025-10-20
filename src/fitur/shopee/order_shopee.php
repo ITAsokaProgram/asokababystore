@@ -105,6 +105,7 @@ if ($shopeeService->isConnected()) {
     <link rel="stylesheet" href="../../output2.css">
     <link rel="stylesheet" href="../../style/shopee/shopee.css">
     <link rel="icon" type="image/png" href="../../../public/images/logo1.png">
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <style>
         .badge-status-ready_to_ship {
             background-color: #fef3c7; 
@@ -317,60 +318,136 @@ if ($shopeeService->isConnected()) {
     <script>
         const allOrdersData = <?php echo json_encode($order_details_list ?? []); ?>;
 
-        const exportOrdersToCSV = (data) => {
-            const headers = [
-                "Order SN", "Tanggal Order", "Status", "Kurir", "COD", "Total Pesanan",
-                "SKU", "Nama Barang", "Variasi", "Qty", "Harga Satuan"
-            ];
-            const csvRows = [headers.join(",")];
-
-            data.forEach(order => {
-                if (order.item_list && order.item_list.length > 0) {
-                    order.item_list.forEach(item => {
-                        const values = [
-                                    `"${order.order_sn}"`,
-                                    `"${new Date(order.create_time * 1000).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' })}"`,
-                                    `"${order.order_status}"`,
-                                    `"${order.shipping_carrier}"`,
-                                    `"${order.cod ? 'Ya' : 'Tidak'}"`,
-                                    order.total_amount, 
-                                    `"=""${(item.model_sku || item.item_sku || 'N/A').trim()}"""`, 
-                                    `"${(item.item_name || '').replace(/"/g, '""')}"`, 
-                                    `"${(item.model_name || 'N/A').replace(/"/g, '""')}"`,
-                                    item.model_quantity_purchased, 
-                                    item.model_discounted_price 
-                        ];
-                        csvRows.push(values.join(","));
-                    });
-                }
-            });
-
-            return csvRows.join("\n");
-        };
-
         const exportShopeeOrders = () => {
             if (allOrdersData.length === 0) {
-                alert("Tidak ada data untuk diexport.");
+                Swal.fire("Tidak Ada Data", "Tidak ada data pesanan untuk diekspor.", "info");
                 return;
             }
+
             try {
-                const csvContent = exportOrdersToCSV(allOrdersData);
-                const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-                const link = document.createElement("a");
-                const url = URL.createObjectURL(blob);
-                link.setAttribute("href", url);
-                link.setAttribute(
-                    "download",
-                    `shopee_orders_${new Date().toISOString().split("T")[0]}.csv`
-                );
-                link.style.visibility = "hidden";
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                const wb = XLSX.utils.book_new();
+
+                const title = [["Permintaan Barang ke Gudang"]];
+
+                const headers = [
+                    "Order SN", "Tanggal Order", "SKU", "Nama Barang", "Variasi",
+                    "Qty", "Harga Satuan", "Total Pesanan"
+                ];
+
+                const dataRows = [];
+                const merges = [
+                    { s: { r: 0, c: 0 }, e: { r: 0, c: 8 } } 
+                ];
+                
+                let currentRowIndex = 2; 
+
+                allOrdersData.forEach(order => {
+                    const orderSN = order.order_sn;
+                    const orderDate = new Date(order.create_time * 1000).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' });
+                    const totalPesanan = order.total_amount;
+                    const numItems = order.item_list.length;
+
+                    order.item_list.forEach((item, itemIndex) => {
+                        const sku = (item.model_sku || item.item_sku || '').trim();
+                        const namaBarang = item.item_name || '';
+                        const variasi = item.model_name || '';
+                        const qty = item.model_quantity_purchased;
+                        const hargaSatuan = item.model_discounted_price;
+
+                        dataRows.push([
+                            itemIndex === 0 ? orderSN : "",
+                            itemIndex === 0 ? orderDate : "",
+                            sku,
+                            namaBarang,
+                            variasi,
+                            qty,
+                            hargaSatuan,
+                            itemIndex === 0 ? totalPesanan : "",
+                        ]);
+                    });
+
+                    if (numItems > 1) {
+                        const startRow = currentRowIndex;
+                        const endRow = currentRowIndex + numItems - 1;
+                        merges.push({ s: { r: startRow, c: 0 }, e: { r: endRow, c: 0 } }); 
+                        merges.push({ s: { r: startRow, c: 1 }, e: { r: endRow, c: 1 } }); 
+                        merges.push({ s: { r: startRow, c: 7 }, e: { r: endRow, c: 7 } }); 
+                    }
+                    
+                    currentRowIndex += numItems;
+                });
+
+                const ws = XLSX.utils.aoa_to_sheet(title); 
+                XLSX.utils.sheet_add_aoa(ws, [headers], { origin: "A2" });
+                XLSX.utils.sheet_add_aoa(ws, dataRows, { origin: "A3" });
+
+                ws['!merges'] = merges; 
+
+                if (ws['A1']) ws['A1'].s = { 
+                    alignment: { horizontal: "center", vertical: "center" } 
+                };
+
+                const headerStyle = {
+                    font: { bold: true },
+                    fill: { fgColor: { rgb: "E0FFFF" } }, 
+                    border: {
+                        top: { style: "thin" }, bottom: { style: "thin" },
+                        left: { style: "thin" }, right: { style: "thin" }
+                    },
+                    alignment: { vertical: "center" }
+                };
+
+                const dataStyle = {
+                    border: {
+                        top: { style: "thin" }, bottom: { style: "thin" },
+                        left: { style: "thin" }, right: { style: "thin" }
+                    },
+                    alignment: { vertical: "top", wrapText: true }
+                };
+                
+                for (let C = 0; C < headers.length; C++) {
+                    const cellRef = XLSX.utils.encode_cell({ r: 1, c: C });
+                    if (ws[cellRef]) ws[cellRef].s = headerStyle;
+                }
+
+                for (let R = 2; R < dataRows.length + 2; R++) {
+                    for (let C = 0; C < headers.length; C++) {
+                        const cellRef = XLSX.utils.encode_cell({ r: R, c: C });
+                        if (!ws[cellRef]) ws[cellRef] = {};
+                        
+                        ws[cellRef].s = dataStyle; 
+
+                        if (C === 5) { 
+                            ws[cellRef].t = 'n';
+                        }
+                        if (C === 6 || C === 7) { 
+                            if (ws[cellRef].v) { 
+                                ws[cellRef].t = 'n';
+                                ws[cellRef].s.numFmt = "#,##0";
+                            }
+                        }
+                    }
+                }
+
+                ws['!cols'] = [
+                    { wch: 20 }, 
+                    { wch: 15 }, 
+                    { wch: 20 }, 
+                    { wch: 50 }, 
+                    { wch: 15 }, 
+                    { wch: 5 },  
+                    { wch: 12 },
+                    { wch: 12 }, 
+                    { wch: 10 }  
+                ];
+
+                XLSX.utils.book_append_sheet(wb, ws, "Permintaan Gudang");
+                const fileName = `Permintaan_Barang_ke_Gudang_${new Date().toISOString().split("T")[0]}.xlsx`;
+                XLSX.writeFile(wb, fileName);
 
             } catch (error) {
                 console.error("Error exporting data:", error);
-                alert("Gagal mengexport data: " + error.message);
+                Swal.fire("Export Gagal", "Terjadi kesalahan: " + error.message, "error");
             }
         };
     </script>
