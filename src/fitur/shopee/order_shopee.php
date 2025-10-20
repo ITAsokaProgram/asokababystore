@@ -156,16 +156,26 @@ if ($shopeeService->isConnected()) {
                 <?php if ($shopeeService->isConnected()): ?>
                     <div class="section-card rounded-2xl overflow-hidden">
                         <div class="section-header p-6">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <h2 class="text-xl font-bold text-gray-800 mb-1">Daftar Order</h2>
-                                    <p class="text-sm text-gray-600">Pesanan yang siap dikirim (READY_TO_SHIP) - 14 hari terakhir</p>
+                                <div class="flex items-center justify-between flex-wrap gap-4"> 
+                                    <div>
+                                        <h2 class="text-xl font-bold text-gray-800 mb-1">Daftar Order</h2>
+                                        <p class="text-sm text-gray-600">Pesanan yang siap dikirim (READY_TO_SHIP) - 14 hari terakhir</p>
+                                    </div>
+                                    
+                                    <?php if (!empty($order_details_list)): ?>
+                                        <div class="flex items-center gap-4">
+                                            <div class="stats-badge" style="background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); color: #0369a1; border: 1px solid #7dd3fc;">
+                                                <i class="fas fa-receipt"></i>
+                                                <span><?php echo count($order_details_list); ?> Pesanan</span>
+                                            </div>
+                                            
+                                            <button onclick="exportShopeeOrders()"
+                                                    class="bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-500 hover:to-yellow-700 text-white px-4 py-2 rounded-xl font-bold shadow-md transition-all duration-200 flex items-center gap-2">
+                                                <i class="fas fa-file-excel"></i> Export
+                                            </button>
+                                        </div>
+                                    <?php endif; ?>
                                 </div>
-                                <div class="stats-badge" style="background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); color: #0369a1; border: 1px solid #7dd3fc;">
-                                    <i class="fas fa-receipt"></i>
-                                    <span><?php echo count($order_details_list); ?> Pesanan</span>
-                                </div>
-                            </div>
                         </div>
 
                         <?php if (!empty($error_message)): ?>
@@ -303,6 +313,66 @@ if ($shopeeService->isConnected()) {
                 });
             }
         });
+    </script>
+    <script>
+        const allOrdersData = <?php echo json_encode($order_details_list ?? []); ?>;
+
+        const exportOrdersToCSV = (data) => {
+            const headers = [
+                "Order SN", "Tanggal Order", "Status", "Kurir", "COD", "Total Pesanan",
+                "SKU", "Nama Barang", "Variasi", "Qty", "Harga Satuan"
+            ];
+            const csvRows = [headers.join(",")];
+
+            data.forEach(order => {
+                if (order.item_list && order.item_list.length > 0) {
+                    order.item_list.forEach(item => {
+                        const values = [
+                                    `"${order.order_sn}"`,
+                                    `"${new Date(order.create_time * 1000).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' })}"`,
+                                    `"${order.order_status}"`,
+                                    `"${order.shipping_carrier}"`,
+                                    `"${order.cod ? 'Ya' : 'Tidak'}"`,
+                                    order.total_amount, 
+                                    `"=""${(item.model_sku || item.item_sku || 'N/A').trim()}"""`, 
+                                    `"${(item.item_name || '').replace(/"/g, '""')}"`, 
+                                    `"${(item.model_name || 'N/A').replace(/"/g, '""')}"`,
+                                    item.model_quantity_purchased, 
+                                    item.model_discounted_price 
+                        ];
+                        csvRows.push(values.join(","));
+                    });
+                }
+            });
+
+            return csvRows.join("\n");
+        };
+
+        const exportShopeeOrders = () => {
+            if (allOrdersData.length === 0) {
+                alert("Tidak ada data untuk diexport.");
+                return;
+            }
+            try {
+                const csvContent = exportOrdersToCSV(allOrdersData);
+                const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+                const link = document.createElement("a");
+                const url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute(
+                    "download",
+                    `shopee_orders_${new Date().toISOString().split("T")[0]}.csv`
+                );
+                link.style.visibility = "hidden";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+            } catch (error) {
+                console.error("Error exporting data:", error);
+                alert("Gagal mengexport data: " + error.message);
+            }
+        };
     </script>
 </body>
 </html>
