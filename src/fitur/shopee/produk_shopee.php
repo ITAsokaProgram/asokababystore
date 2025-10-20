@@ -47,6 +47,46 @@ if ($shopeeService->isConnected()) {
     }
 
   $detailed_products = $shopeeService->getDetailedProductInfo($product_list_response);
+
+  $all_skus = [];
+  $sku_stock_map = [];
+  $kd_store = '3190';
+
+  foreach ($detailed_products as $product) {
+      if (isset($product['has_model']) && $product['has_model'] === true && !empty($product['models'])) {
+          foreach ($product['models'] as $model) {
+              if (!empty($model['model_sku'])) {
+                  $all_skus[] = $model['model_sku'];
+              }
+          }
+      } else {
+          if (!empty($product['item_sku'])) {
+              $all_skus[] = $product['item_sku'];
+          }
+      }
+  }
+
+  if (!empty($all_skus) && isset($conn) && $conn instanceof mysqli) {
+      $unique_skus = array_unique($all_skus);
+      
+      $placeholders = implode(',', array_fill(0, count($unique_skus), '?'));
+      $types = str_repeat('s', count($unique_skus));
+      
+      $sql = "SELECT item_n, qty FROM s_barang WHERE kd_store = ? AND item_n IN ($placeholders)";
+      
+      $stmt = $conn->prepare($sql);
+      
+      if ($stmt) {
+          $stmt->bind_param("s" . $types, $kd_store, ...$unique_skus);
+          $stmt->execute();
+          $result = $stmt->get_result();
+          
+          while ($row = $result->fetch_assoc()) {
+              $sku_stock_map[$row['item_n']] = (int)$row['qty'];
+          }
+          $stmt->close();
+      }
+  }
 } else {
   $auth_url = $shopeeService->getAuthUrl($redirect_uri);
 }
@@ -157,6 +197,16 @@ function getPriceRange($models) {
                             <i class="fas fa-boxes"></i>
                             <span>Stok: <strong id="stock-display-<?php echo $item['item_id']; ?>"><?php echo htmlspecialchars($item['calculated_total_stock'] ?? $item['stock_info_v2']['summary_info']['total_available_stock'] ?? $item['stock_info'][0]['seller_stock'] ?? 'N/A'); ?></strong></span>
                           </span>
+                          <?php if (!(isset($item['has_model']) && $item['has_model'] === true && !empty($item['models']))): ?>
+                              <?php
+                                $item_sku = $item['item_sku'] ?? null;
+                                $db_stock = $sku_stock_map[$item_sku] ?? 'N/A';
+                              ?>
+                              <span class="stats-badge" style="background-color: #f3e8ff; color: #581c87; border-color: #e9d5ff;">
+                                <i class="fas fa-database fa-fw"></i>
+                                <span>Stok DB: <strong><?php echo $db_stock; ?></strong></span>
+                              </span>
+                          <?php endif; ?>
                         </div>
                         
                         <div class="flex gap-2 flex-wrap">
@@ -192,6 +242,14 @@ function getPriceRange($models) {
                                     <span class="text-xs" style="background: #e0e7ff; color: #3730a3; padding: 4px 8px; border-radius: 6px; font-weight: 600;">
                                       SKU: <strong><?php echo htmlspecialchars($model['model_sku'] ?? 'N/A'); ?></strong>
                                     </span>
+                                    <?php
+                                        $model_sku = $model['model_sku'] ?? null;
+                                        $db_stock = $sku_stock_map[$model_sku] ?? 'N/A';
+                                      ?>
+                                      <span class="text-xs" style="background: #f3e8ff; color: #581c87; padding: 4px 8px; border-radius: 6px; font-weight: 600;">
+                                        <i class="fas fa-database fa-fw"></i> Stok DB: <strong><?php echo $db_stock; ?></strong>
+                                      </span>
+                                    
                                     </div>
                                 </div>
                               </div>

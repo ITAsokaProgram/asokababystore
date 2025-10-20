@@ -29,6 +29,5 @@ export const updatePrice = (formData) => {
 };
 
 export const syncStock = (formData) => {
-    console.log('Syncing stock with formData:', formData);
     return sendRequest('/src/api/shopee/sync_stock.php', formData);
 };

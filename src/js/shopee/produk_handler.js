@@ -152,6 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `;
             }
+            console.error("error:", error);
 
             Swal.fire({
                 icon: 'error',
@@ -160,7 +161,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 confirmButtonColor: '#ef4444',
                 confirmButtonText: 'Tutup'
             });
-            // --- AKHIR PERUBAHAN ---
             
             setTimeout(() => {
                 submitButton.innerHTML = originalButtonText;
