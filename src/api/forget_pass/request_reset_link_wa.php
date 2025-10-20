@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . "/../../../aa_kon_sett.php";
 header("Content-Type:application/json");
+$env = parse_ini_file(__DIR__ . '/../../../.env');
+
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -45,7 +47,7 @@ try {
     }
     $stmtInsert->close();
 
-    $nomorTujuan = "6287722752786"; 
+    $nomorTujuan = $env['WHATSAPP_NOMOR_TUJUAN'];
     $pesanWA = "Halo Asoka, saya ingin reset password. Token saya: " . $token;
     $whatsappUrl = "https://wa.me/" . $nomorTujuan . "?text=" . urlencode($pesanWA);
 

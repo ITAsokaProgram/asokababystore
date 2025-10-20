@@ -2,6 +2,8 @@
 require_once __DIR__ . "/../../../aa_kon_sett.php";
 require_once __DIR__ . "/../../auth/middleware_login.php";
 
+$env = parse_ini_file(__DIR__ . '/../../../.env');
+
 header("Content-Type:application/json");
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -47,7 +49,7 @@ try {
 
     $linkInternal = "https://asokababystore.com/verifikasi-wa?token=" . $tokenKirimUser;
 
-    $nomorTujuan = "6287722752786";
+    $nomorTujuan = $env['WHATSAPP_NOMOR_TUJUAN'];
     $pesanWA = "Halo Asoka, saya ingin verifikasi penggantian nomor HP. Link verifikasi saya: " . $linkInternal;
     $whatsappUrl = "https://wa.me/" . $nomorTujuan . "?text=" . urlencode($pesanWA);
 

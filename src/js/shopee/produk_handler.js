@@ -1,5 +1,5 @@
-import { updateStock, updatePrice } from './api_service.js';
 
+import { updateStock, updatePrice, syncStock } from './api_service.js';
 const updatePriceRange = (form) => {
     const productCard = form.closest('.update-form-wrapper');
     if (!productCard) return;
@@ -180,6 +180,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.querySelectorAll('.update-price-form').forEach(form => {
         form.addEventListener('submit', (event) => handleFormSubmit(event, form, updatePrice));
+    });
+
+    document.querySelectorAll('.sync-stock-form').forEach(form => {
+        form.addEventListener('submit', (event) => handleFormSubmit(event, form, syncStock));
     });
     
     document.querySelectorAll('input[type="number"]').forEach(input => {

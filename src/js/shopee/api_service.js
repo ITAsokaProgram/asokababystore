@@ -1,3 +1,4 @@
+
 const handleResponse = async (response) => {
     if (!response.ok) {
         const errorData = await response.json().catch(() => ({ message: 'An unknown error occurred' }));
@@ -25,4 +26,9 @@ export const updateStock = (formData) => {
 
 export const updatePrice = (formData) => {
     return sendRequest('/src/api/shopee/update_price.php', formData);
+};
+
+export const syncStock = (formData) => {
+    console.log('Syncing stock with formData:', formData);
+    return sendRequest('/src/api/shopee/sync_stock.php', formData);
 };
