@@ -10,6 +10,7 @@ const getToken = () => {
 const token = getToken();
 let ws;
 let currentConversationId = null;
+let currentDisplayName = null;
 let currentConversationStatus = null;
 let currentFilter = 'semua';
 
@@ -137,8 +138,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const sendButton = document.getElementById('send-button');
     const messageInput = document.getElementById('message-input');
     const endChatButton = document.getElementById('end-chat-button');
+    const editDisplayNameButton = document.getElementById('edit-display-name-button');
 
     sendButton.addEventListener('click', sendMessage);
+    editDisplayNameButton.addEventListener('click', handleEditDisplayName);
     messageInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -274,29 +277,29 @@ async function fetchAndRenderConversations(isInitialLoad = false) {
             const timeAgo = getTimeAgo(lastInteraction);
             
             item.innerHTML = `
-                <div class="flex items-start gap-3">
-                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold shadow-sm">
-                        <i class="fas fa-user text-sm"></i>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <div class="flex justify-between items-start mb-1">
-                            <p class="font-semibold text-gray-900 text-sm truncate pr-2">${convo.nomor_telepon}</p>
-                            ${convo.status_percakapan === 'live_chat' ? 
-                                '<span class="live-badge px-2 py-0.5 text-xs font-semibold text-red-700 bg-red-100 rounded-full flex-shrink-0 shadow-sm">Live</span>' : 
-                                ''}
+                        <div class="flex items-start gap-3">
+                            <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold shadow-sm">
+                                <i class="fas fa-user text-sm"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex justify-between items-start mb-1">
+                                    <p class="font-semibold text-gray-900 text-sm truncate pr-2">${convo.nama_display || convo.nomor_telepon}</p>
+                                    ${convo.status_percakapan === 'live_chat' ? 
+                                        '<span class="live-badge px-2 py-0.5 text-xs font-semibold text-red-700 bg-red-100 rounded-full flex-shrink-0 shadow-sm">Live</span>' : 
+                                        ''}
+                                </div>
+                                
+                                <div class="flex justify-between items-center">
+                                    <p class="text-xs text-gray-500">${timeAgo}</p>
+                                    ${convo.jumlah_belum_terbaca > 0 ? 
+                                        `<span class="unread-badge bg-blue-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-md">
+                                            ${convo.jumlah_belum_terbaca}
+                                        </span>` : 
+                                        ''}
+                                </div>
+                            </div>
                         </div>
-                        
-                        <div class="flex justify-between items-center">
-                            <p class="text-xs text-gray-500">${timeAgo}</p>
-                            ${convo.jumlah_belum_terbaca > 0 ? 
-                                `<span class="unread-badge bg-blue-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-md">
-                                    ${convo.jumlah_belum_terbaca}
-                                </span>` : 
-                                ''}
-                        </div>
-                    </div>
-                </div>
-            `;
+                    `;
             
             item.addEventListener('click', () => {
                 selectConversation(convo.id);
@@ -367,8 +370,10 @@ async function selectConversation(conversationId) {
         const { details, messages } = data;
         
         currentConversationStatus = details.status_percakapan;
+        currentDisplayName = details.nama_display;
         document.getElementById('chat-with-phone').textContent = details.nomor_telepon;
         document.getElementById('chat-with-name').textContent = details.nama_profil ?? '-';
+        document.getElementById('edit-display-name-button').classList.remove('hidden');
         
         renderMessages(messages);
         updateChatUI(currentConversationStatus);
@@ -427,6 +432,8 @@ function clearActiveConversation() {
 
     chatHeader.classList.remove('show');
     chatWithPhone.textContent = ''; 
+    document.getElementById('edit-display-name-button').classList.add('hidden');
+    currentDisplayName = null;
 
     updateChatUI(null);
 
@@ -755,5 +762,69 @@ function updateFilterUnreadBadges(counts) {
             umumBadge.textContent = '0';
             umumBadge.classList.add('hidden');
         }
+    }
+}
+
+function handleEditDisplayName() {
+    if (!currentConversationId) return;
+
+    Swal.fire({
+        title: 'Ubah Nama Tampilan',
+        input: 'text',
+        inputValue: currentDisplayName || '',
+        inputPlaceholder: 'Masukkan nama tampilan...',
+        showCancelButton: true,
+        showDenyButton: true,
+        confirmButtonText: 'Simpan',
+        denyButtonText: 'Hapus Nama',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#3b82f6',
+        denyButtonColor: '#ef4444',
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const newName = result.value.trim();
+            updateDisplayName(currentConversationId, newName);
+        } else if (result.isDenied) {
+            updateDisplayName(currentConversationId, null);
+        }
+    });
+}
+
+async function updateDisplayName(conversationId, newName) {
+    try {
+        const response = await fetch('/src/api/whatsapp/update_display_name.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                conversation_id: conversationId,
+                nama_display: newName
+            })
+        });
+
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+            throw new Error(result.message || 'Gagal memperbarui nama.');
+        }
+
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: 'Nama berhasil diperbarui!',
+            showConfirmButton: false,
+            timer: 2000
+        });
+
+        currentDisplayName = newName;
+        document.getElementById('chat-with-name').textContent = newName || document.getElementById('chat-with-phone').textContent;
+        
+        fetchAndRenderConversations();
+
+    } catch (error) {
+        console.error('Gagal update nama display:', error);
+        Swal.fire('Error', error.message, 'error');
     }
 }

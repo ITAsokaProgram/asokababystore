@@ -72,7 +72,7 @@ try {
         } catch (Exception $e) {
         }
 
-        $stmt_convo = $conn->prepare("SELECT id, nomor_telepon, nama_profil, status_percakapan FROM wa_percakapan WHERE id = ?");
+        $stmt_convo = $conn->prepare("SELECT id, nomor_telepon, nama_profil, nama_display, status_percakapan FROM wa_percakapan WHERE id = ?");
         $stmt_convo->bind_param("i", $id);
         $stmt_convo->execute();
         $result_convo = $stmt_convo->get_result();
@@ -125,6 +125,7 @@ try {
                 p.id,
                 p.nomor_telepon,
                 p.nama_profil,
+                p.nama_display,
                 p.status_percakapan,
                 p.terakhir_interaksi_pada,
                 COUNT(m.id) AS jumlah_belum_terbaca
@@ -142,7 +143,7 @@ try {
         }
 
         $sql .= $whereClause;
-        $sql .= " GROUP BY p.id, p.nomor_telepon, p.nama_profil, p.status_percakapan, p.terakhir_interaksi_pada ";
+        $sql .= " GROUP BY p.id, p.nomor_telepon, p.nama_profil, p.nama_display, p.status_percakapan, p.terakhir_interaksi_pada ";
         $sql .= "
             ORDER BY
                 CASE p.status_percakapan
