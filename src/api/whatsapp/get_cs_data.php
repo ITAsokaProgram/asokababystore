@@ -99,6 +99,26 @@ try {
     } else {
         
         $filter = $_GET['filter'] ?? 'semua';
+    
+        $stmt_live_chat = $conn->prepare("
+            SELECT COUNT(DISTINCT p.id) AS unread_count
+            FROM wa_pesan m
+            JOIN wa_percakapan p ON m.percakapan_id = p.id
+            WHERE p.status_percakapan = 'live_chat' AND m.pengirim = 'user' AND m.status_baca = 0
+        ");
+        $stmt_live_chat->execute();
+        $live_chat_count = $stmt_live_chat->get_result()->fetch_assoc()['unread_count'] ?? 0;
+        $stmt_live_chat->close();
+
+        $stmt_umum = $conn->prepare("
+            SELECT COUNT(DISTINCT p.id) AS unread_count
+            FROM wa_pesan m
+            JOIN wa_percakapan p ON m.percakapan_id = p.id
+            WHERE p.status_percakapan IN ('open', 'closed') AND m.pengirim = 'user' AND m.status_baca = 0
+        ");
+        $stmt_umum->execute();
+        $umum_count = $stmt_umum->get_result()->fetch_assoc()['unread_count'] ?? 0;
+        $stmt_umum->close();
         
         $sql = "
             SELECT
@@ -121,9 +141,7 @@ try {
         }
 
         $sql .= $whereClause;
-
         $sql .= " GROUP BY p.id, p.nomor_telepon, p.status_percakapan, p.terakhir_interaksi_pada ";
-
         $sql .= "
             ORDER BY
                 CASE p.status_percakapan
@@ -134,12 +152,19 @@ try {
                 p.terakhir_interaksi_pada DESC
         ";
         
-        
         $stmt = $conn->prepare($sql);
         $stmt->execute();
         $result = $stmt->get_result();
-        $data = $result->fetch_all(MYSQLI_ASSOC);
+        $conversations = $result->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
+        
+        $data = [
+            'conversations' => $conversations,
+            'unread_counts' => [
+                'live_chat' => (int)$live_chat_count,
+                'umum' => (int)$umum_count
+            ]
+        ];
     }    
     echo json_encode($data);
 

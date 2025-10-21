@@ -555,9 +555,21 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
             </button>
             
             <div id="status-filter-buttons" class="flex items-center gap-2 flex-wrap">
-                <button data-filter="semua" class="filter-button active px-3 py-1 rounded-full text-xs font-medium bg-blue-500 text-white transition-all shadow-sm">Semua</button>
-                <button data-filter="live_chat" class="filter-button px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all">Live Chat</button>
-                <button data-filter="umum" class="filter-button px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all">Umum</button>
+                <button data-filter="semua" class="filter-button relative active px-3 py-1 rounded-full text-xs font-medium bg-blue-500 text-white transition-all shadow-sm">
+                    <span>
+                        Semua
+                    </span>
+                    <span id="unread-all" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center text-[10px]">0</span>
+                </button>
+                <button data-filter="live_chat" class="filter-button relative px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all">
+                    <span>Live Chat</span>
+                    <span id="unread-live_chat" class="hidden absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center text-[10px]">0</span>
+                </button>
+                
+                <button data-filter="umum" class="filter-button relative px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all">
+                    <span>Umum</span>
+                    <span id="unread-umum" class="hidden absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center text-[10px]">0</span>
+                </button>
             </div>
             <button id="toggle-conversation-list" class="hidden md:block text-gray-600 hover:text-gray-900 transition-all p-2 rounded-lg" title="Collapse/Expand">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">

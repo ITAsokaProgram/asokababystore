@@ -23,5 +23,5 @@ while ($row = mysqli_fetch_assoc($result)) {
     $updateStmt->close();
     $count++;
 }
-$logger->info("Cron job selesai. Menutup " . $count . " sesi live chat.");
+// $logger->info("Cron job selesai. Menutup " . $count . " sesi live chat.");
 mysqli_close($conn);

@@ -234,19 +234,24 @@ async function fetchAndRenderConversations(isInitialLoad = false) {
 
         if (!response.ok) throw new Error('Gagal mengambil data percakapan.');
         
-        const conversations = await response.json();
+        // Modifikasi 1: Dapatkan data sebagai objek
+        const data = await response.json();
+        // Modifikasi 2: Ambil array percakapan dari objek
+        const conversations = data.conversations; 
+        
         const listElement = document.getElementById('conversation-list');
         listElement.innerHTML = ''; 
 
-        if (isInitialLoad) {
-             let totalUnread = 0;
-             if (Array.isArray(conversations)) {
-                 totalUnread = conversations.reduce((sum, convo) => {
-                     return sum + (parseInt(convo.jumlah_belum_terbaca) || 0);
-                 }, 0);
-             }
-             updateTotalUnreadBadge(totalUnread);
-         }
+        // Modifikasi 3: Perbarui filter badge DAN total badge
+        if (data.unread_counts) {
+            updateFilterUnreadBadges(data.unread_counts);
+            
+            // Hitung total dari data count yang baru (lebih akurat)
+            const totalUnread = (data.unread_counts.live_chat || 0) + (data.unread_counts.umum || 0);
+            updateTotalUnreadBadge(totalUnread);
+        }
+        
+        // Modifikasi 4: Hapus blok 'if (isInitialLoad)' yang lama karena sudah digantikan oleh logika di atas
 
         if (conversations.length === 0) {
             listElement.innerHTML = `
@@ -286,7 +291,7 @@ async function fetchAndRenderConversations(isInitialLoad = false) {
                             ${convo.jumlah_belum_terbaca > 0 ? 
                                 `<span class="unread-badge bg-blue-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-md">
                                     ${convo.jumlah_belum_terbaca}
-                                 </span>` : 
+                                </span>` : 
                                 ''}
                         </div>
                     </div>
@@ -297,7 +302,7 @@ async function fetchAndRenderConversations(isInitialLoad = false) {
                 selectConversation(convo.id);
                 
                 if (window.innerWidth <= 768) {
-                    const conversationListContainer = document.getElementById('conversation-list-container');                     
+                    const conversationListContainer = document.getElementById('conversation-list-container');
                     conversationListContainer.classList.remove('mobile-show');
                 }
             });
@@ -712,5 +717,42 @@ function updateTotalUnreadBadge(count) {
         badge.textContent = '0';
         badge.classList.add('hidden');
         title.textContent = 'Dashboard CS WhatsApp';
+    }
+}
+function updateFilterUnreadBadges(counts) {
+    const liveChatBadge = document.getElementById('unread-live_chat');
+    const umumBadge = document.getElementById('unread-umum');
+    const allBadge = document.getElementById('unread-all'); 
+
+    const total = (counts.live_chat || 0) + (counts.umum || 0);
+
+    if (allBadge) {
+        if (total > 0) {
+            allBadge.textContent = total;
+            allBadge.classList.remove('hidden');
+        } else {
+            allBadge.textContent = '0';
+            allBadge.classList.add('hidden');
+        }
+    }
+
+    if (liveChatBadge) {
+        if (counts.live_chat > 0) {
+            liveChatBadge.textContent = counts.live_chat;
+            liveChatBadge.classList.remove('hidden');
+        } else {
+            liveChatBadge.textContent = '0';
+            liveChatBadge.classList.add('hidden');
+        }
+    }
+
+    if (umumBadge) {
+        if (counts.umum > 0) {
+            umumBadge.textContent = counts.umum;
+            umumBadge.classList.remove('hidden');
+        } else {
+            umumBadge.textContent = '0';
+            umumBadge.classList.add('hidden');
+        }
     }
 }

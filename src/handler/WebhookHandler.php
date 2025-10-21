@@ -33,28 +33,31 @@ class WebhookHandler {
     }
 
     public function handleIncomingMessage($body) {
-        $this->logger->info("Webhook received data: " . json_encode($body));
+        // $this->logger->info("Webhook received data: " . json_encode($body));
         $message = $body['entry'][0]['changes'][0]['value']['messages'][0] ?? null;
         if (!$message) {
             return;
         }
-
+        $contact = $body['entry'][0]['changes'][0]['value']['contacts'][0] ?? null;
+        $namaPengirim = $contact['profile']['name'] ?? 'Pelanggan'; 
         $nomorPengirim = $message['from'];
         $messageType = $message['type'];
+
+        // $this->logger->info("Pesan diterima dari: {$namaPengirim} ({$nomorPengirim})");
 
         if ($messageType === 'text') {
             $textBody = $message['text']['body'];
 
             if (preg_match(WhatsappConstants::REGEX_CHANGE_PHONE, $textBody, $matches)) {
                 $token = $matches[1];
-                $this->logger->info("Link verifikasi ganti nomor HP terdeteksi. Token: {$token}");
+                // $this->logger->info("Link verifikasi ganti nomor HP terdeteksi. Token: {$token}");
                 $this->verificationService->processToken($token);
                 return;
             }
 
             if (preg_match(WhatsappConstants::REGEX_RESET_PASSWORD, $textBody, $matches)) {
                 $token = $matches[1];
-                $this->logger->info("Token reset password terdeteksi. Token: {$token}");
+                // $this->logger->info("Token reset password terdeteksi. Token: {$token}");
                 $this->verificationService->processPasswordResetToken($token, $nomorPengirim);
                 return;
             }
@@ -77,7 +80,7 @@ class WebhookHandler {
             }
 
             if ($messageType === 'interactive') {
-                $this->logger->info("User {$nomorPengirim} mencoba memilih menu saat live chat. Mengirim pesan untuk mengakhiri chat.");
+                // $this->logger->info("User {$nomorPengirim} mencoba memilih menu saat live chat. Mengirim pesan untuk mengakhiri chat.");
                 $buttons = [['id' => 'END_LIVE_CHAT', 'title' => 'Akhiri Chat']];
                 kirimPesanButton($nomorPengirim, WhatsappConstants::LIVE_CHAT_MENU_PROMPT, $buttons);
                 $this->saveAdminReply($conversation['id'], $nomorPengirim, WhatsappConstants::LIVE_CHAT_MENU_PROMPT);
@@ -96,7 +99,7 @@ class WebhookHandler {
                 case 'audio':
                     $mediaService = new MediaService($this->logger);
                     $mediaId = $message[$messageType]['id'];
-                    $this->logger->info("Menerima pesan media ({$messageType}) dari {$nomorPengirim} dalam sesi live chat.");
+                    // $this->logger->info("Menerima pesan media ({$messageType}) dari {$nomorPengirim} dalam sesi live chat.");
                     $result = $mediaService->downloadAndUpload($mediaId, $messageType);
 
                     if (isset($result['url'])) {
@@ -116,7 +119,7 @@ class WebhookHandler {
                     break;
 
                 default:
-                    $this->logger->info("Menerima tipe pesan '{$messageType}' yang belum didukung saat live chat.");
+                    // $this->logger->info("Menerima tipe pesan '{$messageType}' yang belum didukung saat live chat.");
                     kirimPesanTeks($nomorPengirim, WhatsappConstants::MEDIA_UNSUPPORTED_LIVE_CHAT);
                     return;
             }
@@ -209,7 +212,7 @@ class WebhookHandler {
                     $this->processTextMessage($message, $conversation); 
                     $this->conversationService->setMenuSent($nomorPengirim);
                 } else {
-                    $this->logger->info("Mengabaikan pesan teks dari {$nomorPengirim} karena menu utama sudah terkirim (bukan link verifikasi).");
+                    // $this->logger->info("Mengabaikan pesan teks dari {$nomorPengirim} karena menu utama sudah terkirim (bukan link verifikasi).");
                 }
             } elseif ($message['type'] === 'interactive' && $message['interactive']['type'] === 'list_reply') {
                 $this->processListReplyMessage($message, $conversation);
@@ -218,7 +221,7 @@ class WebhookHandler {
     }
     
     private function sendWelcomeMessage($nomorPengirim, $conversationId) {
-        $this->logger->info("User {$nomorPengirim} memulai percakapan baru, mengirim Welcome Menu.");
+        // $this->logger->info("User {$nomorPengirim} memulai percakapan baru, mengirim Welcome Menu.");
         
         kirimPesanList(
             $nomorPengirim,
@@ -234,7 +237,7 @@ class WebhookHandler {
 
     private function processTextMessage($message, $conversation) { 
         $nomorPengirim = $message['from'];
-        $this->logger->info("User {$nomorPengirim} mengirim pesan teks dalam sesi aktif, memicu Main Menu (Button).");
+        // $this->logger->info("User {$nomorPengirim} mengirim pesan teks dalam sesi aktif, memicu Main Menu (Button).");
 
         $buttons = [
             ['id' => 'BUKA_MENU_UTAMA', 'title' => 'Buka Menu Utama'],
@@ -276,7 +279,7 @@ class WebhookHandler {
             'total_unread_count' => $totalUnread 
         ]);
         
-        $this->logger->info("Received List reply from {$nomorPengirim}. Selected ID: {$selectedId}, Title: {$selectedTitle}");
+        // $this->logger->info("Received List reply from {$nomorPengirim}. Selected ID: {$selectedId}, Title: {$selectedTitle}");
         if (preg_match('/^(JABODETABEK|BELITUNG|LOKASI_JABODETABEK|LOKASI_BELITUNG)_PAGE_(\d+)$/', $selectedId, $matches)) {
             $region = (strpos($matches[1], 'JABODETABEK') !== false) ? 'jabodetabek' : 'belitung';
             $type = (strpos($matches[1], 'LOKASI') !== false) ? 'lokasi' : 'kontak';
@@ -385,7 +388,7 @@ class WebhookHandler {
     }
 
     private function sendBranchListByRegion($nomorPengirim, $region, $page = 1, $type = 'kontak') {
-        $this->logger->info("Sending {$type} list for region {$region} page {$page} to {$nomorPengirim}.");
+        // $this->logger->info("Sending {$type} list for region {$region} page {$page} to {$nomorPengirim}.");
         $all_cities = ($region === 'jabodetabek') ? BranchConstants::CITIES_JABODETABEK : BranchConstants::CITIES_BELITUNG;
         $all_locations = ($region === 'jabodetabek') ? BranchConstants::LOKASI_JABODETABEK : BranchConstants::LOKASI_BELITUNG;
         $items_per_page = 8;
@@ -441,7 +444,7 @@ class WebhookHandler {
             'Content-Length: ' . strlen($payload)
         ]);
         
-        curl_setopt($ch, CURLOPT_TIMEOUT_MS, 100);
+        curl_setopt($ch, CURLOPT_TIMEOUT_MS, 1000);
         curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
 
         curl_exec($ch);
@@ -466,7 +469,7 @@ class WebhookHandler {
         }
     }
     private function sendMainMenuAsList($nomorPengirim, $conversationId) {
-        $this->logger->info("Sending Main Menu (List) to {$nomorPengirim}.");
+        // $this->logger->info("Sending Main Menu (List) to {$nomorPengirim}.");
         
         $pesanBody = WhatsappConstants::WELCOME_BODY;
         $pesanHeader = WhatsappConstants::WELCOME_HEADER;
@@ -484,7 +487,7 @@ class WebhookHandler {
     }
 
     private function triggerLiveChat($nomorPengirim, $conversation) {
-        $this->logger->info("Triggering live chat for {$nomorPengirim}.");
+        // $this->logger->info("Triggering live chat for {$nomorPengirim}.");
         date_default_timezone_set('Asia/Jakarta');
         $currentHour = (int)date('H');
         $currentMinute = (int)date('i');

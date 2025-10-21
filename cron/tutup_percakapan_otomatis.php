@@ -37,6 +37,6 @@ while ($row = mysqli_fetch_assoc($result)) {
     $count++;
 }
 
-$logger->info("Cron job selesai. Menutup " . $count . " sesi.");
+// $logger->info("Cron job selesai. Menutup " . $count . " sesi.");
 
 mysqli_close($conn);

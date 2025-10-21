@@ -28,7 +28,7 @@ class ConversationService {
             $stmt->execute();
             $stmt->close();
             
-            $this->logger->info("Membuat record percakapan baru untuk: " . $phoneNumber);
+            // $this->logger->info("Membuat record percakapan baru untuk: " . $phoneNumber);
             return $this->getOrCreateConversation($phoneNumber);
         }
     }
@@ -38,7 +38,7 @@ class ConversationService {
         $stmt->bind_param("s", $phoneNumber);
         $stmt->execute();
         $stmt->close();
-        $this->logger->info("Percakapan dibuka untuk: " . $phoneNumber . ". Flag menu_utama_terkirim direset.");
+        // $this->logger->info("Percakapan dibuka untuk: " . $phoneNumber . ". Flag menu_utama_terkirim direset.");
     }
 
     public function setMenuSent($phoneNumber) {
@@ -46,7 +46,7 @@ class ConversationService {
         $stmt->bind_param("s", $phoneNumber);
         $stmt->execute();
         $stmt->close();
-        $this->logger->info("Flag menu_utama_terkirim diatur ke 1 untuk: " . $phoneNumber);
+        // $this->logger->info("Flag menu_utama_terkirim diatur ke 1 untuk: " . $phoneNumber);
     }
     
     private function updateInteractionTimestamp($phoneNumber) {
@@ -60,7 +60,7 @@ class ConversationService {
         $stmt->bind_param("s", $phoneNumber);
         $stmt->execute();
         $stmt->close();
-        $this->logger->info("Live chat dimulai untuk: " . $phoneNumber);
+        // $this->logger->info("Live chat dimulai untuk: " . $phoneNumber);
     }
     public function saveMessage($conversationId, $senderType, $messageType, $messageContent) {
         $stmt = $this->conn->prepare("INSERT INTO wa_pesan (percakapan_id, pengirim, tipe_pesan, isi_pesan) VALUES (?, ?, ?, ?)");
@@ -83,7 +83,7 @@ class ConversationService {
         $stmt->bind_param("s", $phoneNumber);
         $stmt->execute();
         $stmt->close();
-        $this->logger->info("Percakapan ditutup untuk: " . $phoneNumber);
+        // $this->logger->info("Percakapan ditutup untuk: " . $phoneNumber);
     }
 
     public function getTotalUnreadCount() {

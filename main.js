@@ -15,14 +15,16 @@ const httpServer = http.createServer((req, res) => {
             console.log(`[HTTP Bridge] Received notification from PHP: ${body}`);
             
             try {
-                forwardNotificationToWebSocket(body);
-                
                 res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ status: 'notification_sent' }));
-            } catch (error) {
-                console.error('[HTTP Bridge] Error processing notification:', error);
-                res.writeHead(500, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ status: 'error', message: error.message }));
+                res.end(JSON.stringify({ status: 'notification_received_by_bridge' }));
+            } catch (responseError) {
+                console.error('[HTTP Bridge] Error sending immediate response:', responseError);
+            }
+            
+            try {
+                forwardNotificationToWebSocket(body);
+            } catch (forwardError) {
+                console.error('[HTTP Bridge] Error processing notification after response:', forwardError);
             }
         });
 

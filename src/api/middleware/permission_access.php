@@ -40,7 +40,7 @@ class PermissionAccess {
                 $this->denyAccess(401, "Token tidak valid - User ID tidak ditemukan", $menu_code);
             }
             
-            $this->logger->info("✅ User authenticated: $userId");
+            // $this->logger->info("✅ User authenticated: $userId");
             
             // Check database permission
             $hasAccess = $this->checkDatabasePermission($userId, $menu_code);
@@ -50,7 +50,7 @@ class PermissionAccess {
                 $this->denyAccess(403, "Akses ditolak untuk menu '$menu_code'", $menu_code);
             }
             
-            $this->logger->success("✅ Access granted for user $userId to menu: $menu_code");
+            // $this->logger->success("✅ Access granted for user $userId to menu: $menu_code");
             return true;
             
         } catch (Exception $e) {

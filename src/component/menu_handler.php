@@ -50,7 +50,7 @@ class MenuHandler {
             $permissionAccess->checkAccess($this->menu_code, $this->token);
             
             // If we reach here, user has access
-            $this->logger->success("✅ Permission check berhasil untuk " . $this->menu_code);
+            // $this->logger->success("✅ Permission check berhasil untuk " . $this->menu_code);
             return true;
             
         } catch (Exception $e) {

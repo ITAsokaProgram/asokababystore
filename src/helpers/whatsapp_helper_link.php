@@ -43,7 +43,7 @@ function kirimLinkKonfirmasiWA($nomorPenerima, $linkKonfirmasi) {
     $result = sendWhatsAppMessage($data);
 
     if ($result['httpcode'] >= 200 && $result['httpcode'] < 300) {
-        $logger->success("Link konfirmasi berhasil dikirim ke {$nomorPenerima}.");
+        // $logger->success("Link konfirmasi berhasil dikirim ke {$nomorPenerima}.");
         return ['success' => true];
     } else {
         $logger->error("Gagal kirim link konfirmasi ke {$nomorPenerima}. HTTP: {$result['httpcode']}. Response: {$result['response']}");
@@ -65,7 +65,7 @@ function kirimPesanTeks($nomorPenerima, $pesanBody) {
     $result = sendWhatsAppMessage($data);
 
     if ($result['httpcode'] >= 200 && $result['httpcode'] < 300) {
-        $logger->success("Pesan teks berhasil dikirim ke {$nomorPenerima}.");
+        // $logger->success("Pesan teks berhasil dikirim ke {$nomorPenerima}.");
         return ['success' => true];
     } else {
         $logger->error("Gagal kirim pesan teks ke {$nomorPenerima}. HTTP: {$result['httpcode']}. Response: {$result['response']}");
@@ -98,7 +98,7 @@ function kirimPesanKontak($nomorPenerima, $namaKontak, $nomorTeleponKontak) {
     $result = sendWhatsAppMessage($data);
 
     if ($result['httpcode'] >= 200 && $result['httpcode'] < 300) {
-        $logger->success("Pesan kontak '{$namaKontak}' berhasil dikirim ke {$nomorPenerima}.");
+        // $logger->success("Pesan kontak '{$namaKontak}' berhasil dikirim ke {$nomorPenerima}.");
         return ['success' => true];
     } else {
         $logger->error("Gagal kirim pesan kontak ke {$nomorPenerima}. HTTP: {$result['httpcode']}. Response: {$result['response']}");
@@ -129,7 +129,7 @@ function kirimPesanList($nomorPenerima, $judulHeader, $pesanBody, $pesanFooter, 
     $result = sendWhatsAppMessage($data);
 
     if ($result['httpcode'] >= 200 && $result['httpcode'] < 300) {
-        $logger->success("Pesan List berhasil dikirim ke {$nomorPenerima}.");
+        // $logger->success("Pesan List berhasil dikirim ke {$nomorPenerima}.");
         return ['success' => true];
     } else {
         $logger->error("Gagal kirim pesan List ke {$nomorPenerima}. HTTP: {$result['httpcode']}. Response: {$result['response']}");
@@ -170,7 +170,7 @@ function kirimPesanButton($nomorPenerima, $pesanBody, $buttons, $pesanHeader = n
     $result = sendWhatsAppMessage($data);
 
     if ($result['httpcode'] >= 200 && $result['httpcode'] < 300) {
-        $logger->success("Pesan Button berhasil dikirim ke {$nomorPenerima}.");
+        // $logger->success("Pesan Button berhasil dikirim ke {$nomorPenerima}.");
         return ['success' => true];
     } else {
         $logger->error("Gagal kirim pesan Button ke {$nomorPenerima}. HTTP: {$result['httpcode']}. Response: {$result['response']}");
@@ -197,7 +197,7 @@ function kirimPesanLokasi($nomorPenerima, $latitude, $longitude, $namaLokasi, $a
     $result = sendWhatsAppMessage($data);
 
     if ($result['httpcode'] >= 200 && $result['httpcode'] < 300) {
-        $logger->success("Pesan lokasi '{$namaLokasi}' berhasil dikirim ke {$nomorPenerima}.");
+        // $logger->success("Pesan lokasi '{$namaLokasi}' berhasil dikirim ke {$nomorPenerima}.");
         return ['success' => true];
     } else {
         $logger->error("Gagal kirim pesan lokasi ke {$nomorPenerima}. HTTP: {$result['httpcode']}. Response: {$result['response']}");
@@ -224,7 +224,7 @@ function kirimPesanMedia($nomorPenerima, $mediaUrl, $mediaType, $caption = null)
     $result = sendWhatsAppMessage($data);
 
     if ($result['httpcode'] >= 200 && $result['httpcode'] < 300) {
-        $logger->success("Pesan media ({$mediaType}) berhasil dikirim ke {$nomorPenerima}.");
+        // $logger->success("Pesan media ({$mediaType}) berhasil dikirim ke {$nomorPenerima}.");
         return ['success' => true];
     } else {
         $logger->error("Gagal kirim pesan media ({$mediaType}) ke {$nomorPenerima}. HTTP: {$result['httpcode']}. Response: {$result['response']}");
@@ -265,7 +265,7 @@ function kirimPesanCtaUrl($nomorPenerima, $pesanBody, $displayText, $url, $pesan
     $result = sendWhatsAppMessage($data);
 
     if ($result['httpcode'] >= 200 && $result['httpcode'] < 300) {
-        $logger->success("Pesan CTA URL '{$displayText}' berhasil dikirim ke {$nomorPenerima}.");
+        // $logger->success("Pesan CTA URL '{$displayText}' berhasil dikirim ke {$nomorPenerima}.");
         return ['success' => true];
     } else {
         $logger->error("Gagal kirim pesan CTA URL ke {$nomorPenerima}. HTTP: {$result['httpcode']}. Response: {$result['response']}");
