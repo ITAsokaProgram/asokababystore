@@ -590,10 +590,10 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
               <button id="mobile-list-toggle" class="block md:hidden text-white hover:bg-white hover:bg-opacity-20 transition-all p-2 rounded-lg mr-1" title="Tampilkan Daftar Obrolan">
                 <i class="fas fa-bars text-lg"></i>
               </button>
-              <div class="w-10 h-10 rounded-full bg-white bg-opacity-20 flex items-center justify-center">
-                <i class="fas fa-user text-lg"></i>
+              <div class="flex flex-col">
+                  <p id="chat-with-name" class="font-semibold text-base md:text-lg truncate"></p>
+                  <p id="chat-with-phone" class="text-sm md:text-base truncate"></p>
               </div>
-              <span id="chat-with-phone" class="font-semibold text-sm md:text-base truncate"></span>
           </div>
           <button id="end-chat-button" class="hidden bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all flex items-center gap-1.5">
               <i class="fas fa-times-circle"></i>

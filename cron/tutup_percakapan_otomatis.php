@@ -25,7 +25,7 @@ $count = 0;
 while ($row = mysqli_fetch_assoc($result)) {
     $nomorTelepon = $row['nomor_telepon'];
     
-    $logger->info("Menutup sesi untuk nomor: " . $nomorTelepon);
+    // $logger->info("Menutup sesi untuk nomor: " . $nomorTelepon);
 
     kirimPesanTeks($nomorTelepon, $pesanPenutup);
 

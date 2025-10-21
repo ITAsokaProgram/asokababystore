@@ -33,7 +33,7 @@ class WebhookHandler {
     }
 
     public function handleIncomingMessage($body) {
-        // $this->logger->info("Webhook received data: " . json_encode($body));
+        $this->logger->info("Webhook received data: " . json_encode($body));
         $message = $body['entry'][0]['changes'][0]['value']['messages'][0] ?? null;
         if (!$message) {
             return;
@@ -63,7 +63,7 @@ class WebhookHandler {
             }
         }
 
-        $conversation = $this->conversationService->getOrCreateConversation($nomorPengirim);
+        $conversation = $this->conversationService->getOrCreateConversation($nomorPengirim, $namaPengirim);
 
         if ($conversation['status_percakapan'] === 'live_chat') {
             if ($messageType === 'interactive' &&
@@ -74,7 +74,7 @@ class WebhookHandler {
                 $buttonTitle = $message['interactive']['button_reply']['title'];
                 $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $buttonTitle);
                 $this->conversationService->closeConversation($nomorPengirim);
-                $this->sendWelcomeMessage($nomorPengirim, $conversation['id']);
+                $this->sendWelcomeMessage($nomorPengirim, $conversation['id'], $namaPengirim);
                 $this->conversationService->openConversation($nomorPengirim);
                 return;
             }
@@ -145,27 +145,27 @@ class WebhookHandler {
             $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $buttonTitle);
 
             switch ($buttonId) {
-                case 'BUKA_MENU_UTAMA': // <-- TAMBAHKAN INI
+                case 'BUKA_MENU_UTAMA':
                     $this->sendMainMenuAsList($nomorPengirim, $conversation['id']);
                     return;
                 
-                case 'CHAT_CS': // <-- TAMBAHKAN INI
+                case 'CHAT_CS':
                     $this->triggerLiveChat($nomorPengirim, $conversation);
                     return;
                 case 'DAFTAR_JABODETABEK':
-                    $this->sendBranchListByRegion($nomorPengirim, 'jabodetabek', 1, 'kontak');
+                    $this->sendBranchListByRegion($nomorPengirim, 'jabodetabek', 1, 'kontak', $namaPengirim);
                     return;
 
                 case 'DAFTAR_BELITUNG':
-                    $this->sendBranchListByRegion($nomorPengirim, 'belitung', 1, 'kontak');
+                    $this->sendBranchListByRegion($nomorPengirim, 'belitung', 1, 'kontak', $namaPengirim);
                     return;
 
                 case 'LOKASI_DAFTAR_JABODETABEK':
-                    $this->sendBranchListByRegion($nomorPengirim, 'jabodetabek', 1, 'lokasi');
+                    $this->sendBranchListByRegion($nomorPengirim, 'jabodetabek', 1, 'lokasi', $namaPengirim);
                     return;
 
                 case 'LOKASI_DAFTAR_BELITUNG':
-                    $this->sendBranchListByRegion($nomorPengirim, 'belitung', 1, 'lokasi');
+                    $this->sendBranchListByRegion($nomorPengirim, 'belitung', 1, 'lokasi', $namaPengirim);
                     return;
             }
         }
@@ -191,7 +191,7 @@ class WebhookHandler {
                 ]);
             }
 
-            $this->sendWelcomeMessage($nomorPengirim, $conversation['id']);
+            $this->sendWelcomeMessage($nomorPengirim, $conversation['id'], $namaPengirim);
             $this->conversationService->openConversation($nomorPengirim);
         }
         else {
@@ -215,17 +215,17 @@ class WebhookHandler {
                     // $this->logger->info("Mengabaikan pesan teks dari {$nomorPengirim} karena menu utama sudah terkirim (bukan link verifikasi).");
                 }
             } elseif ($message['type'] === 'interactive' && $message['interactive']['type'] === 'list_reply') {
-                $this->processListReplyMessage($message, $conversation);
+                $this->processListReplyMessage($message, $conversation, $namaPengirim);
             }
         }
     }
     
-    private function sendWelcomeMessage($nomorPengirim, $conversationId) {
+    private function sendWelcomeMessage($nomorPengirim, $conversationId, $namaPengirim) {
         // $this->logger->info("User {$nomorPengirim} memulai percakapan baru, mengirim Welcome Menu.");
         
         kirimPesanList(
             $nomorPengirim,
-            WhatsappConstants::WELCOME_HEADER,
+            "Hai " . $namaPengirim,
             WhatsappConstants::WELCOME_BODY,
             "",
             WhatsappConstants::WELCOME_BUTTON_TEXT,
@@ -257,7 +257,7 @@ class WebhookHandler {
         $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody);
     }
 
-    private function processListReplyMessage($message, $conversation) {
+    private function processListReplyMessage($message, $conversation, $namaPengirim) {
         $nomorPengirim = $message['from'];
         $selectedId = $message['interactive']['list_reply']['id'];
         $selectedTitle = $message['interactive']['list_reply']['title'];
@@ -284,7 +284,7 @@ class WebhookHandler {
             $region = (strpos($matches[1], 'JABODETABEK') !== false) ? 'jabodetabek' : 'belitung';
             $type = (strpos($matches[1], 'LOKASI') !== false) ? 'lokasi' : 'kontak';
             $page = (int)$matches[2];
-            $this->sendBranchListByRegion($nomorPengirim, $region, $page, $type);
+            $this->sendBranchListByRegion($nomorPengirim, $region, $page, $type, $namaPengirim);
             return;
         }
 
@@ -387,7 +387,7 @@ class WebhookHandler {
         }
     }
 
-    private function sendBranchListByRegion($nomorPengirim, $region, $page = 1, $type = 'kontak') {
+    private function sendBranchListByRegion($nomorPengirim, $region, $page = 1, $type = 'kontak', $namaPengirim) {
         // $this->logger->info("Sending {$type} list for region {$region} page {$page} to {$nomorPengirim}.");
         $all_cities = ($region === 'jabodetabek') ? BranchConstants::CITIES_JABODETABEK : BranchConstants::CITIES_BELITUNG;
         $all_locations = ($region === 'jabodetabek') ? BranchConstants::LOKASI_JABODETABEK : BranchConstants::LOKASI_BELITUNG;
@@ -418,7 +418,7 @@ class WebhookHandler {
         $header = ($region === 'jabodetabek') ? WhatsappConstants::BRANCH_LIST_HEADER_JABODETABEK : WhatsappConstants::BRANCH_LIST_HEADER_BELITUNG;
         $sections = [['title' => $title, 'rows' => $cities_to_show]];
         $pesanBody = WhatsappConstants::BRANCH_LIST_PROMPT;
-        $conversation = $this->conversationService->getOrCreateConversation($nomorPengirim);
+        $conversation = $this->conversationService->getOrCreateConversation($nomorPengirim, $namaPengirim);
         $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody);
         kirimPesanList(
             $nomorPengirim,

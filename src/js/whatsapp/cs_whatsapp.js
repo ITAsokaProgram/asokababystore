@@ -368,6 +368,7 @@ async function selectConversation(conversationId) {
         
         currentConversationStatus = details.status_percakapan;
         document.getElementById('chat-with-phone').textContent = details.nomor_telepon;
+        document.getElementById('chat-with-name').textContent = details.nama_profil ?? '-';
         
         renderMessages(messages);
         updateChatUI(currentConversationStatus);

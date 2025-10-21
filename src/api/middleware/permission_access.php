@@ -17,7 +17,7 @@ class PermissionAccess {
      */
     public function checkAccess($menu_code, $jwt) {
         try {
-            $this->logger->info("🔐 Checking access for menu: $menu_code");
+            // $this->logger->info("🔐 Checking access for menu: $menu_code");
             
             // Validate input
             if (empty($menu_code) || empty($jwt)) {
