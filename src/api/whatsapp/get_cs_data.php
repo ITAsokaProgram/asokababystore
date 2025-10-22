@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../../../aa_kon_sett.php';
 require_once __DIR__ . '/../../auth/middleware_login.php';
+require_once __DIR__ . '/../../utils/Logger.php';
 
 header('Content-Type: application/json');
 
@@ -29,6 +30,7 @@ try {
 }
 
 try {
+    $logger = new AppLogger('whatsapp_dashboard');
     if (isset($_GET['conversation_id'])) {
         $id = filter_var($_GET['conversation_id'], FILTER_VALIDATE_INT);
         if ($id === false) {
@@ -115,25 +117,40 @@ try {
         
         $filter = $_GET['filter'] ?? 'semua';
     
-        $stmt_live_chat = $conn->prepare("
-            SELECT COUNT(DISTINCT p.id) AS unread_count
-            FROM wa_pesan m
-            JOIN wa_percakapan p ON m.percakapan_id = p.id
-            WHERE p.status_percakapan = 'live_chat' AND m.pengirim = 'user' AND m.status_baca = 0
-        ");
-        $stmt_live_chat->execute();
-        $live_chat_count = $stmt_live_chat->get_result()->fetch_assoc()['unread_count'] ?? 0;
-        $stmt_live_chat->close();
+        $live_chat_count = 0;
+        $umum_count = 0;
 
-        $stmt_umum = $conn->prepare("
-            SELECT COUNT(DISTINCT p.id) AS unread_count
-            FROM wa_pesan m
-            JOIN wa_percakapan p ON m.percakapan_id = p.id
-            WHERE p.status_percakapan IN ('open', 'closed') AND m.pengirim = 'user' AND m.status_baca = 0
-        ");
-        $stmt_umum->execute();
-        $umum_count = $stmt_umum->get_result()->fetch_assoc()['unread_count'] ?? 0;
-        $stmt_umum->close();
+        try {
+            $sql_counts = "
+                SELECT
+                    p.status_percakapan,
+                    COUNT(DISTINCT m.percakapan_id) AS unread_convo_count
+                FROM wa_pesan m
+                JOIN wa_percakapan p ON m.percakapan_id = p.id
+                WHERE m.pengirim = 'user' AND m.status_baca = 0
+                GROUP BY p.status_percakapan
+            ";
+            
+            $stmt_counts = $conn->prepare($sql_counts);
+            if ($stmt_counts === false) {
+                throw new Exception("Prepare statement (sql_counts) failed: " . $conn->error);
+            }
+            
+            $stmt_counts->execute();
+            $counts_result = $stmt_counts->get_result();
+            
+            while ($row = $counts_result->fetch_assoc()) {
+                if ($row['status_percakapan'] == 'live_chat') {
+                    $live_chat_count = (int)$row['unread_convo_count'];
+                } else if (in_array($row['status_percakapan'], ['open', 'closed'])) {
+                    $umum_count += (int)$row['unread_convo_count'];
+                }
+            }
+            $stmt_counts->close();
+
+        } catch (Exception $e) {
+            $logger->error("Error calculating unread counts: " . $e->getMessage());
+        }
         
         
         $sql = "
@@ -145,7 +162,7 @@ try {
                 p.status_percakapan,
                 p.terakhir_interaksi_pada,
                 COUNT(DISTINCT m.id) AS jumlah_belum_terbaca,
-                GROUP_CONCAT(DISTINCT l.id, ':', l.nama_label, ':', l.warna SEPARATOR ';') AS labels_concat
+                GROUP_CONCAT(DISTINCT CONCAT(l.id, ':', l.nama_label, ':', l.warna) SEPARATOR ';') AS labels_concat
             FROM
                 wa_percakapan p
             LEFT JOIN
@@ -164,10 +181,12 @@ try {
         }
 
         $sql .= $whereClause;
-        $sql .= " GROUP BY p.id, p.nomor_telepon, p.nama_profil, p.nama_display, p.status_percakapan, p.terakhir_interaksi_pada ";
-        
-        
-        $sql .= " ORDER BY p.terakhir_interaksi_pada DESC ";
+        $sql .= "
+            GROUP BY
+                p.id, p.nomor_telepon, p.nama_profil, p.nama_display, p.status_percakapan, p.terakhir_interaksi_pada
+            ORDER BY
+                p.terakhir_interaksi_pada DESC
+        ";
         
         
         $stmt = $conn->prepare($sql);

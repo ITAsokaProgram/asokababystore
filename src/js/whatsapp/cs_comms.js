@@ -189,7 +189,6 @@ async function selectConversation(conversationId) {
         renderMessages(messages);
         updateChatUI(currentConversationStatus);
 
-        fetchAndRenderConversations();
 
     } catch (error) {
         console.error(error);
@@ -398,7 +397,6 @@ async function updateDisplayName(conversationId, newName) {
         Swal.fire('Error', error.message, 'error');
     }
 }
-
 async function handleManageLabels() {
     if (!currentConversationId) return;
 
@@ -409,11 +407,11 @@ async function handleManageLabels() {
         if (!response.ok) throw new Error('Gagal mengambil daftar label.');
         const allLabels = await response.json();
 
-        const preselectedLabelIds = new Set(currentConversationLabels.map(label => label.id));
+        const preselectedLabelIds = new Set(currentConversationLabels.map(label => label.id.toString()));
 
         let labelsHtml = '<div id="swal-label-list" class="text-left swal2-checkbox-list" style="display: flex; flex-direction: column; align-items: flex-start; max-height: 250px; overflow-y: auto;">';
         allLabels.forEach(label => {
-            const isChecked = preselectedLabelIds.has(label.id) ? 'checked' : '';
+            const isChecked = preselectedLabelIds.has(label.id.toString()) ? 'checked' : '';
             const textColor = getBrightness(label.warna) > 128 ? '#000' : '#FFF';
             labelsHtml += `
                 <label class="swal2-checkbox" style="display: inline-flex; align-items: center; margin: 0.3em 0; cursor: pointer;">
@@ -427,7 +425,7 @@ async function handleManageLabels() {
             `;
         });
         labelsHtml += '</div>';
-        
+
         const fullHtml = '<div class="text-sm text-left mb-2">Pilih label untuk percakapan ini:</div>' + labelsHtml;
 
         const { value: selectedLabelIds } = await Swal.fire({
@@ -445,10 +443,46 @@ async function handleManageLabels() {
         });
 
         if (Array.isArray(selectedLabelIds)) {
-            console.log("Selected Label IDs:", selectedLabelIds);
+            await updateConversationLabels(currentConversationId, selectedLabelIds);
         }
     } catch (error) {
         console.error('Gagal kelola label:', error);
+        Swal.fire('Error', error.message, 'error');
+    }
+}
+
+async function updateConversationLabels(conversationId, labelIds) {
+    try {
+        const response = await fetch('/src/api/whatsapp/update_conversation_labels.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${wa_token}`
+            },
+            body: JSON.stringify({
+                conversation_id: conversationId,
+                label_ids: labelIds
+            })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+            throw new Error(result.message || 'Gagal memperbarui label.');
+        }
+
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: 'Label berhasil diperbarui!',
+            showConfirmButton: false,
+            timer: 2000
+        });
+
+        currentConversationLabels = result.new_labels || [];
+        renderActiveChatLabels(currentConversationLabels);
+        fetchAndRenderConversations(); 
+    } catch (error) {
+        console.error('Gagal update label percakapan:', error);
         Swal.fire('Error', error.message, 'error');
     }
 }
