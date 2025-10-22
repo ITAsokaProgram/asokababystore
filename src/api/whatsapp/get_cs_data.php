@@ -116,7 +116,7 @@ try {
     } else {
         
         $filter = $_GET['filter'] ?? 'semua';
-    
+        $search = $_GET['search'] ?? '';
         $live_chat_count = 0;
         $umum_count = 0;
 
@@ -181,11 +181,29 @@ try {
             ) AS lm ON p.id = lm.percakapan_id
         ";
 
-        $whereClause = "";
+        $whereConditions = [];
+        $params = [];
+        $types = '';
+
         if ($filter === 'live_chat') {
-            $whereClause = " WHERE p.status_percakapan = 'live_chat'";
+            $whereConditions[] = "p.status_percakapan = ?";
+            $params[] = 'live_chat';
+            $types .= 's';
         } elseif ($filter === 'umum') {
-            $whereClause = " WHERE p.status_percakapan IN ('open', 'closed')";
+            $whereConditions[] = "p.status_percakapan IN ('open', 'closed')";
+        }
+
+        if (!empty($search)) {
+            $whereConditions[] = "(p.nama_display LIKE ? OR p.nomor_telepon LIKE ?)";
+            $searchTerm = "%" . $search . "%";
+            $params[] = $searchTerm;
+            $params[] = $searchTerm;
+            $types .= 'ss';
+        }
+
+        $whereClause = "";
+        if (!empty($whereConditions)) {
+            $whereClause = " WHERE " . implode(' AND ', $whereConditions);
         }
 
         $sql .= $whereClause;
@@ -198,6 +216,9 @@ try {
         
         
         $stmt = $conn->prepare($sql);
+        if (!empty($params)) {
+            $stmt->bind_param($types, ...$params);
+        }
         $stmt->execute();
         $result = $stmt->get_result();
         $conversations = $result->fetch_all(MYSQLI_ASSOC);

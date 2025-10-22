@@ -1,5 +1,6 @@
 let selectedMediaFile = null;
 let currentConversationLabels = [];
+let currentSearchTerm = '';
 const wa_token = getToken();
 let ws;
 let currentConversationId = null;
@@ -120,6 +121,16 @@ document.addEventListener('DOMContentLoaded', () => {
             button.classList.remove('bg-gray-100', 'text-gray-600', 'hover:bg-gray-200');
             fetchAndRenderConversations();
         });
+    }
+
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) {
+        const debouncedSearch = debounce(() => {
+            currentSearchTerm = searchInput.value;
+            fetchAndRenderConversations();
+        }, 300);
+
+        searchInput.addEventListener('input', debouncedSearch);
     }
 
     initWebSocket();

@@ -57,7 +57,11 @@ function initWebSocket() {
 
 async function fetchAndRenderConversations(isInitialLoad = false) {
     try {
-        const response = await fetch(`/src/api/whatsapp/get_cs_data.php?filter=${currentFilter}`, {
+        const params = new URLSearchParams({
+            filter: currentFilter,
+            search: currentSearchTerm
+        });
+        const response = await fetch(`/src/api/whatsapp/get_cs_data.php?${params.toString()}`, {
             headers: { 'Authorization': `Bearer ${wa_token}` }
         });
         if (!response.ok) throw new Error('Gagal mengambil data percakapan.');

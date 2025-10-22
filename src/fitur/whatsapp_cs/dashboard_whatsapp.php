@@ -570,6 +570,14 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
                 </svg>
             </button>
         </div>
+        <div class="p-4 border-b border-gray-200 bg-white">
+            <div class="relative">
+                <input type="text" id="search-input" placeholder="Cari nama atau nomor..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-500">
+                <div class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    <i class="fas fa-search"></i>
+                </div>
+            </div>
+        </div>
         <div id="conversation-list" class="overflow-y-auto flex-1 bg-white">
           <div class="p-8 text-center text-gray-500">
             <div class="loading-spinner mx-auto" style="border-color: #cbd5e1; border-top-color: #3b82f6;"></div>
