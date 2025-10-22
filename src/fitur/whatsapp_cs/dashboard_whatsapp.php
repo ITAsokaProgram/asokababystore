@@ -518,13 +518,12 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
     }
 
     #remove-media-button {
+      background-color: #dc2626;
+
       box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     }
 
-    #remove-media-button:hover {
-      background-color: #dc2626;
-      transform: scale(1.1);
-    }
+    
 
     label[for="media-input"] {
       transition: all 0.2s ease;
