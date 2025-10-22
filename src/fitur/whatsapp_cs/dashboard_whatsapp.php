@@ -32,7 +32,7 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
     #chat-layout {
       display: grid;
       grid-template-columns: 280px 1fr;
-      height: calc(100vh - 180px);
+      height: calc(100vh - 90px);
       gap: 0;
       overflow: hidden;
       transition: grid-template-columns 0.3s ease;
@@ -66,6 +66,13 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
       flex-direction: column;
       background: #ffffff;
       transition: all 0.3s ease-in-out;
+      overflow: hidden;
+    }
+
+    #conversation-list.loading-disabled {
+      pointer-events: none; 
+      opacity: 0.6; 
+      transition: opacity 0.2s ease-in-out;
     }
 
     #conversation-list-container.collapsed {
@@ -533,20 +540,6 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
   <?php include '../../component/sidebar_report.php' ?>
   
   <main id="main-content" class="flex-1 p-4 md:p-6 ml-64">
-
-    <div class="header-card p-4 md:p-6 rounded-2xl mb-4 md:mb-6 bg-white shadow-sm sm:block hidden">
-      <div class="flex items-center gap-3 md:gap-4">
-        <div class="icon-wrapper bg-green-100 p-2.5 md:p-3 rounded-full">
-          <i class="fab fa-whatsapp text-2xl md:text-3xl text-green-600"></i>
-        </div>
-        <div>
-          <h1 class="text-xl md:text-2xl font-bold text-gray-800 mb-1 flex items-center gap-2">
-               <span>Live Chat WhatsApp</span>
-               <!-- <span id="total-unread-badge" class="hidden text-sm font-bold bg-red-500 text-white px-2.5 py-0.5 rounded-full">0</span> -->
-           </h1>
-        </div>
-      </div>
-    </div>
     <div id="chat-layout" class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200">
       <div id="conversation-list-container" class="flex flex-col">
         <div class="p-4 border-b border-gray-200 flex items-center md:justify-between  gap-3 bg-gradient-to-r from-gray-50 to-white">
@@ -596,8 +589,15 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
                       <button id="edit-display-name-button" class="hidden text-white hover:bg-white hover:bg-opacity-20 transition-all p-1.5 rounded-lg" title="Ubah Nama Tampilan">
                           <i class="fas fa-pencil-alt text-xs"></i>
                       </button>
+                      <button id="manage-labels-button" class="hidden text-white hover:bg-white hover:bg-opacity-20 transition-all p-1.5 rounded-lg" title="Kelola Label">
+                          <i class="fas fa-tags text-xs"></i>
+                      </button>
                   </div>
                   <p id="chat-with-phone" class="text-sm md:text-base truncate"></p>
+                  
+                  <div id="active-chat-labels" class="flex flex-wrap gap-1 mt-1.5">
+                  </div>
+                  
               </div>
           </div>
           <button id="end-chat-button" class="hidden bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all flex items-center gap-1.5">
@@ -640,7 +640,10 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
   </main>
   
   <script src="/src/js/middleware_auth.js"></script>
-  <script src="/src/js/whatsapp/cs_whatsapp.js" type="module"></script>
+  <script src="/src/js/whatsapp/cs_utils.js"></script>
+  <script src="/src/js/whatsapp/cs_ui.js"></script>
+  <script src="/src/js/whatsapp/cs_comms.js"></script>
+  <script src="/src/js/whatsapp/cs_whatsapp.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script>

@@ -92,9 +92,24 @@ try {
         $messages = $result_msgs->fetch_all(MYSQLI_ASSOC);
         $stmt_msgs->close();
 
+        
+        $stmt_labels = $conn->prepare("
+            SELECT l.id, l.nama_label, l.warna
+            FROM wa_labels l
+            JOIN wa_percakapan_labels pl ON l.id = pl.label_id
+            WHERE pl.percakapan_id = ?
+            ORDER BY l.nama_label
+        ");
+        $stmt_labels->bind_param("i", $id);
+        $stmt_labels->execute();
+        $result_labels = $stmt_labels->get_result();
+        $labels = $result_labels->fetch_all(MYSQLI_ASSOC);
+        $stmt_labels->close();
+
         $data = [
             'details' => $conversation_details,
-            'messages' => $messages
+            'messages' => $messages,
+            'labels' => $labels
         ];
     } else {
         
@@ -120,6 +135,7 @@ try {
         $umum_count = $stmt_umum->get_result()->fetch_assoc()['unread_count'] ?? 0;
         $stmt_umum->close();
         
+        
         $sql = "
             SELECT
                 p.id,
@@ -128,11 +144,16 @@ try {
                 p.nama_display,
                 p.status_percakapan,
                 p.terakhir_interaksi_pada,
-                COUNT(m.id) AS jumlah_belum_terbaca
+                COUNT(DISTINCT m.id) AS jumlah_belum_terbaca,
+                GROUP_CONCAT(DISTINCT l.id, ':', l.nama_label, ':', l.warna SEPARATOR ';') AS labels_concat
             FROM
                 wa_percakapan p
             LEFT JOIN
                 wa_pesan m ON p.id = m.percakapan_id AND m.pengirim = 'user' AND m.status_baca = 0
+            LEFT JOIN
+                wa_percakapan_labels pl ON p.id = pl.percakapan_id
+            LEFT JOIN
+                wa_labels l ON pl.label_id = l.id
         ";
 
         $whereClause = "";
@@ -144,21 +165,33 @@ try {
 
         $sql .= $whereClause;
         $sql .= " GROUP BY p.id, p.nomor_telepon, p.nama_profil, p.nama_display, p.status_percakapan, p.terakhir_interaksi_pada ";
-        $sql .= "
-            ORDER BY
-                CASE p.status_percakapan
-                    WHEN 'live_chat' THEN 1
-                    WHEN 'open' THEN 2
-                    ELSE 3
-                END,
-                p.terakhir_interaksi_pada DESC
-        ";
+        
+        
+        $sql .= " ORDER BY p.terakhir_interaksi_pada DESC ";
+        
         
         $stmt = $conn->prepare($sql);
         $stmt->execute();
         $result = $stmt->get_result();
         $conversations = $result->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
+        
+        
+        foreach ($conversations as $key => $convo) {
+            $labels = [];
+            if (!empty($convo['labels_concat'])) {
+                $pairs = explode(';', $convo['labels_concat']);
+                foreach ($pairs as $pair) {
+                    
+                    if (substr_count($pair, ':') >= 2) {
+                        list($id, $nama, $warna) = explode(':', $pair, 3);
+                        $labels[] = ['id' => $id, 'nama_label' => $nama, 'warna' => $warna];
+                    }
+                }
+            }
+            $conversations[$key]['labels'] = $labels;
+            unset($conversations[$key]['labels_concat']);
+        }
         
         $data = [
             'conversations' => $conversations,
@@ -167,7 +200,7 @@ try {
                 'umum' => (int)$umum_count
             ]
         ];
-    }    
+    }
     echo json_encode($data);
 
 } catch (Exception $e) {
