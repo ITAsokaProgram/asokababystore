@@ -87,8 +87,29 @@ try {
             exit;
         }
 
-        $stmt_msgs = $conn->prepare("SELECT pengirim, isi_pesan, tipe_pesan, timestamp, status_baca FROM wa_pesan WHERE percakapan_id = ? ORDER BY timestamp ASC");
-        $stmt_msgs->bind_param("i", $id);
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        if ($page < 1) $page = 1;
+        $limit = 40; 
+        $offset = ($page - 1) * $limit;
+
+        $stmt_count = $conn->prepare("SELECT COUNT(id) AS total FROM wa_pesan WHERE percakapan_id = ?");
+        $stmt_count->bind_param("i", $id);
+        $stmt_count->execute();
+        $total_messages = $stmt_count->get_result()->fetch_assoc()['total'];
+        $total_pages = ceil($total_messages / $limit);
+        $stmt_count->close();
+
+        $stmt_msgs = $conn->prepare("
+            SELECT * FROM (
+                SELECT pengirim, isi_pesan, tipe_pesan, timestamp, status_baca
+                FROM wa_pesan
+                WHERE percakapan_id = ?
+                ORDER BY timestamp DESC
+                LIMIT ? OFFSET ?
+            ) AS paged_messages
+            ORDER BY timestamp ASC
+        ");
+        $stmt_msgs->bind_param("iii", $id, $limit, $offset);
         $stmt_msgs->execute();
         $result_msgs = $stmt_msgs->get_result();
         $messages = $result_msgs->fetch_all(MYSQLI_ASSOC);
@@ -111,7 +132,12 @@ try {
         $data = [
             'details' => $conversation_details,
             'messages' => $messages,
-            'labels' => $labels
+            'labels' => $labels,
+            'pagination' => [
+                'current_page' => $page,
+                'total_pages' => (int)$total_pages,
+                'has_more' => $page < $total_pages
+            ]
         ];
     } else {
         
@@ -119,6 +145,11 @@ try {
         $search = $_GET['search'] ?? '';
         $live_chat_count = 0;
         $umum_count = 0;
+
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        if ($page < 1) $page = 1;
+        $limit = 12; 
+        $offset = ($page - 1) * $limit;
 
         try {
             $sql_counts = "
@@ -206,6 +237,18 @@ try {
             $whereClause = " WHERE " . implode(' AND ', $whereConditions);
         }
 
+        $sql_count_total = "SELECT COUNT(DISTINCT p.id) AS total_conversations FROM wa_percakapan p";
+        $sql_count_total .= $whereClause;
+
+        $stmt_count_total = $conn->prepare($sql_count_total);
+        if (!empty($params)) {
+            $stmt_count_total->bind_param($types, ...$params);
+        }
+        $stmt_count_total->execute();
+        $total_conversations = $stmt_count_total->get_result()->fetch_assoc()['total_conversations'];
+        $total_pages = ceil($total_conversations / $limit);
+        $stmt_count_total->close();
+
         $sql .= $whereClause;
         $sql .= "
             GROUP BY
@@ -213,6 +256,11 @@ try {
             ORDER BY
                 urutan_interaksi DESC
         ";
+
+        $sql .= " LIMIT ? OFFSET ?";
+        $params[] = $limit;
+        $params[] = $offset;
+        $types .= 'ii';
         
         
         $stmt = $conn->prepare($sql);
@@ -246,6 +294,11 @@ try {
             'unread_counts' => [
                 'live_chat' => (int)$live_chat_count,
                 'umum' => (int)$umum_count
+            ],
+            'pagination' => [
+                'current_page' => $page,
+                'total_pages' => (int)$total_pages,
+                'has_more' => $page < $total_pages
             ]
         ];
     }

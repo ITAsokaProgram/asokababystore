@@ -9,6 +9,14 @@ let currentConversationStatus = null;
 let currentFilter = 'semua';
 let isConversationLoading = false;
 
+let currentMessagePage = 1;
+let hasMoreMessages = true;
+let isLoadingMoreMessages = false;
+
+let currentConvoPage = 1;
+let hasMoreConvos = true;
+let isLoadingMoreConvos = false;
+
 document.addEventListener('DOMContentLoaded', () => {
     if (window.innerWidth <= 768) {
         document.getElementById('conversation-list-container').classList.add('mobile-show');
@@ -18,6 +26,24 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error("Token admin tidak ditemukan. Harap login kembali.");
         Swal.fire('Error', 'Token tidak ditemukan, harap login kembali.', 'error');
         return;
+    }
+
+    const messageContainer = document.getElementById('message-container');
+    
+    messageContainer.addEventListener('scroll', () => {
+        if (messageContainer.scrollTop === 0 && hasMoreMessages && !isLoadingMoreMessages && currentConversationId) {
+            loadMoreMessages();
+        }
+    });
+
+    const conversationList = document.getElementById('conversation-list');
+    if (conversationList) {
+        conversationList.addEventListener('scroll', () => {
+            const { scrollTop, scrollHeight, clientHeight } = conversationList;
+            if (scrollTop + clientHeight >= scrollHeight - 50 && hasMoreConvos && !isLoadingMoreConvos) {
+                loadMoreConversations();
+            }
+        });
     }
 
     const mobileBackButton = document.getElementById('mobile-back-button');
@@ -119,6 +145,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             button.classList.add('active', 'bg-blue-500', 'text-white', 'shadow-sm');
             button.classList.remove('bg-gray-100', 'text-gray-600', 'hover:bg-gray-200');
+            currentConvoPage = 1; 
+            hasMoreConvos = true;
             fetchAndRenderConversations();
         });
     }
@@ -134,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     initWebSocket();
-    fetchAndRenderConversations(true);
+    fetchAndRenderConversations();
 
     const sendButton = document.getElementById('send-button');
     const messageInput = document.getElementById('message-input');

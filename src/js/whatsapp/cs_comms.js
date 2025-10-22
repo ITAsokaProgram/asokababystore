@@ -35,6 +35,7 @@ function initWebSocket() {
                         headers: { 'Authorization': `Bearer ${wa_token}` }
                     }).catch(err => console.error("Gagal menandai pesan sebagai terbaca:", err));
                 } else {
+                    currentConvoPage = 1;
                     fetchAndRenderConversations();
                     if (data.total_unread_count !== undefined) {
                         updateTotalUnreadBadge(data.total_unread_count);
@@ -42,6 +43,7 @@ function initWebSocket() {
                 }
             } else if (data.event === 'unread_count_update') {
                 updateTotalUnreadBadge(data.total_unread_count);
+                currentConvoPage = 1;
                 fetchAndRenderConversations();
             }
         } catch (e) {}
@@ -55,11 +57,12 @@ function initWebSocket() {
     ws.onerror = (error) => console.error('WebSocket error:', error);
 }
 
-async function fetchAndRenderConversations(isInitialLoad = false) {
+async function fetchAndRenderConversations(isLoadMore = false) {    
     try {
         const params = new URLSearchParams({
             filter: currentFilter,
-            search: currentSearchTerm
+            search: currentSearchTerm,
+            page: currentConvoPage
         });
         const response = await fetch(`/src/api/whatsapp/get_cs_data.php?${params.toString()}`, {
             headers: { 'Authorization': `Bearer ${wa_token}` }
@@ -68,7 +71,9 @@ async function fetchAndRenderConversations(isInitialLoad = false) {
         const data = await response.json();
         const conversations = data.conversations;
         const listElement = document.getElementById('conversation-list');
-        listElement.innerHTML = '';
+        if (!isLoadMore) {
+            listElement.innerHTML = '';
+        }
 
         if (data.unread_counts) {
             updateFilterUnreadBadges(data.unread_counts);
@@ -76,7 +81,12 @@ async function fetchAndRenderConversations(isInitialLoad = false) {
             updateTotalUnreadBadge(totalUnread);
         }
 
-        if (conversations.length === 0) {
+        if (data.pagination) {
+            currentConvoPage = data.pagination.current_page;
+            hasMoreConvos = data.pagination.has_more;
+        }
+
+        if (conversations.length === 0 && !isLoadMore) {
             listElement.innerHTML = `
                 <div class="flex flex-col items-center justify-center p-12 text-gray-400 text-center">
                     <i class="fas fa-inbox text-5xl mb-4 opacity-40"></i>
@@ -144,7 +154,7 @@ async function fetchAndRenderConversations(isInitialLoad = false) {
     }
 }
 async function selectConversation(conversationId) {
-    if (isConversationLoading) {
+    if (isConversationLoading && conversationId === currentConversationId) {
         console.warn('Masih memuat percakapan, harap tunggu...');
         return; 
     }
@@ -169,16 +179,28 @@ async function selectConversation(conversationId) {
                 </div>
             </div>`;
         updateChatUI(null);
+        
+        
+        currentMessagePage = 1;
+        hasMoreMessages = true;
+        isLoadingMoreMessages = false;
     }
     
     currentConversationId = conversationId;
 
     try {
-        const response = await fetch(`/src/api/whatsapp/get_cs_data.php?conversation_id=${conversationId}`, {
+        
+        const response = await fetch(`/src/api/whatsapp/get_cs_data.php?conversation_id=${conversationId}&page=1`, {
             headers: { 'Authorization': `Bearer ${wa_token}` }
         });
         if (!response.ok) throw new Error('Gagal memuat riwayat pesan.');
-        const { details, messages, labels } = await response.json();
+        
+        
+        const { details, messages, labels, pagination } = await response.json();
+
+        
+        currentMessagePage = pagination.current_page;
+        hasMoreMessages = pagination.has_more;
 
         currentConversationStatus = details.status_percakapan;
         currentDisplayName = details.nama_display;
@@ -213,6 +235,85 @@ async function selectConversation(conversationId) {
         if (conversationList) {
             conversationList.classList.remove('loading-disabled');
         }
+    }
+}
+
+async function loadMoreMessages() {
+    if (isLoadingMoreMessages || !hasMoreMessages) return;
+
+    isLoadingMoreMessages = true;
+    currentMessagePage++; 
+
+    const messageContainer = document.getElementById('message-container');
+    const oldScrollHeight = messageContainer.scrollHeight;
+
+    
+    const spinner = document.createElement('div');
+    spinner.id = 'message-loader-spinner';
+    spinner.innerHTML = `<div class="flex justify-center p-3"><div class="loading-spinner" style="border-color: #e0e7ff; border-top-color: #3b82f6; width: 32px; height: 32px;"></div></div>`;
+    messageContainer.prepend(spinner);
+
+    try {
+        const response = await fetch(`/src/api/whatsapp/get_cs_data.php?conversation_id=${currentConversationId}&page=${currentMessagePage}`, {
+            headers: { 'Authorization': `Bearer ${wa_token}` }
+        });
+
+        if (!response.ok) throw new Error('Gagal memuat pesan lama.');
+        
+        const { messages, pagination } = await response.json();
+
+        hasMoreMessages = pagination.has_more;
+        currentMessagePage = pagination.current_page;
+
+        prependMessages(messages); 
+
+    } catch (error) {
+        console.error("Gagal memuat pesan lama:", error);
+        currentMessagePage--; 
+    } finally {
+        
+        const loaderSpinner = document.getElementById('message-loader-spinner');
+        if (loaderSpinner) {
+            loaderSpinner.remove();
+        }
+
+        
+        const newScrollHeight = messageContainer.scrollHeight;
+        messageContainer.scrollTop = newScrollHeight - oldScrollHeight;
+
+        isLoadingMoreMessages = false;
+    }
+}
+
+async function loadMoreConversations() {
+    if (isLoadingMoreConvos || !hasMoreConvos) return;
+
+    isLoadingMoreConvos = true;
+    currentConvoPage++;
+
+    const listElement = document.getElementById('conversation-list');
+    
+    // Tampilkan spinner di bawah list
+    const spinner = document.createElement('div');
+    spinner.id = 'convo-loader-spinner';
+    spinner.innerHTML = `<div class="p-4 text-center text-gray-500">
+                           <div class="loading-spinner mx-auto" style="border-color: #cbd5e1; border-top-color: #3b82f6; width: 32px; height: 32px;"></div>
+                         </div>`;
+    listElement.appendChild(spinner);
+
+    try {
+        // Panggil fetchAndRenderConversations dengan status 'isLoadMore'
+        await fetchAndRenderConversations(true);
+    } catch (error) {
+        console.error("Gagal memuat percakapan lama:", error);
+        currentConvoPage--; // Kembalikan nomor halaman jika gagal
+    } finally {
+        // Hapus spinner
+        const loaderSpinner = document.getElementById('convo-loader-spinner');
+        if (loaderSpinner) {
+            loaderSpinner.remove();
+        }
+        isLoadingMoreConvos = false;
     }
 }
 
@@ -290,6 +391,7 @@ async function sendMessage() {
         if (!response.ok || !result.success) {
             throw new Error(result.message || 'Gagal mengirim balasan.');
         }
+        currentConvoPage = 1;
         fetchAndRenderConversations();
     } catch (error) {
         console.error(error);
@@ -336,6 +438,7 @@ async function endConversation() {
             });
             currentConversationStatus = 'open';
             updateChatUI(currentConversationStatus);
+            currentConvoPage = 1;
             fetchAndRenderConversations();
         } catch (error) {
             console.error(error);
@@ -395,6 +498,7 @@ async function updateDisplayName(conversationId, newName) {
         });
         currentDisplayName = newName;
         document.getElementById('chat-with-name').textContent = newName || document.getElementById('chat-with-phone').textContent;
+        currentConvoPage = 1;
         fetchAndRenderConversations();
     } catch (error) {
         console.error('Gagal update nama display:', error);
@@ -486,6 +590,7 @@ async function updateConversationLabels(conversationId, labelIds) {
 
         currentConversationLabels = result.new_labels || [];
         renderActiveChatLabels(currentConversationLabels);
+        currentConvoPage = 1;
         fetchAndRenderConversations(); 
     } catch (error) {
         console.error('Gagal update label percakapan:', error);

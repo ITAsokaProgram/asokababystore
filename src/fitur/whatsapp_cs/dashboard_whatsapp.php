@@ -178,7 +178,6 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
       padding: 1.5rem;
       background: linear-gradient(to bottom, #f9fafb 0%, #ffffff 100%);
       min-height: 0;
-      scroll-behavior: smooth;
       display: flex;
       flex-direction: column;
       gap: 0.5rem;

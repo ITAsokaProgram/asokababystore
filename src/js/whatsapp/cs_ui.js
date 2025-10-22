@@ -17,7 +17,6 @@ function renderLabelTags(labels, size = 'xs') {
                 </span>`;
     }).join(' ');
 }
-
 function renderMessages(messages) {
     const messageContainer = document.getElementById('message-container');
     messageContainer.innerHTML = '';
@@ -32,11 +31,10 @@ function renderMessages(messages) {
             </div>`;
         return;
     }
-    messages.forEach(msg => appendMessage(msg));
-    messageContainer.scrollTop = messageContainer.scrollHeight;
+    messages.forEach(msg => appendMessage(msg, false)); 
+    messageContainer.scrollTop = messageContainer.scrollHeight; 
 }
-
-function appendMessage(msg) {
+function appendMessage(msg, scrollToBottom = true) {
     const messageContainer = document.getElementById('message-container');
     const placeholder = messageContainer.querySelector('.no-message-placeholder');
     if (placeholder) {
@@ -64,57 +62,67 @@ function appendMessage(msg) {
         messageContainer.appendChild(separator);
     }
 
-    const bubble = document.createElement('div');
-    const isUser = msg.pengirim === 'user';
-    bubble.className = `message-bubble ${isUser ? 'user-bubble' : 'admin-bubble'}`;
-    bubble.dataset.timestamp = msg.timestamp;
-
-    const messageType = msg.tipe_pesan || 'text';
-    let contentHTML = '';
-
-    switch (messageType) {
-        case 'image':
-            bubble.classList.add('media-bubble');
-            contentHTML = `
-                <div class="message-content media-content">
-                    <a href="${msg.isi_pesan}" target="_blank" rel="noopener noreferrer">
-                        <img src="${msg.isi_pesan}" alt="Gambar" class="media-item">
-                    </a>
-                </div>`;
-            break;
-        case 'video':
-            bubble.classList.add('media-bubble');
-            contentHTML = `
-                <div class="message-content media-content">
-                    <video src="${msg.isi_pesan}" controls class="media-item"></video>
-                </div>`;
-            break;
-        case 'audio':
-            contentHTML = `
-                <div class="message-content audio-content">
-                    <audio src="${msg.isi_pesan}" controls class="audio-player"></audio>
-                </div>`;
-            break;
-        default:
-            const p = document.createElement('p');
-            p.style.whiteSpace = 'pre-wrap';
-            p.style.marginBottom = '0';
-            p.appendChild(document.createTextNode(msg.isi_pesan));
-            contentHTML = `<div class="message-content text-content">${p.outerHTML}</div>`;
-            break;
-    }
-
-    bubble.innerHTML = `
-        ${contentHTML}
-        <span class="message-time">${formatTimestamp(msg.timestamp)}</span>
-    `;
-
+    const bubble = createMessageBubble(msg); 
     messageContainer.appendChild(bubble);
-    requestAnimationFrame(() => {
-        messageContainer.scrollTop = messageContainer.scrollHeight;
-    });
-}
 
+    if (scrollToBottom) {
+        messageContainer.scrollTop = messageContainer.scrollHeight;
+    }
+}
+function prependMessages(messages) {
+    const messageContainer = document.getElementById('message-container');
+    const fragment = document.createDocumentFragment();
+
+    const firstBubbleInContainer = messageContainer.querySelector('.message-bubble:first-child');
+    let lastTimestamp = firstBubbleInContainer ? firstBubbleInContainer.dataset.timestamp : null;
+    let lastDateString = lastTimestamp ? new Date(lastTimestamp).toDateString() : null;
+
+    const existingFirstSeparator = messageContainer.querySelector('.date-separator:first-of-type');
+    const existingFirstSeparatorText = existingFirstSeparator ? existingFirstSeparator.textContent : null;
+
+    for (let i = messages.length - 1; i >= 0; i--) {
+        const msg = messages[i];
+        const msgDateString = new Date(msg.timestamp).toDateString();
+
+        if (lastTimestamp && msgDateString !== lastDateString) {
+            const separatorText = formatDateSeparator(lastTimestamp);
+
+            if (separatorText === existingFirstSeparatorText) {
+                if (existingFirstSeparator) {
+                    existingFirstSeparator.remove();
+                }
+            }
+
+            const separator = document.createElement('div');
+            separator.className = 'date-separator';
+            separator.textContent = separatorText;
+            fragment.prepend(separator);
+        }
+
+        const bubble = createMessageBubble(msg);
+        fragment.prepend(bubble);
+
+        lastTimestamp = msg.timestamp;
+        lastDateString = msgDateString;
+    }
+
+    if (messages.length > 0) {
+        if (fragment.children.length > 0 && fragment.children[0].classList.contains('message-bubble')) {
+            const oldestSeparator = document.createElement('div');
+            oldestSeparator.className = 'date-separator';
+            oldestSeparator.textContent = formatDateSeparator(messages[0].timestamp); // timestamp dari pesan terlama
+
+            const firstSepInDomNow = messageContainer.querySelector('.date-separator:first-of-type');
+            if (firstSepInDomNow && firstSepInDomNow.textContent === oldestSeparator.textContent) {
+                firstSepInDomNow.remove();
+            }
+
+            fragment.prepend(oldestSeparator);
+        }
+    }
+
+    messageContainer.prepend(fragment);
+}
 function updateChatUI(status) {
     const endChatButton = document.getElementById('end-chat-button');
     const messageInputArea = document.getElementById('message-input-area');
@@ -222,4 +230,54 @@ function updateFilterUnreadBadges(counts) {
             umumBadge.classList.add('hidden');
         }
     }
+}
+
+
+function createMessageBubble(msg) {
+    const bubble = document.createElement('div');
+    const isUser = msg.pengirim === 'user';
+    bubble.className = `message-bubble ${isUser ? 'user-bubble' : 'admin-bubble'}`;
+    bubble.dataset.timestamp = msg.timestamp;
+
+    const messageType = msg.tipe_pesan || 'text';
+    let contentHTML = '';
+
+    switch (messageType) {
+        case 'image':
+            bubble.classList.add('media-bubble');
+            contentHTML = `
+                <div class="message-content media-content">
+                    <a href="${msg.isi_pesan}" target="_blank" rel="noopener noreferrer">
+                        <img src="${msg.isi_pesan}" alt="Gambar" class="media-item">
+                    </a>
+                </div>`;
+            break;
+        case 'video':
+            bubble.classList.add('media-bubble');
+            contentHTML = `
+                <div class="message-content media-content">
+                    <video src="${msg.isi_pesan}" controls class="media-item"></video>
+                </div>`;
+            break;
+        case 'audio':
+            contentHTML = `
+                <div class="message-content audio-content">
+                    <audio src="${msg.isi_pesan}" controls class="audio-player"></audio>
+                </div>`;
+            break;
+        default:
+            const p = document.createElement('p');
+            p.style.whiteSpace = 'pre-wrap';
+            p.style.marginBottom = '0';
+            p.appendChild(document.createTextNode(msg.isi_pesan));
+            contentHTML = `<div class="message-content text-content">${p.outerHTML}</div>`;
+            break;
+    }
+
+    bubble.innerHTML = `
+        ${contentHTML}
+        <span class="message-time">${formatTimestamp(msg.timestamp)}</span>
+    `;
+
+    return bubble;
 }
