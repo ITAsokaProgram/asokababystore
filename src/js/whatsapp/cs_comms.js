@@ -88,15 +88,15 @@ async function fetchAndRenderConversations(isInitialLoad = false) {
             if (convo.id === currentConversationId) {
                 item.classList.add('active', 'bg-blue-50');
             }
-            const lastInteraction = new Date(convo.terakhir_interaksi_pada);
+            const lastInteraction = new Date(convo.urutan_interaksi);
             const timeAgo = getTimeAgo(lastInteraction);
 
             item.innerHTML = `
-                <div class="flex items-start gap-3">
+                <div class="flex items-start gap-4">
                     <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold shadow-sm">
                         <i class="fas fa-user text-sm"></i>
                     </div>
-                    <div class="flex-1 min-w-0">
+                    <div class="flex-1 min-w-0 space-y-0.5">
                         <div class="flex justify-between items-start mb-1">
                             <p class="font-semibold text-gray-900 text-sm truncate pr-2">${convo.nama_display || convo.nomor_telepon}</p>
                             ${convo.status_percakapan === 'live_chat' ? 
@@ -397,6 +397,7 @@ async function updateDisplayName(conversationId, newName) {
         Swal.fire('Error', error.message, 'error');
     }
 }
+
 async function handleManageLabels() {
     if (!currentConversationId) return;
 
@@ -453,6 +454,7 @@ async function handleManageLabels() {
 
 async function updateConversationLabels(conversationId, labelIds) {
     try {
+        console.log("label: ", labelIds)
         const response = await fetch('/src/api/whatsapp/update_conversation_labels.php', {
             method: 'POST',
             headers: {

@@ -583,7 +583,7 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
               <button id="mobile-list-toggle" class="block md:hidden text-white hover:bg-white hover:bg-opacity-20 transition-all p-2 rounded-lg mr-1" title="Tampilkan Daftar Obrolan">
                   <i class="fas fa-bars text-lg"></i>
               </button>
-              <div class="flex-1 min-w-0">
+              <div class="flex-1 min-w-0 space-y-1">
                   <div class="flex items-center gap-1.5">
                       <p id="chat-with-name" class="font-semibold text-base md:text-lg truncate"></p>
                       <button id="edit-display-name-button" class="hidden text-white hover:bg-white hover:bg-opacity-20 transition-all p-1.5 rounded-lg" title="Ubah Nama Tampilan">

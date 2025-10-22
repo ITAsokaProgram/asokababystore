@@ -1,63 +1,35 @@
 <?php
+
 require_once __DIR__ . '/../../../aa_kon_sett.php';
 require_once __DIR__ . '/../../auth/middleware_login.php';
-// Asumsikan Logger.php sudah di-include di aa_kon_sett.php
-// Jika belum, tambahkan:
-require_once __DIR__ . '/../../utils/Logger.php'; 
+require_once __DIR__ . '/../../utils/Logger.php';
+
+$env = parse_ini_file(__DIR__ . '/../../../.env');
 
 header('Content-Type: application/json');
 
-// ===================================================================
-// 1. Inisialisasi Logger
-// ===================================================================
-$logger = new AppLogger('update_labels.log');
-
-// ===================================================================
-// 2. Pasang Penjaga (Shutdown Function) untuk Fatal Error
-// Ini adalah bagian TERPENTING untuk menangkap error 500
-// ===================================================================
-register_shutdown_function(function() use ($logger) {
-    $error = error_get_last();
-    // Cek jika ada error dan error itu adalah FATAL
-    if ($error !== null && in_array($error['type'], [E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR])) {
-        $errorMessage = "FATAL ERROR: " . $error['message'] . " in " . $error['file'] . " on line " . $error['line'];
-        $logger->critical($errorMessage);
-        
-        // Jika headers belum terkirim, kirim respons JSON error
-        if (!headers_sent()) {
-            http_response_code(500);
-            echo json_encode([
-                'success' => false, 
-                'message' => 'Internal Server Error. Please check logs/update_labels.log'
-            ]);
-        }
-    }
-});
-
-
 try {
-    $logger->info("--- Request update_conversation_labels started ---");
     $headers = getallheaders();
     if (!isset($headers['Authorization']) || !preg_match('/^Bearer\s(\S+)$/', $headers['Authorization'], $matches)) {
         http_response_code(401);
-        echo json_encode(['success' => false, 'message' => 'Token tidak ditemukan.']);
+        echo json_encode(['success' => false, 'message' => 'Token tidak ditemukan atau format salah.']);
         exit;
     }
     $token = $matches[1];
     $decoded = verify_token($token);
-    if (!is_object($decoded) || !isset($decoded->kode)) {
+    $isTokenValidAdmin = is_object($decoded) && isset($decoded->kode);
+
+    if (!$isTokenValidAdmin) {
         http_response_code(403);
         echo json_encode(['success' => false, 'message' => 'Token tidak valid.']);
         exit;
     }
-    $logger->info("Token validated for user: " . $decoded->kode);
-
 } catch (Exception $e) {
-    $logger->error("Token validation error: " . $e->getMessage());
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'Token validation error: ' . $e->getMessage()]);
     exit;
 }
+$logger = new AppLogger('update');
 
 
 $data = json_decode(file_get_contents('php://input'), true);
@@ -72,22 +44,13 @@ if (!$data || !isset($data['conversation_id']) || !isset($data['label_ids']) || 
 
 $conversationId = filter_var($data['conversation_id'], FILTER_VALIDATE_INT);
 $labelIds = array_map('intval', $data['label_ids']); 
-$labelIds = array_filter($labelIds, fn($id) => $id > 0); 
-
+$labelIds = array_filter($labelIds, function($id) {
+    return $id > 0;
+});
 if ($conversationId === false) {
     http_response_code(400);
     $logger->warning("Invalid Conversation ID: " . $data['conversation_id']);
     echo json_encode(['success' => false, 'message' => 'Conversation ID tidak valid.']);
-    exit;
-}
-
-// ===================================================================
-// 3. Tambahkan Pengecekan Koneksi DB
-// ===================================================================
-if ($conn === null || $conn->connect_error) {
-    $logger->critical("Database connection failed: " . ($conn ? $conn->connect_error : 'conn is null'));
-    http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Database connection error.']);
     exit;
 }
 
@@ -105,7 +68,6 @@ try {
     $stmt_nomor->close();
 
     if (!$convo) {
-        // Ini adalah Exception, BUKAN fatal error, jadi akan ditangkap
         throw new Exception("Percakapan tidak ditemukan (ID: $conversationId).");
     }
     $nomorTelepon = $convo['nomor_telepon'];
@@ -126,7 +88,9 @@ try {
             $stmt_insert->bind_param("iis", $conversationId, $labelId, $nomorTelepon);
             $stmt_insert->execute();
         }
-        $stmt_insert->close();
+        
+        // [FIX 2] Pindahkan 'close()' ke LUAR loop
+        $stmt_insert->close(); 
         $logger->info("Inserted new labels: " . json_encode($labelIds));
     } else {
         $logger->info("No new labels to insert (label_ids is empty).");
@@ -150,12 +114,10 @@ try {
     $stmt_new_labels->close();
     $logger->info("Fetched " . count($newLabels) . " new labels for response.");
 
-    echo json_encode(['success' => true, 'message' => 'Label berhasil diperbarui.', 'labels' => $newLabels]);
+    // [FIX 3] Ganti key 'labels' menjadi 'new_labels' agar sesuai dengan JS
+    echo json_encode(['success' => true, 'message' => 'Label berhasil diperbarui.', 'new_labels' => $newLabels]);
 
 } catch (Exception $e) {
-    // ===================================================================
-    // 4. Log Exception yang tertangkap
-    // ===================================================================
     $logger->error("Exception caught: " . $e->getMessage() . " on line " . $e->getLine());
     $conn->rollback();
     http_response_code(500);
@@ -167,4 +129,6 @@ try {
         $logger->info("--- Request finished ---");
     }
 }
+
+
 ?>

@@ -160,7 +160,9 @@ try {
                 p.nama_profil,
                 p.nama_display,
                 p.status_percakapan,
-                p.terakhir_interaksi_pada,
+                
+                COALESCE(lm.last_message_time, p.terakhir_interaksi_pada) AS urutan_interaksi,
+                
                 COUNT(DISTINCT m.id) AS jumlah_belum_terbaca,
                 GROUP_CONCAT(DISTINCT CONCAT(l.id, ':', l.nama_label, ':', l.warna) SEPARATOR ';') AS labels_concat
             FROM
@@ -171,6 +173,12 @@ try {
                 wa_percakapan_labels pl ON p.id = pl.percakapan_id
             LEFT JOIN
                 wa_labels l ON pl.label_id = l.id
+                
+            LEFT JOIN (
+                SELECT percakapan_id, MAX(timestamp) AS last_message_time
+                FROM wa_pesan
+                GROUP BY percakapan_id
+            ) AS lm ON p.id = lm.percakapan_id
         ";
 
         $whereClause = "";
@@ -183,9 +191,9 @@ try {
         $sql .= $whereClause;
         $sql .= "
             GROUP BY
-                p.id, p.nomor_telepon, p.nama_profil, p.nama_display, p.status_percakapan, p.terakhir_interaksi_pada
+                p.id, p.nomor_telepon, p.nama_profil, p.nama_display, p.status_percakapan, urutan_interaksi
             ORDER BY
-                p.terakhir_interaksi_pada DESC
+                urutan_interaksi DESC
         ";
         
         
