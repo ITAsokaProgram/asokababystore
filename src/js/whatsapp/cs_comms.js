@@ -43,8 +43,8 @@ function initWebSocket() {
                 }
             } else if (data.event === 'unread_count_update') {
                 updateTotalUnreadBadge(data.total_unread_count);
-                currentConvoPage = 1;
-                fetchAndRenderConversations();
+                
+                fetchAndUpdateBadges(); 
             }
         } catch (e) {}
     };
@@ -56,8 +56,7 @@ function initWebSocket() {
 
     ws.onerror = (error) => console.error('WebSocket error:', error);
 }
-
-async function fetchAndRenderConversations(isLoadMore = false) {    
+async function fetchAndRenderConversations(isLoadMore = false) {
     try {
         const params = new URLSearchParams({
             filter: currentFilter,
@@ -72,7 +71,7 @@ async function fetchAndRenderConversations(isLoadMore = false) {
         const conversations = data.conversations;
         const listElement = document.getElementById('conversation-list');
         if (!isLoadMore) {
-            listElement.innerHTML = '';
+            listElement.innerHTML = '';
         }
 
         if (data.unread_counts) {
@@ -99,6 +98,9 @@ async function fetchAndRenderConversations(isLoadMore = false) {
         conversations.forEach(convo => {
             const item = document.createElement('div');
             item.className = 'conversation-item p-4 border-b border-gray-100 cursor-pointer hover:bg-blue-50 transition-all duration-200 relative';
+            
+            item.dataset.id = convo.id;
+
             if (convo.id === currentConversationId) {
                 item.classList.add('active', 'bg-blue-50');
             }
@@ -131,13 +133,15 @@ async function fetchAndRenderConversations(isLoadMore = false) {
                     </div>
                 </div>
             `;
-            item.addEventListener('click', () => {
-                selectConversation(convo.id);
+            
+            item.addEventListener('click', (e) => { 
+                selectConversation(convo.id, e.currentTarget); 
                 if (window.innerWidth <= 768) {
                     const conversationListContainer = document.getElementById('conversation-list-container');
                     conversationListContainer.classList.remove('mobile-show');
                 }
             });
+
             listElement.appendChild(item);
         });
     } catch (error) {
@@ -153,10 +157,46 @@ async function fetchAndRenderConversations(isLoadMore = false) {
             </div>`;
     }
 }
-async function selectConversation(conversationId) {
+
+async function fetchAndUpdateBadges() {
+    try {
+        const params = new URLSearchParams({
+            filter: currentFilter,
+            search: currentSearchTerm,
+            page: 1 
+        });
+        const response = await fetch(`/src/api/whatsapp/get_cs_data.php?${params.toString()}`, {
+            headers: { 'Authorization': `Bearer ${wa_token}` }
+        });
+        if (!response.ok) return;
+        const data = await response.json();
+        if (data.unread_counts) {
+            updateFilterUnreadBadges(data.unread_counts);
+            const totalUnread = (data.unread_counts.live_chat || 0) + (data.unread_counts.umum || 0);
+            updateTotalUnreadBadge(totalUnread);
+        }
+    } catch (error) {
+        console.error("Gagal update badge counts:", error);
+    }
+}
+async function selectConversation(conversationId, clickedItemElement = null) {
     if (isConversationLoading && conversationId === currentConversationId) {
         console.warn('Masih memuat percakapan, harap tunggu...');
         return; 
+    }
+
+    const oldActiveItem = document.querySelector('.conversation-item.active');
+    if (oldActiveItem) {
+        oldActiveItem.classList.remove('active', 'bg-blue-50');
+    }
+
+    let currentItemElement = clickedItemElement;
+    if (!currentItemElement && conversationId) {
+        currentItemElement = document.querySelector(`.conversation-item[data-id="${conversationId}"]`);
+    }
+    
+    if (currentItemElement) {
+        currentItemElement.classList.add('active', 'bg-blue-50');
     }
 
     isConversationLoading = true;
@@ -210,6 +250,21 @@ async function selectConversation(conversationId) {
         document.getElementById('chat-with-name').textContent = details.nama_profil ?? '-';
         document.getElementById('edit-display-name-button').classList.remove('hidden');
         document.getElementById('manage-labels-button').classList.remove('hidden');
+
+        if (currentItemElement) {
+            const unreadBadge = currentItemElement.querySelector('.unread-badge');
+            if (unreadBadge) {
+                const totalBadge = document.getElementById('total-unread-badge');
+                if (totalBadge) {
+                    let currentTotal = parseInt(totalBadge.textContent) || 0;
+                    let itemUnreadCount = parseInt(unreadBadge.textContent) || 0;
+                    let newTotal = Math.max(0, currentTotal - itemUnreadCount);
+                    updateTotalUnreadBadge(newTotal); 
+                }
+
+                unreadBadge.remove();
+            }
+        }
 
         renderActiveChatLabels(labels);
         renderMessages(messages);
@@ -293,7 +348,6 @@ async function loadMoreConversations() {
 
     const listElement = document.getElementById('conversation-list');
     
-    // Tampilkan spinner di bawah list
     const spinner = document.createElement('div');
     spinner.id = 'convo-loader-spinner';
     spinner.innerHTML = `<div class="p-4 text-center text-gray-500">
@@ -302,13 +356,11 @@ async function loadMoreConversations() {
     listElement.appendChild(spinner);
 
     try {
-        // Panggil fetchAndRenderConversations dengan status 'isLoadMore'
         await fetchAndRenderConversations(true);
     } catch (error) {
         console.error("Gagal memuat percakapan lama:", error);
-        currentConvoPage--; // Kembalikan nomor halaman jika gagal
+        currentConvoPage--; 
     } finally {
-        // Hapus spinner
         const loaderSpinner = document.getElementById('convo-loader-spinner');
         if (loaderSpinner) {
             loaderSpinner.remove();

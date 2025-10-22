@@ -58,6 +58,10 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
         z-index: 30;
         background: white;
       }
+      :fullscreen #conversation-list-container.mobile-show {
+       
+        top: 92px !important;
+      }
     }
     
     #conversation-list-container {
@@ -587,31 +591,36 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
       <div id="chat-window" class="flex flex-col">
         <div id="chat-header" class="flex justify-between items-center">
           <div class="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
-              <button id="mobile-list-toggle" class="block md:hidden text-white hover:bg-white hover:bg-opacity-20 transition-all p-2 rounded-lg mr-1" title="Tampilkan Daftar Obrolan">
-                  <i class="fas fa-bars text-lg"></i>
-              </button>
-              <div class="flex-1 min-w-0 space-y-1">
-                  <div class="flex items-center gap-1.5">
-                      <p id="chat-with-name" class="font-semibold text-base md:text-lg truncate"></p>
-                      <button id="edit-display-name-button" class="hidden text-white hover:bg-white hover:bg-opacity-20 transition-all p-1.5 rounded-lg" title="Ubah Nama Tampilan">
-                          <i class="fas fa-pencil-alt text-xs"></i>
-                      </button>
-                      <button id="manage-labels-button" class="hidden text-white hover:bg-white hover:bg-opacity-20 transition-all p-1.5 rounded-lg" title="Kelola Label">
-                          <i class="fas fa-tags text-xs"></i>
-                      </button>
-                  </div>
-                  <p id="chat-with-phone" class="text-sm md:text-base truncate"></p>
-                  
-                  <div id="active-chat-labels" class="flex flex-wrap gap-1 mt-1.5">
-                  </div>
-                  
+            <button id="mobile-list-toggle" class="block md:hidden text-white hover:bg-white hover:bg-opacity-20 transition-all p-2 rounded-lg mr-1" title="Tampilkan Daftar Obrolan">
+              <i class="fas fa-bars text-lg"></i>
+            </button>
+            <div class="flex-1 min-w-0 space-y-1">
+              <div class="flex items-center gap-1.5">
+                <p id="chat-with-name" class="font-semibold text-base md:text-lg truncate"></p>
+                <button id="edit-display-name-button" class="hidden text-white hover:bg-white hover:bg-opacity-20 transition-all p-1.5 rounded-lg" title="Ubah Nama Tampilan">
+                  <i class="fas fa-pencil-alt text-xs"></i>
+                </button>
+                <button id="manage-labels-button" class="hidden text-white hover:bg-white hover:bg-opacity-20 transition-all p-1.5 rounded-lg" title="Kelola Label">
+                  <i class="fas fa-tags text-xs"></i>
+                </button>
               </div>
+              <p id="chat-with-phone" class="text-sm md:text-base truncate"></p>
+              <div id="active-chat-labels" class="flex flex-wrap gap-1 mt-1.5">
+              </div>
+            </div>
           </div>
-          <button id="end-chat-button" class="hidden bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all flex items-center gap-1.5">
+
+          <div class="flex items-center gap-1.5 md:gap-2">
+            <button id="mobile-fullscreen-toggle" class="block md:hidden text-white hover:bg-white hover:bg-opacity-20 transition-all p-2 rounded-lg" title="Layar Penuh">
+              <i id="fullscreen-icon" class="fas fa-expand"></i>
+            </button>
+
+            <button id="end-chat-button" class="hidden bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all flex items-center gap-1.5">
               <i class="fas fa-times-circle"></i>
               <span class="hidden sm:inline">Akhiri</span>
-          </button>
-        </div>
+            </button>
+          </div>
+          </div>
 
         <div id="chat-placeholder" class="flex flex-col items-center justify-center h-full text-gray-500 p-4">
           <i class="fas fa-comments text-5xl md:text-6xl mb-4"></i>

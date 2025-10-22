@@ -51,6 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const activeChat = document.getElementById('active-chat');
     const chatPlaceholder = document.getElementById('chat-placeholder');
     const mediaInput = document.getElementById('media-input');
+    const chatLayout = document.getElementById('chat-layout');
     const mediaPreviewContainer = document.getElementById('media-preview-container');
     const mediaPreviewImage = document.getElementById('media-preview-image');
     const mediaPreviewVideo = document.getElementById('media-preview-video');
@@ -90,6 +91,40 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const fullscreenButton = document.getElementById('mobile-fullscreen-toggle');
+    const fullscreenIcon = document.getElementById('fullscreen-icon');
+
+    if (fullscreenButton && chatLayout) {
+        fullscreenButton.addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+            // Jika belum fullscreen, minta masuk ke mode fullscreen
+            chatLayout.requestFullscreen().catch(err => {
+            console.error(`Gagal masuk mode layar penuh: ${err.message} (${err.name})`);
+            });
+        } else {
+            // Jika sedang fullscreen, keluar dari mode fullscreen
+            if (document.exitFullscreen) {
+            document.exitFullscreen();
+            }
+        }
+        });
+
+        // Listener ini penting untuk mengubah ikon jika pengguna keluar fullscreen (misal: pakai tombol 'Esc')
+        document.addEventListener('fullscreenchange', () => {
+        if (document.fullscreenElement) {
+            // Sedang dalam mode fullscreen
+            fullscreenIcon.classList.remove('fa-expand');
+            fullscreenIcon.classList.add('fa-compress');
+            fullscreenButton.title = "Keluar Layar Penuh";
+        } else {
+            // Keluar dari mode fullscreen
+            fullscreenIcon.classList.remove('fa-compress');
+            fullscreenIcon.classList.add('fa-expand');
+            fullscreenButton.title = "Layar Penuh";
+        }
+        });
+    }
+
     const mobileCloseListButton = document.getElementById('mobile-close-list');
     if (mobileCloseListButton) {
         mobileCloseListButton.addEventListener('click', () => {
@@ -108,7 +143,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const toggleButton = document.getElementById('toggle-conversation-list');
-    const chatLayout = document.getElementById('chat-layout');
 
     if (toggleButton) {
         const isCollapsed = sessionStorage.getItem('conversationListCollapsed') === 'true';
