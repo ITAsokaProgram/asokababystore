@@ -189,6 +189,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (searchInput) {
         const debouncedSearch = debounce(() => {
             currentSearchTerm = searchInput.value;
+            currentConvoPage = 1; 
+            hasMoreConvos = true; 
             fetchAndRenderConversations();
         }, 300);
 

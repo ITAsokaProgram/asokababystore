@@ -35,16 +35,49 @@ function initWebSocket() {
                         headers: { 'Authorization': `Bearer ${wa_token}` }
                     }).catch(err => console.error("Gagal menandai pesan sebagai terbaca:", err));
                 } else {
-                    currentConvoPage = 1;
-                    fetchAndRenderConversations();
                     if (data.total_unread_count !== undefined) {
                         updateTotalUnreadBadge(data.total_unread_count);
+                    }
+                    fetchAndUpdateBadges();
+                    const listElement = document.getElementById('conversation-list');
+                    let existingItem = listElement.querySelector(`.conversation-item[data-id="${data.conversation_id}"]`);
+                    
+                    if (existingItem) {
+                        // Itemnya ada di daftar yang sedang ditampilkan
+                        
+                        // Update badge unread-nya
+                        let unreadBadge = existingItem.querySelector('.unread-badge');
+                        if (!unreadBadge) {
+                            // Buat badge jika belum ada
+                            unreadBadge = document.createElement('span');
+                            unreadBadge.className = 'unread-badge bg-blue-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-md';
+                            const timeElement = existingItem.querySelector('.text-xs.text-gray-500');
+                            if (timeElement && timeElement.parentElement) {
+                                timeElement.parentElement.appendChild(unreadBadge);
+                            }
+                        }
+                        // Tambah 1 counternya (cara cepat, tidak 100% akurat tapi sangat ringan)
+                        let currentItemCount = parseInt(unreadBadge.textContent) || 0;
+                        unreadBadge.textContent = currentItemCount + 1;
+                        
+                        // Update waktu
+                        const timeElement = existingItem.querySelector('.text-xs.text-gray-500');
+                        if (timeElement) {
+                            timeElement.textContent = 'Baru saja';
+                        }
+                        
+                        // Pindahkan ke atas HANYA JIKA sedang di halaman 1 dan filter 'semua'
+                        if (currentConvoPage === 1 && currentFilter === 'semua' && currentSearchTerm === '') {
+                            listElement.prepend(existingItem);
+                        }
                     }
                 }
             } else if (data.event === 'unread_count_update') {
                 updateTotalUnreadBadge(data.total_unread_count);
                 
-                fetchAndUpdateBadges(); 
+                if (data.unread_counts) {
+                    updateFilterUnreadBadges(data.unread_counts);
+                }
             }
         } catch (e) {}
     };
@@ -160,12 +193,7 @@ async function fetchAndRenderConversations(isLoadMore = false) {
 
 async function fetchAndUpdateBadges() {
     try {
-        const params = new URLSearchParams({
-            filter: currentFilter,
-            search: currentSearchTerm,
-            page: 1 
-        });
-        const response = await fetch(`/src/api/whatsapp/get_cs_data.php?${params.toString()}`, {
+        const response = await fetch(`/src/api/whatsapp/get_cs_data.php?counts_only=true`, {
             headers: { 'Authorization': `Bearer ${wa_token}` }
         });
         if (!response.ok) return;
