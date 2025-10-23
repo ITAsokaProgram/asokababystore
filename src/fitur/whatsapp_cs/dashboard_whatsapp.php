@@ -300,7 +300,8 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
     .audio-content {
       padding: 0.75rem;
-      min-width: 260px;
+      width: 260px;    
+      max-width: 100%;  
     }
 
     .audio-player {
@@ -454,7 +455,7 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
       }
       
       .audio-content {
-        min-width: 220px;
+        width: 220px;
       }
       
       #end-chat-button {
@@ -642,7 +643,7 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
               </label>
               <input type="file" id="media-input" class="hidden" accept="image/*,video/*">
               
-              <textarea id="message-input" rows="1" placeholder="Ketik balasan Anda..." class="flex-1 p-3 md:p-3.5 border rounded-xl focus:outline-none resize-none text-sm md:text-base"></textarea>
+              <textarea id="message-input" rows="1" class="flex-1 p-3 md:p-3.5 border rounded-xl focus:outline-none resize-none text-sm md:text-base"></textarea>
               <button id="send-button" class="bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-all disabled:bg-gray-400">
                 <i class="fas fa-paper-plane"></i>
               </button>
