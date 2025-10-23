@@ -2,7 +2,6 @@
 session_start();
 include '../../../aa_kon_sett.php';
 require_once __DIR__ . '/lib/ShopeeApiService.php'; 
-
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
@@ -265,7 +264,7 @@ function getPriceRange($models) {
               </div>
               <button id="sync-all-stock-btn" class="" data-total-count="<?php echo $total_count; ?>">
                 <i class="fas fa-sync-alt"></i>
-                <span>Sync Semua Stok ke DB</span>
+                <span>Sync Semua Stok DB ke Shopee</span>
              </button>
             </div>
           </div>
@@ -292,14 +291,14 @@ function getPriceRange($models) {
                       <div class="product-image flex-shrink-0">
                             <a href="detail_produk_shopee.php?item_id=<?php echo $item['item_id']; ?>" class="product-image flex-shrink-0 cursor-pointer hover:opacity-80 transition">
                               <img src="<?php echo htmlspecialchars($item['image']['image_url_list'][0] ?? 'https://placehold.co/100x100'); ?>" 
-                                   alt="<?php echo htmlspecialchars($item['item_name'] ?? '-'); ?>" 
+                                   alt="<?php echo htmlspecialchars($item['item_name']); ?>" 
                                    class="w-24 h-24 object-cover rounded-xl bg-gray-100 border-2 border-gray-200">
                             </a>
                       </div>
                       
                       <div class="flex-grow min-w-0">
                         <a href="detail_produk_shopee.php?item_id=<?php echo $item['item_id']; ?>" class="hover:text-orange-600 transition">
-                          <h3 class="font-bold text-gray-900 mb-3 text-lg line-clamp-2 leading-snug"><?php echo htmlspecialchars($item['item_name'] ?? '-'); ?></h3>
+                          <h3 class="font-bold text-gray-900 mb-3 text-lg line-clamp-2 leading-snug"><?php echo htmlspecialchars($item['item_name']); ?></h3>
                         </a>
                         <div class="flex flex-wrap gap-2 mb-3">
                           <span class="stats-badge badge-price">
@@ -487,19 +486,8 @@ function getPriceRange($models) {
             <?php endif; ?>
           </div>
           <?php if (!empty($detailed_products) && $pagination_info): ?>
-                <div class="pagination-controls p-6 border-t border-gray-100 bg-white rounded-b-2xl">
+                <div class="pagination-controls p-6 border-t border-gray-100 bg-white rounded-b-2xl mt-6">
                     <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-                        <div class="text-sm text-gray-600">
-                            <?php 
-                            if (empty($search_keyword)): 
-                                $start_item = (int)$current_offset + 1; 
-                                $end_item = (int)$current_offset + count($detailed_products);
-                            ?>
-                                Menampilkan <span class="font-semibold text-gray-800"><?php echo $start_item; ?></span> - ...
-                            <?php else: ?>
-                                Menampilkan <span class="font-semibold text-gray-800"><?php echo count($detailed_products); ?></span> produk ...
-                            <?php endif; ?>
-                        </div>
                         <div class="inline-flex items-center gap-2">
                             <a href="<?php echo build_pagination_url($prev_offset); ?>"
                                class="pagination-btn <?php echo !$has_prev_page ? 'disabled' : ''; ?>"
