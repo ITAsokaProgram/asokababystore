@@ -60,6 +60,7 @@ $auth_url = null;
 
 $page_size = 20; 
 $current_offset = isset($_GET['offset']) ? (int)$_GET['offset'] : 0;
+$search_keyword = isset($_GET['search']) ? trim($_GET['search']) : ''; 
 
 $pagination_info = null;
 $total_count = 0;
@@ -69,12 +70,55 @@ $has_prev_page = $current_offset > 0;
 $prev_offset = max(0, $current_offset - $page_size);
 
 if ($shopeeService->isConnected()) {
-    $api_params = [
-        'offset'      => $current_offset,
-        'page_size'   => $page_size,
-        'item_status' => 'NORMAL'
-    ];
-    $product_list_response = $shopeeService->getProductList($api_params);
+    // JANGAN buat $api_params di sini
+
+    if (!empty($search_keyword)) {
+        // --- BLOK UNTUK SEARCH ---
+        // Buat parameter KHUSUS untuk search
+        // Kita tidak menyertakan 'item_status' karena default-nya sudah NORMAL
+        // dan untuk menghindari konflik dengan 'keyword'
+        $search_params = [
+            'offset'    => $current_offset,
+            'page_size' => $page_size,
+            'item_name'   => $search_keyword
+        ];
+        
+        $product_list_response = $shopeeService->searchProductList($search_params);
+        
+        if (isset($product_list_response['response']['item_id_list'])) {
+            
+            $items_from_search = [];
+            foreach ($product_list_response['response']['item_id_list'] as $item_id) {
+                $items_from_search[] = ['item_id' => $item_id];
+            }
+
+            $total_from_api = $product_list_response['response']['total_count'] ?? 0;
+            $next_offset_from_api = $product_list_response['response']['next_offset'] ?? 0;
+
+            $calculated_has_next = $next_offset_from_api > 0;
+            
+            $normalized_response = [
+                'response' => [
+                    'item'          => $items_from_search,
+                    'total_count'   => $total_from_api,
+                    'has_next_page' => $calculated_has_next, 
+                    'next_offset'   => $next_offset_from_api 
+                ],
+                'error'      => $product_list_response['error'] ?? '',
+                'request_id' => $product_list_response['request_id'] ?? ''
+            ];
+            
+            $product_list_response = $normalized_response;
+
+        }
+    } else {
+        $list_params = [
+            'offset'      => $current_offset,
+            'page_size'   => $page_size,
+            'item_status' => 'NORMAL'
+        ];
+        $product_list_response = $shopeeService->getProductList($list_params);
+    }
     if (isset($product_list_response['error']) && 
         ($product_list_response['error'] === 'invalid_acceess_token' || $product_list_response['error'] === 'invalid_access_token')) {
         
@@ -201,6 +245,7 @@ function getPriceRange($models) {
         </div>
 
         <?php if ($shopeeService->isConnected()): ?>
+
            <div class="search-filter-section">
             <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
               <div class="search-box w-full md:w-auto">
@@ -211,9 +256,10 @@ function getPriceRange($models) {
                   placeholder="Cari produk berdasarkan nama atau ID..." 
                   autocomplete="off"
                   aria-label="Cari produk"
+                  value="<?php echo htmlspecialchars($search_keyword); ?>"
                 >
                 <button id="clear-search" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                  <i class="fas fa-times"></i>
+                  <i class="fas fa-times hidden"></i>
                 </button>
               </div>
               <button id="sync-all-stock-btn" class="" data-total-count="<?php echo $total_count; ?>">
@@ -222,6 +268,7 @@ function getPriceRange($models) {
              </button>
             </div>
           </div>
+
           <div class="section-card rounded-2xl overflow-hidden">
             <div class="section-header p-6">
               <div class="flex items-center justify-between">
@@ -414,7 +461,7 @@ function getPriceRange($models) {
                   unset($_SESSION['shopee_flash_message']);
                 endif; 
                 ?>
-            <?php elseif (isset($product_list_response['error'])): ?>
+            <?php elseif (!empty($product_list_response['error'])): ?>
               <div class="p-6">
                 <div class="bg-red-50 border-2 border-red-200 text-red-700 px-6 py-4 rounded-xl" role="alert">
                   <div class="flex items-center gap-3">

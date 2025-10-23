@@ -154,6 +154,9 @@ class ShopeeApiService {
     public function getProductList($params) {
         return $this->call("/api/v2/product/get_item_list", 'GET', $params);
     }
+    public function searchProductList($params) {
+        return $this->call("/api/v2/product/search_item", 'GET', $params);
+    }
 
     public function getDetailedProductInfo($product_list_response) {
         
@@ -161,8 +164,6 @@ class ShopeeApiService {
         if (!isset($product_list_response['response']['item']) || empty($product_list_response['response']['item'])) {
             return [];
         }
-
-        $item_count = count($product_list_response['response']['item']);
 
         $item_ids = array_column($product_list_response['response']['item'], 'item_id');
         
@@ -179,7 +180,7 @@ class ShopeeApiService {
         $merged_products = [];
         foreach ($product_list_response['response']['item'] as $original_item) {
             $item_id = $original_item['item_id'];
-            $merged_products[] = isset($detailed_info_map[$item_id]) ? array_merge($original_item, $detailed_info_map[$item_id]) : $original_item;
+            $merged_products[] = isset($detailed_info_map[$item_id]) ? array_merge($detailed_info_map[$item_id], $original_item) : $original_item;
         }
         
 
@@ -240,4 +241,5 @@ class ShopeeApiService {
     public function getOrderDetail($params) {
         return $this->call("/api/v2/order/get_order_detail", 'GET', $params);
     }
+    
 }

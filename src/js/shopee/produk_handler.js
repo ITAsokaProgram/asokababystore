@@ -48,55 +48,61 @@ const updateTotalStock = (form) => {
         mainStockDisplay.innerText = totalStock;
     }
 };
-
-
 const initializeSearchAndFilter = () => {
     const searchInput = document.getElementById('product-search');
-    const productCards = document.querySelectorAll('.product-card');
-    
-    if (!searchInput) return;
-    
-    
+    const clearSearchBtn = document.getElementById('clear-search'); // Ini Boleh null
+
+    // Periksa hanya searchInput. Jika tidak ada, fungsi berhenti.
+    if (!searchInput) return; 
+
+    // Fungsi untuk menampilkan/menyembunyikan tombol clear
+    const toggleClearButton = () => {
+        if (!clearSearchBtn) return; // Lompati jika tombol 'x' tidak ada
+        if (searchInput.value) {
+            clearSearchBtn.classList.remove('hidden');
+        } else {
+            clearSearchBtn.classList.add('hidden');
+        }
+    };
+
+    // Jalankan saat halaman dimuat
+    toggleClearButton();
+
     let searchTimeout;
     searchInput.addEventListener('input', (e) => {
+        // Tampilkan/sembunyikan tombol 'x' secara real-time
+        toggleClearButton();
+        
         clearTimeout(searchTimeout);
+        
+        // Atur debounce 500ms
         searchTimeout = setTimeout(() => {
-            const searchTerm = e.target.value.toLowerCase().trim();
+            const searchTerm = e.target.value.trim();
+            const currentUrl = new URL(window.location);
+
+            // Set atau hapus parameter 'search'
+            if (searchTerm) {
+                currentUrl.searchParams.set('search', searchTerm);
+            } else {
+                currentUrl.searchParams.delete('search');
+            }
             
-            productCards.forEach(card => {
-                const productName = card.querySelector('h3')?.textContent.toLowerCase() || '';
-                const productId = card.querySelector('.badge-id')?.textContent.toLowerCase() || '';
-                const matchesSearch = productName.includes(searchTerm) || productId.includes(searchTerm);
-                
-                if (matchesSearch) {
-                    card.classList.remove('hidden');
-                    card.style.display = '';
-                } else {
-                    card.classList.add('hidden');
-                    card.style.display = 'none';
-                }
-            });
+            // Selalu reset 'offset' (kembali ke halaman 1) saat melakukan search baru
+            currentUrl.searchParams.delete('offset');
             
-            updateProductCount();
-        }, 300);
+            // Reload halaman dengan URL baru
+            window.location.href = currentUrl.href;
+        }, 500); 
     });
     
-    
-    const clearSearchBtn = document.getElementById('clear-search');
+    // Pasang event listener untuk tombol 'x', HANYA JIKA tombolnya ada
     if (clearSearchBtn) {
         clearSearchBtn.addEventListener('click', () => {
             searchInput.value = '';
-            searchInput.dispatchEvent(new Event('input'));
+            // Ment-trigger event 'input' akan menjalankan logika debounce di atas
+            searchInput.dispatchEvent(new Event('input', { bubbles: true })); 
             searchInput.focus();
         });
-    }
-};
-
-const updateProductCount = () => {
-    const visibleProducts = document.querySelectorAll('.product-card:not(.hidden)').length;
-    const countElement = document.querySelector('.stats-badge span');
-    if (countElement) {
-        countElement.textContent = `${visibleProducts} Produk`;
     }
 };
 
