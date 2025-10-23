@@ -11,10 +11,27 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
 $shopeeService = new ShopeeApiService();
 $redirect_uri = "https://" . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'];
 
-if (isset($_GET['code']) && isset($_GET['shop_id'])) {
-    $shopeeService->handleOAuthCallback($_GET['code'], (int)$_GET['shop_id']);
-    header('Location: ' . strtok($redirect_uri, '?'));
-    exit();
+if (isset($_GET['code'])) {
+    $code = $_GET['code'];
+    $shop_id = $_GET['shop_id'] ?? null;
+    $main_account_id = $_GET['main_account_id'] ?? null;
+    
+    $is_main_account = false;
+    $id_to_pass = 0;
+
+    if ($shop_id) {
+        $id_to_pass = (int)$shop_id;
+        $is_main_account = false;
+    } elseif ($main_account_id) {
+        $id_to_pass = (int)$main_account_id;
+        $is_main_account = true;
+    }
+
+    if ($id_to_pass > 0) {
+        $shopeeService->handleOAuthCallback($code, $id_to_pass, $is_main_account);
+        header('Location: ' . strtok($redirect_uri, '?'));
+        exit();
+    }
 }
 
 if (isset($_GET['action']) && $_GET['action'] == 'disconnect') {

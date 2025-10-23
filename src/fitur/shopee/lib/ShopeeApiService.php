@@ -1,16 +1,25 @@
 <?php
+require_once __DIR__ . '/../../../../src/utils/Logger.php';
+
 class ShopeeApiService {
     private $partner_id;
     private $partner_key;
     private $host;
     private $access_token;
     private $shop_id;
+    private $logger; 
 
-    public function __construct() {
+    public function __construct($logger = null) {
+        if ($logger) {
+            $this->logger = $logger;
+        } else {
+            $this->logger = new AppLogger('shopee_api-service');
+        }
+
         $env = parse_ini_file(__DIR__ . '/../../../../.env');
         $this->partner_id = (int)$env['SHOPEE_PARTNER_ID'];
         $this->partner_key = trim($env['SHOPEE_PARTNER_KEY']);
-        $this->host = "https://openplatform.sandbox.test-stable.shopee.sg";
+        $this->host = trim($env['SHOPEE_HOST']);
 
         if (isset($_SESSION['access_token']) && isset($_SESSION['shop_id'])) {
             $this->access_token = $_SESSION['access_token'];
@@ -31,30 +40,53 @@ class ShopeeApiService {
         $timestamp = time();
         $base_string = sprintf("%s%s%s", $this->partner_id, $path, $timestamp);
         $sign = hash_hmac('sha256', $base_string, $this->partner_key);
-        return sprintf("%s%s?partner_id=%s&redirect=%s&timestamp=%s&sign=%s", 
+        $url = sprintf("%s%s?partner_id=%s&redirect=%s&timestamp=%s&sign=%s", 
             $this->host, $path, $this->partner_id, urlencode($redirect_uri), $timestamp, $sign);
+        
+        return $url;
     }
 
-    public function handleOAuthCallback($code, $shop_id) {
+    public function handleOAuthCallback($code, $id, $is_main_account = false) {
         $path = "/api/v2/auth/token/get";
         $timestamp = time();
         $base_string = sprintf("%s%s%s", $this->partner_id, $path, $timestamp);
         $sign = hash_hmac('sha256', $base_string, $this->partner_key);
 
-        $body = json_encode(["code" => $code, "shop_id" => $shop_id, "partner_id" => $this->partner_id]);
+        $body_payload = [
+            "code" => $code,
+            "partner_id" => $this->partner_id
+        ];
+        
+        if ($is_main_account) {
+            $body_payload['main_account_id'] = $id;
+        } else {
+            $body_payload['shop_id'] = $id;
+        }
+        
+        $body = json_encode($body_payload);
         $url = sprintf("%s%s?partner_id=%s&timestamp=%s&sign=%s", $this->host, $path, $this->partner_id, $timestamp, $sign);
 
         $response_data = $this->executeCurl($url, 'POST', $body);
 
         if (isset($response_data['access_token'])) {
             $_SESSION['access_token'] = $response_data['access_token'];
-            $_SESSION['shop_id'] = $shop_id;
+            
+            if ($is_main_account) {
+                if (isset($response_data['shop_id_list']) && !empty($response_data['shop_id_list'])) {
+                    $_SESSION['shop_id'] = (int)$response_data['shop_id_list'][0];
+                }
+            } else {
+                $_SESSION['shop_id'] = $id;
+            }
+        } else {
+             $this->logger->error("OAuth Callback failed. Response: " . json_encode($response_data));
         }
         return $response_data;
     }
     
     public function call($path, $method = 'GET', $body = null) {
         if (!$this->isConnected()) {
+            $this->logger->warning("API call attempted but not connected. Path: $path");
             return ['error' => 'auth_error', 'message' => 'User not authenticated.'];
         }
         $timestamp = time();
@@ -80,6 +112,7 @@ class ShopeeApiService {
     }
 
     private function executeCurl($url, $method = 'GET', $payload = null) {
+
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -93,8 +126,29 @@ class ShopeeApiService {
         }
         
         $response_str = curl_exec($ch);
+        $curl_error = curl_error($ch); 
         curl_close($ch);
-        return json_decode($response_str, true);
+
+        if ($curl_error) {
+            $this->logger->error("cURL Error: " . $curl_error);
+            return ['error' => 'curl_error', 'message' => $curl_error];
+        }
+
+        $this->logger->info("cURL Raw Response: " . $response_str);
+
+
+
+        $response_data = json_decode($response_str, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $this->logger->error("JSON Decode Error for response: " . $response_str);
+        }
+
+        if (isset($response_data['error']) && !empty($response_data['error'])) {
+             $this->logger->warning("Shopee API Error. Path: $url, Error: " . $response_data['error'] . ", Message: " . ($response_data['message'] ?? 'No message'));
+        }
+
+        return $response_data;
     }
     
     public function getProductList($params) {
@@ -102,11 +156,17 @@ class ShopeeApiService {
     }
 
     public function getDetailedProductInfo($product_list_response) {
+        
+        
         if (!isset($product_list_response['response']['item']) || empty($product_list_response['response']['item'])) {
             return [];
         }
 
+        $item_count = count($product_list_response['response']['item']);
+
         $item_ids = array_column($product_list_response['response']['item'], 'item_id');
+        
+        
         $detail_response = $this->call("/api/v2/product/get_item_base_info", 'GET', ['item_id_list' => implode(',', $item_ids)]);
         
         $detailed_info_map = [];
@@ -121,15 +181,15 @@ class ShopeeApiService {
             $item_id = $original_item['item_id'];
             $merged_products[] = isset($detailed_info_map[$item_id]) ? array_merge($original_item, $detailed_info_map[$item_id]) : $original_item;
         }
+        
 
-        // Fetch model info
+
         foreach ($merged_products as $index => &$item) {
             if (!empty($item['has_model'])) {
                 $model_response = $this->call("/api/v2/product/get_model_list", 'GET', ['item_id' => $item['item_id']]);
                 if (isset($model_response['response']['model']) && !empty($model_response['response']['model'])) {
                     $item['models'] = $model_response['response']['model'];
 
-                    // --- Logika baru untuk menghitung total stok dengan benar ---
                     $total_stock = 0;
                     foreach ($item['models'] as $model) {
                         $stock = $model['stock_info_v2']['summary_info']['total_available_stock'] 

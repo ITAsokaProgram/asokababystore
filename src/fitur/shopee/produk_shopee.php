@@ -10,10 +10,36 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
 $shopeeService = new ShopeeApiService();
 $redirect_uri = "https://" . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'];
 
-if (isset($_GET['code']) && isset($_GET['shop_id'])) {
-    $shopeeService->handleOAuthCallback($_GET['code'], (int)$_GET['shop_id']);
-    header('Location: ' . strtok($redirect_uri, '?'));
-    exit();
+function build_pagination_url($new_offset) {
+    $params = $_GET;
+    $params['offset'] = $new_offset;
+    if ($new_offset == 0) {
+        unset($params['offset']);
+    }
+    return '?' . http_build_query($params);
+}
+
+if (isset($_GET['code'])) {
+    $code = $_GET['code'];
+    $shop_id = $_GET['shop_id'] ?? null;
+    $main_account_id = $_GET['main_account_id'] ?? null;
+    
+    $is_main_account = false;
+    $id_to_pass = 0;
+
+    if ($shop_id) {
+        $id_to_pass = (int)$shop_id;
+        $is_main_account = false;
+    } elseif ($main_account_id) {
+        $id_to_pass = (int)$main_account_id;
+        $is_main_account = true;
+    }
+
+    if ($id_to_pass > 0) {
+        $shopeeService->handleOAuthCallback($code, $id_to_pass, $is_main_account);
+        header('Location: ' . strtok($redirect_uri, '?'));
+        exit();
+    }
 }
 
 if (isset($_GET['action']) && $_GET['action'] == 'disconnect') {
@@ -32,9 +58,23 @@ $detailed_products = [];
 $product_list_response = null;
 $auth_url = null;
 
+$page_size = 20; 
+$current_offset = isset($_GET['offset']) ? (int)$_GET['offset'] : 0;
+
+$pagination_info = null;
+$total_count = 0;
+$has_next_page = false;
+$next_offset = 0;
+$has_prev_page = $current_offset > 0;
+$prev_offset = max(0, $current_offset - $page_size);
+
 if ($shopeeService->isConnected()) {
-  $product_list_response = $shopeeService->getProductList(['offset' => 0, 'page_size' => 20, 'item_status' => 'NORMAL']);
-    
+    $api_params = [
+        'offset'      => $current_offset,
+        'page_size'   => $page_size,
+        'item_status' => 'NORMAL'
+    ];
+    $product_list_response = $shopeeService->getProductList($api_params);
     if (isset($product_list_response['error']) && 
         ($product_list_response['error'] === 'invalid_acceess_token' || $product_list_response['error'] === 'invalid_access_token')) {
         
@@ -44,6 +84,12 @@ if ($shopeeService->isConnected()) {
         
         header('Location: ' . strtok($redirect_uri, '?'));
         exit();
+    }
+    if (isset($product_list_response['response'])) {
+        $pagination_info = $product_list_response['response'];
+        $total_count = $pagination_info['total_count'] ?? 0;
+        $has_next_page = $pagination_info['has_next_page'] ?? false;
+        $next_offset = $pagination_info['next_offset'] ?? 0;
     }
 
   $detailed_products = $shopeeService->getDetailedProductInfo($product_list_response);
@@ -122,43 +168,6 @@ function getPriceRange($models) {
   <link rel="stylesheet" href="../../output2.css">
   <link rel="stylesheet" href="../../style/shopee/shopee.css">
   <link rel="icon" type="image/png" href="../../../public/images/logo1.png">
-  <style>
-    .skeleton-loader {
-        display: none;
-    }
-    .skeleton-loader.active {
-        display: block;
-    }
-    kbd {
-      background-color: #f3f4f6;
-      border: 1px solid #d1d5db;
-      border-radius: 4px;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-      display: inline-block;
-      font-family: 'Courier New', monospace;
-      font-size: 0.875em;
-      font-weight: 600;
-      line-height: 1;
-      padding: 0.25rem 0.5rem;
-      color: #374151;
-    }
-    @media (max-width: 640px) {
-      .product-card .flex {
-        flex-direction: column;
-      }
-      
-      .product-card .product-image {
-        width: 100%;
-        max-width: 200px;
-        margin: 0 auto;
-      }
-      
-      .product-card .product-image img {
-        width: 100%;
-        height: auto;
-      }
-    }
-  </style>
 </head>
 
 <body class="bg-gray-50 overflow-auto">
@@ -207,7 +216,7 @@ function getPriceRange($models) {
                   <i class="fas fa-times"></i>
                 </button>
               </div>
-              <button id="sync-all-stock-btn" class="">
+              <button id="sync-all-stock-btn" class="" data-total-count="<?php echo $total_count; ?>">
                 <i class="fas fa-sync-alt"></i>
                 <span>Sync Semua Stok ke DB</span>
              </button>
@@ -222,7 +231,7 @@ function getPriceRange($models) {
                 </div>
                 <div class="stats-badge" style="background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%); color: #6b21a8; border: 1px solid #c4b5fd;">
                   <i class="fas fa-boxes"></i>
-                  <span><?php echo count($detailed_products); ?> Produk</span>
+                  <span><?php echo $total_count; ?> Produk</span>
                 </div>
               </div>
             </div>
@@ -346,29 +355,6 @@ function getPriceRange($models) {
                           <?php endforeach; ?>
                         </div>
                       <?php else: ?>
-                        <?php if (isset($_SESSION['shopee_flash_message'])): ?>
-                          <script>
-                            document.addEventListener('DOMContentLoaded', () => {
-                              Swal.fire({
-                                icon: 'warning',
-                                title: 'Perhatian',
-                                text: '<?php echo addslashes($_SESSION['shopee_flash_message']); ?>',
-                                toast: true,
-                                position: 'top-end',
-                                showConfirmButton: false,
-                                timer: 4000,
-                                timerProgressBar: true,
-                                didOpen: (toast) => {
-                                  toast.addEventListener('mouseenter', Swal.stopTimer);
-                                  toast.addEventListener('mouseleave', Swal.resumeTimer);
-                                }
-                              });
-                            });
-                          </script>
-                          <?php 
-                            unset($_SESSION['shopee_flash_message']);
-                          endif; 
-                          ?>
                         <div class="flex md:items-center justify-between md:flex-row flex-col flex-wrap gap-4">
                           <form class="update-stock-form form-group" data-item-id="<?php echo $item['item_id']; ?>">
                             <input type="hidden" name="item_id" value="<?php echo htmlspecialchars($item['item_id']); ?>">
@@ -405,6 +391,29 @@ function getPriceRange($models) {
                   </div>
                 <?php endforeach; ?>
               </div>
+               <?php if (isset($_SESSION['shopee_flash_message'])): ?>
+                <script>
+                  document.addEventListener('DOMContentLoaded', () => {
+                    Swal.fire({
+                      icon: 'warning',
+                      title: 'Perhatian',
+                      text: '<?php echo addslashes($_SESSION['shopee_flash_message']); ?>',
+                      toast: true,
+                      position: 'top-end',
+                      showConfirmButton: false,
+                      timer: 4000,
+                      timerProgressBar: true,
+                      didOpen: (toast) => {
+                        toast.addEventListener('mouseenter', Swal.stopTimer);
+                        toast.addEventListener('mouseleave', Swal.resumeTimer);
+                      }
+                    });
+                  });
+                </script>
+                <?php 
+                  unset($_SESSION['shopee_flash_message']);
+                endif; 
+                ?>
             <?php elseif (isset($product_list_response['error'])): ?>
               <div class="p-6">
                 <div class="bg-red-50 border-2 border-red-200 text-red-700 px-6 py-4 rounded-xl" role="alert">
@@ -425,7 +434,34 @@ function getPriceRange($models) {
               </div>
             <?php endif; ?>
           </div>
-
+          <?php if (!empty($detailed_products) && $pagination_info): ?>
+                <?php
+                    $start_item = $current_offset + 1;
+                    $end_item = $current_offset + count($detailed_products);
+                ?>
+                <div class="pagination-controls p-6 border-t border-gray-100 bg-white rounded-b-2xl">
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div class="text-sm text-gray-600">
+                            Menampilkan <span class="font-semibold text-gray-800"><?php echo $start_item; ?></span> - <span class="font-semibold text-gray-800"><?php echo $end_item; ?></span> dari <span class="font-semibold text-gray-800"><?php echo $total_count; ?></span> produk
+                        </div>
+                        <div class="inline-flex items-center gap-2">
+                            <a href="<?php echo build_pagination_url($prev_offset); ?>"
+                               class="pagination-btn <?php echo !$has_prev_page ? 'disabled' : ''; ?>"
+                               <?php echo !$has_prev_page ? 'aria-disabled="true" tabindex="-1"' : ''; ?>>
+                                <i class="fas fa-arrow-left"></i>
+                                <span>Sebelumnya</span>
+                            </a>
+                            <a href="<?php echo build_pagination_url($next_offset); ?>"
+                               class="pagination-btn <?php echo !$has_next_page ? 'disabled' : ''; ?>"
+                               <?php echo !$has_next_page ? 'aria-disabled="true" tabindex="-1"' : ''; ?>>
+                                <span>Berikutnya</span>
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
+                    
         <?php else: ?>
           <div class="connect-card p-16 rounded-2xl">
             <div class="max-w-md mx-auto text-center py-4">
@@ -458,37 +494,5 @@ function getPriceRange($models) {
   <script src="../../js/shopee/produk_handler.js" type="module"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-  <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const profileImg = document.getElementById("profile-img");
-        const profileCard = document.getElementById("profile-card");
-
-        if (profileImg && profileCard) {
-          profileImg.addEventListener("click", function (event) {
-            event.preventDefault();
-            profileCard.classList.toggle("show");
-          });
-
-          document.addEventListener("click", function (event) {
-            if (!profileCard.contains(event.target) && !profileImg.contains(event.target)) {
-              profileCard.classList.remove("show");
-            }
-          });
-        }
-
-        const searchInput = document.getElementById('product-search');
-        const clearBtn = document.getElementById('clear-search');
-        
-        if (searchInput && clearBtn) {
-          searchInput.addEventListener('input', (e) => {
-            if (e.target.value.length > 0) {
-              clearBtn.classList.remove('hidden');
-            } else {
-              clearBtn.classList.add('hidden');
-            }
-          });
-        }
-    });
-  </script>
 </body>
 </html>

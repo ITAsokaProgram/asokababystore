@@ -347,37 +347,14 @@ const handleSyncWithConfirmation = async (event, form) => {
         await handleFormSubmit(event, form, syncStock, 'sync');
     }
 };
-const scrapeProductDataForSync = () => {
-  const productsToSync = [];
-  document.querySelectorAll('.sync-stock-form').forEach(form => {
-    const itemId = form.querySelector('input[name="item_id"]')?.value;
-    const modelId = form.querySelector('input[name="model_id"]')?.value;
-    const sku = form.querySelector('input[name="sku"]')?.value;
-
-    if (itemId && modelId && sku) {
-      productsToSync.push({
-        item_id: parseInt(itemId),
-        model_id: parseInt(modelId), 
-        sku: sku
-      });
-    }
-  });
-  return productsToSync;
-};
-
 const handleSyncAllClick = async (event) => {
   const btn = event.currentTarget;
   const originalHtml = btn.innerHTML;
-  const productsToSync = scrapeProductDataForSync();
-
-  if (productsToSync.length === 0) {
-    Swal.fire('Tidak Ada Produk', 'Tidak ada produk yang valid (dengan SKU) untuk disinkronkan.', 'info');
-    return;
-  }
+  const totalCount = btn.dataset.totalCount || 'semua';
 
   const result = await Swal.fire({
     title: `Konfirmasi Sync Total`,
-    html: `Anda akan menyinkronkan stok untuk <strong>${productsToSync.length}</strong> produk/variasi.<br><br>Stok di Shopee akan di-update massal sesuai dengan stok di database (berdasarkan SKU). Proses ini mungkin memakan waktu.`,
+    html: `Anda akan menyinkronkan stok untuk <strong>${totalCount}</strong> produk.<br><br>Stok di Shopee akan di-update massal sesuai dengan stok di database (berdasarkan SKU). Proses ini mungkin memakan waktu.`,
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#4f46e5',
@@ -394,7 +371,7 @@ const handleSyncAllClick = async (event) => {
   
   Swal.fire({
     title: 'Sinkronisasi Dimulai...',
-    html: `Memproses ${productsToSync.length} item. Harap tunggu...<br><br>Jangan tutup halaman ini.`,
+    html: `Memproses ${totalCount} item. Harap tunggu...<br><br>Jangan tutup halaman ini. Server sedang mengambil semua data produk Anda.`,
     allowOutsideClick: false,
     didOpen: () => {
       Swal.showLoading();
@@ -402,7 +379,7 @@ const handleSyncAllClick = async (event) => {
   });
 
   try {
-    const data = { products: productsToSync };
+    const data = {}; 
     const response = await syncAllStock(data);
 
     if (response.success) {
@@ -434,9 +411,10 @@ const handleSyncAllClick = async (event) => {
         title: 'Sinkronisasi Selesai!',
         html: `
           <div class="text-left space-y-2">
+            <p><strong><i class="fas fa-cubes text-blue-500"></i> Total Produk/Variasi ditemukan:</strong> ${response.total_items_found} item</p>
             <p><strong><i class="fas fa-check-circle text-green-500"></i> Berhasil disinkronkan:</strong> ${response.synced} item</p>
             <p><strong><i class="fas fa-times-circle text-red-500"></i> Gagal disinkronkan:</strong> ${response.failed} item</p>
-            <p><strong><i class="fas fa-minus-circle text-gray-500"></i> Dilewati (SKU N/A / tidak ada di DB):</strong> ${response.skipped} item</p>
+            <p><strong><i class="fas fa-minus-circle text-gray-500"></i> Dilewati (SKU N/A / Stok Sama / Tdk di DB):</strong> ${response.skipped} item</p>
           </div>
           ${skippedDetailsHtml}  
           ${failedDetailsHtml}   
