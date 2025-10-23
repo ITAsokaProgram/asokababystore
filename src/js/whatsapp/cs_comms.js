@@ -8,7 +8,12 @@ function initWebSocket() {
     ws.onmessage = (event) => {
         try {
             const data = JSON.parse(event.data);
-            if ((data.event === 'new_live_chat' || data.event === 'new_message') && data.conversation_id !== currentConversationId) {
+            const currentSwal = Swal.getPopup();
+            const isModalVisible = currentSwal && currentSwal.style.display !== 'none' && !currentSwal.classList.contains('swal2-toast');
+            
+            if ((data.event === 'new_live_chat' || data.event === 'new_message') && 
+                data.conversation_id !== currentConversationId && 
+                !isModalVisible) {
                 Swal.fire({
                     toast: true,
                     position: 'top-end',
@@ -43,12 +48,9 @@ function initWebSocket() {
                     let existingItem = listElement.querySelector(`.conversation-item[data-id="${data.conversation_id}"]`);
                     
                     if (existingItem) {
-                        // Itemnya ada di daftar yang sedang ditampilkan
                         
-                        // Update badge unread-nya
                         let unreadBadge = existingItem.querySelector('.unread-badge');
                         if (!unreadBadge) {
-                            // Buat badge jika belum ada
                             unreadBadge = document.createElement('span');
                             unreadBadge.className = 'unread-badge bg-blue-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-md';
                             const timeElement = existingItem.querySelector('.text-xs.text-gray-500');
@@ -56,19 +58,20 @@ function initWebSocket() {
                                 timeElement.parentElement.appendChild(unreadBadge);
                             }
                         }
-                        // Tambah 1 counternya (cara cepat, tidak 100% akurat tapi sangat ringan)
                         let currentItemCount = parseInt(unreadBadge.textContent) || 0;
                         unreadBadge.textContent = currentItemCount + 1;
                         
-                        // Update waktu
                         const timeElement = existingItem.querySelector('.text-xs.text-gray-500');
                         if (timeElement) {
                             timeElement.textContent = 'Baru saja';
                         }
                         
-                        // Pindahkan ke atas HANYA JIKA sedang di halaman 1 dan filter 'semua'
                         if (currentConvoPage === 1 && currentFilter === 'semua' && currentSearchTerm === '') {
                             listElement.prepend(existingItem);
+                        }
+                    } else {
+                        if (currentConvoPage === 1 && currentSearchTerm === '') {
+                            fetchAndRenderConversations();
                         }
                     }
                 }
@@ -79,7 +82,9 @@ function initWebSocket() {
                     updateFilterUnreadBadges(data.unread_counts);
                 }
             }
-        } catch (e) {}
+        } catch (e) {
+            console.error("WebSocket onmessage error:", e);
+        }
     };
 
     ws.onclose = () => {
@@ -89,6 +94,7 @@ function initWebSocket() {
 
     ws.onerror = (error) => console.error('WebSocket error:', error);
 }
+
 async function fetchAndRenderConversations(isLoadMore = false) {
     try {
         const params = new URLSearchParams({
