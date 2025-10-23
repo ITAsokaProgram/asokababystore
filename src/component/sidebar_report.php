@@ -6,13 +6,20 @@
         
         <!-- Beranda Link -->
         <a href="/in_beranda" id="berandaLink" data-menu="dashboard"
-            class="group flex items-center py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-blue-100 hover:to-blue-200 hover:text-blue-700 hover:shadow-lg transition-all duration-300 mb-4 border border-transparent hover:border-blue-300">
+            class="group flex items-center py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-blue-100 hover:to-blue-200 hover:text-blue-700 hover:shadow-lg transition-all duration-300  border border-transparent hover:border-blue-300">
             <div class="w-8 flex justify-center">
                 <i class="fas fa-home text-xl text-blue-600 group-hover:text-blue-700 transition-all duration-300 group-hover:scale-125 group-hover:-rotate-12 group-hover:drop-shadow-lg"></i>
             </div>
             <span class="sidebar-text ml-3 font-medium transition-all duration-300 group-hover:translate-x-1">Beranda</span>
         </a>
-        <div x-data="{ open: false }" class="relative mb-4">
+        <a href="/src/fitur/whatsapp_cs/dashboard_whatsapp" id="whatsappLink" data-menu="whatsapp_dashboard"
+            class="group flex items-center py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-green-100 hover:to-green-200 hover:text-green-700 hover:shadow-lg transition-all duration-300  border border-transparent hover:border-green-300"
+            style="display: none;"> <div class="w-8 flex justify-center">
+                <i class="fa-brands fa-whatsapp text-xl text-green-600 group-hover:text-green-700 transition-all duration-300 group-hover:scale-125 group-hover:-rotate-12 group-hover:drop-shadow-lg"></i>
+            </div>
+            <span class="sidebar-text ml-3 font-medium transition-all duration-300 group-hover:translate-x-1">WhatsApp CS</span>
+        </a>
+        <div x-data="{ open: false }" class="relative ">
             <button @click="open = !open" id="shopeeLink"
                 class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-orange-100 hover:to-red-200 hover:text-orange-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-orange-300">
                 <div class="w-8 flex justify-center">
@@ -24,6 +31,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                 </svg>
             </button>
+            
             
             <div x-show="open" @click.away="open = false" class="mt-3 ml-4 bg-gradient-to-br from-white to-orange-50 rounded-xl shadow-xl border border-orange-200 z-10 backdrop-blur-sm"
                 style="display: none;">
@@ -58,16 +66,10 @@
                 </ul>
             </div>
         </div>
-        <!-- <a href="/src/fitur/whatsapp_cs/dashboard_whatsapp" id="whatsappLink" data-menu="whatsapp_dashboard"
-            class="group flex items-center py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-orange-100 hover:to-red-200 hover:text-orange-700 hover:shadow-lg transition-all duration-300 mb-4 border border-transparent hover:border-orange-300">
-            <div class="w-8 flex justify-center">
-                <i class="fa-brands fa-whatsapp  text-xl text-orange-600 group-hover:text-orange-700 transition-all duration-300 group-hover:scale-125 group-hover:-rotate-12 group-hover:drop-shadow-lg"></i>
-            </div>
-            <span class="sidebar-text ml-3 font-medium transition-all duration-300 group-hover:translate-x-1">WhatsApp CS</span>
-        </a> -->
+        
 
         <!-- Laporan Section -->
-        <div x-data="{ open: false, nestedOpenPenjualan: false, nestedOpenPelanggan: false }" class="relative mb-4">
+        <div x-data="{ open: false, nestedOpenPenjualan: false, nestedOpenPelanggan: false }" class="relative ">
             <button @click="open = !open" id="laporan"
                 class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-purple-100 hover:to-purple-200 hover:text-purple-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-purple-300">
                 <div class="w-8 flex justify-center">
@@ -191,7 +193,7 @@
         </div>
 
         <!-- Transaksi Section -->
-        <div x-data="{ open: false, nestedOpenTrans: false, nestedOpenTrans: false }" class="relative mb-4">
+        <div x-data="{ open: false, nestedOpenTrans: false, nestedOpenTrans: false }" class="relative ">
             <button @click="open = !open" id="transaction" 
                 class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-orange-100 hover:to-orange-200 hover:text-orange-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-orange-300">
                 <div class="w-8 flex justify-center">
@@ -248,7 +250,7 @@
         </div>
 
         <!-- Member Section -->
-        <div x-data="{ open: false, nestedOpenMember: false, nestedOpenMember: false }" class="relative mb-4">
+        <div x-data="{ open: false, nestedOpenMember: false, nestedOpenMember: false }" class="relative ">
             <button @click="open = !open" id="member"
                 class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-teal-100 hover:to-teal-200 hover:text-teal-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-teal-300">
                 <div class="w-8 flex justify-center">
@@ -289,7 +291,7 @@
         </div>
 
         <!-- Account Section -->
-        <div x-data="{ open: false, nestedOpenAccount: false, nestedOpenAccount: false }" class="relative mb-4">
+        <div x-data="{ open: false, nestedOpenAccount: false, nestedOpenAccount: false }" class="relative ">
             <button @click="open = !open" id="account" 
                 class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-indigo-100 hover:to-indigo-200 hover:text-indigo-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-indigo-300">
                 <div class="w-8 flex justify-center">
@@ -328,7 +330,7 @@
         </div>
 
          <!-- Product -->
-        <div class="relative mb-4">
+        <div class="relative ">
             <a href="/src/fitur/products/product" id="productLink" data-menu="products"
                 class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-fuchsia-100 hover:to-fuchsia-200 hover:text-fuchsia-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-fuchsia-300">
                 <div class="w-8 flex justify-center">
@@ -339,7 +341,7 @@
         </div>
 
         <!-- Asset -->
-        <div class="relative mb-4">
+        <div class="relative ">
             <a href="/src/fitur/aset/history_aset" id="productLink" data-menu="history_aset"
                 class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-fuchsia-100 hover:to-fuchsia-200 hover:text-fuchsia-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-fuchsia-300">
                 <div class="w-8 flex justify-center">
@@ -349,7 +351,7 @@
             </a>
         </div>
        <!-- Upload -->
-        <div x-data="{ open: false }" class="relative mb-4">
+        <div x-data="{ open: false }" class="relative ">
             <button @click="open = !open" id="upload-menu" data-menu="upload_banner"
                 class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-fuchsia-100 hover:to-fuchsia-200 hover:text-fuchsia-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-fuchsia-300">
                 <div class="w-8 flex justify-center">
@@ -416,6 +418,8 @@
             document.getElementById('upload-menu').classList.add('btn', 'active');
         }else if (currentPath.includes('/src/fitur/shopee/dashboard_shopee')) {
             document.getElementById('shopeeLink').classList.add('btn', 'active');
+        } else if (currentPath.includes('/src/fitur/whatsapp_cs/dashboard_whatsapp')) {
+            document.getElementById('whatsappLink').classList.add('btn', 'active');
         }
         // Tambahkan kondisi untuk menu lainnya sesuai kebutuhan
     });

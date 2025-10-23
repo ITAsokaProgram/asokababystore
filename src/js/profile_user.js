@@ -16,11 +16,20 @@ if (token) {
     .then(response => response.json())
     .then(data => {
         if (data.status === 'success') {
+            const userNama = data.data.nama; 
             const userRole = data.data.role;
-            document.getElementById('user-nama').textContent = data.data.nama;
+            
+            document.getElementById('user-nama').textContent = userNama;
             document.getElementById('user-role').textContent = userRole;
-            document.getElementById('user-nama-dropdown').textContent = data.data.nama;
+            document.getElementById('user-nama-dropdown').textContent = userNama;
             document.getElementById('user-role-dropdown').textContent = userRole;
+
+            const whatsappLink = document.getElementById('whatsappLink');
+            
+            if (whatsappLink && (userNama === 'Asfahan Rosyid' || userNama === 'Muhammad Ridho')) {
+                whatsappLink.style.display = 'flex'; 
+            }
+
         } else {
             console.error('Gagal mengambil user:', data.message);
         }

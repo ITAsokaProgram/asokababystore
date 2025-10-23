@@ -5,6 +5,12 @@ include '../../../aa_kon_sett.php';
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
+
+require_once __DIR__ . '/../../component/menu_handler.php';
+$menuHandler = new MenuHandler('whatsapp_dashboard');
+if (!$menuHandler->initialize()) {
+    exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -623,8 +629,8 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
         <div id="chat-placeholder" class="flex flex-col items-center justify-center h-full text-gray-500 p-4">
           <i class="fas fa-comments text-5xl md:text-6xl mb-4"></i>
-          <p class="text-base md:text-lg font-semibold mb-1">Pilih percakapan untuk memulai</p>
-          <p class="text-xs md:text-sm text-gray-400">Pesan akan muncul di sini</p>
+          <p class="text-base md:text-lg font-semibold mb-1 text-center">Pilih percakapan untuk memulai</p>
+          <p class="text-xs md:text-sm text-gray-400 text-center">Pesan akan muncul di sini</p>
         </div>
 
         <div id="active-chat" class="hidden flex-col flex-1 min-h-0">
