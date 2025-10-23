@@ -119,7 +119,11 @@ try {
             $ws_url = 'http://127.0.0.1:8081/notify';
             $payload = json_encode([
                 'event' => 'unread_count_update',
-                'total_unread_count' => $totalUnread
+                'total_unread_count' => $totalUnread,
+                'unread_counts' => [
+                    'live_chat' => $live_chat_count_ws,
+                    'umum' => $umum_count_ws
+                ]
             ]);
             
             $ch = curl_init($ws_url);
@@ -288,11 +292,34 @@ try {
         }
 
         if (!empty($search)) {
-            $whereConditions[] = "(p.nama_display LIKE ? OR p.nomor_telepon LIKE ?)";
-            $searchTerm = "%" . $search . "%";
-            $params[] = $searchTerm;
-            $params[] = $searchTerm;
-            $types .= 'ss';
+            $searchTermLike = "%" . $search . "%";
+            
+            $searchConditions = ["p.nama_display LIKE ?", "p.nomor_telepon LIKE ?"];
+            $params[] = $searchTermLike;
+            $params[] = $searchTermLike; 
+            $types .= 'ss'; 
+
+            if (ctype_digit($search)) {
+                
+                if (strpos($search, '0') === 0) { 
+                    $normalizedSearch = "62" . substr($search, 1);
+                    $normalizedSearchLike = "%" . $normalizedSearch . "%";
+                    
+                    $searchConditions[] = "p.nomor_telepon LIKE ?";
+                    $params[] = $normalizedSearchLike;
+                    $types .= 's'; 
+                } 
+                else if (strpos($search, '62') === 0) { 
+                    $normalizedSearch = "0" . substr($search, 2);
+                    $normalizedSearchLike = "%" . $normalizedSearch . "%";
+                    
+                    $searchConditions[] = "p.nomor_telepon LIKE ?";
+                    $params[] = $normalizedSearchLike;
+                    $types .= 's'; 
+                }
+            }
+
+            $whereConditions[] = "(" . implode(' OR ', $searchConditions) . ")";
         }
 
         $whereClause = "";
