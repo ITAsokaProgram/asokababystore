@@ -230,4 +230,9 @@ document.addEventListener('DOMContentLoaded', () => {
             clearActiveConversation();
         }
     });
+    setInterval(() => {
+        if (typeof updateAllTimeAgoStrings === 'function') {
+            updateAllTimeAgoStrings();
+        }
+    }, 30000);
 });

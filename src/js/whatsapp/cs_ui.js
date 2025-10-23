@@ -282,3 +282,26 @@ function createMessageBubble(msg) {
 
     return bubble;
 }
+
+function updateAllTimeAgoStrings() {
+    const timeElements = document.querySelectorAll('.conversation-time-ago');
+    if (timeElements.length === 0) {
+        return;
+    }
+
+    timeElements.forEach(el => {
+        const timestamp = el.dataset.timestamp;
+        if (timestamp) {
+            try {
+                const date = new Date(timestamp);
+                const newTimeAgo = getTimeAgo(date); 
+                
+                if (el.textContent !== newTimeAgo) {
+                    el.textContent = newTimeAgo;
+                }
+            } catch (e) {
+                console.error("Error parsing timestamp for timeAgo:", e, timestamp);
+            }
+        }
+    });
+}

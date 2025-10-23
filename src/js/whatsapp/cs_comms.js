@@ -78,6 +78,32 @@ function initWebSocket() {
                             }
                         }
                     }
+                
+
+                } else if (data.event === 'new_admin_reply') {
+                    
+                    if (data.conversation_id === currentConversationId) {
+                        appendMessage(data.message);
+                    }
+                    
+                    const listElement = document.getElementById('conversation-list');
+                    let existingItem = listElement.querySelector(`.conversation-item[data-id="${data.conversation_id}"]`);
+                    
+                    if (existingItem) {
+                        const timeElement = existingItem.querySelector('.text-xs.text-gray-500');
+                        if (timeElement) {
+                            timeElement.textContent = 'Baru saja'; 
+                        }
+                        
+                        if (currentConvoPage === 1 && (currentFilter === 'semua' || currentFilter === 'live_chat') && currentSearchTerm === '') {
+                            listElement.prepend(existingItem);
+                        }
+                    } else {
+                        if (currentConvoPage === 1 && (currentFilter === 'semua' || currentFilter === 'live_chat') && currentSearchTerm === '') {
+                            fetchAndRenderConversations(); 
+                        }
+                    }
+
                 } else if (data.event === 'unread_count_update') {
                     updateTotalUnreadBadge(data.total_unread_count);
                     
@@ -168,7 +194,7 @@ async function fetchAndRenderConversations(isLoadMore = false) {
                             ${renderLabelTags(convo.labels, 'xs')}
                         </div>
                         <div class="flex justify-between items-center">
-                            <p class="text-xs text-gray-500">${timeAgo}</p>
+                            <p class="conversation-time-ago text-xs text-gray-500" data-timestamp="${convo.urutan_interaksi}">${timeAgo}</p>
                             ${convo.jumlah_belum_terbaca > 0 ? 
                                 `<span class="unread-badge bg-blue-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-md">
                                     ${convo.jumlah_belum_terbaca}
@@ -408,7 +434,6 @@ async function loadMoreConversations() {
         isLoadingMoreConvos = false;
     }
 }
-
 async function sendMessage() {
     if (currentConversationStatus !== 'live_chat') {
         Swal.fire({
@@ -426,34 +451,6 @@ async function sendMessage() {
     if (!message && !selectedMediaFile) return;
     if (!currentConversationId) return;
 
-    if (selectedMediaFile) {
-        const fileURL = URL.createObjectURL(selectedMediaFile);
-        const mediaType = selectedMediaFile.type.startsWith('image/') ? 'image' : 'video';
-        appendMessage({
-            pengirim: 'admin',
-            isi_pesan: fileURL,
-            tipe_pesan: mediaType,
-            timestamp: new Date().toISOString(),
-            status_baca: 0
-        });
-        if (message) {
-             appendMessage({
-                pengirim: 'admin',
-                isi_pesan: message,
-                tipe_pesan: 'text',
-                timestamp: new Date().toISOString(),
-                status_baca: 0
-            });
-        }
-    } else if (message) {
-        appendMessage({
-            pengirim: 'admin',
-            isi_pesan: message,
-            tipe_pesan: 'text',
-            timestamp: new Date().toISOString(),
-            status_baca: 0
-        });
-    }
 
     sendButton.disabled = true;
     sendButton.innerHTML = '<div class="loading-spinner"></div>';
@@ -483,6 +480,7 @@ async function sendMessage() {
         if (!response.ok || !result.success) {
             throw new Error(result.message || 'Gagal mengirim balasan.');
         }
+        
         currentConvoPage = 1;
         fetchAndRenderConversations();
     } catch (error) {

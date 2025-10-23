@@ -42,9 +42,9 @@ $conversationId = $_POST['conversation_id'];
 $messageText = $_POST['message'] ?? null; 
 $logger = new AppLogger('send_admin_reply.log');
 $conversationService = new ConversationService($conn, $logger);
+$savedMessages = []; 
 
 try {
-    // 3. Ambil nomor telepon dari ID percakapan
     $stmt = $conn->prepare("SELECT nomor_telepon FROM wa_percakapan WHERE id = ?");
     $stmt->bind_param("i", $conversationId);
     $stmt->execute();
@@ -77,16 +77,53 @@ try {
         
         kirimPesanMedia($phoneNumber, $mediaUrl, $resourceType, $messageText);
         
-        $conversationService->saveMessage($conversationId, 'admin', $resourceType, $mediaUrl);
+        $savedMediaMessage = $conversationService->saveMessage($conversationId, 'admin', $resourceType, $mediaUrl);
+        if ($savedMediaMessage) $savedMessages[] = $savedMediaMessage;
+
         if ($messageText) {
-             $conversationService->saveMessage($conversationId, 'admin', 'text', $messageText);
+             $savedTextMessage = $conversationService->saveMessage($conversationId, 'admin', 'text', $messageText);
+             if ($savedTextMessage) $savedMessages[] = $savedTextMessage;
         }
 
     } elseif ($messageText) {
         kirimPesanTeks($phoneNumber, $messageText);
         
-        $conversationService->saveMessage($conversationId, 'admin', 'text', $messageText);
+        $savedTextMessage = $conversationService->saveMessage($conversationId, 'admin', 'text', $messageText);
+        if ($savedTextMessage) $savedMessages[] = $savedTextMessage;
     }
+
+
+    if (!empty($savedMessages)) {
+        $ws_url = 'http://127.0.0.1:8081/notify'; 
+        
+        foreach ($savedMessages as $savedMessage) {
+            $payload = json_encode([
+                'event' => 'new_admin_reply', 
+                'conversation_id' => (int)$conversationId,
+                'phone' => $phoneNumber,
+                'message' => $savedMessage 
+            ]);
+            
+            try {
+                $ch = curl_init($ws_url);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                    'Content-Type: application/json',
+                    'Content-Length: ' . strlen($payload)
+                ]);
+                curl_setopt($ch, CURLOPT_TIMEOUT_MS, 100); 
+                curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
+                curl_exec($ch);
+                curl_close($ch);
+            } catch (Exception $ws_e) {
+                $logger->error("WebSocket broadcast failed: " . $ws_e->getMessage());
+            }
+        }
+    }
+
+
 
     echo json_encode(['success' => true]);
 
