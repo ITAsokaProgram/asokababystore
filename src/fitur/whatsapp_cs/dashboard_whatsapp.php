@@ -222,7 +222,7 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
     .message-bubble {
       display: inline-block;
       position: relative;
-      max-width: 70%;
+      max-width: 100%;
       word-wrap: break-word;
       padding: 0.875rem 1rem;
       border-radius: 1.125rem;
@@ -231,7 +231,7 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
       animation: slideIn 0.3s ease;
       font-size: 0.9rem;
       line-height: 1.6;
-      padding-bottom: 1.75rem;
+      padding-bottom: 1rem;
     }
     
     @keyframes slideIn {
@@ -300,7 +300,6 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
     .audio-content {
       padding: 0.75rem;
-      padding-bottom: 2rem;
       min-width: 260px;
     }
 

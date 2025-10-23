@@ -147,6 +147,7 @@ function clearActiveConversation() {
     if (!currentConversationId) {
         return;
     }
+    document.getElementById('chat-with-name').textContent = "";
     currentConversationId = null;
     currentConversationStatus = null;
     const activeChat = document.getElementById('active-chat');
