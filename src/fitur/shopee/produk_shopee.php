@@ -57,26 +57,27 @@ if (!$menuHandler->initialize()) {
 $detailed_products = [];
 $product_list_response = null;
 $auth_url = null;
-
 $page_size = 20; 
-$current_offset = isset($_GET['offset']) ? (int)$_GET['offset'] : 0;
 $search_keyword = isset($_GET['search']) ? trim($_GET['search']) : ''; 
+$current_offset_raw = $_GET['offset'] ?? 0; 
 
 $pagination_info = null;
 $total_count = 0;
 $has_next_page = false;
 $next_offset = 0;
-$has_prev_page = $current_offset > 0;
-$prev_offset = max(0, $current_offset - $page_size);
 
+if (!empty($search_keyword)) {
+    $current_offset = $current_offset_raw;
+    $has_prev_page = ($current_offset_raw != 0); 
+    $prev_offset = 0; 
+} else {
+    $current_offset = (int)$current_offset_raw;
+    $has_prev_page = $current_offset > 0;
+    $prev_offset = max(0, $current_offset - $page_size);
+}
 if ($shopeeService->isConnected()) {
-    // JANGAN buat $api_params di sini
 
     if (!empty($search_keyword)) {
-        // --- BLOK UNTUK SEARCH ---
-        // Buat parameter KHUSUS untuk search
-        // Kita tidak menyertakan 'item_status' karena default-nya sudah NORMAL
-        // dan untuk menghindari konflik dengan 'keyword'
         $search_params = [
             'offset'    => $current_offset,
             'page_size' => $page_size,
@@ -289,14 +290,17 @@ function getPriceRange($models) {
                   <div class="product-card p-6">
                     <div class="flex gap-6 mb-5">
                       <div class="product-image flex-shrink-0">
-                        <img src="<?php echo htmlspecialchars($item['image']['image_url_list'][0] ?? 'https://placehold.co/100x100'); ?>" 
-                             alt="<?php echo htmlspecialchars($item['item_name']); ?>" 
-                             class="w-24 h-24 object-cover rounded-xl bg-gray-100 border-2 border-gray-200">
+                            <a href="detail_produk_shopee.php?item_id=<?php echo $item['item_id']; ?>" class="product-image flex-shrink-0 cursor-pointer hover:opacity-80 transition">
+                              <img src="<?php echo htmlspecialchars($item['image']['image_url_list'][0] ?? 'https://placehold.co/100x100'); ?>" 
+                                   alt="<?php echo htmlspecialchars($item['item_name'] ?? '-'); ?>" 
+                                   class="w-24 h-24 object-cover rounded-xl bg-gray-100 border-2 border-gray-200">
+                            </a>
                       </div>
                       
                       <div class="flex-grow min-w-0">
-                        <h3 class="font-bold text-gray-900 mb-3 text-lg line-clamp-2 leading-snug"><?php echo htmlspecialchars($item['item_name']); ?></h3>
-                        
+                        <a href="detail_produk_shopee.php?item_id=<?php echo $item['item_id']; ?>" class="hover:text-orange-600 transition">
+                          <h3 class="font-bold text-gray-900 mb-3 text-lg line-clamp-2 leading-snug"><?php echo htmlspecialchars($item['item_name'] ?? '-'); ?></h3>
+                        </a>
                         <div class="flex flex-wrap gap-2 mb-3">
                           <span class="stats-badge badge-price">
                             <i class="fas fa-tag"></i>
@@ -468,6 +472,7 @@ function getPriceRange($models) {
                     <i class="fas fa-exclamation-circle text-2xl"></i>
                     <div>
                       <strong class="font-bold text-lg">Error API!</strong>
+                      <?php ddd($product_list_response) ?>
                       <p class="text-sm mt-1"><?php echo htmlspecialchars($product_list_response['message']); ?></p>
                     </div>
                   </div>
@@ -482,14 +487,18 @@ function getPriceRange($models) {
             <?php endif; ?>
           </div>
           <?php if (!empty($detailed_products) && $pagination_info): ?>
-                <?php
-                    $start_item = $current_offset + 1;
-                    $end_item = $current_offset + count($detailed_products);
-                ?>
                 <div class="pagination-controls p-6 border-t border-gray-100 bg-white rounded-b-2xl">
                     <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
                         <div class="text-sm text-gray-600">
-                            Menampilkan <span class="font-semibold text-gray-800"><?php echo $start_item; ?></span> - <span class="font-semibold text-gray-800"><?php echo $end_item; ?></span> dari <span class="font-semibold text-gray-800"><?php echo $total_count; ?></span> produk
+                            <?php 
+                            if (empty($search_keyword)): 
+                                $start_item = (int)$current_offset + 1; 
+                                $end_item = (int)$current_offset + count($detailed_products);
+                            ?>
+                                Menampilkan <span class="font-semibold text-gray-800"><?php echo $start_item; ?></span> - ...
+                            <?php else: ?>
+                                Menampilkan <span class="font-semibold text-gray-800"><?php echo count($detailed_products); ?></span> produk ...
+                            <?php endif; ?>
                         </div>
                         <div class="inline-flex items-center gap-2">
                             <a href="<?php echo build_pagination_url($prev_offset); ?>"

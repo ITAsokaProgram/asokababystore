@@ -50,14 +50,14 @@ const updateTotalStock = (form) => {
 };
 const initializeSearchAndFilter = () => {
     const searchInput = document.getElementById('product-search');
-    const clearSearchBtn = document.getElementById('clear-search'); // Ini Boleh null
+    const clearSearchBtn = document.getElementById('clear-search'); 
 
-    // Periksa hanya searchInput. Jika tidak ada, fungsi berhenti.
+    
     if (!searchInput) return; 
 
-    // Fungsi untuk menampilkan/menyembunyikan tombol clear
+    
     const toggleClearButton = () => {
-        if (!clearSearchBtn) return; // Lompati jika tombol 'x' tidak ada
+        if (!clearSearchBtn) return; 
         if (searchInput.value) {
             clearSearchBtn.classList.remove('hidden');
         } else {
@@ -65,41 +65,41 @@ const initializeSearchAndFilter = () => {
         }
     };
 
-    // Jalankan saat halaman dimuat
+    
     toggleClearButton();
 
     let searchTimeout;
     searchInput.addEventListener('input', (e) => {
-        // Tampilkan/sembunyikan tombol 'x' secara real-time
+        
         toggleClearButton();
         
         clearTimeout(searchTimeout);
         
-        // Atur debounce 500ms
+        
         searchTimeout = setTimeout(() => {
             const searchTerm = e.target.value.trim();
             const currentUrl = new URL(window.location);
 
-            // Set atau hapus parameter 'search'
+            
             if (searchTerm) {
                 currentUrl.searchParams.set('search', searchTerm);
             } else {
                 currentUrl.searchParams.delete('search');
             }
             
-            // Selalu reset 'offset' (kembali ke halaman 1) saat melakukan search baru
+            
             currentUrl.searchParams.delete('offset');
             
-            // Reload halaman dengan URL baru
+            
             window.location.href = currentUrl.href;
         }, 500); 
     });
     
-    // Pasang event listener untuk tombol 'x', HANYA JIKA tombolnya ada
+    
     if (clearSearchBtn) {
         clearSearchBtn.addEventListener('click', () => {
             searchInput.value = '';
-            // Ment-trigger event 'input' akan menjalankan logika debounce di atas
+            
             searchInput.dispatchEvent(new Event('input', { bubbles: true })); 
             searchInput.focus();
         });
