@@ -146,7 +146,7 @@ try {
         if (empty($no_lpb)) {
             throw new Exception("Validasi gagal: No LPB wajib diisi jika QTY Diterima > 0.");
         }
-        $prefix = $kd_store . "-RC-" . $kode_kasir . "_";
+        $prefix = $kd_store . "-RC-" . $kode_kasir . "-";
         $sql_get_last_num = "SELECT MAX(CAST(SUBSTRING_INDEX(no_faktur, '_', -1) AS UNSIGNED)) as last_num 
                              FROM s_receipt 
                              WHERE no_faktur LIKE ? 

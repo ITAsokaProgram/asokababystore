@@ -18,6 +18,9 @@ let hasMoreConvos = true;
 let isLoadingMoreConvos = false;
 
 document.addEventListener('DOMContentLoaded', () => {
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
     if (window.innerWidth <= 768) {
         document.getElementById('conversation-list-container').classList.add('mobile-show');
     }

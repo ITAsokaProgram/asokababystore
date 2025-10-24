@@ -14,20 +14,27 @@ function initWebSocket() {
                 const currentSwal = Swal.getPopup();
                 const isModalVisible = currentSwal && currentSwal.style.display !== 'none' && !currentSwal.classList.contains('swal2-toast');
                 
-                if ((data.event === 'new_live_chat' || data.event === 'new_message') && 
-                    data.conversation_id !== currentConversationId && 
+                if ((data.event === 'new_live_chat' || data.event === 'new_message') &&
+                    data.conversation_id !== currentConversationId &&
                     !isModalVisible) {
+
+                    const title = data.event === 'new_live_chat' ? `Live chat baru` : `Pesan baru`;
+                    const body = `Dari: ${data.phone}`;
+
                     Swal.fire({
                         toast: true,
                         position: 'top-end',
                         icon: 'info',
-                        title: data.event === 'new_live_chat' ? `Live chat baru dari ${data.phone}` : `Pesan baru dari ${data.phone}`,
+                        title: `${title} dari ${data.phone}`,
                         showConfirmButton: false,
                         timer: 3000,
                         timerProgressBar: true,
                     });
-                }
 
+                    playNotificationSound();
+
+                    showBrowserNotification(title, body);
+                }
                 if (data.event === 'new_live_chat') {
                     fetchAndRenderConversations();
                     if (data.conversation_id) {

@@ -72,3 +72,37 @@ function debounce(func, delay) {
         }, delay);
     };
 }
+
+function playNotificationSound() {
+    const sound = document.getElementById('notification-sound');
+    if (sound) {
+        sound.currentTime = 0; 
+        sound.play().catch(error => {
+            console.warn("Gagal memutar suara notifikasi, perlu interaksi pengguna.", error);
+        });
+    }
+}
+
+function showBrowserNotification(title, body) {
+    if (!("Notification" in window)) {
+        console.log("Browser ini tidak mendukung notifikasi desktop.");
+        return;
+    }
+
+    if (Notification.permission === "granted") {
+        new Notification(title, {   
+            body: body,
+            icon: '/public/images/logo1.png' 
+        });
+    }
+    else if (Notification.permission !== "denied") {
+        Notification.requestPermission().then((permission) => {
+            if (permission === "granted") {
+                new Notification(title, {
+                    body: body,
+                    icon: '/public/images/logo1.png'
+                });
+            }
+        });
+    }
+}
