@@ -51,3 +51,6 @@ export const syncStock = (formData) => {
 export const syncAllStock = (data) => {
   return sendRequestJSON('/src/api/shopee/sync_all_stock.php', data);
 };
+export const manageStokOl = (formData) => {
+  return sendRequest('/src/api/shopee/manage_stok_ol.php', formData);
+};

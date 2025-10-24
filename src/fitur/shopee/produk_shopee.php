@@ -158,23 +158,58 @@ if ($shopeeService->isConnected()) {
 
   if (!empty($all_skus) && isset($conn) && $conn instanceof mysqli) {
       $unique_skus = array_unique($all_skus);
-      
       $placeholders = implode(',', array_fill(0, count($unique_skus), '?'));
       $types = str_repeat('s', count($unique_skus));
       
-      $sql = "SELECT item_n, qty FROM s_barang WHERE kd_store = ? AND item_n IN ($placeholders)";
-      
-      $stmt = $conn->prepare($sql);
-      
-      if ($stmt) {
-          $stmt->bind_param("s" . $types, $kd_store, ...$unique_skus);
-          $stmt->execute();
-          $result = $stmt->get_result();
-          
-          while ($row = $result->fetch_assoc()) {
-              $sku_stock_map[$row['item_n']] = (int)$row['qty'];
+      $sku_barang_data_map = [];
+      $sku_stock_map = []; 
+
+      $sql_barang = "SELECT item_n, plu, DESCP, VENDOR, Harga_Beli, Harga_Jual, qty 
+                      FROM s_barang 
+                      WHERE kd_store = ? AND item_n IN ($placeholders)";
+
+      $stmt_barang = $conn->prepare($sql_barang);
+
+      if ($stmt_barang) {
+          $stmt_barang->bind_param("s" . $types, $kd_store, ...$unique_skus);
+          $stmt_barang->execute();
+          $result_barang = $stmt_barang->get_result();
+          while ($row = $result_barang->fetch_assoc()) {
+              $trimmed_sku = trim($row['item_n']);
+              $sku_barang_data_map[$trimmed_sku] = [
+                  'plu' => $row['plu'],
+                  'descp' => $row['DESCP'],
+                  'vendor' => $row['VENDOR'],
+                  'harga_beli' => $row['Harga_Beli'],
+                  'harga_jual' => $row['Harga_Jual']
+              ];
+              $sku_stock_map[$trimmed_sku] = (int)$row['qty'];
           }
-          $stmt->close();
+          $stmt_barang->close();
+      }
+
+      $sku_stok_ol_data_map = [];
+      $kd_store_ol = '9998'; 
+      $sql_stok_ol = "SELECT item_n, plu, DESCP, VENDOR, hrg_beli, price 
+                      FROM s_stok_ol 
+                      WHERE kd_store = ? AND item_n IN ($placeholders)";
+
+      $stmt_stok_ol = $conn->prepare($sql_stok_ol);
+
+      if ($stmt_stok_ol) {
+          $stmt_stok_ol->bind_param("s" . $types, $kd_store_ol, ...$unique_skus);
+          $stmt_stok_ol->execute();
+          $result_stok_ol = $stmt_stok_ol->get_result();
+          while ($row = $result_stok_ol->fetch_assoc()) {
+              $sku_stok_ol_data_map[trim($row['item_n'])] = [
+                  'plu' => $row['plu'],
+                  'descp' => $row['DESCP'],
+                  'vendor' => $row['VENDOR'],
+                  'hrg_beli' => $row['hrg_beli'],
+                  'price' => $row['price']
+              ];
+          }
+          $stmt_stok_ol->close();
       }
   }
 } else {
@@ -213,6 +248,242 @@ function getPriceRange($models) {
   <link rel="stylesheet" href="../../style/shopee/shopee.css">
   <link rel="icon" type="image/png" href="../../../public/images/logo1.png">
 </head>
+<style>
+    
+    .btn-manage-stok-ol {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .btn-manage-ol-add {
+        background-color: #dcfce7; 
+        color: #166534; 
+    }
+    .btn-manage-ol-add:hover {
+        background-color: #bbf7d0; 
+    }
+    .btn-manage-ol-edit {
+        background-color: #e0e7ff; 
+        color: #3730a3; 
+    }
+    .btn-manage-ol-edit:hover {
+        background-color: #c7d2fe; 
+    }
+    .btn-manage-ol-disabled {
+        background-color: #f3f4f6; 
+        color: #9ca3af; 
+        cursor: not-allowed;
+    }
+    
+    .swal2-modal {
+    width: 100%;
+    max-width: 600px;
+}
+
+.swal2-popup {
+    border-radius: 1rem;
+    padding: 2rem;
+}
+
+.btn-manage-stok-ol {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 0.75rem;
+}
+
+.btn-manage-ol-add {
+    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+    color: #166534;
+    border: 1px solid #86efac;
+}
+
+.btn-manage-ol-add:hover {
+    background: linear-gradient(135deg, #bbf7d0 0%, #86efac 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+}
+
+.btn-manage-ol-edit {
+    background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+    color: #3730a3;
+    border: 1px solid #a5b4fc;
+}
+
+.btn-manage-ol-edit:hover {
+    background: linear-gradient(135deg, #c7d2fe 0%, #a5b4fc 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+}
+
+.btn-manage-ol-disabled {
+    background-color: #f3f4f6;
+    color: #9ca3af;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.swal2-html-container {
+    text-align: left !important;
+    overflow: visible !important;
+    max-height: none !important;
+    padding: 0 !important;
+    margin: 1.5rem 0 !important;
+}
+
+.swal-form-grid {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 1.25rem;
+    align-items: center;
+    margin-top: 1.5rem;
+    padding: 0 0.5rem;
+}
+
+.swal-form-grid label {
+    font-weight: 600;
+    text-align: right;
+    font-size: 0.875rem;
+    color: #374151;
+    padding-right: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    min-height: 42px;
+}
+
+.swal-form-grid input {
+    width: 100% !important;
+    padding: 0.625rem 0.875rem !important;
+    border: 2px solid #e5e7eb !important;
+    border-radius: 0.5rem !important;
+    font-size: 0.875rem !important;
+    box-sizing: border-box !important;
+    transition: all 0.2s ease !important;
+    margin: 0 !important;
+    background-color: white !important;
+    color: #1f2937 !important;
+    font-family: inherit !important;
+}
+
+.swal-form-grid input:focus {
+    outline: none !important;
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+    background-color: white !important;
+}
+
+.swal-form-grid input:not(:read-only):hover {
+    border-color: #d1d5db !important;
+}
+
+.swal-form-grid input:read-only {
+    background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%) !important;
+    color: #6b7280 !important;
+    cursor: not-allowed !important;
+    border-color: #e5e7eb !important;
+    font-weight: 500 !important;
+}
+
+.swal2-html-container > p {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    border-radius: 0.5rem;
+    border-left: 3px solid #6366f1;
+}
+
+.swal2-html-container > p strong {
+    color: #1f2937;
+    font-weight: 600;
+}
+
+.swal2-title {
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    color: #1f2937 !important;
+    padding: 0 0 1rem 0 !important;
+}
+
+.swal2-confirm {
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+    border: none !important;
+    border-radius: 0.5rem !important;
+    padding: 0.625rem 1.5rem !important;
+    font-weight: 600 !important;
+    transition: all 0.2s ease !important;
+}
+
+.swal2-confirm:hover {
+    background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3) !important;
+}
+
+.swal2-cancel {
+    background-color: #e5e7eb !important;
+    color: #4b5563 !important;
+    border: none !important;
+    border-radius: 0.5rem !important;
+    padding: 0.625rem 1.5rem !important;
+    font-weight: 600 !important;
+    transition: all 0.2s ease !important;
+}
+
+.swal2-cancel:hover {
+    background-color: #d1d5db !important;
+    transform: translateY(-1px) !important;
+}
+
+@media (max-width: 640px) {
+    .swal-form-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .swal-form-grid label {
+        text-align: left;
+        justify-content: flex-start;
+        padding-right: 0;
+        margin-bottom: 0.25rem;
+        min-height: auto;
+    }
+    
+    .swal2-popup {
+        padding: 1.5rem;
+    }
+}
+
+@keyframes shake-input {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+}
+
+.swal-form-grid input.invalid {
+    animation: shake-input 0.3s ease;
+    border-color: #ef4444 !important;
+}
+
+.swal2-loading .swal2-confirm {
+    opacity: 0.7;
+}
+
+</style>
 
 <body class="bg-gray-50 overflow-auto">
 
@@ -400,6 +671,59 @@ function getPriceRange($models) {
                                     Sinkronisasi Stok
                                   </button>
                                 </form>
+                                <?php
+                                $model_sku_trimmed = trim($model['model_sku'] ?? '');
+                                $barang_data = $sku_barang_data_map[$model_sku_trimmed] ?? null;
+                                $stok_ol_data = $sku_stok_ol_data_map[$model_sku_trimmed] ?? null;
+
+                                $btn_text = '';
+                                $btn_class = '';
+                                $btn_icon = 'fa-plus';
+                                $btn_disabled = false;
+                                $data_attrs = '';
+
+                                if ($barang_data) {
+                                    if ($stok_ol_data) {
+                                        // Ada di s_barang DAN s_stok_ol -> Mode EDIT
+                                        $btn_text = 'Edit Stok Online';
+                                        $btn_class = 'btn-manage-ol-edit';
+                                        $btn_icon = 'fa-pencil-alt';
+                                        $data_attrs = 'data-mode="edit" ' .
+                                                      'data-sku="' . htmlspecialchars($model_sku_trimmed) . '" ' .
+                                                      'data-plu="' . htmlspecialchars($stok_ol_data['plu']) . '" ' .
+                                                      'data-descp="' . htmlspecialchars($stok_ol_data['descp']) . '" ' .
+                                                      'data-vendor="' . htmlspecialchars($stok_ol_data['vendor']) . '" ' .
+                                                      'data-hrg_beli="' . htmlspecialchars($stok_ol_data['hrg_beli']) . '" ' .
+                                                      'data-price="' . htmlspecialchars($stok_ol_data['price']) . '"';
+                                    } else {
+                                        // Ada di s_barang TAPI TIDAK s_stok_ol -> Mode ADD
+                                        $btn_text = 'Masukkan ke Stok Online';
+                                        $btn_class = 'btn-manage-ol-add';
+                                        $btn_icon = 'fa-plus';
+                                        $data_attrs = 'data-mode="add" ' .
+                                                      'data-sku="' . htmlspecialchars($model_sku_trimmed) . '" ' .
+                                                      'data-plu="' . htmlspecialchars($barang_data['plu']) . '" ' .
+                                                      'data-descp="' . htmlspecialchars($barang_data['descp']) . '" ' .
+                                                      'data-vendor="' . htmlspecialchars($barang_data['vendor']) . '" ' .
+                                                      'data-hrg_beli="' . htmlspecialchars($barang_data['harga_beli']) . '" ' .
+                                                      'data-price="' . htmlspecialchars($barang_data['harga_jual']) . '"';
+                                    }
+                                } else {
+                                    // Tidak ada di s_barang
+                                    $btn_text = 'SKU tdk ada di s_barang';
+                                    $btn_class = 'btn-manage-ol-disabled';
+                                    $btn_icon = 'fa-times';
+                                    $btn_disabled = true;
+                                }
+                                ?>
+                                <button 
+                                    type="button" 
+                                    class="btn-action btn-manage-stok-ol <?php echo $btn_class; ?> rounded-xl whitespace-nowrap"
+                                    <?php echo $data_attrs; ?>
+                                    <?php if ($btn_disabled) echo 'disabled'; ?>>
+                                    <i class="fas <?php echo $btn_icon; ?> fa-fw"></i>
+                                    <span><?php echo $btn_text; ?></span>
+                                </button>
                               </div>
                             </div>
                           <?php endforeach; ?>
@@ -435,6 +759,59 @@ function getPriceRange($models) {
                               Sinkronisasi Stok
                             </button>
                           </form>
+                          <?php
+                                $item_sku_trimmed = trim($item['item_sku'] ?? '');
+                                $barang_data = $sku_barang_data_map[$item_sku_trimmed] ?? null;
+                                $stok_ol_data = $sku_stok_ol_data_map[$item_sku_trimmed] ?? null;
+
+                                $btn_text = '';
+                                $btn_class = '';
+                                $btn_icon = 'fa-plus';
+                                $btn_disabled = false;
+                                $data_attrs = '';
+
+                                if ($barang_data) {
+                                    if ($stok_ol_data) {
+                                        // Mode EDIT
+                                        $btn_text = 'Edit Stok Online';
+                                        $btn_class = 'btn-manage-ol-edit';
+                                        $btn_icon = 'fa-pencil-alt';
+                                        $data_attrs = 'data-mode="edit" ' .
+                                                      'data-sku="' . htmlspecialchars($item_sku_trimmed) . '" ' .
+                                                      'data-plu="' . htmlspecialchars($stok_ol_data['plu']) . '" ' .
+                                                      'data-descp="' . htmlspecialchars($stok_ol_data['descp']) . '" ' .
+                                                      'data-vendor="' . htmlspecialchars($stok_ol_data['vendor']) . '" ' .
+                                                      'data-hrg_beli="' . htmlspecialchars($stok_ol_data['hrg_beli']) . '" ' .
+                                                      'data-price="' . htmlspecialchars($stok_ol_data['price']) . '"';
+                                    } else {
+                                        // Mode ADD
+                                        $btn_text = 'Masukkan ke Stok Online';
+                                        $btn_class = 'btn-manage-ol-add';
+                                        $btn_icon = 'fa-plus';
+                                        $data_attrs = 'data-mode="add" ' .
+                                                      'data-sku="' . htmlspecialchars($item_sku_trimmed) . '" ' .
+                                                      'data-plu="' . htmlspecialchars($barang_data['plu']) . '" ' .
+                                                      'data-descp="' . htmlspecialchars($barang_data['descp']) . '" ' .
+                                                      'data-vendor="' . htmlspecialchars($barang_data['vendor']) . '" ' .
+                                                      'data-hrg_beli="' . htmlspecialchars($barang_data['harga_beli']) . '" ' .
+                                                      'data-price="' . htmlspecialchars($barang_data['harga_jual']) . '"';
+                                    }
+                                } else {
+                                    // Tidak ada di s_barang
+                                    $btn_text = 'SKU tdk ada di s_barang';
+                                    $btn_class = 'btn-manage-ol-disabled';
+                                    $btn_icon = 'fa-times';
+                                    $btn_disabled = true;
+                                }
+                                ?>
+                                <button 
+                                    type="button" 
+                                    class="btn-action btn-manage-stok-ol <?php echo $btn_class; ?> rounded-xl whitespace-nowrap"
+                                    <?php echo $data_attrs; ?>
+                                    <?php if ($btn_disabled) echo 'disabled'; ?>>
+                                    <i class="fas <?php echo $btn_icon; ?> fa-fw"></i>
+                                    <span><?php echo $btn_text; ?></span>
+                                </button>
                         </div>
                       <?php endif; ?>
                     </div>

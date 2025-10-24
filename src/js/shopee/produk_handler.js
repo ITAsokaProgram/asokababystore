@@ -1,5 +1,4 @@
-import { updateStock, updatePrice, syncStock, syncAllStock } from './api_service.js';
-
+import { updateStock, updatePrice, syncStock, syncAllStock, manageStokOl } from './api_service.js';
 const updatePriceRange = (form) => {
     const productCard = form.closest('.update-form-wrapper');
     if (!productCard) return;
@@ -576,6 +575,116 @@ const addShakeAnimation = () => {
     }
 };
 
+const handleManageStokOlClick = (event) => {
+    const button = event.currentTarget;
+    const { mode, sku, plu, descp, vendor, hrgBeli, price } = button.dataset;
+    const title = (mode === 'add') ? 'Masukkan ke Stok Online' : 'Edit Data Stok Online';
+    const kd_store = '9998'; // Sesuai permintaan
+
+    Swal.fire({
+        title: title,
+        html: `
+            <p class="mb-4 text-sm text-gray-600">SKU: <strong>${sku}</strong></p>
+            <form id="stok-ol-form" class="swal-form-grid">
+                <label for="swal-kd_store">KD Store:</label>
+                <input type="text" id="swal-kd_store" class="swal2-input" value="${kd_store}" readonly>
+                
+                <label for="swal-plu">PLU:</label>
+                <input type="text" id="swal-plu" class="swal2-input" value="${plu}" placeholder="PLU Produk">
+                
+                <label for="swal-descp">Deskripsi:</label>
+                <input type="text" id="swal-descp" class="swal2-input" value="${descp}" placeholder="Deskripsi Produk">
+                
+                <label for="swal-vendor">Vendor:</label>
+                <input type="text" id="swal-vendor" class="swal2-input" placeholder="Vendor">
+                
+                <label for="swal-hrg_beli">Harga Beli:</label>
+                <input type="number" id="swal-hrg_beli" class="swal2-input" placeholder="0">
+                
+                <label for="swal-price">Harga Jual:</label>
+                <input type="number" id="swal-price" class="swal2-input"  placeholder="0">
+            </form>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Simpan',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#4f46e5',
+        focusConfirm: false,
+        preConfirm: () => {
+            // Ambil nilai dari form
+            const form = document.getElementById('stok-ol-form');
+            const formData = new FormData();
+            
+            formData.append('mode', mode);
+            formData.append('sku', sku); // ini adalah item_n
+            formData.append('kd_store', kd_store);
+            formData.append('plu', document.getElementById('swal-plu').value);
+            formData.append('descp', document.getElementById('swal-descp').value);
+            formData.append('vendor', document.getElementById('swal-vendor').value);
+            formData.append('hrg_beli', document.getElementById('swal-hrg_beli').value);
+            formData.append('price', document.getElementById('swal-price').value);
+            
+            // Validasi sederhana
+            if (!formData.get('plu') || !formData.get('price') || !formData.get('descp')) {
+                Swal.showValidationMessage('PLU, Deskripsi, dan Harga Jual tidak boleh kosong');
+                return false;
+            }
+            
+            return formData;
+        }
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            const formData = result.value;
+            
+            Swal.fire({
+                title: 'Menyimpan...',
+                text: 'Data sedang diproses, harap tunggu.',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            try {
+                const response = await manageStokOl(formData);
+                if (!response.success) {
+                    throw new Error(response.message);
+                }
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: response.message,
+                    timer: 2000,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end'
+                });
+
+                // Update data di tombol
+                button.dataset.mode = 'edit';
+                button.dataset.plu = formData.get('plu');
+                button.dataset.descp = formData.get('descp');
+                button.dataset.vendor = formData.get('vendor');
+                button.dataset.hrgBeli = formData.get('hrg_beli');
+                button.dataset.price = formData.get('price');
+                
+                // Ubah tampilan tombol
+                button.classList.remove('btn-manage-ol-add');
+                button.classList.add('btn-manage-ol-edit');
+                button.innerHTML = '<i class="fas fa-pencil-alt fa-fw"></i> <span>Edit Stok Online</span>';
+                button.title = 'Edit Stok Online';
+
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal Menyimpan',
+                    text: error.message
+                });
+            }
+        }
+    });
+};
 
 document.addEventListener('DOMContentLoaded', () => {
     
@@ -611,6 +720,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     document.querySelectorAll('.sync-stock-form').forEach(form => {
         form.addEventListener('submit', (event) => handleSyncWithConfirmation(event, form));
+    });
+
+    document.querySelectorAll('.btn-manage-stok-ol').forEach(button => {
+        if (button.disabled) return;
+        button.addEventListener('click', (event) => handleManageStokOlClick(event));
     });
     
     const syncAllBtn = document.getElementById('sync-all-stock-btn');
