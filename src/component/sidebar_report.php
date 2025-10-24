@@ -63,6 +63,15 @@
                             </span>
                         </a>
                     </li>
+                    <li>
+                        <a href="/src/fitur/shopee/terima_barang_cabang" data-menu="shopee_order"
+                            class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-orange-100 hover:text-orange-700 transition-all duration-200 group rounded-lg">
+                            <span class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
+                                <i class="fa-solid fa-receipt mr-2 text-base text-orange-400 group-hover:text-orange-600 group-hover:scale-110 transition-all duration-200"></i>
+                                Terima Barang
+                            </span>
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>
