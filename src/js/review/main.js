@@ -1,7 +1,6 @@
 import { getReviewData, submitReviewHandling, getReviewDetail,getReviewConversation,sendReviewMessage } from "./fetch.js";
 import { renderPagination } from "./pagination.js";
 import { renderTableReview } from "./table.js";
-
 let currentFilter = {
     rating: "all",
     status: "all", 
@@ -10,7 +9,6 @@ let currentFilter = {
 };
 let currentReviewId = null;
 let isEditMode = false; 
-
 const updateHeaderStats = (stats) => {
     const totalReviewsEl = document.getElementById("totalReviews");
     const avgRatingEl = document.getElementById("avgRating");
@@ -31,10 +29,7 @@ const fetchAndRenderPage = async (page = 1) => {
         document.getElementById("tableLoading").classList.remove("hidden");
         document.querySelector("table").classList.add("hidden");
         document.getElementById("paginationContainer").innerHTML = `<div class="animate-pulse h-8 bg-gray-200 rounded w-48"></div>`;
-        
-        
         const response = await getReviewData(currentFilter.page, currentFilter.limit, currentFilter.rating, currentFilter.status); 
-        
         if (response.stats) {
             updateHeaderStats(response.stats);
         }
@@ -49,8 +44,6 @@ const fetchAndRenderPage = async (page = 1) => {
         Toastify({ text: "Gagal memuat data review", backgroundColor: "#EF4444" }).showToast();
     }
 };
-
-
 const setupRatingCardEvents = () => {
     const container = document.getElementById("ratingCardContainer");
     container.querySelectorAll(".rating-card").forEach(card => {
@@ -66,7 +59,6 @@ const setupRatingCardEvents = () => {
         });
     });
 };
-
 const setupStatusFilterEvent = () => {
     const statusFilter = document.getElementById("statusFilter");
     if (statusFilter) {
@@ -76,8 +68,6 @@ const setupStatusFilterEvent = () => {
         });
     }
 };
-
-
 const updateRatingCardCounts = (counts) => {
     document.querySelectorAll(".rating-card").forEach(card => {
         const rating = card.dataset.rating;
@@ -92,35 +82,23 @@ const updateRatingCardCounts = (counts) => {
         }
     });
 };
-
-
-
-
 window.openIssueHandlingModal = function(reviewId, reviewData) {
     isEditMode = false;
     currentReviewId = reviewId;
-    
     document.getElementById('customerName').textContent = reviewData.nama || '-';
     document.getElementById('customerPhone').textContent = reviewData.handphone || '-';
     document.getElementById('reviewRating').textContent = reviewData.rating ? `${reviewData.rating} ⭐` : '-';
     document.getElementById('reviewDate').textContent = reviewData.tanggal || '-';
     document.getElementById('reviewComment').textContent = reviewData.komentar || '-';
-    
-    
     document.getElementById('issueHandlingForm').reset();
-    
-    
     const modalTitle = document.querySelector('#issueHandlingModal h2');
     if (modalTitle) {
         modalTitle.textContent = 'Penanganan Masalah';
     }
-    
     const issueModal = document.getElementById('issueHandlingModal');
     issueModal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
 }
-
-
 window.editIssueHandling = async function(reviewId) {
     try {
         Swal.fire({
@@ -129,41 +107,28 @@ window.editIssueHandling = async function(reviewId) {
             showConfirmButton: false,
             allowOutsideClick: false
         });
-
         const result = await getReviewDetail(reviewId);
-
         if (result && result.success) {
             const data = result.data;
-            
-            
             isEditMode = true;
             currentReviewId = reviewId;
-            
-            
             document.getElementById('customerName').textContent = data.nama_lengkap || '-';
             document.getElementById('customerPhone').textContent = data.no_hp || '-';
             document.getElementById('reviewRating').textContent = data.rating ? `${data.rating} ⭐` : '-';
             document.getElementById('reviewDate').textContent = new Date(data.diperbarui_tgl).toLocaleDateString('id-ID');
             document.getElementById('reviewComment').textContent = data.komentar || '-';
-            
-            
             document.getElementById('handlingStatus').value = data.status || '';
             document.getElementById('priority').value = data.prioritas || '';
             document.getElementById('issueCategory').value = data.kategori_masalah || '';
             document.getElementById('handlingDescription').value = data.deskripsi_penanganan || '';
-            
-            
             const modalTitle = document.querySelector('#issueHandlingModal h2');
             if (modalTitle) {
                 modalTitle.textContent = 'Edit Penanganan Masalah';
             }
-            
-            
             Swal.close();
             const issueModal = document.getElementById('issueHandlingModal');
             issueModal.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
-            
         } else {
             Swal.fire({
                 title: 'Error',
@@ -182,8 +147,6 @@ window.editIssueHandling = async function(reviewId) {
         });
     }
 }
-
-
 window.viewHandlingDetail = async function(reviewId) {
     try {
         Swal.fire({
@@ -192,17 +155,13 @@ window.viewHandlingDetail = async function(reviewId) {
             showConfirmButton: false,
             allowOutsideClick: false
         });
-
         const result = await getReviewDetail(reviewId);
-
         if (result && result.success) {
             const data = result.data;
-
             const formattedDate = new Date(data.diperbarui_tgl).toLocaleString('id-ID', {
                 dateStyle: 'long',
                 timeStyle: 'short'
             });
-
             Swal.fire({
                 title: `<div class="flex items-center text-2xl">
                             <div>
@@ -235,7 +194,6 @@ window.viewHandlingDetail = async function(reviewId) {
                                 </blockquote>
                             </div>
                         </div>
-
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="bg-blue-50 p-4 rounded-xl text-center shadow-sm">
                                 <p class="text-sm font-semibold text-blue-800">Status Penanganan</p>
@@ -246,19 +204,16 @@ window.viewHandlingDetail = async function(reviewId) {
                                 <p class="text-lg font-bold text-orange-900 mt-1">${getPriorityLabel(data.prioritas)}</p>
                             </div>
                         </div>
-
                         <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
                            <p class="text-sm font-semibold text-gray-700">Kategori Masalah</p>
                            <p class="text-md font-medium text-gray-900 mt-1">${getCategoryLabel(data.kategori_masalah)}</p>
                         </div>
-
                         <div class="bg-yellow-50 p-4 rounded-xl border-l-4 border-yellow-400">
                             <h4 class="font-semibold text-yellow-800 text-md flex items-center mb-2">
                                 <i class="fas fa-clipboard-check text-yellow-600 mr-3"></i>Deskripsi Penanganan
                             </h4>
                             <p class="text-gray-800 mt-2 whitespace-pre-wrap text-sm">${data.deskripsi_penanganan}</p>
                         </div>
-
                         <div class="text-xs text-gray-500 text-center pt-2">
                              <i class="fas fa-clock mr-1"></i>Terakhir diperbarui: ${formattedDate}
                         </div>
@@ -290,11 +245,9 @@ window.viewHandlingDetail = async function(reviewId) {
         });
     }
 }
-
 let currentChatReviewId = null;
 const renderChatConversation = (messages) => {
     const container = document.getElementById('chatConversationMessages');
-    
     if (!messages || messages.length === 0) {
         container.innerHTML = `
             <div class="text-center text-gray-400 text-sm py-8">
@@ -304,7 +257,6 @@ const renderChatConversation = (messages) => {
         `;
         return;
     }
-    
     container.innerHTML = messages.map(msg => {
         const isAdmin = msg.pengirim_type === 'admin';
         const alignClass = isAdmin ? 'justify-end' : 'justify-start';
@@ -315,14 +267,10 @@ const renderChatConversation = (messages) => {
             hour: '2-digit', 
             minute: '2-digit' 
         });
-
-        // --- INI PERUBAHANNYA ---
         let bubbleContent = '';
         let bubblePadding = '';
-
         if (msg.tipe_pesan === 'image') {
-            // Jika tipe pesan adalah 'image'
-            bubblePadding = 'p-2'; // Padding bubble untuk gambar
+            bubblePadding = 'p-2'; 
             bubbleContent = `
                 <a href="${msg.media_url}" target="_blank" rel="noopener noreferrer" class="cursor-pointer">
                     <img src="${msg.media_url}" alt="Lampiran" class="rounded-lg mb-2 max-h-48 w-full object-cover">
@@ -330,14 +278,11 @@ const renderChatConversation = (messages) => {
                 ${msg.pesan ? `<p class="text-sm whitespace-pre-wrap break-words px-1">${msg.pesan}</p>` : ''}
             `;
         } else {
-            // Jika tipe pesan adalah 'text' (default)
-            bubblePadding = 'px-4 py-2'; // Padding bubble untuk teks
+            bubblePadding = 'px-4 py-2'; 
             bubbleContent = `
                 <p class="text-sm whitespace-pre-wrap break-words">${msg.pesan}</p>
             `;
         }
-        // --- AKHIR PERUBAHAN ---
-        
         return `
             <div class="flex ${alignClass} animate-fade-in-up">
                 <div class="max-w-xs md:max-w-md lg:max-w-lg mb-4">
@@ -351,10 +296,8 @@ const renderChatConversation = (messages) => {
             </div>
         `;
     }).join('');
-    
     scrollToBottomAdmin();
 };
-
 const loadChatConversation = async (reviewId) => {
     try {
         const result = await getReviewConversation(reviewId);
@@ -370,21 +313,30 @@ const loadChatConversation = async (reviewId) => {
         }).showToast();
     }
 };
-
-
 window.openChatModal = function(reviewId, reviewData) {
     currentChatReviewId = reviewId;
-    
     document.getElementById('chatCustomerName').textContent = reviewData.nama || '-';
     document.getElementById('chatCustomerPhone').textContent = reviewData.handphone || '-';
     document.getElementById('chatCustomerRating').textContent = reviewData.rating ? `${reviewData.rating} ⭐` : '-';
     document.getElementById('chatCustomerComment').textContent = reviewData.komentar || 'Tidak ada komentar';
-    
     document.getElementById('chatMessageInput').value = '';
+    const waButton = document.getElementById('sendWaButton');
+    if (waButton) {
+        let phone = (reviewData.handphone || '').replace(/[\s+-]/g, '');
+        if (phone.startsWith('0')) {
+            phone = '62' + phone.substring(1);
+        }
 
+        if (phone) {
+            waButton.href = `https://wa.me/${phone}`;
+            waButton.classList.remove('hidden');
+        } else {
+            waButton.href = '#';
+            waButton.classList.add('hidden');
+        }
+    }
     const chatInputContainer = document.getElementById('chatInputContainer');
     const resolvedMessage = document.getElementById('chatResolvedMessage');
-
     if (reviewData.detail_status === 'resolved') {
         chatInputContainer.classList.add('hidden');
         resolvedMessage.classList.remove('hidden');
@@ -392,14 +344,11 @@ window.openChatModal = function(reviewId, reviewData) {
         chatInputContainer.classList.remove('hidden');
         resolvedMessage.classList.add('hidden');
     }
-    
     loadChatConversation(reviewId);
-    
     const chatModal = document.getElementById('chatModal');
     chatModal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
 }
-
 function closeChatModal() {
     const chatModal = document.getElementById('chatModal');
     chatModal.classList.add('hidden');
@@ -407,24 +356,19 @@ function closeChatModal() {
     document.getElementById('chatMessageInput').value = '';
     currentChatReviewId = null;
 }
-
 let adminSelectedFile = null;
-
-// --- TAMBAHKAN LISTENER BARU UNTUK ADMIN ---
 const attachBtnAdmin = document.getElementById('attachFileBtnAdmin');
 const mediaInputAdmin = document.getElementById('mediaInputAdmin');
 const previewContainerAdmin = document.getElementById('imagePreviewContainerAdmin');
 const previewImgAdmin = document.getElementById('imagePreviewAdmin');
 const removePreviewBtnAdmin = document.getElementById('removeImagePreviewAdmin');
-
 if (attachBtnAdmin) attachBtnAdmin.addEventListener('click', () => mediaInputAdmin.click());
-
 if (mediaInputAdmin) mediaInputAdmin.addEventListener('change', () => {
     const file = mediaInputAdmin.files[0];
     if (file && file.type.startsWith('image/')) {
-        if (file.size > 5 * 1024 * 1024) { // 5MB
+        if (file.size > 5 * 1024 * 1024) { 
             alert('Ukuran gambar maksimal adalah 5MB.');
-            mediaInputAdmin.value = ''; // Reset input
+            mediaInputAdmin.value = ''; 
             return;
         }
         adminSelectedFile = file;
@@ -436,36 +380,29 @@ if (mediaInputAdmin) mediaInputAdmin.addEventListener('change', () => {
         reader.readAsDataURL(file);
     } else if (file) {
         alert('Hanya file gambar yang diizinkan.');
-        mediaInputAdmin.value = ''; // Reset input
+        mediaInputAdmin.value = ''; 
     }
 });
-
 if (removePreviewBtnAdmin) removePreviewBtnAdmin.addEventListener('click', () => {
     adminSelectedFile = null;
-    mediaInputAdmin.value = ''; // Reset input file
+    mediaInputAdmin.value = ''; 
     previewContainerAdmin.classList.add('hidden');
     previewImgAdmin.src = '';
 });
 
 const sendChatMessageBtn = document.getElementById('sendChatMessageBtn');
 const chatMessageInput = document.getElementById('chatMessageInput');
-
 if (sendChatMessageBtn && chatMessageInput) {
     sendChatMessageBtn.addEventListener('click', async () => {
         const pesan = chatMessageInput.value.trim();
-
-        // --- 1. VALIDASI BARU ---
-        // Cek jika pesan DAN file sama-sama kosong
         if (!pesan && !adminSelectedFile) {
             Toastify({
                 text: "Pesan atau gambar tidak boleh kosong!",
                 duration: 2000,
                 backgroundColor: "#EF4444",
             }).showToast();
-            return; // Hentikan di sini
+            return; 
         }
-        // --- AKHIR VALIDASI BARU ---
-        
         if (!currentChatReviewId) {
             Toastify({
                 text: "Review ID tidak ditemukan!",
@@ -474,39 +411,28 @@ if (sendChatMessageBtn && chatMessageInput) {
             }).showToast();
             return;
         }
-        
         const originalText = sendChatMessageBtn.innerHTML;
         sendChatMessageBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Mengirim...';
         sendChatMessageBtn.disabled = true;
-        
-        // --- 2. BUAT FORMDATA ---
         const formData = new FormData();
         formData.append('review_id', currentChatReviewId);
         formData.append('pesan', pesan);
         if (adminSelectedFile) {
             formData.append('media', adminSelectedFile);
         }
-        // --- AKHIR FORMDATA ---
-
         try {
-            // --- 3. PANGGILAN FUNGSI BARU ---
-            // Kirim formData, bukan (currentChatReviewId, pesan)
             const result = await sendReviewMessage(formData);
-            
             if (result.success) {
                 chatMessageInput.value = '';
-                removePreviewBtnAdmin.click(); // <-- TAMBAHAN: Reset preview setelah kirim
-                
+                removePreviewBtnAdmin.click(); 
                 await loadChatConversation(currentChatReviewId);
                 scrollToBottomAdmin();
-
                 Toastify({
                     text: "Pesan berhasil dikirim!",
                     duration: 2000,
                     backgroundColor: "#10B981",
                 }).showToast();
             } else {
-                // Tampilkan pesan error dari server
                 Toastify({
                     text: result.message || "Gagal mengirim pesan",
                     duration: 3000,
@@ -524,8 +450,6 @@ if (sendChatMessageBtn && chatMessageInput) {
             sendChatMessageBtn.disabled = false;
         }
     });
-    
-    
     chatMessageInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -533,13 +457,10 @@ if (sendChatMessageBtn && chatMessageInput) {
         }
     });
 }
-
-
 const closeChatModalBtn = document.getElementById('closeChatModal');
 if (closeChatModalBtn) {
     closeChatModalBtn.addEventListener('click', closeChatModal);
 }
-
 const chatModal = document.getElementById('chatModal');
 if (chatModal) {
     chatModal.addEventListener('click', (e) => {
@@ -548,14 +469,11 @@ if (chatModal) {
         }
     });
 }
-
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && chatModal && !chatModal.classList.contains('hidden')) {
         closeChatModal();
     }
 });
-
-
 function getStatusLabel(status) {
     const labels = {
         'pending': '⏳ Pending',
@@ -564,7 +482,6 @@ function getStatusLabel(status) {
     };
     return labels[status] || status;
 }
-
 function getPriorityLabel(priority) {
     const labels = {
         'low': '🟢 Rendah',
@@ -574,7 +491,6 @@ function getPriorityLabel(priority) {
     };
     return labels[priority] || priority;
 }
-
 function getCategoryLabel(category) {
     const labels = {
         'service': '👥 Pelayanan',
@@ -586,8 +502,6 @@ function getCategoryLabel(category) {
     };
     return labels[category] || category;
 }
-
-
 const issueHandlingForm = document.getElementById('issueHandlingForm');
 if (issueHandlingForm) {
     issueHandlingForm.addEventListener('submit', async (e) => {
@@ -657,7 +571,6 @@ if (issueHandlingForm) {
         }
     });
 }
-
 function closeIssueHandlingModal() {
     const issueModal = document.getElementById('issueHandlingModal');
     issueModal.classList.add('hidden');
@@ -666,7 +579,6 @@ function closeIssueHandlingModal() {
     currentReviewId = null;
     isEditMode = false;
 }
-
 const closeIssueModalBtn = document.getElementById('closeIssueModal');
 const cancelIssueHandlingBtn = document.getElementById('cancelIssueHandling');
 if (closeIssueModalBtn) {
@@ -688,7 +600,6 @@ document.addEventListener('keydown', (e) => {
         closeIssueHandlingModal();
     }
 });
-
 const scrollToBottomAdmin = () => {
     const container = document.getElementById('chatScrollContainer'); 
     if (container) {
@@ -709,5 +620,4 @@ const init = async () => {
         backgroundColor: "#10B981",
     }).showToast();
 };
-
 init();

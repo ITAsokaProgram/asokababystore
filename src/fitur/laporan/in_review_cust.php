@@ -678,10 +678,17 @@ $token = $menuHandler->getToken();
                                 <p class="text-white/80 text-sm" id="chatCustomerName">-</p>
                             </div>
                         </div>
-                        <button type="button" id="closeChatModal"
-                            class="text-white/80 hover:text-white transition-colors duration-200">
-                            <i class="fas fa-times text-xl"></i>
-                        </button>
+                        <div class="flex items-center">
+                            <a id="sendWaButton" href="#" target="_blank"
+                                class="text-white/80 hover:text-white transition-colors duration-200 mr-4 hidden"
+                                title="Kirim via WhatsApp">
+                                <i class="fab fa-whatsapp text-xl"></i>
+                            </a>
+                            <button type="button" id="closeChatModal"
+                                class="text-white/80 hover:text-white transition-colors duration-200">
+                                <i class="fas fa-times text-xl"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
