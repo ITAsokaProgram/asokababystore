@@ -281,7 +281,7 @@ function getPriceRange($models) {
         cursor: not-allowed;
     }
     
-    .swal2-modal {
+.swal2-modal {
     width: 100%;
     max-width: 600px;
 }
@@ -684,7 +684,6 @@ function getPriceRange($models) {
 
                                 if ($barang_data) {
                                     if ($stok_ol_data) {
-                                        // Ada di s_barang DAN s_stok_ol -> Mode EDIT
                                         $btn_text = 'Edit Stok Online';
                                         $btn_class = 'btn-manage-ol-edit';
                                         $btn_icon = 'fa-pencil-alt';
@@ -696,7 +695,6 @@ function getPriceRange($models) {
                                                       'data-hrg_beli="' . htmlspecialchars($stok_ol_data['hrg_beli']) . '" ' .
                                                       'data-price="' . htmlspecialchars($stok_ol_data['price']) . '"';
                                     } else {
-                                        // Ada di s_barang TAPI TIDAK s_stok_ol -> Mode ADD
                                         $btn_text = 'Masukkan ke Stok Online';
                                         $btn_class = 'btn-manage-ol-add';
                                         $btn_icon = 'fa-plus';
@@ -709,7 +707,6 @@ function getPriceRange($models) {
                                                       'data-price="' . htmlspecialchars($barang_data['harga_jual']) . '"';
                                     }
                                 } else {
-                                    // Tidak ada di s_barang
                                     $btn_text = 'SKU tdk ada di s_barang';
                                     $btn_class = 'btn-manage-ol-disabled';
                                     $btn_icon = 'fa-times';
@@ -772,7 +769,6 @@ function getPriceRange($models) {
 
                                 if ($barang_data) {
                                     if ($stok_ol_data) {
-                                        // Mode EDIT
                                         $btn_text = 'Edit Stok Online';
                                         $btn_class = 'btn-manage-ol-edit';
                                         $btn_icon = 'fa-pencil-alt';
@@ -784,7 +780,6 @@ function getPriceRange($models) {
                                                       'data-hrg_beli="' . htmlspecialchars($stok_ol_data['hrg_beli']) . '" ' .
                                                       'data-price="' . htmlspecialchars($stok_ol_data['price']) . '"';
                                     } else {
-                                        // Mode ADD
                                         $btn_text = 'Masukkan ke Stok Online';
                                         $btn_class = 'btn-manage-ol-add';
                                         $btn_icon = 'fa-plus';
@@ -797,7 +792,6 @@ function getPriceRange($models) {
                                                       'data-price="' . htmlspecialchars($barang_data['harga_jual']) . '"';
                                     }
                                 } else {
-                                    // Tidak ada di s_barang
                                     $btn_text = 'SKU tdk ada di s_barang';
                                     $btn_class = 'btn-manage-ol-disabled';
                                     $btn_icon = 'fa-times';
@@ -911,7 +905,7 @@ function getPriceRange($models) {
       </div>
     </section>
   </main>
-
+  <script src="/src/js/middleware_auth.js"></script>
   <script src="../../js/shopee/produk_handler.js" type="module"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>

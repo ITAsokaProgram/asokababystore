@@ -9,4 +9,5 @@ if (!empty($_SERVER['HTTP_CF_CONNECTING_IP'])) {
     $ip = $_SERVER['REMOTE_ADDR'];
 }
 echo "IP kamu: " . $ip;
+
 ?>
