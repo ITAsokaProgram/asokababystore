@@ -102,18 +102,16 @@ export const getReviewConversation = async (reviewId) => {
         return { success: false, message: 'Gagal mengambil percakapan', error_detail: error.message };
     }
 }
-
-export const sendReviewMessage = async (reviewId, pesan) => {
+export const sendReviewMessage = async (formData) => { 
     try {
         const token = getCookie('admin_token');
         
         const response = await fetch('/src/api/customer/send_review_message.php', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({ review_id: reviewId, pesan })
+            body: formData 
         });
 
         const result = await response.json();

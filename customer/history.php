@@ -295,13 +295,26 @@ logVisitor($conn, $user->id, "History Transaksi");
                     Kasus ini telah diselesaikan. Percakapan ditutup.
                 </div>
 
+                <div id="imagePreviewContainerCust" class="hidden relative w-32 mb-3">
+                    <img id="imagePreviewCust" src="" alt="Preview" class="rounded-lg w-full object-cover">
+                    <button id="removeImagePreviewCust" type="button" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-md">
+                        <i class="fas fa-times text-sm"></i>
+                    </button>
+                </div>
+
                 <div id="chatInputContainerCust" class="flex items-start space-x-3">
+                    <button type="button" id="attachFileBtnCust"
+                        class="px-3 py-2 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300 transition-all shadow-sm flex items-center h-full mt-2">
+                        <i class="fas fa-paperclip"></i>
+                    </button>
+                    <input type="file" id="mediaInputCust" class="hidden" accept="image/*">
+
                     <div class="flex-1">
                         <textarea id="chatMessageInputCust" rows="2" placeholder="Ketik balasan Anda..."
                             class="block w-full rounded-lg border border-gray-300 px-4 py-3 shadow-sm text-sm resize-none"></textarea>
                     </div>
                     <button type="button" id="sendChatMessageBtnCust"
-                        class="px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg hover:opacity-90 transition-all shadow-sm flex items-center h-full">
+                        class="px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg hover:opacity-90 transition-all shadow-sm flex items-center h-full mt-2">
                         <i class="fas fa-paper-plane mr-2"></i> Kirim
                     </button>
                 </div>
@@ -318,17 +331,14 @@ logVisitor($conn, $user->id, "History Transaksi");
     </script>
 
     <script>
-        // Handle page refresh on back navigation
         window.addEventListener("pageshow", function(event) {
             if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
                 location.reload();
             }
         });
 
-        // Add smooth scrolling
         document.documentElement.style.scrollBehavior = 'smooth';
 
-        // Hide loading state when content loads
         document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => {
                 const loadingState = document.getElementById('transaksi-loader');
@@ -338,7 +348,6 @@ logVisitor($conn, $user->id, "History Transaksi");
             }, 1000);
         });
 
-        // Add card animations
         document.addEventListener('DOMContentLoaded', function() {
             const cards = document.querySelectorAll('.card-hover-effect');
             cards.forEach((card, index) => {
@@ -348,7 +357,6 @@ logVisitor($conn, $user->id, "History Transaksi");
         });
 
 
-        // Show/hide no transactions message
         function toggleNoTransactions(show) {
             const noTransactions = document.getElementById('no-transactions');
             const container = document.getElementById('transaksi-container');

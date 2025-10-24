@@ -19,16 +19,14 @@ export const getReviewConversation = async (reviewId) => {
 }
 
 
-export const sendReviewMessage = async (reviewId, pesan) => {
+export const sendReviewMessage = async (formData) => {
     try {
-        
         const response = await fetch('/src/api/review/send_customer_message.php', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({ review_id: reviewId, pesan })
+            body: formData // Kirim FormData
         });
         return await response.json();
     } catch (error) {

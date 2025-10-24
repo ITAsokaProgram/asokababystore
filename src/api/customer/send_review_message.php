@@ -1,6 +1,10 @@
 <?php
 require_once __DIR__ . ("/../../../aa_kon_sett.php");
 require_once __DIR__ . ("/../../auth/middleware_login.php");
+require_once __DIR__ . '/../../../vendor/autoload.php'; 
+
+use Cloudinary\Cloudinary;
+$env = parse_ini_file(__DIR__ . '/../../../.env');
 
 header('Content-Type: application/json');
 header("Access-Control-Allow-Methods: POST");
@@ -39,24 +43,66 @@ try {
     }
 
     $admin_id = $verif->id ?? $verif->kode ?? null;
-
-    $data = json_decode(file_get_contents('php://input'), true);
-    $review_id = $data['review_id'] ?? null;
-    $pesan = trim($data['pesan'] ?? '');
-
-    if (!$review_id || empty($pesan)) {
-        http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'Review ID dan pesan wajib diisi']);
+    if (!$admin_id) {
+         http_response_code(401);
+        echo json_encode(['success' => false, 'message' => 'ID Admin tidak ditemukan di token.']);
         exit;
     }
 
-    $sql = "INSERT INTO review_conversation (review_id, pengirim_type, pengirim_id, pesan) 
-            VALUES (?, 'admin', ?, ?)";
+    $review_id = $_POST['review_id'] ?? null;
+    $pesan = trim($_POST['pesan'] ?? '');
+    $media = $_FILES['media'] ?? null;
+
+    $tipe_pesan = 'text';
+    $media_url = null;
+
+    if (empty($pesan) && (empty($media) || $media['error'] !== UPLOAD_ERR_OK)) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Pesan atau gambar wajib diisi']);
+        exit;
+    }
+
+    if (!empty($media) && $media['error'] === UPLOAD_ERR_OK) {
+        $allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        $file_type = mime_content_type($media['tmp_name']);
+        
+        if (!in_array($file_type, $allowed_types)) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'Hanya file gambar (JPG, PNG, GIF, WEBP) yang diizinkan.']);
+            exit;
+        }
+
+        if ($media['size'] > 5 * 1024 * 1024) { // 5 MB
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'Ukuran gambar maksimal adalah 5MB.']);
+            exit;
+        }
+
+        $cloudinary = new Cloudinary([
+            'cloud' => [
+                'cloud_name' => $env['CLOUDINARY_NAME'],
+                'api_key'    => $env['CLOUDINARY_KEY'],
+                'api_secret' => $env['CLOUDINARY_SECRET'],
+            ],
+        ]);
+
+        $uploadResult = $cloudinary->uploadApi()->upload($media['tmp_name'], [
+            'folder' => 'review_chat',
+            'resource_type' => 'image' 
+        ]);
+        
+        $media_url = $uploadResult['secure_url'];
+        $tipe_pesan = 'image';
+    }
+
+    // Perhatikan: 'admin'
+    $sql = "INSERT INTO review_conversation (review_id, pengirim_type, pengirim_id, pesan, tipe_pesan, media_url) 
+            VALUES (?, 'admin', ?, ?, ?, ?)";
     
     $stmt = $conn->prepare($sql);
     if (!$stmt) throw new Exception("Prepare Gagal: " . $conn->error);
 
-    $stmt->bind_param("iss", $review_id, $admin_id, $pesan);
+    $stmt->bind_param("issss", $review_id, $admin_id, $pesan, $tipe_pesan, $media_url);
     
     if (!$stmt->execute()) throw new Exception("Execute Gagal: " . $stmt->error);
 
@@ -66,7 +112,9 @@ try {
         'message' => 'Pesan berhasil dikirim',
         'data' => [
             'review_id' => $review_id,
-            'pesan' => $pesan
+            'pesan' => $pesan,
+            'tipe_pesan' => $tipe_pesan,
+            'media_url' => $media_url
         ]
     ]);
 
@@ -76,3 +124,4 @@ try {
     if (isset($stmt)) $stmt->close();
     if (isset($conn)) $conn->close();
 }
+?>

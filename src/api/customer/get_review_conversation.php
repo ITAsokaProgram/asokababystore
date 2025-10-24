@@ -69,7 +69,7 @@ try {
     
     $sql = "SELECT 
                 rc.review_id, rc.pengirim_type, rc.pengirim_id,
-                rc.pesan, rc.dibuat_tgl, rc.sudah_dibaca,
+                rc.pesan, rc.dibuat_tgl, rc.sudah_dibaca, rc.tipe_pesan, rc.media_url, 
                 CASE 
                     WHEN rc.pengirim_type = 'admin' THEN a.nama
                     WHEN rc.pengirim_type = 'customer' THEN ua.nama_lengkap
@@ -96,8 +96,11 @@ try {
             'pengirim_id' => (int)$row['pengirim_id'],
             'nama_pengirim' => $row['nama_pengirim'],
             'pesan' => $row['pesan'],
+            'tipe_pesan' => $row['tipe_pesan'],
+            'media_url' => $row['media_url'],
             'dibuat_tgl' => $row['dibuat_tgl'],
-            'sudah_dibaca' => (bool)$row['sudah_dibaca']
+            'sudah_dibaca' => (bool)$row['sudah_dibaca'],
+            
         ];
     }
 

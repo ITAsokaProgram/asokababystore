@@ -48,7 +48,7 @@ export const resetPassword = async (payload) => {
         }
 
         if (payload.method === 'email') {
-            showToast('Link reset password telah dikirim ke email Anda.');
+            showToast('Link reset password terkirim. Jika tidak ada di kotak masuk, mohon periksa folder spam.');
         } else if (payload.method === 'hp') {
             showToast('Anda akan diarahkan ke WhatsApp. Silakan kirim pesan yang telah disiapkan.');
             setTimeout(() => {

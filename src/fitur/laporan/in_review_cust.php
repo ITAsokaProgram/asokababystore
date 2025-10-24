@@ -711,19 +711,32 @@ $token = $menuHandler->getToken();
                     </div>
                 </div>
 
-                <div class="p-4 border-t border-gray-200 bg-gray-50 rounded-b-2xl">
+               <div class="p-4 border-t border-gray-200 bg-gray-50 rounded-b-2xl">
                     <div id="chatResolvedMessage" class="hidden text-center text-sm text-gray-600 bg-yellow-100 p-3 rounded-lg mb-3">
                         <i class="fas fa-check-circle text-green-500 mr-2"></i>
-                        Kasus ini telah diselesaikan. Anda tidak dapat mengirim pesan lagi.
+                        Kasus ini telah diselesaikan. Percakapan ditutup.
+                    </div>
+
+                    <div id="imagePreviewContainerAdmin" class="hidden relative w-32 mb-3">
+                        <img id="imagePreviewAdmin" src="" alt="Preview" class="rounded-lg w-full object-cover">
+                        <button id="removeImagePreviewAdmin" type="button" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-md">
+                            <i class="fas fa-times text-sm"></i>
+                        </button>
                     </div>
 
                     <div id="chatInputContainer" class="flex items-start space-x-3">
+                        <button type="button" id="attachFileBtnAdmin"
+                            class="px-3 py-2 bg-gray-200 text-gray-600 rounded-lg hover:bg-gray-300 transition-all shadow-sm flex items-center h-full mt-2">
+                            <i class="fas fa-paperclip"></i>
+                        </button>
+                        <input type="file" id="mediaInputAdmin" class="hidden" accept="image/*">
+
                         <div class="flex-1">
-                            <textarea id="chatMessageInput" rows="2" placeholder="Ketik pesan untuk customer..."
-                                class="block w-full rounded-lg border border-gray-300 px-4 py-3 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm resize-none"></textarea>
+                            <textarea id="chatMessageInput" rows="2" placeholder="Ketik balasan Anda..."
+                                class="block w-full rounded-lg border border-gray-300 px-4 py-3 shadow-sm text-sm resize-none"></textarea>
                         </div>
                         <button type="button" id="sendChatMessageBtn"
-                            class="px-5 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 shadow-sm hover:shadow-md flex items-center h-full">
+                            class="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:opacity-90 transition-all shadow-sm flex items-center h-full mt-2">
                             <i class="fas fa-paper-plane mr-2"></i> Kirim
                         </button>
                     </div>

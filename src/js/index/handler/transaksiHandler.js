@@ -252,13 +252,13 @@ const generateStars = (count) => {
 
 let currentChatReviewId = null;
 
-
 const renderChatConversation = (messages) => {
     const container = document.getElementById('chatConversationMessagesCust');
     if (!messages || messages.length === 0) {
         container.innerHTML = `<div class="text-center text-gray-400 py-8"><i class="fas fa-comment-slash text-3xl mb-2"></i><p>Belum ada percakapan.</p></div>`;
         return;
     }
+    
 
     container.innerHTML = messages.map(msg => {
         const isCustomer = msg.pengirim_type === 'customer';
@@ -266,11 +266,29 @@ const renderChatConversation = (messages) => {
         const bgClass = isCustomer ? 'bg-pink-500 text-white' : 'bg-gray-200 text-gray-800';
         const time = new Date(msg.dibuat_tgl).toLocaleString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
-         return `
+        let bubbleContent = '';
+        let bubblePadding = '';
+
+        if (msg.tipe_pesan === 'image') {
+            bubblePadding = 'p-2'; 
+            bubbleContent = `
+                <a href="${msg.media_url}" target="_blank" rel="noopener noreferrer" class="cursor-pointer">
+                    <img src="${msg.media_url}" alt="Lampiran" class="rounded-lg mb-2 max-h-48 w-full object-cover">
+                </a>
+                ${msg.pesan ? `<p class="text-sm whitespace-pre-wrap break-words px-1">${msg.pesan}</p>` : ''}
+            `;
+        } else {
+            bubblePadding = 'px-4 py-2'; 
+            bubbleContent = `
+                <p class="text-sm whitespace-pre-wrap break-words">${msg.pesan}</p>
+            `;
+        }
+
+        return `
             <div class="flex ${alignClass} animate-fade-in-up">
                 <div class="max-w-xs md:max-w-md lg:max-w-lg mb-4">
-                    <div class="${bgClass} rounded-lg px-4 py-2 shadow-sm">
-                        <p class="text-sm whitespace-pre-wrap break-words">${msg.pesan}</p>
+                    <div class="${bgClass} ${bubblePadding} rounded-lg shadow-sm">
+                        ${bubbleContent}
                     </div>
                     <p class="text-xs text-gray-400 mt-1 ${isCustomer ? 'text-right' : 'text-left'}">
                         ${time}
@@ -279,9 +297,8 @@ const renderChatConversation = (messages) => {
             </div>
         `;
     }).join('');
-    scrollToBottomCust(); 
-
     
+    scrollToBottomCust();
 };
 
 
@@ -338,34 +355,93 @@ function closeChatModal() {
     currentChatReviewId = null;
 }
 
-
 document.addEventListener('DOMContentLoaded', () => {
     const chatModal = document.getElementById('chatModalCust');
     const closeBtn = document.getElementById('closeChatModalCust');
     const sendBtn = document.getElementById('sendChatMessageBtnCust');
     const input = document.getElementById('chatMessageInputCust');
 
+    // Elemen baru
+    const attachBtn = document.getElementById('attachFileBtnCust');
+    const mediaInput = document.getElementById('mediaInputCust');
+    const previewContainer = document.getElementById('imagePreviewContainerCust');
+    const previewImg = document.getElementById('imagePreviewCust');
+    const removePreviewBtn = document.getElementById('removeImagePreviewCust');
+
+    let selectedFile = null;
+
     if (closeBtn) closeBtn.addEventListener('click', closeChatModal);
     if (chatModal) chatModal.addEventListener('click', (e) => {
         if (e.target === chatModal) closeChatModal();
     });
 
+    // --- LOGIKA BARU UNTUK FILE ---
+    if (attachBtn) attachBtn.addEventListener('click', () => mediaInput.click());
+
+    if (mediaInput) mediaInput.addEventListener('change', () => {
+        const file = mediaInput.files[0];
+        if (file && file.type.startsWith('image/')) {
+            if (file.size > 5 * 1024 * 1024) { // 5MB
+                alert('Ukuran gambar maksimal adalah 5MB.');
+                mediaInput.value = ''; // Reset input
+                return;
+            }
+            selectedFile = file;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImg.src = e.target.result;
+                previewContainer.classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        } else if (file) {
+            alert('Hanya file gambar yang diizinkan.');
+            mediaInput.value = ''; // Reset input
+        }
+    });
+
+    if (removePreviewBtn) removePreviewBtn.addEventListener('click', () => {
+        selectedFile = null;
+        mediaInput.value = ''; // Reset input file
+        previewContainer.classList.add('hidden');
+        previewImg.src = '';
+    });
+    // --- AKHIR LOGIKA BARU ---
+
+    // Modifikasi fungsi sendMessage
     const sendMessage = async () => {
         const pesan = input.value.trim();
-        if (!pesan || !currentChatReviewId) return;
+        
+        // Cek jika pesan dan file kosong
+        if (!pesan && !selectedFile) {
+            alert('Silakan tulis pesan atau pilih gambar.');
+            return;
+        }
+        if (!currentChatReviewId) return;
 
         sendBtn.disabled = true;
         sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
+        // Buat FormData
+        const formData = new FormData();
+        formData.append('review_id', currentChatReviewId);
+        formData.append('pesan', pesan);
+        if (selectedFile) {
+            formData.append('media', selectedFile);
+        }
+
         try {
-            const result = await sendReviewMessage(currentChatReviewId, pesan);
+            // Kirim FormData
+            const result = await sendReviewMessage(formData); 
             if (result.success) {
                 input.value = '';
+                // Reset file preview
+                removePreviewBtn.click(); 
                 await loadChatConversation(currentChatReviewId);
             } else {
                 alert('Gagal mengirim pesan: ' + result.message);
             }
         } catch (error) {
+            console.error(error);
             alert('Terjadi kesalahan saat mengirim pesan.');
         } finally {
             sendBtn.disabled = false;

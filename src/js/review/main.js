@@ -292,7 +292,6 @@ window.viewHandlingDetail = async function(reviewId) {
 }
 
 let currentChatReviewId = null;
-
 const renderChatConversation = (messages) => {
     const container = document.getElementById('chatConversationMessages');
     
@@ -316,12 +315,34 @@ const renderChatConversation = (messages) => {
             hour: '2-digit', 
             minute: '2-digit' 
         });
+
+        // --- INI PERUBAHANNYA ---
+        let bubbleContent = '';
+        let bubblePadding = '';
+
+        if (msg.tipe_pesan === 'image') {
+            // Jika tipe pesan adalah 'image'
+            bubblePadding = 'p-2'; // Padding bubble untuk gambar
+            bubbleContent = `
+                <a href="${msg.media_url}" target="_blank" rel="noopener noreferrer" class="cursor-pointer">
+                    <img src="${msg.media_url}" alt="Lampiran" class="rounded-lg mb-2 max-h-48 w-full object-cover">
+                </a>
+                ${msg.pesan ? `<p class="text-sm whitespace-pre-wrap break-words px-1">${msg.pesan}</p>` : ''}
+            `;
+        } else {
+            // Jika tipe pesan adalah 'text' (default)
+            bubblePadding = 'px-4 py-2'; // Padding bubble untuk teks
+            bubbleContent = `
+                <p class="text-sm whitespace-pre-wrap break-words">${msg.pesan}</p>
+            `;
+        }
+        // --- AKHIR PERUBAHAN ---
         
         return `
             <div class="flex ${alignClass} animate-fade-in-up">
                 <div class="max-w-xs md:max-w-md lg:max-w-lg mb-4">
-                    <div class="${bgClass} rounded-lg px-4 py-2 shadow-sm">
-                        <p class="text-sm whitespace-pre-wrap break-words">${msg.pesan}</p>
+                    <div class="${bgClass} ${bubblePadding} rounded-lg shadow-sm">
+                        ${bubbleContent}
                     </div>
                     <p class="text-xs text-gray-400 mt-1 ${isAdmin ? 'text-right' : 'text-left'}">
                         ${time}
@@ -330,11 +351,8 @@ const renderChatConversation = (messages) => {
             </div>
         `;
     }).join('');
+    
     scrollToBottomAdmin();
-
-    
-    
-    
 };
 
 const loadChatConversation = async (reviewId) => {
@@ -390,6 +408,44 @@ function closeChatModal() {
     currentChatReviewId = null;
 }
 
+let adminSelectedFile = null;
+
+// --- TAMBAHKAN LISTENER BARU UNTUK ADMIN ---
+const attachBtnAdmin = document.getElementById('attachFileBtnAdmin');
+const mediaInputAdmin = document.getElementById('mediaInputAdmin');
+const previewContainerAdmin = document.getElementById('imagePreviewContainerAdmin');
+const previewImgAdmin = document.getElementById('imagePreviewAdmin');
+const removePreviewBtnAdmin = document.getElementById('removeImagePreviewAdmin');
+
+if (attachBtnAdmin) attachBtnAdmin.addEventListener('click', () => mediaInputAdmin.click());
+
+if (mediaInputAdmin) mediaInputAdmin.addEventListener('change', () => {
+    const file = mediaInputAdmin.files[0];
+    if (file && file.type.startsWith('image/')) {
+        if (file.size > 5 * 1024 * 1024) { // 5MB
+            alert('Ukuran gambar maksimal adalah 5MB.');
+            mediaInputAdmin.value = ''; // Reset input
+            return;
+        }
+        adminSelectedFile = file;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            previewImgAdmin.src = e.target.result;
+            previewContainerAdmin.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+    } else if (file) {
+        alert('Hanya file gambar yang diizinkan.');
+        mediaInputAdmin.value = ''; // Reset input
+    }
+});
+
+if (removePreviewBtnAdmin) removePreviewBtnAdmin.addEventListener('click', () => {
+    adminSelectedFile = null;
+    mediaInputAdmin.value = ''; // Reset input file
+    previewContainerAdmin.classList.add('hidden');
+    previewImgAdmin.src = '';
+});
 
 const sendChatMessageBtn = document.getElementById('sendChatMessageBtn');
 const chatMessageInput = document.getElementById('chatMessageInput');
@@ -397,15 +453,18 @@ const chatMessageInput = document.getElementById('chatMessageInput');
 if (sendChatMessageBtn && chatMessageInput) {
     sendChatMessageBtn.addEventListener('click', async () => {
         const pesan = chatMessageInput.value.trim();
-        
-        if (!pesan) {
+
+        // --- 1. VALIDASI BARU ---
+        // Cek jika pesan DAN file sama-sama kosong
+        if (!pesan && !adminSelectedFile) {
             Toastify({
-                text: "Pesan tidak boleh kosong!",
+                text: "Pesan atau gambar tidak boleh kosong!",
                 duration: 2000,
                 backgroundColor: "#EF4444",
             }).showToast();
-            return;
+            return; // Hentikan di sini
         }
+        // --- AKHIR VALIDASI BARU ---
         
         if (!currentChatReviewId) {
             Toastify({
@@ -420,11 +479,24 @@ if (sendChatMessageBtn && chatMessageInput) {
         sendChatMessageBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Mengirim...';
         sendChatMessageBtn.disabled = true;
         
+        // --- 2. BUAT FORMDATA ---
+        const formData = new FormData();
+        formData.append('review_id', currentChatReviewId);
+        formData.append('pesan', pesan);
+        if (adminSelectedFile) {
+            formData.append('media', adminSelectedFile);
+        }
+        // --- AKHIR FORMDATA ---
+
         try {
-            const result = await sendReviewMessage(currentChatReviewId, pesan);
+            // --- 3. PANGGILAN FUNGSI BARU ---
+            // Kirim formData, bukan (currentChatReviewId, pesan)
+            const result = await sendReviewMessage(formData);
             
             if (result.success) {
                 chatMessageInput.value = '';
+                removePreviewBtnAdmin.click(); // <-- TAMBAHAN: Reset preview setelah kirim
+                
                 await loadChatConversation(currentChatReviewId);
                 scrollToBottomAdmin();
 
@@ -432,6 +504,13 @@ if (sendChatMessageBtn && chatMessageInput) {
                     text: "Pesan berhasil dikirim!",
                     duration: 2000,
                     backgroundColor: "#10B981",
+                }).showToast();
+            } else {
+                // Tampilkan pesan error dari server
+                Toastify({
+                    text: result.message || "Gagal mengirim pesan",
+                    duration: 3000,
+                    backgroundColor: "#EF4444",
                 }).showToast();
             }
         } catch (error) {
