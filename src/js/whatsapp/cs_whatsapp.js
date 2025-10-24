@@ -205,10 +205,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const endChatButton = document.getElementById('end-chat-button');
     const manageLabelsButton = document.getElementById('manage-labels-button');
     const editDisplayNameButton = document.getElementById('edit-display-name-button');
+    const startChatButton = document.getElementById('start-chat-button'); 
 
     sendButton.addEventListener('click', sendMessage);
     editDisplayNameButton.addEventListener('click', handleEditDisplayName);
     manageLabelsButton.addEventListener('click', handleManageLabels);
+    endChatButton.addEventListener('click', endConversation);
+    startChatButton.addEventListener('click', startConversation);
+
 
     messageInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -217,7 +221,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    endChatButton.addEventListener('click', endConversation);
 
     messageInput.addEventListener('input', () => {
         messageInput.style.height = 'auto';

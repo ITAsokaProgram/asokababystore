@@ -414,20 +414,10 @@ if (!$menuHandler->initialize()) {
       filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05));
     }
     
-    #end-chat-button {
+    #end-chat-button, #start-chat-button {
       font-size: 0.875rem;
       padding: 0.5rem 1rem;
       transition: all 0.2s ease;
-      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
-    }
-    
-    #end-chat-button:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-    }
-
-    #end-chat-button:active {
-      transform: translateY(0);
     }
     
     #mobile-back-button {
@@ -619,7 +609,10 @@ if (!$menuHandler->initialize()) {
             <button id="mobile-fullscreen-toggle" class="block md:hidden text-white hover:bg-white hover:bg-opacity-20 transition-all p-2 rounded-lg" title="Layar Penuh">
               <i id="fullscreen-icon" class="fas fa-expand"></i>
             </button>
-
+            <button id="start-chat-button" class="hidden bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all flex items-center gap-1.5">
+              <i class="fas fa-play-circle"></i>
+              <span class="hidden sm:inline">Mulai Chat</span>
+            </button>
             <button id="end-chat-button" class="hidden bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all flex items-center gap-1.5">
               <i class="fas fa-times-circle"></i>
               <span class="hidden sm:inline">Akhiri</span>

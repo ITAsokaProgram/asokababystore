@@ -148,6 +148,9 @@ class WebhookHandler {
                 case 'BUKA_MENU_UTAMA':
                     $this->sendMainMenuAsList($nomorPengirim, $conversation['id']);
                     return;
+                case 'REQ_LIVE_CHAT': 
+                    $this->triggerLiveChat($nomorPengirim, $conversation);
+                    return;
                 
                 case 'CHAT_CS':
                     $this->triggerLiveChat($nomorPengirim, $conversation);

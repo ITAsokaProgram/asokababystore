@@ -124,23 +124,28 @@ function prependMessages(messages) {
     messageContainer.prepend(fragment);
 }
 function updateChatUI(status) {
-    const endChatButton = document.getElementById('end-chat-button');
-    const messageInputArea = document.getElementById('message-input-area');
-    const manageLabelsButton = document.getElementById('manage-labels-button');
+  const endChatButton = document.getElementById('end-chat-button');
+  const startChatButton = document.getElementById('start-chat-button'); 
+  const messageInputArea = document.getElementById('message-input-area');
+  const manageLabelsButton = document.getElementById('manage-labels-button');
 
-    if (status === 'live_chat') {
-        endChatButton.classList.remove('hidden');
-        messageInputArea.classList.remove('hidden');
+  if (status === 'live_chat') {
+    endChatButton.classList.remove('hidden');
+    startChatButton.classList.add('hidden'); 
+    messageInputArea.classList.remove('hidden');
+    manageLabelsButton.classList.remove('hidden');
+  } else {
+    endChatButton.classList.add('hidden');
+    
+    if (status) {
+        startChatButton.classList.remove('hidden'); 
         manageLabelsButton.classList.remove('hidden');
     } else {
-        endChatButton.classList.add('hidden');
-        messageInputArea.classList.add('hidden');
-        if (status) {
-            manageLabelsButton.classList.remove('hidden');
-        } else {
-            manageLabelsButton.classList.add('hidden');
-        }
+        startChatButton.classList.add('hidden'); 
+        manageLabelsButton.classList.add('hidden');
     }
+    messageInputArea.classList.add('hidden');
+  }
 }
 
 function clearActiveConversation() {

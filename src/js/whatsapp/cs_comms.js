@@ -687,3 +687,62 @@ async function updateConversationLabels(conversationId, labelIds) {
         Swal.fire('Error', error.message, 'error');
     }
 }
+async function startConversation() {
+  if (!currentConversationId) return;
+
+  const confirmation = await Swal.fire({
+      title: 'Mulai Live Chat?',
+      text: "Anda akan mengirim undangan untuk memulai live chat ke pelanggan ini. Lanjutkan?",
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#28a745', 
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Ya, Kirim Undangan!',
+      cancelButtonText: 'Batal'
+  });
+
+  if (confirmation.isConfirmed) {
+      const startButton = document.getElementById('start-chat-button');
+      if(startButton) {
+          startButton.disabled = true;
+          startButton.innerHTML = '<div class="loading-spinner"></div>';
+      }
+
+      try {
+          const response = await fetch('/src/api/whatsapp/send_live_chat_invitation.php', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${wa_token}`
+              },
+              body: JSON.stringify({ conversation_id: currentConversationId })
+          });
+          const result = await response.json();
+          if (!response.ok || !result.success) {
+              throw new Error(result.message || 'Gagal mengirim undangan.');
+          }
+          
+          Swal.fire({
+              toast: true,
+              position: 'top-end',
+              icon: 'success',
+              title: 'Undangan terkirim!',
+              text: 'Menunggu balasan pelanggan.',
+              showConfirmButton: false,
+              timer: 3000
+          });
+          
+          currentConvoPage = 1;
+          fetchAndRenderConversations();
+
+      } catch (error) {
+          console.error(error);
+          Swal.fire('Error', error.message, 'error');
+      } finally {
+            if(startButton) {
+                startButton.disabled = false;
+                startButton.innerHTML = '<i class="fas fa-play-circle"></i><span class="hidden sm:inline">Mulai Chat</span>';
+            }
+      }
+  }
+}
