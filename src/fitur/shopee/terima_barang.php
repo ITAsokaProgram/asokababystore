@@ -352,19 +352,21 @@ if ($shopeeService->isConnected()) {
     <section class="min-h-screen">
       <div class="max-w-7xl mx-auto">
         <!-- Header -->
+       
         <div class="header-card p-6 rounded-2xl mb-6">
           <div class="flex items-center justify-between flex-wrap gap-4">
             <div class="flex items-center gap-4">
-              <div class="bg-white/20 backdrop-blur-sm p-3 rounded-xl">
-                <img src="../../../public/images/logo/shopee.png" alt="Shopee" class="h-8 w-8">
+              <div class="icon-wrapper">
+                <img src="../../../public/images/logo/shopee.png" alt="Shopee Logo" class="h-10 w-10">
               </div>
               <div>
-                <h1 class="text-2xl font-bold mb-1">Terima Barang</h1>
-                <p class="text-white/80 text-sm">Kelola penerimaan barang dari supplier</p>
+                <h1 class="text-2xl font-bold text-gray-800 mb-1">Terima Barang</h1>
+                <p class="text-sm text-gray-600">Pusat</p>
               </div>
             </div>
+            
             <?php if ($shopeeService->isConnected()): ?>
-              <a href="?action=disconnect" class="btn-danger inline-flex items-center gap-2 py-2 px-5 rounded-lg transition shadow-lg hover:shadow-xl text-white">
+              <a href="?action=disconnect" class="inline-flex items-center gap-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold py-3 px-6 rounded-xl transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
                 <i class="fas fa-unlink"></i>
                 <span>Disconnect</span>
               </a>
