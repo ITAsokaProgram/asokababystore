@@ -9,6 +9,17 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
 $shopeeService = new ShopeeApiService();
 $redirect_uri = "https://" . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'];
 
+function build_sort_url($current_sort_by, $current_sort_dir, $new_sort_by) {
+    $params = $_GET;
+    $new_sort_dir = 'ASC';
+    if ($current_sort_by == $new_sort_by && $current_sort_dir == 'ASC') {
+        $new_sort_dir = 'DESC';
+    }
+    $params['sort_by'] = $new_sort_by;
+    $params['sort_dir'] = $new_sort_dir;
+    return '?' . http_build_query($params);
+}
+
 if (isset($_GET['code'])) {
     $code = $_GET['code'];
     $shop_id = $_GET['shop_id'] ?? null;
@@ -39,10 +50,10 @@ $menuHandler = new MenuHandler('shopee_dashboard');
 if (!$menuHandler->initialize()) {
     exit();
 }
+
 if ($shopeeService->isConnected()) {
     $vendors = [];
     $stok_items = [];
-    
     $filter_kd_store = '9998'; 
 
     $result_vendors = $conn->query("SELECT DISTINCT VENDOR FROM s_stok_ol WHERE KD_STORE = '9998' AND VENDOR IS NOT NULL AND VENDOR != '' ORDER BY VENDOR");
@@ -53,7 +64,37 @@ if ($shopeeService->isConnected()) {
     }
 
     $filter_vendor = $_GET['vendor'] ?? '';
+    $filter_plu = $_GET['plu'] ?? '';
+    $filter_sku = $_GET['sku'] ?? '';
+    $filter_descp = $_GET['descp'] ?? '';
 
+    // Ambil parameter sorting (BARU)
+    $allowed_sort_cols = ['plu', 'ITEM_N', 'DESCP', 'VENDOR', 'Qty', 'hrg_beli', 'price'];
+    $sort_by = $_GET['sort_by'] ?? 'DESCP';
+    $sort_dir = $_GET['sort_dir'] ?? 'ASC';
+
+    // Validasi sorting params
+    if (!in_array($sort_by, $allowed_sort_cols)) {
+        $sort_by = 'DESCP';
+    }
+    if (!in_array(strtoupper($sort_dir), ['ASC', 'DESC'])) {
+        $sort_dir = 'ASC';
+    }
+
+    $nama_supplier = '';
+    if (!empty($filter_vendor) && $filter_vendor !== 'ALL') {
+        $stmt_supp = $conn->prepare("SELECT nama_supp FROM supplier WHERE kode_supp = ?");
+        if ($stmt_supp) {
+            $stmt_supp->bind_param("s", $filter_vendor);
+            $stmt_supp->execute();
+            $result_supp = $stmt_supp->get_result();
+            if ($row_supp = $result_supp->fetch_assoc()) {
+                $nama_supplier = $row_supp['nama_supp'];
+            }
+            $stmt_supp->close();
+        }
+    }
+    
     if (!empty($filter_vendor)) {
         $params = [];
         $types = "";
@@ -64,17 +105,37 @@ if ($shopeeService->isConnected()) {
         $params[] = $filter_kd_store;
         $types .= "s";
 
-        if ($filter_vendor === 'ALL') {
-            $sql_stok .= " ORDER BY VENDOR, DESCP";
-        } else {
-            $sql_stok .= " AND VENDOR = ? ORDER BY DESCP";
+        if ($filter_vendor !== 'ALL') {
+            $sql_stok .= " AND VENDOR = ?";
             $params[] = $filter_vendor;
             $types .= "s";
         }
+
+        if (!empty($filter_plu)) {
+            $sql_stok .= " AND plu LIKE ?";
+            $params[] = "%" . $filter_plu . "%";
+            $types .= "s";
+        }
+
+        if (!empty($filter_sku)) {
+            $sql_stok .= " AND ITEM_N LIKE ?";
+            $params[] = "%" . $filter_sku . "%";
+            $types .= "s";
+        }
+
+        if (!empty($filter_descp)) {
+            $sql_stok .= " AND DESCP LIKE ?";
+            $params[] = "%" . $filter_descp . "%";
+            $types .= "s";
+        }
         
+        $sql_stok .= " ORDER BY $sort_by $sort_dir"; 
+
         $stmt = $conn->prepare($sql_stok);
         if ($stmt) {
-            $stmt->bind_param($types, ...$params);
+            if (count($params) > 0) {
+                $stmt->bind_param($types, ...$params);
+            }
             $stmt->execute();
             $result_stok = $stmt->get_result();
             if ($result_stok) {
@@ -109,7 +170,6 @@ if ($shopeeService->isConnected()) {
   <link rel="stylesheet" href="../../style/shopee/shopee.css">
   <link rel="icon" type="image/png" href="../../../public/images/logo1.png">
   <style>
-    /* Style untuk tabel scrollable */
     .table-container {
       width: 100%;
       overflow-x: auto;
@@ -120,16 +180,24 @@ if ($shopeeService->isConnected()) {
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
     .min-w-table {
-      min-width: 1500px; /* Atur agar tabel lebih lebar dari kontainer */
+      min-width: 1500px;
     }
     .sticky-header th {
       position: sticky;
       top: 0;
-      background-color: #f8fafc; /* bg-gray-50 */
+      background-color: #f8fafc;
       z-index: 10;
     }
     .data-input {
       width: 90px;
+    }
+    .sticky-header th a {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .sticky-header th a:hover {
+        color: #2563eb; 
     }
   </style>
 </head>
@@ -161,13 +229,14 @@ if ($shopeeService->isConnected()) {
             <?php endif; ?>
           </div>
         </div>
+
         <?php if ($shopeeService->isConnected()): ?>
           
           <div class="bg-white p-6 rounded-2xl shadow-lg mb-6">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">Filter Data Stok</h2>
-            <form method="GET" action="terima_barang_cabang.php" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Filter Data Stok (Store: 9998)</h2>
+            <form method="GET" action="terima_barang_cabang.php" class="grid grid-cols-1 md:grid-cols-4 gap-4">
               
-              <div class="md:col-span-2">
+              <div>
                 <label for="vendor" class="block text-sm font-medium text-gray-700 mb-1">Vendor (Supplier)</label>
                 <select id="vendor" name="vendor" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required>
                   <option value="">Pilih Vendor</option>
@@ -179,7 +248,23 @@ if ($shopeeService->isConnected()) {
                   <?php endforeach; ?>
                 </select>
               </div>
-              <div class="md:col-span-1 flex items-end justify-end">
+
+              <div>
+                <label for="filter_plu" class="block text-sm font-medium text-gray-700 mb-1">PLU</label>
+                <input type="text" id="filter_plu" name="plu" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value="<?php echo htmlspecialchars($filter_plu); ?>" placeholder="Cari PLU...">
+              </div>
+
+              <div>
+                <label for="filter_sku" class="block text-sm font-medium text-gray-700 mb-1">SKU (ITEM_N)</label>
+                <input type="text" id="filter_sku" name="sku" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value="<?php echo htmlspecialchars($filter_sku); ?>" placeholder="Cari SKU...">
+              </div>
+
+              <div>
+                <label for="filter_descp" class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
+                <input type="text" id="filter_descp" name="descp" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value="<?php echo htmlspecialchars($filter_descp); ?>" placeholder="Cari Deskripsi...">
+              </div>
+
+              <div class="md:col-span-4 flex">
                 <button type="submit" class="inline-flex items-center gap-2 w-full md:w-auto bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
                   <i class="fas fa-search"></i>
                   <span>Muat Data Stok</span>
@@ -188,8 +273,10 @@ if ($shopeeService->isConnected()) {
             </form>
           </div>
 
+
           <?php if (!empty($stok_items)): ?>
             <form id="bulk-receive-form" class="bg-white p-6 rounded-2xl shadow-lg">
+              
               <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
                 <div>
                   <label for="no_lpb" class="block text-sm font-medium text-gray-700 mb-1">No. LPB (Laporan Penerimaan Barang)</label>
@@ -205,17 +292,43 @@ if ($shopeeService->isConnected()) {
 
               <div class="table-container">
                 <table id="stock-table" class="min-w-table w-full text-sm text-left text-gray-600">
+                  
                   <thead class="text-xs text-gray-700 uppercase bg-gray-50 sticky-header">
                     <tr>
-                      <th scope="col" class="py-3 px-4">PLU</th>
-                      <th scope="col" class="py-3 px-4">SKU (ITEM_N)</th>
-                      <th scope="col" class="py-3 px-4" style="min-width: 250px;">Deskripsi</th>
+                      <?php 
+                      $sort_icon = function($col_name) use ($sort_by, $sort_dir) {
+                          if ($sort_by == $col_name) {
+                              echo ($sort_dir == 'ASC') ? ' <i class="fas fa-sort-up"></i>' : ' <i class="fas fa-sort-down"></i>';
+                          } else {
+                              echo ' <i class="fas fa-sort text-gray-300"></i>';
+                          }
+                      };
+                      ?>
+                      <th scope="col" class="py-3 px-4">
+                        <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'plu'); ?>">PLU<?php $sort_icon('plu'); ?></a>
+                      </th>
+                      <th scope="col" class="py-3 px-4">
+                        <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'ITEM_N'); ?>">SKU (ITEM_N)<?php $sort_icon('ITEM_N'); ?></a>
+                      </th>
+                      <th scope="col" class="py-3 px-4" style="min-width: 250px;">
+                        <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'DESCP'); ?>">Deskripsi<?php $sort_icon('DESCP'); ?></a>
+                      </th>
+                      
                       <?php if ($filter_vendor === 'ALL'): ?>
-                        <th scope="col" class="py-3 px-4 bg-gray-100">Vendor</th>
+                        <th scope="col" class="py-3 px-4 bg-gray-100">
+                          <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'VENDOR'); ?>">Vendor<?php $sort_icon('VENDOR'); ?></a>
+                        </th>
                       <?php endif; ?>
-                      <th scope="col" class="py-3 px-4">Stok Saat Ini</th>
-                      <th scope="col" class="py-3 px-4">Hrg. Beli</th>
-                      <th scope="col" class="py-3 px-4">Hrg. Jual</th>
+                      
+                      <th scope="col" class="py-3 px-4">
+                        <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'Qty'); ?>">Stok Saat Ini<?php $sort_icon('Qty'); ?></a>
+                      </th>
+                      <th scope="col" class="py-3 px-4">
+                        <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'hrg_beli'); ?>">Hrg. Beli<?php $sort_icon('hrg_beli'); ?></a>
+                      </th>
+                      <th scope="col" class="py-3 px-4">
+                        <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'price'); ?>">Hrg. Jual<?php $sort_icon('price'); ?></a>
+                      </th>
                       <th scope="col" class="py-3 px-4 bg-blue-50">Qty Terima</th>
                       <th scope="col" class="py-3 px-4 bg-yellow-50">Admin</th>
                       <th scope="col" class="py-3 px-4 bg-yellow-50">Ongkir</th>
@@ -223,6 +336,7 @@ if ($shopeeService->isConnected()) {
                       <th scope="col" class="py-3 px-4 bg-yellow-50">Biaya Pesan</th>
                     </tr>
                   </thead>
+
                   <tbody class="bg-white">
                     <?php foreach ($stok_items as $item): ?>
                       <tr class="border-b hover:bg-gray-50"
@@ -266,6 +380,7 @@ if ($shopeeService->isConnected()) {
               </div>
 
             </form>
+          
           <?php elseif (!empty($filter_vendor)): ?>
             <div class="bg-white p-6 rounded-2xl shadow-lg text-center">
               <p class="text-gray-600">Tidak ada data stok ditemukan untuk Store <strong><?php echo htmlspecialchars($filter_kd_store); ?></strong> dan Vendor <strong><?php echo htmlspecialchars($filter_vendor); ?></strong>.</p>
@@ -298,6 +413,7 @@ if ($shopeeService->isConnected()) {
       </div>
     </section>
   </main>
+  
   <script src="/src/js/middleware_auth.js"></script>
   <script src="../../js/shopee/terima_barang_cabang_handler.js" type="module"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
