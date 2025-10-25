@@ -150,8 +150,6 @@ if ($shopeeService->isConnected()) {
     * {
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     }
-    /* Definisi gradient body dihapus */
-    /* Definisi gradient .header-card dihapus */
     .filter-card {
         background: white;
         border-radius: 16px;
@@ -174,10 +172,6 @@ if ($shopeeService->isConnected()) {
         border-color: #667eea;
         box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
     }
-    /* Definisi gradient .btn-primary dihapus */
-    /* Definisi gradient .btn-primary:hover dihapus */
-    /* Definisi gradient .btn-success dihapus */
-    /* Definisi gradient .btn-danger dihapus */
     .btn-secondary {
         background: #f1f5f9;
         color: #475569;
@@ -199,7 +193,6 @@ if ($shopeeService->isConnected()) {
         border-collapse: separate;
         border-spacing: 0;
     }
-    /* Definisi gradient .table-modern thead dihapus */
     .table-modern thead th {
         padding: 16px 12px;
         font-weight: 600;
@@ -211,8 +204,6 @@ if ($shopeeService->isConnected()) {
         z-index: 10;
     }
     .table-modern thead th a {
-        /* Asumsi .shopee.css akan memberi warna text */
-        /* color: white; */ 
         text-decoration: none;
         display: flex;
         align-items: center;
@@ -319,7 +310,6 @@ if ($shopeeService->isConnected()) {
     }
      .btn-primary:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 25px rgba(102, 126, 234, 0.4);
     }
     .btn-success {
       background: linear-gradient(135deg, #10b981 0%, #059669 100%);
@@ -331,6 +321,7 @@ if ($shopeeService->isConnected()) {
     }
     .btn-danger {
       background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color:white;
     }
     .btn-secondary {
       background: #f1f5f9;
@@ -374,177 +365,307 @@ if ($shopeeService->isConnected()) {
           </div>
         </div>
         <?php if ($shopeeService->isConnected()): ?>
-          <!-- Filter Section -->
+          <!-- Filter Section dengan Hasil Pencarian yang Expandable -->
           <div class="filter-card p-6 mb-6">
-            <div class="flex items-center justify-between mb-5">
-              <h2 class="text-lg font-bold text-gray-800">
-                <i class="fas fa-filter text-purple-600 mr-2"></i>
-                Filter Data Stok
-              </h2>
+            <div class="flex items-center justify-between">
+              <button type="button" id="toggle-filter-section" class="flex items-center gap-3 text-lg font-bold text-gray-800 hover:text-purple-600 transition-colors">
+                <i class="fas fa-chevron-down text-purple-600 transition-transform duration-300" id="filter-chevron"></i>
+                <i class="fas fa-filter text-purple-600"></i>
+                <span class="text-lg font-bold text-gray-800">Produk yang tersedia di pusat</span>
+                <?php if (!empty($stok_items)): ?>
+                  <span class="badge badge-info text-xs ml-2"><?php echo count($stok_items); ?> item</span>
+                <?php endif; ?>
+              </button>
               <a href="history_terima_barang.php" class="btn-secondary inline-flex items-center gap-2 text-sm">
                 <i class="fas fa-history"></i>
                 <span>Lihat History</span>
               </a>
             </div>
-            <form method="GET" action="terima_barang.php" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                  <i class="fas fa-store text-purple-600 mr-1"></i>
-                  Vendor (Supplier)
-                </label>
-                <select name="vendor" class="input-modern w-full" required>
-                  <option value="">Pilih Vendor</option>
-                  <option value="ALL" <?php echo ($filter_vendor == 'ALL') ? 'selected' : ''; ?>>Semua Vendor</option>
-                  <?php foreach ($vendors as $vendor): ?>
-                    <option value="<?php echo htmlspecialchars($vendor); ?>" <?php echo ($filter_vendor == $vendor) ? 'selected' : ''; ?>>
-                      <?php echo htmlspecialchars($vendor); ?>
-                    </option>
-                  <?php endforeach; ?>
-                </select>
-              </div>
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                  <i class="fas fa-barcode text-purple-600 mr-1"></i>
-                  PLU
-                </label>
-                <input type="text" name="plu" class="input-modern w-full" value="<?php echo htmlspecialchars($filter_plu); ?>" placeholder="Cari PLU...">
-              </div>
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                  <i class="fas fa-tag text-purple-600 mr-1"></i>
-                  SKU (ITEM_N)
-                </label>
-                <input type="text" name="sku" class="input-modern w-full" value="<?php echo htmlspecialchars($filter_sku); ?>" placeholder="Cari SKU...">
-              </div>
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                  <i class="fas fa-align-left text-purple-600 mr-1"></i>
-                  Deskripsi
-                </label>
-                <input type="text" name="descp" class="input-modern w-full" value="<?php echo htmlspecialchars($filter_descp); ?>" placeholder="Cari Deskripsi...">
-              </div>
-              <div class="lg:col-span-4">
-                <button type="submit" class="btn-primary inline-flex items-center gap-2 w-full md:w-auto">
-                  <i class="fas fa-search"></i>
-                  <span>Muat Data Stok</span>
-                </button>
-              </div>
-            </form>
-          </div>
-          <!-- Table Section -->
-          <?php if (!empty($stok_items)): ?>
-            <form id="bulk-receive-form" class="filter-card p-6">
-              <div class="flex flex-wrap items-end gap-4 mb-6 pb-5 border-b border-gray-200">
-                <div class="flex-1 min-w-[250px]">
+
+            <!-- Collapsible Content -->
+            <div id="filter-content" class="space-y-6">
+              <!-- Form Filter -->
+              <form method="GET" action="terima_barang.php" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+                <div>
                   <label class="block text-sm font-semibold text-gray-700 mb-2">
-                    <i class="fas fa-file-invoice text-purple-600 mr-1"></i>
-                    No. LPB
+                    <i class="fas fa-store text-purple-600 mr-1"></i>
+                    Vendor (Supplier)
                   </label>
-                  <input type="text" id="no_lpb" name="no_lpb" class="input-modern w-full" placeholder="Masukkan No. LPB" required>
-                  <input type="hidden" id="form_kd_store" name="kd_store" value="<?php echo htmlspecialchars($filter_kd_store); ?>">
-                </div>
-                <button type="submit" class="btn-success inline-flex items-center gap-2 whitespace-nowrap">
-                  <i class="fas fa-save"></i>
-                  <span>Simpan Penerimaan</span>
-                </button>
-              </div>
-              <div class="table-container scroll-container">
-                <table class="table-modern" id="stock-table" style="min-width: 1500px;">
-                  <thead>
-                    <tr>
-                      <?php 
-                      $sort_icon = function($col_name) use ($sort_by, $sort_dir) {
-                          if ($sort_by == $col_name) {
-                              echo ($sort_dir == 'ASC') ? ' <i class="fas fa-sort-up"></i>' : ' <i class="fas fa-sort-down"></i>';
-                          } else {
-                              echo ' <i class="fas fa-sort" style="opacity: 0.3"></i>';
-                          }
-                      };
-                      ?>
-                      <th>
-                        <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'plu'); ?>">PLU<?php $sort_icon('plu'); ?></a>
-                      </th>
-                      <th>
-                        <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'ITEM_N'); ?>">SKU<?php $sort_icon('ITEM_N'); ?></a>
-                      </th>
-                      <th style="min-width: 250px;">
-                        <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'DESCP'); ?>">Deskripsi<?php $sort_icon('DESCP'); ?></a>
-                      </th>
-                      <?php if ($filter_vendor === 'ALL'): ?>
-                        <th>
-                          <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'VENDOR'); ?>">Vendor<?php $sort_icon('VENDOR'); ?></a>
-                        </th>
-                      <?php endif; ?>
-                      <th>
-                        <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'Qty'); ?>">Stok Saat Ini<?php $sort_icon('Qty'); ?></a>
-                      </th>
-                      <th>
-                        <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'hrg_beli'); ?>">Hrg. Beli<?php $sort_icon('hrg_beli'); ?></a>
-                      </th>
-                      <th>
-                        <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'price'); ?>">Hrg. Jual<?php $sort_icon('price'); ?></a>
-                      </th>
-                      <th>Qty Terima</th>
-                      <th>Admin</th>
-                      <th>Ongkir</th>
-                      <th>Promo</th>
-                      <th>Biaya Pesan</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <?php foreach ($stok_items as $item): ?>
-                      <tr data-plu="<?php echo htmlspecialchars($item['plu']); ?>"
-                          data-descp="<?php echo htmlspecialchars($item['DESCP']); ?>"
-                          data-avg-cost="<?php echo htmlspecialchars($item['avg_cost']); ?>"
-                          data-hrg-beli="<?php echo htmlspecialchars($item['hrg_beli']); ?>"
-                          data-ppn="<?php echo htmlspecialchars($item['ppn']); ?>"
-                          data-netto="<?php echo htmlspecialchars($item['netto']); ?>"
-                          data-price="<?php echo htmlspecialchars($item['price']); ?>"
-                          data-vendor="<?php echo htmlspecialchars($item['VENDOR']); ?>">
-                        <td class="font-semibold text-gray-900"><?php echo htmlspecialchars($item['plu']); ?></td>
-                        <td><?php echo htmlspecialchars($item['ITEM_N']); ?></td>
-                        <td>
-                          <span class="link-history open-history-modal"
-                                data-plu="<?php echo htmlspecialchars($item['plu']); ?>"
-                                data-descp="<?php echo htmlspecialchars($item['DESCP']); ?>">
-                              <?php echo htmlspecialchars($item['DESCP']); ?>
-                          </span>
-                        </td>
-                        <?php if ($filter_vendor === 'ALL'): ?>
-                          <td><span class="badge badge-info"><?php echo htmlspecialchars($item['VENDOR']); ?></span></td>
-                        <?php endif; ?>
-                        <td><?php echo htmlspecialchars($item['Qty']); ?></td>
-                        <td>Rp <?php echo number_format($item['hrg_beli'], 0, ',', '.'); ?></td>
-                        <td>Rp <?php echo number_format($item['price'], 0, ',', '.'); ?></td>
-                        <td>
-                          <input type="number" name="qty_rec" class="input-qty" value="0" min="0">
-                        </td>
-                        <td>
-                          <input type="number" name="admin_s" class="input-qty" value="0" min="0" step="0.01">
-                        </td>
-                        <td>
-                          <input type="number" name="ongkir" class="input-qty" value="0" min="0" step="0.01">
-                        </td>
-                        <td>
-                          <input type="number" name="promo" class="input-qty" value="0" min="0" step="0.01">
-                        </td>
-                        <td>
-                          <input type="number" name="biaya_psn" class="input-qty" value="0" min="0" step="0.01">
-                        </td>
-                      </tr>
+                  <select name="vendor" class="input-modern w-full" required>
+                    <option value="">Pilih Vendor</option>
+                    <option value="ALL" <?php echo ($filter_vendor == 'ALL') ? 'selected' : ''; ?>>Semua Vendor</option>
+                    <?php foreach ($vendors as $vendor): ?>
+                      <option value="<?php echo htmlspecialchars($vendor); ?>" <?php echo ($filter_vendor == $vendor) ? 'selected' : ''; ?>>
+                        <?php echo htmlspecialchars($vendor); ?>
+                      </option>
                     <?php endforeach; ?>
-                  </tbody>
-                </table>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-barcode text-purple-600 mr-1"></i>
+                    PLU
+                  </label>
+                  <input type="text" name="plu" class="input-modern w-full" value="<?php echo htmlspecialchars($filter_plu); ?>" placeholder="Cari PLU...">
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-tag text-purple-600 mr-1"></i>
+                    SKU
+                  </label>
+                  <input type="text" name="sku" class="input-modern w-full" value="<?php echo htmlspecialchars($filter_sku); ?>" placeholder="Cari SKU...">
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-align-left text-purple-600 mr-1"></i>
+                    Deskripsi
+                  </label>
+                  <input type="text" name="descp" class="input-modern w-full" value="<?php echo htmlspecialchars($filter_descp); ?>" placeholder="Cari Deskripsi...">
+                </div>
+                <div class="lg:col-span-4">
+                  <button type="submit" class="btn-primary inline-flex items-center gap-2 w-full md:w-auto">
+                    <i class="fas fa-search"></i>
+                    <span>Muat Data Stok</span>
+                  </button>
+                </div>
+              </form>
+
+              <?php if (!empty($stok_items)): ?>
+              <!-- Divider -->
+              <div class="border-t border-gray-200 pt-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">
+                  <i class="fas fa-search text-purple-600 mr-2"></i>
+                  Hasil Pencarian Stok (<?php echo count($stok_items); ?> item ditemukan)
+                </h3>
+                <div class="table-container scroll-container">
+                  <table class="table-modern" id="stock-table" style="min-width: 1500px;">
+                    <thead>
+                      <tr>
+                        <?php 
+                        $sort_icon = function($col_name) use ($sort_by, $sort_dir) {
+                            if ($sort_by == $col_name) {
+                                echo ($sort_dir == 'ASC') ? ' <i class="fas fa-sort-up"></i>' : ' <i class="fas fa-sort-down"></i>';
+                            } else {
+                                echo ' <i class="fas fa-sort" style="opacity: 0.3"></i>';
+                            }
+                        };
+                        ?>
+                        <th>
+                          <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'plu'); ?>">PLU<?php $sort_icon('plu'); ?></a>
+                        </th>
+                        <th>
+                          <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'ITEM_N'); ?>">SKU<?php $sort_icon('ITEM_N'); ?></a>
+                        </th>
+                        <th style="min-width: 250px;">
+                          <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'DESCP'); ?>">Deskripsi<?php $sort_icon('DESCP'); ?></a>
+                        </th>
+                        <?php if ($filter_vendor === 'ALL'): ?>
+                          <th>
+                            <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'VENDOR'); ?>">Vendor<?php $sort_icon('VENDOR'); ?></a>
+                          </th>
+                        <?php endif; ?>
+                        <th>
+                          <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'Qty'); ?>">Stok Saat Ini<?php $sort_icon('Qty'); ?></a>
+                        </th>
+                        <th>
+                          <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'hrg_beli'); ?>">Hrg. Beli<?php $sort_icon('hrg_beli'); ?></a>
+                        </th>
+                        <th>
+                          <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'price'); ?>">Hrg. Jual<?php $sort_icon('price'); ?></a>
+                        </th>
+                        <th>Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <?php foreach ($stok_items as $item): ?>
+                        <tr data-plu="<?php echo htmlspecialchars($item['plu']); ?>"
+                            data-descp="<?php echo htmlspecialchars($item['DESCP']); ?>"
+                            data-avg-cost="<?php echo htmlspecialchars($item['avg_cost']); ?>"
+                            data-hrg-beli="<?php echo htmlspecialchars($item['hrg_beli']); ?>"
+                            data-ppn="<?php echo htmlspecialchars($item['ppn']); ?>"
+                            data-netto="<?php echo htmlspecialchars($item['netto']); ?>"
+                            data-price="<?php echo htmlspecialchars($item['price']); ?>"
+                            data-vendor="<?php echo htmlspecialchars($item['VENDOR']); ?>"
+                            data-item-n="<?php echo htmlspecialchars($item['ITEM_N']); ?>">
+                          <td class="font-semibold text-gray-900"><?php echo htmlspecialchars($item['plu']); ?></td>
+                          <td><?php echo htmlspecialchars($item['ITEM_N']); ?></td>
+                          <td>
+                            <span class="link-history open-history-modal"
+                                  data-plu="<?php echo htmlspecialchars($item['plu']); ?>"
+                                  data-descp="<?php echo htmlspecialchars($item['DESCP']); ?>">
+                              <?php echo htmlspecialchars($item['DESCP']); ?>
+                            </span>
+                          </td>
+                          <?php if ($filter_vendor === 'ALL'): ?>
+                            <td><span class="badge badge-info"><?php echo htmlspecialchars($item['VENDOR']); ?></span></td>
+                          <?php endif; ?>
+                          <td><?php echo htmlspecialchars($item['Qty']); ?></td>
+                          <td>Rp <?php echo number_format($item['hrg_beli'], 0, ',', '.'); ?></td>
+                          <td>Rp <?php echo number_format($item['price'], 0, ',', '.'); ?></td>
+                          <td>
+                            <button type="button" class="btn-secondary btn-add-to-temp text-xs py-2 px-3 inline-flex items-center gap-1">
+                              <i class="fas fa-plus"></i> Tambah
+                            </button>
+                          </td>
+                        </tr>
+                      <?php endforeach; ?>
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </form>
-          <?php elseif (!empty($filter_vendor)): ?>
-            <div class="filter-card p-8 text-center">
-              <i class="fas fa-inbox text-gray-300 text-5xl mb-4"></i>
-              <p class="text-gray-600">Tidak ada data stok ditemukan</p>
+              <?php elseif (!empty($filter_vendor)): ?>
+              <div class="border-t border-gray-200 pt-6">
+                <div class="text-center p-8">
+                  <i class="fas fa-inbox text-gray-300 text-5xl mb-4"></i>
+                  <p class="text-gray-600">Tidak ada data stok ditemukan untuk filter ini.</p>
+                </div>
+              </div>
+              <?php endif; ?>
             </div>
-          <?php endif; ?>
+          </div>
+
+          <style>
+            #filter-content {
+              max-height: 2000px;
+              overflow: hidden;
+              opacity: 1;
+            }
+            #filter-content.no-transition {
+              transition: none;
+            }
+            #filter-content.with-transition {
+              transition: max-height 0.4s ease-in-out, opacity 0.3s ease-in-out;
+            }
+            #filter-content.collapsed {
+              max-height: 0;
+              opacity: 0;
+            }
+            #filter-chevron {
+              transition: transform 0.3s ease-in-out;
+            }
+            #filter-chevron.rotated {
+              transform: rotate(-90deg);
+            }
+          </style>
+
+          <script>
+            document.addEventListener('DOMContentLoaded', () => {
+              const toggleButton = document.getElementById('toggle-filter-section');
+              const filterContent = document.getElementById('filter-content');
+              const chevron = document.getElementById('filter-chevron');
+
+              const isCollapsed = localStorage.getItem('filterSectionCollapsed') !== 'false';
+              if (isCollapsed) {
+                filterContent.classList.add('collapsed');
+                chevron.classList.add('rotated');
+              }
+
+              setTimeout(() => {
+                filterContent.classList.add('with-transition');
+              }, 50);
+
+              toggleButton.addEventListener('click', () => {
+                filterContent.classList.toggle('collapsed');
+                chevron.classList.toggle('rotated');
+                const collapsed = filterContent.classList.contains('collapsed');
+                localStorage.setItem('filterSectionCollapsed', collapsed);
+              });
+            });
+          </script>
+        <div class="filter-card p-6 space-y-8">
+          <h3 class="text-lg font-bold">
+            <i class="fas fa-shopping-cart text-purple-600 mr-2"></i>
+            Keranjang Temporary
+          </h3>
+          <form id="save-temp-form">
+            <div id="quick-add-container" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 pb-5">
+                <div>
+                    <label for="quick-add-vendor" class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-store text-purple-600 mr-1"></i>
+                        Pilih Vendor
+                    </label>
+                    <select id="quick-add-vendor" class="input-modern w-full">
+                        <option value="">Pilih Vendor...</option>
+                        <?php foreach ($vendors as $vendor_code): ?>
+                            <option value="<?php echo htmlspecialchars($vendor_code); ?>">
+                                <?php echo htmlspecialchars($vendor_code); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div>
+                    <label for="quick-add-plu" class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-search-plus text-purple-600 mr-1"></i>
+                        Masukkan PLU
+                    </label>
+                    <input type="text" id="quick-add-plu" class="input-modern w-full" placeholder="Ketik PLU, lalu Enter...">
+                </div>
+                <div>
+                      <label for="quick-add-plu" class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-add text-purple-600 mr-1"></i>
+                        Tambah Ke Temp
+                    </label>
+                    <button type="button" id="quick-add-button" class="btn-primary inline-flex items-center gap-2 w-full">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="flex flex-wrap items-end gap-4 mb-6 pb-5 border-b border-gray-200">
+              <div class="flex-1 min-w-[250px]">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  <i class="fas fa-file-invoice text-purple-600 mr-1"></i>
+                  No. LPB (Wajib)
+                </label>
+                <input type="text" id="no_lpb" name="no_lpb" class="input-modern w-full" placeholder="Masukkan No. LPB" required>
+                </div>
+              <button type="submit" class="btn-success inline-flex items-center gap-2 whitespace-nowrap">
+                <i class="fas fa-save"></i>
+                <span>Simpan Penerimaan</span>
+              </button>
+            </div>
+          </form>
+
+          <div class="flex flex-wrap items-center gap-4 mb-4">
+            <button type="button" id="delete-selected-temp" class="btn-danger inline-flex items-center gap-2 text-sm py-2 px-4 rounded-lg">
+              <i class="fas fa-trash-alt"></i> Hapus Pilihan
+            </button>
+            <button type="button" id="delete-all-temp" class="btn-danger inline-flex items-center gap-2 text-sm py-2 px-4 rounded-lg">
+              <i class="fas fa-times-circle"></i> Hapus Semua
+            </button>
+          </div>
+
+          <style>
+            .input-qty { width: 100px; }
+            .input-disabled { background-color: #f4f4f5; color: #71717a; border-color: #e4e4e7; }
+            .input-cb-temp { width: 1.2rem; height: 1.2rem; }
+          </style>
+
+          <div class="table-container scroll-container">
+            <table class="table-modern" id="temp-receipt-table" style="min-width: 1500px;">
+              <thead>
+                <tr>
+                  <th class="w-10 text-center"><input type="checkbox" id="select-all-temp" class="input-cb-temp"></th>
+                  <th>PLU</th>
+                  <th style="min-width: 250px;">Deskripsi</th>
+                  <th>Qty Terima</th>
+                  <th>Hrg. Beli</th>
+                  <th>Hrg. Jual</th>
+                  <th>Admin</th>
+                  <th>Ongkir</th>
+                  <th>Promo</th>
+                  <th>Biaya Pesan</th>
+                </tr>
+              </thead>
+              <tbody id="temp-receipt-body">
+                <tr>
+                  <td colspan="11" class="text-center p-4 text-gray-500">Memuat data keranjang...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
         <?php else: ?>
-          <div class="filter-card p-16 text-center">
+          <div class="filter-card p-8 text-center">
             <div class="max-w-md mx-auto">
               <div class="bg-gradient-to-br from-purple-100 to-blue-100 w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center">
                 <img src="../../../public/images/logo/shopee.png" alt="Shopee" class="h-12 w-12">

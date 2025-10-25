@@ -97,3 +97,30 @@ export const getItemHistory = (plu) => {
   const url = `/src/api/shopee/get_item_history.php?plu=${encodeURIComponent(plu)}`;
   return sendRequestGET(url);
 };
+export const getTempReceiptItems = () => {
+    return sendRequestGET('/src/api/shopee/temp_receipt_handler.php?action=get');
+};
+
+export const addTempReceiptItem = (itemData) => {
+    return sendRequestJSON('/src/api/shopee/temp_receipt_handler.php?action=add', { item: itemData });
+};
+
+export const updateTempReceiptItem = (plu, qty_rec, hrg_beli, price) => {
+    const data = { plu, qty_rec, hrg_beli, price };
+    return sendRequestJSON('/src/api/shopee/temp_receipt_handler.php?action=update', data);
+};
+
+export const deleteTempReceiptItems = (plus) => {
+    return sendRequestJSON('/src/api/shopee/temp_receipt_handler.php?action=delete', { plus });
+};
+
+export const deleteAllTempReceiptItems = () => {
+    return sendRequestJSON('/src/api/shopee/temp_receipt_handler.php?action=delete_all', {});
+};
+
+export const saveTempReceipt = (no_lpb) => {
+    return sendRequestJSON('/src/api/shopee/temp_receipt_handler.php?action=save', { no_lpb });
+};
+export const addTempReceiptItemByPlu = (plu, vendor) => {
+    return sendRequestJSON('/src/api/shopee/temp_receipt_handler.php?action=add_by_plu', { plu, vendor });
+};

@@ -3,7 +3,7 @@ session_start();
 include '../../../aa_kon_sett.php';
 require_once __DIR__ . '/../../component/menu_handler.php';
 
-$menuHandler = new MenuHandler('shopee_dashboard'); 
+$menuHandler = new MenuHandler('shopee_dashboard');
 if (!$menuHandler->initialize()) {
     exit();
 }
@@ -27,9 +27,11 @@ $filter_kode_supp = $_GET['kode_supp'] ?? '';
 $filter_tgl_dari = $_GET['tgl_dari'] ?? '';
 $filter_tgl_sampai = $_GET['tgl_sampai'] ?? '';
 
+// 1. Array allowed_sort_cols diperbarui
 $allowed_sort_cols = [
-    'tgl_pesan', 'no_faktur', 'no_lpb', 'plu', 'descp',
-    'kode_supp', 'nama_supp', 'QTY_REC', 'hrg_beli', 'admin_s', 'ongkir'
+    'tgl_pesan', 'jam', 'no_faktur', 'no_lpb', 'plu', 'barcode', 'descp',
+    'kode_supp', 'nama_supp', 'QTY_REC', 'avg_cost', 'hrg_beli', 'ppn', 'netto',
+    'admin_s', 'ongkir', 'promo', 'biaya_psn', 'price', 'net_price'
 ];
 $sort_by = $_GET['sort_by'] ?? 'tgl_pesan';
 $sort_dir = $_GET['sort_dir'] ?? 'DESC';
@@ -43,9 +45,9 @@ if (!in_array(strtoupper($sort_dir), ['ASC', 'DESC'])) {
 
 $suppliers = [];
 $sql_supp = "SELECT DISTINCT s.kode_supp, s.nama_supp
-             FROM supplier s
-             JOIN s_receipt r ON s.kode_supp = r.kode_supp
-             ORDER BY s.nama_supp ASC";
+              FROM supplier s
+              JOIN s_receipt r ON s.kode_supp = r.kode_supp
+              ORDER BY s.nama_supp ASC";
 $result_supp = $conn->query($sql_supp);
 if ($result_supp) {
     while ($row = $result_supp->fetch_assoc()) {
@@ -57,9 +59,10 @@ $history_items = [];
 $params = [];
 $types = "";
 
+// 2. SQL Query diperbarui (menambahkan r.avg_cost, r.net_price)
 $sql = "SELECT r.kd_store, r.no_faktur, r.plu, r.barcode, r.descp,
-               r.hrg_beli, r.ppn, r.netto, r.admin_s, r.ongkir, r.promo, r.biaya_psn,
-               r.price, r.QTY_REC, r.tgl_pesan, r.no_lpb, r.kode_kasir, r.kode_supp, r.jam,
+               r.avg_cost, r.hrg_beli, r.ppn, r.netto, r.admin_s, r.ongkir, r.promo, r.biaya_psn,
+               r.price, r.net_price, r.QTY_REC, r.tgl_pesan, r.no_lpb, r.kode_kasir, r.kode_supp, r.jam,
                s.nama_supp
         FROM s_receipt r
         LEFT JOIN (
@@ -367,7 +370,6 @@ $conn->close();
         <section class="min-h-screen">
             <div class="max-w-[1600px] mx-auto">
                 
-                <!-- Header -->
                 <div class="header-card p-6 rounded-2xl mb-6">
                     <div class="flex items-center justify-between flex-wrap gap-4">
                         <div>
@@ -381,7 +383,6 @@ $conn->close();
                     </div>
                 </div>
 
-                <!-- Filter Section -->
                 <div class="filter-card p-6 mb-6">
                     <h2 class="text-lg font-bold text-gray-800 mb-5">
                         <i class="fas fa-filter text-purple-600 mr-2"></i>
@@ -466,7 +467,6 @@ $conn->close();
                     </form>
                 </div>
 
-                <!-- Stats Info -->
                 <?php if (!empty($history_items)): ?>
                     <div class="stats-card mb-6">
                         <div class="flex items-center gap-3">
@@ -481,10 +481,9 @@ $conn->close();
                     </div>
                 <?php endif; ?>
 
-                <!-- Table Section -->
                 <div class="filter-card p-0 md:p-6">
                     <div class="table-container scroll-container">
-                        <table class="table-modern" style="min-width: 2000px;">
+                        <table class="table-modern" style="min-width: 2800px;">
                             <thead>
                                 <tr>
                                     <?php
@@ -500,6 +499,9 @@ $conn->close();
                                         <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'tgl_pesan'); ?>">Tanggal<?php $sort_icon('tgl_pesan'); ?></a>
                                     </th>
                                     <th>
+                                        <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'jam'); ?>">Jam<?php $sort_icon('jam'); ?></a>
+                                    </th>
+                                    <th>
                                         <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'no_faktur'); ?>">No. Faktur<?php $sort_icon('no_faktur'); ?></a>
                                     </th>
                                     <th>
@@ -507,6 +509,9 @@ $conn->close();
                                     </th>
                                     <th>
                                         <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'plu'); ?>">PLU<?php $sort_icon('plu'); ?></a>
+                                    </th>
+                                    <th>
+                                        <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'barcode'); ?>">Barcode<?php $sort_icon('barcode'); ?></a>
                                     </th>
                                     <th style="min-width: 250px;">
                                         <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'descp'); ?>">Deskripsi<?php $sort_icon('descp'); ?></a>
@@ -521,7 +526,16 @@ $conn->close();
                                         <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'QTY_REC'); ?>">Qty Terima<?php $sort_icon('QTY_REC'); ?></a>
                                     </th>
                                     <th>
+                                        <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'avg_cost'); ?>">Avg Cost<?php $sort_icon('avg_cost'); ?></a>
+                                    </th>
+                                    <th>
                                         <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'hrg_beli'); ?>">Hrg. Beli<?php $sort_icon('hrg_beli'); ?></a>
+                                    </th>
+                                    <th>
+                                        <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'ppn'); ?>">PPN<?php $sort_icon('ppn'); ?></a>
+                                    </th>
+                                    <th>
+                                        <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'netto'); ?>">Netto<?php $sort_icon('netto'); ?></a>
                                     </th>
                                     <th>
                                         <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'admin_s'); ?>">Admin<?php $sort_icon('admin_s'); ?></a>
@@ -529,8 +543,18 @@ $conn->close();
                                     <th>
                                         <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'ongkir'); ?>">Ongkir<?php $sort_icon('ongkir'); ?></a>
                                     </th>
-                                    <th>Promo</th>
-                                    <th>Biaya Pesan</th>
+                                    <th>
+                                        <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'promo'); ?>">Promo<?php $sort_icon('promo'); ?></a>
+                                    </th>
+                                    <th>
+                                        <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'biaya_psn'); ?>">Biaya Pesan<?php $sort_icon('biaya_psn'); ?></a>
+                                    </th>
+                                    <th>
+                                        <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'price'); ?>">Price<?php $sort_icon('price'); ?></a>
+                                    </th>
+                                    <th>
+                                        <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'net_price'); ?>">Net Price<?php $sort_icon('net_price'); ?></a>
+                                    </th>
                                     <th>Store</th>
                                     <th>Kasir</th>
                                 </tr>
@@ -538,7 +562,7 @@ $conn->close();
                             <tbody>
                                 <?php if (empty($history_items)): ?>
                                     <tr>
-                                        <td colspan="15">
+                                        <td colspan="22">
                                             <div class="empty-state">
                                                 <i class="fas fa-inbox"></i>
                                                 <p class="text-gray-600 text-lg font-semibold mb-2">Tidak Ada Data</p>
@@ -551,8 +575,14 @@ $conn->close();
                                         <tr>
                                             <td class="whitespace-nowrap">
                                                 <div class="flex items-center gap-2">
+                                                    <i class="fas fa-calendar-alt text-gray-400 text-xs"></i>
+                                                    <?php echo htmlspecialchars(date('d/m/Y', strtotime($item['tgl_pesan']))); ?>
+                                                </div>
+                                            </td>
+                                            <td class="whitespace-nowrap">
+                                                <div class="flex items-center gap-2">
                                                     <i class="fas fa-clock text-gray-400 text-xs"></i>
-                                                    <?php echo htmlspecialchars(date('d/m/Y H:i', strtotime($item['tgl_pesan']))); ?>
+                                                    <?php echo htmlspecialchars($item['jam']); ?>
                                                 </div>
                                             </td>
                                             <td>
@@ -562,6 +592,7 @@ $conn->close();
                                                 <span class="badge badge-purple"><?php echo htmlspecialchars($item['no_lpb']); ?></span>
                                             </td>
                                             <td class="font-semibold text-gray-900"><?php echo htmlspecialchars($item['plu']); ?></td>
+                                            <td class="font-semibold text-gray-700"><?php echo htmlspecialchars($item['barcode']); ?></td>
                                             <td>
                                                 <span class="link-history open-history-modal"
                                                     data-plu="<?php echo htmlspecialchars($item['plu']); ?>"
@@ -577,11 +608,16 @@ $conn->close();
                                                     <?php echo number_format($item['QTY_REC'], 0, ',', '.'); ?>
                                                 </span>
                                             </td>
+                                            <td class="text-right">Rp <?php echo number_format($item['avg_cost'], 0, ',', '.'); ?></td>
                                             <td class="text-right">Rp <?php echo number_format($item['hrg_beli'], 0, ',', '.'); ?></td>
+                                            <td class="text-right">Rp <?php echo number_format($item['ppn'], 0, ',', '.'); ?></td>
+                                            <td class="text-right">Rp <?php echo number_format($item['netto'], 0, ',', '.'); ?></td>
                                             <td class="text-right">Rp <?php echo number_format($item['admin_s'], 0, ',', '.'); ?></td>
                                             <td class="text-right">Rp <?php echo number_format($item['ongkir'], 0, ',', '.'); ?></td>
                                             <td class="text-right">Rp <?php echo number_format($item['promo'], 0, ',', '.'); ?></td>
                                             <td class="text-right">Rp <?php echo number_format($item['biaya_psn'], 0, ',', '.'); ?></td>
+                                            <td class="text-right">Rp <?php echo number_format($item['price'], 0, ',', '.'); ?></td>
+                                            <td class="text-right">Rp <?php echo number_format($item['net_price'], 0, ',', '.'); ?></td>
                                             <td><?php echo htmlspecialchars($item['kd_store']); ?></td>
                                             <td><?php echo htmlspecialchars($item['kode_kasir']); ?></td>
                                         </tr>
@@ -596,7 +632,6 @@ $conn->close();
         </section>
     </main>
 
-    <!-- Modal History -->
     <div id="itemHistoryModal" class="modal-overlay fixed inset-0 overflow-y-auto h-full w-full flex items-center justify-center z-50" style="display: none;">
         <div class="modal-content relative mx-4 p-6 w-full max-w-3xl">
             <div class="flex justify-between items-center border-b pb-4 mb-4">
