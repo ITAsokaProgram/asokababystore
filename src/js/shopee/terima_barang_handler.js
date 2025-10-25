@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         const items = [];
-        const rows = document.querySelectorAll('#stock-table tbody tr');
+        const rows = form.querySelectorAll('tbody tr');
         rows.forEach(row => {
             const qty_rec = parseFloat(row.querySelector('input[name="qty_rec"]').value) || 0;
             if (qty_rec > 0) {

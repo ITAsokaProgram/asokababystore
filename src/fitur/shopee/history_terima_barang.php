@@ -106,7 +106,6 @@ if (!empty($filter_tgl_sampai)) {
 }
 
 $sql .= " ORDER BY $sort_by $sort_dir";
-
 $sql .= " LIMIT 1000";
 
 $stmt = $conn->prepare($sql);
@@ -137,77 +136,282 @@ $conn->close();
     <link rel="stylesheet" href="../../style/header.css">
     <link rel="stylesheet" href="../../style/sidebar.css">
     <link rel="stylesheet" href="../../style/animation-fade-in.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../../style/default-font.css">
     <link rel="stylesheet" href="../../output2.css">
     <link rel="stylesheet" href="../../style/shopee/shopee.css">
     <link rel="icon" type="image/png" href="../../../public/images/logo1.png">
     <style>
-        .table-container {
-            width: 100%;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            border: 1px solid #e2e8f0;
-            border-radius: 0.75rem;
-            background-color: white;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        }
-        .min-w-table {
-            min-width: 2000px; 
-        }
-        .sticky-header th {
-            position: sticky;
-            top: 0;
-            background-color: #f8fafc;
-            z-index: 10;
-        }
-        .sticky-header th a {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .sticky-header th a:hover {
-            color: #2563eb;
-        }
-    </style>
-</head>
-<body class="bg-gray-50 overflow-auto">
+    * {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    
+    /* Definisi gradient body dihapus */
 
+    /* Definisi gradient .header-card dihapus */
+
+    .filter-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transition: transform 0.2s;
+    }
+
+    .filter-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    }
+
+    .input-modern {
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 10px 14px;
+        transition: all 0.3s;
+        font-size: 14px;
+    }
+
+    .input-modern:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    /* Definisi gradient .btn-primary dihapus */
+
+    /* Definisi gradient .btn-primary:hover dihapus */
+
+    .btn-secondary {
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+        border-radius: 10px;
+        padding: 10px 20px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    .btn-secondary:hover {
+        background: #667eea;
+        color: white;
+    }
+
+    .btn-reset {
+        background: #f1f5f9;
+        color: #475569;
+        border-radius: 10px;
+        padding: 12px 24px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    .btn-reset:hover {
+        background: #e2e8f0;
+    }
+
+    .table-container {
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .table-modern {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    /* Definisi gradient .table-modern thead dihapus */
+
+    .table-modern thead th {
+        padding: 16px 12px;
+        font-weight: 600;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .table-modern thead th a {
+        /* Asumsi .shopee.css akan memberi warna text */
+        /* color: white; */
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .table-modern tbody tr {
+        background: white;
+        transition: all 0.2s;
+    }
+
+    .table-modern tbody tr:hover {
+        background: #f8fafc;
+        transform: scale(1.005);
+    }
+
+    .table-modern tbody td {
+        padding: 14px 12px;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 14px;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .badge-success {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .badge-info {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .badge-purple {
+        background: #ede9fe;
+        color: #5b21b6;
+    }
+
+    .link-history {
+        color: #667eea;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .link-history:hover {
+        color: #764ba2;
+        text-decoration: underline;
+    }
+
+    .modal-overlay {
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+    }
+
+    .modal-content {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+        animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .scroll-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .scroll-container::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .scroll-container::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 10px;
+    }
+
+    .scroll-container::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+    }
+
+    .scroll-container::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+
+    .stats-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        border-left: 4px solid #667eea;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-state i {
+        font-size: 64px;
+        color: #cbd5e1;
+        margin-bottom: 20px;
+    }
+</style>
+</head>
+<body class="bg-gray-50">
     <?php include '../../component/navigation_report.php' ?>
     <?php include '../../component/sidebar_report.php' ?>
     
     <main id="main-content" class="flex-1 p-6 ml-64">
-        <section class="min-h-[85vh] px-2 md:px-6">
-            <div class="w-full max-w-none mx-auto">
+        <section class="min-h-screen">
+            <div class="max-w-[1600px] mx-auto">
                 
+                <!-- Header -->
                 <div class="header-card p-6 rounded-2xl mb-6">
                     <div class="flex items-center justify-between flex-wrap gap-4">
                         <div>
-                            <h1 class="text-2xl font-bold text-gray-800 mb-1">History Terima Barang Cabang</h1>
-                            <p class="text-gray-600">Menampilkan data penerimaan barang</p>
+                            <h1 class="text-2xl font-bold mb-1">History Terima Barang</h1>
+                            <p class="text-white/80 text-sm">Riwayat penerimaan barang dari supplier</p>
                         </div>
-                        <a href="terima_barang.php" class="inline-flex items-center gap-2 bg-white hover:bg-gray-50 text-blue-600 font-semibold py-2 px-4 rounded-lg transition shadow-sm border border-gray-200">
+                        <a href="terima_barang.php" class="btn-secondary inline-flex items-center gap-2">
                             <i class="fas fa-arrow-left"></i>
-                            <span>Kembali ke Terima Barang</span>
+                            <span>Kembali</span>
                         </a>
                     </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-2xl shadow-lg mb-6">
-                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Filter History</h2>
-                    <form method="GET" action="history_terima_barang.php" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <!-- Filter Section -->
+                <div class="filter-card p-6 mb-6">
+                    <h2 class="text-lg font-bold text-gray-800 mb-5">
+                        <i class="fas fa-filter text-purple-600 mr-2"></i>
+                        Filter History
+                    </h2>
+                    
+                    <form method="GET" action="history_terima_barang.php" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         
                         <div>
-                            <label for="tgl_dari" class="block text-sm font-medium text-gray-700 mb-1">Tgl. Dari</label>
-                            <input type="date" id="tgl_dari" name="tgl_dari" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value="<?php echo htmlspecialchars($filter_tgl_dari); ?>">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-calendar text-purple-600 mr-1"></i>
+                                Tanggal Dari
+                            </label>
+                            <input type="date" name="tgl_dari" class="input-modern w-full" value="<?php echo htmlspecialchars($filter_tgl_dari); ?>">
                         </div>
+
                         <div>
-                            <label for="tgl_sampai" class="block text-sm font-medium text-gray-700 mb-1">Tgl. Sampai</label>
-                            <input type="date" id="tgl_sampai" name="tgl_sampai" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value="<?php echo htmlspecialchars($filter_tgl_sampai); ?>">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-calendar text-purple-600 mr-1"></i>
+                                Tanggal Sampai
+                            </label>
+                            <input type="date" name="tgl_sampai" class="input-modern w-full" value="<?php echo htmlspecialchars($filter_tgl_sampai); ?>">
                         </div>
+
                         <div>
-                            <label for="kode_supp" class="block text-sm font-medium text-gray-700 mb-1">Vendor (Supplier)</label>
-                            <select id="kode_supp" name="kode_supp" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-store text-purple-600 mr-1"></i>
+                                Vendor (Supplier)
+                            </label>
+                            <select name="kode_supp" class="input-modern w-full">
                                 <option value="">Semua Vendor</option>
                                 <?php foreach ($suppliers as $supplier): ?>
                                     <option value="<?php echo htmlspecialchars($supplier['kode_supp']); ?>" <?php echo ($filter_kode_supp == $supplier['kode_supp']) ? 'selected' : ''; ?>>
@@ -216,29 +420,45 @@ $conn->close();
                                 <?php endforeach; ?>
                             </select>
                         </div>
+
                         <div>
-                            <label for="filter_no_lpb" class="block text-sm font-medium text-gray-700 mb-1">No. LPB</label>
-                            <input type="text" id="filter_no_lpb" name="no_lpb" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value="<?php echo htmlspecialchars($filter_no_lpb); ?>" placeholder="Cari No. LPB...">
-                        </div>
-                        <div>
-                            <label for="filter_no_faktur" class="block text-sm font-medium text-gray-700 mb-1">No. Faktur</label>
-                            <input type="text" id="filter_no_faktur" name="no_faktur" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value="<?php echo htmlspecialchars($filter_no_faktur); ?>" placeholder="Cari No. Faktur...">
-                        </div>
-                        <div>
-                            <label for="filter_plu" class="block text-sm font-medium text-gray-700 mb-1">PLU</label>
-                            <input type="text" id="filter_plu" name="plu" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value="<?php echo htmlspecialchars($filter_plu); ?>" placeholder="Cari PLU...">
-                        </div>
-                        <div>
-                            <label for="filter_descp" class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
-                            <input type="text" id="filter_descp" name="descp" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value="<?php echo htmlspecialchars($filter_descp); ?>" placeholder="Cari Deskripsi...">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-file-invoice text-purple-600 mr-1"></i>
+                                No. LPB
+                            </label>
+                            <input type="text" name="no_lpb" class="input-modern w-full" value="<?php echo htmlspecialchars($filter_no_lpb); ?>" placeholder="Cari No. LPB...">
                         </div>
 
-                        <div class="md:col-span-4 flex gap-4">
-                            <button type="submit" class="inline-flex items-center gap-2 w-full md:w-auto bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition transform hover:-translate-y-0.5">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-receipt text-purple-600 mr-1"></i>
+                                No. Faktur
+                            </label>
+                            <input type="text" name="no_faktur" class="input-modern w-full" value="<?php echo htmlspecialchars($filter_no_faktur); ?>" placeholder="Cari No. Faktur...">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-barcode text-purple-600 mr-1"></i>
+                                PLU
+                            </label>
+                            <input type="text" name="plu" class="input-modern w-full" value="<?php echo htmlspecialchars($filter_plu); ?>" placeholder="Cari PLU...">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-align-left text-purple-600 mr-1"></i>
+                                Deskripsi
+                            </label>
+                            <input type="text" name="descp" class="input-modern w-full" value="<?php echo htmlspecialchars($filter_descp); ?>" placeholder="Cari Deskripsi...">
+                        </div>
+
+                        <div class="lg:col-span-4 flex gap-3">
+                            <button type="submit" class="btn-primary inline-flex items-center gap-2">
                                 <i class="fas fa-search"></i>
                                 <span>Filter Data</span>
                             </button>
-                            <a href="history_terima_barang.php" class="inline-flex items-center gap-2 w-full md:w-auto bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-6 rounded-lg shadow-md transition">
+                            <a href="history_terima_barang.php" class="btn-reset inline-flex items-center gap-2">
                                 <i class="fas fa-undo"></i>
                                 <span>Reset</span>
                             </a>
@@ -246,90 +466,124 @@ $conn->close();
                     </form>
                 </div>
 
-                <div class="bg-white p-0 md:p-6 rounded-2xl shadow-lg">
-                    <div class="table-container">
-                        <table class="min-w-table w-full text-sm text-left text-gray-600">
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 sticky-header">
+                <!-- Stats Info -->
+                <?php if (!empty($history_items)): ?>
+                    <div class="stats-card mb-6">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-purple-100 p-3 rounded-lg">
+                                <i class="fas fa-chart-bar text-purple-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Total Data Ditemukan</p>
+                                <p class="text-2xl font-bold text-gray-800"><?php echo count($history_items); ?> <span class="text-sm font-normal text-gray-500">transaksi</span></p>
+                            </div>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
+                <!-- Table Section -->
+                <div class="filter-card p-0 md:p-6">
+                    <div class="table-container scroll-container">
+                        <table class="table-modern" style="min-width: 2000px;">
+                            <thead>
                                 <tr>
                                     <?php
                                     $sort_icon = function($col_name) use ($sort_by, $sort_dir) {
                                         if ($sort_by == $col_name) {
                                             echo ($sort_dir == 'ASC') ? ' <i class="fas fa-sort-up"></i>' : ' <i class="fas fa-sort-down"></i>';
                                         } else {
-                                            echo ' <i class="fas fa-sort text-gray-300"></i>';
+                                            echo ' <i class="fas fa-sort" style="opacity: 0.3"></i>';
                                         }
                                     };
                                     ?>
-                                    <th scope="col" class="py-3 px-4">
+                                    <th>
                                         <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'tgl_pesan'); ?>">Tanggal<?php $sort_icon('tgl_pesan'); ?></a>
                                     </th>
-                                    <th scope="col" class="py-3 px-4">
+                                    <th>
                                         <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'no_faktur'); ?>">No. Faktur<?php $sort_icon('no_faktur'); ?></a>
                                     </th>
-                                    <th scope="col" class="py-3 px-4">
+                                    <th>
                                         <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'no_lpb'); ?>">No. LPB<?php $sort_icon('no_lpb'); ?></a>
                                     </th>
-                                    <th scope="col" class="py-3 px-4">
+                                    <th>
                                         <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'plu'); ?>">PLU<?php $sort_icon('plu'); ?></a>
                                     </th>
-                                    <th scope="col" class="py-3 px-4" style="min-width: 250px;">
+                                    <th style="min-width: 250px;">
                                         <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'descp'); ?>">Deskripsi<?php $sort_icon('descp'); ?></a>
                                     </th>
-                                    <th scope="col" class="py-3 px-4">
+                                    <th>
                                         <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'kode_supp'); ?>">Kd. Supp<?php $sort_icon('kode_supp'); ?></a>
                                     </th>
-                                    <th scope="col" class="py-3 px-4" style="min-width: 200px;">
+                                    <th style="min-width: 200px;">
                                         <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'nama_supp'); ?>">Nama Supplier<?php $sort_icon('nama_supp'); ?></a>
                                     </th>
-                                    <th scope="col" class="py-3 px-4">
+                                    <th>
                                         <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'QTY_REC'); ?>">Qty Terima<?php $sort_icon('QTY_REC'); ?></a>
                                     </th>
-                                    <th scope="col" class="py-3 px-4">
+                                    <th>
                                         <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'hrg_beli'); ?>">Hrg. Beli<?php $sort_icon('hrg_beli'); ?></a>
                                     </th>
-                                    <th scope="col" class="py-3 px-4">
+                                    <th>
                                         <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'admin_s'); ?>">Admin<?php $sort_icon('admin_s'); ?></a>
                                     </th>
-                                    <th scope="col" class="py-3 px-4">
+                                    <th>
                                         <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'ongkir'); ?>">Ongkir<?php $sort_icon('ongkir'); ?></a>
                                     </th>
-                                    <th scope="col" class="py-3 px-4">Promo</th>
-                                    <th scope="col" class="py-3 px-4">Biaya Pesan</th>
-                                    <th scope="col" class="py-3 px-4">Store</th>
-                                    <th scope="col" class="py-3 px-4">Kasir</th>
+                                    <th>Promo</th>
+                                    <th>Biaya Pesan</th>
+                                    <th>Store</th>
+                                    <th>Kasir</th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white">
+                            <tbody>
                                 <?php if (empty($history_items)): ?>
-                                    <tr class="border-b">
-                                        <td colspan="15" class="py-4 px-4 text-center text-gray-500">
-                                            Tidak ada data history ditemukan dengan filter yang diterapkan.
+                                    <tr>
+                                        <td colspan="15">
+                                            <div class="empty-state">
+                                                <i class="fas fa-inbox"></i>
+                                                <p class="text-gray-600 text-lg font-semibold mb-2">Tidak Ada Data</p>
+                                                <p class="text-gray-500 text-sm">Tidak ada history penerimaan ditemukan dengan filter yang diterapkan</p>
+                                            </div>
                                         </td>
                                     </tr>
                                 <?php else: ?>
                                     <?php foreach ($history_items as $item): ?>
-                                        <tr class="border-b hover:bg-gray-50">
-                                            <td class="py-3 px-4 whitespace-nowrap"><?php echo htmlspecialchars(date('d-m-Y H:i', strtotime($item['tgl_pesan']))); ?></td>
-                                            <td class="py-3 px-4 font-medium text-gray-900 whitespace-nowrap"><?php echo htmlspecialchars($item['no_faktur']); ?></td>
-                                            <td class="py-3 px-4"><?php echo htmlspecialchars($item['no_lpb']); ?></td>
-                                            <td class="py-3 px-4"><?php echo htmlspecialchars($item['plu']); ?></td>
-                                            <td class="py-3 px-4">
-                                                <span class="text-blue-600 hover:text-blue-800 cursor-pointer font-medium open-history-modal"
+                                        <tr>
+                                            <td class="whitespace-nowrap">
+                                                <div class="flex items-center gap-2">
+                                                    <i class="fas fa-clock text-gray-400 text-xs"></i>
+                                                    <?php echo htmlspecialchars(date('d/m/Y H:i', strtotime($item['tgl_pesan']))); ?>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-info"><?php echo htmlspecialchars($item['no_faktur']); ?></span>
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-purple"><?php echo htmlspecialchars($item['no_lpb']); ?></span>
+                                            </td>
+                                            <td class="font-semibold text-gray-900"><?php echo htmlspecialchars($item['plu']); ?></td>
+                                            <td>
+                                                <span class="link-history open-history-modal"
                                                     data-plu="<?php echo htmlspecialchars($item['plu']); ?>"
                                                     data-descp="<?php echo htmlspecialchars($item['descp']); ?>">
                                                     <?php echo htmlspecialchars($item['descp']); ?>
                                                 </span>
                                             </td>
-                                            <td class="py-3 px-4"><?php echo htmlspecialchars($item['kode_supp']); ?></td>
-                                            <td class="py-3 px-4"><?php echo htmlspecialchars($item['nama_supp']); ?></td>
-                                            <td class="py-3 px-4 font-semibold text-blue-600"><?php echo number_format($item['QTY_REC'], 0); ?></td>
-                                            <td class="py-3 px-4 text-right"><?php echo number_format($item['hrg_beli'], 0); ?></td>
-                                            <td class="py-3 px-4 text-right"><?php echo number_format($item['admin_s'], 0); ?></td>
-                                            <td class="py-3 px-4 text-right"><?php echo number_format($item['ongkir'], 0); ?></td>
-                                            <td class="py-3 px-4 text-right"><?php echo number_format($item['promo'], 0); ?></td>
-                                            <td class="py-3 px-4 text-right"><?php echo number_format($item['biaya_psn'], 0); ?></td>
-                                            <td class="py-3 px-4"><?php echo htmlspecialchars($item['kd_store']); ?></td>
-                                            <td class="py-3 px-4"><?php echo htmlspecialchars($item['kode_kasir']); ?></td>
+                                            <td><?php echo htmlspecialchars($item['kode_supp']); ?></td>
+                                            <td><?php echo htmlspecialchars($item['nama_supp']); ?></td>
+                                            <td>
+                                                <span class="badge badge-success">
+                                                    <i class="fas fa-box mr-1"></i>
+                                                    <?php echo number_format($item['QTY_REC'], 0, ',', '.'); ?>
+                                                </span>
+                                            </td>
+                                            <td class="text-right">Rp <?php echo number_format($item['hrg_beli'], 0, ',', '.'); ?></td>
+                                            <td class="text-right">Rp <?php echo number_format($item['admin_s'], 0, ',', '.'); ?></td>
+                                            <td class="text-right">Rp <?php echo number_format($item['ongkir'], 0, ',', '.'); ?></td>
+                                            <td class="text-right">Rp <?php echo number_format($item['promo'], 0, ',', '.'); ?></td>
+                                            <td class="text-right">Rp <?php echo number_format($item['biaya_psn'], 0, ',', '.'); ?></td>
+                                            <td><?php echo htmlspecialchars($item['kd_store']); ?></td>
+                                            <td><?php echo htmlspecialchars($item['kode_kasir']); ?></td>
                                         </tr>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
@@ -341,11 +595,15 @@ $conn->close();
             </div>
         </section>
     </main>
-    <div id="itemHistoryModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50" style="display: none;">
-        <div class="relative mx-auto p-5 border w-full max-w-3xl shadow-lg rounded-xl bg-white">
-            <div class="flex justify-between items-center border-b pb-3 mb-4">
-                <h3 class="text-xl font-semibold text-gray-900">History Penerimaan: <span id="modalItemName" class="text-blue-600"></span></h3>
-                <button id="closeHistoryModal" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+
+    <!-- Modal History -->
+    <div id="itemHistoryModal" class="modal-overlay fixed inset-0 overflow-y-auto h-full w-full flex items-center justify-center z-50" style="display: none;">
+        <div class="modal-content relative mx-4 p-6 w-full max-w-3xl">
+            <div class="flex justify-between items-center border-b pb-4 mb-4">
+                <h3 class="text-xl font-bold text-gray-900">
+                    History Penerimaan: <span id="modalItemName" class="text-purple-600"></span>
+                </h3>
+                <button id="closeHistoryModal" class="text-gray-400 hover:text-gray-600 text-3xl leading-none">&times;</button>
             </div>
             <div id="modalBodyContent" class="max-h-[60vh] overflow-y-auto">
                 <p class="text-center text-gray-500">Memuat data...</p>
