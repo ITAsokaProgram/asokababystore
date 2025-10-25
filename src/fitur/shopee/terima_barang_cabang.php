@@ -1,7 +1,7 @@
 <?php
 session_start();
 include '../../../aa_kon_sett.php';
-require_once __DIR__ . '/lib/ShopeeApiService.php'; 
+require_once __DIR__ . '/lib/ShopeeApiService.php';
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
@@ -9,23 +9,12 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
 $shopeeService = new ShopeeApiService();
 $redirect_uri = "https://" . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'];
 
-function build_pagination_url($new_offset) {
-    $params = $_GET;
-    $params['offset'] = $new_offset;
-    if ($new_offset == 0) {
-        unset($params['offset']);
-    }
-    return '?' . http_build_query($params);
-}
-
 if (isset($_GET['code'])) {
     $code = $_GET['code'];
     $shop_id = $_GET['shop_id'] ?? null;
     $main_account_id = $_GET['main_account_id'] ?? null;
-    
     $is_main_account = false;
     $id_to_pass = 0;
-
     if ($shop_id) {
         $id_to_pass = (int)$shop_id;
         $is_main_account = false;
@@ -33,14 +22,12 @@ if (isset($_GET['code'])) {
         $id_to_pass = (int)$main_account_id;
         $is_main_account = true;
     }
-
     if ($id_to_pass > 0) {
         $shopeeService->handleOAuthCallback($code, $id_to_pass, $is_main_account);
         header('Location: ' . strtok($redirect_uri, '?'));
         exit();
     }
 }
-
 if (isset($_GET['action']) && $_GET['action'] == 'disconnect') {
     $shopeeService->disconnect();
     header('Location: ' . strtok($redirect_uri, '?'));
@@ -52,11 +39,55 @@ $menuHandler = new MenuHandler('shopee_dashboard');
 if (!$menuHandler->initialize()) {
     exit();
 }
-
 if ($shopeeService->isConnected()) {
+    $vendors = [];
+    $stok_items = [];
+    
+    $filter_kd_store = '9998'; 
+
+    $result_vendors = $conn->query("SELECT DISTINCT VENDOR FROM s_stok_ol WHERE KD_STORE = '9998' AND VENDOR IS NOT NULL AND VENDOR != '' ORDER BY VENDOR");
+    if ($result_vendors) {
+        while ($row = $result_vendors->fetch_assoc()) {
+            $vendors[] = $row['VENDOR'];
+        }
+    }
+
+    $filter_vendor = $_GET['vendor'] ?? '';
+
+    if (!empty($filter_vendor)) {
+        $params = [];
+        $types = "";
+
+        $sql_stok = "SELECT KD_STORE, plu, ITEM_N, DESCP, VENDOR, avg_cost, hrg_beli, ppn, netto, price, Qty 
+                     FROM s_stok_ol 
+                     WHERE KD_STORE = ?";
+        $params[] = $filter_kd_store;
+        $types .= "s";
+
+        if ($filter_vendor === 'ALL') {
+            $sql_stok .= " ORDER BY VENDOR, DESCP";
+        } else {
+            $sql_stok .= " AND VENDOR = ? ORDER BY DESCP";
+            $params[] = $filter_vendor;
+            $types .= "s";
+        }
+        
+        $stmt = $conn->prepare($sql_stok);
+        if ($stmt) {
+            $stmt->bind_param($types, ...$params);
+            $stmt->execute();
+            $result_stok = $stmt->get_result();
+            if ($result_stok) {
+                while ($row = $result_stok->fetch_assoc()) {
+                    $stok_items[] = $row;
+                }
+            }
+            $stmt->close();
+        }
+    }
 
 } else {
-  $auth_url = $shopeeService->getAuthUrl($redirect_uri);
+    $auth_url = $shopeeService->getAuthUrl($redirect_uri);
 }
 
 ?>
@@ -77,6 +108,30 @@ if ($shopeeService->isConnected()) {
   <link rel="stylesheet" href="../../output2.css">
   <link rel="stylesheet" href="../../style/shopee/shopee.css">
   <link rel="icon" type="image/png" href="../../../public/images/logo1.png">
+  <style>
+    /* Style untuk tabel scrollable */
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.75rem;
+      background-color: white;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    .min-w-table {
+      min-width: 1500px; /* Atur agar tabel lebih lebar dari kontainer */
+    }
+    .sticky-header th {
+      position: sticky;
+      top: 0;
+      background-color: #f8fafc; /* bg-gray-50 */
+      z-index: 10;
+    }
+    .data-input {
+      width: 90px;
+    }
+  </style>
 </head>
 <body class="bg-gray-50 overflow-auto">
 
@@ -94,8 +149,7 @@ if ($shopeeService->isConnected()) {
                 <img src="../../../public/images/logo/shopee.png" alt="Shopee Logo" class="h-10 w-10">
               </div>
               <div>
-                <h1 class="text-2xl font-bold text-gray-800 mb-1">Barang Cabang</h1>
-                <p class="text-sm text-gray-600">Terima Barang Cabang</p>
+                <h1 class="text-2xl font-bold text-gray-800 mb-1">Terima Barang Pusat</h1>
               </div>
             </div>
             
@@ -107,11 +161,117 @@ if ($shopeeService->isConnected()) {
             <?php endif; ?>
           </div>
         </div>
-
         <?php if ($shopeeService->isConnected()): ?>
-            <p>
-                test
-            </p> 
+          
+          <div class="bg-white p-6 rounded-2xl shadow-lg mb-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Filter Data Stok</h2>
+            <form method="GET" action="terima_barang_cabang.php" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              
+              <div class="md:col-span-2">
+                <label for="vendor" class="block text-sm font-medium text-gray-700 mb-1">Vendor (Supplier)</label>
+                <select id="vendor" name="vendor" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                  <option value="">Pilih Vendor</option>
+                  <option value="ALL" <?php echo ($filter_vendor == 'ALL') ? 'selected' : ''; ?>>Semua Vendor</option>
+                  <?php foreach ($vendors as $vendor): ?>
+                    <option value="<?php echo htmlspecialchars($vendor); ?>" <?php echo ($filter_vendor == $vendor) ? 'selected' : ''; ?>>
+                      <?php echo htmlspecialchars($vendor); ?>
+                    </option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+              <div class="md:col-span-1 flex items-end justify-end">
+                <button type="submit" class="inline-flex items-center gap-2 w-full md:w-auto bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                  <i class="fas fa-search"></i>
+                  <span>Muat Data Stok</span>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <?php if (!empty($stok_items)): ?>
+            <form id="bulk-receive-form" class="bg-white p-6 rounded-2xl shadow-lg">
+              <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+                <div>
+                  <label for="no_lpb" class="block text-sm font-medium text-gray-700 mb-1">No. LPB (Laporan Penerimaan Barang)</label>
+                  <input type="text" id="no_lpb" name="no_lpb" class="px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Masukkan No. LPB" required>
+                  
+                  <input type="hidden" id="form_kd_store" name="kd_store" value="<?php echo htmlspecialchars($filter_kd_store); ?>">
+                </div>
+                <button type="submit" class="inline-flex items-center gap-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-3 px-8 rounded-lg transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                  <i class="fas fa-save"></i>
+                  <span>Simpan Penerimaan</span>
+                </button>
+              </div>
+
+              <div class="table-container">
+                <table id="stock-table" class="min-w-table w-full text-sm text-left text-gray-600">
+                  <thead class="text-xs text-gray-700 uppercase bg-gray-50 sticky-header">
+                    <tr>
+                      <th scope="col" class="py-3 px-4">PLU</th>
+                      <th scope="col" class="py-3 px-4">SKU (ITEM_N)</th>
+                      <th scope="col" class="py-3 px-4" style="min-width: 250px;">Deskripsi</th>
+                      <?php if ($filter_vendor === 'ALL'): ?>
+                        <th scope="col" class="py-3 px-4 bg-gray-100">Vendor</th>
+                      <?php endif; ?>
+                      <th scope="col" class="py-3 px-4">Stok Saat Ini</th>
+                      <th scope="col" class="py-3 px-4">Hrg. Beli</th>
+                      <th scope="col" class="py-3 px-4">Hrg. Jual</th>
+                      <th scope="col" class="py-3 px-4 bg-blue-50">Qty Terima</th>
+                      <th scope="col" class="py-3 px-4 bg-yellow-50">Admin</th>
+                      <th scope="col" class="py-3 px-4 bg-yellow-50">Ongkir</th>
+                      <th scope="col" class="py-3 px-4 bg-yellow-50">Promo</th>
+                      <th scope="col" class="py-3 px-4 bg-yellow-50">Biaya Pesan</th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white">
+                    <?php foreach ($stok_items as $item): ?>
+                      <tr class="border-b hover:bg-gray-50"
+                          data-plu="<?php echo htmlspecialchars($item['plu']); ?>"
+                          data-descp="<?php echo htmlspecialchars($item['DESCP']); ?>"
+                          data-avg-cost="<?php echo htmlspecialchars($item['avg_cost']); ?>"
+                          data-hrg-beli="<?php echo htmlspecialchars($item['hrg_beli']); ?>"
+                          data-ppn="<?php echo htmlspecialchars($item['ppn']); ?>"
+                          data-netto="<?php echo htmlspecialchars($item['netto']); ?>"
+                          data-price="<?php echo htmlspecialchars($item['price']); ?>"
+                          data-vendor="<?php echo htmlspecialchars($item['VENDOR']); ?>"
+                      >
+                        <td class="py-3 px-4 font-medium text-gray-900"><?php echo htmlspecialchars($item['plu']); ?></td>
+                        <td class="py-3 px-4"><?php echo htmlspecialchars($item['ITEM_N']); ?></td>
+                        <td class="py-3 px-4"><?php echo htmlspecialchars($item['DESCP']); ?></td>
+                        <?php if ($filter_vendor === 'ALL'): ?>
+                          <td class="py-3 px-4 bg-gray-50"><?php echo htmlspecialchars($item['VENDOR']); ?></td>
+                        <?php endif; ?>
+                        <td class="py-3 px-4"><?php echo htmlspecialchars($item['Qty']); ?></td>
+                        <td class="py-3 px-4"><?php echo number_format($item['hrg_beli']); ?></td>
+                        <td class="py-3 px-4"><?php echo number_format($item['price']); ?></td>
+                        <td class="py-3 px-4 bg-blue-50">
+                          <input type="number" name="qty_rec" class="data-input w-full px-2 py-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" value="0" min="0">
+                        </td>
+                        <td class="py-3 px-4 bg-yellow-50">
+                          <input type="number" name="admin_s" class="data-input w-full px-2 py-1 border border-gray-300 rounded-md focus:ring-yellow-500 focus:border-yellow-500" value="0" min="0" step="0.01">
+                        </td>
+                        <td class="py-3 px-4 bg-yellow-50">
+                          <input type="number" name="ongkir" class="data-input w-full px-2 py-1 border border-gray-300 rounded-md focus:ring-yellow-500 focus:border-yellow-500" value="0" min="0" step="0.01">
+                        </td>
+                        <td class="py-3 px-4 bg-yellow-50">
+                          <input type="number" name="promo" class="data-input w-full px-2 py-1 border border-gray-300 rounded-md focus:ring-yellow-500 focus:border-yellow-500" value="0" min="0" step="0.01">
+                        </td>
+                        <td class="py-3 px-4 bg-yellow-50">
+                          <input type="number" name="biaya_psn" class="data-input w-full px-2 py-1 border border-gray-300 rounded-md focus:ring-yellow-500 focus:border-yellow-500" value="0" min="0" step="0.01">
+                        </td>
+                      </tr>
+                    <?php endforeach; ?>
+                  </tbody>
+                </table>
+              </div>
+
+            </form>
+          <?php elseif (!empty($filter_vendor)): ?>
+            <div class="bg-white p-6 rounded-2xl shadow-lg text-center">
+              <p class="text-gray-600">Tidak ada data stok ditemukan untuk Store <strong><?php echo htmlspecialchars($filter_kd_store); ?></strong> dan Vendor <strong><?php echo htmlspecialchars($filter_vendor); ?></strong>.</p>
+            </div>
+          <?php endif; ?>
+          
         <?php else: ?>
           <div class="connect-card p-16 rounded-2xl">
             <div class="max-w-md mx-auto text-center py-4">
@@ -120,7 +280,7 @@ if ($shopeeService->isConnected()) {
               </div>
               <h2 class="text-3xl font-bold text-gray-800 mb-4">Hubungkan Toko Shopee</h2>
               <?php if(isset($auth_url)): ?>
-                <a href="<?php echo htmlspecialchars($auth_url); ?>" 
+                <a href="<?php echo htmlspecialchars($auth_url); ?>"
                    class="inline-flex items-center justify-center gap-3 w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-4 px-8 rounded-xl text-lg transition shadow-xl hover:shadow-2xl transform hover:-translate-y-1">
                   <i class="fas fa-link text-xl"></i>
                   <span>Hubungkan Sekarang</span>

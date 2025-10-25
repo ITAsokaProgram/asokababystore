@@ -18,7 +18,7 @@ header('Content-Type: application/json');
 $user_kode = 'UNKNOWN';
 
 try {
-    // 1. Verifikasi Token (Sama seperti di manage_stok_ol.php)
+    
     $authHeader = null;
     if (function_exists('getallheaders')) {
         $headers = getallheaders();
@@ -44,7 +44,7 @@ try {
         echo json_encode(['success' => false, 'message' => 'Token tidak valid.']);
         exit;
     }
-    $user_kode = $decoded->kode; // Ini adalah $kode_kasir
+    $user_kode = $decoded->kode; 
     $logger->info("Token valid. User '{$user_kode}' memulai bulk insert.");
 } catch (Exception $e) {
     http_response_code(500);
@@ -60,28 +60,29 @@ if (!isset($conn) || !$conn instanceof mysqli) {
     exit();
 }
 
-// 2. Ambil data JSON dari body request
+
 $data = json_decode(file_get_contents('php://input'), true);
 if ($data === null) {
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => 'Invalid JSON data.']);
     exit();
 }
-
 $conn->begin_transaction();
 try {
     $kd_store = $data['kd_store'] ?? '';
     $no_lpb = $data['no_lpb'] ?? '';
-    $kode_supp = $data['kode_supp'] ?? '';
+    
+    
     $items = $data['items'] ?? [];
 
-    if (empty($kd_store) || empty($no_lpb) || empty($kode_supp) || empty($items)) {
-        throw new Exception("Validasi gagal: kd_store, no_lpb, kode_supp, dan items wajib diisi.");
+    
+    if (empty($kd_store) || empty($no_lpb) || empty($items)) {
+        throw new Exception("Validasi gagal: kd_store, no_lpb, dan items wajib diisi.");
     }
 
     $kode_kasir = (int)$user_kode;
 
-    // 3. Generate No. Faktur (Satu kali untuk semua item di batch ini)
+    
     $prefix = $kd_store . "-RC-" . $kode_kasir . "-";
     $sql_get_last_num = "SELECT MAX(CAST(SUBSTRING_INDEX(no_faktur, '-', -1) AS UNSIGNED)) as last_num 
                          FROM s_receipt 
@@ -98,11 +99,11 @@ try {
     $last_num = $row['last_num'] ?? 0;
     $next_num = (int)$last_num + 1;
     $padded_num = str_pad($next_num, 5, '0', STR_PAD_LEFT);
-    $no_faktur = $prefix . $padded_num; // No faktur ini akan sama untuk semua item
+    $no_faktur = $prefix . $padded_num; 
 
     $logger->info("Memulai batch insert untuk No Faktur: $no_faktur, No LPB: $no_lpb");
 
-    // 4. Siapkan statement untuk s_receipt
+    
     $sql_receipt = "INSERT INTO s_receipt 
                         (kd_store, no_faktur, plu, barcode, descp, 
                          avg_cost, hrg_beli, ppn, netto, admin_s, 
@@ -120,7 +121,7 @@ try {
         throw new Exception("Database prepare failed (s_receipt): " . $conn->error);
     }
 
-    // 5. Siapkan statement untuk update s_stok_ol
+    
     $sql_stok_update = "UPDATE s_stok_ol 
                         SET Qty = Qty + ?, Tgl_Update = NOW() 
                         WHERE KD_STORE = ? AND plu = ?";
@@ -131,10 +132,18 @@ try {
 
     $total_items_processed = 0;
 
-    // 6. Loop dan Eksekusi
+    
     foreach ($items as $item) {
+        
+        $kode_supp = $item['kode_supp'] ?? '';
+        if (empty($kode_supp)) {
+            
+            $logger->warning("Item dilewati: kode_supp (vendor) tidak ditemukan.", $item);
+            continue; 
+        }
+
         $plu = $item['plu'];
-        $barcode = $item['barcode']; // Sesuai contoh, barcode = plu
+        $barcode = $item['barcode']; 
         $descp = $item['descp'];
         $avg_cost = (float)($item['avg_cost'] ?? 0);
         $hrg_beli = (float)($item['hrg_beli'] ?? 0);
@@ -145,14 +154,15 @@ try {
         $promo = (float)($item['promo'] ?? 0);
         $biaya_psn = (float)($item['biaya_psn'] ?? 0);
         $price = (float)($item['price'] ?? 0);
-        $net_price = (float)($item['net_price'] ?? $price); // Asumsi net_price = price jika tidak ada
+        $net_price = (float)($item['net_price'] ?? $price); 
         $qty_rec = (float)($item['qty_rec'] ?? 0);
 
         if ($qty_rec <= 0) {
-            continue; // Lewati item jika tidak ada qty
+            continue; 
         }
 
-        // Insert ke s_receipt
+        
+        
         $stmt_receipt->bind_param(
             "sssssdddddddddddsss",
             $kd_store,
@@ -173,13 +183,13 @@ try {
             $qty_rec,
             $no_lpb,
             $kode_kasir,
-            $kode_supp
+            $kode_supp 
         );
         if (!$stmt_receipt->execute()) {
             throw new Exception("Gagal eksekusi query (s_receipt) untuk PLU $plu: " . $stmt_receipt->error);
         }
 
-        // Update s_stok_ol
+        
         $stmt_stok->bind_param("dss", $qty_rec, $kd_store, $plu);
         if (!$stmt_stok->execute()) {
             throw new Exception("Gagal eksekusi query (s_stok_ol update) untuk PLU $plu: " . $stmt_stok->error);
@@ -192,10 +202,10 @@ try {
     $stmt_stok->close();
 
     if ($total_items_processed == 0) {
-        throw new Exception("Tidak ada item yang diproses (QTY Terima mungkin 0).");
+        throw new Exception("Tidak ada item yang diproses (QTY Terima mungkin 0 atau vendor tidak ada).");
     }
 
-    // 7. Commit Transaksi
+    
     $conn->commit();
     $logger->success("Transaksi berhasil di-commit. No Faktur: $no_faktur. Total $total_items_processed item diterima.");
     echo json_encode([
