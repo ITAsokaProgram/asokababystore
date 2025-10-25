@@ -4,6 +4,7 @@ function getToken() {
   if (parts.length === 2) return parts.pop().split(";").shift();
   return null;
 }
+
 const handleResponse = async (response) => {
   if (!response.ok) {
     let errorData;
@@ -27,6 +28,25 @@ const sendRequest = async (url, formData) => {
       method: 'POST',
       headers: headers, 
       body: formData
+    });
+    return handleResponse(response);
+  } catch (error) {
+    console.error('Fetch error:', error);
+    throw error;
+  }
+};
+const sendRequestGET = async (url) => {
+  try {
+    const token = getToken();
+    const headers = new Headers({
+      'Accept': 'application/json'
+    });
+    if (token) {
+      headers.append('Authorization', `Bearer ${token}`);
+    }
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: headers
     });
     return handleResponse(response);
   } catch (error) {
@@ -72,4 +92,8 @@ export const manageStokOl = (formData) => {
 };
 export const bulkTerimaBarang = (data) => {
   return sendRequestJSON('/src/api/shopee/bulk_terima_barang.php', data);
+};
+export const getItemHistory = (plu) => {
+  const url = `/src/api/shopee/get_item_history.php?plu=${encodeURIComponent(plu)}`;
+  return sendRequestGET(url);
 };

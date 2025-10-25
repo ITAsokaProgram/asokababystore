@@ -313,7 +313,13 @@ $conn->close();
                                             <td class="py-3 px-4 font-medium text-gray-900 whitespace-nowrap"><?php echo htmlspecialchars($item['no_faktur']); ?></td>
                                             <td class="py-3 px-4"><?php echo htmlspecialchars($item['no_lpb']); ?></td>
                                             <td class="py-3 px-4"><?php echo htmlspecialchars($item['plu']); ?></td>
-                                            <td class="py-3 px-4"><?php echo htmlspecialchars($item['descp']); ?></td>
+                                            <td class="py-3 px-4">
+                                                <span class="text-blue-600 hover:text-blue-800 cursor-pointer font-medium open-history-modal"
+                                                    data-plu="<?php echo htmlspecialchars($item['plu']); ?>"
+                                                    data-descp="<?php echo htmlspecialchars($item['descp']); ?>">
+                                                    <?php echo htmlspecialchars($item['descp']); ?>
+                                                </span>
+                                            </td>
                                             <td class="py-3 px-4"><?php echo htmlspecialchars($item['kode_supp']); ?></td>
                                             <td class="py-3 px-4"><?php echo htmlspecialchars($item['nama_supp']); ?></td>
                                             <td class="py-3 px-4 font-semibold text-blue-600"><?php echo number_format($item['QTY_REC'], 0); ?></td>
@@ -335,8 +341,20 @@ $conn->close();
             </div>
         </section>
     </main>
+    <div id="itemHistoryModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50" style="display: none;">
+        <div class="relative mx-auto p-5 border w-full max-w-3xl shadow-lg rounded-xl bg-white">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="text-xl font-semibold text-gray-900">History Penerimaan: <span id="modalItemName" class="text-blue-600"></span></h3>
+                <button id="closeHistoryModal" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            <div id="modalBodyContent" class="max-h-[60vh] overflow-y-auto">
+                <p class="text-center text-gray-500">Memuat data...</p>
+            </div>
+        </div>
+    </div>
     
     <script src="/src/js/middleware_auth.js"></script>
+    <script src="../../js/shopee/item_history_modal.js" type="module"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </body>
