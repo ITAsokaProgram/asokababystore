@@ -556,8 +556,18 @@ function getPriceRange($models) {
 
             <?php if (!empty($detailed_products)): ?>
               <div class="divide-y divide-gray-100">
-                <?php foreach ($detailed_products as $item): ?>
-                  <div class="product-card p-6">
+              <?php 
+              foreach ($detailed_products as $item): 
+                  $product_card_style = '';
+                  if (!(isset($item['has_model']) && $item['has_model'] === true && !empty($item['models']))) {
+                      $item_sku_trimmed = trim($item['item_sku'] ?? '');
+                      $stok_ol_data = $sku_stok_ol_data_map[$item_sku_trimmed] ?? null;
+                      if ($stok_ol_data) {
+                          $product_card_style = 'style="background-color: #ffeaf0;"';
+                      }
+                  }
+              ?>
+                  <div class="product-card p-6" <?php echo $product_card_style; ?>>
                     <div class="flex gap-6 mb-5">
                       <div class="product-image flex-shrink-0">
                             <a href="detail_produk_shopee.php?item_id=<?php echo $item['item_id']; ?>" class="product-image flex-shrink-0 cursor-pointer hover:opacity-80 transition">
@@ -610,9 +620,18 @@ function getPriceRange($models) {
                           <i class="fas fa-layer-group text-indigo-600"></i>
                           <p class="text-sm font-bold text-gray-700 uppercase tracking-wide">Variasi Produk</p>
                         </div>
-                        <div class="space-y-3">
-                          <?php foreach ($item['models'] as $model): ?>
-                            <div class="variant-card p-4">
+                       <div class="space-y-3">
+                        <?php 
+                        foreach ($item['models'] as $model): 
+                            $model_sku_trimmed = trim($model['model_sku'] ?? '');
+                            $barang_data = $sku_barang_data_map[$model_sku_trimmed] ?? null;
+                            $stok_ol_data = $sku_stok_ol_data_map[$model_sku_trimmed] ?? null;
+                            $variant_card_style = '';
+                            if ($stok_ol_data) {
+                                $variant_card_style = 'style="background-color: #ffeaf0;"';
+                            }
+                        ?>
+                            <div class="variant-card p-4" <?php echo $variant_card_style; ?>>
                               <div class="flex justify-between items-start mb-4">
                                 <div>
                                   <p class="font-bold text-gray-900 mb-2"><?php echo htmlspecialchars($model['model_name'] ?? 'Variation'); ?></p>
@@ -671,10 +690,7 @@ function getPriceRange($models) {
                                     Sinkronisasi Stok
                                   </button>
                                 </form>
-                                <?php
-                                $model_sku_trimmed = trim($model['model_sku'] ?? '');
-                                $barang_data = $sku_barang_data_map[$model_sku_trimmed] ?? null;
-                                $stok_ol_data = $sku_stok_ol_data_map[$model_sku_trimmed] ?? null;
+                              <?php
 
                                 $btn_text = '';
                                 $btn_class = '';
@@ -682,19 +698,13 @@ function getPriceRange($models) {
                                 $btn_disabled = false;
                                 $data_attrs = '';
 
+                                $show_button = false; 
+
                                 if ($barang_data) {
                                     if ($stok_ol_data) {
-                                        $btn_text = 'Edit Stok Online';
-                                        $btn_class = 'btn-manage-ol-edit';
-                                        $btn_icon = 'fa-pencil-alt';
-                                        $data_attrs = 'data-mode="edit" ' .
-                                                      'data-sku="' . htmlspecialchars($model_sku_trimmed) . '" ' .
-                                                      'data-plu="' . htmlspecialchars($stok_ol_data['plu']) . '" ' .
-                                                      'data-descp="' . htmlspecialchars($stok_ol_data['descp']) . '" ' .
-                                                      'data-vendor="' . htmlspecialchars($stok_ol_data['vendor']) . '" ' .
-                                                      'data-hrg_beli="' . htmlspecialchars($stok_ol_data['hrg_beli']) . '" ' .
-                                                      'data-price="' . htmlspecialchars($stok_ol_data['price']) . '"';
+                                        $show_button = false; 
                                     } else {
+                                        $show_button = true;
                                         $btn_text = 'Masukkan ke Stok Online';
                                         $btn_class = 'btn-manage-ol-add';
                                         $btn_icon = 'fa-plus';
@@ -707,12 +717,14 @@ function getPriceRange($models) {
                                                       'data-price="' . htmlspecialchars($barang_data['harga_jual']) . '"';
                                     }
                                 } else {
+                                    $show_button = true;
                                     $btn_text = 'SKU tdk ada di s_barang';
                                     $btn_class = 'btn-manage-ol-disabled';
                                     $btn_icon = 'fa-times';
                                     $btn_disabled = true;
                                 }
                                 ?>
+                                <?php if ($show_button):  ?>
                                 <button 
                                     type="button" 
                                     class="btn-action btn-manage-stok-ol <?php echo $btn_class; ?> rounded-xl whitespace-nowrap"
@@ -721,93 +733,93 @@ function getPriceRange($models) {
                                     <i class="fas <?php echo $btn_icon; ?> fa-fw"></i>
                                     <span><?php echo $btn_text; ?></span>
                                 </button>
+                                <?php endif; ?>
                               </div>
                             </div>
                           <?php endforeach; ?>
                         </div>
                       <?php else: ?>
+                      <?php
+                        $item_sku_trimmed = trim($item['item_sku'] ?? '');
+                        $barang_data = $sku_barang_data_map[$item_sku_trimmed] ?? null;
+                        $stok_ol_data = $sku_stok_ol_data_map[$item_sku_trimmed] ?? null;
+                        
+                        ?>
                         <div class="flex md:items-center justify-between md:flex-row flex-col flex-wrap gap-4">
                           <form class="update-stock-form form-group" data-item-id="<?php echo $item['item_id']; ?>">
-                            <input type="hidden" name="item_id" value="<?php echo htmlspecialchars($item['item_id']); ?>">
-                            <label class="text-sm font-semibold text-gray-700 whitespace-nowrap w-28">
-                              <i class="fas fa-box mr-1"></i> Stok Baru:
-                            </label>
-                            <input type="number" name="new_stock" placeholder="0" class="input-field flex-1" required>
-                            <button type="submit" class="btn-action btn-stock rounded-xl whitespace-nowrap">
-                               Update
-                            </button>
+                              <input type="hidden" name="item_id" value="<?php echo htmlspecialchars($item['item_id']); ?>">
+                              <label class="text-sm font-semibold text-gray-700 whitespace-nowrap w-28">
+                                  <i class="fas fa-box mr-1"></i> Stok Baru:
+                              </label>
+                              <input type="number" name="new_stock" placeholder="0" class="input-field flex-1" required>
+                              <button type="submit" class="btn-action btn-stock rounded-xl whitespace-nowrap">
+                                  Update
+                              </button>
                           </form>
                           
                           <form class="update-price-form form-group" data-item-id="<?php echo $item['item_id']; ?>">
-                            <input type="hidden" name="item_id" value="<?php echo htmlspecialchars($item['item_id']); ?>">
-                            <label class="text-sm font-semibold text-gray-700 whitespace-nowrap w-28">
-                              <i class="fas fa-tag mr-1"></i> Harga Baru:
-                            </label>
-                            <input type="number" name="new_price" placeholder="0" class="input-field flex-1" required>
-                            <button type="submit" class="btn-action btn-price rounded-xl whitespace-nowrap">
-                               Update
-                            </button>
+                              <input type="hidden" name="item_id" value="<?php echo htmlspecialchars($item['item_id']); ?>">
+                              <label class="text-sm font-semibold text-gray-700 whitespace-nowrap w-28">
+                                  <i class="fas fa-tag mr-1"></i> Harga Baru:
+                              </label>
+                              <input type="number" name="new_price" placeholder="0" class="input-field flex-1" required>
+                              <button type="submit" class="btn-action btn-price rounded-xl whitespace-nowrap">
+                                  Update
+                              </button>
                           </form>
                           <form class="sync-stock-form" data-item-id="<?php echo htmlspecialchars($item['item_id']); ?>">
-                            <input type="hidden" name="item_id" value="<?php echo htmlspecialchars($item['item_id']); ?>">
-                            <input type="hidden" name="model_id" value="0"> <input type="hidden" name="sku" value="<?php echo htmlspecialchars($item['item_sku']); ?>">
-                            <button type="submit" class="btn-action btn-sync rounded-xl whitespace-nowrap" 
-                            title="Samakan stok Shopee dengan stok database (SKU: <?php echo htmlspecialchars($item['item_sku']); ?>)">
-                              Sinkronisasi Stok
-                            </button>
+                              <input type="hidden" name="item_id" value="<?php echo htmlspecialchars($item['item_id']); ?>">
+                              <input type="hidden" name="model_id" value="0"> <input type="hidden" name="sku" value="<?php echo htmlspecialchars($item['item_sku']); ?>">
+                              <button type="submit" class="btn-action btn-sync rounded-xl whitespace-nowrap" 
+                              title="Samakan stok Shopee dengan stok database (SKU: <?php echo htmlspecialchars($item['item_sku']); ?>)">
+                                  Sinkronisasi Stok
+                              </button>
                           </form>
                           <?php
-                                $item_sku_trimmed = trim($item['item_sku'] ?? '');
-                                $barang_data = $sku_barang_data_map[$item_sku_trimmed] ?? null;
-                                $stok_ol_data = $sku_stok_ol_data_map[$item_sku_trimmed] ?? null;
+                          $btn_text = '';
+                          $btn_class = '';
+                          $btn_icon = 'fa-plus';
+                          $btn_disabled = false;
+                          $data_attrs = '';
+                          
+                          $show_button = false; 
 
-                                $btn_text = '';
-                                $btn_class = '';
-                                $btn_icon = 'fa-plus';
-                                $btn_disabled = false;
-                                $data_attrs = '';
-
-                                if ($barang_data) {
-                                    if ($stok_ol_data) {
-                                        $btn_text = 'Edit Stok Online';
-                                        $btn_class = 'btn-manage-ol-edit';
-                                        $btn_icon = 'fa-pencil-alt';
-                                        $data_attrs = 'data-mode="edit" ' .
-                                                      'data-sku="' . htmlspecialchars($item_sku_trimmed) . '" ' .
-                                                      'data-plu="' . htmlspecialchars($stok_ol_data['plu']) . '" ' .
-                                                      'data-descp="' . htmlspecialchars($stok_ol_data['descp']) . '" ' .
-                                                      'data-vendor="' . htmlspecialchars($stok_ol_data['vendor']) . '" ' .
-                                                      'data-hrg_beli="' . htmlspecialchars($stok_ol_data['hrg_beli']) . '" ' .
-                                                      'data-price="' . htmlspecialchars($stok_ol_data['price']) . '"';
-                                    } else {
-                                        $btn_text = 'Masukkan ke Stok Online';
-                                        $btn_class = 'btn-manage-ol-add';
-                                        $btn_icon = 'fa-plus';
-                                        $data_attrs = 'data-mode="add" ' .
-                                                      'data-sku="' . htmlspecialchars($item_sku_trimmed) . '" ' .
-                                                      'data-plu="' . htmlspecialchars($barang_data['plu']) . '" ' .
-                                                      'data-descp="' . htmlspecialchars($barang_data['descp']) . '" ' .
-                                                      'data-vendor="' . htmlspecialchars($barang_data['vendor']) . '" ' .
-                                                      'data-hrg_beli="' . htmlspecialchars($barang_data['harga_beli']) . '" ' .
-                                                      'data-price="' . htmlspecialchars($barang_data['harga_jual']) . '"';
-                                    }
-                                } else {
-                                    $btn_text = 'SKU tdk ada di s_barang';
-                                    $btn_class = 'btn-manage-ol-disabled';
-                                    $btn_icon = 'fa-times';
-                                    $btn_disabled = true;
-                                }
-                                ?>
-                                <button 
-                                    type="button" 
-                                    class="btn-action btn-manage-stok-ol <?php echo $btn_class; ?> rounded-xl whitespace-nowrap"
-                                    <?php echo $data_attrs; ?>
-                                    <?php if ($btn_disabled) echo 'disabled'; ?>>
-                                    <i class="fas <?php echo $btn_icon; ?> fa-fw"></i>
-                                    <span><?php echo $btn_text; ?></span>
-                                </button>
-                        </div>
-                      <?php endif; ?>
+                          if ($barang_data) {
+                              if ($stok_ol_data) {
+                                  $show_button = false;
+                              } else {
+                                  $show_button = true;
+                                  $btn_text = 'Masukkan ke Stok Online';
+                                  $btn_class = 'btn-manage-ol-add';
+                                  $btn_icon = 'fa-plus';
+                                  $data_attrs = 'data-mode="add" ' .
+                                                'data-sku="' . htmlspecialchars($item_sku_trimmed) . '" ' .
+                                                'data-plu="' . htmlspecialchars($barang_data['plu']) . '" ' .
+                                                'data-descp="' . htmlspecialchars($barang_data['descp']) . '" ' .
+                                                'data-vendor="' . htmlspecialchars($barang_data['vendor']) . '" ' .
+                                                'data-hrg_beli="' . htmlspecialchars($barang_data['harga_beli']) . '" ' .
+                                                'data-price="' . htmlspecialchars($barang_data['harga_jual']) . '"';
+                              }
+                          } else {
+                              $show_button = true;
+                              $btn_text = 'SKU tdk ada di s_barang';
+                              $btn_class = 'btn-manage-ol-disabled';
+                              $btn_icon = 'fa-times';
+                              $btn_disabled = true;
+                          }
+                          ?>
+                          <?php if ($show_button):  ?>
+                          <button 
+                              type="button" 
+                              class="btn-action btn-manage-stok-ol <?php echo $btn_class; ?> rounded-xl whitespace-nowrap"
+                              <?php echo $data_attrs; ?>
+                              <?php if ($btn_disabled) echo 'disabled'; ?>>
+                              <i class="fas <?php echo $btn_icon; ?> fa-fw"></i>
+                              <span><?php echo $btn_text; ?></span>
+                          </button>
+                          <?php endif; ?>
+                      </div>
+                  <?php endif; ?>
                     </div>
                   </div>
                 <?php endforeach; ?>

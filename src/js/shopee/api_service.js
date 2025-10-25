@@ -70,3 +70,6 @@ export const syncAllStock = (data) => {
 export const manageStokOl = (formData) => {
   return sendRequest('/src/api/shopee/manage_stok_ol.php', formData);
 };
+export const bulkTerimaBarang = (data) => {
+  return sendRequestJSON('/src/api/shopee/bulk_terima_barang.php', data);
+};

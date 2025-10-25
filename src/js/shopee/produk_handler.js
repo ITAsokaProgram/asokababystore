@@ -591,16 +591,27 @@ const handleManageStokOlClick = (event) => {
                     toast: true,
                     position: 'top-end'
                 });
-                button.dataset.mode = 'edit';
-                button.dataset.plu = formData.get('plu');
-                button.dataset.descp = formData.get('descp');
-                button.dataset.vendor = formData.get('vendor');
-                button.dataset.hrgBeli = formData.get('hrg_beli');
-                button.dataset.price = formData.get('price');
-                button.classList.remove('btn-manage-ol-add');
-                button.classList.add('btn-manage-ol-edit');
-                button.innerHTML = '<i class="fas fa-pencil-alt fa-fw"></i> <span>Edit / Tambah Stok</span>';
-                button.title = 'Edit / Tambah Stok Online';
+                const mode = formData.get('mode');
+                if (mode === 'add') {
+                    button.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                    button.style.opacity = '0';
+                    button.style.transform = 'scale(0.8)';
+                    setTimeout(() => {
+                        button.remove();
+                    }, 300);
+
+                    const variantCard = button.closest('.variant-card');
+                    if (variantCard) {
+                        variantCard.style.transition = 'background-color 0.3s ease';
+                        variantCard.style.backgroundColor = '#ffeaf0';
+                    } else {
+                        const productCard = button.closest('.product-card');
+                        if (productCard) {
+                            productCard.style.transition = 'background-color 0.3s ease';
+                            productCard.style.backgroundColor = '#ffeaf0';
+                        }
+                    }
+                }
             } catch (error) {
                 Swal.fire({
                     icon: 'error',
