@@ -63,17 +63,15 @@ if ($shopeeService->isConnected()) {
         }
     }
 
-    $filter_vendor = $_GET['vendor'] ?? '';
+    $filter_vendor = $_GET['vendor'] ?? 'ALL';
     $filter_plu = $_GET['plu'] ?? '';
     $filter_sku = $_GET['sku'] ?? '';
     $filter_descp = $_GET['descp'] ?? '';
 
-    // Ambil parameter sorting (BARU)
     $allowed_sort_cols = ['plu', 'ITEM_N', 'DESCP', 'VENDOR', 'Qty', 'hrg_beli', 'price'];
     $sort_by = $_GET['sort_by'] ?? 'DESCP';
     $sort_dir = $_GET['sort_dir'] ?? 'ASC';
 
-    // Validasi sorting params
     if (!in_array($sort_by, $allowed_sort_cols)) {
         $sort_by = 'DESCP';
     }
@@ -217,7 +215,7 @@ if ($shopeeService->isConnected()) {
                 <img src="../../../public/images/logo/shopee.png" alt="Shopee Logo" class="h-10 w-10">
               </div>
               <div>
-                <h1 class="text-2xl font-bold text-gray-800 mb-1">Terima Barang Pusat</h1>
+                <h1 class="text-2xl font-bold text-gray-800 mb-1">Terima Barang</h1>
               </div>
             </div>
             
@@ -233,8 +231,12 @@ if ($shopeeService->isConnected()) {
         <?php if ($shopeeService->isConnected()): ?>
           
           <div class="bg-white p-6 rounded-2xl shadow-lg mb-6">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">Filter Data Stok (Store: 9998)</h2>
-            <form method="GET" action="terima_barang_cabang.php" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Filter Data Stok</h2>
+            <a href="history_terima_barang.php" class="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg transition shadow-sm">
+                <i class="fas fa-history"></i>
+                <span>Lihat History Penerimaan</span>
+            </a>
+            <form method="GET" action="terima_barang.php" class="grid grid-cols-1 md:grid-cols-4 gap-4">
               
               <div>
                 <label for="vendor" class="block text-sm font-medium text-gray-700 mb-1">Vendor (Supplier)</label>
@@ -279,7 +281,7 @@ if ($shopeeService->isConnected()) {
               
               <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
                 <div>
-                  <label for="no_lpb" class="block text-sm font-medium text-gray-700 mb-1">No. LPB (Laporan Penerimaan Barang)</label>
+                  <label for="no_lpb" class="block text-sm font-medium text-gray-700 mb-1">No. LPB</label>
                   <input type="text" id="no_lpb" name="no_lpb" class="px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Masukkan No. LPB" required>
                   
                   <input type="hidden" id="form_kd_store" name="kd_store" value="<?php echo htmlspecialchars($filter_kd_store); ?>">
@@ -415,7 +417,7 @@ if ($shopeeService->isConnected()) {
   </main>
   
   <script src="/src/js/middleware_auth.js"></script>
-  <script src="../../js/shopee/terima_barang_cabang_handler.js" type="module"></script>
+  <script src="../../js/shopee/terima_barang_handler.js" type="module"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </body>
