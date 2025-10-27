@@ -32,7 +32,7 @@ class WebhookHandler {
         }
     }
 
-    public function handleIncomingMessage($body) {
+public function handleIncomingMessage($body) {
         $this->logger->info("Webhook received data: " . json_encode($body));
         $message = $body['entry'][0]['changes'][0]['value']['messages'][0] ?? null;
         if (!$message) {
@@ -200,8 +200,10 @@ class WebhookHandler {
 
         if ($conversation['status_percakapan'] === 'closed') {
             $savedUserMessage = null;
+            $messageContent = ''; 
+
             if ($messageType === 'text') {
-                $messageContent = $message['text']['body'];
+                $messageContent = $message['text']['body']; 
                 $savedUserMessage = $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $messageContent);
             } else {
                 kirimPesanTeks($nomorPengirim, WhatsappConstants::TEXT_ONLY_TO_START);
@@ -218,6 +220,8 @@ class WebhookHandler {
                     'total_unread_count' => $totalUnread 
                 ]);
             }
+
+            kirimPesanTeks($nomorPengirim, $messageContent);
 
             $this->sendWelcomeMessage($nomorPengirim, $conversation['id'], $namaPengirim);
             $this->conversationService->openConversation($nomorPengirim);
@@ -506,7 +510,7 @@ class WebhookHandler {
             $nomorPengirim,
             $pesanHeader,
             $pesanBody,
-            "", // footer
+            "", 
             WhatsappConstants::WELCOME_BUTTON_TEXT,
             BranchConstants::MAIN_MENU_SECTIONS
         );
