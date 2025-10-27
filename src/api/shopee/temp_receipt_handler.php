@@ -166,22 +166,38 @@ try {
             echo json_encode(['success' => true, 'message' => "Item '{$item['DESCP']}' berhasil ditambahkan."]);
             break;
         case 'add':
-            $item = $data['item'];
-            if (empty($item) || empty($item['plu']) || empty($item['VENDOR'])) {
+            $item_data_from_client = $data['item'];
+            if (empty($item_data_from_client) || empty($item_data_from_client['plu']) || empty($item_data_from_client['VENDOR'])) {
                 throw new Exception("Data item tidak lengkap (PLU atau VENDOR kosong).");
             }
+            
+            $plu_from_client = $item_data_from_client['plu'];
+            $vendor_from_client = $item_data_from_client['VENDOR'];
+            $descp_from_client = $item_data_from_client['DESCP']; // Ambil deskripsi dari client sebagai fallback
+
+            // 1. Periksa duplikat di keranjang
             $stmt_check = $conn->prepare("SELECT plu FROM s_receipt_temp WHERE kd_store = ? AND kode_kasir = ? AND plu = ?");
-            $stmt_check->bind_param("sis", $kd_store, $kode_kasir_int, $item['plu']);
+            $stmt_check->bind_param("sis", $kd_store, $kode_kasir_int, $plu_from_client);
             $stmt_check->execute();
             $result_check = $stmt_check->get_result();
             if ($result_check->num_rows > 0) {
-                 throw new Exception("Item '{$item['DESCP']}' (PLU: {$item['plu']}) sudah ada di keranjang.");
+                 throw new Exception("Item '{$descp_from_client}' (PLU: {$plu_from_client}) sudah ada di keranjang.");
             }
             $stmt_check->close();
 
-            
-            $hrg_beli_val = (float)($item['hrg_beli'] ?? 0);
-            $price_val = (float)($item['price'] ?? 0);
+            $hrg_beli_val = 0.0;
+            $price_val = 0.0;
+            $descp_val = $descp_from_client;
+            $stmt_find = $conn->prepare("SELECT hrg_beli, price, DESCP FROM s_stok_ol WHERE KD_STORE = ? AND plu = ? AND VENDOR = ?");
+            $stmt_find->bind_param("sss", $kd_store, $plu_from_client, $vendor_from_client);
+            $stmt_find->execute();
+            $result_find = $stmt_find->get_result();
+            if ($item_db = $result_find->fetch_assoc()) {
+                $hrg_beli_val = (float)$item_db['hrg_beli'];
+                $price_val = (float)$item_db['price'];     
+                $descp_val = $item_db['DESCP'];           
+            }
+            $stmt_find->close();
 
             
             $calcs = calculate_fields($hrg_beli_val, $price_val);
@@ -195,27 +211,26 @@ try {
             
             $stmt->bind_param("sssssdddddddddis", 
                 $kd_store,
-                $item['plu'], 
-                $item['plu'], 
-                $item['DESCP'],
+                $plu_from_client, 
+                $plu_from_client, 
+                $descp_val,       
                 $calcs['avg_cost'], 
-                $hrg_beli_val,
+                $hrg_beli_val,    
                 $calcs['ppn'], 
                 $calcs['netto'], 
                 $calcs['admin_s'], 
                 $calcs['ongkir'], 
                 $calcs['promo'], 
                 $calcs['biaya_psn'], 
-                $price_val,
+                $price_val,       
                 $calcs['net_price'], 
                 $kode_kasir_int,
-                $item['VENDOR']
+                $vendor_from_client
             );
-            
             
             $stmt->execute();
             $stmt->close();
-            echo json_encode(['success' => true, 'message' => "Item '{$item['DESCP']}' berhasil ditambahkan."]);
+            echo json_encode(['success' => true, 'message' => "Item '{$descp_val}' berhasil ditambahkan."]);
             break;
         case 'update':
             

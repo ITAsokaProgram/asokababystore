@@ -7,7 +7,7 @@ import {
     deleteAllTempReceiptItems,
     saveTempReceipt
 } from './api_service.js';
-import {unformatRupiah,calculateFieldsJS} from './calculate_terima_barang.js';
+import {unformatRupiah, calculateReceiveForm} from './calculate_terima_barang.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     function formatRupiah(value) {
@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const price = parseFloat(item.price) || 0;
         const qty = parseFloat(item.QTY_REC) || 0;
 
-        const calcs = calculateFieldsJS(hrg_beli, price);
+        const calcs =  calculateReceiveForm(hrg_beli, price);
 
         return `
         <tr data-plu="${item.plu}">
@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const hrg_beli = parseFloat(unformatRupiah(hrg_beli_raw)) || 0;
         const price = parseFloat(unformatRupiah(price_raw)) || 0;
 
-        const calcs = calculateFieldsJS(hrg_beli, price);
+        const calcs =  calculateReceiveForm(hrg_beli, price);
 
         row.querySelector('[data-field="avg_cost"]').value = formatRupiah(calcs.avg_cost);
         row.querySelector('[data-field="ppn"]').value = formatRupiah(calcs.ppn);
