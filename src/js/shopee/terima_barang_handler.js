@@ -7,6 +7,8 @@ import {
     deleteAllTempReceiptItems,
     saveTempReceipt
 } from './api_service.js';
+import {unformatRupiah,calculateFieldsJS} from './calculate_terima_barang.js';
+
 document.addEventListener('DOMContentLoaded', () => {
     function formatRupiah(value) {
         let cleanValue = String(value).replace(/\./g, '').replace(/,/g, '.');
@@ -16,12 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
             minimumFractionDigits: 0, 
             maximumFractionDigits: 2  
         }).format(number);
-    }
-    function unformatRupiah(value) {
-        if (typeof value !== 'string') {
-            value = String(value);
-        }
-        return value.replace(/\./g, '').replace(/,/g, '.');
     }
     const stockTable = document.getElementById('stock-table');
     if (stockTable) {
@@ -61,40 +57,44 @@ document.addEventListener('DOMContentLoaded', () => {
     const noLpbInput = document.getElementById('no_lpb');
     async function loadTempTable() {
         if (!tempTableBody) return;
-        // Ubah colspan menjadi 12
-        tempTableBody.innerHTML = '<tr><td colspan="12" class="text-center p-4"><i class="fas fa-spinner fa-spin"></i> Memuat data keranjang...</td></tr>';
+        tempTableBody.innerHTML = '<tr><td colspan="15" class="text-center p-4"><i class="fas fa-spinner fa-spin"></i> Memuat data keranjang...</td></tr>';
         try {
-            const result = await getTempReceiptItems();
-            if (result.success && result.items.length > 0) {
-                tempTableBody.innerHTML = result.items.map(item => createTempRowHtml(item)).join('');
-            } else {
-                // Ubah colspan menjadi 12
-                tempTableBody.innerHTML = '<tr><td colspan="12" class="text-center p-4 text-gray-500">Keranjang penerimaan masih kosong.</td></tr>';
-            }
+        const result = await getTempReceiptItems();
+        if (result.success && result.items.length > 0) {
+            tempTableBody.innerHTML = result.items.map(item => createTempRowHtml(item)).join('');
+        } else {
+            tempTableBody.innerHTML = '<tr><td colspan="15" class="text-center p-4 text-gray-500">Keranjang penerimaan masih kosong.</td></tr>';
+        }
         } catch (error) {
-            // Ubah colspan menjadi 12
-            tempTableBody.innerHTML = `<tr><td colspan="12" class="text-center p-4 text-red-500">Gagal memuat data: ${error.message}</td></tr>`;
+        tempTableBody.innerHTML = `<tr><td colspan="15" class="text-center p-4 text-red-500">Gagal memuat data: ${error.message}</td></tr>`;
         }
     }
     function createTempRowHtml(item) {
         const hrg_beli = parseFloat(item.hrg_beli) || 0;
         const price = parseFloat(item.price) || 0;
         const qty = parseFloat(item.QTY_REC) || 0;
-        const admin_s = hrg_beli * 0.01;
-        const ongkir = price * 0.12; 
+
+        const calcs = calculateFieldsJS(hrg_beli, price);
+
         return `
-            <tr data-plu="${item.plu}">
-                <td class="p-3 text-center"><input type="checkbox" class="input-cb-temp" value="${item.plu}"></td>
-                <td class="p-3 font-semibold">${item.plu}</td>
-                <td class="p-3">${item.descp}</td>
-                <td class="p-3"><input type="number" value="${qty}" min="0" class="input-qty input-temp-update" data-field="qty_rec"></td>
-                <td class="p-3"><input type="text" value="${formatRupiah(hrg_beli)}" min="0" class="input-qty input-temp-update input-rupiah" data-field="hrg_beli" inputmode="decimal"></td>
-                <td class="p-3"><input type="text" value="${formatRupiah(price)}" min="0" class="input-qty input-temp-update input-rupiah" data-field="price" inputmode="decimal"></td>
-                <td class="p-3"><input type="text" value="${formatRupiah(admin_s)}" class="input-qty input-disabled" disabled></td>
-                <td class="p-3"><input type="text" value="${formatRupiah(ongkir)}" class="input-qty input-disabled" disabled></td>
-                <td class="p-3"><input type="number" value="0" class="input-qty input-disabled" disabled></td>
-                <td class="p-3"><input type="number" value="0" class="input-qty input-disabled" disabled></td>
-            </tr>
+        <tr data-plu="${item.plu}">
+            <td class="p-3 text-center"><input type="checkbox" class="input-cb-temp" value="${item.plu}"></td>
+            <td class="p-3 font-semibold">${item.plu}</td>
+            <td class="p-3">${item.descp}</td>
+            <td class="p-3"><input type="number" value="${qty}" min="0" class="input-qty input-temp-update" data-field="qty_rec"></td>
+            <td class="p-3"><input type="text" value="${formatRupiah(hrg_beli)}" min="0" class="input-qty input-temp-update input-rupiah" data-field="hrg_beli" inputmode="decimal"></td>
+            <td class="p-3"><input type="text" value="${formatRupiah(price)}" min="0" class="input-qty input-temp-update input-rupiah" data-field="price" inputmode="decimal"></td>
+            
+            <td class="p-3"><input type="text" value="${formatRupiah(calcs.avg_cost)}" class="input-qty input-disabled" data-field="avg_cost" disabled></td>
+            <td class="p-3"><input type="text" value="${formatRupiah(calcs.ppn)}" class="input-qty input-disabled" data-field="ppn" disabled></td>
+            <td class="p-3"><input type="text" value="${formatRupiah(calcs.netto)}" class="input-qty input-disabled" data-field="netto" disabled></td>
+            <td class="p-3"><input type="text" value="${formatRupiah(calcs.admin_s)}" class="input-qty input-disabled" data-field="admin_s" disabled></td>
+            <td class="p-3"><input type="text" value="${formatRupiah(calcs.ongkir)}" class="input-qty input-disabled" data-field="ongkir" disabled></td>
+            <td class="p-3"><input type="text" value="${formatRupiah(calcs.promo)}" class="input-qty input-disabled" data-field="promo" disabled></td>
+            <td class="p-3"><input type="text" value="${formatRupiah(calcs.biaya_psn)}" class="input-qty input-disabled" data-field="biaya_psn" disabled></td>
+            <td class="p-3"><input type="text" value="${formatRupiah(calcs.net_price)}" class="input-qty input-disabled" data-field="net_price" disabled></td>
+            <td class="p-3"><input type="text" value="${formatRupiah(calcs.harga_rekomendasi)}" class="input-qty input-disabled" data-field="harga_rekomendasi" disabled></td>
+        </tr>
         `;
     }
     if (tempTableBody) {
@@ -120,12 +120,21 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateCalculatedFields(row) {
         const hrg_beli_raw = row.querySelector('[data-field="hrg_beli"]').value;
         const price_raw = row.querySelector('[data-field="price"]').value;
+
         const hrg_beli = parseFloat(unformatRupiah(hrg_beli_raw)) || 0;
         const price = parseFloat(unformatRupiah(price_raw)) || 0;
-        const admin_s = hrg_beli * 0.01;
-        const ongkir = price * 0.12; 
-        row.querySelector('.input-disabled[disabled]').value = formatRupiah(admin_s);
-        row.querySelectorAll('.input-disabled[disabled]')[1].value = formatRupiah(ongkir);
+
+        const calcs = calculateFieldsJS(hrg_beli, price);
+
+        row.querySelector('[data-field="avg_cost"]').value = formatRupiah(calcs.avg_cost);
+        row.querySelector('[data-field="ppn"]').value = formatRupiah(calcs.ppn);
+        row.querySelector('[data-field="netto"]').value = formatRupiah(calcs.netto);
+        row.querySelector('[data-field="admin_s"]').value = formatRupiah(calcs.admin_s);
+        row.querySelector('[data-field="ongkir"]').value = formatRupiah(calcs.ongkir);
+        row.querySelector('[data-field="promo"]').value = formatRupiah(calcs.promo);
+        row.querySelector('[data-field="biaya_psn"]').value = formatRupiah(calcs.biaya_psn);
+        row.querySelector('[data-field="net_price"]').value = formatRupiah(calcs.net_price);
+        row.querySelector('[data-field="harga_rekomendasi"]').value = formatRupiah(calcs.harga_rekomendasi);
     }
     async function sendUpdateToServer(row) {
         const plu = row.dataset.plu;

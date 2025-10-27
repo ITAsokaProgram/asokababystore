@@ -650,10 +650,16 @@ if ($shopeeService->isConnected()) {
                   <th>Qty Terima</th>
                   <th>Hrg. Beli</th>
                   <th>Hrg. Jual</th>
+                  
+                  <th>Avg. Cost</th>
+                  <th>PPN (11%)</th>
+                  <th>Netto</th>
                   <th>Admin</th>
                   <th>Ongkir</th>
                   <th>Promo</th>
                   <th>Biaya Pesan</th>
+                  <th>Net Price</th>
+                  <th>Hrg. Rekomendasi</th>
                 </tr>
               </thead>
               <tbody id="temp-receipt-body">

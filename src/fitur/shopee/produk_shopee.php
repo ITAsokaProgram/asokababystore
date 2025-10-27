@@ -129,6 +129,13 @@ if ($shopeeService->isConnected()) {
         header('Location: ' . strtok($redirect_uri, '?'));
         exit();
     }
+
+    if (isset($product_list_response['error']) && $product_list_response['error'] === 'error_param' &&
+        isset($product_list_response['message']) && $product_list_response['message'] === 'Invalid timestamp.') {
+        header('Location: ' . strtok($redirect_uri, '?'));
+        exit();
+    }
+
     if (isset($product_list_response['response'])) {
         $pagination_info = $product_list_response['response'];
         $total_count = $pagination_info['total_count'] ?? 0;

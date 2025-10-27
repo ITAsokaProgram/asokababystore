@@ -1,4 +1,32 @@
 <?php
+
+function calculate_fields($hrg_beli, $price) {
+    $hrg_beli = (float)$hrg_beli;
+    $price = (float)$price;
+
+    $ppn = $hrg_beli * 0.11; 
+    $netto = $hrg_beli + $ppn;
+    $admin_s = $hrg_beli * 0.01; 
+    $ongkir = $price * 0.12; 
+    
+    $promo = $hrg_beli * 0.005; 
+    $biaya_psn = 150; 
+    
+    $avg_cost = $netto + $admin_s + $ongkir + $biaya_psn - $promo;
+    $net_price = $avg_cost; 
+    
+    return [
+        'ppn' => $ppn,
+        'netto' => $netto,
+        'admin_s' => $admin_s,
+        'ongkir' => $ongkir,
+        'promo' => $promo,
+        'biaya_psn' => $biaya_psn,
+        'avg_cost' => $avg_cost,
+        'net_price' => $net_price
+    ];
+}
+
 session_start();
 ini_set('display_errors', 0);
 require_once __DIR__ . '/../../utils/Logger.php';
@@ -95,50 +123,44 @@ try {
                  throw new Exception("Item '{$item['DESCP']}' (PLU: {$item['plu']}) sudah ada di keranjang.");
             }
             $stmt_check->close();
-            $stmt_insert = $conn->prepare("INSERT INTO s_receipt_temp 
-                (kd_store, no_faktur, plu, barcode, descp, 
-                 avg_cost, hrg_beli, ppn, netto, admin_s, 
-                 ongkir, promo, biaya_psn, price, net_price, 
-                 QTY_REC, tgl_pesan, no_lpb, kode_kasir, kode_supp, jam) 
-                VALUES (?, '', ?, ?, ?, ?, ?, ?, ?, 0, 0, 0, 0, ?, ?, 1, NOW(), '', ?, ?, NOW())");
+
+            
             $plu_val = $item['plu'];
             $descp_val = $item['DESCP'];
-            $avg_cost_val = (float)$item['avg_cost'];
             $hrg_beli_val = (float)$item['hrg_beli'];
-            $ppn_val = (float)$item['ppn'];
-            $netto_val = (float)$item['netto'];
             $price_val = (float)$item['price'];
             $vendor_val = $item['VENDOR'];
 
             
-            $admin_s_val = $hrg_beli_val * 0.01;
-            $ongkir_val = $price_val * 0.11;
+            $calcs = calculate_fields($hrg_beli_val, $price_val);
 
-            
             $stmt_insert = $conn->prepare("INSERT INTO s_receipt_temp 
                 (kd_store, no_faktur, plu, barcode, descp, 
-                 avg_cost, hrg_beli, ppn, netto, admin_s, 
-                 ongkir, promo, biaya_psn, price, net_price, 
-                 QTY_REC, tgl_pesan, no_lpb, kode_kasir, kode_supp, jam) 
-                VALUES (?, '', ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, ?, ?, 1, NOW(), '', ?, ?, NOW())");
+                avg_cost, hrg_beli, ppn, netto, admin_s, 
+                ongkir, promo, biaya_psn, price, net_price, 
+                QTY_REC, tgl_pesan, no_lpb, kode_kasir, kode_supp, jam) 
+                VALUES (?, '', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, NOW(), '', ?, ?, NOW())");
             
-            
-            $stmt_insert->bind_param("ssssddddddddis", 
+            $stmt_insert->bind_param("sssssdddddddddis", 
                 $kd_store,
                 $plu_val,
                 $plu_val, 
                 $descp_val,
-                $avg_cost_val,
+                $calcs['avg_cost'], 
                 $hrg_beli_val,
-                $ppn_val,
-                $netto_val,
-                $admin_s_val, 
-                $ongkir_val,  
+                $calcs['ppn'], 
+                $calcs['netto'], 
+                $calcs['admin_s'], 
+                $calcs['ongkir'], 
+                $calcs['promo'], 
+                $calcs['biaya_psn'], 
                 $price_val,
-                $price_val, 
+                $calcs['net_price'], 
                 $kode_kasir_int,
                 $vendor_val
             );
+            
+
             $stmt_insert->execute();
             $stmt_insert->close();
             echo json_encode(['success' => true, 'message' => "Item '{$item['DESCP']}' berhasil ditambahkan."]);
@@ -156,48 +178,92 @@ try {
                  throw new Exception("Item '{$item['DESCP']}' (PLU: {$item['plu']}) sudah ada di keranjang.");
             }
             $stmt_check->close();
+
+            
+            $hrg_beli_val = (float)($item['hrg_beli'] ?? 0);
+            $price_val = (float)($item['price'] ?? 0);
+
+            
+            $calcs = calculate_fields($hrg_beli_val, $price_val);
+
             $stmt = $conn->prepare("INSERT INTO s_receipt_temp 
                 (kd_store, no_faktur, plu, barcode, descp, 
-                 avg_cost, hrg_beli, ppn, netto, admin_s, 
-                 ongkir, promo, biaya_psn, price, net_price, 
-                 QTY_REC, tgl_pesan, no_lpb, kode_kasir, kode_supp, jam) 
-                VALUES (?, '', ?, ?, ?, ?, ?, ?, ?, 0, 0, 0, 0, ?, ?, 1, NOW(), '', ?, ?, NOW())");
-            $stmt->bind_param("ssssddddddis", 
+                avg_cost, hrg_beli, ppn, netto, admin_s, 
+                ongkir, promo, biaya_psn, price, net_price, 
+                QTY_REC, tgl_pesan, no_lpb, kode_kasir, kode_supp, jam) 
+                VALUES (?, '', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, NOW(), '', ?, ?, NOW())");
+            
+            $stmt->bind_param("sssssdddddddddis", 
                 $kd_store,
                 $item['plu'], 
                 $item['plu'], 
                 $item['DESCP'],
-                $item['avg_cost'],
-                $item['hrg_beli'],
-                $item['ppn'],
-                $item['netto'],
-                $item['price'],
-                $item['price'], 
+                $calcs['avg_cost'], 
+                $hrg_beli_val,
+                $calcs['ppn'], 
+                $calcs['netto'], 
+                $calcs['admin_s'], 
+                $calcs['ongkir'], 
+                $calcs['promo'], 
+                $calcs['biaya_psn'], 
+                $price_val,
+                $calcs['net_price'], 
                 $kode_kasir_int,
                 $item['VENDOR']
             );
+            
+            
             $stmt->execute();
             $stmt->close();
             echo json_encode(['success' => true, 'message' => "Item '{$item['DESCP']}' berhasil ditambahkan."]);
             break;
         case 'update':
+            
             $plu = $data['plu'] ?? '';
             $qty = (float)($data['qty_rec'] ?? 0);
             $hrg_beli = (float)($data['hrg_beli'] ?? 0);
             $price = (float)($data['price'] ?? 0);
 
-            $admin_s = $hrg_beli * 0.01;
-            $ongkir = $price * 0.11;
-
             if (empty($plu)) {
                 throw new Exception("PLU tidak ditemukan untuk update.");
             }
+
             
+            $calcs = calculate_fields($hrg_beli, $price);
+
             $stmt = $conn->prepare("UPDATE s_receipt_temp 
-                                    SET QTY_REC = ?, hrg_beli = ?, price = ?, admin_s = ?, ongkir = ? 
+                                    SET 
+                                        QTY_REC = ?, 
+                                        hrg_beli = ?, 
+                                        price = ?, 
+                                        ppn = ?, 
+                                        netto = ?, 
+                                        admin_s = ?, 
+                                        ongkir = ?, 
+                                        promo = ?, 
+                                        biaya_psn = ?, 
+                                        avg_cost = ?, 
+                                        net_price = ? 
                                     WHERE kd_store = ? AND kode_kasir = ? AND plu = ?");
             
-            $stmt->bind_param("dddddsis", $qty, $hrg_beli, $price, $admin_s, $ongkir, $kd_store, $kode_kasir_int, $plu);
+            $stmt->bind_param("dddddddddddsis", 
+                $qty, 
+                $hrg_beli, 
+                $price, 
+                $calcs['ppn'],
+                $calcs['netto'],
+                $calcs['admin_s'],
+                $calcs['ongkir'],
+                $calcs['promo'],
+                $calcs['biaya_psn'],
+                $calcs['avg_cost'],
+                $calcs['net_price'],
+                $kd_store, 
+                $kode_kasir_int, 
+                $plu
+            );
+            
+
             $stmt->execute();
             $stmt->close();
             echo json_encode(['success' => true]);

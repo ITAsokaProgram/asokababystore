@@ -79,6 +79,12 @@ if ($shopeeService->isConnected()) {
         exit();
     }
 
+    if (isset($order_list_response['error']) && $order_list_response['error'] === 'error_param' &&
+        isset($order_list_response['message']) && $order_list_response['message'] === 'Invalid timestamp.') {
+        header('Location: ' . strtok($redirect_uri, '?'));
+        exit();
+    }
+
     if (!empty($order_list_response['error'])) {
         $error_message = $order_list_response['message'];
     }
