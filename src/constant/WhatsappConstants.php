@@ -3,6 +3,17 @@
 namespace Asoka\Constant;
 
 class WhatsappConstants {
+    const LOKER_MESSAGE = "Halo kak, untuk informasi mengenai ketersediaan lowongan kerja, hal tersebut bergantung pada kebutuhan masing-masing cabang. Anda dapat langsung mengunjungi cabang / store Asoka Baby Store terdekat dan menyerahkan berkas lamaran kerja kepada kasir.
+                Berkas Lamaran :
+                * Surat Lamaran Kerja
+                * Curriculum Vitae (CV)
+                * FC Ijazah
+                * FC SKCK
+                * FC KTP
+                * FC KK
+                * Foto 3x4
+
+                Terima kasih";
     const LIVE_CHAT_END_MESSAGE = "Terima kasih telah menghubungi Customer Service ASOKA. Jika Ayah/Bunda memerlukan bantuan lebih lanjut, jangan ragu untuk menghubungi kami kembali ya. 😊";
     public const LIVE_CHAT_MENU_PROMPT = "Untuk memilih menu awal, silakan akhiri sesi chat ini terlebih dahulu.";
     public const MEDIA_UNSUPPORTED_LIVE_CHAT = "Maaf, saat ini kami hanya mendukung pesan teks, gambar, video, dan pesan suara dalam sesi live chat.";

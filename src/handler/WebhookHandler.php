@@ -137,6 +137,31 @@ class WebhookHandler {
             return; 
         }
 
+        if ($messageType === 'text') {
+            $textBody = $message['text']['body'];
+            if (preg_match('/(lowongan|loker)/i', $textBody)) {
+
+                $savedUserMessage = $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $textBody);
+
+                if ($savedUserMessage) {
+                    $totalUnread = $this->conversationService->getTotalUnreadCount(); 
+                    $this->notifyWebSocketServer([
+                        'event' => 'new_message',
+                        'conversation_id' => $conversation['id'],
+                        'phone' => $nomorPengirim,
+                        'message' => $savedUserMessage,
+                        'total_unread_count' => $totalUnread 
+                    ]);
+                }
+
+                kirimPesanTeks($nomorPengirim, WhatsappConstants::LOKER_MESSAGE);
+
+                $this->saveAdminReply($conversation['id'], $nomorPengirim, WhatsappConstants::LOKER_MESSAGE);
+                
+                return;
+            }
+        }
+
 
         if ($message['type'] === 'interactive' && isset($message['interactive']['type']) && $message['interactive']['type'] === 'button_reply') {
             $buttonId = $message['interactive']['button_reply']['id'];
