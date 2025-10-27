@@ -81,29 +81,31 @@ try {
     $hrg_beli = (float)($_POST['hrg_beli'] ?? 0);
     $price = (float)($_POST['price'] ?? 0);
 
-    $qty_rec = 0;
-    $avg_cost = 0;
-    $ppn_rec = 0;
-    $netto_rec = 0;
+    $qty_rec = 0; 
+
+    $ppn_rec = $hrg_beli * 0.11;
+    $netto_rec = $hrg_beli + $ppn_rec;
+
+    $avg_cost = $hrg_beli;
+
 
     if (empty($kd_store) || empty($plu) || empty($sku) || empty($descp)) {
         throw new Exception("Validasi gagal: KD_STORE, PLU, SKU (item_n), dan Deskripsi wajib diisi.");
     }
 
-    $sql_stok_ol = "INSERT INTO s_stok_ol 
-                        (KD_STORE, plu, ITEM_N, DESCP, VENDOR, avg_cost, hrg_beli, ppn, netto, price, Qty, Tgl_Entry) 
-                    VALUES 
+    $sql_stok_ol = "INSERT INTO s_stok_ol
+                        (KD_STORE, plu, ITEM_N, DESCP, VENDOR, avg_cost, hrg_beli, ppn, netto, price, Qty, Tgl_Entry)
+                    VALUES
                         (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
-                    ON DUPLICATE KEY UPDATE 
+                    ON DUPLICATE KEY UPDATE
                         ITEM_N = VALUES(ITEM_N),
                         DESCP = VALUES(DESCP),
                         VENDOR = VALUES(VENDOR),
-                        avg_cost = VALUES(avg_cost),
+                        avg_cost = VALUES(avg_cost), 
                         hrg_beli = VALUES(hrg_beli),
-                        ppn = VALUES(ppn),
-                        netto = VALUES(netto),
+                        ppn = VALUES(ppn),           
+                        netto = VALUES(netto),         
                         price = VALUES(price),
-                        Qty = VALUES(Qty), 
                         Tgl_Update = NOW()";
 
     $stmt_stok_ol = $conn->prepare($sql_stok_ol);
@@ -111,16 +113,15 @@ try {
         throw new Exception("Database prepare failed (s_stok_ol): ". $conn->error);
     }
 
-    $stmt_stok_ol->bind_param("sssssdddddd", 
-        $kd_store, $plu, $sku, $descp, $vendor, 
+    $stmt_stok_ol->bind_param("sssssdddddi",
+        $kd_store, $plu, $sku, $descp, $vendor,
         $avg_cost, 
-        $hrg_beli, 
-        $ppn_rec,  
+        $hrg_beli,
+        $ppn_rec,   
         $netto_rec, 
-        $price,     
+        $price,
         $qty_rec    
     );
-
     if (!$stmt_stok_ol->execute()) {
         throw new Exception("Gagal eksekusi query (s_stok_ol): ". $stmt_stok_ol->error);
     }

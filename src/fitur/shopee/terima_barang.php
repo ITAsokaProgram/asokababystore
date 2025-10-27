@@ -645,21 +645,20 @@ if ($shopeeService->isConnected()) {
               <thead>
                 <tr>
                   <th class="w-10 text-center"><input type="checkbox" id="select-all-temp" class="input-cb-temp"></th>
-                  <th>PLU</th>
+                  <th>SKU</th>
                   <th style="min-width: 250px;">Deskripsi</th>
                   <th>Qty Terima</th>
-                  <th>Hrg. Beli</th>
-                  <th>Hrg. Jual</th>
-                  
                   <th>Avg. Cost</th>
-                  <th>PPN (11%)</th>
+                  <th>Hrg. Beli</th>
+                  <th>PPN</th>
                   <th>Netto</th>
-                  <th>Admin</th>
-                  <th>Ongkir</th>
-                  <th>Promo</th>
-                  <th>Biaya Pesan</th>
-                  <th>Net Price</th>
-                  <th>Hrg. Rekomendasi</th>
+                  <th>HB+Biaya Lainnya</th>
+                  <th>Hrg. Jual</th>
+                  <th>Margin</th>
+                  <th>Admin (%)</th>
+                  <th>Ongkir (%)</th>
+                  <th>Promo (%)</th>
+                  <th>Biaya Pesanan</th>
                 </tr>
               </thead>
               <tbody id="temp-receipt-body">

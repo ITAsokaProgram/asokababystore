@@ -2,12 +2,12 @@ import {
     getTempReceiptItems,
     addTempReceiptItem,
     addTempReceiptItemByPlu,
-    updateTempReceiptItem,
+    updateTempReceiptItem, // Modifikasi: updateTempReceiptItem sekarang akan me-return data item yang baru
     deleteTempReceiptItems,
     deleteAllTempReceiptItems,
     saveTempReceipt
 } from './api_service.js';
-import {unformatRupiah, calculateReceiveForm} from './calculate_terima_barang.js';
+import { unformatRupiah } from './calculate_terima_barang.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     function formatRupiah(value) {
@@ -15,10 +15,21 @@ document.addEventListener('DOMContentLoaded', () => {
         let number = parseFloat(cleanValue);
         if (isNaN(number)) number = 0;
         return new Intl.NumberFormat('id-ID', {
-            minimumFractionDigits: 0, 
-            maximumFractionDigits: 2  
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2
         }).format(number);
     }
+    
+    function formatPersen(value) {
+        let number = parseFloat(value);
+        if (isNaN(number)) number = 0;
+        // Format dengan 2 desimal jika perlu
+        return number.toLocaleString('id-ID', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2
+        });
+    }
+
     const stockTable = document.getElementById('stock-table');
     if (stockTable) {
         stockTable.addEventListener('click', async (e) => {
@@ -26,14 +37,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 const button = e.target;
                 const row = button.closest('tr');
                 const itemData = { ...row.dataset };
-                itemData.avg_cost = parseFloat(itemData.avgCost) || 0;
-                itemData.hrg_beli = parseFloat(itemData.hrgBeli) || 0;
-                itemData.ppn = parseFloat(itemData.ppn) || 0;
-                itemData.netto = parseFloat(itemData.netto) || 0;
-                itemData.price = parseFloat(itemData.price) || 0;
+                
+                // Ambil data dari s_stok_ol (sudah di-join) yang diperlukan untuk kalkulasi awal
+                // Kita tidak perlu mengirim semua data, server akan mengambilnya lagi saat 'add'
+                // Cukup kirim data dasar.
                 itemData.plu = itemData.plu;
                 itemData.DESCP = itemData.descp;
                 itemData.VENDOR = itemData.vendor;
+                itemData.hrg_beli = parseFloat(itemData.hrgBeli) || 0;
+                itemData.price = parseFloat(itemData.price) || 0;
+                itemData.ITEM_N = itemData.itemN;
+
                 button.disabled = true;
                 button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
                 try {
@@ -49,115 +63,179 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
     const tempTableBody = document.getElementById('temp-receipt-body');
     const saveTempForm = document.getElementById('save-temp-form');
     const selectAllCheckbox = document.getElementById('select-all-temp');
     const deleteSelectedButton = document.getElementById('delete-selected-temp');
     const deleteAllButton = document.getElementById('delete-all-temp');
     const noLpbInput = document.getElementById('no_lpb');
+
     async function loadTempTable() {
         if (!tempTableBody) return;
         tempTableBody.innerHTML = '<tr><td colspan="15" class="text-center p-4"><i class="fas fa-spinner fa-spin"></i> Memuat data keranjang...</td></tr>';
         try {
-        const result = await getTempReceiptItems();
-        if (result.success && result.items.length > 0) {
-            tempTableBody.innerHTML = result.items.map(item => createTempRowHtml(item)).join('');
-        } else {
-            tempTableBody.innerHTML = '<tr><td colspan="15" class="text-center p-4 text-gray-500">Keranjang penerimaan masih kosong.</td></tr>';
-        }
+            const result = await getTempReceiptItems();
+            if (result.success && result.items.length > 0) {
+                tempTableBody.innerHTML = result.items.map(item => createTempRowHtml(item)).join('');
+            } else {
+                tempTableBody.innerHTML = '<tr><td colspan="15" class="text-center p-4 text-gray-500">Keranjang penerimaan masih kosong.</td></tr>';
+            }
         } catch (error) {
-        tempTableBody.innerHTML = `<tr><td colspan="15" class="text-center p-4 text-red-500">Gagal memuat data: ${error.message}</td></tr>`;
+            tempTableBody.innerHTML = `<tr><td colspan="15" class="text-center p-4 text-red-500">Gagal memuat data: ${error.message}</td></tr>`;
         }
     }
+
+    // REWRITE: Fungsi createTempRowHtml di-rewrite total
     function createTempRowHtml(item) {
+        const qty = parseFloat(item.QTY_REC) || 0;
         const hrg_beli = parseFloat(item.hrg_beli) || 0;
         const price = parseFloat(item.price) || 0;
-        const qty = parseFloat(item.QTY_REC) || 0;
+        
+        // Semua data kalkulasi sekarang datang dari server
+        const itemN = item.ITEM_N || item.plu; // Fallback SKU ke PLU
+        const avg_cost = parseFloat(item.calc_weighted_avg_cost) || 0;
+        const ppn = parseFloat(item.ppn) || 0;
+        const netto = parseFloat(item.netto) || 0;
+        const hb_plus_lainnya = parseFloat(item.calc_hb_plus_lainnya) || 0;
+        const margin = parseFloat(item.calc_margin) || 0;
+        
+        // Persentase dari s_kategori
+        const admin_pct = parseFloat(item.kategori_admin_pct) || 0;
+        const ongkir_pct = parseFloat(item.kategori_ongkir_pct) || 0;
+        const promo_pct = parseFloat(item.kategori_promo_pct) || 0;
+        const biaya_pesanan = parseFloat(item.kategori_biaya_pesanan) || 0;
 
-        const calcs =  calculateReceiveForm(hrg_beli, price);
+        // Tentukan warna margin
+        let marginClass = 'text-gray-900';
+        if (margin < 0) {
+            marginClass = 'text-red-600 font-bold';
+        } else if (margin > 0) {
+            marginClass = 'text-green-600 font-bold';
+        }
 
         return `
         <tr data-plu="${item.plu}">
             <td class="p-3 text-center"><input type="checkbox" class="input-cb-temp" value="${item.plu}"></td>
-            <td class="p-3 font-semibold">${item.plu}</td>
+            <td class="p-3 font-semibold">${itemN}</td>
             <td class="p-3">${item.descp}</td>
+            
             <td class="p-3"><input type="number" value="${qty}" min="0" class="input-qty input-temp-update" data-field="qty_rec"></td>
+            
+            <td class="p-3"><input type="text" value="${formatRupiah(avg_cost)}" class="input-qty input-disabled" data-field="calc_weighted_avg_cost" disabled></td>
+            
             <td class="p-3"><input type="text" value="${formatRupiah(hrg_beli)}" min="0" class="input-qty input-temp-update input-rupiah" data-field="hrg_beli" inputmode="decimal"></td>
+            
+            <td class="p-3"><input type="text" value="${formatRupiah(ppn)}" class="input-qty input-disabled" data-field="ppn" disabled></td>
+            <td class="p-3"><input type="text" value="${formatRupiah(netto)}" class="input-qty input-disabled" data-field="netto" disabled></td>
+            <td class="p-3"><input type="text" value="${formatRupiah(hb_plus_lainnya)}" class="input-qty input-disabled" data-field="calc_hb_plus_lainnya" disabled></td>
+            
             <td class="p-3"><input type="text" value="${formatRupiah(price)}" min="0" class="input-qty input-temp-update input-rupiah" data-field="price" inputmode="decimal"></td>
             
-            <td class="p-3"><input type="text" value="${formatRupiah(calcs.avg_cost)}" class="input-qty input-disabled" data-field="avg_cost" disabled></td>
-            <td class="p-3"><input type="text" value="${formatRupiah(calcs.ppn)}" class="input-qty input-disabled" data-field="ppn" disabled></td>
-            <td class="p-3"><input type="text" value="${formatRupiah(calcs.netto)}" class="input-qty input-disabled" data-field="netto" disabled></td>
-            <td class="p-3"><input type="text" value="${formatRupiah(calcs.admin_s)}" class="input-qty input-disabled" data-field="admin_s" disabled></td>
-            <td class="p-3"><input type="text" value="${formatRupiah(calcs.ongkir)}" class="input-qty input-disabled" data-field="ongkir" disabled></td>
-            <td class="p-3"><input type="text" value="${formatRupiah(calcs.promo)}" class="input-qty input-disabled" data-field="promo" disabled></td>
-            <td class="p-3"><input type="text" value="${formatRupiah(calcs.biaya_psn)}" class="input-qty input-disabled" data-field="biaya_psn" disabled></td>
-            <td class="p-3"><input type="text" value="${formatRupiah(calcs.net_price)}" class="input-qty input-disabled" data-field="net_price" disabled></td>
-            <td class="p-3"><input type="text" value="${formatRupiah(calcs.harga_rekomendasi)}" class="input-qty input-disabled" data-field="harga_rekomendasi" disabled></td>
+            <td class="p-3"><input type="text" value="${formatRupiah(margin)}" class="input-qty input-disabled ${marginClass}" data-field="calc_margin" disabled></td>
+            <td class="p-3"><input type="text" value="${formatPersen(admin_pct)}" class="input-qty input-disabled" data-field="kategori_admin_pct" disabled></td>
+            <td class="p-3"><input type="text" value="${formatPersen(ongkir_pct)}" class="input-qty input-disabled" data-field="kategori_ongkir_pct" disabled></td>
+            <td class="p-3"><input type="text" value="${formatPersen(promo_pct)}" class="input-qty input-disabled" data-field="kategori_promo_pct" disabled></td>
+            <td class="p-3"><input type="text" value="${formatRupiah(biaya_pesanan)}" class="input-qty input-disabled" data-field="kategori_biaya_pesanan" disabled></td>
         </tr>
         `;
     }
+
     if (tempTableBody) {
         let updateTimeout;
+
         tempTableBody.addEventListener('blur', (e) => {
             if (e.target.classList.contains('input-rupiah')) {
                 const input = e.target;
                 const unformattedValue = unformatRupiah(input.value);
                 input.value = formatRupiah(unformattedValue);
             }
-        }, true); 
+        }, true);
+
+        // MODIFIKASI: Event listener input tidak lagi memanggil updateCalculatedFields
         tempTableBody.addEventListener('input', (e) => {
             if (e.target.classList.contains('input-temp-update')) {
                 clearTimeout(updateTimeout);
                 const row = e.target.closest('tr');
-                updateCalculatedFields(row);
+                
+                // Tandai input sebagai 'sedang diproses'
+                e.target.style.borderColor = '#667eea'; // Indigo-500
+                
                 updateTimeout = setTimeout(() => {
-                    sendUpdateToServer(row);
-                }, 1000);
+                    sendUpdateToServer(row, e.target); // Kirim 'e.target' untuk status visual
+                }, 1000); // Tunda 1 detik
             }
         });
     }
-    function updateCalculatedFields(row) {
-        const hrg_beli_raw = row.querySelector('[data-field="hrg_beli"]').value;
-        const price_raw = row.querySelector('[data-field="price"]').value;
 
-        const hrg_beli = parseFloat(unformatRupiah(hrg_beli_raw)) || 0;
-        const price = parseFloat(unformatRupiah(price_raw)) || 0;
+    // REMOVED: Fungsi updateCalculatedFields(row) dihapus.
 
-        const calcs =  calculateReceiveForm(hrg_beli, price);
-
-        row.querySelector('[data-field="avg_cost"]').value = formatRupiah(calcs.avg_cost);
-        row.querySelector('[data-field="ppn"]').value = formatRupiah(calcs.ppn);
-        row.querySelector('[data-field="netto"]').value = formatRupiah(calcs.netto);
-        row.querySelector('[data-field="admin_s"]').value = formatRupiah(calcs.admin_s);
-        row.querySelector('[data-field="ongkir"]').value = formatRupiah(calcs.ongkir);
-        row.querySelector('[data-field="promo"]').value = formatRupiah(calcs.promo);
-        row.querySelector('[data-field="biaya_psn"]').value = formatRupiah(calcs.biaya_psn);
-        row.querySelector('[data-field="net_price"]').value = formatRupiah(calcs.net_price);
-        row.querySelector('[data-field="harga_rekomendasi"]').value = formatRupiah(calcs.harga_rekomendasi);
-    }
-    async function sendUpdateToServer(row) {
+    // REWRITE: sendUpdateToServer sekarang menerima 'inputElement'
+    // dan me-render ulang nilai baris dari respons server.
+    async function sendUpdateToServer(row, inputElement) {
         const plu = row.dataset.plu;
         const hrg_beli_raw = row.querySelector('[data-field="hrg_beli"]').value;
         const price_raw = row.querySelector('[data-field="price"]').value;
         const qty_rec = parseFloat(row.querySelector('[data-field="qty_rec"]').value) || 0;
+
         const hrg_beli = parseFloat(unformatRupiah(hrg_beli_raw)) || 0;
         const price = parseFloat(unformatRupiah(price_raw)) || 0;
-        const qtyInput = row.querySelector('[data-field="qty_rec"]');
-        qtyInput.style.borderColor = '#667eea';
+
         try {
-            await updateTempReceiptItem(plu, qty_rec, hrg_beli, price);
-            qtyInput.style.borderColor = '#10b981';
+            // Panggil API. API 'update' sekarang harus me-return item yang sudah dikalkulasi ulang
+            const updatedItem = await updateTempReceiptItem(plu, qty_rec, hrg_beli, price);
+            
+            if (updatedItem.success && updatedItem.item) {
+                // Update semua field kalkulasi di row
+                const item = updatedItem.item;
+                const margin = parseFloat(item.calc_margin) || 0;
+                
+                row.querySelector('[data-field="calc_weighted_avg_cost"]').value = formatRupiah(item.calc_weighted_avg_cost);
+                row.querySelector('[data-field="ppn"]').value = formatRupiah(item.ppn);
+                row.querySelector('[data-field="netto"]').value = formatRupiah(item.netto);
+                row.querySelector('[data-field="calc_hb_plus_lainnya"]').value = formatRupiah(item.calc_hb_plus_lainnya);
+                
+                const marginInput = row.querySelector('[data-field="calc_margin"]');
+                marginInput.value = formatRupiah(margin);
+                
+                // Update warna margin
+                marginInput.classList.remove('text-red-600', 'text-green-600', 'text-gray-900', 'font-bold');
+                if (margin < 0) {
+                    marginInput.classList.add('text-red-600', 'font-bold');
+                } else if (margin > 0) {
+                    marginInput.classList.add('text-green-600', 'font-bold');
+                } else {
+                    marginInput.classList.add('text-gray-900');
+                }
+
+                // Update data persentase (jika-jika berubah, meskipun seharusnya tidak)
+                row.querySelector('[data-field="kategori_admin_pct"]').value = formatPersen(item.kategori_admin_pct);
+                row.querySelector('[data-field="kategori_ongkir_pct"]').value = formatPersen(item.kategori_ongkir_pct);
+                row.querySelector('[data-field="kategori_promo_pct"]').value = formatPersen(item.kategori_promo_pct);
+                row.querySelector('[data-field="kategori_biaya_pesanan"]').value = formatRupiah(item.kategori_biaya_pesanan);
+
+                if (inputElement) inputElement.style.borderColor = '#10b981'; // Green-500
+            } else {
+                 throw new Error(updatedItem.message || 'Data item tidak diterima dari server.');
+            }
+
         } catch (error) {
             console.error('Update Gagal:', error.message);
-            qtyInput.style.borderColor = '#ef4444';
+            if (inputElement) inputElement.style.borderColor = '#ef4444'; // Red-500
             Swal.fire('Update Gagal', `Gagal menyimpan data untuk PLU ${plu}: ${error.message}`, 'error');
         } finally {
-            setTimeout(() => {
-                qtyInput.style.borderColor = '';
-            }, 1500);
+            if (inputElement) {
+                setTimeout(() => {
+                    inputElement.style.borderColor = ''; // Hapus border
+                }, 1500);
+            }
         }
     }
+    
+    // ... (Sisa file: saveTempForm, handleSaveSubmit, selectAll, deleteSelected, deleteAll, quickAdd) ...
+    // Tidak ada perubahan di bawah ini, kecuali untuk 'addTempReceiptItemByPlu'
+    // yang juga diuntungkan oleh loadTempTable() baru.
+
     if (saveTempForm) {
         saveTempForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -183,6 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+
     async function handleSaveSubmit(no_lpb) {
         Swal.fire({
             title: 'Memproses...',
@@ -210,6 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     }
+
     if (selectAllCheckbox) {
         selectAllCheckbox.addEventListener('change', (e) => {
             const checkboxes = tempTableBody.querySelectorAll('.input-cb-temp');
@@ -218,6 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+
     if (deleteSelectedButton) {
         deleteSelectedButton.addEventListener('click', async () => {
             const checkboxes = tempTableBody.querySelectorAll('.input-cb-temp:checked');
@@ -247,6 +328,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+
     if (deleteAllButton) {
         deleteAllButton.addEventListener('click', () => {
             Swal.fire({
@@ -270,9 +352,11 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+
     const quickAddPluInput = document.getElementById('quick-add-plu');
     const quickAddButton = document.getElementById('quick-add-button');
     const quickAddVendor = document.getElementById('quick-add-vendor');
+
     const handleQuickAdd = async () => {
         const plu = quickAddPluInput.value.trim();
         const vendor = quickAddVendor.value.trim();
@@ -301,6 +385,7 @@ document.addEventListener('DOMContentLoaded', () => {
             quickAddButton.innerHTML = '<i class="fas fa-plus"></i>';
         }
     };
+
     if (quickAddButton) {
         quickAddButton.addEventListener('click', handleQuickAdd);
     }
@@ -312,5 +397,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
     loadTempTable();
 });
