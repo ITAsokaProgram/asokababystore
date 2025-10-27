@@ -14,9 +14,9 @@ export function calculateReceiveForm(hargaBeli, price) {
     const admin_s = hargaBeli * 0.01;
     const ongkir = price * 0.12; 
     const promo = hargaBeli * 0.005;
-    const biayaPesanan = 150; 
+    const biaya_psn = 150; 
     
-    const avg_cost = netto + admin_s + ongkir + biayaPesanan - promo;
+    const avg_cost = netto + admin_s + ongkir + biaya_psn - promo;
     const net_price = avg_cost;
     
     const harga_rekomendasi = avg_cost; 
@@ -27,7 +27,7 @@ export function calculateReceiveForm(hargaBeli, price) {
         admin_s,
         ongkir,
         promo,
-        biayaPesanan,
+        biaya_psn,
         avg_cost,
         net_price,
         harga_rekomendasi
