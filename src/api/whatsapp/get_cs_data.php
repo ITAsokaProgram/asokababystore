@@ -77,68 +77,86 @@ try {
             exit;
         }
 
-        try {
-            $stmt_update = $conn->prepare("UPDATE wa_pesan SET status_baca = 1 WHERE percakapan_id = ? AND pengirim = 'user' AND status_baca = 0");
-            $stmt_update->bind_param("i", $id);
-            $stmt_update->execute();
-            $stmt_update->close();
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        if ($page < 1) $page = 1;
 
-            $totalUnread = 0;
-            $sql_count = "SELECT COUNT(id) AS total_unread FROM wa_pesan WHERE pengirim = 'user' AND status_baca = 0";
-            $result_count = $conn->query($sql_count);
-            if ($result_count) {
-                $row_count = $result_count->fetch_assoc();
-                $totalUnread = (int)$row_count['total_unread'];
-            }
-
-            $live_chat_count_ws = 0;
-            $umum_count_ws = 0;
+        if ($page == 1) {
             try {
-                $sql_counts_ws = "
-                    SELECT
-                        p.status_percakapan,
-                        COUNT(DISTINCT m.percakapan_id) AS unread_convo_count
-                    FROM wa_pesan m
-                    JOIN wa_percakapan p ON m.percakapan_id = p.id
-                    WHERE m.pengirim = 'user' AND m.status_baca = 0
-                    GROUP BY p.status_percakapan
-                ";
-                $stmt_counts_ws = $conn->prepare($sql_counts_ws);
-                $stmt_counts_ws->execute();
-                $counts_result_ws = $stmt_counts_ws->get_result();
-                while ($row_ws = $counts_result_ws->fetch_assoc()) {
-                    if ($row_ws['status_percakapan'] == 'live_chat') {
-                        $live_chat_count_ws = (int)$row_ws['unread_convo_count'];
-                    } else if (in_array($row_ws['status_percakapan'], ['open', 'closed'])) {
-                        $umum_count_ws += (int)$row_ws['unread_convo_count'];
-                    }
+                $stmt_update = $conn->prepare("UPDATE wa_pesan SET status_baca = 1 WHERE percakapan_id = ? AND pengirim = 'user' AND status_baca = 0");
+                $stmt_update->bind_param("i", $id);
+                $stmt_update->execute();
+                $stmt_update->close();
+
+                $totalUnread = 0;
+                $sql_count = "SELECT COUNT(id) AS total_unread FROM wa_pesan WHERE pengirim = 'user' AND status_baca = 0";
+                $result_count = $conn->query($sql_count);
+                if ($result_count) {
+                    $row_count = $result_count->fetch_assoc();
+                    $totalUnread = (int)$row_count['total_unread'];
                 }
-                $stmt_counts_ws->close();
-            } catch (Exception $e) {}
-            
-            $ws_url = 'http://127.0.0.1:8081/notify';
-            $payload = json_encode([
-                'event' => 'unread_count_update',
-                'total_unread_count' => $totalUnread,
-                'unread_counts' => [
-                    'live_chat' => $live_chat_count_ws,
-                    'umum' => $umum_count_ws
-                ]
-            ]);
-            
-            $ch = curl_init($ws_url);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                'Content-Type: application/json',
-                'Content-Length: ' . strlen($payload)
-            ]);
-            curl_setopt($ch, CURLOPT_TIMEOUT_MS, 100);
-            curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
-            curl_exec($ch);
-            curl_close($ch);
-        } catch (Exception $e) {
+
+                $live_chat_count_ws = 0;
+                $umum_count_ws = 0;
+                try {
+                    $sql_counts_ws = "
+                        SELECT
+                            p.status_percakapan,
+                            COUNT(DISTINCT m.percakapan_id) AS unread_convo_count
+                        FROM wa_pesan m
+                        JOIN wa_percakapan p ON m.percakapan_id = p.id
+                        WHERE m.pengirim = 'user' AND m.status_baca = 0
+                        GROUP BY p.status_percakapan
+                    ";
+                    $stmt_counts_ws = $conn->prepare($sql_counts_ws);
+                    $stmt_counts_ws->execute();
+                    $counts_result_ws = $stmt_counts_ws->get_result();
+                    while ($row_ws = $counts_result_ws->fetch_assoc()) {
+                        if ($row_ws['status_percakapan'] == 'live_chat') {
+                            $live_chat_count_ws = (int)$row_ws['unread_convo_count'];
+                        } else if (in_array($row_ws['status_percakapan'], ['open', 'closed'])) {
+                            $umum_count_ws += (int)$row_ws['unread_convo_count'];
+                        }
+                    }
+                    $stmt_counts_ws->close();
+                } catch (Exception $e) {}
+                
+                $ws_url = 'http://127.0.0.1:8081/notify';
+                $payload = json_encode([
+                    'event' => 'unread_count_update',
+                    'total_unread_count' => $totalUnread,
+                    'unread_counts' => [
+                        'live_chat' => $live_chat_count_ws,
+                        'umum' => $umum_count_ws
+                    ]
+                ]);
+                try {
+                    $ch = curl_init($ws_url);
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+                    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                        'Content-Type: application/json',
+                        'Content-Length: ' . strlen($payload)
+                    ]);
+                    
+                    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT_MS, 50); 
+                    curl_setopt($ch, CURLOPT_TIMEOUT_MS, 100); 
+
+                    curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
+                    curl_exec($ch);
+                    if (curl_errno($ch)) {
+                        $logger->warning("cURL error to WS bridge: " . curl_error($ch));
+                    }
+                    curl_close($ch);
+                } catch (Exception $e) {
+                    // Log error jika cURL gagal, jangan biarkan kosong
+                    $logger->error("Failed to notify WS bridge: " . $e->getMessage());
+                }
+                
+                
+            } catch (Exception $e) {
+                $logger->error("Error during page=1 read/notify logic: " . $e->getMessage());
+            }
         }
 
         $stmt_convo = $conn->prepare("SELECT id, nomor_telepon, nama_profil, nama_display, status_percakapan FROM wa_percakapan WHERE id = ?");
@@ -154,9 +172,7 @@ try {
             exit;
         }
 
-        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-        if ($page < 1) $page = 1;
-        $limit = 40; 
+        $limit = 40;
         $offset = ($page - 1) * $limit;
 
         $stmt_count = $conn->prepare("SELECT COUNT(id) AS total FROM wa_pesan WHERE percakapan_id = ?");
@@ -215,7 +231,7 @@ try {
 
         $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
         if ($page < 1) $page = 1;
-        $limit = 12; 
+        $limit = 12;
         $offset = ($page - 1) * $limit;
 
         try {
@@ -296,26 +312,26 @@ try {
             
             $searchConditions = ["p.nama_display LIKE ?", "p.nomor_telepon LIKE ?"];
             $params[] = $searchTermLike;
-            $params[] = $searchTermLike; 
-            $types .= 'ss'; 
+            $params[] = $searchTermLike;
+            $types .= 'ss';
 
             if (ctype_digit($search)) {
                 
-                if (strpos($search, '0') === 0) { 
+                if (strpos($search, '0') === 0) {
                     $normalizedSearch = "62" . substr($search, 1);
                     $normalizedSearchLike = "%" . $normalizedSearch . "%";
                     
                     $searchConditions[] = "p.nomor_telepon LIKE ?";
                     $params[] = $normalizedSearchLike;
-                    $types .= 's'; 
-                } 
-                else if (strpos($search, '62') === 0) { 
+                    $types .= 's';
+                }
+                else if (strpos($search, '62') === 0) {
                     $normalizedSearch = "0" . substr($search, 2);
                     $normalizedSearchLike = "%" . $normalizedSearch . "%";
                     
                     $searchConditions[] = "p.nomor_telepon LIKE ?";
                     $params[] = $normalizedSearchLike;
-                    $types .= 's'; 
+                    $types .= 's';
                 }
             }
 
