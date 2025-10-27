@@ -488,8 +488,8 @@ async function sendMessage() {
             throw new Error(result.message || 'Gagal mengirim balasan.');
         }
         
-        currentConvoPage = 1;
-        fetchAndRenderConversations();
+        // currentConvoPage = 1;
+        // fetchAndRenderConversations();
     } catch (error) {
         console.error(error);
         Swal.fire('Error', error.message, 'error');
