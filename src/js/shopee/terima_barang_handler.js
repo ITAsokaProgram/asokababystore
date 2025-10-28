@@ -2,7 +2,7 @@ import {
     getTempReceiptItems,
     addTempReceiptItem,
     addTempReceiptItemByPlu,
-    updateTempReceiptItem, // Modifikasi: updateTempReceiptItem sekarang akan me-return data item yang baru
+    updateTempReceiptItem, 
     deleteTempReceiptItems,
     deleteAllTempReceiptItems,
     saveTempReceipt
@@ -23,7 +23,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function formatPersen(value) {
         let number = parseFloat(value);
         if (isNaN(number)) number = 0;
-        // Format dengan 2 desimal jika perlu
         return number.toLocaleString('id-ID', {
             minimumFractionDigits: 0,
             maximumFractionDigits: 2
@@ -38,9 +37,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const row = button.closest('tr');
                 const itemData = { ...row.dataset };
                 
-                // Ambil data dari s_stok_ol (sudah di-join) yang diperlukan untuk kalkulasi awal
-                // Kita tidak perlu mengirim semua data, server akan mengambilnya lagi saat 'add'
-                // Cukup kirim data dasar.
                 itemData.plu = itemData.plu;
                 itemData.DESCP = itemData.descp;
                 itemData.VENDOR = itemData.vendor;
@@ -71,6 +67,32 @@ document.addEventListener('DOMContentLoaded', () => {
     const deleteAllButton = document.getElementById('delete-all-temp');
     const noLpbInput = document.getElementById('no_lpb');
 
+    function updateSelectAllState() {
+        if (!selectAllCheckbox || !tempTableBody) return;
+
+        const allCheckboxes = tempTableBody.querySelectorAll('.input-cb-temp');
+        const checkedCheckboxes = tempTableBody.querySelectorAll('.input-cb-temp:checked');
+        const total = allCheckboxes.length;
+        const checkedCount = checkedCheckboxes.length;
+
+        if (total === 0) {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = false;
+            return;
+        }
+
+        if (checkedCount === total) {
+            selectAllCheckbox.checked = true;
+            selectAllCheckbox.indeterminate = false;
+        } else if (checkedCount > 0) {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = true;
+        } else {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = false;
+        }
+    }
+
     async function loadTempTable() {
         if (!tempTableBody) return;
         tempTableBody.innerHTML = '<tr><td colspan="15" class="text-center p-4"><i class="fas fa-spinner fa-spin"></i> Memuat data keranjang...</td></tr>';
@@ -81,32 +103,29 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 tempTableBody.innerHTML = '<tr><td colspan="15" class="text-center p-4 text-gray-500">Keranjang penerimaan masih kosong.</td></tr>';
             }
+            updateSelectAllState();
         } catch (error) {
             tempTableBody.innerHTML = `<tr><td colspan="15" class="text-center p-4 text-red-500">Gagal memuat data: ${error.message}</td></tr>`;
         }
     }
 
-    // REWRITE: Fungsi createTempRowHtml di-rewrite total
     function createTempRowHtml(item) {
         const qty = parseFloat(item.QTY_REC) || 0;
         const hrg_beli = parseFloat(item.hrg_beli) || 0;
         const price = parseFloat(item.price) || 0;
         
-        // Semua data kalkulasi sekarang datang dari server
-        const itemN = item.ITEM_N || item.plu; // Fallback SKU ke PLU
+        const itemN = item.ITEM_N || item.plu; 
         const avg_cost = parseFloat(item.calc_weighted_avg_cost) || 0;
         const ppn = parseFloat(item.ppn) || 0;
         const netto = parseFloat(item.netto) || 0;
         const hb_plus_lainnya = parseFloat(item.calc_hb_plus_lainnya) || 0;
         const margin = parseFloat(item.calc_margin) || 0;
         
-        // Persentase dari s_kategori
         const admin_pct = parseFloat(item.kategori_admin_pct) || 0;
         const ongkir_pct = parseFloat(item.kategori_ongkir_pct) || 0;
         const promo_pct = parseFloat(item.kategori_promo_pct) || 0;
         const biaya_pesanan = parseFloat(item.kategori_biaya_pesanan) || 0;
 
-        // Tentukan warna margin
         let marginClass = 'text-gray-900';
         if (margin < 0) {
             marginClass = 'text-red-600 font-bold';
@@ -152,26 +171,25 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }, true);
 
-        // MODIFIKASI: Event listener input tidak lagi memanggil updateCalculatedFields
         tempTableBody.addEventListener('input', (e) => {
             if (e.target.classList.contains('input-temp-update')) {
                 clearTimeout(updateTimeout);
                 const row = e.target.closest('tr');
                 
-                // Tandai input sebagai 'sedang diproses'
-                e.target.style.borderColor = '#667eea'; // Indigo-500
+                e.target.style.borderColor = '#667eea';
                 
                 updateTimeout = setTimeout(() => {
-                    sendUpdateToServer(row, e.target); // Kirim 'e.target' untuk status visual
-                }, 1000); // Tunda 1 detik
+                    sendUpdateToServer(row, e.target); 
+                }, 1000); 
+            }
+        });
+        tempTableBody.addEventListener('change', (e) => {
+            if (e.target.classList.contains('input-cb-temp')) {
+                updateSelectAllState();
             }
         });
     }
 
-    // REMOVED: Fungsi updateCalculatedFields(row) dihapus.
-
-    // REWRITE: sendUpdateToServer sekarang menerima 'inputElement'
-    // dan me-render ulang nilai baris dari respons server.
     async function sendUpdateToServer(row, inputElement) {
         const plu = row.dataset.plu;
         const hrg_beli_raw = row.querySelector('[data-field="hrg_beli"]').value;
@@ -182,11 +200,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const price = parseFloat(unformatRupiah(price_raw)) || 0;
 
         try {
-            // Panggil API. API 'update' sekarang harus me-return item yang sudah dikalkulasi ulang
             const updatedItem = await updateTempReceiptItem(plu, qty_rec, hrg_beli, price);
             
             if (updatedItem.success && updatedItem.item) {
-                // Update semua field kalkulasi di row
                 const item = updatedItem.item;
                 const margin = parseFloat(item.calc_margin) || 0;
                 
@@ -198,7 +214,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const marginInput = row.querySelector('[data-field="calc_margin"]');
                 marginInput.value = formatRupiah(margin);
                 
-                // Update warna margin
                 marginInput.classList.remove('text-red-600', 'text-green-600', 'text-gray-900', 'font-bold');
                 if (margin < 0) {
                     marginInput.classList.add('text-red-600', 'font-bold');
@@ -208,33 +223,29 @@ document.addEventListener('DOMContentLoaded', () => {
                     marginInput.classList.add('text-gray-900');
                 }
 
-                // Update data persentase (jika-jika berubah, meskipun seharusnya tidak)
                 row.querySelector('[data-field="kategori_admin_pct"]').value = formatPersen(item.kategori_admin_pct);
                 row.querySelector('[data-field="kategori_ongkir_pct"]').value = formatPersen(item.kategori_ongkir_pct);
                 row.querySelector('[data-field="kategori_promo_pct"]').value = formatPersen(item.kategori_promo_pct);
                 row.querySelector('[data-field="kategori_biaya_pesanan"]').value = formatRupiah(item.kategori_biaya_pesanan);
 
-                if (inputElement) inputElement.style.borderColor = '#10b981'; // Green-500
+                if (inputElement) inputElement.style.borderColor = '#10b981'; 
             } else {
                  throw new Error(updatedItem.message || 'Data item tidak diterima dari server.');
             }
 
         } catch (error) {
             console.error('Update Gagal:', error.message);
-            if (inputElement) inputElement.style.borderColor = '#ef4444'; // Red-500
+            if (inputElement) inputElement.style.borderColor = '#ef4444'; 
             Swal.fire('Update Gagal', `Gagal menyimpan data untuk PLU ${plu}: ${error.message}`, 'error');
         } finally {
             if (inputElement) {
                 setTimeout(() => {
-                    inputElement.style.borderColor = ''; // Hapus border
+                    inputElement.style.borderColor = ''; 
                 }, 1500);
             }
         }
     }
     
-    // ... (Sisa file: saveTempForm, handleSaveSubmit, selectAll, deleteSelected, deleteAll, quickAdd) ...
-    // Tidak ada perubahan di bawah ini, kecuali untuk 'addTempReceiptItemByPlu'
-    // yang juga diuntungkan oleh loadTempTable() baru.
 
     if (saveTempForm) {
         saveTempForm.addEventListener('submit', async (e) => {
@@ -296,6 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
             checkboxes.forEach(cb => {
                 cb.checked = e.target.checked;
             });
+            updateSelectAllState(); 
         });
     }
 

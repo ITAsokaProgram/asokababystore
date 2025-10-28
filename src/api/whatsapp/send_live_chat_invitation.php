@@ -48,7 +48,6 @@ if ($conversationId === false) {
     echo json_encode(['success' => false, 'message' => 'Conversation ID tidak valid.']);
     exit;
 }
-
 try {
     $stmt_get = $conn->prepare("SELECT nomor_telepon FROM wa_percakapan WHERE id = ?");
     $stmt_get->bind_param("i", $conversationId);
@@ -65,56 +64,40 @@ try {
     
     $nomorTelepon = $conversation['nomor_telepon'];
     
-    $pesanBody = "Ingin berinteraksi dengan customer service? \nKlik tombol di bawah ini.";
-    $buttons = [
-        ['id' => 'REQ_LIVE_CHAT', 'title' => 'Chat Dengan CS']
-    ];
+    $conversationService->startLiveChat($nomorTelepon);
     
-    $kirimResult = kirimPesanButton(
-        $nomorTelepon,
-        $pesanBody,
-        $buttons,
-        "Bantuan Customer Service" 
-    );
+    $totalUnread = $conversationService->getTotalUnreadCount();
 
-    if (!$kirimResult['success']) {
-         $logger->error("Gagal kirim undangan ke {$nomorTelepon}. Response: " . json_encode($kirimResult));
-         throw new Exception("Gagal mengirim pesan undangan via WhatsApp API.");
-    }
-
-    $savedMessage = $conversationService->saveMessage($conversationId, 'admin', 'text', $pesanBody);
-
-    if ($savedMessage) {
-        $ws_url = 'http://127.0.0.1:8081/notify';
-        $payload = json_encode([
-            'event' => 'new_admin_reply',
-            'conversation_id' => (int)$conversationId,
-            'phone' => $nomorTelepon,
-            'message' => $savedMessage
+    $ws_url = 'http://127.0.0.1:8081/notify';
+    $payload = json_encode([
+        'event' => 'new_live_chat', 
+        'conversation_id' => (int)$conversationId,
+        'phone' => $nomorTelepon,
+        'total_unread_count' => $totalUnread 
+    ]);
+    
+    try {
+        $ch = curl_init($ws_url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json',
+            'Content-Length: ' . strlen($payload)
         ]);
-        
-        try {
-            $ch = curl_init($ws_url);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                'Content-Type: application/json',
-                'Content-Length: ' . strlen($payload)
-            ]);
-            curl_setopt($ch, CURLOPT_TIMEOUT_MS, 100);
-            curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
-            curl_exec($ch);
-            curl_close($ch);
-        } catch (Exception $ws_e) {
-            $logger->error("WebSocket broadcast failed for invitation: " . $ws_e->getMessage());
-        }
+        curl_setopt($ch, CURLOPT_TIMEOUT_MS, 100);
+        curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
+        curl_exec($ch);
+        curl_close($ch);
+    } catch (Exception $ws_e) {
+        $logger->error("WebSocket broadcast failed for starting live chat: " . $ws_e->getMessage());
     }
+    
 
-    echo json_encode(['success' => true, 'message' => 'Undangan live chat terkirim.']);
+    echo json_encode(['success' => true, 'message' => 'Status percakapan diubah ke live chat.']);
 
 } catch (Exception $e) {
-    $logger->error("Error sending live chat invitation: ". $e->getMessage());
+    $logger->error("Error starting live chat: ". $e->getMessage());
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'Terjadi kesalahan server: ' . $e->getMessage()]);
 } finally {

@@ -221,8 +221,6 @@ public function handleIncomingMessage($body) {
                 ]);
             }
 
-            kirimPesanTeks($nomorPengirim, $messageContent);
-
             $this->sendWelcomeMessage($nomorPengirim, $conversation['id'], $namaPengirim);
             $this->conversationService->openConversation($nomorPengirim);
         }

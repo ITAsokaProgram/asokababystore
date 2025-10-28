@@ -700,12 +700,12 @@ async function startConversation() {
 
   const confirmation = await Swal.fire({
       title: 'Mulai Live Chat?',
-      text: "Anda akan mengirim undangan untuk memulai live chat ke pelanggan ini. Lanjutkan?",
+      text: "Anda akan dapat mengirim pesan customer",
       icon: 'question',
       showCancelButton: true,
       confirmButtonColor: '#28a745', 
       cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Ya, Kirim Undangan!',
+      confirmButtonText: 'Ya!',
       cancelButtonText: 'Batal'
   });
 
@@ -727,15 +727,15 @@ async function startConversation() {
           });
           const result = await response.json();
           if (!response.ok || !result.success) {
-              throw new Error(result.message || 'Gagal mengirim undangan.');
+              throw new Error(result.message || 'Gagal memulai live chat.');
           }
           
           Swal.fire({
               toast: true,
               position: 'top-end',
               icon: 'success',
-              title: 'Undangan terkirim!',
-              text: 'Menunggu balasan pelanggan.',
+              title: 'Live chat!',
+              text: 'Live chat sudah dimulai',
               showConfirmButton: false,
               timer: 3000
           });
