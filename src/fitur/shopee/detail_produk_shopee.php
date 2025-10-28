@@ -285,7 +285,7 @@ function getPriceRange($models) {
                                             ?>
                                             <span class="stats-badge" style="background-color: #f3e8ff; color: #581c87; border-color: #e9d5ff;">
                                                 <i class="fas fa-database fa-fw"></i>
-                                                <span>Stok Sistem: <strong><?php echo $db_stock; ?></strong></span>
+                                                <span>Stok ADMB: <strong><?php echo $db_stock; ?></strong></span>
                                             </span>
                                         <?php endif; ?>
                                     </div>
@@ -335,7 +335,7 @@ function getPriceRange($models) {
                                                 $db_stock = $sku_stock_map[trim($model_sku)] ?? '';
                                             ?>
                                             <span class="text-xs" style="background: #f3e8ff; color: #581c87; padding: 6px 10px; border-radius: 6px; font-weight: 600;">
-                                                <i class="fas fa-database fa-fw"></i> Stok Sistem: <strong><?php echo $db_stock; ?></strong>
+                                                <i class="fas fa-database fa-fw"></i> Stok ADMB: <strong><?php echo $db_stock; ?></strong>
                                             </span>
                                         </div>
                                     </div>
