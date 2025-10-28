@@ -54,10 +54,10 @@ const initializeSearchAndFilter = () => {
     };
     toggleClearButton();
     let searchTimeout;
-
-    const buildUrlAndNavigate = () => {
+    
+const buildUrlAndNavigate = () => {
         const searchTerm = searchInput.value.trim();
-        const activeButton = document.querySelector('.filter-btn-active');
+        const activeButton = document.querySelector('.filter-btn[disabled]'); 
         const filterTerm = activeButton ? activeButton.dataset.filter : 'all';
         
         const currentUrl = new URL(window.location);

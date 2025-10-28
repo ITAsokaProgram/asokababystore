@@ -552,10 +552,11 @@ function getPriceRange($models) {
                         <div class="flex flex-wrap items-center gap-2">
                             <?php
                             $filters = [
-                                'all' => ['label' => 'Semua', 'icon' => 'fa-th-large'],
-                                'pusat' => ['label' => 'Pusat', 'icon' => 'fa-cloud'],
-                                'cabang' => ['label' => 'Cabang', 'icon' => 'fa-store']
-                            ];
+                                    'all' => ['label' => 'Semua', 'icon' => 'fa-th-large'],
+                                    'pusat' => ['label' => 'Beda Stok (Pusat)', 'icon' => 'fa-cloud'],
+                                    'cabang' => ['label' => 'Beda Stok (Cabang)', 'icon' => 'fa-store'],
+                                    'beda_harga' => ['label' => 'Beda Harga (Pusat)', 'icon' => 'fa-dollar-sign']
+                                ];
 
                             foreach ($filters as $key => $filter):
                                 $is_active = ($filter_type == $key);
@@ -612,8 +613,8 @@ function getPriceRange($models) {
                         if (isset($item['has_model']) && $item['has_model'] === true && !empty($item['models'])) {
                             foreach ($item['models'] as $model) {
                                 $shopee_stock = (int)($model['stock_info_v2']['summary_info']['total_available_stock'] 
-                                              ?? $model['stock_info'][0]['seller_stock'] 
-                                              ?? 0);
+                                                    ?? $model['stock_info'][0]['seller_stock'] 
+                                                    ?? 0);
                                 $sku = trim($model['model_sku'] ?? '');
                                 
                                 if (empty($sku)) continue;
@@ -630,13 +631,21 @@ function getPriceRange($models) {
                                         $show_product = true;
                                         break;
                                     }
+                                } elseif ($filter_type == 'beda_harga' && isset($sku_stok_ol_data_map[$sku])) {
+                                    $shopee_price = (float)($model['price_info'][0]['original_price'] ?? 0);
+                                    $stok_ol_price = (float)($sku_stok_ol_data_map[$sku]['price'] ?? 0);
+                                    
+                                    if (abs($shopee_price - $stok_ol_price) > 0.001) { 
+                                        $show_product = true;
+                                        break;
+                                    }
                                 }
                             }
                         } 
-                        else {
+                        else { 
                             $shopee_stock = (int)($item['stock_info_v2']['summary_info']['total_available_stock'] 
-                                          ?? $item['stock_info'][0]['seller_stock'] 
-                                          ?? 0);
+                                            ?? $item['stock_info'][0]['seller_stock'] 
+                                            ?? 0);
                             $sku = trim($item['item_sku'] ?? '');
 
                             if (!empty($sku)) {
@@ -648,6 +657,13 @@ function getPriceRange($models) {
                                 } elseif ($filter_type == 'cabang' && isset($sku_stock_map[$sku])) {
                                     $db_stock_barang = (int)($sku_stock_map[$sku] ?? 0);
                                     if ($shopee_stock != $db_stock_barang) {
+                                        $show_product = true;
+                                    }
+                                } elseif ($filter_type == 'beda_harga' && isset($sku_stok_ol_data_map[$sku])) {
+                                    $shopee_price = (float)($item['price_info'][0]['original_price'] ?? 0);
+                                    $stok_ol_price = (float)($sku_stok_ol_data_map[$sku]['price'] ?? 0);
+                                    
+                                    if (abs($shopee_price - $stok_ol_price) > 0.001) { 
                                         $show_product = true;
                                     }
                                 }
@@ -712,6 +728,9 @@ function getPriceRange($models) {
                                             <span class="stats-badge" style="background-color: #e0f2fe; color: #0369a1; border-color: #bae6fd;"> <i class="fas fa-cloud fa-fw"></i>
                                                 <span>Stok Online: <strong><?php echo $sku_stok_ol_data_map[$item_sku_trimmed]['qty'] ?? ''; ?></strong></span>
                                             </span>
+                                            <span class="stats-badge" style="background-color: #fef3c7; color: #92400e; border-color: #fde68a;"> <i class="fas fa-money-bill-wave fa-fw"></i>
+                                                <span>Harga Online: <strong>Rp <?php echo number_format($sku_stok_ol_data_map[$item_sku_trimmed]['price'] ?? 0, 0, ',', '.'); ?></strong></span>
+                                            </span>
                                         <?php endif; ?>
                                         
                                     <?php endif; ?>
@@ -739,6 +758,40 @@ function getPriceRange($models) {
                                     $model_sku_trimmed = trim($model['model_sku'] ?? '');
                                     $barang_data = $sku_barang_data_map[$model_sku_trimmed] ?? null;
                                     $stok_ol_data = $sku_stok_ol_data_map[$model_sku_trimmed] ?? null;
+
+                                    if ($filter_type != 'all') {
+                                        $show_variation = false; 
+                                        $sku = $model_sku_trimmed;
+
+                                        if (empty($sku)) {
+                                            $show_variation = false; 
+                                        } else {
+                                            $shopee_stock = (int)($model['stock_info_v2']['summary_info']['total_available_stock'] ?? $model['stock_info'][0]['seller_stock'] ?? 0);
+
+                                            if ($filter_type == 'pusat' && isset($sku_stok_ol_data_map[$sku])) {
+                                                $db_stock_ol = (int)($sku_stok_ol_data_map[$sku]['qty'] ?? 0);
+                                                if ($shopee_stock != $db_stock_ol) {
+                                                    $show_variation = true;
+                                                }
+                                            } elseif ($filter_type == 'cabang' && isset($sku_stock_map[$sku])) {
+                                                $db_stock_barang = (int)($sku_stock_map[$sku] ?? 0);
+                                                if ($shopee_stock != $db_stock_barang) {
+                                                    $show_variation = true;
+                                                }
+                                            } elseif ($filter_type == 'beda_harga' && isset($sku_stok_ol_data_map[$sku])) {
+                                                $shopee_price = (float)($model['price_info'][0]['original_price'] ?? 0);
+                                                $stok_ol_price = (float)($sku_stok_ol_data_map[$sku]['price'] ?? 0);
+                                                if (abs($shopee_price - $stok_ol_price) > 0.001) { 
+                                                    $show_variation = true;
+                                                }
+                                            }
+                                        }
+                                        
+                                        if (!$show_variation) {
+                                            continue;
+                                        }
+                                    }
+
                                     $variant_card_style = '';
                                     if ($stok_ol_data) {
                                         $variant_card_style = 'style="background-color: #ffeaf0;"';
@@ -773,6 +826,8 @@ function getPriceRange($models) {
                                                         <?php  ?>
                                                         <?php if (isset($sku_stok_ol_data_map[$model_sku_trimmed])): ?>
                                                             <span class="text-xs" style="background: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 6px; font-weight: 600;"> <i class="fas fa-cloud fa-fw"></i> Stok Online: <strong><?php echo $sku_stok_ol_data_map[$model_sku_trimmed]['qty'] ?? ''; ?></strong>
+                                                            </span>
+                                                            <span class="text-xs" style="background: #fef3c7; color: #92400e; padding: 4px 8px; border-radius: 6px; font-weight: 600;"> <i class="fas fa-money-bill-wave fa-fw"></i> Harga Online: <strong>Rp <?php echo number_format($sku_stok_ol_data_map[$model_sku_trimmed]['price'] ?? 0, 0, ',', '.'); ?></strong>
                                                             </span>
                                                         <?php endif; ?>
                                                 </div>
