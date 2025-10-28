@@ -19,6 +19,14 @@ body {
     position: relative;
     flex: 1;
     max-width: 400px;
+    min-width: 250px;
+}
+
+@media (max-width: 768px) {
+    .search-box {
+        max-width: 100%;
+        min-width: 100%;
+    }
 }
 
 .search-box input {
@@ -581,9 +589,11 @@ html {
   align-items: center;
   gap: 8px; 
   font-size: 13px;
-  padding: 10px 18px;
+  padding: 10px 16px;
   font-weight: 600;
   border-radius: 12px;
+  height: 42px;
+  min-height: 42px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border: none;
   cursor: pointer;
@@ -699,5 +709,20 @@ kbd {
     .product-card .product-image img {
     width: 100%;
     height: auto;
+    }
+}
+
+
+@media (max-width: 768px) {
+    #sync-all-stock-btn {
+        width: 100%;
+        justify-content: center;
+        font-size: 14px;
+    }
+    
+    .filter-btn {
+        flex: 1;
+        min-width: calc(50% - 6px);
+        justify-content: center;
     }
 }

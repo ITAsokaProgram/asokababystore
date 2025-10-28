@@ -528,10 +528,10 @@ function getPriceRange($models) {
         <?php if ($shopeeService->isConnected()): ?>
 
            <div class="search-filter-section">
-                <div class="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between">
+                <div class="flex flex-col lg:flex-row gap-4 items-stretch lg:items-start justify-between">
                     
                     <div class="search-box w-full lg:w-96 shrink-0 relative">
-                        <i class="fas fa-search"></i>
+                        <!-- <i class="fas fa-search"></i> -->
                         <input 
                             type="text" 
                             id="product-search" 
@@ -547,16 +547,18 @@ function getPriceRange($models) {
                         <?php endif; ?>
                     </div>
 
-                    <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto justify-between lg:justify-end">
+                    <div class="flex flex-col md:flex-row gap-3 w-full lg:w-auto justify-between lg:justify-end">
                         
                         <div class="flex flex-wrap items-center gap-2">
                             <?php
                             $filters = [
-                                    'all' => ['label' => 'Semua', 'icon' => 'fa-th-large'],
-                                    'pusat' => ['label' => 'Beda Stok (Pusat)', 'icon' => 'fa-cloud'],
-                                    'cabang' => ['label' => 'Beda Stok (Cabang)', 'icon' => 'fa-store'],
-                                    'beda_harga' => ['label' => 'Beda Harga (Pusat)', 'icon' => 'fa-dollar-sign']
-                                ];
+                                'all' => ['label' => 'Semua', 'icon' => 'fa-th-large'],
+                                'pusat' => ['label' => 'Beda Stok (Pusat)', 'icon' => 'fa-cloud'],
+                                'cabang' => ['label' => 'Beda Stok (Cabang)', 'icon' => 'fa-store'],
+                                'beda_harga' => ['label' => 'Beda Harga (Pusat)', 'icon' => 'fa-dollar-sign'],
+                                'ada_pusat' => ['label' => 'Ada di Pusat', 'icon' => 'fa-cloud-download-alt'], 
+                                'ada_cabang' => ['label' => 'Ada di Cabang', 'icon' => 'fa-store-alt'] 
+                            ];
 
                             foreach ($filters as $key => $filter):
                                 $is_active = ($filter_type == $key);
@@ -625,7 +627,7 @@ function getPriceRange($models) {
                                         $show_product = true;
                                         break;
                                     }
-                                } elseif ($filter_type == 'cabang' && isset($sku_stock_map[$sku])) {
+                                } elseif ($filter_type == 'cabang' && isset($sku_stock_map[$sku]) && !isset($sku_stok_ol_data_map[$sku])) {
                                     $db_stock_barang = (int)($sku_stock_map[$sku] ?? 0);
                                     if ($shopee_stock != $db_stock_barang) {
                                         $show_product = true;
@@ -639,6 +641,12 @@ function getPriceRange($models) {
                                         $show_product = true;
                                         break;
                                     }
+                                } elseif ($filter_type == 'ada_pusat' && isset($sku_stok_ol_data_map[$sku])) { 
+                                    $show_product = true;
+                                    break;
+                                } elseif ($filter_type == 'ada_cabang' && isset($sku_stock_map[$sku]) && !isset($sku_stok_ol_data_map[$sku])) { 
+                                    $show_product = true;
+                                    break;
                                 }
                             }
                         } 
@@ -654,7 +662,7 @@ function getPriceRange($models) {
                                     if ($shopee_stock != $db_stock_ol) {
                                         $show_product = true;
                                     }
-                                } elseif ($filter_type == 'cabang' && isset($sku_stock_map[$sku])) {
+                                } elseif ($filter_type == 'cabang' && isset($sku_stock_map[$sku]) && !isset($sku_stok_ol_data_map[$sku])) {
                                     $db_stock_barang = (int)($sku_stock_map[$sku] ?? 0);
                                     if ($shopee_stock != $db_stock_barang) {
                                         $show_product = true;
@@ -666,6 +674,10 @@ function getPriceRange($models) {
                                     if (abs($shopee_price - $stok_ol_price) > 0.001) { 
                                         $show_product = true;
                                     }
+                                } elseif ($filter_type == 'ada_pusat' && isset($sku_stok_ol_data_map[$sku])) { 
+                                    $show_product = true;
+                                } elseif ($filter_type == 'ada_cabang' && isset($sku_stock_map[$sku]) && !isset($sku_stok_ol_data_map[$sku])) { 
+                                    $show_product = true;
                                 }
                             }
                         }
@@ -681,7 +693,7 @@ function getPriceRange($models) {
                         $item_sku_trimmed = trim($item['item_sku'] ?? '');
                         $stok_ol_data = $sku_stok_ol_data_map[$item_sku_trimmed] ?? null;
                         if ($stok_ol_data) {
-                            $product_card_style = 'style="background-color: #ffeaf0;"';
+                            $product_card_style = 'style="background-color: #ffdae8;"';
                         }
                     }
                 ?>
@@ -773,7 +785,7 @@ function getPriceRange($models) {
                                                 if ($shopee_stock != $db_stock_ol) {
                                                     $show_variation = true;
                                                 }
-                                            } elseif ($filter_type == 'cabang' && isset($sku_stock_map[$sku])) {
+                                            } elseif ($filter_type == 'cabang' && isset($sku_stock_map[$sku]) && !isset($sku_stok_ol_data_map[$sku])) {
                                                 $db_stock_barang = (int)($sku_stock_map[$sku] ?? 0);
                                                 if ($shopee_stock != $db_stock_barang) {
                                                     $show_variation = true;
@@ -784,6 +796,10 @@ function getPriceRange($models) {
                                                 if (abs($shopee_price - $stok_ol_price) > 0.001) { 
                                                     $show_variation = true;
                                                 }
+                                            } elseif ($filter_type == 'ada_pusat' && isset($sku_stok_ol_data_map[$sku])) { 
+                                                $show_variation = true;
+                                            } elseif ($filter_type == 'ada_cabang' && isset($sku_stock_map[$sku]) && !isset($sku_stok_ol_data_map[$sku])) { 
+                                                $show_variation = true;
                                             }
                                         }
                                         
@@ -794,7 +810,7 @@ function getPriceRange($models) {
 
                                     $variant_card_style = '';
                                     if ($stok_ol_data) {
-                                        $variant_card_style = 'style="background-color: #ffeaf0;"';
+                                        $variant_card_style = 'style="background-color: #ffdae8;"';
                                     }
                                 ?>
                                     <div class="variant-card p-4" <?php echo $variant_card_style; ?>>
