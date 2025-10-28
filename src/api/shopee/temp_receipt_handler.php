@@ -284,7 +284,7 @@ try {
             $stmt_find->execute();
             $result_find = $stmt_find->get_result();
             if ($result_find->num_rows === 0) {
-                throw new Exception("Produk dengan PLU '$plu' dan Vendor '$vendor' tidak ditemukan di stok.");
+                throw new Exception("Produk dengan PLU '$plu' dan Vendor '$vendor' tidak ditemukan.");
             }
             $item_db = $result_find->fetch_assoc();
             $stmt_find->close();

@@ -33,7 +33,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateTempFooter() {
         if (!tempTableBody) return;
+
         const rows = tempTableBody.querySelectorAll('tr[data-plu]');
+        
+        if (rows.length === 0) {
+            if (tempTableFooter) tempTableFooter.style.display = 'none';
+            return; 
+        }
+        
+        if (tempTableFooter) tempTableFooter.style.display = '';
+
         let totalQty = 0;
         let grandTotalNet = 0;
 
@@ -98,6 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const deleteSelectedButton = document.getElementById('delete-selected-temp');
     const deleteAllButton = document.getElementById('delete-all-temp');
     const noLpbInput = document.getElementById('no_lpb');
+    const tempTableFooter = document.querySelector('#temp-receipt-table tfoot'); 
 
     function updateSelectAllState() {
         if (!selectAllCheckbox || !tempTableBody) return;

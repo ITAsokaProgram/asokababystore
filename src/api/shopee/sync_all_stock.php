@@ -44,7 +44,7 @@ try {
     $page_size = 50; 
     $total_items_found = 0;
     $has_next_page = true;
-    $kd_store = '3190';
+    $kd_store = '3190'; 
 
     while ($has_next_page) {
         $api_params = [
@@ -109,7 +109,7 @@ try {
         if (!$has_next_page) {
             break;
         }
-        usleep(250000); // jeda 250ms
+        usleep(250000); 
     }
 
     $logger->info("✅ Pengambilan data Shopee selesai. Total produk/variasi ditemukan: " . count($products_to_sync));
@@ -128,6 +128,8 @@ try {
     }
     
     $db_stock_map = [];
+    $excluded_skus_map = []; 
+
     $unique_skus = array_unique($all_skus);
 
     if (!empty($unique_skus)) {
@@ -137,17 +139,18 @@ try {
         }
 
         try {
-            $sku_chunks = array_chunk($unique_skus, 1000); // Ambil 1000 SKU per query
+            $sku_chunks = array_chunk($unique_skus, 1000); 
             $logger->info("🗃️ Mengambil stok DB untuk " . count($unique_skus) . " SKU unik dalam " . count($sku_chunks) . " chunk.");
 
             foreach ($sku_chunks as $chunk) {
                 $placeholders = implode(',', array_fill(0, count($chunk), '?'));
                 $types = str_repeat('s', count($chunk));
+                
                 $sql = "SELECT item_n, qty FROM s_barang WHERE kd_store = ? AND item_n IN ($placeholders)";
                 
                 $stmt = $conn->prepare($sql);
                 if ($stmt === false) {
-                    throw new Exception("Database prepare failed: " . $conn->error);
+                    throw new Exception("Database prepare (s_barang) failed: " . $conn->error);
                 }
                 
                 $stmt->bind_param("s" . $types, $kd_store, ...$chunk);
@@ -158,8 +161,25 @@ try {
                     $db_stock_map[$row['item_n']] = (int)$row['qty'];
                 }
                 $stmt->close();
+
+                $sql_excluded = "SELECT DISTINCT item_n FROM s_stok_ol WHERE KD_STORE = ? AND item_n IN ($placeholders)";
+                
+                $stmt_excluded = $conn->prepare($sql_excluded);
+                if ($stmt_excluded === false) {
+                    throw new Exception("Database prepare (s_stok_ol) failed: " . $conn->error);
+                }
+
+                $stmt_excluded->bind_param("s" . $types, $kd_store, ...$chunk);
+                $stmt_excluded->execute();
+                $result_excluded = $stmt_excluded->get_result();
+
+                while ($row_excluded = $result_excluded->fetch_assoc()) {
+                    $excluded_skus_map[$row_excluded['item_n']] = true; 
+                }
+                $stmt_excluded->close();
             }
             $logger->info("✅ Berhasil mengambil " . count($db_stock_map) . " data stok dari database.");
+            $logger->info("ℹ️ Ditemukan " . count($excluded_skus_map) . " SKU di s_stok_ol yang akan dikecualikan.");
 
         } catch (Exception $e) {
             $logger->error("❌ Error query database: " . $e->getMessage());
@@ -191,9 +211,17 @@ try {
             continue;
         }
 
+        if (isset($excluded_skus_map[$sku])) {
+            $results['skipped']++; 
+            $reason = "SKU ditemukan di s_stok_ol (dikecualikan)";
+            $results['skipped_details'][] = "{$name} (SKU: {$sku}) - Alasan: " . $reason;
+            $logger->info("🚫 SKIP (s_stok_ol): '{$name}' (SKU: {$sku}) - Stok tidak akan diubah.");
+            continue; 
+        }
+
         if (!isset($db_stock_map[$sku])) {
             $results['skipped']++;
-            $reason = "SKU tidak ditemukan di DB";
+            $reason = "SKU tidak ditemukan di DB (s_barang)";
             $results['skipped_details'][] = "{$name} (SKU: {$sku}) - Alasan: " . $reason;
             $logger->warning("⚠️ DILEWATI: {$reason} - Produk: '{$name}' (SKU: {$sku}, ItemID: {$item_id})");
             continue;
@@ -221,7 +249,7 @@ try {
             $logger->success("✅ UPDATE: '{$name}' (SKU: {$sku}) disinkronkan dari {$current_shopee_stock} ke {$new_stock}");
         }
         
-        usleep(100000); // 100ms jeda
+        usleep(100000); 
     }
 
     $logger->info("🎉 Sinkronisasi selesai.", $results);
