@@ -39,10 +39,13 @@ const updateTotalStock = (form) => {
 };
 const initializeSearchAndFilter = () => {
     const searchInput = document.getElementById('product-search');
-    const clearSearchBtn = document.getElementById('clear-search'); 
-    if (!searchInput) return; 
+    const clearSearchBtn = document.getElementById('clear-search');
+    const filterButtons = document.querySelectorAll('.filter-btn'); 
+
+    if (!searchInput) return;
+
     const toggleClearButton = () => {
-        if (!clearSearchBtn) return; 
+        if (!clearSearchBtn) return;
         if (searchInput.value) {
             clearSearchBtn.classList.remove('hidden');
         } else {
@@ -51,25 +54,69 @@ const initializeSearchAndFilter = () => {
     };
     toggleClearButton();
     let searchTimeout;
+
+    const buildUrlAndNavigate = () => {
+        const searchTerm = searchInput.value.trim();
+        const activeButton = document.querySelector('.filter-btn-active');
+        const filterTerm = activeButton ? activeButton.dataset.filter : 'all';
+        
+        const currentUrl = new URL(window.location);
+
+        if (searchTerm) {
+            currentUrl.searchParams.set('search', searchTerm);
+        } else {
+            currentUrl.searchParams.delete('search');
+        }
+
+        if (filterTerm && filterTerm !== 'all') {
+            currentUrl.searchParams.set('filter', filterTerm);
+        } else {
+            currentUrl.searchParams.delete('filter');
+        }
+
+        currentUrl.searchParams.delete('offset'); 
+        window.location.href = currentUrl.href;
+    };
+
     searchInput.addEventListener('input', (e) => {
         toggleClearButton();
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
-            const searchTerm = e.target.value.trim();
-            const currentUrl = new URL(window.location);
-            if (searchTerm) {
-                currentUrl.searchParams.set('search', searchTerm);
-            } else {
-                currentUrl.searchParams.delete('search');
-            }
-            currentUrl.searchParams.delete('offset');
-            window.location.href = currentUrl.href;
-        }, 500); 
+            buildUrlAndNavigate();
+        }, 500);
     });
+
+    if (filterButtons.length > 0) {
+        filterButtons.forEach(button => {
+            if (!button.disabled) {
+                button.addEventListener('click', () => {
+                    const newFilterValue = button.dataset.filter;
+                    const searchTerm = searchInput.value.trim();
+                    const currentUrl = new URL(window.location);
+
+                    if (searchTerm) {
+                        currentUrl.searchParams.set('search', searchTerm);
+                    } else {
+                        currentUrl.searchParams.delete('search');
+                    }
+
+                    if (newFilterValue && newFilterValue !== 'all') {
+                        currentUrl.searchParams.set('filter', newFilterValue);
+                    } else {
+                        currentUrl.searchParams.delete('filter');
+                    }
+
+                    currentUrl.searchParams.delete('offset'); 
+                    window.location.href = currentUrl.href;
+                });
+            }
+        });
+    }
+
     if (clearSearchBtn) {
         clearSearchBtn.addEventListener('click', () => {
             searchInput.value = '';
-            searchInput.dispatchEvent(new Event('input', { bubbles: true })); 
+            searchInput.dispatchEvent(new Event('input', { bubbles: true }));
             searchInput.focus();
         });
     }

@@ -123,8 +123,14 @@ function get_item_calculation_data($logger, $conn, $plu, $kd_store, $hrg_beli, $
     $hb_plus_lainnya = $netto + $admin_cost + $ongkir_cost + $promo_cost + $biaya_pesanan_cost;
     $logger->info(" Perhitungan HB+Biaya Lainnya | Hasil: {$hb_plus_lainnya} | Rumus: {$netto} + {$admin_cost} + {$ongkir_cost} + {$promo_cost} + {$biaya_pesanan_cost}");
 
-    
-    $margin = $price - $admin_cost + $ongkir_cost + $promo_cost + $netto + $biaya_pesanan_cost;
+    $admin_cost_margin = ($price * $admin_pct) / 100;
+    $ongkir_cost_margin_raw = ($price * $ongkir_pct) / 100;
+    $ongkir_cost_margin = ($ongkir_max > 0 && $ongkir_cost_margin_raw > $ongkir_max) ? $ongkir_max : $ongkir_cost_margin_raw;
+    $promo_cost_margin_raw = ($price * $promo_pct) / 100;
+    $promo_cost_margin = ($promo_max > 0 && $promo_cost_margin_raw > $promo_max) ? $promo_max : $promo_cost_margin_raw;
+
+
+    $margin = $price - ($netto + $admin_cost_margin + $ongkir_cost_margin + $promo_cost_margin + $biaya_pesanan_cost);
     $logger->info(" Perhitungan Margin | Hasil: {$margin} | Rumus: {$price} - {$admin_cost} + {$ongkir_cost} + {$promo_cost} + {$netto} + {$biaya_pesanan_cost}");
 
     
