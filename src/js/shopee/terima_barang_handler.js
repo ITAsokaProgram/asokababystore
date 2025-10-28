@@ -11,11 +11,13 @@ import { unformatRupiah } from './calculate_terima_barang.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     function formatRupiah(value) {
-        let cleanValue = String(value).replace(/\./g, '').replace(/,/g, '.');
-        let number = parseFloat(cleanValue);
+        let number = parseFloat(value);
         if (isNaN(number)) number = 0;
+
+        const hasDecimal = number % 1 !== 0;
+        
         return new Intl.NumberFormat('id-ID', {
-            minimumFractionDigits: 0,
+            minimumFractionDigits: hasDecimal ? 2 : 0,
             maximumFractionDigits: 2
         }).format(number);
     }
@@ -27,6 +29,36 @@ document.addEventListener('DOMContentLoaded', () => {
             minimumFractionDigits: 0,
             maximumFractionDigits: 2
         });
+    }
+
+    function updateTempFooter() {
+        if (!tempTableBody) return;
+        const rows = tempTableBody.querySelectorAll('tr[data-plu]');
+        let totalQty = 0;
+        let grandTotalNet = 0;
+
+        rows.forEach(row => {
+            const qty = parseFloat(row.querySelector('[data-field="qty_rec"]').value) || 0;
+            const hrg_beli_raw = row.querySelector('[data-field="hrg_beli"]').value;
+            const hrg_beli = parseFloat(unformatRupiah(hrg_beli_raw)) || 0;
+
+            totalQty += qty;
+            grandTotalNet += (hrg_beli * qty);
+        });
+
+        const ppn = grandTotalNet * 0.11;
+        const totalPenerimaan = grandTotalNet + ppn;
+
+
+        const totalQtyEl = document.getElementById('temp-total-qty');
+        const grandTotalNetEl = document.getElementById('temp-grand-total-net');
+        const ppnEl = document.getElementById('temp-ppn');
+        const totalPenerimaanEl = document.getElementById('temp-total-penerimaan');
+
+        if (totalQtyEl) totalQtyEl.textContent = formatRupiah(totalQty);
+        if (grandTotalNetEl) grandTotalNetEl.textContent = 'Rp ' + formatRupiah(grandTotalNet);
+        if (ppnEl) ppnEl.textContent = 'Rp ' + formatRupiah(ppn);
+        if (totalPenerimaanEl) totalPenerimaanEl.textContent = 'Rp ' + formatRupiah(totalPenerimaan);
     }
 
     const stockTable = document.getElementById('stock-table');
@@ -95,17 +127,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadTempTable() {
         if (!tempTableBody) return;
-        tempTableBody.innerHTML = '<tr><td colspan="15" class="text-center p-4"><i class="fas fa-spinner fa-spin"></i> Memuat data keranjang...</td></tr>';
+        tempTableBody.innerHTML = '<tr><td colspan="16" class="text-center p-4"><i class="fas fa-spinner fa-spin"></i> Memuat data keranjang...</td></tr>';
         try {
             const result = await getTempReceiptItems();
             if (result.success && result.items.length > 0) {
                 tempTableBody.innerHTML = result.items.map(item => createTempRowHtml(item)).join('');
             } else {
-                tempTableBody.innerHTML = '<tr><td colspan="15" class="text-center p-4 text-gray-500">Keranjang penerimaan masih kosong.</td></tr>';
+                tempTableBody.innerHTML = '<tr><td colspan="16" class="text-center p-4 text-gray-500">Keranjang penerimaan masih kosong.</td></tr>';
             }
             updateSelectAllState();
+            updateTempFooter(); 
         } catch (error) {
-            tempTableBody.innerHTML = `<tr><td colspan="15" class="text-center p-4 text-red-500">Gagal memuat data: ${error.message}</td></tr>`;
+            tempTableBody.innerHTML = `<tr><td colspan="16" class="text-center p-4 text-red-500">Gagal memuat data: ${error.message}</td></tr>`;
+            updateTempFooter(); 
         }
     }
 
@@ -125,6 +159,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const ongkir_pct = parseFloat(item.kategori_ongkir_pct) || 0;
         const promo_pct = parseFloat(item.kategori_promo_pct) || 0;
         const biaya_pesanan = parseFloat(item.kategori_biaya_pesanan) || 0;
+
+        const total = netto * qty;
 
         let marginClass = 'text-gray-900';
         if (margin < 0) {
@@ -156,6 +192,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <td class="p-3"><input type="text" value="${formatPersen(ongkir_pct)}" class="input-qty input-disabled" data-field="kategori_ongkir_pct" disabled></td>
             <td class="p-3"><input type="text" value="${formatPersen(promo_pct)}" class="input-qty input-disabled" data-field="kategori_promo_pct" disabled></td>
             <td class="p-3"><input type="text" value="${formatRupiah(biaya_pesanan)}" class="input-qty input-disabled" data-field="kategori_biaya_pesanan" disabled></td>
+            
+            <td class="p-3"><input type="text" value="${formatRupiah(total)}" class="input-qty input-disabled font-bold text-gray-900" data-field="total" disabled></td>
         </tr>
         `;
     }
@@ -180,6 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 updateTimeout = setTimeout(() => {
                     sendUpdateToServer(row, e.target); 
+                    console.log("SENDING CHANGES TO SERVER")
                 }, 1000); 
             }
         });
@@ -199,7 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const hrg_beli = parseFloat(unformatRupiah(hrg_beli_raw)) || 0;
         const price = parseFloat(unformatRupiah(price_raw)) || 0;
 
-        try {
+        try {   
             const updatedItem = await updateTempReceiptItem(plu, qty_rec, hrg_beli, price);
             
             if (updatedItem.success && updatedItem.item) {
@@ -228,7 +267,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.querySelector('[data-field="kategori_promo_pct"]').value = formatPersen(item.kategori_promo_pct);
                 row.querySelector('[data-field="kategori_biaya_pesanan"]').value = formatRupiah(item.kategori_biaya_pesanan);
 
+                const newTotal = (parseFloat(item.netto) || 0) * qty_rec;
+                row.querySelector('[data-field="total"]').value = formatRupiah(newTotal);
+
                 if (inputElement) inputElement.style.borderColor = '#10b981'; 
+
+                updateTempFooter();
+
             } else {
                  throw new Error(updatedItem.message || 'Data item tidak diterima dari server.');
             }
@@ -245,8 +290,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
-    
-
     if (saveTempForm) {
         saveTempForm.addEventListener('submit', async (e) => {
             e.preventDefault();

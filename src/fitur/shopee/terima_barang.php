@@ -659,13 +659,45 @@ if ($shopeeService->isConnected()) {
                   <th>Ongkir (%)</th>
                   <th>Promo (%)</th>
                   <th>Biaya Pesanan</th>
+                  <th>Total</th>
                 </tr>
               </thead>
               <tbody id="temp-receipt-body">
                 <tr>
-                  <td colspan="11" class="text-center p-4 text-gray-500">Memuat data keranjang...</td>
+                  <td colspan="16" class="text-center p-4 text-gray-500">Memuat data keranjang...</td>
                 </tr>
               </tbody>
+              <tfoot>
+                  <tr class="bg-gradient-to-r from-blue-50 to-indigo-50">
+                      <td colspan="3" class="p-4 text-right font-semibold text-gray-700">
+                          <i class="fas fa-boxes text-blue-600 mr-2"></i>
+                          Total Quantity:
+                      </td>
+                      <td id="temp-total-qty" class="p-4 text-left font-bold text-blue-900 text-lg">0</td>
+                      <td colspan="13" class="p-4"></td>
+                  </tr>
+                  <tr class="bg-gradient-to-r from-purple-50 to-pink-50">
+                      <td colspan="3" class="p-4 text-right font-semibold text-gray-700">
+                          <i class="fas fa-calculator text-purple-600 mr-2"></i>
+                          Grand Total Net (HB × Qty):
+                      </td>
+                      <td id="temp-grand-total-net" class="p-4 text-left font-bold text-purple-900 text-lg" colspan="13">Rp 0</td>
+                  </tr>
+                  <tr class="bg-gradient-to-r from-yellow-50 to-orange-50">
+                      <td colspan="3" class="p-4 text-right font-semibold text-gray-700">
+                          <i class="fas fa-percentage text-orange-600 mr-2"></i>
+                          PPN (11%):
+                      </td>
+                      <td id="temp-ppn" class="p-4 text-left font-bold text-orange-900 text-lg" colspan="13">Rp 0</td>
+                  </tr>
+                  <tr class="bg-gradient-to-r from-green-100 to-emerald-100 border-t-4 border-green-600">
+                      <td colspan="3" class="p-5 text-right font-bold text-gray-800 text-xl">
+                          <i class="fas fa-money-bill-wave text-green-600 mr-2"></i>
+                          Total Penerimaan:
+                      </td>
+                      <td id="temp-total-penerimaan" class="p-5 text-left font-extrabold text-green-800 text-2xl" colspan="13">Rp 0</td>
+                  </tr>
+              </tfoot>
             </table>
           </div>
         </div>
