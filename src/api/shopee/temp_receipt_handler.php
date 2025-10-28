@@ -233,7 +233,6 @@ try {
                 
                 
                 
-                
                 $item['avg_cost'] = $calcs['calc_weighted_avg_cost'];
                 $item['net_price'] = $calcs['calc_hb_plus_lainnya'];
                 
@@ -297,7 +296,6 @@ try {
 
             
             
-            
             $stmt_insert = $conn->prepare(
                 "INSERT INTO s_receipt_temp 
                 (kd_store, no_faktur, plu, barcode, descp, 
@@ -308,23 +306,23 @@ try {
             );
             
             $stmt_insert->bind_param("ssssddddddddddiis", 
-                $kd_store,                      
-                $plu_val,                       
-                $item_n_val,                    
-                $descp_val,                     
+                $kd_store,                       
+                $plu_val,                        
+                $item_n_val,                     
+                $descp_val,                      
                 $calcs['calc_weighted_avg_cost'], 
-                $hrg_beli_val,                  
+                $hrg_beli_val,                   
                 $calcs['ppn'],                   
                 $calcs['netto'],                 
                 $calcs['admin_cost'],            
                 $calcs['ongkir_cost'],           
                 $calcs['promo_cost'],            
                 $calcs['biaya_pesanan_cost'],    
-                $price_val,                     
+                $price_val,                      
                 $calcs['calc_hb_plus_lainnya'],  
-                $qty_rec_val,                   
-                $kode_kasir_int,                
-                $vendor_val                     
+                $qty_rec_val,                    
+                $kode_kasir_int,                 
+                $vendor_val                      
             );
             
             $stmt_insert->execute();
@@ -360,9 +358,9 @@ try {
                     biaya_psn = ?, 
                     avg_cost = ?, 
                     net_price = ? 
-                WHERE kd_store = ? AND kode_kasir = ? AND plu = ?");
+                WHERE kd_store = ? AND plu = ?");
             
-            $stmt->bind_param("dddddddddddsis", 
+            $stmt->bind_param("dddddddddddss", 
                 $qty_rec,
                 $hrg_beli,
                 $price,
@@ -375,7 +373,6 @@ try {
                 $calcs['calc_weighted_avg_cost'], 
                 $calcs['calc_hb_plus_lainnya'],   
                 $kd_store, 
-                $kode_kasir_int, 
                 $plu
             );
             

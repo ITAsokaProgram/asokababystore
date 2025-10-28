@@ -218,7 +218,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 updateTimeout = setTimeout(() => {
                     sendUpdateToServer(row, e.target); 
-                    console.log("SENDING CHANGES TO SERVER")
                 }, 1000); 
             }
         });
