@@ -66,8 +66,7 @@ try {
     exit;
 }
 
-function get_item_calculation_data($logger, $conn, $plu, $kd_store, $hrg_beli, $price, $qty_terima) {
-    
+function get_item_calculation_data($logger, $conn, $plu, $item_n, $kd_store, $hrg_beli, $price, $qty_terima) {    
     $logger->info(" Kalkulasi dimulai | PLU: {$plu} | KD_Store: {$kd_store} | Hrg Beli: {$hrg_beli} | Price: {$price} | Qty Terima: {$qty_terima}");
 
     $hrg_beli = (float)$hrg_beli;
@@ -75,8 +74,8 @@ function get_item_calculation_data($logger, $conn, $plu, $kd_store, $hrg_beli, $
     $qty_terima = (float)$qty_terima;
 
     
-    $stmt_kat = $conn->prepare("SELECT admin, x_ongkir, x_ongkir_max, x_promo, x_promo_max, biaya_pesanan FROM s_kategori WHERE KD_STORE = ? AND plu = ?");
-    $stmt_kat->bind_param("ss", $kd_store, $plu);
+    $stmt_kat = $conn->prepare("SELECT admin, x_ongkir, x_ongkir_max, x_promo, x_promo_max, biaya_pesanan FROM s_kategori WHERE KD_STORE = ? AND ITEM_N = ?");
+    $stmt_kat->bind_param("ss", $kd_store, $item_n);
     $stmt_kat->execute();
     $kat_result = $stmt_kat->get_result();
     $kategori_data = $kat_result->fetch_assoc();
@@ -177,29 +176,28 @@ function get_item_calculation_data($logger, $conn, $plu, $kd_store, $hrg_beli, $
 }
 $action = $_GET['action'] ?? '';
 $data = json_decode(file_get_contents('php://input'), true);
-$kode_kasir_int = (int)$user_kode;
+$kode_kasir_int = (int)$user_kode; 
 $kd_store = '9998';
 try {
     switch ($action) {
         case 'get':
-            
             $stmt = $conn->prepare("
-                SELECT 
-                    t.*, 
-                    s.ITEM_N, 
-                    s.Qty as stok_qty, 
-                    s.avg_cost as stok_avg_cost,
-                    k.admin as kategori_admin_pct,
-                    k.x_ongkir as kategori_ongkir_pct,
-                    k.x_ongkir_max as kategori_ongkir_max,
-                    k.x_promo as kategori_promo_pct,
-                    k.x_promo_max as kategori_promo_max,
-                    k.biaya_pesanan as kategori_biaya_pesanan
-                FROM s_receipt_temp t
-                LEFT JOIN s_stok_ol s ON t.plu = s.plu AND t.kd_store = s.KD_STORE
-                LEFT JOIN s_kategori k ON t.plu = k.plu AND t.kd_store = k.KD_STORE
-                WHERE t.kd_store = ?
-                ORDER BY t.descp ASC
+            SELECT 
+                t.*, 
+                s.ITEM_N, 
+                s.Qty AS stok_qty, 
+                s.avg_cost AS stok_avg_cost,
+                k.admin AS kategori_admin_pct,
+                k.x_ongkir AS kategori_ongkir_pct,
+                k.x_ongkir_max AS kategori_ongkir_max,
+                k.x_promo AS kategori_promo_pct,
+                k.x_promo_max AS kategori_promo_max,
+                k.biaya_pesanan AS kategori_biaya_pesanan
+            FROM s_receipt_temp t
+            LEFT JOIN s_stok_ol s ON t.barcode = s.ITEM_N AND t.kd_store = s.KD_STORE
+            LEFT JOIN s_kategori k ON t.barcode = k.ITEM_N AND t.kd_store = k.KD_STORE
+            WHERE t.kd_store = ?
+            ORDER BY t.descp ASC
             ");
             $stmt->bind_param("s", $kd_store); 
             $stmt->execute();
@@ -212,6 +210,7 @@ try {
                     $logger, 
                     $conn,
                     $item['plu'],
+                    $item['barcode'], 
                     $kd_store,
                     $item['hrg_beli'],
                     $item['price'],
@@ -270,8 +269,8 @@ try {
             }
             
             
-            $stmt_check = $conn->prepare("SELECT plu FROM s_receipt_temp WHERE kd_store = ? AND kode_kasir = ? AND plu = ?");
-            $stmt_check->bind_param("sis", $kd_store, $kode_kasir_int, $plu);
+            $stmt_check = $conn->prepare("SELECT plu FROM s_receipt_temp WHERE kd_store = ? AND plu = ?");
+            $stmt_check->bind_param("ss", $kd_store, $plu);
             $stmt_check->execute();
             if ($stmt_check->get_result()->num_rows > 0) {
                 throw new Exception("Item (PLU: {$plu}) sudah ada di keranjang.");
@@ -298,7 +297,7 @@ try {
             $qty_rec_val = 1;
 
             
-            $calcs = get_item_calculation_data($logger, $conn, $plu_val, $kd_store, $hrg_beli_val, $price_val, $qty_rec_val);
+            $calcs = get_item_calculation_data($logger, $conn, $plu_val, $item_n_val, $kd_store, $hrg_beli_val, $price_val, $qty_rec_val);
 
             
             
@@ -312,23 +311,23 @@ try {
             );
             
             $stmt_insert->bind_param("ssssddddddddddiis", 
-                $kd_store,                       
-                $plu_val,                        
-                $item_n_val,                     
-                $descp_val,                      
+                $kd_store,                     
+                $plu_val,                      
+                $item_n_val,                   
+                $descp_val,                    
                 $calcs['calc_weighted_avg_cost'], 
-                $hrg_beli_val,                   
-                $calcs['ppn'],                   
-                $calcs['netto'],                 
-                $calcs['admin_cost'],            
-                $calcs['ongkir_cost'],           
-                $calcs['promo_cost'],            
-                $calcs['biaya_pesanan_cost'],    
-                $price_val,                      
-                $calcs['calc_hb_plus_lainnya'],  
-                $qty_rec_val,                    
-                $kode_kasir_int,                 
-                $vendor_val                      
+                $hrg_beli_val,                 
+                $calcs['ppn'],                 
+                $calcs['netto'],               
+                $calcs['admin_cost'],          
+                $calcs['ongkir_cost'],         
+                $calcs['promo_cost'],          
+                $calcs['biaya_pesanan_cost'],  
+                $price_val,                    
+                $calcs['calc_hb_plus_lainnya'], 
+                $qty_rec_val,                  
+                $kode_kasir_int,               
+                $vendor_val                    
             );
             
             $stmt_insert->execute();
@@ -348,7 +347,21 @@ try {
             }
 
             
-            $calcs = get_item_calculation_data($logger, $conn, $plu, $kd_store, $hrg_beli, $price, $qty_rec);
+            $stmt_get_barcode = $conn->prepare("SELECT barcode FROM s_receipt_temp WHERE kd_store = ? AND plu = ?");
+            if (!$stmt_get_barcode) {
+                throw new Exception("Gagal prepare statement: " . $conn->error);
+            }
+            $stmt_get_barcode->bind_param("ss", $kd_store, $plu);
+            $stmt_get_barcode->execute();
+            $barcode_result = $stmt_get_barcode->get_result();
+            if ($barcode_result->num_rows === 0) {
+                throw new Exception("Item PLU {$plu} tidak ditemukan di temp table.");
+            }
+            $item_temp_data = $barcode_result->fetch_assoc();
+            $barcode = $item_temp_data['barcode'];
+            $stmt_get_barcode->close();
+            
+            $calcs = get_item_calculation_data($logger, $conn, $plu, $barcode, $kd_store, $hrg_beli, $price, $qty_rec);
             
             
             $stmt = $conn->prepare("UPDATE s_receipt_temp 
@@ -408,9 +421,11 @@ try {
             }
             $placeholders = implode(',', array_fill(0, count($plus), '?'));
             $types = str_repeat('s', count($plus));
-            $sql = "DELETE FROM s_receipt_temp WHERE kd_store = ? AND kode_kasir = ? AND plu IN ($placeholders)";
+            
+            $sql = "DELETE FROM s_receipt_temp WHERE kd_store = ? AND plu IN ($placeholders)";
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("si" . $types, $kd_store, $kode_kasir_int, ...$plus);
+            $stmt->bind_param("s" . $types, $kd_store, ...$plus); 
+            
             $stmt->execute();
             $affected_rows = $stmt->affected_rows;
             $stmt->close();
@@ -419,8 +434,9 @@ try {
 
         case 'delete_all':
             
-            $stmt = $conn->prepare("DELETE FROM s_receipt_temp WHERE kd_store = ? AND kode_kasir = ?");
-            $stmt->bind_param("si", $kd_store, $kode_kasir_int);
+            $stmt = $conn->prepare("DELETE FROM s_receipt_temp WHERE kd_store = ?");
+            $stmt->bind_param("s", $kd_store);
+
             $stmt->execute();
             $affected_rows = $stmt->affected_rows;
             $stmt->close();
@@ -437,8 +453,9 @@ try {
             $conn->begin_transaction();
             try {
                 
-                $stmt_get_temp = $conn->prepare("SELECT * FROM s_receipt_temp WHERE kd_store = ? AND kode_kasir = ? AND QTY_REC > 0 FOR UPDATE");
-                $stmt_get_temp->bind_param("si", $kd_store, $kode_kasir_int);
+                $stmt_get_temp = $conn->prepare("SELECT * FROM s_receipt_temp WHERE kd_store = ? AND QTY_REC > 0 FOR UPDATE");
+                $stmt_get_temp->bind_param("s", $kd_store);
+
                 $stmt_get_temp->execute();
                 $temp_items_result = $stmt_get_temp->get_result();
                 $temp_items = $temp_items_result->fetch_all(MYSQLI_ASSOC);
@@ -498,7 +515,7 @@ try {
                         $item['avg_cost'], $item['hrg_beli'], $item['ppn'], $item['netto'], $item['admin_s'],
                         $item['ongkir'], $item['promo'], $item['biaya_psn'], $item['price'], $item['net_price'],
                         $qty_rec, 
-                        $no_lpb, $item['kode_kasir'], $item['kode_supp']
+                        $no_lpb, $item['kode_kasir'], $item['kode_supp'] 
                     );
                     if (!$stmt_receipt->execute()) {
                         throw new Exception("Gagal insert s_receipt PLU {$plu}: " . $stmt_receipt->error);
@@ -540,8 +557,9 @@ try {
                 $stmt_stok_update->close();
 
                 
-                $stmt_delete = $conn->prepare("DELETE FROM s_receipt_temp WHERE kd_store = ? AND kode_kasir = ?");
-                $stmt_delete->bind_param("si", $kd_store, $kode_kasir_int);
+                $stmt_delete = $conn->prepare("DELETE FROM s_receipt_temp WHERE kd_store = ?");
+                $stmt_delete->bind_param("s", $kd_store);
+                
                 $stmt_delete->execute();
                 $stmt_delete->close();
                 
