@@ -128,3 +128,6 @@ export const addTempReceiptItemByPlu = (plu, vendor) => {
 export const syncAllProductsToDb = (data) => {
   return sendRequestJSON('/src/api/shopee/sync_all_products_to_db.php', data);
 };
+export const syncAllProductsToRedis = (data) => {
+  return sendRequestJSON('/src/api/shopee/sync_all_products_to_redis.php', data);
+};

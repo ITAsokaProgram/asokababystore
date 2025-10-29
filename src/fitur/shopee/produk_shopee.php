@@ -86,6 +86,7 @@ if (!empty($search_keyword)) {
     $has_prev_page = $current_offset > 0;
     $prev_offset = max(0, $current_offset - $page_size);
 }
+
 if ($shopeeService->isConnected()) {
     if (!empty($search_keyword)) {
         $search_params = [
@@ -160,7 +161,6 @@ if ($shopeeService->isConnected()) {
     }
 
   $detailed_products = $shopeeService->getDetailedProductInfo($product_list_response);
-//   ddd($detailed_products);
 
   $all_skus = [];
   $sku_stock_map = [];
@@ -624,16 +624,16 @@ function getPriceRange($models) {
 
           <div class="section-card rounded-2xl overflow-hidden">
             <div class="section-header p-6">
-              <div class="flex items-center justify-between">
-                <div>
-                  <h2 class="text-xl font-bold text-gray-800 mb-1">Daftar Produk</h2>
-                  <p class="text-sm text-gray-600">Update harga dan stok produk Anda dengan cepat</p>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800 mb-1">Daftar Produk</h2>
+                        <p class="text-sm text-gray-600">Update harga dan stok produk Anda dengan cepat</p>
+                    </div>
+                    <div class="stats-badge" style="background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%); color: #6b21a8; border: 1px solid #c4b5fd;">
+                        <i class="fas fa-boxes"></i>
+                        <span id="product-count-display"><?php echo $total_count; ?> Produk</span>
+                    </div>
                 </div>
-                <div class="stats-badge" style="background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%); color: #6b21a8; border: 1px solid #c4b5fd;">
-                  <i class="fas fa-boxes"></i>
-                  <span><?php echo $total_count; ?> Produk</span>
-                </div>
-              </div>
             </div>
 
             <?php if (!empty($detailed_products)): ?>
@@ -1052,7 +1052,32 @@ function getPriceRange($models) {
                         </div>
                     </div>
                 <?php endforeach; ?>
+                <?php if ($filter_type != 'all'): ?>
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                const countDisplay = document.getElementById('product-count-display');
+                                if (countDisplay) {
+                                    const totalApiCount = <?php echo $total_count; ?>;
+                                    const filteredPageCount = <?php echo $filtered_product_count; ?>;
+                                    
+                                    countDisplay.innerHTML = `${filteredPageCount} Produk`;
+                                    
+                                    const countBadge = countDisplay.closest('.stats-badge');
+                                    if (countBadge) {
+                                        countBadge.style.background = 'linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%)';
+                                        countBadge.style.color = '#0369a1';
+                                        countBadge.style.borderColor = '#7dd3fc';
+                                        const icon = countBadge.querySelector('i');
+                                        if (icon) {
+                                            icon.className = 'fas fa-filter';
+                                        }
+                                    }
+                                }
+                            });
+                        </script>
+                        <?php endif; ?>
                 </div>
+                
 
                 <?php if ($filtered_product_count == 0):  ?>
                 <div class="p-16 text-center">
@@ -1091,7 +1116,6 @@ function getPriceRange($models) {
                     <i class="fas fa-exclamation-circle text-2xl"></i>
                     <div>
                       <strong class="font-bold text-lg">Error API!</strong>
-                      <?php ddd($product_list_response) ?>
                       <p class="text-sm mt-1"><?php echo htmlspecialchars($product_list_response['message']); ?></p>
                     </div>
                   </div>

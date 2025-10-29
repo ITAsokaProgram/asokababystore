@@ -1,4 +1,4 @@
-import { updateStock, updatePrice, syncStock, syncAllStock, manageStokOl, syncAllProductsToDb } from './api_service.js';
+import { updateStock, updatePrice, syncStock, syncAllStock, manageStokOl, syncAllProductsToDb, syncAllProductsToRedis } from './api_service.js';
 const updatePriceRange = (form) => {
     const productCard = form.closest('.update-form-wrapper');
     if (!productCard) return;
@@ -708,6 +708,11 @@ document.addEventListener('DOMContentLoaded', () => {
         syncAllStockBtn.addEventListener('click', handleSyncAllClick);
     }
 
+    const syncAllProductsRedisBtn = document.getElementById('sync-products-to-redis-btn');
+    if (syncAllProductsRedisBtn) {
+        syncAllProductsRedisBtn.addEventListener('click', handleSyncAllProductsToRedisClick);
+    }
+
     const syncAllProductsBtn = document.getElementById('sync-products-to-db-btn');
     if (syncAllProductsBtn) {
         syncAllProductsBtn.addEventListener('click', handleSyncAllProductsToDbClick);
@@ -781,6 +786,72 @@ const handleSyncAllProductsToDbClick = async (event) => {
     }
   } catch (error) {
     console.error('Sync All Products to DB Error:', error);
+    Swal.fire({
+      title: 'Error!',
+      text: `Terjadi kesalahan: ${error.message}`,
+      icon: 'error'
+    });
+  } finally {
+    btn.innerHTML = originalHtml;
+    btn.disabled = false;
+  }
+};
+
+const handleSyncAllProductsToRedisClick = async (event) => {
+  const btn = event.currentTarget;
+  const originalHtml = btn.innerHTML;
+
+  const result = await Swal.fire({
+    title: `Konfirmasi Sync Produk ke Cache (Redis)`,
+    html: `Anda akan mengambil <strong>SEMUA</strong> produk dari Shopee dan menyimpannya di cache (Redis).<br><br>Ini akan menjadi sumber data untuk halaman ini. Lakukan ini jika ada produk baru atau perubahan besar. Proses ini mungkin memakan waktu.`,
+    icon: 'info',
+    showCancelButton: true,
+    confirmButtonColor: '#eab308', // Warna kuning
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: '<i class="fas fa-bolt mr-1"></i> Ya, Sync ke Cache!',
+    cancelButtonText: 'Batal',
+    reverseButtons: true
+  });
+
+  if (!result.isConfirmed) return;
+
+  btn.innerHTML = '<span class="loading-spinner"></span> Mengambil data...';
+  btn.disabled = true;
+
+  Swal.fire({
+    title: 'Sinkronisasi ke Cache Dimulai...',
+    html: `Memproses semua produk. Harap tunggu...<br><br>Jangan tutup halaman ini. Server sedang mengambil semua data produk Anda.`,
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    }
+  });
+
+  try {
+    const data = {}; 
+    const response = await syncAllProductsToRedis(data); // <-- Panggil fungsi baru
+
+    if (response.success) {
+      Swal.fire({
+        title: 'Sinkronisasi Selesai!',
+        html: `
+            <div class="text-left space-y-2">
+                <p><strong><i class="fas fa-check-circle text-green-500"></i> Berhasil!</strong></p>
+                <p><strong><i class="fas fa-cubes text-blue-500"></i> Total Produk/Variasi disimpan:</strong> ${response.total_items_saved_to_redis} item</p>
+                <p class="mt-4">Halaman akan dimuat ulang untuk menggunakan data baru...</p>
+            </div>
+        `,
+        icon: 'success',
+        allowOutsideClick: false,
+        confirmButtonText: 'Muat Ulang Sekarang',
+      }).then(() => {
+        location.reload(); // Muat ulang untuk pakai cache baru
+      });
+    } else {
+      throw new Error(response.message || 'Gagal menyinkronkan data.');
+    }
+  } catch (error) {
+    console.error('Sync All Products to Redis Error:', error);
     Swal.fire({
       title: 'Error!',
       text: `Terjadi kesalahan: ${error.message}`,
