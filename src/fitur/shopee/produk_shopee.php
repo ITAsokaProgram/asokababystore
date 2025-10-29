@@ -584,6 +584,13 @@ function getPriceRange($models) {
                             <i class="fas fa-sync-alt text-sm"></i>
                             <span>Sync Semua Stok</span>
                         </button>
+                        <!-- <button 
+                            id="sync-products-to-db-btn" 
+                            class="px-5 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 whitespace-nowrap"
+                            data-total-count="<?php echo $total_count; ?>">
+                            <i class="fas fa-database text-sm"></i>
+                            <span>Sync Produk ke DB</span>
+                        </button> -->
                     </div>
                 </div>
             </div>

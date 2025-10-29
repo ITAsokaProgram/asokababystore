@@ -1,4 +1,4 @@
-import { updateStock, updatePrice, syncStock, syncAllStock, manageStokOl } from './api_service.js';
+import { updateStock, updatePrice, syncStock, syncAllStock, manageStokOl, syncAllProductsToDb } from './api_service.js';
 const updatePriceRange = (form) => {
     const productCard = form.closest('.update-form-wrapper');
     if (!productCard) return;
@@ -691,9 +691,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (button.disabled) return;
         button.addEventListener('click', (event) => handleManageStokOlClick(event));
     });
-    const syncAllBtn = document.getElementById('sync-all-stock-btn');
-    if (syncAllBtn) {
-        syncAllBtn.addEventListener('click', handleSyncAllClick);
+    const syncAllStockBtn = document.getElementById('sync-all-stock-btn');
+    if (syncAllStockBtn) {
+        syncAllStockBtn.addEventListener('click', handleSyncAllClick);
+    }
+
+    const syncAllProductsBtn = document.getElementById('sync-products-to-db-btn');
+    if (syncAllProductsBtn) {
+        syncAllProductsBtn.addEventListener('click', handleSyncAllProductsToDbClick);
     }
     const profileImg = document.getElementById("profile-img");
     const profileCard = document.getElementById("profile-card");
@@ -710,3 +715,67 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     document.body.classList.add('loaded');
 });
+
+const handleSyncAllProductsToDbClick = async (event) => {
+  const btn = event.currentTarget;
+  const originalHtml = btn.innerHTML;
+  const totalCount = btn.dataset.totalCount || 'semua';
+
+  const result = await Swal.fire({
+    title: `Konfirmasi Sync Produk ke DB`,
+    html: `Anda akan mengambil data <strong>${totalCount}</strong> produk dari Shopee dan memasukkannya ke tabel lokal <strong>s_shopee</strong>.<br><br>Produk dengan SKU yang sudah ada di tabel akan dilewati. Proses ini mungkin memakan waktu.`,
+    icon: 'info',
+    showCancelButton: true,
+    confirmButtonColor: '#3b82f6', // Biru
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: '<i class="fas fa-database mr-1"></i> Ya, Sync ke DB!',
+    cancelButtonText: 'Batal',
+    reverseButtons: true
+  });
+
+  if (!result.isConfirmed) return;
+
+  btn.innerHTML = '<span class="loading-spinner"></span> Mengambil data...';
+  btn.disabled = true;
+
+  Swal.fire({
+    title: 'Sinkronisasi ke DB Dimulai...',
+    html: `Memproses ${totalCount} item. Harap tunggu...<br><br>Jangan tutup halaman ini. Server sedang mengambil semua data produk Anda.`,
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    }
+  });
+
+  try {
+    const data = {}; // Kirim data kosong jika diperlukan
+    const response = await syncAllProductsToDb(data);
+
+    if (response.success) {
+      Swal.fire({
+        title: 'Sinkronisasi Selesai!',
+        html: `
+          <div class="text-left space-y-2">
+            <p><strong><i class="fas fa-cubes text-blue-500"></i> Total Produk/Variasi ditemukan:</strong> ${response.total_items_found} item</p>
+            <p><strong><i class="fas fa-check-circle text-green-500"></i> Berhasil dimasukkan ke DB:</strong> ${response.inserted} item baru</p>
+            <p><strong><i class="fas fa-minus-circle text-gray-500"></i> Dilewati (SKU N/A / Sudah Ada):</strong> ${response.skipped} item</p>
+          </div>
+        `,
+        icon: 'success',
+        confirmButtonText: 'OK',
+      });
+    } else {
+      throw new Error(response.message || 'Gagal menyinkronkan data.');
+    }
+  } catch (error) {
+    console.error('Sync All Products to DB Error:', error);
+    Swal.fire({
+      title: 'Error!',
+      text: `Terjadi kesalahan: ${error.message}`,
+      icon: 'error'
+    });
+  } finally {
+    btn.innerHTML = originalHtml;
+    btn.disabled = false;
+  }
+};

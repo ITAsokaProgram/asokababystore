@@ -124,3 +124,7 @@ export const saveTempReceipt = (no_lpb) => {
 export const addTempReceiptItemByPlu = (plu, vendor) => {
     return sendRequestJSON('/src/api/shopee/temp_receipt_handler.php?action=add_by_plu', { plu, vendor });
 };
+
+export const syncAllProductsToDb = (data) => {
+  return sendRequestJSON('/src/api/shopee/sync_all_products_to_db.php', data);
+};
