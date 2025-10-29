@@ -12,9 +12,13 @@ $redirect_uri = "https://" . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'];
 function build_pagination_url($new_offset) {
     $params = $_GET;
     $params['offset'] = $new_offset;
-    if ($new_offset == 0) {
+
+    $is_searching = !empty($params['search']);
+
+    if (($new_offset === 0 || $new_offset === '0') && !$is_searching) {
         unset($params['offset']);
     }
+    
     return '?' . http_build_query($params);
 }
 
@@ -152,6 +156,7 @@ if ($shopeeService->isConnected()) {
     }
 
   $detailed_products = $shopeeService->getDetailedProductInfo($product_list_response);
+//   ddd($detailed_products);
 
   $all_skus = [];
   $sku_stock_map = [];
@@ -179,54 +184,55 @@ if ($shopeeService->isConnected()) {
       $sku_barang_data_map = [];
       $sku_stock_map = []; 
 
-      $sql_barang = "SELECT item_n, plu, DESCP, VENDOR, Harga_Beli, Harga_Jual, qty 
-                      FROM s_barang 
-                      WHERE kd_store = ? AND item_n IN ($placeholders)";
+    $sql_barang = "SELECT item_n, plu, DESCP, VENDOR, Harga_Beli, Harga_Jual, qty 
+                           FROM s_barang 
+                           WHERE kd_store = ? AND item_n IN ($placeholders)";
 
-      $stmt_barang = $conn->prepare($sql_barang);
+            $stmt_barang = $conn->prepare($sql_barang);
 
-      if ($stmt_barang) {
-          $stmt_barang->bind_param("s" . $types, $kd_store, ...$unique_skus);
-          $stmt_barang->execute();
-          $result_barang = $stmt_barang->get_result();
-          while ($row = $result_barang->fetch_assoc()) {
-              $trimmed_sku = trim($row['item_n']);
-              $sku_barang_data_map[$trimmed_sku] = [
-                  'plu' => $row['plu'],
-                  'descp' => $row['DESCP'],
-                  'vendor' => $row['VENDOR'],
-                  'harga_beli' => $row['Harga_Beli'],
-                  'harga_jual' => $row['Harga_Jual']
-              ];
-              $sku_stock_map[$trimmed_sku] = (int)$row['qty'];
-          }
-          $stmt_barang->close();
-      }
-
+            if ($stmt_barang) {
+                $stmt_barang->bind_param("s" . $types, $kd_store, ...$unique_skus);
+                $stmt_barang->execute();
+                $result_barang = $stmt_barang->get_result();
+                while ($row = $result_barang->fetch_assoc()) {
+                    $trimmed_sku = trim($row['item_n']);
+                    $sku_barang_data_map[$trimmed_sku] = [
+                        'plu' => $row['plu'],
+                        'descp' => $row['DESCP'],
+                        'vendor' => $row['VENDOR'],
+                        'harga_beli' => $row['Harga_Beli'],
+                        'harga_jual' => $row['Harga_Jual']
+                    ];
+                    $sku_stock_map[$trimmed_sku] = (int)$row['qty'];
+                }
+                $stmt_barang->close();
+            }
       $sku_stok_ol_data_map = [];
       $kd_store_ol = '9998'; 
-      $sql_stok_ol = "SELECT item_n, plu, DESCP, VENDOR, hrg_beli, price, Qty 
-                        FROM s_stok_ol 
-                        WHERE kd_store = ? AND item_n IN ($placeholders)";
+      $sku_stok_ol_data_map = [];
+            $kd_store_ol = '9998'; 
+            $sql_stok_ol = "SELECT item_n, plu, DESCP, VENDOR, hrg_beli, price, Qty 
+                            FROM s_stok_ol 
+                            WHERE kd_store = ? AND item_n IN ($placeholders)";
 
-      $stmt_stok_ol = $conn->prepare($sql_stok_ol);
+            $stmt_stok_ol = $conn->prepare($sql_stok_ol);
 
-      if ($stmt_stok_ol) {
-          $stmt_stok_ol->bind_param("s" . $types, $kd_store_ol, ...$unique_skus);
-          $stmt_stok_ol->execute();
-          $result_stok_ol = $stmt_stok_ol->get_result();
-          while ($row = $result_stok_ol->fetch_assoc()) {
-              $sku_stok_ol_data_map[trim($row['item_n'])] = [
-                  'plu' => $row['plu'],
-                  'descp' => $row['DESCP'],
-                  'vendor' => $row['VENDOR'],
-                  'hrg_beli' => $row['hrg_beli'],
-                  'price' => $row['price'],
-                  'qty' => (int)$row['Qty']
-              ];
-          }
-          $stmt_stok_ol->close();
-      }
+            if ($stmt_stok_ol) {
+                $stmt_stok_ol->bind_param("s" . $types, $kd_store_ol, ...$unique_skus);
+                $stmt_stok_ol->execute();
+                $result_stok_ol = $stmt_stok_ol->get_result();
+                while ($row = $result_stok_ol->fetch_assoc()) {
+                    $sku_stok_ol_data_map[trim($row['item_n'])] = [
+                        'plu' => $row['plu'],
+                        'descp' => $row['DESCP'],
+                        'vendor' => $row['VENDOR'],
+                        'hrg_beli' => $row['hrg_beli'],
+                        'price' => $row['price'],
+                        'qty' => (int)$row['Qty']
+                    ];
+                }
+                $stmt_stok_ol->close();
+            }
   }
 } else {
   $auth_url = $shopeeService->getAuthUrl($redirect_uri);
@@ -534,6 +540,7 @@ function getPriceRange($models) {
 
         <?php if ($shopeeService->isConnected()): ?>
 
+
            <div class="search-filter-section">
                 <div class="flex flex-col lg:flex-row gap-4 items-stretch lg:items-start justify-between">
                     
@@ -548,8 +555,8 @@ function getPriceRange($models) {
                             value="<?php echo htmlspecialchars($search_keyword); ?>"
                         >
                         <?php if (!empty($search_keyword)): ?>
-                        <button id="clear-search" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition">
-                            <i class="fas fa-times"></i>
+                        <button id="clear-search" class="absolute hidden right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition">
+                            <i class="fas fa-times hidden"></i>
                         </button>
                         <?php endif; ?>
                     </div>
