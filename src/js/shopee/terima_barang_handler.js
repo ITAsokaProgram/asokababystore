@@ -31,6 +31,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function formatRupiahInteger(value) {
+        let number = parseFloat(value);
+        if (isNaN(number)) number = 0;
+        
+        return new Intl.NumberFormat('id-ID', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        }).format(Math.round(number));
+    }
+
     function updateTempFooter() {
         if (!tempTableBody) return;
 
@@ -67,8 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (totalQtyEl) totalQtyEl.textContent = formatRupiah(totalQty);
         if (grandTotalNetEl) grandTotalNetEl.textContent = 'Rp ' + formatRupiah(grandTotalNet);
         if (ppnEl) ppnEl.textContent = 'Rp ' + formatRupiah(ppn);
-        if (totalPenerimaanEl) totalPenerimaanEl.textContent = 'Rp ' + formatRupiah(totalPenerimaan);
-    }
+        if (totalPenerimaanEl) totalPenerimaanEl.textContent = 'Rp ' + formatRupiahInteger(totalPenerimaan);    }
 
     const stockTable = document.getElementById('stock-table');
     if (stockTable) {
@@ -192,12 +201,12 @@ document.addEventListener('DOMContentLoaded', () => {
             <td class="p-3"><input type="text" value="${formatRupiah(hrg_beli)}" min="0" class="input-qty input-temp-update input-rupiah" data-field="hrg_beli" inputmode="decimal"></td>
             
             <td class="p-3"><input type="text" value="${formatRupiah(ppn)}" class="input-qty input-disabled" data-field="ppn" disabled></td>
-            <td class="p-3"><input type="text" value="${formatRupiah(netto)}" class="input-qty input-disabled" data-field="netto" disabled></td>
-            <td class="p-3"><input type="text" value="${formatRupiah(hb_plus_lainnya)}" class="input-qty input-disabled" data-field="calc_hb_plus_lainnya" disabled></td>
+            <td class="p-3"><input type="text" value="${formatRupiahInteger(netto)}" class="input-qty input-disabled" data-field="netto" disabled></td>
+            <td class="p-3"><input type="text" value="${formatRupiahInteger(hb_plus_lainnya)}" class="input-qty input-disabled" data-field="calc_hb_plus_lainnya" disabled></td>
             
             <td class="p-3"><input type="text" value="${formatRupiah(price)}" min="0" class="input-qty input-temp-update input-rupiah" data-field="price" inputmode="decimal"></td>
             
-            <td class="p-3"><input type="text" value="${formatRupiah(margin)}" class="input-qty input-disabled ${marginClass}" data-field="calc_margin" disabled></td>
+            <td class="p-3"><input type="text" value="${formatRupiahInteger(margin)}" class="input-qty input-disabled ${marginClass}" data-field="calc_margin" disabled></td>
             <td class="p-3"><input type="text" value="${formatPersen(admin_pct)}" class="input-qty input-disabled" data-field="kategori_admin_pct" disabled></td>
             <td class="p-3"><input type="text" value="${formatPersen(ongkir_pct)}" class="input-qty input-disabled" data-field="kategori_ongkir_pct" disabled></td>
             <td class="p-3"><input type="text" value="${formatPersen(promo_pct)}" class="input-qty input-disabled" data-field="kategori_promo_pct" disabled></td>
@@ -256,11 +265,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 row.querySelector('[data-field="calc_weighted_avg_cost"]').value = formatRupiah(item.calc_weighted_avg_cost);
                 row.querySelector('[data-field="ppn"]').value = formatRupiah(item.ppn);
-                row.querySelector('[data-field="netto"]').value = formatRupiah(item.netto);
-                row.querySelector('[data-field="calc_hb_plus_lainnya"]').value = formatRupiah(item.calc_hb_plus_lainnya);
+                row.querySelector('[data-field="netto"]').value = formatRupiahInteger(item.netto);
+                row.querySelector('[data-field="calc_hb_plus_lainnya"]').value = formatRupiahInteger(item.calc_hb_plus_lainnya);
                 
                 const marginInput = row.querySelector('[data-field="calc_margin"]');
-                marginInput.value = formatRupiah(margin);
+                marginInput.value = formatRupiahInteger(margin);
                 
                 marginInput.classList.remove('text-red-600', 'text-green-600', 'text-gray-900', 'font-bold');
                 if (margin < 0) {
