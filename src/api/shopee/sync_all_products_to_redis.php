@@ -1,3 +1,4 @@
+
 <?php
 session_start();
 
@@ -5,14 +6,13 @@ ini_set('display_errors', 0);
 set_time_limit(1800); // 30 menit
 ini_set('memory_limit', '512M');
 
-// 1. Load dependencies (Logger, ShopeeService, Redis)
 require_once __DIR__ . '/../../utils/Logger.php';
-$logger = new AppLogger('shopee_sync_redis.log'); // Log file terpisah
+$logger = new AppLogger('shopee_sync_redis.log'); 
 
 try {
-    include '../../../aa_kon_sett.php'; // Untuk $conn, meskipun tidak dipakai
+    include '../../../aa_kon_sett.php'; 
     require_once __DIR__ . '/../../fitur/shopee/lib/ShopeeApiService.php';
-    require_once __DIR__ . '/../../../redis.php'; // Memuat koneksi Redis
+    require_once __DIR__ . '/../../../redis.php'; 
 } catch (Throwable $t) {
     $logger->critical("Gagal memuat file dependensi: " . $t->getMessage());
     http_response_code(500);
@@ -22,7 +22,6 @@ try {
 
 header('Content-Type: application/json');
 
-// 2. Cek koneksi Redis
 try {
     if (!isset($redis) || !$redis->ping()) {
         throw new Exception("Koneksi Redis Gagal.");
@@ -35,7 +34,7 @@ try {
 }
 
 
-$redisKey = 'shopee_all_products'; // Key untuk menyimpan semua produk
+$redisKey = 'shopee_all_products'; 
 
 try {
     $logger->info("🚀 Memulai request sync SEMUA produk ke REDIS...");
@@ -47,7 +46,7 @@ try {
         exit();
     }
 
-    $shopeeService = new ShopeeApiService($logger); // Pass logger
+    $shopeeService = new ShopeeApiService($logger); 
     if (!$shopeeService->isConnected()) {
         $logger->warning("Request gagal: Belum terautentikasi dengan Shopee.");
         http_response_code(401);
@@ -57,7 +56,7 @@ try {
 
     $logger->info("🔍 Memulai pengambilan data SEMUA produk dari Shopee...");
     
-    $all_detailed_products = []; // Kita akan menyimpan objek lengkap
+    $all_detailed_products = []; 
     $offset = 0;
     $page_size = 50;
     $total_items_found = 0;
@@ -81,7 +80,6 @@ try {
             break;
         }
 
-        // getDetailedProductInfo sudah mengambil data model, ini yang kita inginkan
         $detailed_items_batch = $shopeeService->getDetailedProductInfo($product_list_response);
         
         if (empty($detailed_items_batch)) {
@@ -89,7 +87,6 @@ try {
             break; 
         }
 
-        // Tambahkan batch ini ke array utama
         $all_detailed_products = array_merge($all_detailed_products, $detailed_items_batch);
 
         $total_items_found += count($detailed_items_batch);
@@ -101,7 +98,7 @@ try {
         if (!$has_next_page) {
             break;
         }
-        usleep(250000); // 250ms sleep
+        usleep(250000); 
     }
 
     $logger->info("✅ Pengambilan data Shopee selesai. Total produk/variasi ditemukan: " . count($all_detailed_products));
@@ -113,10 +110,8 @@ try {
         exit();
     }
 
-    // 3. Simpan ke Redis
     $logger->info("💾 Menyimpan " . count($all_detailed_products) . " produk ke Redis key: $redisKey");
     
-    // Simpan tanpa TTL (Time To Live), akan di-overwrite saat sync berikutnya
     $redis->set($redisKey, json_encode($all_detailed_products)); 
 
     $logger->info("🎉 Sinkronisasi ke REDIS selesai.");
