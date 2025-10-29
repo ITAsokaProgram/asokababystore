@@ -1,10 +1,12 @@
 <?php
 
+require_once __DIR__ . '/../../utils/Logger.php';
+$logger = new AppLogger('put_image.log');
+
 $dir = realpath(__DIR__ . '/../../../public/images/promo');
 $urlPrefix = '/public/images/promo/';
 $jsonFile = __DIR__ . '/../../../public/slider.json';
 
-// Ambil data lama
 $oldData = [];
 if (file_exists($jsonFile)) {
     $oldData = json_decode(file_get_contents($jsonFile), true) ?: [];
@@ -23,92 +25,90 @@ if (!empty($uploadedFiles['name'][0]) && is_dir($dir)) {
         $originalName = $uploadedFiles['name'][$i];
         $tmpName = $uploadedFiles['tmp_name'][$i];
         
-        // Sanitasi nama file dan buat nama unik
         $ext = pathinfo($originalName, PATHINFO_EXTENSION);
         $baseName = pathinfo($originalName, PATHINFO_FILENAME);
-        $baseName = preg_replace('/[^a-zA-Z0-9\s\-_]/', '', $baseName); // Hapus karakter khusus
+        $baseName = preg_replace('/[^a-zA-Z0-9\s\-_]/', '', $baseName); 
         $baseName = trim($baseName);
         
-        // Buat nama file unik dengan timestamp
         $uniqueName = $baseName . '_' . uniqid() . '.' . $ext;
         
         $tanggal_mulai = isset($promoDateStarts[$i]) && $promoDateStarts[$i] ? $promoDateStarts[$i] : $mainPromoDate;
         $tanggal_selesai = isset($promoDateEnds[$i]) && $promoDateEnds[$i] ? $promoDateEnds[$i] : $mainPromoDateEnd;
 
-        // determine promo name (per-file falls back to main promo name)
         $promo_name = '';
         if (isset($promoNames[$i]) && strlen(trim($promoNames[$i])) > 0) {
             $promo_name = trim($promoNames[$i]);
         } elseif (!empty($mainPromoName)) {
             $promo_name = trim($mainPromoName);
         }
-        // sanitize promo name (remove control chars)
         $promo_name = preg_replace('/[\x00-\x1F\x7F]/u', '', $promo_name);
         
+        $logger->info("Processing file: $originalName. Promo name determined: '$promo_name'");
+
         $targetPath = $dir . '/' . $uniqueName;
         
-        // Upload file
         if (move_uploaded_file($tmpName, $targetPath)) {
-            // Set permission yang benar
             chmod($targetPath, 0644);
 
-            // Cek apakah file sudah ada di data lama (berdasarkan nama asli)
-        $found = false;
-        foreach ($oldData as &$item) {
+            $found = false;
+            foreach ($oldData as &$item) {
                 if ($item['filename'] === $uniqueName || $item['original_name'] === $originalName) {
                     $item['filename'] = $uniqueName;
                     $item['path'] = $urlPrefix . $uniqueName;
                     $item['tanggal_mulai'] = $tanggal_mulai;
                     $item['tanggal_selesai'] = $tanggal_selesai;
-                    // update promo_name if provided, otherwise keep existing or fallback
-                    if ($promo_name !== '') {
-                        $item['promo_name'] = $promo_name;
-                    } elseif (!isset($item['promo_name']) || $item['promo_name'] === '') {
-                        $item['promo_name'] = $mainPromoName ?? '';
-                    }
+                    
+                    $item['promo_name'] = $promo_name;
+                    
                     $found = true;
+                    $logger->info("Updating existing item: $originalName -> $uniqueName");
                     break;
                 }
-        }
-        unset($item);
+            }
+            unset($item);
 
-            // Jika belum ada, tambahkan entri baru
-        if (!$found) {
-            $oldData[] = [
+            if (!$found) {
+                $oldData[] = [
                     "filename" => $uniqueName,
                     "original_name" => $originalName,
                     "path" => $urlPrefix . $uniqueName,
-                "tanggal_mulai" => $tanggal_mulai,
-                "tanggal_selesai" => $tanggal_selesai,
-                "promo_name" => $promo_name
-            ];
-        }
+                    "tanggal_mulai" => $tanggal_mulai,
+                    "tanggal_selesai" => $tanggal_selesai,
+                    "promo_name" => $promo_name 
+                ];
+                $logger->info("Adding new item: $uniqueName with promo: '$promo_name'");
+            }
+        } else {
+             $logger->error("Failed to move uploaded file: $tmpName to $targetPath");
         }
     }
 
-    // Hapus otomatis banner yang sudah lewat tanggal selesai penayangan
     $today = date('Y-m-d');
     $filteredData = [];
     foreach ($oldData as $item) {
         if (!empty($item['tanggal_selesai']) && $item['tanggal_selesai'] < $today) {
-            // Hapus file fisik
             $oldFile = $dir . '/' . $item['filename'];
             if (is_file($oldFile)) {
-                @unlink($oldFile);
+                if (@unlink($oldFile)) {
+                     $logger->info("Removed expired file: {$item['filename']}");
+                } else {
+                     $logger->warning("Failed to remove expired file: {$item['filename']}");
+                }
             }
-            // Lewati entri ini (tidak dimasukkan ke $filteredData)
         } else {
             $filteredData[] = $item;
         }
     }
 
-    // Simpan JSON dengan permission yang benar
     if (file_put_contents($jsonFile, json_encode($filteredData, JSON_PRETTY_PRINT))) {
         chmod($jsonFile, 0664);
-    echo json_encode(["success" => true]);
+        echo json_encode(["success" => true]);
+        $logger->success("Successfully updated slider.json.");
     } else {
         echo json_encode(["success" => false, "error" => "Gagal menyimpan JSON"]);
+         $logger->error("Failed to write to $jsonFile.");
     }
 } else {
     echo json_encode(["success" => false, "error" => "Upload gagal atau folder tidak ditemukan"]);
+    $logger->error("Upload failed. Files empty or dir '$dir' not found.");
 }

@@ -444,7 +444,6 @@ $token = $menuHandler->getToken();
                 }));
         });
 
-        // Enhanced Gallery List
         function loadGallery() {
             fetch('/public/slider.json?ts=' + Date.now())
                 .then(res => res.json())
@@ -471,20 +470,24 @@ $token = $menuHandler->getToken();
                         div.className = 'bg-white rounded-2xl shadow-lg overflow-hidden card-hover group';
                         const domain = window.location.origin;
 
+                        const promoNameText = item.promo_name || '-';
+                        const promoNameTitle = item.promo_name || '';
+
                         div.innerHTML = `
                             <div class="relative overflow-hidden">
                                 <img src="${domain + item.path}" alt="${item.filename}" 
-                                    data-full-src="${domain + item.path}" data-caption="${item.promo_name || ''}"
-                                    class="promo-img cursor-pointer w-full h-48 object-cover transition-transform duration-300 group-hover:scale-110 cursor-pointer">
+                                     data-full-src="${domain + item.path}" data-caption="${promoNameTitle}"
+                                     class="promo-img cursor-pointer w-full h-48 object-cover transition-transform duration-300 group-hover:scale-110 cursor-pointer">
                                 <button data-index="${index}" 
-                                    class="deleteBtn absolute top-3 right-3 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full shadow-lg transition-all duration-300 opacity-0 group-hover:opacity-100 transform scale-90 group-hover:scale-100 z-10" 
-                                    title="Hapus Banner">
+                                        class="deleteBtn absolute top-3 right-3 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full shadow-lg transition-all duration-300 opacity-0 group-hover:opacity-100 transform scale-90 group-hover:scale-100 z-10" 
+                                        title="Hapus Banner">
                                     <i class="fas fa-trash text-sm"></i>
                                 </button>
                             </div>
                             <div class="p-4 space-y-2">
-                             <div class="flex items-center justify-between text-sm">
-                                    <span class="font-semibold text-gray-800 truncate block" title=${item.promo_name}>${item.promo_name || '-'}</span>
+                               <div class="flex items-center justify-between text-sm">
+                                    
+                                    <span class="font-semibold text-gray-800 truncate block" title="${promoNameTitle}">${promoNameText}</span>
                                     </div>
                                 <div class="flex items-center justify-between text-sm">
                                     <span class="text-gray-500">Mulai:</span>
@@ -502,7 +505,6 @@ $token = $menuHandler->getToken();
                         gallery.appendChild(div);
                     });
 
-                    // Image preview handlers: clicking any .promo-img opens a fullscreen modal
                     function openImagePreview(url, caption) {
                         const modal = document.getElementById('imagePreviewModal');
                         const img = document.getElementById('imagePreviewImg');
@@ -528,7 +530,6 @@ $token = $menuHandler->getToken();
                         img.addEventListener('click', () => openImagePreview(img.dataset.fullSrc, img.dataset.caption || img.alt));
                     });
 
-                    // Close modal handlers
                     const modalEl = document.getElementById('imagePreviewModal');
                     if (modalEl) {
                         modalEl.addEventListener('click', (ev) => {
@@ -539,7 +540,6 @@ $token = $menuHandler->getToken();
                     if (closeBtn) closeBtn.addEventListener('click', closeImagePreview);
                     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeImagePreview(); });
 
-                    // Enhanced Delete Buttons
                     document.querySelectorAll('.deleteBtn').forEach(button => {
                         button.addEventListener('click', function () {
                             const idx = this.dataset.index;
@@ -586,7 +586,6 @@ $token = $menuHandler->getToken();
 
         document.addEventListener('DOMContentLoaded', loadGallery);
 
-        // Enhanced Clean Expired Button
         document.getElementById('cleanExpiredBtn').addEventListener('click', function () {
             Swal.fire({
                 title: 'Membersihkan...',
