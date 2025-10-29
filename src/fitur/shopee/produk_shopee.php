@@ -35,7 +35,14 @@ if (isset($_GET['code'])) {
     }
 
     if ($id_to_pass > 0) {
-        $shopeeService->handleOAuthCallback($code, $id_to_pass, $is_main_account);
+        $response = $shopeeService->handleOAuthCallback($code, $id_to_pass, $is_main_account);
+
+        if (is_array($response) && isset($response['error']) && $response['error'] === 'error_param' &&
+            isset($response['message']) && $response['message'] === 'Invalid timestamp.') {
+            header('Location: ' . strtok($redirect_uri, '?'));
+            exit();
+        }
+
         header('Location: ' . strtok($redirect_uri, '?'));
         exit();
     }
