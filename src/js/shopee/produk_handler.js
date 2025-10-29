@@ -54,10 +54,10 @@ const initializeSearchAndFilter = () => {
         }
     };
     toggleClearButton();
-    // let searchTimeout; // Dihapus, tidak dipakai lagi
-
     const buildUrlAndNavigate = () => {
         const searchTerm = searchInput.value.trim();
+        const searchTypeSelect = document.getElementById('search-type');
+        const searchType = searchTypeSelect ? searchTypeSelect.value : 'sku';
         const activeButton = document.querySelector('.filter-btn[disabled]'); 
         const filterTerm = activeButton ? activeButton.dataset.filter : 'all';
         
@@ -65,8 +65,10 @@ const initializeSearchAndFilter = () => {
 
         if (searchTerm) {
             currentUrl.searchParams.set('search', searchTerm);
+            currentUrl.searchParams.set('search_type', searchType);
         } else {
             currentUrl.searchParams.delete('search');
+            currentUrl.searchParams.delete('search_type');
         }
 
         if (filterTerm && filterTerm !== 'all') {
@@ -79,22 +81,13 @@ const initializeSearchAndFilter = () => {
         window.location.href = currentUrl.href;
     };
 
-    // Modifikasi: Hapus auto-search on input
-    // searchInput.addEventListener('input', (e) => {
-    //     toggleClearButton();
-    //     clearTimeout(searchTimeout);
-    //     searchTimeout = setTimeout(() => {
-    //         buildUrlAndNavigate();
-    //     }, 500);
-    // });
-
-    // Tetap panggil toggleClearButton saat mengetik (untuk show/hide tombol 'x')
+ 
     searchInput.addEventListener('input', toggleClearButton);
 
-    // Tambahkan listener untuk 'Enter'
+
     searchInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
-            e.preventDefault(); // Mencegah perilaku default jika ada
+            e.preventDefault();
             buildUrlAndNavigate();
         }
     });
@@ -105,12 +98,16 @@ const initializeSearchAndFilter = () => {
                 button.addEventListener('click', () => {
                     const newFilterValue = button.dataset.filter;
                     const searchTerm = searchInput.value.trim();
+                    const searchTypeSelect = document.getElementById('search-type');
+                    const searchType = searchTypeSelect ? searchTypeSelect.value : 'sku';
                     const currentUrl = new URL(window.location);
 
                     if (searchTerm) {
                         currentUrl.searchParams.set('search', searchTerm);
+                        currentUrl.searchParams.set('search_type', searchType);
                     } else {
                         currentUrl.searchParams.delete('search');
+                        currentUrl.searchParams.delete('search_type');
                     }
 
                     if (newFilterValue && newFilterValue !== 'all') {
@@ -741,7 +738,7 @@ const handleSyncAllProductsToDbClick = async (event) => {
     html: `Anda akan mengambil data <strong>${totalCount}</strong> produk dari Shopee dan memasukkannya ke tabel lokal <strong>s_shopee</strong>.<br><br>Produk dengan SKU yang sudah ada di tabel akan dilewati. Proses ini mungkin memakan waktu.`,
     icon: 'info',
     showCancelButton: true,
-    confirmButtonColor: '#3b82f6', // Biru
+    confirmButtonColor: '#3b82f6', 
     cancelButtonColor: '#6b7280',
     confirmButtonText: '<i class="fas fa-database mr-1"></i> Ya, Sync ke DB!',
     cancelButtonText: 'Batal',
@@ -763,7 +760,7 @@ const handleSyncAllProductsToDbClick = async (event) => {
   });
 
   try {
-    const data = {}; // Kirim data kosong jika diperlukan
+    const data = {}; 
     const response = await syncAllProductsToDb(data);
 
     if (response.success) {
