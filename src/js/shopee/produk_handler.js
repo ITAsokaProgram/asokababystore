@@ -37,6 +37,7 @@ const updateTotalStock = (form) => {
         mainStockDisplay.innerText = totalStock;
     }
 };
+
 const initializeSearchAndFilter = () => {
     const searchInput = document.getElementById('product-search');
     const clearSearchBtn = document.getElementById('clear-search');
@@ -53,9 +54,9 @@ const initializeSearchAndFilter = () => {
         }
     };
     toggleClearButton();
-    let searchTimeout;
-    
-const buildUrlAndNavigate = () => {
+    // let searchTimeout; // Dihapus, tidak dipakai lagi
+
+    const buildUrlAndNavigate = () => {
         const searchTerm = searchInput.value.trim();
         const activeButton = document.querySelector('.filter-btn[disabled]'); 
         const filterTerm = activeButton ? activeButton.dataset.filter : 'all';
@@ -78,12 +79,24 @@ const buildUrlAndNavigate = () => {
         window.location.href = currentUrl.href;
     };
 
-    searchInput.addEventListener('input', (e) => {
-        toggleClearButton();
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => {
+    // Modifikasi: Hapus auto-search on input
+    // searchInput.addEventListener('input', (e) => {
+    //     toggleClearButton();
+    //     clearTimeout(searchTimeout);
+    //     searchTimeout = setTimeout(() => {
+    //         buildUrlAndNavigate();
+    //     }, 500);
+    // });
+
+    // Tetap panggil toggleClearButton saat mengetik (untuk show/hide tombol 'x')
+    searchInput.addEventListener('input', toggleClearButton);
+
+    // Tambahkan listener untuk 'Enter'
+    searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault(); // Mencegah perilaku default jika ada
             buildUrlAndNavigate();
-        }, 500);
+        }
     });
 
     if (filterButtons.length > 0) {
@@ -116,11 +129,13 @@ const buildUrlAndNavigate = () => {
     if (clearSearchBtn) {
         clearSearchBtn.addEventListener('click', () => {
             searchInput.value = '';
-            searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+            searchInput.dispatchEvent(new Event('input', { bubbles: true })); 
             searchInput.focus();
+            buildUrlAndNavigate();
         });
     }
 };
+
 const initializeKeyboardShortcuts = () => {
     const shortcuts = {
         'ctrl+k': () => document.getElementById('product-search')?.focus(),
