@@ -40,7 +40,6 @@ require_once __DIR__ . '/produk_shopee.logic.php';
                                 <p class="text-sm text-gray-600">Kelola produk</p>
                             </div>
                         </div>
-                        
                         <?php if ($shopeeService->isConnected()): ?>
                             <a href="?action=disconnect" class="inline-flex items-center gap-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold py-3 px-6 rounded-xl transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
                                 <i class="fas fa-unlink"></i>
@@ -160,7 +159,6 @@ require_once __DIR__ . '/produk_shopee.logic.php';
                             <?php 
                             $filtered_product_count = 0; 
                             foreach ($detailed_products as $item): 
-                                // BLOK FILTER INTERNAL (BARIS 207-308) DIHAPUS
                                 $filtered_product_count++; 
 
                                 $product_card_style = '';
@@ -573,19 +571,6 @@ require_once __DIR__ . '/produk_shopee.logic.php';
                                 </div>
                             </div>
                             <?php endif; ?>
-                            
-                        <?php elseif ($filter_type != 'all' || !empty($search_keyword)): ?>
-                            <div class="p-8 text-center">
-                                <i class="fas fa-filter text-6xl text-gray-300 mb-4"></i>
-                                <p class="text-gray-500 text-lg font-medium">Tidak Ada Produk Ditemukan</p>
-                                <p class="text-gray-400 text-sm mt-2">Tidak ada produk yang cocok dengan filter "<?php echo htmlspecialchars($filters[$filter_type]['label'] ?? $filter_type); ?>" dan pencarian Anda.</p>
-                            </div>
-                        <?php elseif (empty($redis_error)): ?>
-                            <div class="p-8 text-center">
-                                <i class="fas fa-box-open text-6xl text-gray-300 mb-4"></i>
-                                <p class="text-gray-500 text-lg font-medium">Tidak ada produk ditemukan</p>
-                                <p class="text-gray-400 text-sm mt-2">Produk Anda akan muncul di sini. Jika cache kosong, coba 'Sync Produk ke Cache'.</p>
-                            </div>
                 <?php else: ?>
                     <div class="connect-card p-16 rounded-2xl">
                         <div class="max-w-md mx-auto text-center py-4">
