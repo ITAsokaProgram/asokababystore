@@ -252,7 +252,11 @@ if ($shopeeService->isConnected()) {
         $final_filtered_products = [];
         foreach ($filtered_products as $item) {
             $show_product = false;
+            
             if (isset($item['has_model']) && $item['has_model'] === true && !empty($item['models'])) {
+                
+                $item['matching_models'] = []; 
+                
                 foreach ($item['models'] as $model) {
                     $shopee_stock = (int)($model['stock_info_v2']['summary_info']['total_available_stock'] 
                                         ?? $model['stock_info'][0]['seller_stock'] 
@@ -261,34 +265,40 @@ if ($shopeeService->isConnected()) {
                     
                     if (empty($sku)) continue;
 
+                    $model_matches_filter = false; 
+
                     if ($filter_type == 'pusat' && isset($sku_stok_ol_data_map[$sku])) {
                         $db_stock_ol = (int)($sku_stok_ol_data_map[$sku]['qty'] ?? 0);
                         if ($shopee_stock != $db_stock_ol) {
-                            $show_product = true;
-                            break;
+                            $model_matches_filter = true;
                         }
                     } elseif ($filter_type == 'cabang' && isset($sku_stock_map[$sku]) && !isset($sku_stok_ol_data_map[$sku])) {
                         $db_stock_barang = (int)($sku_stock_map[$sku] ?? 0);
                         if ($shopee_stock != $db_stock_barang) {
-                            $show_product = true;
-                            break;
+                            $model_matches_filter = true;
                         }
                     } elseif ($filter_type == 'beda_harga' && isset($sku_stok_ol_data_map[$sku])) {
                         $shopee_price = (float)($model['price_info'][0]['original_price'] ?? 0);
                         $stok_ol_price = (float)($sku_stok_ol_data_map[$sku]['price'] ?? 0);
                         
                         if (abs($shopee_price - $stok_ol_price) > 0.001) { 
-                            $show_product = true;
-                            break;
+                            $model_matches_filter = true;
                         }
                     } elseif ($filter_type == 'ada_pusat' && isset($sku_stok_ol_data_map[$sku])) { 
-                        $show_product = true;
-                        break;
+                        $model_matches_filter = true;
                     } elseif ($filter_type == 'ada_cabang' && isset($sku_stock_map[$sku]) && !isset($sku_stok_ol_data_map[$sku])) { 
-                        $show_product = true;
-                        break;
+                        $model_matches_filter = true;
+                    }
+
+                    if ($model_matches_filter) {
+                        $item['matching_models'][] = $model;
                     }
                 }
+
+                if (!empty($item['matching_models'])) {
+                    $show_product = true; 
+                }
+
             } 
             else { 
                 $shopee_stock = (int)($item['stock_info_v2']['summary_info']['total_available_stock'] 
@@ -326,9 +336,6 @@ if ($shopeeService->isConnected()) {
                 $final_filtered_products[] = $item;
             }
         }
-        
-        $detailed_products = $final_filtered_products;
-        $total_count = count($final_filtered_products);
         
         $total_count = count($final_filtered_products);
         $pagination_threshold = 200; 

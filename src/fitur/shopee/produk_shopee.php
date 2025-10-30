@@ -239,53 +239,20 @@ require_once __DIR__ . '/produk_shopee.logic.php';
                                             </div>
                                             <div class="space-y-3">
                                             <?php 
-                                            foreach ($item['models'] as $model): 
-                                                $model_sku_trimmed = trim($model['model_sku'] ?? '');
-                                                $barang_data = $sku_barang_data_map[$model_sku_trimmed] ?? null;
-                                                $stok_ol_data = $sku_stok_ol_data_map[$model_sku_trimmed] ?? null;
+                                                $models_to_display = ($filter_type == 'all') 
+                                                    ? ($item['models'] ?? []) 
+                                                    : ($item['matching_models'] ?? []);
+                                                
+                                                foreach ($models_to_display as $model): 
+                                                    $model_sku_trimmed = trim($model['model_sku'] ?? '');
+                                                    $barang_data = $sku_barang_data_map[$model_sku_trimmed] ?? null;
+                                                    $stok_ol_data = $sku_stok_ol_data_map[$model_sku_trimmed] ?? null;
 
-                                                if ($filter_type != 'all') {
-                                                    $show_variation = false; 
-                                                    $sku = $model_sku_trimmed;
-
-                                                    if (empty($sku)) {
-                                                        $show_variation = false; 
-                                                    } else {
-                                                        $shopee_stock = (int)($model['stock_info_v2']['summary_info']['total_available_stock'] ?? $model['stock_info'][0]['seller_stock'] ?? 0);
-
-                                                        if ($filter_type == 'pusat' && isset($sku_stok_ol_data_map[$sku])) {
-                                                            $db_stock_ol = (int)($sku_stok_ol_data_map[$sku]['qty'] ?? 0);
-                                                            if ($shopee_stock != $db_stock_ol) {
-                                                                $show_variation = true;
-                                                            }
-                                                        } elseif ($filter_type == 'cabang' && isset($sku_stock_map[$sku]) && !isset($sku_stok_ol_data_map[$sku])) {
-                                                            $db_stock_barang = (int)($sku_stock_map[$sku] ?? 0);
-                                                            if ($shopee_stock != $db_stock_barang) {
-                                                                $show_variation = true;
-                                                            }
-                                                        } elseif ($filter_type == 'beda_harga' && isset($sku_stok_ol_data_map[$sku])) {
-                                                            $shopee_price = (float)($model['price_info'][0]['original_price'] ?? 0);
-                                                            $stok_ol_price = (float)($sku_stok_ol_data_map[$sku]['price'] ?? 0);
-                                                            if (abs($shopee_price - $stok_ol_price) > 0.001) { 
-                                                                $show_variation = true;
-                                                            }
-                                                        } elseif ($filter_type == 'ada_pusat' && isset($sku_stok_ol_data_map[$sku])) { 
-                                                            $show_variation = true;
-                                                        } elseif ($filter_type == 'ada_cabang' && isset($sku_stock_map[$sku]) && !isset($sku_stok_ol_data_map[$sku])) { 
-                                                            $show_variation = true;
-                                                        }
+                                                    $variant_card_style = '';
+                                                    if ($stok_ol_data) {
+                                                        $variant_card_style = 'style="background-color: #ffdae8;"';
                                                     }
-                                                    
-                                                    if (!$show_variation) {
-                                                        continue;
-                                                    }
-                                                }
-
-                                                $variant_card_style = '';
-                                                if ($stok_ol_data) {
-                                                    $variant_card_style = 'style="background-color: #ffdae8;"';
-                                                }
-                                            ?>
+                                                ?>
                                                 <div class="variant-card p-4" <?php echo $variant_card_style; ?>>
                                                     <div class="flex justify-between items-start mb-4">
                                                         <div>
