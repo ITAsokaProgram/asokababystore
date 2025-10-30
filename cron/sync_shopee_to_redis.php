@@ -29,18 +29,16 @@ $expiry_seconds = 3600;
 
 try {
 
-    // --- TAMBAHKAN BLOK LOCK ---
-    $lockAcquired = $redis->set($lockKey, 1, ['nx', 'ex' => 1800]); // Lock 30 menit
+    $lockAcquired = $redis->set($lockKey, 1, ['nx', 'ex' => 1800]); 
     if (!$lockAcquired) {
         $logger->warning("CRON Gagal: Gagal mendapatkan lock '{$lockKey}'. Sync lain (mungkin via web) sedang berjalan.");
         exit();
     }
-    // --- SELESAI BLOK LOCK ---
 
     $shopeeService = new ShopeeApiService($logger); 
     if (!$shopeeService->isConnected()) {
         $logger->warning("CRON Gagal: Belum terautentikasi dengan Shopee (Kredensial di DB kosong?).");
-        $redis->del($lockKey); // Lepas lock jika gagal auth
+        $redis->del($lockKey); 
         exit();
     }
     $all_detailed_products = []; 
@@ -89,10 +87,10 @@ try {
          throw new Exception("Perintah REDIS setex gagal mengembalikan true.");
     }
     
-    $redis->del($lockKey); // <--- RELEASE LOCK
+    $redis->del($lockKey); 
 
 } catch (Throwable $t) {
-    $redis->del($lockKey); // <--- RELEASE LOCK ON ERROR
+    $redis->del($lockKey); 
     $logger->critical("🔥 FATAL ERROR CRON (Throwable) - Lock dilepaskan: " . $t->getMessage(), [
         'file' => $t->getFile(),
         'line' => $t->getLine()

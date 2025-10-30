@@ -142,26 +142,43 @@ class ShopeeApiService {
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+
+        curl_setopt($ch, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2); 
+
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30); // 10 detik
+        curl_setopt($ch, CURLOPT_TIMEOUT, 60); // 30 detik
+
+        curl_setopt($ch, CURLOPT_DNS_SERVERS, '8.8.8.8,1.1.1.1');
+
+        curl_setopt($ch, CURLOPT_SSL_CIPHER_LIST, 'DEFAULT@SECLEVEL=1');
+
+
         if ($method === 'POST') {
             curl_setopt($ch, CURLOPT_POST, 1);
             if ($payload) {
                 curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
             }
         }
+        
         $response_str = curl_exec($ch);
         $curl_error = curl_error($ch); 
         curl_close($ch);
+
         if ($curl_error) {
-            $this->logger->error("cURL Error: " . $curl_error);
+            $this->logger->error("❌ cURL Error: " . $curl_error); 
             return ['error' => 'curl_error', 'message' => $curl_error];
         }
+
         $response_data = json_decode($response_str, true);
+
         if (json_last_error() !== JSON_ERROR_NONE) {
-            $this->logger->error("JSON Decode Error for response: " . $response_str);
+            $this->logger->error("❌ JSON Decode Error. Response: " . $response_str);
         }
+
         if (isset($response_data['error']) && !empty($response_data['error'])) {
-             $this->logger->warning("Shopee API Error. Path: $url, Error: " . $response_data['error'] . ", Message: " . ($response_data['message'] ?? 'No message'));
+            $this->logger->warning("⚠️ Shopee API Error. Path: $url, Error: " . $response_data['error'] . ", Message: " . ($response_data['message'] ?? 'No message'));
         }
+
         return $response_data;
     }
     public function getProductList($params) {

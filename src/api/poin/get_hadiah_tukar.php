@@ -5,7 +5,6 @@ require_once __DIR__ . '/../../auth/middleware_login.php';
 require_once __DIR__ . '/../../utils/Logger.php';
 
 $logger = new AppLogger('get_hadiah_tukar.log');
-$logger->info('Request hadiah_tukar dari IP: ' . ($_SERVER['REMOTE_ADDR'] ?? '-') . ', headers: ' . json_encode(getAllHeaders()));
 
 header("Content-Type:application/json");
 header("Access-Control-Allow-Methods: GET");

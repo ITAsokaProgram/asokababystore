@@ -101,121 +101,13 @@ if ($shopeeService->isConnected()) {
             }
         } 
         
-        // CACHE MISS: Data tidak ditemukan (expired atau gagal decode)
         if (!$cached_products) {
             
-            $lockKey = 'shopee_sync_in_progress';
-            $lockAcquired = $redis->set($lockKey, 1, ['nx', 'ex' => 1800]); // Lock 30 menit
-
-            if ($lockAcquired) {
-                // 1. Lock didapat. User ini yang bertugas sync.
-                $logger = new AppLogger('shopee_page_sync.log');
-                $logger->info("🚀 Cache miss. Lock '{$lockKey}' didapat. Memulai sinkronisasi dari produk_shopee.php...");
-                
-                try {
-                    // LOGIKA INTI SINKRONISASI (diambil dari cron/api)
-                    $all_detailed_products_sync = []; 
-                    $offset_sync = 0;
-                    $page_size_sync = 50;
-                    $total_items_found_sync = 0;
-                    $has_next_page_sync = true;
-
-                    while ($has_next_page_sync) {
-                        $api_params = [
-                            'offset'    => $offset_sync,
-                            'page_size' => $page_size_sync,
-                            'item_status' => 'NORMAL'
-                        ];
-                        $product_list_response_sync = $shopeeService->getProductList($api_params);
-
-                        if (isset($product_list_response_sync['error']) && $product_list_response_sync['error']) {
-                            $logger->error("❌ Gagal mengambil daftar produk batch offset: {$offset_sync}", $product_list_response_sync);
-                            throw new Exception("Gagal mengambil daftar produk dari Shopee: " . $product_list_response_sync['message']);
-                        }
-
-                        if (!isset($product_list_response_sync['response']['item']) || empty($product_list_response_sync['response']['item'])) {
-                            $logger->info("🏁 Tidak ada item lagi pada offset: {$offset_sync}. Selesai mengambil list.");
-                            break;
-                        }
-
-                        $detailed_items_batch = $shopeeService->getDetailedProductInfo($product_list_response_sync);
-                        
-                        if (empty($detailed_items_batch)) {
-                            $logger->info("🏁 getDetailedProductInfo mengembalikan kosong untuk offset: {$offset_sync}.");
-                            break; 
-                        }
-
-                        $all_detailed_products_sync = array_merge($all_detailed_products_sync, $detailed_items_batch);
-
-                        $total_items_found_sync += count($detailed_items_batch);
-                        $has_next_page_sync = $product_list_response_sync['response']['has_next_page'] ?? false;
-                        $offset_sync = $product_list_response_sync['response']['next_offset'] ?? 0;
-
-                        $logger->info("Batch diproses: " . count($detailed_items_batch) . " produk. Total: {$total_items_found_sync}. Next: {$offset_sync}.");
-
-                        if (!$has_next_page_sync) {
-                            break;
-                        }
-                        usleep(250000); 
-                    }
-
-                    $logger->info("✅ Pengambilan data Shopee selesai. Total produk: " . count($all_detailed_products_sync));
-
-                    if (!empty($all_detailed_products_sync)) {
-                        $total_products_sync = count($all_detailed_products_sync);
-                        $expiry_seconds = 7200; // 1 Jam
-                        
-                        $logger->info("💾 Meng-encode $total_products_sync produk ke JSON...");
-                        $json_data = json_encode($all_detailed_products_sync);
-                        
-                        if (json_last_error() !== JSON_ERROR_NONE) {
-                            $logger->error("❌ Gagal encode JSON: " . json_last_error_msg());
-                            throw new Exception("Gagal memproses data produk untuk cache.");
-                        }
-
-                        $logger->info("💾 Menyimpan $total_products_sync produk ke Redis key: $redisKey dengan TTL: $expiry_seconds detik...");
-                        $success = $redis->setex($redisKey, $expiry_seconds, $json_data); 
-
-                        if (!$success) {
-                            throw new Exception("Perintah REDIS setex gagal mengembalikan true.");
-                        }
-
-                        // Data berhasil di-sync, langsung gunakan
-                        $all_products_from_redis = $all_detailed_products_sync;
-                        $logger->info("🎉 Sinkronisasi on-page-load selesai.");
-
-                    } else {
-                        $logger->warning("Tidak ada produk yang ditemukan di akun Shopee saat sync on-page-load.");
-                        $redis_error = "Sinkronisasi selesai, namun tidak ada produk yang ditemukan di akun Shopee.";
-                    }
-
-                } catch (Throwable $t_sync) {
-                    $logger->critical("🔥 FATAL ERROR saat sync on-page-load: " . $t_sync->getMessage());
-                    $redis_error = "Gagal sinkronisasi data produk: " . $t_sync->getMessage();
-                } finally {
-                    // Selalu lepaskan lock setelah selesai (baik sukses atau gagal)
-                    $redis->del($lockKey);
-                    $logger->info("Lock '{$lockKey}' dilepaskan.");
-                }
-                
-            } else {
-                // 2. Lock GAGAL didapat. User lain sedang sync.
-                $redis_error = "Data produk sedang disinkronkan oleh pengguna lain. Halaman ini mungkin menampilkan data yang kedaluwarsa atau kosong. Silakan muat ulang dalam 1-2 menit.";
-                $logger = new AppLogger('shopee_page_sync.log');
-                $logger->info("Cache miss, tapi lock '{$lockKey}' gagal didapat. Menunggu...");
-
-                // Coba tunggu 5 detik dan cek lagi, siapa tahu sync-nya cepat selesai
-                $cached_products_retry = $redis->get($redisKey);
-                if ($cached_products_retry) {
-                     $all_products_from_redis = json_decode($cached_products_retry, true);
-                     if (json_last_error() === JSON_ERROR_NONE) {
-                         $redis_error = null; // Sukses! data sudah ada
-                         $logger->info("Data cache ditemukan setelah menunggu lock.");
-                     }
-                } 
+            if (empty($redis_error)) { 
+                 $redis_error = "Cache produk kosong atau kedaluwarsa. Silakan tekan tombol 'Sync Produk ke Cache' untuk mengambil data terbaru.";
             }
-        }
-
+            $all_products_from_redis = [];
+      }
     } catch (Throwable $t) {
         $redis_error = "Error Redis: " . $t->getMessage();
     }
