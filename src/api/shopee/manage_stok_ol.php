@@ -84,7 +84,7 @@ try {
     $ppn_rec = $hrg_beli * 0.11;
     $netto_rec = $hrg_beli + $ppn_rec;
 
-    $avg_cost = $hrg_beli;
+    $avg_cost = 0;
 
 
     if (empty($kd_store) || empty($plu) || empty($sku) || empty($descp)) {
