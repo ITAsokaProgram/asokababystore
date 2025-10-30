@@ -224,6 +224,35 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    messageInput.addEventListener('paste', (e) => {
+        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+        let foundImage = false;
+
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf('image') !== -1) {
+                const file = items[i].getAsFile();
+                if (file) {
+                    e.preventDefault();
+                    foundImage = true;
+
+                    if (selectedMediaFile) {
+                        removeMediaButton.click();
+                    }
+
+                    selectedMediaFile = file;
+                    const fileURL = URL.createObjectURL(file);
+
+                    mediaPreviewImage.src = fileURL;
+                    mediaPreviewImage.classList.remove('hidden');
+                    mediaPreviewVideo.classList.add('hidden');
+                    mediaPreviewContainer.classList.remove('hidden');
+                    
+                    break; 
+                }
+            }
+        }
+    });
+
 
     messageInput.addEventListener('input', () => {
         messageInput.style.height = 'auto';
