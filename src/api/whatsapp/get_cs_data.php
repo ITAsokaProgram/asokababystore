@@ -184,13 +184,13 @@ try {
 
         $stmt_msgs = $conn->prepare("
             SELECT * FROM (
-                SELECT pengirim, isi_pesan, tipe_pesan, timestamp, status_baca
+                SELECT id, pengirim, isi_pesan, tipe_pesan, timestamp, status_baca
                 FROM wa_pesan
                 WHERE percakapan_id = ?
-                ORDER BY timestamp DESC
+                ORDER BY timestamp DESC, id DESC
                 LIMIT ? OFFSET ?
             ) AS paged_messages
-            ORDER BY timestamp ASC
+            ORDER BY timestamp ASC, id ASC
         ");
         $stmt_msgs->bind_param("iii", $id, $limit, $offset);
         $stmt_msgs->execute();
