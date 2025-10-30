@@ -2,7 +2,7 @@
 session_start();
 
 ini_set('display_errors', 0);
-set_time_limit(1800); // 30 menit
+set_time_limit(1800); 
 ini_set('memory_limit', '512M');
 
 require_once __DIR__ . '/../../utils/Logger.php';
@@ -38,15 +38,13 @@ $lockKey = 'shopee_sync_in_progress';
 
 try {
 
-    // --- TAMBAHKAN BLOK LOCK ---
-    $lockAcquired = $redis->set($lockKey, 1, ['nx', 'ex' => 1800]); // Lock 30 menit
+    $lockAcquired = $redis->set($lockKey, 1, ['nx', 'ex' => 1800]); 
     if (!$lockAcquired) {
         $logger->warning("Gagal mendapatkan lock '{$lockKey}'. Sync lain mungkin sedang berjalan.");
-        http_response_code(429); // Too Many Requests
+        http_response_code(429); 
         echo json_encode(['success' => false, 'message' => 'Sinkronisasi sudah sedang berjalan. Silakan coba lagi dalam beberapa menit.']);
         exit();
     }
-    // --- SELESAI BLOK LOCK ---
 
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         $logger->warning("Method Not Allowed: " . $_SERVER['REQUEST_METHOD']);
@@ -134,7 +132,7 @@ try {
     }
 
     
-    $redis->del($lockKey); // <--- RELEASE LOCK
+    $redis->del($lockKey); 
     
     echo json_encode([
         'success' => true,
@@ -143,7 +141,7 @@ try {
     ]);
 
 } catch (Throwable $t) {
-    $redis->del($lockKey); // <--- RELEASE LOCK ON ERROR
+    $redis->del($lockKey); 
     $logger->critical("🔥 FATAL ERROR (Throwable) - Lock dilepaskan: " . $t->getMessage(), [
         'file' => $t->getFile(),
         'line' => $t->getLine()

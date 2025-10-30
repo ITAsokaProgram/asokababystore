@@ -70,7 +70,7 @@ function kirimPesanTeks($nomorPenerima, $pesanBody) {
         // $logger->success("Pesan teks berhasil dikirim ke {$nomorPenerima}.");
         return ['success' => true];
     } else {
-        $logger->error("Gagal kirim pesan teks ke {$nomorPenerima}. HTTP: {$result['httpcode']}. Response: {$result['response']}");
+        // $logger->error("Gagal kirim pesan teks ke {$nomorPenerima}. HTTP: {$result['httpcode']}. Response: {$result['response']}");
         return ['success' => false];
     }
 }

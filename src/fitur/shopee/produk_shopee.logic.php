@@ -163,7 +163,7 @@ if ($shopeeService->isConnected()) {
 
                     if (!empty($all_detailed_products_sync)) {
                         $total_products_sync = count($all_detailed_products_sync);
-                        $expiry_seconds = 3600; // 1 Jam
+                        $expiry_seconds = 7200; // 1 Jam
                         
                         $logger->info("💾 Meng-encode $total_products_sync produk ke JSON...");
                         $json_data = json_encode($all_detailed_products_sync);
@@ -205,7 +205,6 @@ if ($shopeeService->isConnected()) {
                 $logger->info("Cache miss, tapi lock '{$lockKey}' gagal didapat. Menunggu...");
 
                 // Coba tunggu 5 detik dan cek lagi, siapa tahu sync-nya cepat selesai
-                sleep(5); 
                 $cached_products_retry = $redis->get($redisKey);
                 if ($cached_products_retry) {
                      $all_products_from_redis = json_decode($cached_products_retry, true);
@@ -213,9 +212,7 @@ if ($shopeeService->isConnected()) {
                          $redis_error = null; // Sukses! data sudah ada
                          $logger->info("Data cache ditemukan setelah menunggu lock.");
                      }
-                } else {
-                     $logger->warning("Data cache masih belum ada setelah menunggu 5 detik.");
-                }
+                } 
             }
         }
 
