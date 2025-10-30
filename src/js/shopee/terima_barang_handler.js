@@ -5,7 +5,8 @@ import {
     updateTempReceiptItem, 
     deleteTempReceiptItems,
     deleteAllTempReceiptItems,
-    saveTempReceipt
+    saveTempReceipt,
+    deleteStokOlItem
 } from './api_service.js';
 import { unformatRupiah } from './calculate_terima_barang.js';
 
@@ -82,8 +83,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const stockTable = document.getElementById('stock-table');
     if (stockTable) {
         stockTable.addEventListener('click', async (e) => {
-            if (e.target.classList.contains('btn-add-to-temp')) {
-                const button = e.target;
+            const addButton = e.target.closest('.btn-add-to-temp');
+            const deleteButton = e.target.closest('.btn-delete-stok-ol');
+
+            if (addButton) {
+                const button = addButton;
                 const row = button.closest('tr');
                 const itemData = { ...row.dataset };
                 
@@ -106,6 +110,36 @@ document.addEventListener('DOMContentLoaded', () => {
                     button.disabled = false;
                     button.innerHTML = '<i class="fas fa-plus"></i> Tambah';
                 }
+            } 
+            else if (deleteButton) {
+                const button = deleteButton;
+                const plu = button.dataset.plu;
+                const kd_store = button.dataset.kdStore;
+                const descp = button.dataset.descp;
+
+                Swal.fire({
+                    title: 'Konfirmasi Hapus',
+                    html: `Anda yakin ingin menghapus produk ini dari stok online?<br><br><strong>${plu} - ${descp}</strong><br><br>`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc2626',
+                    confirmButtonText: 'Ya, Hapus!',
+                    cancelButtonText: 'Batal'
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        button.disabled = true;
+                        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                        try {
+                            const deleteResult = await deleteStokOlItem(plu, kd_store);
+                            Swal.fire('Berhasil', deleteResult.message, 'success');
+                            button.closest('tr').remove();
+                        } catch (error) {
+                            Swal.fire('Gagal', error.message, 'error');
+                            button.disabled = false;
+                            button.innerHTML = '<i class="fas fa-trash"></i> Hapus';
+                        }
+                    }
+                });
             }
         });
     }

@@ -151,6 +151,7 @@ if ($shopeeService->isConnected()) {
         $detailed_products = [];
         $total_count = 0;
         $pagination_info = null;
+        $filtered_products = [];
     }
     
     $all_skus = [];

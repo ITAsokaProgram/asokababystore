@@ -471,10 +471,17 @@ if (!empty($filter_vendor)) {
                         <td><?php echo htmlspecialchars($item['Qty']); ?></td>
                         <td>Rp <?php echo number_format($item['hrg_beli'], 0, ',', '.'); ?></td>
                         <td>Rp <?php echo number_format($item['price'], 0, ',', '.'); ?></td>
-                        <td>
-                          <button type="button" class="btn-secondary btn-add-to-temp text-xs py-2 px-3 inline-flex items-center gap-1">
-                            <i class="fas fa-plus"></i> Tambah
-                          </button>
+                        <td class="flex items-center gap-1">
+                            <button type="button" class="btn-secondary btn-add-to-temp text-xs py-2 px-3 inline-flex items-center gap-1">
+                                <i class="fas fa-plus"></i> Tambah
+                            </button>
+                            <button type="button" 
+                                    class="btn-danger btn-delete-stok-ol text-xs py-2 px-3 inline-flex items-center gap-1"
+                                    data-plu="<?php echo htmlspecialchars($item['plu']); ?>"
+                                    data-kd-store="<?php echo htmlspecialchars($item['KD_STORE']); ?>"
+                                    data-descp="<?php echo htmlspecialchars($item['DESCP']); ?>">
+                                <i class="fas fa-trash"></i> Hapus
+                            </button>
                         </td>
                       </tr>
                     <?php endforeach; ?>
