@@ -143,15 +143,10 @@ class ShopeeApiService {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
 
-        curl_setopt($ch, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2); 
-
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30); // 10 detik
         curl_setopt($ch, CURLOPT_TIMEOUT, 60); // 30 detik
 
         curl_setopt($ch, CURLOPT_DNS_SERVERS, '8.8.8.8,1.1.1.1');
-
-        curl_setopt($ch, CURLOPT_SSL_CIPHER_LIST, 'DEFAULT@SECLEVEL=1');
-
 
         if ($method === 'POST') {
             curl_setopt($ch, CURLOPT_POST, 1);
@@ -193,6 +188,11 @@ class ShopeeApiService {
         }
         $item_ids = array_column($product_list_response['response']['item'], 'item_id');
         $detail_response = $this->call("/api/v2/product/get_item_base_info", 'GET', ['item_id_list' => implode(',', $item_ids)]);
+        if (isset($detail_response['error']) && $detail_response['error']) {
+            $error_message = $detail_response['message'] ?? 'Unknown error';
+            $this->logger->error("❌ Gagal get_item_base_info: " . $error_message, $detail_response);
+            throw new Exception("Gagal mengambil detail (get_item_base_info): " . $error_message);
+        }
         $detailed_info_map = [];
         if (isset($detail_response['response']['item_list'])) {
             foreach ($detail_response['response']['item_list'] as $item) {
@@ -207,6 +207,11 @@ class ShopeeApiService {
         foreach ($merged_products as $index => &$item) {
             if (!empty($item['has_model'])) {
                 $model_response = $this->call("/api/v2/product/get_model_list", 'GET', ['item_id' => $item['item_id']]);
+                if (isset($model_response['error']) && $model_response['error']) {
+                    $error_message = $model_response['message'] ?? 'Unknown error';
+                    $this->logger->warning("⚠️ Gagal get_model_list untuk item_id " . $item['item_id'] . ": " . $error_message . ". Melanjutkan tanpa data model.", $model_response);
+                    continue; 
+                }
                 if (isset($model_response['response']['model']) && !empty($model_response['response']['model'])) {
                     $item['models'] = $model_response['response']['model'];
                     $total_stock = 0;
