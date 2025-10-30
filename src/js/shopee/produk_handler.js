@@ -241,6 +241,7 @@ const handleFormSubmit = async (event, form, apiFunction, actionType) => {
             throw new Error(data.message || 'Terjadi kesalahan');
         }
     } catch (error) {
+        if (handleInvalidAccessToken(error)) return;
         submitButton.innerHTML = '<i class="fas fa-times"></i> Gagal';
         submitButton.classList.add('error');
         submitButton.style.opacity = '1';
@@ -391,6 +392,7 @@ const handleSyncAllClick = async (event) => {
             throw new Error(response.message || 'Gagal menyinkronkan data.');
         }
     } catch (error) {
+        if (handleInvalidAccessToken(error)) return;
         console.error('Sync All Error:', error);
         Swal.fire({
             title: 'Error!',
@@ -708,6 +710,7 @@ const handleSyncAllProductsToDbClick = async (event) => {
             throw new Error(response.message || 'Gagal menyinkronkan data.');
         }
     } catch (error) {
+        if (handleInvalidAccessToken(error)) return;
         console.error('Sync All Products to DB Error:', error);
         Swal.fire({
             title: 'Error!',
@@ -767,6 +770,7 @@ const handleSyncAllProductsToRedisClick = async (event) => {
             throw new Error(response.message || 'Gagal menyinkronkan data.');
         }
     } catch (error) {
+        if (handleInvalidAccessToken(error)) return;
         console.error('Sync All Products to Redis Error:', error);
         Swal.fire({
             title: 'Error!',
@@ -777,6 +781,28 @@ const handleSyncAllProductsToRedisClick = async (event) => {
         btn.innerHTML = originalHtml;
         btn.disabled = false;
     }
+};
+
+const handleInvalidAccessToken = (error) => {
+    const errorMessageText = (error.message || 'Terjadi kesalahan.').toLowerCase();
+    if (errorMessageText.includes('invalid access_token')) {
+        Swal.close();
+        
+        Swal.fire({
+            icon: 'error',
+            title: 'Sesi Shopee Habis',
+            text: 'Token akses Anda tidak valid atau telah kedaluwarsa. Sistem akan me-logout Anda dari Shopee untuk otorisasi ulang.',
+            confirmButtonText: 'OK',
+            allowOutsideClick: false,
+            willClose: () => {
+                window.location.href = '?action=disconnect';
+            }
+        }).then(() => {
+            window.location.href = '?action=disconnect';
+        });
+        return true; 
+    }
+    return false; 
 };
 document.addEventListener('DOMContentLoaded', () => {
     addShakeAnimation();
@@ -814,3 +840,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     document.body.classList.add('loaded');
 });
+
