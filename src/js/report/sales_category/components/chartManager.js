@@ -106,67 +106,381 @@ class ChartManager {
         setTimeout(() => this.chartInstance.resize(), 300);
     }
 
-    /**
-     * Update chart untuk tampilan kategori (pie chart supplier)
-     * @param {Array} labels - Labels untuk chart
-     * @param {Array} data - Data untuk chart
-     * @param {string} sortBy - Sorting method (qty atau total)
-     * @param {Function} onClickHandler - Handler untuk click event
-     */
+    
+    
+
+    // updateCategoryChart(labels, data, sortBy, onClickHandler) {
+    //     if (!this.ensureInitialized()) return;
+    //     const chartData = labels.map((label, index) => {
+    //         const item = data[index];
+    //         const value = sortBy === "total" ? parseCurrencyToNumber(item.total) : item.qty;
+    //         return {
+    //             name: label,
+    //             value: isNaN(value) ? 0 : value,
+    //             kode: item.kode,
+    //             kategori: item.kategori,
+    //             total: item.total,
+    //             qty: item.qty,
+    //             persen_qty: item.persen_qty,
+    //             persen_rp: item.persen_rp
+    //         };
+    //     });
+
+    //     const option = {
+    //         animationDuration: CHART_ANIMATION_CONFIG.duration,
+    //         animationEasing: CHART_ANIMATION_CONFIG.easing,
+    //         tooltip: {
+    //             trigger: 'item',
+    //             formatter: (params) => {
+    //                 if (sortBy === "total") {
+    //                     return `${params.name}<br/>Qty: ${params.data.qty}<br/>Total: Rp ${params.value.toLocaleString()}`;
+    //                 } else {
+    //                     return `${params.name}<br/>Qty: ${params.value}<br/>Total: ${params.data.total}`;
+    //                 }
+    //             }
+    //         },
+    //         toolbox: {
+    //             show: true,
+    //             feature: {
+    //                 dataZoom: {
+    //                     show: true,
+    //                     title: {
+    //                         zoom: 'Zoom',
+    //                         back: 'Reset Zoom'
+    //                     }
+    //                 },
+    //                 saveAsImage: {
+    //                     show: true,
+    //                     title: 'Simpan Gambar'
+    //                 }
+    //             }
+    //         },
+    //         series: [{
+    //             type: 'pie',
+    //             radius: ['40%', '70%'],
+    //             center: ['50%', '50%'],
+    //             minAngle: 5,
+    //             minShowLabelAngle: 2,
+    //             avoidLabelOverlap: true,
+    //             itemStyle: {
+    //                 borderRadius: 8,
+    //                 borderColor: '#fff',
+    //                 borderWidth: 2
+    //             },
+    //             label: {
+    //                 show: true,
+    //                 fontSize: 11,
+    //                 position: 'outer',
+    //                 alignTo: 'edge',
+    //                 margin: 20,
+    //                 edgeDistance: 10,
+    //                 lineHeight: 15,
+    //                 formatter: (params) => {
+    //                     const percentage = sortBy === "total" ? params.data.persen_rp : params.data.persen_qty;
+    //                     const persenFix = !isNaN(Number(percentage)) ? Number(percentage).toFixed(2) : '0.00';
+    //                     if (persenFix < 1) {
+    //                         return `${params.name.substring(0, 15)}...\n${persenFix}%`;
+    //                     }
+    //                     return `${params.name}\n(${persenFix}%)`;
+    //                 },
+    //                 overflow: 'break',
+    //                 distanceToLabelLine: 5
+    //             },
+    //             labelLine: {
+    //                 show: true,
+    //                 length: 15,
+    //                 length2: 30,
+    //                 smooth: 0.2,
+    //                 lineStyle: {
+    //                     width: 1.5
+    //                 }
+    //             },
+    //             emphasis: {
+    //                 focus: 'self',
+    //                 label: {
+    //                     show: true,
+    //                     fontSize: 14,
+    //                     fontWeight: 'bold'
+    //                 },
+    //                 itemStyle: {
+    //                     shadowBlur: 1,
+    //                     shadowOffsetX: 0,
+    //                     shadowColor: 'rgba(0, 0, 0, 0.8)',
+    //                     borderWidth: 3,
+    //                     scale: true,
+    //                     scaleSize: 1
+    //                 }
+    //             },
+    //             data: chartData,
+    //             itemStyle: {
+    //                 color: (params) => CHART_COLORS[params.dataIndex % CHART_COLORS.length]
+    //             }
+    //         }]
+    //     };
+
+    //     this.chartInstance.setOption(option, { notMerge: true });
+    //     this.bindClickHandler(onClickHandler);
+    //     setTimeout(() => this.chartInstance.resize(), 300);
+    // }
+
+    // updateCategoryChart(labels, data, sortBy, onClickHandler) {
+    //     if (!this.ensureInitialized()) return;
+    //     const chartData = labels.map((label, index) => {
+    //         const item = data[index];
+    //         const value = sortBy === "total" ? parseCurrencyToNumber(item.total) : item.qty;
+    //         return {
+    //             name: label,
+    //             value: isNaN(value) ? 0 : value,
+    //             kode: item.kode,
+    //             kategori: item.kategori,
+    //             total: item.total,
+    //             qty: item.qty,
+    //             persen_qty: item.persen_qty,
+    //             persen_rp: item.persen_rp
+    //         };
+    //     });
+
+    //     const option = {
+    //         animationDuration: CHART_ANIMATION_CONFIG.duration,
+    //         animationEasing: CHART_ANIMATION_CONFIG.easing,
+    //         tooltip: {
+    //             trigger: 'item',
+    //             formatter: (params) => {
+    //                 if (sortBy === "total") {
+    //                     return `${params.name}<br/>Qty: ${params.data.qty}<br/>Total: Rp ${params.value.toLocaleString()}`;
+    //                 } else {
+    //                     return `${params.name}<br/>Qty: ${params.value}<br/>Total: ${params.data.total}`;
+    //                 }
+    //             }
+    //         },
+    //         toolbox: {
+    //             show: true,
+    //             feature: {
+                    
+    //                 saveAsImage: {
+    //                     show: true,
+    //                     title: 'Simpan Gambar'
+    //                 }
+    //             }
+    //         },
+    //         series: [{
+    //             type: 'pie',
+    //             // [BARU] Mengaktifkan zoom (scroll wheel) dan pan (drag)
+    //             roam: true, 
+    //             // [BARU] Membatasi level zoom
+    //             scaleLimit: { 
+    //                 min: 0.5, // Maksimal zoom out
+    //                 max: 4    // Maksimal zoom in
+    //             },
+    //             // [BARU] Mengaktifkan highlight (explode) saat slice di-klik
+    //             selectedMode: 'single', 
+    //             radius: ['40%', '70%'],
+    //             center: ['50%', '50%'],
+    //             minAngle: 5, // Tetap pertahankan agar slice sangat kecil tetap terlihat
+    //             // [DIHAPUS] minShowLabelAngle: 2, // Menghapus ini agar semua label dipaksa tampil
+    //             avoidLabelOverlap: true, // Biarkan ECharts mengatur agar label tidak tumpang tindih
+    //             itemStyle: {
+    //                 borderRadius: 8,
+    //                 borderColor: '#fff',
+    //                 borderWidth: 2
+    //             },
+    //             label: {
+    //                 show: true,
+    //                 fontSize: 11,
+    //                 position: 'outer',
+    //                 alignTo: 'edge',
+    //                 margin: 20,
+    //                 edgeDistance: 10,
+    //                 lineHeight: 15,
+    //                 formatter: (params) => {
+    //                     const percentage = sortBy === "total" ? params.data.persen_rp : params.data.persen_qty;
+    //                     const persenFix = !isNaN(Number(percentage)) ? Number(percentage).toFixed(2) : '0.00';
+    //                     if (persenFix < 1) {
+    //                          // Memotong teks jika terlalu kecil, agar lebih rapi saat di-zoom
+    //                         return `${params.name.substring(0, 15)}...\n${persenFix}%`;
+    //                     }
+    //                     return `${params.name}\n(${persenFix}%)`;
+    //                 },
+    //                 overflow: 'break',
+    //                 distanceToLabelLine: 5
+    //             },
+    //             labelLine: {
+    //                 show: true,
+    //                 length: 15,
+    //                 length2: 30,
+    //                 smooth: 0.2,
+    //                 lineStyle: {
+    //                     width: 1.5
+    //                 }
+    //             },
+    //             emphasis: {
+    //                 focus: 'self',
+    //                 label: {
+    //                     show: true,
+    //                     fontSize: 14,
+    //                     fontWeight: 'bold'
+    //                 },
+    //                 itemStyle: {
+    //                     shadowBlur: 1,
+    //                     shadowOffsetX: 0,
+    //                     shadowColor: 'rgba(0, 0, 0, 0.8)',
+    //                     borderWidth: 3,
+    //                     scale: true,
+    //                     scaleSize: 1
+    //                 }
+    //             },
+    //             data: chartData,
+    //             itemStyle: {
+    //                 color: (params) => CHART_COLORS[params.dataIndex % CHART_COLORS.length]
+    //             }
+    //         }]
+    //     };
+
+    //     this.chartInstance.setOption(option, { notMerge: true });
+    //     this.bindClickHandler(onClickHandler);
+    //     setTimeout(() => this.chartInstance.resize(), 300);
+    // }
+
     updateCategoryChart(labels, data, sortBy, onClickHandler) {
-        if (!this.ensureInitialized()) return;
+    if (!this.ensureInitialized()) return;
+    const chartData = labels.map((label, index) => {
+        const item = data[index];
+        const value = sortBy === "total" ? parseCurrencyToNumber(item.total) : item.qty;
+        return {
+            name: label,
+            value: isNaN(value) ? 0 : value,
+            kode: item.kode,
+            kategori: item.kategori,
+            total: item.total,
+            qty: item.qty,
+            persen_qty: item.persen_qty,
+            persen_rp: item.persen_rp
+        };
+    });
 
-        const chartData = labels.map((label, index) => {
-            const item = data[index];
-            const value = sortBy === "total" ? parseCurrencyToNumber(item.total) : item.qty;
-
-            return {
-                name: label,
-                value: isNaN(value) ? 0 : value,
-                kode: item.kode,
-                kategori: item.kategori,
-                total: item.total,
-                qty: item.qty,
-                persen_qty: item.persen_qty,
-                persen_rp: item.persen_rp
-            };
-        });
-
-        const option = {
-            animationDuration: CHART_ANIMATION_CONFIG.duration,
-            animationEasing: CHART_ANIMATION_CONFIG.easing,
-            tooltip: {
-                trigger: 'item',
-                formatter: (params) => {
-                    if (sortBy === "total") {
-                        return `${params.name}<br/>Qty: ${params.data.qty}<br/>Total: Rp ${params.value.toLocaleString()}`;
-                    } else {
-                        return `${params.name}<br/>Qty: ${params.value}<br/>Total: ${params.data.total}`;
-                    }
+    const option = {
+        animationDuration: CHART_ANIMATION_CONFIG.duration,
+        animationEasing: CHART_ANIMATION_CONFIG.easing,
+        tooltip: {
+            trigger: 'item',
+            // Konflik: memunculkan tooltip lebih cepat untuk membantu identifikasi slice kecil
+            showDelay: 0,
+            formatter: (params) => {
+                if (sortBy === "total") {
+                    return `${params.name}<br/>Qty: ${params.data.qty}<br/>Total: Rp ${params.value.toLocaleString()}`;
+                } else {
+                    return `${params.name}<br/>Qty: ${params.value}<br/>Total: ${params.data.total}`;
+                }
+            }
+        },
+        toolbox: {
+            show: true,
+            feature: {
+                saveAsImage: {
+                    show: true,
+                    title: 'Simpan Gambar'
+                }
+            }
+        },
+        series: [{
+            type: 'pie',
+            roam: true, 
+            scaleLimit: { 
+                min: 0.5,
+                max: 4
+            },
+            selectedMode: 'single',
+            // Memperbesar radius untuk area klik yang lebih luas
+            radius: ['30%', '80%'],
+            center: ['50%', '50%'],
+            // Mengurangi minAngle agar slice kecil lebih lebar dan mudah diklik
+            minAngle: 2,
+            avoidLabelOverlap: true,
+            itemStyle: {
+                borderRadius: 6,
+                borderColor: '#fff',
+                borderWidth: 2
+            },
+            // Memperluas area hover untuk slice kecil
+            emphasis: {
+                focus: 'self',
+                // Memperbesar scale saat hover agar lebih mudah diklik
+                scale: true,
+                scaleSize: 20, // Memberikan perbesaran signifikan saat di-hover
+                label: {
+                    show: true,
+                    fontSize: 15,
+                    fontWeight: 'bold'
+                },
+                itemStyle: {
+                    shadowBlur: 15,
+                    shadowOffsetX: 0,
+                    shadowColor: 'rgba(0, 0, 0, 0.6)',
+                    borderWidth: 4,
+                    borderColor: '#fff'
                 }
             },
-            series: [{
-                type: 'pie',
-                label: {
-                    fontSize: 12,
-                    formatter: (params) => {
-                        const percentage = sortBy === "total" ? params.data.persen_rp : params.data.persen_qty;
-                        const persenFix = !isNaN(Number(percentage)) ? Number(percentage).toFixed(2) : '0.00';
-                        return `${params.name}\n(${persenFix}%)`;
+            label: {
+                show: true,
+                fontSize: 11,
+                position: 'outer',
+                alignTo: 'edge',
+                margin: 20,
+                edgeDistance: 10,
+                lineHeight: 15,
+                formatter: (params) => {
+                    const percentage = sortBy === "total" ? params.data.persen_rp : params.data.persen_qty;
+                    const persenFix = !isNaN(Number(percentage)) ? Number(percentage).toFixed(2) : '0.00';
+                    if (persenFix < 1) {
+                        return `${params.name.substring(0, 15)}...\n${persenFix}%`;
                     }
+                    return `${params.name}\n(${persenFix}%)`;
                 },
-                data: chartData,
-                itemStyle: {
-                    color: (params) => CHART_COLORS[params.dataIndex % CHART_COLORS.length]
+                overflow: 'break',
+                distanceToLabelLine: 5
+            },
+            labelLine: {
+                show: true,
+                length: 15,
+                length2: 30,
+                smooth: 0.2,
+                lineStyle: {
+                    width: 1.5
                 }
-            }]
-        };
+            },
+            data: chartData,
+            itemStyle: {
+                color: (params) => CHART_COLORS[params.dataIndex % CHART_COLORS.length]
+            }
+        }]
+    };
 
-        this.chartInstance.setOption(option, { notMerge: true });
-        this.bindClickHandler(onClickHandler);
-        
-        setTimeout(() => this.chartInstance.resize(), 300);
-    }
+    this.chartInstance.setOption(option, { notMerge: true });
+    this.bindClickHandler(onClickHandler);
+    
+    this.chartInstance.off('mousemove');
+    this.chartInstance.on('mousemove', (params) => {
+        if (params.componentType === 'series' && params.dataIndex !== undefined) {
+            this.chartInstance.dispatchAction({
+                type: 'highlight',
+                seriesIndex: 0,
+                dataIndex: params.dataIndex
+            });
+        }
+    });
+    
+    this.chartInstance.off('mouseout');
+    this.chartInstance.on('mouseout', (params) => {
+        if (params.componentType === 'series') {
+            this.chartInstance.dispatchAction({
+                type: 'downplay',
+                seriesIndex: 0
+            });
+        }
+    });
+    
+    setTimeout(() => this.chartInstance.resize(), 300);
+}
 
     /**
      * Update chart untuk tampilan detail (bar/line chart timeline)
