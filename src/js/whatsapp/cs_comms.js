@@ -749,7 +749,7 @@ async function startConversation() {
       } finally {
             if(startButton) {
                 startButton.disabled = false;
-                startButton.innerHTML = '<i class="fas fa-play-circle"></i><span class="hidden sm:inline">Mulai Chat</span>';
+                startButton.innerHTML = '<i class="fas fa-play-circle"></i><span class="hidden sm:inline"></span>';
             }
       }
   }

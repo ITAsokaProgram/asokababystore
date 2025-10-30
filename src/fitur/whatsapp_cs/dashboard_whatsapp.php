@@ -605,20 +605,58 @@ if (!$menuHandler->initialize()) {
             </div>
           </div>
 
-          <div class="flex items-center gap-1.5 md:gap-2">
-            <button id="mobile-fullscreen-toggle" class="block md:hidden text-white hover:bg-white hover:bg-opacity-20 transition-all p-2 rounded-lg" title="Layar Penuh">
-              <i id="fullscreen-icon" class="fas fa-expand"></i>
-            </button>
-            <button id="start-chat-button" class="hidden bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all flex items-center gap-1.5">
-              <i class="fas fa-play-circle"></i>
-              <span class="hidden sm:inline">Mulai Chat</span>
-            </button>
-            <button id="end-chat-button" class="hidden bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all flex items-center gap-1.5">
-              <i class="fas fa-times-circle"></i>
-              <span class="hidden sm:inline">Akhiri</span>
-            </button>
+          <div x-data="{ open: false, isDesktop: window.innerWidth >= 768 }" 
+              @resize.window="isDesktop = window.innerWidth >= 768" 
+              class="relative">
+
+              <button @click="open = !open" class="block md:hidden text-white hover:bg-white hover:bg-opacity-20 transition-all p-2 rounded-lg" title="Opsi">
+                  <i class="fas fa-ellipsis-v"></i>
+              </button>
+
+              <div x-show="open || isDesktop" 
+                  @click.away="open = false"
+                  x-transition:enter="transition ease-out duration-100"
+                  x-transition:enter-start="transform opacity-0 scale-95"
+                  x-transition:enter-end="transform opacity-100 scale-100"
+                  x-transition:leave="transition ease-in duration-75"
+                  x-transition:leave-start="transform opacity-100 scale-100"
+                  x-transition:leave-end="transform opacity-0 scale-95"
+                  
+                  class="absolute top-full right-0 mt-2 w-auto bg-white rounded-lg z-20 p-2 flex flex-col gap-2
+                          md:flex md:flex-row md:items-center md:gap-1.5 md:gap-2 
+                          md:static md:mt-0 md:w-auto md:bg-transparent md:rounded-none md:shadow-none md:z-auto md:p-0"
+                  
+                  style="display: none;" 
+                  x-cloak> 
+                  
+                  <button id="mobile-fullscreen-toggle" 
+                          @click="open = false"
+                          class="flex w-full items-center justify-center gap-2 p-2 rounded-lg text-sm text-white bg-blue-500 hover:bg-blue-600 transition-all
+                                md:hidden" 
+                          title="Layar Penuh">
+                      <i id="fullscreen-icon" class="fas fa-expand"></i>
+                  </button>
+
+                  <button id="start-chat-button" 
+                          @click="open = false"
+                          class="hidden bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all flex items-center justify-center gap-1.5 p-2 w-full
+                                md:w-auto md:p-0">
+                      
+                      <i class="fas fa-play-circle md:p-2 md:pl-3"></i>
+                  </button>
+
+                  <button id="end-chat-button" 
+                          @click="open = false"
+                          class="hidden bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all flex items-center justify-center gap-1.5 p-2 w-full
+                                md:w-auto md:p-0">
+                      
+                      <i class="fas fa-times-circle md:p-2 md:pl-3"></i>
+                      
+                      <span class="inline sm:inline md:p-2 md:pr-3">Akhiri</span>
+                  </button>
+              </div>
           </div>
-          </div>
+        </div>
 
         <div id="chat-placeholder" class="flex flex-col items-center justify-center h-full text-gray-500 p-4">
           <i class="fas fa-comments text-5xl md:text-6xl mb-4"></i>
