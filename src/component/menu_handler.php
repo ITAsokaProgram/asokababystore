@@ -34,7 +34,6 @@ class MenuHandler {
     public function initialize() {
         if (!$this->token) {
             $this->message = "Token tidak ada";
-            $this->logger->error("❌ Token tidak ada");
             $this->showErrorPage("Token tidak ada");
             return false;
         }

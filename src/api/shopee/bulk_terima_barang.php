@@ -45,7 +45,6 @@ try {
         exit;
     }
     $user_kode = $decoded->kode; 
-    $logger->info("Token valid. User '{$user_kode}' memulai bulk insert.");
 } catch (Exception $e) {
     http_response_code(500);
     $logger->error("Token validation error: " . $e->getMessage());
@@ -101,7 +100,6 @@ try {
     $padded_num = str_pad($next_num, 5, '0', STR_PAD_LEFT);
     $no_faktur = $prefix . $padded_num; 
 
-    $logger->info("Memulai batch insert untuk No Faktur: $no_faktur, No LPB: $no_lpb");
 
     
     $sql_receipt = "INSERT INTO s_receipt 
@@ -138,7 +136,6 @@ try {
         $kode_supp = $item['kode_supp'] ?? '';
         if (empty($kode_supp)) {
             
-            $logger->warning("Item dilewati: kode_supp (vendor) tidak ditemukan.", $item);
             continue; 
         }
 
@@ -207,7 +204,6 @@ try {
 
     
     $conn->commit();
-    $logger->success("Transaksi berhasil di-commit. No Faktur: $no_faktur. Total $total_items_processed item diterima.");
     echo json_encode([
         'success' => true,
         'message' => "Berhasil! $total_items_processed item telah dicatat dengan No. Faktur: $no_faktur"

@@ -21,14 +21,12 @@ class PermissionAccess {
             
             // Validate input
             if (empty($menu_code) || empty($jwt)) {
-                $this->logger->error("❌ Invalid input: menu_code or jwt is empty");
                 $this->denyAccess(400, "Data tidak lengkap", $menu_code);
             }
             
             // Verify JWT token
             $user = $this->verifyToken($jwt);
             if (!$user) {
-                $this->logger->error("❌ Authentication failed for menu: $menu_code");
                 $this->denyAccess(401, "Tidak terautentikasi", $menu_code);
             }
             
@@ -36,7 +34,6 @@ class PermissionAccess {
             $userId = $this->getUserId($user);
             
             if (!$userId) {
-                $this->logger->error("❌ User ID not found in token");
                 $this->denyAccess(401, "Token tidak valid - User ID tidak ditemukan", $menu_code);
             }
             
@@ -46,7 +43,6 @@ class PermissionAccess {
             $hasAccess = $this->checkDatabasePermission($userId, $menu_code);
             
             if (!$hasAccess) {
-                $this->logger->warning("⚠️ Access denied for user $userId to menu: $menu_code");
                 $this->denyAccess(403, "Akses ditolak untuk menu '$menu_code'", $menu_code);
             }
             
@@ -105,7 +101,6 @@ class PermissionAccess {
             $result = $this->dbHelper->select('user_internal_access', ['can_view'], 'id_user = ? AND menu_code = ?', [$userId, $menuCode]);
             
             if (empty($result)) {
-                $this->logger->warning("⚠️ No permission record found for user $userId and menu $menuCode");
                 return false;
             }
             
@@ -173,7 +168,6 @@ class PermissionAccess {
      */
     public function getUserPermissions($userId) {
         try {
-            $this->logger->info("📋 Getting permissions for user: $userId");
             
             $permissions = $this->dbHelper->select(
                 'user_internal_access', 
@@ -182,7 +176,6 @@ class PermissionAccess {
                 [$userId]
             );
             
-            $this->logger->success("✅ Retrieved " . count($permissions) . " permissions for user $userId");
             return $permissions;
             
         } catch (Exception $e) {
@@ -220,7 +213,6 @@ class PermissionAccess {
      */
     public function grantPermission($userId, $menuCode, $permissions = []) {
         try {
-            $this->logger->info("🔓 Granting permissions for user $userId to menu $menuCode");
             
             $data = [
                 'id_user' => $userId,
@@ -235,7 +227,6 @@ class PermissionAccess {
             $result = $this->dbHelper->insertOrUpdate('user_internal_access', $data, $updateFields);
             
             if ($result) {
-                $this->logger->success("✅ Permissions granted successfully");
                 return true;
             } else {
                 $this->logger->error("❌ Failed to grant permissions");
@@ -253,7 +244,6 @@ class PermissionAccess {
      */
     public function revokePermission($userId, $menuCode) {
         try {
-            $this->logger->info("🔒 Revoking permissions for user $userId from menu $menuCode");
             
             $result = $this->dbHelper->delete(
                 'user_internal_access', 
@@ -262,7 +252,6 @@ class PermissionAccess {
             );
             
             if ($result) {
-                $this->logger->success("✅ Permissions revoked successfully");
                 return true;
             } else {
                 $this->logger->error("❌ Failed to revoke permissions");

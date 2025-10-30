@@ -14,7 +14,6 @@ header("Access-Control-Allow-Headers: Authorization");
 if ($_SERVER['REQUEST_METHOD'] != 'GET') {
     http_response_code(405);
     echo json_encode(['status' => false, 'message' => 'Request ditolak method tidak terdaftar']);
-    $logger->info('Request method tidak valid: ' . $_SERVER['REQUEST_METHOD']);
     exit;
 }
 
@@ -66,7 +65,6 @@ $stmt->bind_param('iii', $user_id, $limit, $offset);
 $stmt->execute();
 $result = $stmt->get_result();
 if($result->num_rows === 0 && $page === 1) {
-    $logger->info('User_id ' . $user_id . ' tidak ada hadiah yang sedang ditukar');
     http_response_code(204);
     echo json_encode(['status' => false, 'message' => 'Tidak ada hadiah yang sedang ditukar']);
     exit;
@@ -75,7 +73,6 @@ http_response_code(200);
 $hadiah = $result->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 
-$logger->success('User_id ' . $user_id . ' ambil data hadiah_tukar halaman ' . $page . ', total: ' . count($hadiah));
 
 // Calculate pagination info
 $totalPages = ceil($totalCount / $limit);

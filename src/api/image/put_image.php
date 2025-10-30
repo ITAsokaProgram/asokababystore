@@ -43,7 +43,6 @@ if (!empty($uploadedFiles['name'][0]) && is_dir($dir)) {
         }
         $promo_name = preg_replace('/[\x00-\x1F\x7F]/u', '', $promo_name);
         
-        $logger->info("Processing file: $originalName. Promo name determined: '$promo_name'");
 
         $targetPath = $dir . '/' . $uniqueName;
         
@@ -61,7 +60,6 @@ if (!empty($uploadedFiles['name'][0]) && is_dir($dir)) {
                     $item['promo_name'] = $promo_name;
                     
                     $found = true;
-                    $logger->info("Updating existing item: $originalName -> $uniqueName");
                     break;
                 }
             }
@@ -76,10 +74,8 @@ if (!empty($uploadedFiles['name'][0]) && is_dir($dir)) {
                     "tanggal_selesai" => $tanggal_selesai,
                     "promo_name" => $promo_name 
                 ];
-                $logger->info("Adding new item: $uniqueName with promo: '$promo_name'");
             }
         } else {
-             $logger->error("Failed to move uploaded file: $tmpName to $targetPath");
         }
     }
 
@@ -90,9 +86,7 @@ if (!empty($uploadedFiles['name'][0]) && is_dir($dir)) {
             $oldFile = $dir . '/' . $item['filename'];
             if (is_file($oldFile)) {
                 if (@unlink($oldFile)) {
-                     $logger->info("Removed expired file: {$item['filename']}");
                 } else {
-                     $logger->warning("Failed to remove expired file: {$item['filename']}");
                 }
             }
         } else {
@@ -103,12 +97,9 @@ if (!empty($uploadedFiles['name'][0]) && is_dir($dir)) {
     if (file_put_contents($jsonFile, json_encode($filteredData, JSON_PRETTY_PRINT))) {
         chmod($jsonFile, 0664);
         echo json_encode(["success" => true]);
-        $logger->success("Successfully updated slider.json.");
     } else {
         echo json_encode(["success" => false, "error" => "Gagal menyimpan JSON"]);
-         $logger->error("Failed to write to $jsonFile.");
     }
 } else {
     echo json_encode(["success" => false, "error" => "Upload gagal atau folder tidak ditemukan"]);
-    $logger->error("Upload failed. Files empty or dir '$dir' not found.");
 }

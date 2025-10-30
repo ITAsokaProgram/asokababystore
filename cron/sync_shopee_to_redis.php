@@ -24,15 +24,25 @@ try {
     exit();
 }
 $redisKey = 'shopee_all_products';
+$lockKey = 'shopee_sync_in_progress';
 $expiry_seconds = 3600; 
+
 try {
-    $logger->info("🚀 Memulai request sync SEMUA produk ke REDIS (via CRON)...");
+
+    // --- TAMBAHKAN BLOK LOCK ---
+    $lockAcquired = $redis->set($lockKey, 1, ['nx', 'ex' => 1800]); // Lock 30 menit
+    if (!$lockAcquired) {
+        $logger->warning("CRON Gagal: Gagal mendapatkan lock '{$lockKey}'. Sync lain (mungkin via web) sedang berjalan.");
+        exit();
+    }
+    // --- SELESAI BLOK LOCK ---
+
     $shopeeService = new ShopeeApiService($logger); 
     if (!$shopeeService->isConnected()) {
         $logger->warning("CRON Gagal: Belum terautentikasi dengan Shopee (Kredensial di DB kosong?).");
+        $redis->del($lockKey); // Lepas lock jika gagal auth
         exit();
     }
-    $logger->info("🔍 Memulai pengambilan data SEMUA produk dari Shopee...");
     $all_detailed_products = []; 
     $offset = 0;
     $page_size = 50;
@@ -50,43 +60,40 @@ try {
             throw new Exception("Gagal mengambil daftar produk dari Shopee: " . $product_list_response['message']);
         }
         if (!isset($product_list_response['response']['item']) || empty($product_list_response['response']['item'])) {
-            $logger->info("🏁 Tidak ada item lagi pada offset: {$offset}. Selesai mengambil list.");
             break;
         }
         $detailed_items_batch = $shopeeService->getDetailedProductInfo($product_list_response);
         if (empty($detailed_items_batch)) {
-            $logger->info("🏁 getDetailedProductInfo mengembalikan kosong untuk offset: {$offset}.");
             break; 
         }
         $all_detailed_products = array_merge($all_detailed_products, $detailed_items_batch);
         $total_items_found += count($detailed_items_batch);
         $has_next_page = $product_list_response['response']['has_next_page'] ?? false;
         $offset = $product_list_response['response']['next_offset'] ?? 0;
-        $logger->info("Batch diproses: " . count($detailed_items_batch) . " produk. Total ditemukan: {$total_items_found}. Next offset: {$offset}. Has next: " . ($has_next_page ? 'Ya' : 'Tidak'));
         if (!$has_next_page) {
             break;
         }
         usleep(250000); 
     }
-    $logger->info("✅ Pengambilan data Shopee selesai. Total produk/variasi ditemukan: " . count($all_detailed_products));
     if (empty($all_detailed_products)) {
         $logger->warning("Tidak ada produk yang ditemukan di akun Shopee.");
     }
     $total_products = count($all_detailed_products);
-    $logger->info("💾 Meng-encode $total_products produk ke JSON...");
     $json_data = json_encode($all_detailed_products);
     if (json_last_error() !== JSON_ERROR_NONE) {
          $logger->error("❌ Gagal encode JSON: " . json_last_error_msg());
          throw new Exception("Gagal memproses data produk untuk cache.");
     }
-    $logger->info("💾 Menyimpan $total_products produk ke Redis key: $redisKey dengan TTL: $expiry_seconds detik...");
     $success = $redis->setex($redisKey, $expiry_seconds, $json_data); 
     if (!$success) {
          throw new Exception("Perintah REDIS setex gagal mengembalikan true.");
     }
-    $logger->info("🎉 Sinkronisasi CRON ke REDIS selesai.");
+    
+    $redis->del($lockKey); // <--- RELEASE LOCK
+
 } catch (Throwable $t) {
-    $logger->critical("🔥 FATAL ERROR CRON (Throwable): " . $t->getMessage(), [
+    $redis->del($lockKey); // <--- RELEASE LOCK ON ERROR
+    $logger->critical("🔥 FATAL ERROR CRON (Throwable) - Lock dilepaskan: " . $t->getMessage(), [
         'file' => $t->getFile(),
         'line' => $t->getLine()
     ]);

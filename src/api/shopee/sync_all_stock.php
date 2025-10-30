@@ -21,7 +21,6 @@ try {
 header('Content-Type: application/json');
 
 try {
-    $logger->info("🚀 Memulai request sync SEMUA stock...");
 
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         $logger->warning("Method Not Allowed: " . $_SERVER['REQUEST_METHOD']);
@@ -38,7 +37,6 @@ try {
         exit();
     }
 
-    $logger->info("🔍 Memulai pengambilan data SEMUA produk dari Shopee...");
     $products_to_sync = [];
     $offset = 0;
     $page_size = 50; 
@@ -60,13 +58,11 @@ try {
         }
 
         if (!isset($product_list_response['response']['item']) || empty($product_list_response['response']['item'])) {
-            $logger->info("🏁 Tidak ada item lagi pada offset: {$offset}. Selesai mengambil list.");
             break; 
         }
 
         $detailed_items = $shopeeService->getDetailedProductInfo($product_list_response);
         if (empty($detailed_items)) {
-            $logger->info("🏁 getDetailedProductInfo mengembalikan kosong untuk offset: {$offset}.");
             break;
         }
 
@@ -104,7 +100,6 @@ try {
         $has_next_page = $product_list_response['response']['has_next_page'] ?? false;
         $offset = $product_list_response['response']['next_offset'] ?? 0;
 
-        $logger->info("Batch diproses: " . count($detailed_items) . " produk. Total ditemukan: {$total_items_found}. Next offset: {$offset}. Has next: " . ($has_next_page ? 'Ya' : 'Tidak'));
 
         if (!$has_next_page) {
             break;
@@ -112,7 +107,6 @@ try {
         usleep(250000); 
     }
 
-    $logger->info("✅ Pengambilan data Shopee selesai. Total produk/variasi ditemukan: " . count($products_to_sync));
 
     if (empty($products_to_sync)) {
         http_response_code(404);
@@ -140,7 +134,6 @@ try {
 
         try {
             $sku_chunks = array_chunk($unique_skus, 1000); 
-            $logger->info("🗃️ Mengambil stok DB untuk " . count($unique_skus) . " SKU unik dalam " . count($sku_chunks) . " chunk.");
 
             foreach ($sku_chunks as $chunk) {
                 $placeholders = implode(',', array_fill(0, count($chunk), '?'));
@@ -178,8 +171,6 @@ try {
                 }
                 $stmt_excluded->close();
             }
-            $logger->info("✅ Berhasil mengambil " . count($db_stock_map) . " data stok dari database.");
-            $logger->info("ℹ️ Ditemukan " . count($excluded_skus_map) . " SKU di s_stok_ol yang akan dikecualikan.");
 
         } catch (Exception $e) {
             $logger->error("❌ Error query database: " . $e->getMessage());
@@ -187,7 +178,6 @@ try {
         }
     }
 
-    $logger->info("🔄 Memulai proses sinkronisasi...");
     $results = [
         'synced' => 0,
         'failed' => 0,
@@ -215,7 +205,6 @@ try {
             $results['skipped']++; 
             $reason = "SKU ditemukan di s_stok_ol (dikecualikan)";
             $results['skipped_details'][] = "{$name} (SKU: {$sku}) - Alasan: " . $reason;
-            $logger->info("🚫 SKIP (s_stok_ol): '{$name}' (SKU: {$sku}) - Stok tidak akan diubah.");
             continue; 
         }
 
@@ -233,7 +222,6 @@ try {
             $results['skipped']++; 
             $reason = "Stok sudah sama ({$new_stock})";
             $results['skipped_details'][] = "{$name} (SKU: {$sku}) - Alasan: " . $reason;
-            $logger->info("🔄 SKIP (SAMA): '{$name}' (SKU: {$sku}) - Stok di DB ({$new_stock}) sudah sama dengan Shopee.");
             continue; 
         }
 
@@ -252,7 +240,6 @@ try {
         usleep(100000); 
     }
 
-    $logger->info("🎉 Sinkronisasi selesai.", $results);
     echo json_encode([
         'success' => true,
         'message' => 'Sinkronisasi massal selesai.',

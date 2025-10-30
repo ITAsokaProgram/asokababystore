@@ -24,7 +24,6 @@ class WebhookHandler {
         if (isset($_GET['hub_mode']) && $_GET['hub_mode'] === 'subscribe' && $_GET['hub_verify_token'] === $verify_token) {
             echo $_GET['hub_challenge'];
             http_response_code(200);
-            $this->logger->info("Webhook verified successfully.");
         } else {
             http_response_code(403);
             echo "Token salah.";
@@ -33,7 +32,6 @@ class WebhookHandler {
     }
 
 public function handleIncomingMessage($body) {
-        $this->logger->info("Webhook received data: " . json_encode($body));
         $message = $body['entry'][0]['changes'][0]['value']['messages'][0] ?? null;
         if (!$message) {
             return;
@@ -43,21 +41,18 @@ public function handleIncomingMessage($body) {
         $nomorPengirim = $message['from'];
         $messageType = $message['type'];
 
-        // $this->logger->info("Pesan diterima dari: {$namaPengirim} ({$nomorPengirim})");
 
         if ($messageType === 'text') {
             $textBody = $message['text']['body'];
 
             if (preg_match(WhatsappConstants::REGEX_CHANGE_PHONE, $textBody, $matches)) {
                 $token = $matches[1];
-                // $this->logger->info("Link verifikasi ganti nomor HP terdeteksi. Token: {$token}");
                 $this->verificationService->processToken($token);
                 return;
             }
 
             if (preg_match(WhatsappConstants::REGEX_RESET_PASSWORD, $textBody, $matches)) {
                 $token = $matches[1];
-                // $this->logger->info("Token reset password terdeteksi. Token: {$token}");
                 $this->verificationService->processPasswordResetToken($token, $nomorPengirim);
                 return;
             }
@@ -80,7 +75,6 @@ public function handleIncomingMessage($body) {
             }
 
             if ($messageType === 'interactive') {
-                // $this->logger->info("User {$nomorPengirim} mencoba memilih menu saat live chat. Mengirim pesan untuk mengakhiri chat.");
                 $buttons = [['id' => 'END_LIVE_CHAT', 'title' => 'Akhiri Chat']];
                 kirimPesanButton($nomorPengirim, WhatsappConstants::LIVE_CHAT_MENU_PROMPT, $buttons);
                 $this->saveAdminReply($conversation['id'], $nomorPengirim, WhatsappConstants::LIVE_CHAT_MENU_PROMPT);
@@ -99,7 +93,6 @@ public function handleIncomingMessage($body) {
                 case 'audio':
                     $mediaService = new MediaService($this->logger);
                     $mediaId = $message[$messageType]['id'];
-                    // $this->logger->info("Menerima pesan media ({$messageType}) dari {$nomorPengirim} dalam sesi live chat.");
                     $result = $mediaService->downloadAndUpload($mediaId, $messageType);
 
                     if (isset($result['url'])) {
@@ -119,7 +112,6 @@ public function handleIncomingMessage($body) {
                     break;
 
                 default:
-                    // $this->logger->info("Menerima tipe pesan '{$messageType}' yang belum didukung saat live chat.");
                     kirimPesanTeks($nomorPengirim, WhatsappConstants::MEDIA_UNSUPPORTED_LIVE_CHAT);
                     return;
             }
@@ -242,7 +234,6 @@ public function handleIncomingMessage($body) {
                     $this->processTextMessage($message, $conversation); 
                     $this->conversationService->setMenuSent($nomorPengirim);
                 } else {
-                    // $this->logger->info("Mengabaikan pesan teks dari {$nomorPengirim} karena menu utama sudah terkirim (bukan link verifikasi).");
                 }
             } elseif ($message['type'] === 'interactive' && $message['interactive']['type'] === 'list_reply') {
                 $this->processListReplyMessage($message, $conversation, $namaPengirim);
@@ -251,7 +242,6 @@ public function handleIncomingMessage($body) {
     }
     
     private function sendWelcomeMessage($nomorPengirim, $conversationId, $namaPengirim) {
-        // $this->logger->info("User {$nomorPengirim} memulai percakapan baru, mengirim Welcome Menu.");
         
         kirimPesanList(
             $nomorPengirim,
@@ -267,7 +257,6 @@ public function handleIncomingMessage($body) {
 
     private function processTextMessage($message, $conversation) { 
         $nomorPengirim = $message['from'];
-        // $this->logger->info("User {$nomorPengirim} mengirim pesan teks dalam sesi aktif, memicu Main Menu (Button).");
 
         $buttons = [
             ['id' => 'BUKA_MENU_UTAMA', 'title' => 'Buka Menu Utama'],
@@ -309,7 +298,6 @@ public function handleIncomingMessage($body) {
             'total_unread_count' => $totalUnread 
         ]);
         
-        // $this->logger->info("Received List reply from {$nomorPengirim}. Selected ID: {$selectedId}, Title: {$selectedTitle}");
         if (preg_match('/^(JABODETABEK|BELITUNG|LOKASI_JABODETABEK|LOKASI_BELITUNG)_PAGE_(\d+)$/', $selectedId, $matches)) {
             $region = (strpos($matches[1], 'JABODETABEK') !== false) ? 'jabodetabek' : 'belitung';
             $type = (strpos($matches[1], 'LOKASI') !== false) ? 'lokasi' : 'kontak';
@@ -418,7 +406,6 @@ public function handleIncomingMessage($body) {
     }
 
     private function sendBranchListByRegion($nomorPengirim, $region, $page = 1, $type = 'kontak', $namaPengirim) {
-        // $this->logger->info("Sending {$type} list for region {$region} page {$page} to {$nomorPengirim}.");
         $all_cities = ($region === 'jabodetabek') ? BranchConstants::CITIES_JABODETABEK : BranchConstants::CITIES_BELITUNG;
         $all_locations = ($region === 'jabodetabek') ? BranchConstants::LOKASI_JABODETABEK : BranchConstants::LOKASI_BELITUNG;
         $items_per_page = 8;
@@ -499,7 +486,6 @@ public function handleIncomingMessage($body) {
         }
     }
     private function sendMainMenuAsList($nomorPengirim, $conversationId) {
-        // $this->logger->info("Sending Main Menu (List) to {$nomorPengirim}.");
         
         $pesanBody = WhatsappConstants::WELCOME_BODY;
         $pesanHeader = WhatsappConstants::WELCOME_HEADER;
@@ -517,7 +503,6 @@ public function handleIncomingMessage($body) {
     }
 
     private function triggerLiveChat($nomorPengirim, $conversation) {
-        // $this->logger->info("Triggering live chat for {$nomorPengirim}.");
         date_default_timezone_set('Asia/Jakarta');
         $currentHour = (int)date('H');
         $currentMinute = (int)date('i');

@@ -45,7 +45,6 @@ try {
         exit;
     }
     $user_kode = $decoded->kode; 
-    // $logger->info("Token valid. User '{$user_kode}' mengakses delete_stok_ol.");
 } catch (Exception $e) {
     http_response_code(500);
     $logger->error("Token validation error: " . $e->getMessage());
@@ -86,7 +85,6 @@ try {
         throw new Exception("Validasi gagal: PLU dan KD_STORE wajib diisi.");
     }
     
-    // $logger->info("Memulai request HAPUS stok online...", $data);
 
     $sql_delete = "DELETE FROM s_stok_ol WHERE plu = ? AND KD_STORE = ?";
     $stmt_delete = $conn->prepare($sql_delete);

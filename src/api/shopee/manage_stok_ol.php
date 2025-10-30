@@ -46,7 +46,6 @@ try {
         exit;
     }
     $user_kode = $decoded->kode; 
-    $logger->info("Token valid. User '{$user_kode}' mengakses.");
 } catch (Exception $e) {
     http_response_code(500);
     $logger->error("Token validation error: " . $e->getMessage());
@@ -71,7 +70,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $conn->begin_transaction();
 
 try {
-    $logger->info("Memulai request MASUKKAN stok online...", $_POST);
     
     $sku = trim($_POST['sku'] ?? ''); 
     $kd_store = trim($_POST['kd_store'] ?? '');
@@ -130,7 +128,6 @@ try {
 
     
     $message = "Produk (SKU: {$sku}) berhasil dimasukkan ke stok online";
-    $logger->info("STEP 1 (s_stok_ol) berhasil. Affected rows: $affected_rows. Pesan: $message");
 
     $conn->commit();
     $logger->success("Transaksi berhasil di-commit. ". $message);

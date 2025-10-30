@@ -108,11 +108,9 @@ if ($result->num_rows > 0) {
     http_response_code(200);
     $data = json_encode(["status" => true,"message"=> "Data ditemukan", "data" => $result->fetch_all(MYSQLI_ASSOC)]);
     echo $data;
-    $logger->info('Hadiah data ditemukan, count: ' . $result->num_rows . ', user_id: ' . $user_id);
 } else {
     http_response_code(200);
     echo json_encode(["status"=> true,"message"=> "Data kosong", 'data' => []]);
-    $logger->info('Hadiah data kosong untuk user_id: ' . $user_id);
 }
 $stmt->close();
 $conn->close();

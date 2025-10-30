@@ -11,7 +11,7 @@ class ShopeeApiService {
         if ($logger) {
             $this->logger = $logger;
         } else {
-            $this->logger = new AppLogger('shopee_api-service');
+            $this->logger = new AppLogger('shopee_api-service.log');
         }
         $env = parse_ini_file(__DIR__ . '/../../../../.env');
         $this->partner_id = (int)$env['SHOPEE_PARTNER_ID'];
@@ -29,7 +29,6 @@ class ShopeeApiService {
                     $result = $stmt->get_result();
                     if ($row = $result->fetch_assoc()) {
                         if (!empty($row['access_token']) && !empty($row['shop_id'])) {
-                            $this->logger->info("Memuat kredensial Shopee dari Database.");
                             $this->access_token = $row['access_token'];
                             $this->shop_id = (int)$row['shop_id'];
                             if (session_status() == PHP_SESSION_ACTIVE) {
@@ -56,7 +55,6 @@ class ShopeeApiService {
                 $stmt = $conn->prepare("UPDATE shopee_auth SET access_token = NULL, shop_id = NULL WHERE id = 1");
                 $stmt->execute();
                 $stmt->close();
-                $this->logger->info("Kredensial Shopee dihapus dari Database.");
             }
         } catch (Throwable $t) {
             $this->logger->error("Gagal menghapus kredensial Shopee dari DB: " . $t->getMessage());
@@ -108,7 +106,6 @@ class ShopeeApiService {
                         $stmt->bind_param("si", $response_data['access_token'], $shop_id_to_save);
                         $stmt->execute();
                         $stmt->close();
-                        $this->logger->info("Kredensial Shopee disimpan ke Database. Shop ID: $shop_id_to_save");
                     }
                 } catch (Throwable $t) {
                     $this->logger->error("Gagal menyimpan kredensial Shopee ke DB: " . $t->getMessage());
@@ -121,7 +118,6 @@ class ShopeeApiService {
     }
     public function call($path, $method = 'GET', $body = null) {
         if (!$this->isConnected()) {
-            $this->logger->warning("API call attempted but not connected. Path: $path");
             return ['error' => 'auth_error', 'message' => 'User not authenticated.'];
         }
         $timestamp = time();
@@ -159,7 +155,6 @@ class ShopeeApiService {
             $this->logger->error("cURL Error: " . $curl_error);
             return ['error' => 'curl_error', 'message' => $curl_error];
         }
-        $this->logger->info("cURL Raw Response: " . $response_str);
         $response_data = json_decode($response_str, true);
         if (json_last_error() !== JSON_ERROR_NONE) {
             $this->logger->error("JSON Decode Error for response: " . $response_str);

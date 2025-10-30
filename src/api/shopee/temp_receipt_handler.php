@@ -67,7 +67,6 @@ try {
 }
 
 function get_item_calculation_data($logger, $conn, $plu, $item_n, $kd_store, $hrg_beli, $price, $qty_terima) {    
-    $logger->info(" Kalkulasi dimulai | PLU: {$plu} | KD_Store: {$kd_store} | Hrg Beli: {$hrg_beli} | Price: {$price} | Qty Terima: {$qty_terima}");
 
     $hrg_beli = (float)$hrg_beli;
     $price = (float)$price;
@@ -88,7 +87,6 @@ function get_item_calculation_data($logger, $conn, $plu, $item_n, $kd_store, $hr
     $promo_pct = (float)($kategori_data['x_promo'] ?? 0);
     $promo_max = (float)($kategori_data['x_promo_max'] ?? 0);
     $biaya_pesanan_cost = (float)($kategori_data['biaya_pesanan'] ?? 0);
-    $logger->info(" Data Kategori | Admin: {$admin_pct}% | Ongkir: {$ongkir_pct}% (Max: {$ongkir_max}) | Promo: {$promo_pct}% (Max: {$promo_max}) | Biaya Psn: {$biaya_pesanan_cost}");
 
     
     $stmt_stok = $conn->prepare("SELECT Qty, avg_cost FROM s_stok_ol WHERE KD_STORE = ? AND plu = ?");
@@ -100,27 +98,21 @@ function get_item_calculation_data($logger, $conn, $plu, $item_n, $kd_store, $hr
 
     $stok_qty = (float)($stok_data['Qty'] ?? 0);
     $stok_avg_cost = (float)($stok_data['avg_cost'] ?? 0);
-    $logger->info(" Data Stok Online | Stok Qty: {$stok_qty} | Stok Avg Cost: {$stok_avg_cost}");
 
     
     $ppn = $hrg_beli * 0.11;
     $netto = $hrg_beli + $ppn;
-    $logger->info(" Perhitungan PPN & Netto | PPN: {$ppn} ({$hrg_beli} * 0.11) | Netto: {$netto} ({$hrg_beli} + {$ppn})");
 
     $admin_cost = ($netto * $admin_pct) / 100;
-    $logger->info(" Perhitungan Admin Cost | Hasil: {$admin_cost} | Rumus: ({$netto} * {$admin_pct}) / 100");
 
     $ongkir_cost_raw = ($netto * $ongkir_pct) / 100;
     $ongkir_cost = ($ongkir_max > 0 && $ongkir_cost_raw > $ongkir_max) ? $ongkir_max : $ongkir_cost_raw;
-    $logger->info(" Perhitungan Ongkir Cost | {$ongkir_cost_raw} | Max: {$ongkir_max} | Final: {$ongkir_cost} | Rumus: ({$netto} * {$ongkir_pct}) / 100");
 
     $promo_cost_raw = ($netto * $promo_pct) / 100;
     $promo_cost = ($promo_max > 0 && $promo_cost_raw > $promo_max) ? $promo_max : $promo_cost_raw;
-    $logger->info(" Perhitungan Promo Cost | {$promo_cost_raw} | Max: {$promo_max} | Final: {$promo_cost} | Rumus: ({$netto} * {$promo_pct}) / 100");
 
     
     $hb_plus_lainnya = $netto + $admin_cost + $ongkir_cost + $promo_cost + $biaya_pesanan_cost;
-    $logger->info(" Perhitungan HB+Biaya Lainnya | Hasil: {$hb_plus_lainnya} | Rumus: {$netto} + {$admin_cost} + {$ongkir_cost} + {$promo_cost} + {$biaya_pesanan_cost}");
 
     $admin_cost_margin = ($price * $admin_pct) / 100;
     $ongkir_cost_margin_raw = ($price * $ongkir_pct) / 100;
@@ -130,7 +122,6 @@ function get_item_calculation_data($logger, $conn, $plu, $item_n, $kd_store, $hr
 
 
     $margin = $price - ($netto + $admin_cost_margin + $ongkir_cost_margin + $promo_cost_margin + $biaya_pesanan_cost);
-    $logger->info(" Perhitungan Margin | Hasil: {$margin} | Rumus: {$price} - {$admin_cost} + {$ongkir_cost} + {$promo_cost} + {$netto} + {$biaya_pesanan_cost}");
 
     
     $total_qty = $stok_qty + $qty_terima;
@@ -140,11 +131,9 @@ function get_item_calculation_data($logger, $conn, $plu, $item_n, $kd_store, $hr
         
         $weighted_avg_cost = $hrg_beli;
         $avg_cost_rumus = "Stok awal 0, avg_cost = hrg_beli ({$hrg_beli})";
-        $logger->info(" Perhitungan Avg Cost (Stok 0) | Hasil: {$weighted_avg_cost} | Keterangan: {$avg_cost_rumus}");
     } else if ($total_qty > 0) {
         $weighted_avg_cost = (($stok_qty * $stok_avg_cost) + ($qty_terima * $hrg_beli)) / $total_qty;
         $avg_cost_rumus = "(({$stok_qty} * {$stok_avg_cost}) + ({$qty_terima} * {$hrg_beli})) / ({$total_qty})";
-        $logger->info(" Perhitungan Avg Cost (Weighted) | Hasil: {$weighted_avg_cost} | Rumus: {$avg_cost_rumus}");
     } else {
         
         $weighted_avg_cost = ($qty_terima > 0) ? $hrg_beli : 0; 
@@ -481,7 +470,6 @@ try {
                 $padded_num = str_pad($next_num, 5, '0', STR_PAD_LEFT);
                 $no_faktur = $prefix . $padded_num;
                 
-                // $logger->info("Memulai batch insert. No Faktur: $no_faktur, No LPB: $no_lpb");
 
                 
                 $sql_receipt = "INSERT INTO s_receipt 
