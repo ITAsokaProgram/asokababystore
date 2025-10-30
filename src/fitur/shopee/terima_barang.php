@@ -476,7 +476,7 @@ if (!empty($filter_vendor)) {
                                 <i class="fas fa-plus"></i> Tambah
                             </button>
                             <button type="button" 
-                                    class="btn-danger btn-delete-stok-ol text-xs py-2 px-3 inline-flex items-center gap-1"
+                                    class="btn-danger btn-delete-stok-ol text-xs py-2 px-3 inline-flex items-center gap-1 rounded-md"
                                     data-plu="<?php echo htmlspecialchars($item['plu']); ?>"
                                     data-kd-store="<?php echo htmlspecialchars($item['KD_STORE']); ?>"
                                     data-descp="<?php echo htmlspecialchars($item['DESCP']); ?>">
