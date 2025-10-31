@@ -131,7 +131,7 @@ try {
             $logger->warning("API: Token invalid terdeteksi. Otomatis disconnect.");
         }
         $statusCode = 401;
-        $errorMessage = "Token Shopee tidak valid atau kedaluwarsa. Halaman akan dimuat ulang untuk autentikasi.";
+        $errorMessage = "Token Shopee tidak valid (invalid access_token). Halaman akan dimuat ulang.";
     }
     
     $endTime = microtime(true);

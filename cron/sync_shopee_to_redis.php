@@ -1,6 +1,6 @@
 <?php
 ini_set('display_errors', 0);
-set_time_limit(1800); 
+set_time_limit(1800);
 ini_set('memory_limit', '512M');
 try {
     require_once __DIR__ . '/../aa_kon_sett.php';
@@ -11,7 +11,7 @@ try {
     error_log("CRON FATAL: Gagal memuat dependensi: " . $t->getMessage());
     exit();
 }
-$logger = new AppLogger('cron_shopee_sync_redis.log'); 
+$logger = new AppLogger('cron_shopee_sync_redis.log');
 try {
     if (!isset($redis) || !$redis->ping()) {
         throw new Exception("Koneksi Redis Gagal.");
@@ -25,9 +25,9 @@ try {
 }
 $redisKey = 'shopee_all_products';
 $lockKey = 'shopee_sync_in_progress';
-$expiry_seconds = 3600; 
+$expiry_seconds = 7500;
 try {
-    $startTime = microtime(true); 
+    $startTime = microtime(true);
     $lockAcquired = $redis->set($lockKey, 1, ['nx', 'ex' => 1800]);
     if (!$lockAcquired) {
         $logger->warning("[CRON-FAIL] Gagal mendapatkan lock '{$lockKey}'. Sync lain (mungkin via web) sedang berjalan.");
@@ -45,11 +45,11 @@ try {
     $page_size = 50;
     $total_items_found = 0;
     $has_next_page = true;
-    $page_counter = 1; 
+    $page_counter = 1;
     while ($has_next_page) {
         $logger->info("[CRON-PROGRESS] Mengambil batch #{$page_counter}. Offset: {$offset}, Page Size: {$page_size}.");
         $api_params = [
-            'offset'    => $offset,
+            'offset' => $offset,
             'page_size' => $page_size,
             'item_status' => 'NORMAL'
         ];
@@ -78,7 +78,7 @@ try {
             $logger->info("[CRON-PROGRESS] Shopee API melaporkan tidak ada halaman berikutnya (has_next_page: false).");
             break;
         }
-        usleep(250000); 
+        usleep(250000);
     }
     if (empty($all_detailed_products)) {
         $logger->warning("[CRON-WARN] Tidak ada produk yang ditemukan di akun Shopee setelah iterasi selesai.");
@@ -98,9 +98,9 @@ try {
     $endTime = microtime(true);
     $duration = round($endTime - $startTime, 2);
     $logger->info("✅ [CRON-SUCCESS] Berhasil menyimpan {$total_products} item ke Redis key '{$redisKey}'. Expire dalam {$expiry_seconds} detik. Durasi total: {$duration} detik.");
-    $redis->del($lockKey); 
+    $redis->del($lockKey);
 } catch (Throwable $t) {
-    $redis->del($lockKey); 
+    $redis->del($lockKey);
     $errorMessage = $t->getMessage();
     if (strpos($errorMessage, 'Invalid access_token') !== false || strpos($errorMessage, 'invalid_acceess_token') !== false) {
         if (isset($shopeeService)) {
@@ -119,4 +119,3 @@ try {
         'line' => $t->getLine()
     ]);
 }
-?>

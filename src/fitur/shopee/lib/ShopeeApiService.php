@@ -143,8 +143,8 @@ class ShopeeApiService {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
 
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30); // 10 detik
-        curl_setopt($ch, CURLOPT_TIMEOUT, 60); // 30 detik
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30); 
+        curl_setopt($ch, CURLOPT_TIMEOUT, 300); // 30 detik
 
         curl_setopt($ch, CURLOPT_DNS_SERVERS, '8.8.8.8,1.1.1.1');
 
@@ -224,6 +224,8 @@ class ShopeeApiService {
                     $item['calculated_total_stock'] = $total_stock;
                 }
             }
+            // ! ini biar ga kena rate limiting dari shopee
+            usleep(50000);
         }
         return $merged_products;
     }
