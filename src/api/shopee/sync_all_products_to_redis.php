@@ -1,14 +1,14 @@
 <?php
 session_start();
 ini_set('display_errors', 0);
-set_time_limit(1800); 
+set_time_limit(1800);
 ini_set('memory_limit', '512M');
 require_once __DIR__ . '/../../utils/Logger.php';
-$logger = new AppLogger('shopee_sync_redis.log'); 
+$logger = new AppLogger('shopee_sync_redis.log');
 try {
-    include '../../../aa_kon_sett.php'; 
+    include '../../../aa_kon_sett.php';
     require_once __DIR__ . '/../../fitur/shopee/lib/ShopeeApiService.php';
-    require_once __DIR__ . '/../../../redis.php'; 
+    require_once __DIR__ . '/../../../redis.php';
 } catch (Throwable $t) {
     $logger->critical("Gagal memuat file dependensi: " . $t->getMessage());
     http_response_code(500);
@@ -26,14 +26,14 @@ try {
     echo json_encode(['success' => false, 'message' => 'Internal Server Error: Koneksi Redis Gagal.']);
     exit();
 }
-$redisKey = 'shopee_all_products'; 
+$redisKey = 'shopee_all_products';
 $lockKey = 'shopee_sync_in_progress';
 try {
     $startTime = microtime(true);
-    $lockAcquired = $redis->set($lockKey, 1, ['nx', 'ex' => 1800]); 
+    $lockAcquired = $redis->set($lockKey, 1, ['nx', 'ex' => 1800]);
     if (!$lockAcquired) {
         $logger->warning("Gagal mendapatkan lock '{$lockKey}'. Sync lain mungkin sedang berjalan.");
-        http_response_code(429); 
+        http_response_code(429);
         echo json_encode(['success' => false, 'message' => 'Sinkronisasi sudah sedang berjalan. Silakan coba lagi dalam beberapa menit.']);
         exit();
     }
@@ -43,7 +43,7 @@ try {
         echo json_encode(['success' => false, 'message' => 'Method Not Allowed']);
         exit();
     }
-    $shopeeService = new ShopeeApiService($logger); 
+    $shopeeService = new ShopeeApiService($logger);
     if (!$shopeeService->isConnected()) {
         $logger->warning("Request gagal: Belum terautentikasi dengan Shopee.");
         http_response_code(401);
@@ -51,16 +51,16 @@ try {
         exit();
     }
     $logger->info("[START] Mulai sinkronisasi Shopee ke Redis...");
-    $all_detailed_products = []; 
+    $all_detailed_products = [];
     $offset = 0;
     $page_size = 50;
     $total_items_found = 0;
     $has_next_page = true;
-    $page_counter = 1; 
+    $page_counter = 1;
     while ($has_next_page) {
         $logger->info("[PROGRESS] Mengambil batch #{$page_counter}. Offset: {$offset}, Page Size: {$page_size}.");
         $api_params = [
-            'offset'    => $offset,
+            'offset' => $offset,
             'page_size' => $page_size,
             'item_status' => 'NORMAL'
         ];
@@ -76,11 +76,11 @@ try {
         $detailed_items_batch = $shopeeService->getDetailedProductInfo($product_list_response);
         if (empty($detailed_items_batch)) {
             $logger->info("[PROGRESS] Batch (Offset: {$offset}) tidak mengembalikan item detail. Menghentikan loop.");
-            break; 
+            break;
         }
-        $batch_count = count($detailed_items_batch); 
+        $batch_count = count($detailed_items_batch);
         $all_detailed_products = array_merge($all_detailed_products, $detailed_items_batch);
-        $total_items_found += $batch_count; 
+        $total_items_found += $batch_count;
         $logger->info("[PROGRESS] Batch #{$page_counter} (Offset: {$offset}) sukses. Ditemukan {$batch_count} item. Total sementara: {$total_items_found}.");
         $has_next_page = $product_list_response['response']['has_next_page'] ?? false;
         $offset = $product_list_response['response']['next_offset'] ?? 0;
@@ -89,7 +89,7 @@ try {
             $logger->info("[PROGRESS] Shopee API melaporkan tidak ada halaman berikutnya (has_next_page: false).");
             break;
         }
-        usleep(250000); 
+        usleep(250000);
     }
     $total_products = count($all_detailed_products);
     if (empty($all_detailed_products)) {
@@ -99,13 +99,13 @@ try {
         exit();
     }
     $logger->info("[SAVE] Selesai mengambil semua produk dari Shopee. Total item: {$total_products}. Mulai menyimpan ke Redis key '{$redisKey}'...");
-    $expiry_seconds = 7500; 
+    $expiry_seconds = 86400;
     $json_data = json_encode($all_detailed_products);
     if (json_last_error() !== JSON_ERROR_NONE) {
-         $logger->error("❌ Gagal encode JSON sebelum menyimpan ke Redis: " . json_last_error_msg());
-         throw new Exception("Gagal memproses data produk untuk cache.");
+        $logger->error("❌ Gagal encode JSON sebelum menyimpan ke Redis: " . json_last_error_msg());
+        throw new Exception("Gagal memproses data produk untuk cache.");
     }
-    $success = $redis->setex($redisKey, $expiry_seconds, $json_data); 
+    $success = $redis->setex($redisKey, $expiry_seconds, $json_data);
     if (!$success) {
         $logger->error("❌ Gagal menyimpan ke Redis. Perintah SETEX mengembalikan false. Key: {$redisKey}");
         throw new Exception("Perintah REDIS setex gagal mengembalikan true. Key mungkin tidak tersimpan.");
@@ -113,12 +113,12 @@ try {
     $endTime = microtime(true);
     $duration = round($endTime - $startTime, 2);
     $logger->info("[SUCCESS] Berhasil menyimpan {$total_products} item ke Redis key '{$redisKey}'. Durasi total: {$duration} detik.");
-    $redis->del($lockKey); 
+    $redis->del($lockKey);
     echo json_encode([
         'success' => true,
         'message' => 'Sinkronisasi produk ke cache Redis selesai.',
         'total_items_saved_to_redis' => $total_products,
-        'duration_seconds' => $duration 
+        'duration_seconds' => $duration
     ]);
 } catch (Throwable $t) {
     $redis->del($lockKey);
@@ -133,13 +133,13 @@ try {
         $statusCode = 401;
         $errorMessage = "Token Shopee tidak valid (invalid access_token). Halaman akan dimuat ulang.";
     }
-    
+
     $endTime = microtime(true);
     if (!isset($startTime)) {
-        $startTime = $endTime; 
+        $startTime = $endTime;
     }
     $duration = round($endTime - $startTime, 2);
-    
+
     $logger->critical("🔥 FATAL ERROR API (Throwable) - Lock dilepaskan. Durasi berjalan: {$duration} detik. Error: " . $t->getMessage(), [
         'file' => $t->getFile(),
         'line' => $t->getLine()

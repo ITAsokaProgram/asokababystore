@@ -25,7 +25,7 @@ try {
 }
 $redisKey = 'shopee_all_products';
 $lockKey = 'shopee_sync_in_progress';
-$expiry_seconds = 7500;
+$expiry_seconds = 86400;
 try {
     $startTime = microtime(true);
     $lockAcquired = $redis->set($lockKey, 1, ['nx', 'ex' => 1800]);
