@@ -374,7 +374,6 @@ async function showQuickContactMenu() {
             <div class="text-left mb-3">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Cabang:</label>
                 <select id="branch-selector" class="swal2-input w-full p-2 border rounded-lg">
-                    <option value="">-- Pilih Cabang --</option>
                     ${regionsHtml}
                 </select>
             </div>

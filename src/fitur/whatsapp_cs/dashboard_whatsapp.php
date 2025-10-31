@@ -548,7 +548,6 @@ if (!$menuHandler->initialize()) {
 
     .swal2-input#branch-selector {
       font-size: 14px;
-      padding: 10px 12px;
       border: 2px solid #e5e7eb;
       border-radius: 8px;
       transition: all 0.2s;
@@ -726,6 +725,9 @@ if (!$menuHandler->initialize()) {
         </div>
       </div>
       <div id="chat-window" class="flex flex-col">
+        <!-- Update bagian chat header di dashboard_whatsapp.php -->
+        <!-- Cari bagian dengan id="chat-header" dan ganti dengan kode ini: -->
+
         <div id="chat-header" class="flex justify-between items-center">
           <div class="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
             <button id="mobile-list-toggle"
@@ -778,12 +780,7 @@ if (!$menuHandler->initialize()) {
                 <i id="fullscreen-icon" class="fas fa-expand"></i>
               </button>
 
-              <!-- Tombol Quick Contact - BARU -->
-              <button id="quick-contact-button" @click="open = false" class="hidden bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-all flex items-center justify-center gap-1.5 p-2 w-full
-                        md:w-auto md:p-0" title="Kirim Kontak Cabang">
-                <i class="fas fa-address-book md:p-2 md:pl-3"></i>
-                <span class="inline md:p-2 md:pr-3">Kontak</span>
-              </button>
+
 
               <button id="start-chat-button" @click="open = false" class="hidden bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all flex items-center justify-center gap-1.5 p-2 w-full
                         md:w-auto md:p-0">
@@ -798,7 +795,6 @@ if (!$menuHandler->initialize()) {
             </div>
           </div>
         </div>
-
         <div id="chat-placeholder" class="flex flex-col items-center justify-center h-full text-gray-500 p-4">
           <i class="fas fa-comments text-5xl md:text-6xl mb-4"></i>
           <p class="text-base md:text-lg font-semibold mb-1 text-center">Pilih percakapan untuk memulai</p>
@@ -809,6 +805,7 @@ if (!$menuHandler->initialize()) {
           <div id="message-container" class="flex-1 overflow-y-auto flex flex-col">
           </div>
 
+
           <div id="message-input-area" class="hidden">
             <div id="media-preview-container" class="hidden mb-3 p-3 rounded-xl relative w-fit">
               <button id="remove-media-button"
@@ -818,17 +815,28 @@ if (!$menuHandler->initialize()) {
               <video id="media-preview-video" class="hidden rounded-lg shadow-sm" controls
                 style="max-height: 200px;"></video>
             </div>
+
             <div class="flex items-end gap-2 md:gap-3">
-              <label for="media-input" class="cursor-pointer p-3 text-gray-500 hover:text-blue-500 transition-all">
+              <label for="media-input"
+                class="cursor-pointer p-3 text-gray-500 hover:text-blue-500 transition-all flex-shrink-0"
+                title="Kirim Gambar/Video">
                 <i class="fas fa-paperclip text-xl"></i>
               </label>
               <input type="file" id="media-input" class="hidden" accept="image/*,video/*">
 
+              <button id="quick-contact-button"
+                class="hidden p-3 text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-all flex-shrink-0"
+                title="Kirim Kontak Cabang">
+                <i class="fas fa-address-book text-xl"></i>
+              </button>
+
               <textarea id="message-input" rows="1"
-                class="flex-1 p-3 md:p-3.5 border rounded-xl focus:outline-none resize-none text-sm md:text-base"></textarea>
+                class="flex-1 p-3 md:p-3.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-500 resize-none text-sm md:text-base"
+                placeholder="Ketik pesan..."></textarea>
+
               <button id="send-button"
-                class="bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-all disabled:bg-gray-400">
-                <i class="fas fa-paper-plane"></i>
+                class="bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-all disabled:bg-gray-400 p-3 flex-shrink-0">
+                <i class="fas fa-paper-plane text-lg"></i>
               </button>
             </div>
           </div>
