@@ -86,7 +86,7 @@ const initValidationUi = () => {
             await Swal.fire({
               icon: "info",
               title: "Verifikasi Nomor HP",
-              text: "Nomor HP Anda terdaftar sebagai customer. Kami akan mengarahkan Anda ke WhatsApp untuk verifikasi dan melanjutkan pendaftaran akun.",
+              text: "Nomor HP Anda terdaftar sebagai Member Asoka. Kami akan mengarahkan Anda ke WhatsApp untuk verifikasi dan melanjutkan pendaftaran akun.",
               confirmButtonText: "Lanjutkan ke WhatsApp",
               confirmButtonColor: "#ec4899",
             }).then((result) => {
