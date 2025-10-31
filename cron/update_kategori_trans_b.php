@@ -6,7 +6,6 @@ require_once __DIR__ . "/../src/utils/Logger.php";
 $logFileName = 'cron_update_kategori_trans_b.log';
 $logger = new AppLogger($logFileName);
 
-$logger->info("mulai buat nge Update Kategori Trans B.");
 
 $queries = [
     "UPDATE trans_b SET type_kategori='BABY' WHERE kode_supp IN ('A10001','A18001','A20001','A30001','A31','A31001','A39001','A39002','A40001','A40002','A41001','A42001','A43001','A50001','A60001','A80001','A8B001','A90001','B12001','B18001','B28','B28001','C10','C10001','C10002','C14001','C16001','C17001','C18001','C19','C19001','C20002','C40001','C50001','C70001','D20002','D28001','D29001','D9','D90001','D9B001','E11001','E11A01','E12001','E16001','E17001','E18001','E19001','E40001','E80001','F10001','F13001','F16','F16001','F17001','F19','F19001','F21001','F23001','F24001','F25001','F27001','F28001','F29001','F50001','F90001','G11','G11001','G12001','G14001','G60001','G6001','G6A001','G6B001','G7','G70001','G90001','H11001','H11A01','H7','H70001','L07301','L07401','L074A','L074A0','L074A01','L074A1','MDS001','MEDISOFT','BUMBOO')",
@@ -16,20 +15,17 @@ $queries = [
 ];
 
 mysqli_begin_transaction($conn);
-$logger->info("mulai transaction db.");
 
 try {
     foreach ($queries as $index => $sql) {
         if (mysqli_query($conn, $sql)) {
             $affected_rows = mysqli_affected_rows($conn);
-            $logger->info("Query ke-" . ($index + 1) . " berhasil. $affected_rows baris terpengaruh.");
         } else {
             throw new Exception("Query ke-" . ($index + 1) . " gagal: " . mysqli_error($conn));
         }
     }
     
     mysqli_commit($conn);
-    $logger->info("Transaksi BERHASIL. Semua kategori telah diupdate.");
 
 } catch (Exception $e) {
     mysqli_rollback($conn);
@@ -37,6 +33,5 @@ try {
 }
 
 mysqli_close($conn);
-$logger->info("Koneksi database ditutup. Cron job selesai.");
 
 ?>

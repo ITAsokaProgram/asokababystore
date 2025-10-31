@@ -97,7 +97,6 @@ class VerificationService {
             $pesanBalasan = "Verifikasi berhasil! 👍\n\nKlik link di bawah ini untuk membuat password baru Anda. Link ini hanya berlaku 30 menit.\n\n" . $resetLink;
 
             kirimPesanTeks($nomorPengirim, $pesanBalasan);
-            $this->logger->success("Link reset password final berhasil dikirim ke {$nomorPengirim}.");
 
         } catch (Exception $e) {
             $this->logger->error("Error saat proses token reset password: " . $e->getMessage());

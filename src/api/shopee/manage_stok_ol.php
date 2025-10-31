@@ -130,7 +130,6 @@ try {
     $message = "Produk (SKU: {$sku}) berhasil dimasukkan ke stok online";
 
     $conn->commit();
-    $logger->success("Transaksi berhasil di-commit. ". $message);
     echo json_encode([
         'success' => true,
         'message' => $message

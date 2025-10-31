@@ -107,7 +107,6 @@ try {
 
     $conn->commit();
     $message = "Produk (PLU: {$plu}) berhasil dihapus dari stok online (s_stok_ol).";
-    $logger->success("Transaksi berhasil di-commit. ". $message);
     echo json_encode([
         'success' => true,
         'message' => $message
