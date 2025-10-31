@@ -2,7 +2,8 @@
 
 namespace Asoka\Constant;
 
-class WhatsappConstants {
+class WhatsappConstants
+{
     const LOKER_MESSAGE = "Halo kak, untuk informasi mengenai ketersediaan lowongan kerja, hal tersebut bergantung pada kebutuhan masing-masing cabang. Anda dapat langsung mengunjungi cabang / store Asoka Baby Store terdekat dan menyerahkan berkas lamaran kerja kepada kasir.
                 Berkas Lamaran :
                 * Surat Lamaran Kerja
@@ -23,24 +24,24 @@ class WhatsappConstants {
     public const INVALID_OPTION = "Maaf, pilihan Ayah/Bunda tidak valid. Silakan coba lagi.";
     public const SENDING_LOCATION_NOTICE = "Mengirimkan lokasi: %s";
     public const SENDING_CONTACT_NOTICE = "Mengirimkan kontak: %s (%s)";
-
+    public const REGEX_REGISTER_CUSTOMER = '/(?:Token saya|token saya): (reg_[a-zA-Z0-9]+)/';
     public const REGEX_CHANGE_PHONE = '/https:\/\/asokababystore\.com\/verifikasi-wa\?token=([a-f0-9]{64})/';
     public const REGEX_RESET_PASSWORD = '/Token saya: (resetpw_[a-f0-9]{60})/';
 
     public const WELCOME_HEADER = "Asoka Baby Store";
     public const WELCOME_BODY = "Terimakasih telah menghubungi Asoka Baby Store.\n\n" .
-                                "Jam Operasional:\n" .
-                                "- Senin - Sabtu: 08.30 - 16.30 WIB\n" .
-                                "- Hari Minggu dan Tanggal Merah: Tutup\n" .
-                                "- Pesan yang masuk setelah pukul 16.30 WIB akan dibalas pada hari kerja berikutnya.\n\n" .
-                                "Untuk informasi lainnya bisa diakses di website kami:\n" .
-                                "asokababystore.com\n\n" .
-                                "Silakan pilih menu di bawah ini untuk melanjutkan.";
+        "Jam Operasional:\n" .
+        "- Senin - Sabtu: 08.30 - 16.30 WIB\n" .
+        "- Hari Minggu dan Tanggal Merah: Tutup\n" .
+        "- Pesan yang masuk setelah pukul 16.30 WIB akan dibalas pada hari kerja berikutnya.\n\n" .
+        "Untuk informasi lainnya bisa diakses di website kami:\n" .
+        "asokababystore.com\n\n" .
+        "Silakan pilih menu di bawah ini untuk melanjutkan.";
     public const WELCOME_BUTTON_TEXT = "Lihat Pilihan Menu";
 
     public const CHOOSE_BRANCH_REGION_PROMPT = "Silakan pilih wilayah cabang yang ingin Anda hubungi.";
     public const CHOOSE_LOCATION_REGION_PROMPT = "Silakan pilih wilayah toko fisik yang ingin Anda lihat lokasinya.";
-    
+
     public const HOW_TO_ORDER_WA_HEADER = "Cara Pesan via WhatsApp";
     public const HOW_TO_ORDER_WA_BODY = "Untuk melihat cara melakukan pemesanan melalui WhatsApp, silakan kunjungi halaman panduan pemesanan di website kami.";
     public const HOW_TO_ORDER_WA_BUTTON = "Lihat Panduan";
@@ -61,12 +62,12 @@ class WhatsappConstants {
     public const POINT_HISTORY_INFO_BUTTON = "Login & Cek Poin";
     public const POINT_HISTORY_INFO_URL = "https://asokababystore.com/log_in";
     public const OPERATIONAL_HOURS_INFO = "Berikut adalah informasi jam operasional toko kami:\n\n" .
-                                          "*Jam Buka Store:*\n" .
-                                          "Senin s/d Minggu: Pukul 08:30 WIB\n\n" .
-                                          "*Jam Tutup Store:*\n" .
-                                          "Senin s/d Jum'at: Pukul 21:30 WIB\n" .
-                                          "Sabtu: Pukul 22:00 WIB\n" .
-                                          "Minggu: Pukul 21:30 WIB";
+        "*Jam Buka Store:*\n" .
+        "Senin s/d Minggu: Pukul 08:30 WIB\n\n" .
+        "*Jam Tutup Store:*\n" .
+        "Senin s/d Jum'at: Pukul 21:30 WIB\n" .
+        "Sabtu: Pukul 22:00 WIB\n" .
+        "Minggu: Pukul 21:30 WIB";
 
     public const CS_CONNECT_SUCCESS = "Anda sekarang terhubung dengan Customer Service kami. Silakan sampaikan pertanyaan Ayah/Bunda.";
     public const CS_OUTSIDE_HOURS = "Maaf Ayah/Bunda, Customer Service kami sedang di luar jam operasional (Senin - Sabtu, 09:00 - 16:30).\n\nPesan Ayah/Bunda akan kami terima dan akan kami balas pada jam operasional berikutnya. Terima kasih.";

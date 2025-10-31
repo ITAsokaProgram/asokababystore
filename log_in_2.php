@@ -165,26 +165,36 @@ header("Pragma: no-cache");
               </div>
             </div>
 
-            <div class="space-y-2">
-              <label for="loginPassword" class="block text-sm font-medium text-gray-700">Password</label>
-              <div class="relative">
-                <i class="fas fa-lock absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                <input type="password" name="password" id="loginPassword" placeholder="Masukkan password Anda"
-                  class="w-full border-2 border-gray-200 pl-10 pr-12 py-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-300 text-lg" />
-                <button type="button"
-                  class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                  onclick="togglePassword('loginPassword', this)">
-                  <i class="fas fa-eye"></i>
+            <div id="password-step" class="hidden space-y-5">
+              <div class="text-left">
+                <button type="button" id="back-to-identifier"
+                  class="text-sm text-pink-600 font-semibold hover:text-pink-700 hover:underline transition-colors">
+                  <i class="fas fa-arrow-left mr-1"></i>Kembali
                 </button>
               </div>
-              <div id="passwordError" class="hidden text-sm text-red-500 mt-1">
-                <i class="fas fa-exclamation-circle mr-1"></i>Password minimal 8 karakter, 1 Huruf Besar Dan 1 Angka
-              </div>
-            </div>
 
-            <button type="submit"
+              <div class="space-y-2">
+                <label for="loginPassword" class="block text-sm font-medium text-gray-700">Password</label>
+                <div class="relative">
+                  <i class="fas fa-lock absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                  <input type="password" name="password" id="loginPassword" placeholder="Masukkan password Anda"
+                    class="w-full border-2 border-gray-200 pl-10 pr-12 py-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-300 text-lg" />
+                  <button type="button"
+                    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    onclick="togglePassword('loginPassword', this)">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                </div>
+                <div id="passwordError" class="hidden text-sm text-red-500 mt-1">
+                  <i class="fas fa-exclamation-circle mr-1"></i>Password minimal 8 karakter, 1 Huruf Besar Dan 1 Angka
+                </div>
+              </div>
+
+
+            </div>
+            <button type="submit" id="loginSubmitButton"
               class="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 transition-all duration-300 text-white py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105">
-              <i class="fas fa-sign-in-alt mr-2"></i>Masuk
+              <i class="fas fa-arrow-right mr-2"></i>Selanjutnya
             </button>
           </form>
 
@@ -450,7 +460,7 @@ header("Pragma: no-cache");
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script type="module" src="src/js/validation_ui/display.js"></script>
+  <script type="module" src="src/js/validation_ui/display_2.js"></script>
 
   <script>
     function togglePassword(inputId, button) {
