@@ -121,19 +121,36 @@ try {
         'duration_seconds' => $duration 
     ]);
 } catch (Throwable $t) {
-    $redis->del($lockKey); 
+    $redis->del($lockKey);
     $errorMessage = $t->getMessage();
+    $statusCode = 500;
+
     if (strpos($errorMessage, 'Invalid access_token') !== false || strpos($errorMessage, 'invalid_acceess_token') !== false) {
         if (isset($shopeeService)) {
             $shopeeService->disconnect();
-            $logger->warning("CRON: Token invalid terdeteksi. Otomatis disconnect.");
+            $logger->warning("API: Token invalid terdeteksi. Otomatis disconnect.");
         }
+        $statusCode = 401;
+        $errorMessage = "Token Shopee tidak valid atau kedaluwarsa. Halaman akan dimuat ulang untuk autentikasi.";
     }
+    
     $endTime = microtime(true);
+    if (!isset($startTime)) {
+        $startTime = $endTime; 
+    }
     $duration = round($endTime - $startTime, 2);
-    $logger->critical("🔥 FATAL ERROR CRON (Throwable) - Lock dilepaskan. Durasi berjalan: {$duration} detik. Error: " . $errorMessage, [
+    
+    $logger->critical("🔥 FATAL ERROR API (Throwable) - Lock dilepaskan. Durasi berjalan: {$duration} detik. Error: " . $t->getMessage(), [
         'file' => $t->getFile(),
         'line' => $t->getLine()
     ]);
+
+    if (!headers_sent()) {
+        http_response_code($statusCode);
+        echo json_encode([
+            'success' => false,
+            'message' => $errorMessage
+        ]);
+    }
 }
 ?>
