@@ -656,6 +656,62 @@ if (!$menuHandler->initialize()) {
       font-size: 0.95rem;
       font-weight: 600;
     }
+
+    .document-content .document-link {
+      display: inline-flex;
+      align-items: center;
+      padding: 10px 12px;
+      background-color: rgba(0, 0, 0, 0.05);
+      border-radius: 12px;
+      text-decoration: none;
+      color: inherit;
+      max-width: 100%;
+      transition: background-color 0.2s ease;
+    }
+
+    .user-bubble .document-content .document-link:hover {
+      background-color: rgba(0, 0, 0, 0.1);
+    }
+
+    .admin-bubble .document-content .document-link {
+      background-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .admin-bubble .document-content .document-link:hover {
+      background-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .document-content .document-icon {
+      font-size: 1.5em;
+      margin-right: 10px;
+      color: #4B5563;
+      /* gray-600 */
+    }
+
+    .admin-bubble .document-content .document-icon {
+      color: #E5E7EB;
+      /* gray-200 */
+    }
+
+    .document-content .document-filename {
+      font-size: 0.9em;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 200px;
+      /* Batasi lebar nama file */
+    }
+
+    /* Perbaikan untuk link di bubble teks */
+    .message-bubble .text-content a {
+      color: inherit;
+      text-decoration: underline;
+    }
+
+    .admin-bubble .text-content a {
+      font-weight: 600;
+    }
   </style>
 </head>
 

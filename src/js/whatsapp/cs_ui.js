@@ -3,7 +3,6 @@ function renderActiveChatLabels(labels) {
   if (!container) return;
   container.innerHTML = renderLabelTags(labels, "sm");
 }
-
 function renderLabelTags(labels, size = "xs") {
   if (!labels || labels.length === 0) return "";
   const sizeClasses =
@@ -41,13 +40,11 @@ function appendMessage(msg, scrollToBottom = true) {
   if (placeholder) {
     placeholder.remove();
   }
-
   const lastBubble = messageContainer.querySelector(
     ".message-bubble:last-child"
   );
   const lastTimestamp = lastBubble ? lastBubble.dataset.timestamp : null;
   let needsSeparator = false;
-
   if (!lastTimestamp) {
     needsSeparator = true;
   } else {
@@ -57,17 +54,14 @@ function appendMessage(msg, scrollToBottom = true) {
       needsSeparator = true;
     }
   }
-
   if (needsSeparator) {
     const separator = document.createElement("div");
     separator.className = "date-separator";
     separator.textContent = formatDateSeparator(msg.timestamp);
     messageContainer.appendChild(separator);
   }
-
   const bubble = createMessageBubble(msg);
   messageContainer.appendChild(bubble);
-
   if (scrollToBottom) {
     messageContainer.scrollTop = messageContainer.scrollHeight;
   }
@@ -75,7 +69,6 @@ function appendMessage(msg, scrollToBottom = true) {
 function prependMessages(messages) {
   const messageContainer = document.getElementById("message-container");
   const fragment = document.createDocumentFragment();
-
   const firstBubbleInContainer = messageContainer.querySelector(
     ".message-bubble:first-child"
   );
@@ -85,40 +78,32 @@ function prependMessages(messages) {
   let lastDateString = lastTimestamp
     ? new Date(lastTimestamp).toDateString()
     : null;
-
   const existingFirstSeparator = messageContainer.querySelector(
     ".date-separator:first-of-type"
   );
   const existingFirstSeparatorText = existingFirstSeparator
     ? existingFirstSeparator.textContent
     : null;
-
   for (let i = messages.length - 1; i >= 0; i--) {
     const msg = messages[i];
     const msgDateString = new Date(msg.timestamp).toDateString();
-
     if (lastTimestamp && msgDateString !== lastDateString) {
       const separatorText = formatDateSeparator(lastTimestamp);
-
       if (separatorText === existingFirstSeparatorText) {
         if (existingFirstSeparator) {
           existingFirstSeparator.remove();
         }
       }
-
       const separator = document.createElement("div");
       separator.className = "date-separator";
       separator.textContent = separatorText;
       fragment.prepend(separator);
     }
-
     const bubble = createMessageBubble(msg);
     fragment.prepend(bubble);
-
     lastTimestamp = msg.timestamp;
     lastDateString = msgDateString;
   }
-
   if (messages.length > 0) {
     if (
       fragment.children.length > 0 &&
@@ -127,7 +112,6 @@ function prependMessages(messages) {
       const oldestSeparator = document.createElement("div");
       oldestSeparator.className = "date-separator";
       oldestSeparator.textContent = formatDateSeparator(messages[0].timestamp);
-
       const firstSepInDomNow = messageContainer.querySelector(
         ".date-separator:first-of-type"
       );
@@ -137,11 +121,9 @@ function prependMessages(messages) {
       ) {
         firstSepInDomNow.remove();
       }
-
       fragment.prepend(oldestSeparator);
     }
   }
-
   messageContainer.prepend(fragment);
 }
 function updateChatUI(status) {
@@ -150,7 +132,6 @@ function updateChatUI(status) {
   const quickContactButton = document.getElementById("quick-contact-button");
   const messageInputArea = document.getElementById("message-input-area");
   const manageLabelsButton = document.getElementById("manage-labels-button");
-
   if (status === "live_chat") {
     endChatButton.classList.remove("hidden");
     startChatButton.classList.add("hidden");
@@ -160,7 +141,6 @@ function updateChatUI(status) {
   } else {
     endChatButton.classList.add("hidden");
     quickContactButton.classList.add("hidden");
-
     if (status) {
       startChatButton.classList.remove("hidden");
       manageLabelsButton.classList.remove("hidden");
@@ -171,7 +151,6 @@ function updateChatUI(status) {
     messageInputArea.classList.add("hidden");
   }
 }
-
 function clearActiveConversation() {
   if (!currentConversationId) {
     return;
@@ -183,10 +162,8 @@ function clearActiveConversation() {
   const chatPlaceholder = document.getElementById("chat-placeholder");
   const chatHeader = document.getElementById("chat-header");
   const chatWithPhone = document.getElementById("chat-with-phone");
-
   activeChat.classList.add("hidden");
   activeChat.classList.remove("flex");
-
   if (window.innerWidth <= 768) {
     document
       .getElementById("conversation-list-container")
@@ -195,7 +172,6 @@ function clearActiveConversation() {
   } else {
     chatPlaceholder.classList.remove("hidden");
   }
-
   chatHeader.classList.remove("show");
   chatWithPhone.textContent = "";
   document.getElementById("edit-display-name-button").classList.add("hidden");
@@ -204,18 +180,15 @@ function clearActiveConversation() {
   currentConversationLabels = [];
   document.getElementById("active-chat-labels").innerHTML = "";
   updateChatUI(null);
-
   const activeItem = document.querySelector(".conversation-item.active");
   if (activeItem) {
     activeItem.classList.remove("active", "bg-blue-50");
   }
 }
-
 function updateTotalUnreadBadge(count) {
   const badge = document.getElementById("total-unread-badge");
   const title = document.querySelector("title");
   if (!badge) return;
-
   if (count > 0) {
     badge.textContent = count;
     badge.classList.remove("hidden");
@@ -226,13 +199,11 @@ function updateTotalUnreadBadge(count) {
     title.textContent = "Dashboard CS WhatsApp";
   }
 }
-
 function updateFilterUnreadBadges(counts) {
   const liveChatBadge = document.getElementById("unread-live_chat");
   const umumBadge = document.getElementById("unread-umum");
   const allBadge = document.getElementById("unread-all");
   const total = (counts.live_chat || 0) + (counts.umum || 0);
-
   if (allBadge) {
     if (total > 0) {
       allBadge.textContent = total;
@@ -242,7 +213,6 @@ function updateFilterUnreadBadges(counts) {
       allBadge.classList.add("hidden");
     }
   }
-
   if (liveChatBadge) {
     if (counts.live_chat > 0) {
       liveChatBadge.textContent = counts.live_chat;
@@ -252,7 +222,6 @@ function updateFilterUnreadBadges(counts) {
       liveChatBadge.classList.add("hidden");
     }
   }
-
   if (umumBadge) {
     if (counts.umum > 0) {
       umumBadge.textContent = counts.umum;
@@ -263,21 +232,17 @@ function updateFilterUnreadBadges(counts) {
     }
   }
 }
-
 function getStatusIcon(status) {
   let iconClass = "fa-check";
   let iconColor = "text-gray-400";
-
   if (status === "delivered") {
     iconClass = "fa-check-double";
   } else if (status === "read") {
     iconClass = "fa-check-double";
     iconColor = "text-teal-500";
   }
-
   return `<i class="fas ${iconClass} ${iconColor} message-status-icon"></i>`;
 }
-
 function createMessageBubble(msg) {
   const bubble = document.createElement("div");
   const isUser = msg.pengirim === "user";
@@ -285,14 +250,11 @@ function createMessageBubble(msg) {
     isUser ? "user-bubble" : "admin-bubble"
   }`;
   bubble.dataset.timestamp = msg.timestamp;
-
   if (!isUser && msg.wamid) {
     bubble.dataset.wamid = msg.wamid;
   }
-
   const messageType = msg.tipe_pesan || "text";
   let contentHTML = "";
-
   switch (messageType) {
     case "image":
       bubble.classList.add("media-bubble");
@@ -316,6 +278,51 @@ function createMessageBubble(msg) {
                     <audio src="${msg.isi_pesan}" controls class="audio-player"></audio>
                 </div>`;
       break;
+    case "document":
+      try {
+        const docInfo = JSON.parse(msg.isi_pesan);
+        const url = docInfo.url;
+        const filename = docInfo.filename || "dokumen";
+        const filenameLower = filename.toLowerCase();
+        let iconClass = "fas fa-file-alt";
+        let iconColor = "#4B5563";
+        if (filenameLower.endsWith(".pdf")) {
+          iconClass = "fas fa-file-pdf";
+          iconColor = "#EF4444";
+        } else if (
+          filenameLower.endsWith(".doc") ||
+          filenameLower.endsWith(".docx")
+        ) {
+          iconClass = "fas fa-file-word";
+          iconColor = "#3B82F6";
+        } else if (
+          filenameLower.endsWith(".xls") ||
+          filenameLower.endsWith(".xlsx") ||
+          filenameLower.endsWith(".csv")
+        ) {
+          iconClass = "fas fa-file-excel";
+          iconColor = "#10B981";
+        }
+        contentHTML = `
+                    <div class="message-content document-content" style="display: flex; align-items: center; background-color: ${
+                      isUser ? "#EBF5FF" : "#F3F4F6"
+                    }; border-radius: 8px; padding: 10px 14px; max-width: 280px; word-break: break-all;">
+                        <a href="${url}" target="_blank" rel="noopener noreferrer" download="${filename}" style="display: flex; align-items: center; text-decoration: none; color: #333; width: 100%;">
+                            <i class="${iconClass}" style="font-size: 1.6em; color: ${iconColor}; margin-right: 12px; flex-shrink: 0;"></i>
+                            <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; color: #1F2937;">${filename}</span>
+                            <i class="fas fa-download" style="font-size: 1em; color: #6B7280; margin-left: 10px; flex-shrink: 0;"></i>
+                        </a>
+                    </div>`;
+        bubble.classList.add("file-bubble");
+      } catch (e) {
+        console.error("Gagal parse JSON dokumen:", e, msg.isi_pesan);
+        const p = document.createElement("p");
+        p.style.whiteSpace = "pre-wrap";
+        p.style.marginBottom = "0";
+        p.appendChild(document.createTextNode(msg.isi_pesan));
+        contentHTML = `<div class="message-content text-content">${p.outerHTML}</div>`;
+      }
+      break;
     default:
       const p = document.createElement("p");
       p.style.whiteSpace = "pre-wrap";
@@ -324,35 +331,29 @@ function createMessageBubble(msg) {
       contentHTML = `<div class="message-content text-content">${p.outerHTML}</div>`;
       break;
   }
-
   let statusIconHTML = "";
   if (!isUser && msg.status_pengiriman) {
     statusIconHTML = getStatusIcon(msg.status_pengiriman);
   }
-
   bubble.innerHTML = `
         ${contentHTML}
         <span class="message-time">
             ${formatTimestamp(msg.timestamp)}
             ${statusIconHTML} </span>
     `;
-
   return bubble;
 }
-
 function updateAllTimeAgoStrings() {
   const timeElements = document.querySelectorAll(".conversation-time-ago");
   if (timeElements.length === 0) {
     return;
   }
-
   timeElements.forEach((el) => {
     const timestamp = el.dataset.timestamp;
     if (timestamp) {
       try {
         const date = new Date(timestamp);
         const newTimeAgo = getTimeAgo(date);
-
         if (el.textContent !== newTimeAgo) {
           el.textContent = newTimeAgo;
         }

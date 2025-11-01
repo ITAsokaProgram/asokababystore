@@ -138,8 +138,8 @@ class WebhookHandler
 
             if ($messageType === 'interactive') {
                 $buttons = [['id' => 'END_LIVE_CHAT', 'title' => 'Akhiri Chat']];
-                kirimPesanButton($nomorPengirim, WhatsappConstants::LIVE_CHAT_MENU_PROMPT, $buttons);
-                $this->saveAdminReply($conversation['id'], $nomorPengirim, WhatsappConstants::LIVE_CHAT_MENU_PROMPT);
+                $sendResult = kirimPesanButton($nomorPengirim, WhatsappConstants::LIVE_CHAT_MENU_PROMPT, $buttons);
+                $this->saveAdminReply($conversation['id'], $nomorPengirim, WhatsappConstants::LIVE_CHAT_MENU_PROMPT, 'text', $sendResult['wamid'] ?? null);
                 return;
             }
 
@@ -153,12 +153,22 @@ class WebhookHandler
                 case 'image':
                 case 'video':
                 case 'audio':
+                case 'document': // <--- TAMBAHAN UNTUK GOAL 2
                     $mediaService = new MediaService($this->logger);
                     $mediaId = $message[$messageType]['id'];
-                    $result = $mediaService->downloadAndUpload($mediaId, $messageType);
-
+                    // --- AWAL MODIFIKASI ---
+                    $originalFilename = $message['document']['filename'] ?? 'dokumen';
+                    $result = $mediaService->downloadAndUpload($mediaId, $messageType, $originalFilename);
                     if (isset($result['url'])) {
                         $messageContent = $result['url'];
+                        // MODIFIKASI: Jika ini dokumen, simpan JSON
+                        if ($messageType === 'document') {
+                            $fileInfo = [
+                                'url' => $result['url'],
+                                'filename' => $message['document']['filename'] ?? 'dokumen'
+                            ];
+                            $messageContent = json_encode($fileInfo);
+                        }
                         $savedMessage = $this->conversationService->saveMessage($conversation['id'], 'user', $messageType, $messageContent);
                     } else {
                         $limit = $result['limit'] ?? 'yang ditentukan';
@@ -173,14 +183,20 @@ class WebhookHandler
                             case 'audio':
                                 $mediaName = 'pesan suara';
                                 break;
+                            case 'document': // <--- TAMBAHAN UNTUK GOAL 2
+                                $mediaName = 'dokumen';
+                                break;
                         }
-                        kirimPesanTeks($nomorPengirim, sprintf(WhatsappConstants::MEDIA_SIZE_EXCEEDED, $mediaName, $limit));
+                        $pesanError = sprintf(WhatsappConstants::MEDIA_SIZE_EXCEEDED, $mediaName, $limit);
+                        $sendResult = kirimPesanTeks($nomorPengirim, $pesanError);
+                        $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanError, 'text', $sendResult['wamid'] ?? null); // <-- MODIFIKASI GOAL 1
                         return;
                     }
                     break;
 
                 default:
-                    kirimPesanTeks($nomorPengirim, WhatsappConstants::MEDIA_UNSUPPORTED_LIVE_CHAT);
+                    $sendResult = kirimPesanTeks($nomorPengirim, WhatsappConstants::MEDIA_UNSUPPORTED_LIVE_CHAT); // <-- MODIFIKASI GOAL 1
+                    $this->saveAdminReply($conversation['id'], $nomorPengirim, WhatsappConstants::MEDIA_UNSUPPORTED_LIVE_CHAT, 'text', $sendResult['wamid'] ?? null); // <-- MODIFIKASI GOAL 1
                     return;
             }
 
@@ -214,9 +230,8 @@ class WebhookHandler
                     ]);
                 }
 
-                kirimPesanTeks($nomorPengirim, WhatsappConstants::LOKER_MESSAGE);
-
-                $this->saveAdminReply($conversation['id'], $nomorPengirim, WhatsappConstants::LOKER_MESSAGE);
+                $sendResult = kirimPesanTeks($nomorPengirim, WhatsappConstants::LOKER_MESSAGE); // <-- MODIFIKASI GOAL 1
+                $this->saveAdminReply($conversation['id'], $nomorPengirim, WhatsappConstants::LOKER_MESSAGE, 'text', $sendResult['wamid'] ?? null); // <-- MODIFIKASI GOAL 1
 
                 return;
             }
@@ -290,12 +305,22 @@ class WebhookHandler
                 case 'image':
                 case 'video':
                 case 'audio':
+                case 'document': // <--- TAMBAHAN UNTUK GOAL 2
                     $mediaService = new MediaService($this->logger);
                     $mediaId = $message[$messageType]['id'];
-                    $result = $mediaService->downloadAndUpload($mediaId, $messageType);
-
+                    // --- AWAL MODIFIKASI ---
+                    $originalFilename = $message['document']['filename'] ?? 'dokumen';
+                    $result = $mediaService->downloadAndUpload($mediaId, $messageType, $originalFilename);
                     if (isset($result['url'])) {
                         $messageContent = $result['url'];
+                        // MODIFIKASI: Jika ini dokumen, simpan JSON
+                        if ($messageType === 'document') {
+                            $fileInfo = [
+                                'url' => $result['url'],
+                                'filename' => $message['document']['filename'] ?? 'dokumen'
+                            ];
+                            $messageContent = json_encode($fileInfo);
+                        }
                         $savedUserMessage = $this->conversationService->saveMessage($conversation['id'], 'user', $messageType, $messageContent);
                     } else {
                         // Gagal mengunduh media, kirim pesan balasan error ukuran
@@ -310,6 +335,9 @@ class WebhookHandler
                                 break;
                             case 'audio':
                                 $mediaName = 'pesan suara';
+                                break;
+                            case 'document': // <--- TAMBAHAN UNTUK GOAL 2
+                                $mediaName = 'dokumen';
                                 break;
                         }
                         kirimPesanTeks($nomorPengirim, sprintf(WhatsappConstants::MEDIA_SIZE_EXCEEDED, $mediaName, $limit));
@@ -353,34 +381,99 @@ class WebhookHandler
                 $this->processListReplyMessage($message, $updatedConversation, $namaPengirim);
             }
         } else { // status_percakapan === 'open'
+
+            // --- AWAL REFAKTOR GOAL 2 ---
+            $savedUserMessage = null;
+
             if ($message['type'] === 'text') {
                 $messageContent = $message['text']['body'];
                 $savedUserMessage = $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $messageContent);
-                if ($savedUserMessage) {
-                    $totalUnread = $this->conversationService->getTotalUnreadCount();
-                    $this->notifyWebSocketServer([
-                        'event' => 'new_message',
-                        'conversation_id' => $conversation['id'],
-                        'phone' => $nomorPengirim,
-                        'message' => $savedUserMessage,
-                        'total_unread_count' => $totalUnread
-                    ]);
-                }
+
                 if ($conversation['menu_utama_terkirim'] == 0) {
                     $this->processTextMessage($message, $conversation);
                     $this->conversationService->setMenuSent($nomorPengirim);
                 } else {
+                    // Opsional: Kirim menu lagi jika user mengetik teks bebas
+                    // $this->processTextMessage($message, $conversation);
                 }
             } elseif ($message['type'] === 'interactive' && $message['interactive']['type'] === 'list_reply') {
                 $this->processListReplyMessage($message, $conversation, $namaPengirim);
+                return; // processListReplyMessage sudah menangani save/notify
             }
+            // MODIFIKASI: Tangani media di status 'open'
+            elseif (in_array($messageType, ['image', 'video', 'audio', 'document'])) {
+                $mediaService = new MediaService($this->logger);
+                $mediaId = $message[$messageType]['id'];
+                // --- AWAL MODIFIKASI ---
+                $originalFilename = null;
+                if ($messageType === 'document') {
+                    $originalFilename = $message['document']['filename'] ?? 'dokumen';
+                }
+                $result = $mediaService->downloadAndUpload($mediaId, $messageType, $originalFilename);
+                if (isset($result['url'])) {
+                    $messageContent = $result['url'];
+                    if ($messageType === 'document') {
+                        $fileInfo = [
+                            'url' => $result['url'],
+                            'filename' => $message['document']['filename'] ?? 'dokumen'
+                        ];
+                        $messageContent = json_encode($fileInfo);
+                    }
+                    $savedUserMessage = $this->conversationService->saveMessage($conversation['id'], 'user', $messageType, $messageContent);
+                } else {
+                    $limit = $result['limit'] ?? 'yang ditentukan';
+                    $mediaName = 'file';
+                    switch ($messageType) {
+                        case 'image':
+                            $mediaName = 'gambar';
+                            break;
+                        case 'video':
+                            $mediaName = 'video';
+                            break;
+                        case 'audio':
+                            $mediaName = 'pesan suara';
+                            break;
+                        case 'document':
+                            $mediaName = 'dokumen';
+                            break;
+                    }
+                    $pesanError = sprintf(WhatsappConstants::MEDIA_SIZE_EXCEEDED, $mediaName, $limit);
+                    $sendResult = kirimPesanTeks($nomorPengirim, $pesanError);
+                    $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanError, 'text', $sendResult['wamid'] ?? null);
+                    return; // Jangan kirim menu jika media gagal
+                }
+
+                // Kirim ulang menu setelah menerima media
+                $this->processTextMessage($message, $conversation);
+                $this->conversationService->setMenuSent($nomorPengirim);
+
+            } else { // Tipe lain (sticker, location, dll)
+                $messageContent = "[$messageType]";
+                $savedUserMessage = $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $messageContent);
+
+                // Kirim ulang menu
+                $this->processTextMessage($message, $conversation);
+                $this->conversationService->setMenuSent($nomorPengirim);
+            }
+
+            // Pindahkan notifikasi websocket ke sini
+            if ($savedUserMessage) {
+                $totalUnread = $this->conversationService->getTotalUnreadCount();
+                $this->notifyWebSocketServer([
+                    'event' => 'new_message',
+                    'conversation_id' => $conversation['id'],
+                    'phone' => $nomorPengirim,
+                    'message' => $savedUserMessage,
+                    'total_unread_count' => $totalUnread
+                ]);
+            }
+            // --- AKHIR REFAKTOR GOAL 2 ---
         }
     }
-
     private function sendWelcomeMessage($nomorPengirim, $conversationId, $namaPengirim)
     {
 
-        kirimPesanList(
+        $sendResult = kirimPesanList(
             $nomorPengirim,
             "Hai " . $namaPengirim,
             WhatsappConstants::WELCOME_BODY,
@@ -389,7 +482,7 @@ class WebhookHandler
             BranchConstants::MAIN_MENU_SECTIONS
         );
 
-        $this->saveAdminReply($conversationId, $nomorPengirim, WhatsappConstants::WELCOME_BODY);
+        $this->saveAdminReply($conversationId, $nomorPengirim, WhatsappConstants::WELCOME_BODY, 'text', $sendResult['wamid'] ?? null);
     }
 
     private function processTextMessage($message, $conversation)
@@ -404,14 +497,14 @@ class WebhookHandler
         $pesanBody = "Silakan pilih lagi dari menu di bawah ini.";
         $pesanHeader = "Menu Utama";
 
-        kirimPesanButton(
+        $sendResult = kirimPesanButton(
             $nomorPengirim,
             $pesanBody,
             $buttons,
             $pesanHeader
         );
 
-        $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody);
+        $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody, 'text', $sendResult['wamid'] ?? null);
     }
 
     private function processListReplyMessage($message, $conversation, $namaPengirim)
@@ -446,72 +539,73 @@ class WebhookHandler
         }
 
         $pesanBody = '';
+        $sendResult = []; // Inisialisasi
         switch ($selectedId) {
             case 'DAFTAR_NOMOR':
                 $pesanBody = WhatsappConstants::CHOOSE_BRANCH_REGION_PROMPT;
-                $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody);
-                kirimPesanButton($nomorPengirim, $pesanBody, BranchConstants::REGION_SELECTION_BUTTONS, "Pilih Wilayah Cabang", "");
+                $sendResult = kirimPesanButton($nomorPengirim, $pesanBody, BranchConstants::REGION_SELECTION_BUTTONS, "Pilih Wilayah Cabang", "");
+                $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody, 'text', $sendResult['wamid'] ?? null);
                 break;
             case 'DAFTAR_LOKASI':
                 $pesanBody = WhatsappConstants::CHOOSE_LOCATION_REGION_PROMPT;
-                $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody);
-                kirimPesanButton($nomorPengirim, $pesanBody, BranchConstants::REGION_SELECTION_BUTTONS_LOKASI, "Pilih Wilayah Toko", "");
+                $sendResult = kirimPesanButton($nomorPengirim, $pesanBody, BranchConstants::REGION_SELECTION_BUTTONS_LOKASI, "Pilih Wilayah Toko", "");
+                $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody, 'text', $sendResult['wamid'] ?? null);
                 break;
             case 'ORDER_VIA_WA':
                 $pesanHeader = WhatsappConstants::HOW_TO_ORDER_WA_HEADER;
                 $pesanBody = WhatsappConstants::HOW_TO_ORDER_WA_BODY;
-                $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody);
-                kirimPesanCtaUrl(
+                $sendResult = kirimPesanCtaUrl(
                     $nomorPengirim,
                     $pesanBody,
                     WhatsappConstants::HOW_TO_ORDER_WA_BUTTON,
                     WhatsappConstants::HOW_TO_ORDER_WA_URL,
                     $pesanHeader
                 );
+                $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody, 'text', $sendResult['wamid'] ?? null);
                 break;
 
             case 'PROMO':
                 $pesanHeader = WhatsappConstants::PROMO_INFO_HEADER;
                 $pesanBody = WhatsappConstants::PROMO_INFO_BODY;
-                $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody);
-                kirimPesanCtaUrl(
+                $sendResult = kirimPesanCtaUrl(
                     $nomorPengirim,
                     $pesanBody,
                     WhatsappConstants::PROMO_INFO_BUTTON,
                     WhatsappConstants::PROMO_INFO_URL,
                     $pesanHeader
                 );
+                $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody, 'text', $sendResult['wamid'] ?? null);
                 break;
 
             case 'KRITIK_SARAN':
                 $pesanHeader = WhatsappConstants::FEEDBACK_INFO_HEADER;
                 $pesanBody = WhatsappConstants::FEEDBACK_INFO_BODY;
-                $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody);
-                kirimPesanCtaUrl(
+                $sendResult = kirimPesanCtaUrl(
                     $nomorPengirim,
                     $pesanBody,
                     WhatsappConstants::FEEDBACK_INFO_BUTTON,
                     WhatsappConstants::FEEDBACK_INFO_URL,
                     $pesanHeader
                 );
+                $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody, 'text', $sendResult['wamid'] ?? null);
                 break;
 
             case 'RIWAYAT_POIN':
                 $pesanHeader = WhatsappConstants::POINT_HISTORY_INFO_HEADER;
                 $pesanBody = WhatsappConstants::POINT_HISTORY_INFO_BODY;
-                $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody);
-                kirimPesanCtaUrl(
+                $sendResult = kirimPesanCtaUrl(
                     $nomorPengirim,
                     $pesanBody,
                     WhatsappConstants::POINT_HISTORY_INFO_BUTTON,
                     WhatsappConstants::POINT_HISTORY_INFO_URL,
                     $pesanHeader
                 );
+                $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody, 'text', $sendResult['wamid'] ?? null);
                 break;
             case 'INFO_JAM_BUKA':
                 $pesanBody = WhatsappConstants::OPERATIONAL_HOURS_INFO;
-                $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody);
-                kirimPesanTeks($nomorPengirim, $pesanBody);
+                $sendResult = kirimPesanTeks($nomorPengirim, $pesanBody);
+                $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody, 'text', $sendResult['wamid'] ?? null);
                 break;
             case 'CHAT_CS':
                 $this->triggerLiveChat($nomorPengirim, $conversation);
@@ -522,23 +616,23 @@ class WebhookHandler
                     if (isset(BranchConstants::ALL_LOKASI_CABANG[$branchKey])) {
                         $lokasi = BranchConstants::ALL_LOKASI_CABANG[$branchKey];
                         $pesanLokasi = sprintf(WhatsappConstants::SENDING_LOCATION_NOTICE, $lokasi['name']);
-                        $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanLokasi);
-                        kirimPesanLokasi($nomorPengirim, $lokasi['latitude'], $lokasi['longitude'], $lokasi['name'], $lokasi['address']);
+                        $sendResult = kirimPesanLokasi($nomorPengirim, $lokasi['latitude'], $lokasi['longitude'], $lokasi['name'], $lokasi['address']);
+                        $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanLokasi, 'text', $sendResult['wamid'] ?? null);
                     } else {
                         $pesanError = sprintf(WhatsappConstants::INVALID_LOCATION_DATA, $branchKey);
-                        $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanError);
-                        kirimPesanTeks($nomorPengirim, $pesanError);
+                        $sendResult = kirimPesanTeks($nomorPengirim, $pesanError);
+                        $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanError, 'text', $sendResult['wamid'] ?? null);
                     }
                 } elseif (array_key_exists($selectedId, BranchConstants::ALL_NOMOR_TELEPON)) {
                     $namaKontak = "Asoka Baby Store " . $selectedId;
                     $nomorUntukDikirim = BranchConstants::ALL_NOMOR_TELEPON[$selectedId];
                     $pesanKontak = sprintf(WhatsappConstants::SENDING_CONTACT_NOTICE, $namaKontak, $nomorUntukDikirim);
-                    $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanKontak);
-                    kirimPesanKontak($nomorPengirim, $namaKontak, $nomorUntukDikirim);
+                    $sendResult = kirimPesanKontak($nomorPengirim, $namaKontak, $nomorUntukDikirim);
+                    $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanKontak, 'text', $sendResult['wamid'] ?? null);
                 } else {
                     $pesanError = WhatsappConstants::INVALID_OPTION;
-                    $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanError);
-                    kirimPesanTeks($nomorPengirim, $pesanError);
+                    $sendResult = kirimPesanTeks($nomorPengirim, $pesanError);
+                    $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanError, 'text', $sendResult['wamid'] ?? null);
                 }
                 break;
         }
@@ -576,8 +670,8 @@ class WebhookHandler
         $sections = [['title' => $title, 'rows' => $cities_to_show]];
         $pesanBody = WhatsappConstants::BRANCH_LIST_PROMPT;
         $conversation = $this->conversationService->getOrCreateConversation($nomorPengirim, $namaPengirim);
-        $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody);
-        kirimPesanList(
+
+        $sendResult = kirimPesanList(
             $nomorPengirim,
             "Pilih Cabang",
             $pesanBody,
@@ -585,6 +679,7 @@ class WebhookHandler
             "Pilih Cabang",
             $sections
         );
+        $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody, 'text', $sendResult['wamid'] ?? null);
     }
 
     private function notifyWebSocketServer($data)
@@ -614,9 +709,9 @@ class WebhookHandler
         curl_close($ch);
     }
 
-    private function saveAdminReply($conversationId, $nomorPengirim, $messageContent, $messageType = 'text')
+    private function saveAdminReply($conversationId, $nomorPengirim, $messageContent, $messageType = 'text', $wamid = null)
     {
-        $savedMessage = $this->conversationService->saveMessage($conversationId, 'admin', $messageType, $messageContent, null);
+        $savedMessage = $this->conversationService->saveMessage($conversationId, 'admin', $messageType, $messageContent, $wamid);
 
         if ($savedMessage) {
             $this->notifyWebSocketServer([
@@ -633,7 +728,7 @@ class WebhookHandler
         $pesanBody = WhatsappConstants::WELCOME_BODY;
         $pesanHeader = WhatsappConstants::WELCOME_HEADER;
 
-        kirimPesanList(
+        $sendResult = kirimPesanList(
             $nomorPengirim,
             $pesanHeader,
             $pesanBody,
@@ -642,7 +737,7 @@ class WebhookHandler
             BranchConstants::MAIN_MENU_SECTIONS
         );
 
-        $this->saveAdminReply($conversationId, $nomorPengirim, $pesanBody);
+        $this->saveAdminReply($conversationId, $nomorPengirim, $pesanBody, 'text', $sendResult['wamid'] ?? null);
     }
 
     private function triggerLiveChat($nomorPengirim, $conversation)
@@ -659,8 +754,8 @@ class WebhookHandler
         }
 
         $this->conversationService->startLiveChat($nomorPengirim);
-        kirimPesanTeks($nomorPengirim, $pesanBody);
-        $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody);
+        $sendResult = kirimPesanTeks($nomorPengirim, $pesanBody);
+        $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanBody, 'text', $sendResult['wamid'] ?? null);
 
         $totalUnread = $this->conversationService->getTotalUnreadCount();
 
