@@ -296,6 +296,48 @@ try {
             FROM
                 wa_percakapan p
         ";
+        $sql = "
+            SELECT
+                p.id,
+                p.nomor_telepon,
+                p.nama_profil,
+                p.nama_display,
+                p.status_percakapan,
+                
+                COALESCE(
+                    (SELECT MAX(m.timestamp) FROM wa_pesan m WHERE m.percakapan_id = p.id),
+                    p.terakhir_interaksi_pada
+                ) AS urutan_interaksi,
+                
+                (SELECT COUNT(m.id)
+                 FROM wa_pesan m
+                 WHERE m.percakapan_id = p.id AND m.pengirim = 'user' AND m.status_baca = 0
+                ) AS jumlah_belum_terbaca,
+
+                (SELECT m.isi_pesan 
+                 FROM wa_pesan m 
+                 WHERE m.percakapan_id = p.id 
+                 ORDER BY m.timestamp DESC, m.id DESC 
+                 LIMIT 1
+                ) AS latest_message_content,
+                
+                (SELECT m.tipe_pesan 
+                 FROM wa_pesan m 
+                 WHERE m.percakapan_id = p.id 
+                 ORDER BY m.timestamp DESC, m.id DESC 
+                 LIMIT 1
+                ) AS latest_message_type,
+                
+                (SELECT GROUP_CONCAT(DISTINCT CONCAT(l.id, ':', l.nama_label, ':', l.warna) SEPARATOR ';')
+                 FROM wa_percakapan_labels pl
+                 JOIN wa_labels l ON pl.label_id = l.id
+                 WHERE pl.percakapan_id = p.id
+                ) AS labels_concat
+                
+            FROM
+                wa_percakapan p
+        ";
+
 
         $whereConditions = [];
         $params = [];

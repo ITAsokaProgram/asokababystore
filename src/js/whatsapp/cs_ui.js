@@ -363,3 +363,47 @@ function updateAllTimeAgoStrings() {
     }
   });
 }
+
+function formatLatestMessage(convo) {
+  if (!convo.latest_message_type || !convo.latest_message_content) {
+    return '<p class="text-xs text-gray-500 italic truncate">Belum ada pesan</p>';
+  }
+
+  let icon = "";
+  let text = "";
+
+  switch (convo.latest_message_type) {
+    case "text":
+      text = convo.latest_message_content;
+      break;
+    case "image":
+      icon = '<i class="fas fa-image text-gray-400 mr-1.5"></i>';
+      text = "Gambar";
+      break;
+    case "video":
+      icon = '<i class="fas fa-video text-gray-400 mr-1.5"></i>';
+      text = "Video";
+      break;
+    case "audio":
+      icon = '<i class="fas fa-microphone text-gray-400 mr-1.5"></i>';
+      text = "Pesan suara";
+      break;
+    case "document":
+      icon = '<i class="fas fa-file-alt text-gray-400 mr-1.5"></i>';
+      try {
+        const docInfo = JSON.parse(convo.latest_message_content);
+        text = docInfo.filename || "Dokumen";
+      } catch (e) {
+        text = "Dokumen";
+      }
+      break;
+    default:
+      text = `[${convo.latest_message_type}]`;
+      break;
+  }
+
+  return `<div class="latest-message-preview text-xs text-gray-500 flex items-center truncate">
+                ${icon}
+                <span class="truncate">${text}</span>
+            </div>`;
+}

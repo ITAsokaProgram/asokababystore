@@ -116,6 +116,20 @@ function initWebSocket() {
                 timeElement.dataset.timestamp = data.message.timestamp;
               }
 
+              // --- KODE BARU ---
+              const latestMessagePreview = existingItem.querySelector(
+                ".latest-message-preview"
+              );
+              if (latestMessagePreview && data.message) {
+                const pseudoConvo = {
+                  latest_message_content: data.message.isi_pesan,
+                  latest_message_type: data.message.tipe_pesan,
+                };
+                latestMessagePreview.parentElement.innerHTML =
+                  formatLatestMessage(pseudoConvo);
+              }
+              // --- AKHIR KODE BARU ---
+
               if (currentConvoPage === 1 && currentSearchTerm === "") {
                 listElement.prepend(existingItem);
               }
@@ -143,6 +157,20 @@ function initWebSocket() {
               timeElement.textContent = "Baru saja";
               timeElement.dataset.timestamp = data.message.timestamp;
             }
+
+            // --- KODE BARU ---
+            const latestMessagePreview = existingItem.querySelector(
+              ".latest-message-preview"
+            );
+            if (latestMessagePreview && data.message) {
+              const pseudoConvo = {
+                latest_message_content: data.message.isi_pesan,
+                latest_message_type: data.message.tipe_pesan,
+              };
+              latestMessagePreview.parentElement.innerHTML =
+                formatLatestMessage(pseudoConvo);
+            }
+            // --- AKHIR KODE BARU ---
 
             if (currentConvoPage === 1 && currentSearchTerm === "") {
               listElement.prepend(existingItem);
@@ -245,11 +273,11 @@ async function fetchAndRenderConversations(isLoadMore = false) {
 
     if (conversations.length === 0 && !isLoadMore) {
       listElement.innerHTML = `
-                <div class="flex flex-col items-center justify-center p-12 text-gray-400 text-center">
-                    <i class="fas fa-inbox text-5xl mb-4 opacity-40"></i>
-                    <p class="text-sm font-medium">Tidak ada percakapan</p>
-                    <p class="text-xs mt-1 opacity-75">Percakapan baru akan muncul di sini</p>
-                </div>`;
+                        <div class="flex flex-col items-center justify-center p-12 text-gray-400 text-center">
+                            <i class="fas fa-inbox text-5xl mb-4 opacity-40"></i>
+                            <p class="text-sm font-medium">Tidak ada percakapan</p>
+                            <p class="text-xs mt-1 opacity-75">Percakapan baru akan muncul di sini</p>
+                        </div>`;
       return;
     }
 
@@ -267,39 +295,43 @@ async function fetchAndRenderConversations(isLoadMore = false) {
       const timeAgo = getTimeAgo(lastInteraction);
 
       item.innerHTML = `
-                <div class="flex items-start gap-4">
-                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold shadow-sm">
-                        <i class="fas fa-user text-sm"></i>
-                    </div>
-                    <div class="flex-1 min-w-0 space-y-0.5">
-                        <div class="flex justify-between items-start mb-1">
-                            <p class="font-semibold text-gray-900 text-sm truncate pr-2">${
-                              convo.nama_display || convo.nomor_telepon
-                            }</p>
-                            ${
-                              convo.status_percakapan === "live_chat"
-                                ? '<span class="live-badge px-2 py-0.5 text-xs font-semibold text-red-700 bg-red-100 rounded-full flex-shrink-0 shadow-sm">Live</span>'
-                                : ""
-                            }
+                        <div class="flex items-start gap-4">
+                            <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold shadow-sm">
+                                <i class="fas fa-user text-sm"></i>
+                            </div>
+                            <div class="flex-1 min-w-0 space-y-0.5">
+                                <div class="flex justify-between items-start mb-1">
+                                    <p class="font-semibold text-gray-900 text-sm truncate pr-2">${
+                                      convo.nama_display || convo.nomor_telepon
+                                    }</p>
+                                    ${
+                                      convo.status_percakapan === "live_chat"
+                                        ? '<span class="live-badge px-2 py-0.5 text-xs font-semibold text-red-700 bg-red-100 rounded-full flex-shrink-0 shadow-sm">Live</span>'
+                                        : ""
+                                    }
+                                </div>
+                                <div class="flex flex-wrap gap-1 mb-1.5 min-h-[14px]">
+                                    ${renderLabelTags(convo.labels, "xs")}
+                                </div>
+                                
+                                <div>
+                                    ${formatLatestMessage(convo)}
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <p class="conversation-time-ago text-xs text-gray-500" data-timestamp="${
+                                      convo.urutan_interaksi
+                                    }">${timeAgo}</p>
+                                    ${
+                                      convo.jumlah_belum_terbaca > 0
+                                        ? `<span class="unread-badge bg-blue-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-md">
+                                                ${convo.jumlah_belum_terbaca}
+                                            </span>`
+                                        : ""
+                                    }
+                                </div>
+                            </div>
                         </div>
-                        <div class="flex flex-wrap gap-1 mb-1.5 min-h-[14px]">
-                            ${renderLabelTags(convo.labels, "xs")}
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <p class="conversation-time-ago text-xs text-gray-500" data-timestamp="${
-                              convo.urutan_interaksi
-                            }">${timeAgo}</p>
-                            ${
-                              convo.jumlah_belum_terbaca > 0
-                                ? `<span class="unread-badge bg-blue-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-md">
-                                    ${convo.jumlah_belum_terbaca}
-                                </span>`
-                                : ""
-                            }
-                        </div>
-                    </div>
-                </div>
-            `;
+                    `;
 
       item.addEventListener("click", (e) => {
         selectConversation(convo.id, e.currentTarget);
@@ -317,13 +349,13 @@ async function fetchAndRenderConversations(isLoadMore = false) {
     console.error(error);
     const listElement = document.getElementById("conversation-list");
     listElement.innerHTML = `
-            <div class="flex flex-col items-center justify-center p-12 text-red-500">
-                <i class="fas fa-exclamation-circle text-4xl mb-3"></i>
-                <p class="text-sm font-medium">Gagal memuat percakapan</p>
-                <button onclick="fetchAndRenderConversations()" class="mt-3 px-4 py-2 bg-blue-500 text-white text-xs rounded-lg hover:bg-blue-600 transition-colors">
-                    <i class="fas fa-sync-alt mr-1"></i> Coba Lagi
-                </button>
-            </div>`;
+                <div class="flex flex-col items-center justify-center p-12 text-red-500">
+                    <i class="fas fa-exclamation-circle text-4xl mb-3"></i>
+                    <p class="text-sm font-medium">Gagal memuat percakapan</p>
+                    <button onclick="fetchAndRenderConversations()" class="mt-3 px-4 py-2 bg-blue-500 text-white text-xs rounded-lg hover:bg-blue-600 transition-colors">
+                        <i class="fas fa-sync-alt mr-1"></i> Coba Lagi
+                    </button>
+                </div>`;
   }
 }
 
