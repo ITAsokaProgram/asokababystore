@@ -277,24 +277,24 @@ try {
                 p.nama_display,
                 p.status_percakapan,
                 
-                COALESCE(lm.last_message_time, p.terakhir_interaksi_pada) AS urutan_interaksi,
+                COALESCE(
+                    (SELECT MAX(m.timestamp) FROM wa_pesan m WHERE m.percakapan_id = p.id),
+                    p.terakhir_interaksi_pada
+                ) AS urutan_interaksi,
                 
-                COUNT(DISTINCT m.id) AS jumlah_belum_terbaca,
-                GROUP_CONCAT(DISTINCT CONCAT(l.id, ':', l.nama_label, ':', l.warna) SEPARATOR ';') AS labels_concat
+                (SELECT COUNT(m.id)
+                 FROM wa_pesan m
+                 WHERE m.percakapan_id = p.id AND m.pengirim = 'user' AND m.status_baca = 0
+                ) AS jumlah_belum_terbaca,
+                
+                (SELECT GROUP_CONCAT(DISTINCT CONCAT(l.id, ':', l.nama_label, ':', l.warna) SEPARATOR ';')
+                 FROM wa_percakapan_labels pl
+                 JOIN wa_labels l ON pl.label_id = l.id
+                 WHERE pl.percakapan_id = p.id
+                ) AS labels_concat
+                
             FROM
                 wa_percakapan p
-            LEFT JOIN
-                wa_pesan m ON p.id = m.percakapan_id AND m.pengirim = 'user' AND m.status_baca = 0
-            LEFT JOIN
-                wa_percakapan_labels pl ON p.id = pl.percakapan_id
-            LEFT JOIN
-                wa_labels l ON pl.label_id = l.id
-                
-            LEFT JOIN (
-                SELECT percakapan_id, MAX(timestamp) AS last_message_time
-                FROM wa_pesan
-                GROUP BY percakapan_id
-            ) AS lm ON p.id = lm.percakapan_id
         ";
 
         $whereConditions = [];
@@ -358,8 +358,6 @@ try {
 
         $sql .= $whereClause;
         $sql .= "
-            GROUP BY
-                p.id, p.nomor_telepon, p.nama_profil, p.nama_display, p.status_percakapan, urutan_interaksi
             ORDER BY
                 urutan_interaksi DESC
         ";

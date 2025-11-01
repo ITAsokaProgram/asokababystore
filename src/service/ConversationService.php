@@ -76,6 +76,17 @@ class ConversationService
         $newId = $stmt->insert_id;
         $stmt->close();
 
+        if ($newId > 0) {
+            try {
+                $stmt_update = $this->conn->prepare("UPDATE wa_percakapan SET terakhir_interaksi_pada = NOW() WHERE id = ?");
+                $stmt_update->bind_param("i", $conversationId);
+                $stmt_update->execute();
+                $stmt_update->close();
+            } catch (Exception $e) {
+                $this->logger->error("Gagal update terakhir_interaksi_pada for convo ID {$conversationId}: " . $e->getMessage());
+            }
+        }
+
         $stmt = $this->conn->prepare("SELECT * FROM wa_pesan WHERE id = ?");
         $stmt->bind_param("i", $newId);
         $stmt->execute();

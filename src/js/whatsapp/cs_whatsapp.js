@@ -75,6 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
       messageContainer.scrollTop === 0 &&
       hasMoreMessages &&
       !isLoadingMoreMessages &&
+      !isConversationLoading &&
       currentConversationId
     ) {
       loadMoreMessages();
