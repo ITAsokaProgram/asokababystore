@@ -13,6 +13,8 @@ if (!$conn) {
     exit();
 }
 
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+
 
  // Set the default timezone
  date_default_timezone_set('Asia/Jakarta');

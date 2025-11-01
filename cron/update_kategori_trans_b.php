@@ -1,6 +1,5 @@
 <?php
 
-require_once __DIR__ . "/../aa_kon_sett.php";
 require_once __DIR__ . "/../src/utils/Logger.php";
 
 $logFileName = 'cron_update_kategori_trans_b.log';
@@ -32,6 +31,5 @@ try {
     $logger->error("Transaksi GAGAL. Rollback dilakukan. Error: " . $e->getMessage());
 }
 
-mysqli_close($conn);
 
 ?>
