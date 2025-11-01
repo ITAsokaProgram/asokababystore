@@ -13,8 +13,8 @@ function renderLabelTags(labels, size = "xs") {
       const brightness = getBrightness(label.warna);
       const textColor = brightness > 128 ? "#000000" : "#FFFFFF";
       return `<span class="label-tag inline-block ${sizeClasses} font-medium rounded-full" style="background-color: ${label.warna}; color: ${textColor}; line-height: 1.2;">
-                    ${label.nama_label}
-                </span>`;
+                ${label.nama_label}
+              </span>`;
     })
     .join(" ");
 }
@@ -23,13 +23,13 @@ function renderMessages(messages) {
   messageContainer.innerHTML = "";
   if (messages.length === 0) {
     messageContainer.innerHTML = `
-            <div class="no-message-placeholder flex items-center justify-center h-full text-center text-gray-400">
-                <div>
-                    <i class="fas fa-comment-dots text-5xl mb-3 opacity-30"></i>
-                    <p class="text-sm font-medium">Belum ada pesan</p>
-                    <p class="text-xs mt-1 opacity-75">Mulai percakapan dengan mengirim pesan</p>
-                </div>
-            </div>`;
+              <div class="no-message-placeholder flex items-center justify-center h-full text-center text-gray-400">
+                  <div>
+                      <i class="fas fa-comment-dots text-5xl mb-3 opacity-30"></i>
+                      <p class="text-sm font-medium">Belum ada pesan</p>
+                      <p class="text-xs mt-1 opacity-75">Mulai percakapan dengan mengirim pesan</p>
+                  </div>
+              </div>`;
     return;
   }
   messages.forEach((msg) => appendMessage(msg, false));
@@ -126,7 +126,7 @@ function prependMessages(messages) {
     ) {
       const oldestSeparator = document.createElement("div");
       oldestSeparator.className = "date-separator";
-      oldestSeparator.textContent = formatDateSeparator(messages[0].timestamp); // timestamp dari pesan terlama
+      oldestSeparator.textContent = formatDateSeparator(messages[0].timestamp);
 
       const firstSepInDomNow = messageContainer.querySelector(
         ".date-separator:first-of-type"
@@ -264,6 +264,20 @@ function updateFilterUnreadBadges(counts) {
   }
 }
 
+function getStatusIcon(status) {
+  let iconClass = "fa-check";
+  let iconColor = "text-gray-400";
+
+  if (status === "delivered") {
+    iconClass = "fa-check-double";
+  } else if (status === "read") {
+    iconClass = "fa-check-double";
+    iconColor = "text-teal-500";
+  }
+
+  return `<i class="fas ${iconClass} ${iconColor} message-status-icon"></i>`;
+}
+
 function createMessageBubble(msg) {
   const bubble = document.createElement("div");
   const isUser = msg.pengirim === "user";
@@ -271,6 +285,10 @@ function createMessageBubble(msg) {
     isUser ? "user-bubble" : "admin-bubble"
   }`;
   bubble.dataset.timestamp = msg.timestamp;
+
+  if (!isUser && msg.wamid) {
+    bubble.dataset.wamid = msg.wamid;
+  }
 
   const messageType = msg.tipe_pesan || "text";
   let contentHTML = "";
@@ -307,9 +325,16 @@ function createMessageBubble(msg) {
       break;
   }
 
+  let statusIconHTML = "";
+  if (!isUser && msg.status_pengiriman) {
+    statusIconHTML = getStatusIcon(msg.status_pengiriman);
+  }
+
   bubble.innerHTML = `
         ${contentHTML}
-        <span class="message-time">${formatTimestamp(msg.timestamp)}</span>
+        <span class="message-time">
+            ${formatTimestamp(msg.timestamp)}
+            ${statusIconHTML} </span>
     `;
 
   return bubble;

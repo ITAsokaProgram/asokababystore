@@ -39,10 +39,10 @@ if (!isset($_POST['conversation_id']) || (empty($_POST['message']) && empty($_FI
 }
 
 $conversationId = $_POST['conversation_id'];
-$messageText = $_POST['message'] ?? null; 
+$messageText = $_POST['message'] ?? null;
 $logger = new AppLogger('send_admin_reply.log');
 $conversationService = new ConversationService($conn, $logger);
-$savedMessages = []; 
+$savedMessages = [];
 
 try {
     $stmt = $conn->prepare("SELECT nomor_telepon FROM wa_percakapan WHERE id = ?");
@@ -55,12 +55,12 @@ try {
     if (!$phoneNumber) {
         throw new Exception("Conversation with ID {$conversationId} not found.");
     }
-    
+
     if (isset($_FILES['media']) && $_FILES['media']['error'] === UPLOAD_ERR_OK) {
         $cloudinary = new Cloudinary([
             'cloud' => [
                 'cloud_name' => $env['CLOUDINARY_NAME'],
-                'api_key'    => $env['CLOUDINARY_KEY'],
+                'api_key' => $env['CLOUDINARY_KEY'],
                 'api_secret' => $env['CLOUDINARY_SECRET'],
             ],
         ]);
@@ -72,38 +72,43 @@ try {
             'folder' => 'whatsapp_cs_media',
             'resource_type' => $resourceType
         ]);
-        
+
         $mediaUrl = $uploadResult['secure_url'];
-        
-        kirimPesanMedia($phoneNumber, $mediaUrl, $resourceType, $messageText);
-        
-        $savedMediaMessage = $conversationService->saveMessage($conversationId, 'admin', $resourceType, $mediaUrl);
-        if ($savedMediaMessage) $savedMessages[] = $savedMediaMessage;
+
+        $sendResult = kirimPesanMedia($phoneNumber, $mediaUrl, $resourceType, $messageText);
+        $wamid = $sendResult['wamid'] ?? null;
+
+        $savedMediaMessage = $conversationService->saveMessage($conversationId, 'admin', $resourceType, $mediaUrl, $wamid);
+        if ($savedMediaMessage)
+            $savedMessages[] = $savedMediaMessage;
 
         if ($messageText) {
-             $savedTextMessage = $conversationService->saveMessage($conversationId, 'admin', 'text', $messageText);
-             if ($savedTextMessage) $savedMessages[] = $savedTextMessage;
+            $savedTextMessage = $conversationService->saveMessage($conversationId, 'admin', 'text', $messageText);
+            if ($savedTextMessage)
+                $savedMessages[] = $savedTextMessage;
         }
 
     } elseif ($messageText) {
-        kirimPesanTeks($phoneNumber, $messageText);
-        
-        $savedTextMessage = $conversationService->saveMessage($conversationId, 'admin', 'text', $messageText);
-        if ($savedTextMessage) $savedMessages[] = $savedTextMessage;
+        $sendResult = kirimPesanTeks($phoneNumber, $messageText);
+        $wamid = $sendResult['wamid'] ?? null;
+
+        $savedTextMessage = $conversationService->saveMessage($conversationId, 'admin', 'text', $messageText, $wamid);
+        if ($savedTextMessage)
+            $savedMessages[] = $savedTextMessage;
     }
 
 
     if (!empty($savedMessages)) {
-        $ws_url = 'http://127.0.0.1:8081/notify'; 
-        
+        $ws_url = 'http://127.0.0.1:8081/notify';
+
         foreach ($savedMessages as $savedMessage) {
             $payload = json_encode([
-                'event' => 'new_admin_reply', 
-                'conversation_id' => (int)$conversationId,
+                'event' => 'new_admin_reply',
+                'conversation_id' => (int) $conversationId,
                 'phone' => $phoneNumber,
-                'message' => $savedMessage 
+                'message' => $savedMessage
             ]);
-            
+
             try {
                 $ch = curl_init($ws_url);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -113,7 +118,7 @@ try {
                     'Content-Type: application/json',
                     'Content-Length: ' . strlen($payload)
                 ]);
-                curl_setopt($ch, CURLOPT_TIMEOUT_MS, 100); 
+                curl_setopt($ch, CURLOPT_TIMEOUT_MS, 100);
                 curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
                 curl_exec($ch);
                 curl_close($ch);

@@ -1,15 +1,18 @@
 <?php
 require_once __DIR__ . '/../utils/Logger.php';
 
-function sendWhatsAppMessage($data) {
+function sendWhatsAppMessage($data)
+{
     $env = parse_ini_file(__DIR__ . '/../../.env');
     $accessToken = $env['WHATSAPP_ACCESS_TOKEN'];
     $phoneNumberId = $env['WHATSAPP_PHONE_NUMBER_ID'];
     $url = "https://graph.facebook.com/v24.0/{$phoneNumberId}/messages";
 
     $ch = curl_init($url);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 5);
-    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
+
+    curl_setopt($ch, CURLOPT_TIMEOUT, 20);
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+
     curl_setopt($ch, CURLOPT_HTTPHEADER, ['Authorization: Bearer ' . $accessToken, 'Content-Type: application/json']);
     curl_setopt($ch, CURLOPT_POST, 1);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
@@ -17,22 +20,35 @@ function sendWhatsAppMessage($data) {
 
     $response = curl_exec($ch);
     $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $wamid = null;
+
+    if (curl_errno($ch)) {
+        $response = curl_error($ch);
+    } elseif ($httpcode >= 200 && $httpcode < 300) {
+        $decoded_response = json_decode($response, true);
+        if (isset($decoded_response['messages'][0]['id'])) {
+            $wamid = $decoded_response['messages'][0]['id'];
+        }
+    }
+
     curl_close($ch);
-    
-    return ['httpcode' => $httpcode, 'response' => $response];
+
+    return ['httpcode' => $httpcode, 'response' => $response, 'wamid' => $wamid];
 }
 
-function normalizePhoneNumber($nomor) {
+function normalizePhoneNumber($nomor)
+{
     if (substr($nomor, 0, 1) === '0') {
         return '62' . substr($nomor, 1);
     }
     return $nomor;
 }
 
-function kirimLinkKonfirmasiWA($nomorPenerima, $linkKonfirmasi) {
+function kirimLinkKonfirmasiWA($nomorPenerima, $linkKonfirmasi)
+{
     $logger = new AppLogger('whatsapp_link_verification.log');
     $nomorPenerima = normalizePhoneNumber($nomorPenerima);
-    
+
     $pesanBody = "Satu langkah lagi! Klik link di bawah ini untuk menyelesaikan proses penggantian nomor HP Anda. Link ini hanya berlaku selama 15 menit.\n\n" . $linkKonfirmasi;
 
     $data = [
@@ -52,8 +68,8 @@ function kirimLinkKonfirmasiWA($nomorPenerima, $linkKonfirmasi) {
         return ['success' => false];
     }
 }
-
-function kirimPesanTeks($nomorPenerima, $pesanBody) {
+function kirimPesanTeks($nomorPenerima, $pesanBody)
+{
     $logger = new AppLogger('whatsapp_text_message.log');
     $nomorPenerima = normalizePhoneNumber($nomorPenerima);
 
@@ -68,14 +84,15 @@ function kirimPesanTeks($nomorPenerima, $pesanBody) {
 
     if ($result['httpcode'] >= 200 && $result['httpcode'] < 300) {
         // $logger->success("Pesan teks berhasil dikirim ke {$nomorPenerima}.");
-        return ['success' => true];
+        return ['success' => true, 'wamid' => $result['wamid']];
     } else {
         // $logger->error("Gagal kirim pesan teks ke {$nomorPenerima}. HTTP: {$result['httpcode']}. Response: {$result['response']}");
-        return ['success' => false];
+        return ['success' => false, 'wamid' => null];
     }
 }
 
-function kirimPesanKontak($nomorPenerima, $namaKontak, $nomorTeleponKontak) {
+function kirimPesanKontak($nomorPenerima, $namaKontak, $nomorTeleponKontak)
+{
     $logger = new AppLogger('whatsapp_contact_message.log');
     $nomorPenerima = normalizePhoneNumber($nomorPenerima);
     $nomorTeleponBersih = preg_replace('/[^0-9]/', '', $nomorTeleponKontak);
@@ -84,31 +101,36 @@ function kirimPesanKontak($nomorPenerima, $namaKontak, $nomorTeleponKontak) {
         'messaging_product' => 'whatsapp',
         'to' => $nomorPenerima,
         'type' => 'contacts',
-        'contacts' => [[
-            'name' => [
-                'formatted_name' => $namaKontak,
-                'first_name' => $namaKontak
-            ],
-            'phones' => [[
-                'phone' => $nomorTeleponBersih,
-                'type' => 'Mobile', 
-                'wa_id' => $nomorTeleponBersih 
-            ]]
-        ]]
+        'contacts' => [
+            [
+                'name' => [
+                    'formatted_name' => $namaKontak,
+                    'first_name' => $namaKontak
+                ],
+                'phones' => [
+                    [
+                        'phone' => $nomorTeleponBersih,
+                        'type' => 'Mobile',
+                        'wa_id' => $nomorTeleponBersih
+                    ]
+                ]
+            ]
+        ]
     ];
 
     $result = sendWhatsAppMessage($data);
 
     if ($result['httpcode'] >= 200 && $result['httpcode'] < 300) {
         // $logger->success("Pesan kontak '{$namaKontak}' berhasil dikirim ke {$nomorPenerima}.");
-        return ['success' => true];
+        return ['success' => true, 'wamid' => $result['wamid']];
     } else {
         $logger->error("Gagal kirim pesan kontak ke {$nomorPenerima}. HTTP: {$result['httpcode']}. Response: {$result['response']}");
-        return ['success' => false];
+        return ['success' => false, 'wamid' => null];
     }
 }
 
-function kirimPesanList($nomorPenerima, $judulHeader, $pesanBody, $pesanFooter, $namaTombol, $sections) {
+function kirimPesanList($nomorPenerima, $judulHeader, $pesanBody, $pesanFooter, $namaTombol, $sections)
+{
     $logger = new AppLogger('whatsapp_list_message.log');
     $nomorPenerima = normalizePhoneNumber($nomorPenerima);
 
@@ -131,16 +153,16 @@ function kirimPesanList($nomorPenerima, $judulHeader, $pesanBody, $pesanFooter, 
     $result = sendWhatsAppMessage($data);
 
     if ($result['httpcode'] >= 200 && $result['httpcode'] < 300) {
-        // $logger->success("Pesan List berhasil dikirim ke {$nomorPenerima}.");
-        return ['success' => true];
+        return ['success' => true, 'wamid' => $result['wamid']];
     } else {
         $logger->error("Gagal kirim pesan List ke {$nomorPenerima}. HTTP: {$result['httpcode']}. Response: {$result['response']}");
-        return ['success' => false];
+        return ['success' => false, 'wamid' => null];
     }
 }
 
 
-function kirimPesanButton($nomorPenerima, $pesanBody, $buttons, $pesanHeader = null, $pesanFooter = null) {
+function kirimPesanButton($nomorPenerima, $pesanBody, $buttons, $pesanHeader = null, $pesanFooter = null)
+{
     $logger = new AppLogger('whatsapp_button_message.log');
     $nomorPenerima = normalizePhoneNumber($nomorPenerima);
 
@@ -161,7 +183,7 @@ function kirimPesanButton($nomorPenerima, $pesanBody, $buttons, $pesanHeader = n
     if ($pesanFooter) {
         $interactiveData['footer'] = ['text' => $pesanFooter];
     }
-    
+
     $data = [
         'messaging_product' => 'whatsapp',
         'to' => $nomorPenerima,
@@ -173,14 +195,15 @@ function kirimPesanButton($nomorPenerima, $pesanBody, $buttons, $pesanHeader = n
 
     if ($result['httpcode'] >= 200 && $result['httpcode'] < 300) {
         // $logger->success("Pesan Button berhasil dikirim ke {$nomorPenerima}.");
-        return ['success' => true];
+        return ['success' => true, 'wamid' => $result['wamid']];
     } else {
         $logger->error("Gagal kirim pesan Button ke {$nomorPenerima}. HTTP: {$result['httpcode']}. Response: {$result['response']}");
-        return ['success' => false];
+        return ['success' => false, 'wamid' => null];
     }
 }
 
-function kirimPesanLokasi($nomorPenerima, $latitude, $longitude, $namaLokasi, $alamatLokasi) {
+function kirimPesanLokasi($nomorPenerima, $latitude, $longitude, $namaLokasi, $alamatLokasi)
+{
     $logger = new AppLogger('whatsapp_location_message.log');
     $nomorPenerima = normalizePhoneNumber($nomorPenerima);
 
@@ -200,14 +223,15 @@ function kirimPesanLokasi($nomorPenerima, $latitude, $longitude, $namaLokasi, $a
 
     if ($result['httpcode'] >= 200 && $result['httpcode'] < 300) {
         // $logger->success("Pesan lokasi '{$namaLokasi}' berhasil dikirim ke {$nomorPenerima}.");
-        return ['success' => true];
+        return ['success' => true, 'wamid' => $result['wamid']];
     } else {
         $logger->error("Gagal kirim pesan lokasi ke {$nomorPenerima}. HTTP: {$result['httpcode']}. Response: {$result['response']}");
-        return ['success' => false];
+        return ['success' => false, 'wamid' => null];
     }
 }
-
-function kirimPesanMedia($nomorPenerima, $mediaUrl, $mediaType, $caption = null) {
+function kirimPesanMedia($nomorPenerima, $mediaUrl, $mediaType, $caption = null)
+{
+    // ... (sAmbil body fungsi ini)
     $logger = new AppLogger('whatsapp_media_message.log');
     $nomorPenerima = normalizePhoneNumber($nomorPenerima);
 
@@ -219,7 +243,7 @@ function kirimPesanMedia($nomorPenerima, $mediaUrl, $mediaType, $caption = null)
     $data = [
         'messaging_product' => 'whatsapp',
         'to' => $nomorPenerima,
-        'type' => $mediaType, 
+        'type' => $mediaType,
         $mediaType => $mediaObject
     ];
 
@@ -227,14 +251,15 @@ function kirimPesanMedia($nomorPenerima, $mediaUrl, $mediaType, $caption = null)
 
     if ($result['httpcode'] >= 200 && $result['httpcode'] < 300) {
         // $logger->success("Pesan media ({$mediaType}) berhasil dikirim ke {$nomorPenerima}.");
-        return ['success' => true];
+        return ['success' => true, 'wamid' => $result['wamid']];
     } else {
         $logger->error("Gagal kirim pesan media ({$mediaType}) ke {$nomorPenerima}. HTTP: {$result['httpcode']}. Response: {$result['response']}");
-        return ['success' => false];
+        return ['success' => false, 'wamid' => null];
     }
 }
 
-function kirimPesanCtaUrl($nomorPenerima, $pesanBody, $displayText, $url, $pesanHeader = null, $pesanFooter = null) {
+function kirimPesanCtaUrl($nomorPenerima, $pesanBody, $displayText, $url, $pesanHeader = null, $pesanFooter = null)
+{
     $logger = new AppLogger('whatsapp_cta_url_message.log');
     $nomorPenerima = normalizePhoneNumber($nomorPenerima);
 
@@ -244,7 +269,7 @@ function kirimPesanCtaUrl($nomorPenerima, $pesanBody, $displayText, $url, $pesan
         'action' => [
             'name' => 'cta_url',
             'parameters' => [
-                'display_text' => substr($displayText, 0, 20), 
+                'display_text' => substr($displayText, 0, 20),
                 'url' => $url
             ]
         ]
@@ -256,7 +281,7 @@ function kirimPesanCtaUrl($nomorPenerima, $pesanBody, $displayText, $url, $pesan
     if ($pesanFooter) {
         $interactiveData['footer'] = ['text' => substr($pesanFooter, 0, 60)];
     }
-    
+
     $data = [
         'messaging_product' => 'whatsapp',
         'to' => $nomorPenerima,
@@ -268,9 +293,9 @@ function kirimPesanCtaUrl($nomorPenerima, $pesanBody, $displayText, $url, $pesan
 
     if ($result['httpcode'] >= 200 && $result['httpcode'] < 300) {
         // $logger->success("Pesan CTA URL '{$displayText}' berhasil dikirim ke {$nomorPenerima}.");
-        return ['success' => true];
+        return ['success' => true, 'wamid' => $result['wamid']];
     } else {
         $logger->error("Gagal kirim pesan CTA URL ke {$nomorPenerima}. HTTP: {$result['httpcode']}. Response: {$result['response']}");
-        return ['success' => false];
+        return ['success' => false, 'wamid' => null];
     }
 }

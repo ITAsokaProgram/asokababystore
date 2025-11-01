@@ -1,12 +1,15 @@
 <?php
-class ConversationService {
-    private $conn;
+class ConversationService
+{
+    public $conn;
     private $logger;
-    public function __construct($dbConnection, $logger) {
+    public function __construct($dbConnection, $logger)
+    {
         $this->conn = $dbConnection;
         $this->logger = $logger;
     }
-    public function getOrCreateConversation($phoneNumber, $profileName = 'Pelanggan') {
+    public function getOrCreateConversation($phoneNumber, $profileName = 'Pelanggan')
+    {
         $stmt = $this->conn->prepare("SELECT * FROM wa_percakapan WHERE nomor_telepon = ?");
         $stmt->bind_param("s", $phoneNumber);
         $stmt->execute();
@@ -19,7 +22,7 @@ class ConversationService {
                 $stmt_update->bind_param("ss", $profileName, $phoneNumber);
                 $stmt_update->execute();
                 $stmt_update->close();
-                $conversation['nama_profil'] = $profileName; 
+                $conversation['nama_profil'] = $profileName;
             }
             if ($conversation['status_percakapan'] === 'open') {
                 $this->updateInteractionTimestamp($phoneNumber);
@@ -30,59 +33,71 @@ class ConversationService {
             $stmt->bind_param("ss", $phoneNumber, $profileName);
             $stmt->execute();
             $stmt->close();
-            return $this->getOrCreateConversation($phoneNumber); 
+            return $this->getOrCreateConversation($phoneNumber);
         }
     }
-    public function openConversation($phoneNumber) {
+    public function openConversation($phoneNumber)
+    {
         $stmt = $this->conn->prepare("UPDATE wa_percakapan SET status_percakapan = 'open', terakhir_interaksi_pada = NOW(), menu_utama_terkirim = 0 WHERE nomor_telepon = ?");
         $stmt->bind_param("s", $phoneNumber);
         $stmt->execute();
         $stmt->close();
     }
-    public function setMenuSent($phoneNumber) {
+    public function setMenuSent($phoneNumber)
+    {
         $stmt = $this->conn->prepare("UPDATE wa_percakapan SET menu_utama_terkirim = 1 WHERE nomor_telepon = ?");
         $stmt->bind_param("s", $phoneNumber);
         $stmt->execute();
         $stmt->close();
     }
-    private function updateInteractionTimestamp($phoneNumber) {
+    private function updateInteractionTimestamp($phoneNumber)
+    {
         $stmt = $this->conn->prepare("UPDATE wa_percakapan SET terakhir_interaksi_pada = NOW() WHERE nomor_telepon = ?");
         $stmt->bind_param("s", $phoneNumber);
         $stmt->execute();
         $stmt->close();
     }
-    public function startLiveChat($phoneNumber) {
+    public function startLiveChat($phoneNumber)
+    {
         $stmt = $this->conn->prepare("UPDATE wa_percakapan SET status_percakapan = 'live_chat', terakhir_interaksi_pada = NOW() WHERE nomor_telepon = ?");
         $stmt->bind_param("s", $phoneNumber);
         $stmt->execute();
         $stmt->close();
     }
-    public function saveMessage($conversationId, $senderType, $messageType, $messageContent) {
-        $stmt = $this->conn->prepare("INSERT INTO wa_pesan (percakapan_id, pengirim, tipe_pesan, isi_pesan) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("isss", $conversationId, $senderType, $messageType, $messageContent);
+
+    public function saveMessage($conversationId, $senderType, $messageType, $messageContent, $wamid = null)
+    {
+        $statusPengiriman = ($senderType === 'admin' && $wamid !== null) ? 'sent' : null;
+
+        $stmt = $this->conn->prepare("INSERT INTO wa_pesan (percakapan_id, pengirim, tipe_pesan, isi_pesan, wamid, status_pengiriman, timestamp) VALUES (?, ?, ?, ?, ?, ?, NOW())");
+        $stmt->bind_param("isssss", $conversationId, $senderType, $messageType, $messageContent, $wamid, $statusPengiriman);
+
         $stmt->execute();
-        $newId = $stmt->insert_id; 
+        $newId = $stmt->insert_id;
         $stmt->close();
+
         $stmt = $this->conn->prepare("SELECT * FROM wa_pesan WHERE id = ?");
         $stmt->bind_param("i", $newId);
         $stmt->execute();
         $result = $stmt->get_result();
         $newMessage = $result->fetch_assoc();
         $stmt->close();
-        return $newMessage; 
+        return $newMessage;
     }
-     public function closeConversation($phoneNumber) {
+    public function closeConversation($phoneNumber)
+    {
         $stmt = $this->conn->prepare("UPDATE wa_percakapan SET status_percakapan = 'closed', menu_utama_terkirim = 0 WHERE nomor_telepon = ?");
         $stmt->bind_param("s", $phoneNumber);
         $stmt->execute();
         $stmt->close();
     }
-    public function getTotalUnreadCount() {
+    public function getTotalUnreadCount()
+    {
         $sql = "SELECT COUNT(id) AS total_unread FROM wa_pesan WHERE pengirim = 'user' AND status_baca = 0";
         $result = $this->conn->query($sql);
         if ($result) {
             $row = $result->fetch_assoc();
-            return (int)$row['total_unread'];
+            return (int) $row['total_unread'];
         }
         return 0;
     }

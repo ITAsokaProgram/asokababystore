@@ -12,7 +12,7 @@ try {
         echo json_encode(['success' => false, 'message' => 'Token tidak ditemukan atau format salah.']);
         exit;
     }
-    
+
     $token = $matches[1];
     $decoded = verify_token($token);
 
@@ -47,23 +47,23 @@ try {
             $stmt_counts = $conn->prepare($sql_counts);
             $stmt_counts->execute();
             $counts_result = $stmt_counts->get_result();
-            
+
             while ($row = $counts_result->fetch_assoc()) {
                 if ($row['status_percakapan'] == 'live_chat') {
-                    $live_chat_count = (int)$row['unread_convo_count'];
+                    $live_chat_count = (int) $row['unread_convo_count'];
                 } else if (in_array($row['status_percakapan'], ['open', 'closed'])) {
-                    $umum_count += (int)$row['unread_convo_count'];
+                    $umum_count += (int) $row['unread_convo_count'];
                 }
             }
             $stmt_counts->close();
         } catch (Exception $e) {
             $logger->error("Error calculating unread counts (counts_only): " . $e->getMessage());
         }
-        
+
         echo json_encode([
             'unread_counts' => [
-                'live_chat' => (int)$live_chat_count,
-                'umum' => (int)$umum_count
+                'live_chat' => (int) $live_chat_count,
+                'umum' => (int) $umum_count
             ]
         ]);
         $conn->close();
@@ -77,8 +77,9 @@ try {
             exit;
         }
 
-        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-        if ($page < 1) $page = 1;
+        $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
+        if ($page < 1)
+            $page = 1;
 
         if ($page == 1) {
             try {
@@ -92,7 +93,7 @@ try {
                 $result_count = $conn->query($sql_count);
                 if ($result_count) {
                     $row_count = $result_count->fetch_assoc();
-                    $totalUnread = (int)$row_count['total_unread'];
+                    $totalUnread = (int) $row_count['total_unread'];
                 }
 
                 $live_chat_count_ws = 0;
@@ -112,14 +113,15 @@ try {
                     $counts_result_ws = $stmt_counts_ws->get_result();
                     while ($row_ws = $counts_result_ws->fetch_assoc()) {
                         if ($row_ws['status_percakapan'] == 'live_chat') {
-                            $live_chat_count_ws = (int)$row_ws['unread_convo_count'];
+                            $live_chat_count_ws = (int) $row_ws['unread_convo_count'];
                         } else if (in_array($row_ws['status_percakapan'], ['open', 'closed'])) {
-                            $umum_count_ws += (int)$row_ws['unread_convo_count'];
+                            $umum_count_ws += (int) $row_ws['unread_convo_count'];
                         }
                     }
                     $stmt_counts_ws->close();
-                } catch (Exception $e) {}
-                
+                } catch (Exception $e) {
+                }
+
                 $ws_url = 'http://127.0.0.1:8081/notify';
                 $payload = json_encode([
                     'event' => 'unread_count_update',
@@ -138,9 +140,9 @@ try {
                         'Content-Type: application/json',
                         'Content-Length: ' . strlen($payload)
                     ]);
-                    
-                    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT_MS, 50); 
-                    curl_setopt($ch, CURLOPT_TIMEOUT_MS, 100); 
+
+                    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT_MS, 50);
+                    curl_setopt($ch, CURLOPT_TIMEOUT_MS, 100);
 
                     curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
                     curl_exec($ch);
@@ -149,11 +151,10 @@ try {
                     }
                     curl_close($ch);
                 } catch (Exception $e) {
-                    // Log error jika cURL gagal, jangan biarkan kosong
                     $logger->error("Failed to notify WS bridge: " . $e->getMessage());
                 }
-                
-                
+
+
             } catch (Exception $e) {
                 $logger->error("Error during page=1 read/notify logic: " . $e->getMessage());
             }
@@ -184,7 +185,7 @@ try {
 
         $stmt_msgs = $conn->prepare("
             SELECT * FROM (
-                SELECT id, pengirim, isi_pesan, tipe_pesan, timestamp, status_baca
+                SELECT id, pengirim, isi_pesan, tipe_pesan, timestamp, status_baca, wamid, status_pengiriman
                 FROM wa_pesan
                 WHERE percakapan_id = ?
                 ORDER BY timestamp DESC, id DESC
@@ -198,7 +199,7 @@ try {
         $messages = $result_msgs->fetch_all(MYSQLI_ASSOC);
         $stmt_msgs->close();
 
-        
+
         $stmt_labels = $conn->prepare("
             SELECT l.id, l.nama_label, l.warna
             FROM wa_labels l
@@ -218,19 +219,20 @@ try {
             'labels' => $labels,
             'pagination' => [
                 'current_page' => $page,
-                'total_pages' => (int)$total_pages,
+                'total_pages' => (int) $total_pages,
                 'has_more' => $page < $total_pages
             ]
         ];
     } else {
-        
+
         $filter = $_GET['filter'] ?? 'semua';
         $search = $_GET['search'] ?? '';
         $live_chat_count = 0;
         $umum_count = 0;
 
-        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-        if ($page < 1) $page = 1;
+        $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
+        if ($page < 1)
+            $page = 1;
         $limit = 12;
         $offset = ($page - 1) * $limit;
 
@@ -244,20 +246,20 @@ try {
                 WHERE m.pengirim = 'user' AND m.status_baca = 0
                 GROUP BY p.status_percakapan
             ";
-            
+
             $stmt_counts = $conn->prepare($sql_counts);
             if ($stmt_counts === false) {
                 throw new Exception("Prepare statement (sql_counts) failed: " . $conn->error);
             }
-            
+
             $stmt_counts->execute();
             $counts_result = $stmt_counts->get_result();
-            
+
             while ($row = $counts_result->fetch_assoc()) {
                 if ($row['status_percakapan'] == 'live_chat') {
-                    $live_chat_count = (int)$row['unread_convo_count'];
+                    $live_chat_count = (int) $row['unread_convo_count'];
                 } else if (in_array($row['status_percakapan'], ['open', 'closed'])) {
-                    $umum_count += (int)$row['unread_convo_count'];
+                    $umum_count += (int) $row['unread_convo_count'];
                 }
             }
             $stmt_counts->close();
@@ -265,8 +267,8 @@ try {
         } catch (Exception $e) {
             $logger->error("Error calculating unread counts: " . $e->getMessage());
         }
-        
-        
+
+
         $sql = "
             SELECT
                 p.id,
@@ -309,26 +311,25 @@ try {
 
         if (!empty($search)) {
             $searchTermLike = "%" . $search . "%";
-            
+
             $searchConditions = ["p.nama_display LIKE ?", "p.nomor_telepon LIKE ?"];
             $params[] = $searchTermLike;
             $params[] = $searchTermLike;
             $types .= 'ss';
 
             if (ctype_digit($search)) {
-                
+
                 if (strpos($search, '0') === 0) {
                     $normalizedSearch = "62" . substr($search, 1);
                     $normalizedSearchLike = "%" . $normalizedSearch . "%";
-                    
+
                     $searchConditions[] = "p.nomor_telepon LIKE ?";
                     $params[] = $normalizedSearchLike;
                     $types .= 's';
-                }
-                else if (strpos($search, '62') === 0) {
+                } else if (strpos($search, '62') === 0) {
                     $normalizedSearch = "0" . substr($search, 2);
                     $normalizedSearchLike = "%" . $normalizedSearch . "%";
-                    
+
                     $searchConditions[] = "p.nomor_telepon LIKE ?";
                     $params[] = $normalizedSearchLike;
                     $types .= 's';
@@ -367,8 +368,8 @@ try {
         $params[] = $limit;
         $params[] = $offset;
         $types .= 'ii';
-        
-        
+
+
         $stmt = $conn->prepare($sql);
         if (!empty($params)) {
             $stmt->bind_param($types, ...$params);
@@ -377,14 +378,14 @@ try {
         $result = $stmt->get_result();
         $conversations = $result->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
-        
-        
+
+
         foreach ($conversations as $key => $convo) {
             $labels = [];
             if (!empty($convo['labels_concat'])) {
                 $pairs = explode(';', $convo['labels_concat']);
                 foreach ($pairs as $pair) {
-                    
+
                     if (substr_count($pair, ':') >= 2) {
                         list($id, $nama, $warna) = explode(':', $pair, 3);
                         $labels[] = ['id' => $id, 'nama_label' => $nama, 'warna' => $warna];
@@ -394,16 +395,16 @@ try {
             $conversations[$key]['labels'] = $labels;
             unset($conversations[$key]['labels_concat']);
         }
-        
+
         $data = [
             'conversations' => $conversations,
             'unread_counts' => [
-                'live_chat' => (int)$live_chat_count,
-                'umum' => (int)$umum_count
+                'live_chat' => (int) $live_chat_count,
+                'umum' => (int) $umum_count
             ],
             'pagination' => [
                 'current_page' => $page,
-                'total_pages' => (int)$total_pages,
+                'total_pages' => (int) $total_pages,
                 'has_more' => $page < $total_pages
             ]
         ];

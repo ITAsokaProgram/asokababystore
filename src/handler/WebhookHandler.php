@@ -13,12 +13,14 @@ class WebhookHandler
     private $logger;
     private $verificationService;
     private $conversationService;
+    private $conn;
 
     public function __construct(VerificationService $verificationService, ConversationService $conversationService, $logger)
     {
         $this->verificationService = $verificationService;
         $this->conversationService = $conversationService;
         $this->logger = $logger;
+        $this->conn = $conversationService->conn;
     }
 
     public function handleVerification()
@@ -33,6 +35,48 @@ class WebhookHandler
             $this->logger->warning("Webhook verification failed. Invalid token.");
         }
     }
+
+    public function handleStatusUpdate($body)
+    {
+        $status_data = $body['entry'][0]['changes'][0]['value']['statuses'][0] ?? null;
+        if (!$status_data) {
+            return;
+        }
+
+        $wamid = $status_data['id'];
+        $status = $status_data['status'];
+        $recipient_id = $status_data['recipient_id'];
+
+        try {
+            $stmt = $this->conn->prepare("
+                UPDATE wa_pesan 
+                SET status_pengiriman = ? 
+                WHERE wamid = ? AND 
+                (
+                    status_pengiriman IS NULL OR 
+                    (status_pengiriman = 'sent' AND (? = 'delivered' OR ? = 'read')) OR
+                    (status_pengiriman = 'delivered' AND ? = 'read')
+                )
+            ");
+            $stmt->bind_param("sssss", $status, $wamid, $status, $status, $status);
+            $stmt->execute();
+            $affected_rows = $stmt->affected_rows;
+            $stmt->close();
+
+            if ($affected_rows > 0) {
+                $this->notifyWebSocketServer([
+                    'event' => 'message_status_update',
+                    'wamid' => $wamid,
+                    'status' => $status,
+                    'recipient_id' => $recipient_id
+                ]);
+            }
+        } catch (Exception $e) {
+            $this->logger->error("Gagal update status untuk wamid {$wamid}: " . $e->getMessage());
+        }
+    }
+
+
 
     public function handleIncomingMessage($body)
     {
@@ -83,6 +127,12 @@ class WebhookHandler
                 $this->conversationService->closeConversation($nomorPengirim);
                 $this->sendWelcomeMessage($nomorPengirim, $conversation['id'], $namaPengirim);
                 $this->conversationService->openConversation($nomorPengirim);
+
+                $this->notifyWebSocketServer([
+                    'event' => 'conversation_status_update',
+                    'conversation_id' => $conversation['id'],
+                    'new_status' => 'open'
+                ]);
                 return;
             }
 
@@ -171,6 +221,10 @@ class WebhookHandler
                 return;
             }
         }
+        if ($message['type'] === 'interactive' && isset($message['interactive']['type']) && $message['interactive']['type'] === 'button_reply') {
+            $this->processButtonReply($message, $conversation, $namaPengirim);
+            return;
+        }
 
 
         if ($message['type'] === 'interactive' && isset($message['interactive']['type']) && $message['interactive']['type'] === 'button_reply') {
@@ -212,13 +266,66 @@ class WebhookHandler
             $savedUserMessage = null;
             $messageContent = '';
 
-            if ($messageType === 'text') {
-                $messageContent = $message['text']['body'];
-                $savedUserMessage = $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $messageContent);
-            } else {
-                kirimPesanTeks($nomorPengirim, WhatsappConstants::TEXT_ONLY_TO_START);
-                return;
+            // MODIFIKASI: Izinkan semua tipe pesan untuk memulai percakapan
+            switch ($messageType) {
+                case 'text':
+                    $messageContent = $message['text']['body'];
+                    $savedUserMessage = $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $messageContent);
+                    break;
+
+                case 'interactive':
+                    if (isset($message['interactive']['type']) && $message['interactive']['type'] === 'button_reply') {
+                        $messageContent = $message['interactive']['button_reply']['title'];
+                        $savedUserMessage = $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $messageContent);
+                    } elseif (isset($message['interactive']['type']) && $message['interactive']['type'] === 'list_reply') {
+                        $messageContent = $message['interactive']['list_reply']['title'];
+                        $savedUserMessage = $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $messageContent);
+                    } else {
+                        $this->logger->warning("Unhandled interactive message type in 'closed' state: " . ($message['interactive']['type'] ?? 'unknown'));
+                        $messageContent = "[Pesan interaktif]";
+                        $savedUserMessage = $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $messageContent);
+                    }
+                    break;
+
+                case 'image':
+                case 'video':
+                case 'audio':
+                    $mediaService = new MediaService($this->logger);
+                    $mediaId = $message[$messageType]['id'];
+                    $result = $mediaService->downloadAndUpload($mediaId, $messageType);
+
+                    if (isset($result['url'])) {
+                        $messageContent = $result['url'];
+                        $savedUserMessage = $this->conversationService->saveMessage($conversation['id'], 'user', $messageType, $messageContent);
+                    } else {
+                        // Gagal mengunduh media, kirim pesan balasan error ukuran
+                        $limit = $result['limit'] ?? 'yang ditentukan';
+                        $mediaName = 'file';
+                        switch ($messageType) {
+                            case 'image':
+                                $mediaName = 'gambar';
+                                break;
+                            case 'video':
+                                $mediaName = 'video';
+                                break;
+                            case 'audio':
+                                $mediaName = 'pesan suara';
+                                break;
+                        }
+                        kirimPesanTeks($nomorPengirim, sprintf(WhatsappConstants::MEDIA_SIZE_EXCEEDED, $mediaName, $limit));
+                        // return agar tidak membuka convo jika media gagal.
+                        return;
+                    }
+                    break;
+
+                default:
+                    // Tipe lain seperti sticker, document, location, etc.
+                    // Simpan sebagai placeholder
+                    $messageContent = "[$messageType]";
+                    $savedUserMessage = $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $messageContent);
+                    break;
             }
+            // AKHIR MODIFIKASI
 
             if ($savedUserMessage) {
                 $totalUnread = $this->conversationService->getTotalUnreadCount();
@@ -233,7 +340,19 @@ class WebhookHandler
 
             $this->sendWelcomeMessage($nomorPengirim, $conversation['id'], $namaPengirim);
             $this->conversationService->openConversation($nomorPengirim);
-        } else {
+
+            // Ambil ulang status percakapan yang sekarang sudah 'open'
+            $updatedConversation = $this->conversationService->getOrCreateConversation($nomorPengirim, $namaPengirim);
+
+            // Proses klik tombol yang baru saja membuka percakapan
+            if ($messageType === 'interactive' && isset($message['interactive']['type']) && $message['interactive']['type'] === 'button_reply') {
+                $this->processButtonReply($message, $updatedConversation, $namaPengirim);
+            }
+            // Proses list reply yang baru saja membuka percakapan
+            elseif ($messageType === 'interactive' && isset($message['interactive']['type']) && $message['interactive']['type'] === 'list_reply') {
+                $this->processListReplyMessage($message, $updatedConversation, $namaPengirim);
+            }
+        } else { // status_percakapan === 'open'
             if ($message['type'] === 'text') {
                 $messageContent = $message['text']['body'];
                 $savedUserMessage = $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $messageContent);
@@ -497,7 +616,7 @@ class WebhookHandler
 
     private function saveAdminReply($conversationId, $nomorPengirim, $messageContent, $messageType = 'text')
     {
-        $savedMessage = $this->conversationService->saveMessage($conversationId, 'admin', $messageType, $messageContent);
+        $savedMessage = $this->conversationService->saveMessage($conversationId, 'admin', $messageType, $messageContent, null);
 
         if ($savedMessage) {
             $this->notifyWebSocketServer([
@@ -551,5 +670,42 @@ class WebhookHandler
             'conversation_id' => $conversation['id'],
             'total_unread_count' => $totalUnread
         ]);
+    }
+
+    private function processButtonReply($message, $conversation, $namaPengirim)
+    {
+        $nomorPengirim = $message['from'];
+        $buttonId = $message['interactive']['button_reply']['id'];
+        $buttonTitle = $message['interactive']['button_reply']['title'];
+
+        $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $buttonTitle);
+
+        switch ($buttonId) {
+            case 'BUKA_MENU_UTAMA':
+                $this->sendMainMenuAsList($nomorPengirim, $conversation['id']);
+                return;
+            case 'REQ_LIVE_CHAT':
+                $this->triggerLiveChat($nomorPengirim, $conversation);
+                return;
+
+            case 'CHAT_CS':
+                $this->triggerLiveChat($nomorPengirim, $conversation);
+                return;
+            case 'DAFTAR_JABODETABEK':
+                $this->sendBranchListByRegion($nomorPengirim, 'jabodetabek', 1, 'kontak', $namaPengirim);
+                return;
+
+            case 'DAFTAR_BELITUNG':
+                $this->sendBranchListByRegion($nomorPengirim, 'belitung', 1, 'kontak', $namaPengirim);
+                return;
+
+            case 'LOKASI_DAFTAR_JABODETABEK':
+                $this->sendBranchListByRegion($nomorPengirim, 'jabodetabek', 1, 'lokasi', $namaPengirim);
+                return;
+
+            case 'LOKASI_DAFTAR_BELITUNG':
+                $this->sendBranchListByRegion($nomorPengirim, 'belitung', 1, 'lokasi', $namaPengirim);
+                return;
+        }
     }
 }
