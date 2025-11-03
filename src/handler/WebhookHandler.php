@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/../constant/BranchConstants.php';
 require_once __DIR__ . '/../constant/WhatsappConstants.php';
+require_once __DIR__ . '/../constant/VoucherConstants.php';
+require_once __DIR__ . '/../service/VoucherService.php';
 require_once __DIR__ . '/../service/ConversationService.php';
 require_once __DIR__ . '/../service/MediaService.php';
 require_once __DIR__ . '/../config/Config.php';
@@ -13,7 +15,9 @@ class WebhookHandler
     private $logger;
     private $verificationService;
     private $conversationService;
+    private $voucherService;
     private $conn;
+
 
     public function __construct(VerificationService $verificationService, ConversationService $conversationService, $logger)
     {
@@ -21,6 +25,7 @@ class WebhookHandler
         $this->conversationService = $conversationService;
         $this->logger = $logger;
         $this->conn = $conversationService->conn;
+        $this->voucherService = new VoucherService($this->conn, $this->logger);
     }
 
     public function handleVerification()
@@ -114,6 +119,47 @@ class WebhookHandler
 
         $conversation = $this->conversationService->getOrCreateConversation($nomorPengirim, $namaPengirim);
 
+        $activePromoSession = $this->voucherService->getAnyActiveSession($nomorPengirim);
+
+        if ($activePromoSession) {
+
+            if ($messageType === 'text') {
+                $textBody = strtolower(trim($message['text']['body']));
+                if ($textBody === 'batal' || $textBody === 'cancel') {
+
+                    $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $message['text']['body']);
+
+                    $this->voucherService->cancelSession($conversation, $activePromoSession);
+
+                    return;
+                }
+            }
+
+
+            $this->voucherService->handlePromoMessage($conversation, $message, $activePromoSession);
+            return;
+        }
+
+        if ($messageType === 'text') {
+            $textBody = trim($message['text']['body']);
+            if (substr($textBody, 0, 4) === 'VCR:') {
+
+                if (!array_key_exists($textBody, \Asoka\Constant\VoucherConstants::VOUCHERS)) {
+                    $this->logger->warning("Kode voucher tidak valid: {$textBody}");
+
+                    $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $textBody);
+
+                    $pesanError = "Maaf Ayah/Bunda, kode voucher `{$textBody}` tidak valid atau sudah kedaluwarsa. Silakan periksa kembali kode Anda.";
+                    $sendResult = kirimPesanTeks($nomorPengirim, $pesanError);
+                    $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanError, 'text', $sendResult['wamid'] ?? null);
+
+                    return;
+                }
+
+                $this->voucherService->handleVoucherCode($conversation, $message, $namaPengirim);
+                return;
+            }
+        }
         if ($conversation['status_percakapan'] === 'live_chat') {
             if (
                 $messageType === 'interactive' &&

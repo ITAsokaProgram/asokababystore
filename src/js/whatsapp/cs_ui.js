@@ -429,19 +429,19 @@ function formatLatestMessage(convo) {
       text = convo.latest_message_content;
       break;
     case "image":
-      icon = '<i class="fas fa-image text-gray-400 mr-1.5"></i>';
+      icon = '<i class="fas fa-image text-gray-400 mr-2"></i>';
       text = " Gambar";
       break;
     case "video":
-      icon = '<i class="fas fa-video text-gray-400 mr-1.5"></i>';
+      icon = '<i class="fas fa-video text-gray-400 mr-2"></i>';
       text = " Video";
       break;
     case "audio":
-      icon = '<i class="fas fa-microphone text-gray-400 mr-1.5"></i>';
+      icon = '<i class="fas fa-microphone text-gray-400 mr-2"></i>';
       text = " Pesan suara";
       break;
     case "document":
-      icon = '<i class="fas fa-file-alt text-gray-400 mr-1.5"></i>';
+      icon = '<i class="fas fa-file-alt text-gray-400 mr-2"></i>';
       try {
         const docInfo = JSON.parse(convo.latest_message_content);
         text = docInfo.filename || "Dokumen";
