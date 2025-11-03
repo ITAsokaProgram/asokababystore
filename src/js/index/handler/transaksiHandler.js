@@ -161,7 +161,7 @@ export const displayTransaksi = async () => {
                     <p class="text-sm text-gray-700">
                         Jika ingin ditanggapi dengan cepat,
                         <a href="https://wa.me/62817171212" target="_blank" class="font-bold text-green-600 hover:underline">
-                            klik disini untuk menghubungi CS kami.
+                            klik disini untuk menghubungi Customer Service kami.
                         </a>
                     </p>
                 </div>
