@@ -268,34 +268,34 @@ try {
             $logger->error("Error calculating unread counts: " . $e->getMessage());
         }
 
+        // ini ga bener
+        // $sql = "
+        //     SELECT
+        //         p.id,
+        //         p.nomor_telepon,
+        //         p.nama_profil,
+        //         p.nama_display,
+        //         p.status_percakapan,
 
-        $sql = "
-            SELECT
-                p.id,
-                p.nomor_telepon,
-                p.nama_profil,
-                p.nama_display,
-                p.status_percakapan,
-                
-                COALESCE(
-                    (SELECT MAX(m.timestamp) FROM wa_pesan m WHERE m.percakapan_id = p.id),
-                    p.terakhir_interaksi_pada
-                ) AS urutan_interaksi,
-                
-                (SELECT COUNT(m.id)
-                 FROM wa_pesan m
-                 WHERE m.percakapan_id = p.id AND m.pengirim = 'user' AND m.status_baca = 0
-                ) AS jumlah_belum_terbaca,
-                
-                (SELECT GROUP_CONCAT(DISTINCT CONCAT(l.id, ':', l.nama_label, ':', l.warna) SEPARATOR ';')
-                 FROM wa_percakapan_labels pl
-                 JOIN wa_labels l ON pl.label_id = l.id
-                 WHERE pl.percakapan_id = p.id
-                ) AS labels_concat
-                
-            FROM
-                wa_percakapan p
-        ";
+        //         COALESCE(
+        //             (SELECT MAX(m.timestamp) FROM wa_pesan m WHERE m.percakapan_id = p.id),
+        //             p.terakhir_interaksi_pada
+        //         ) AS urutan_interaksi,
+
+        //         (SELECT COUNT(m.id)
+        //          FROM wa_pesan m
+        //          WHERE m.percakapan_id = p.id AND m.pengirim = 'user' AND m.status_baca = 0
+        //         ) AS jumlah_belum_terbaca,
+
+        //         (SELECT GROUP_CONCAT(DISTINCT CONCAT(l.id, ':', l.nama_label, ':', l.warna) SEPARATOR ';')
+        //          FROM wa_percakapan_labels pl
+        //          JOIN wa_labels l ON pl.label_id = l.id
+        //          WHERE pl.percakapan_id = p.id
+        //         ) AS labels_concat
+
+        //     FROM
+        //         wa_percakapan p
+        // ";
         $sql = "
             SELECT
                 p.id,
