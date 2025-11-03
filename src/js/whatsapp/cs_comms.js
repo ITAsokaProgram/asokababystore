@@ -63,6 +63,12 @@ function initWebSocket() {
                 titleContainer.appendChild(newBadge);
               }
             }
+          } else {
+            if (currentConvoPage === 1 && currentSearchTerm === "") {
+              setTimeout(() => {
+                fetchAndRenderConversations();
+              }, 500);
+            }
           }
           if (data.conversation_id) {
             selectConversation(data.conversation_id);
@@ -135,7 +141,9 @@ function initWebSocket() {
               }
             } else {
               if (currentConvoPage === 1 && currentSearchTerm === "") {
-                fetchAndRenderConversations();
+                setTimeout(() => {
+                  fetchAndRenderConversations();
+                }, 500);
               }
             }
           }
