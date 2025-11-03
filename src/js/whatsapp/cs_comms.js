@@ -64,14 +64,11 @@ function initWebSocket() {
               }
             }
           } else {
-            if (currentConvoPage === 1 && currentSearchTerm === "") {
+            if (currentConpoPage === 1 && currentSearchTerm === "") {
               setTimeout(() => {
                 fetchAndRenderConversations();
               }, 500);
             }
-          }
-          if (data.conversation_id) {
-            selectConversation(data.conversation_id);
           }
 
           if (data.total_unread_count !== undefined) {
