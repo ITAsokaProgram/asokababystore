@@ -430,15 +430,15 @@ function formatLatestMessage(convo) {
       break;
     case "image":
       icon = '<i class="fas fa-image text-gray-400 mr-1.5"></i>';
-      text = "Gambar";
+      text = " Gambar";
       break;
     case "video":
       icon = '<i class="fas fa-video text-gray-400 mr-1.5"></i>';
-      text = "Video";
+      text = " Video";
       break;
     case "audio":
       icon = '<i class="fas fa-microphone text-gray-400 mr-1.5"></i>';
-      text = "Pesan suara";
+      text = " Pesan suara";
       break;
     case "document":
       icon = '<i class="fas fa-file-alt text-gray-400 mr-1.5"></i>';
@@ -446,25 +446,25 @@ function formatLatestMessage(convo) {
         const docInfo = JSON.parse(convo.latest_message_content);
         text = docInfo.filename || "Dokumen";
       } catch (e) {
-        text = "Dokumen";
+        text = " Dokumen";
       }
       break;
     case "contacts":
-      icon = '<i class="fas fa-user-circle text-gray-400 mr-1.5"></i>';
+      icon = '<i class="fas fa-user-circle text-gray-400 mr-2"></i>';
       try {
         const contactInfo = JSON.parse(convo.latest_message_content);
-        text = contactInfo.name || "Kontak";
+        text = contactInfo.name || " Kontak";
       } catch (e) {
-        text = "Kontak";
+        text = " Kontak";
       }
       break;
     default:
-      text = `[${convo.latest_message_type}]`;
+      text = ` [${convo.latest_message_type}]`;
       break;
   }
 
   return `<div class="latest-message-preview text-xs text-gray-500 flex items-center truncate">
                 ${icon}
-                <span class="truncate">${text}</span>
+                <span class="truncate"> ${text}</span>
             </div>`;
 }

@@ -375,6 +375,17 @@ class WebhookHandler
                 $messageContent = $message['text']['body'];
                 $savedUserMessage = $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $messageContent);
 
+                if ($savedUserMessage) {
+                    $totalUnread = $this->conversationService->getTotalUnreadCount();
+                    $this->notifyWebSocketServer([
+                        'event' => 'new_message',
+                        'conversation_id' => $conversation['id'],
+                        'phone' => $nomorPengirim,
+                        'message' => $savedUserMessage,
+                        'total_unread_count' => $totalUnread
+                    ]);
+                }
+
                 if ($conversation['menu_utama_terkirim'] == 0) {
                     $this->processTextMessage($message, $conversation);
                     $this->conversationService->setMenuSent($nomorPengirim);
@@ -400,6 +411,18 @@ class WebhookHandler
                         $messageContent = json_encode($fileInfo);
                     }
                     $savedUserMessage = $this->conversationService->saveMessage($conversation['id'], 'user', $messageType, $messageContent);
+
+                    if ($savedUserMessage) {
+                        $totalUnread = $this->conversationService->getTotalUnreadCount();
+                        $this->notifyWebSocketServer([
+                            'event' => 'new_message',
+                            'conversation_id' => $conversation['id'],
+                            'phone' => $nomorPengirim,
+                            'message' => $savedUserMessage,
+                            'total_unread_count' => $totalUnread
+                        ]);
+                    }
+
                 } else {
                     $limit = $result['limit'] ?? 'yang ditentukan';
                     $mediaName = 'file';
@@ -430,19 +453,19 @@ class WebhookHandler
                 $messageContent = "[$messageType]";
                 $savedUserMessage = $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $messageContent);
 
+                if ($savedUserMessage) {
+                    $totalUnread = $this->conversationService->getTotalUnreadCount();
+                    $this->notifyWebSocketServer([
+                        'event' => 'new_message',
+                        'conversation_id' => $conversation['id'],
+                        'phone' => $nomorPengirim,
+                        'message' => $savedUserMessage,
+                        'total_unread_count' => $totalUnread
+                    ]);
+                }
+
                 $this->processTextMessage($message, $conversation);
                 $this->conversationService->setMenuSent($nomorPengirim);
-            }
-
-            if ($savedUserMessage) {
-                $totalUnread = $this->conversationService->getTotalUnreadCount();
-                $this->notifyWebSocketServer([
-                    'event' => 'new_message',
-                    'conversation_id' => $conversation['id'],
-                    'phone' => $nomorPengirim,
-                    'message' => $savedUserMessage,
-                    'total_unread_count' => $totalUnread
-                ]);
             }
 
         }
