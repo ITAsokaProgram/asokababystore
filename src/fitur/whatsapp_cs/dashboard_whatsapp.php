@@ -321,7 +321,7 @@ if (!$menuHandler->initialize()) {
 
     .message-time {
       position: absolute;
-      bottom: 6px;
+      bottom: 2px;
       right: 10px;
       font-size: 0.7rem;
       color: #64748b;

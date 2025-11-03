@@ -59,10 +59,21 @@ try {
     }
 
     $contactName = "Asoka Baby Store " . $branchName;
-    kirimPesanKontak($customerPhone, $contactName, $phoneNumber);
 
-    $messageContent = "Mengirim kontak cabang {$branchName}: {$phoneNumber}";
-    $savedMessage = $conversationService->saveMessage($conversationId, 'admin', 'text', $messageContent);
+    $sendResult = kirimPesanKontak($customerPhone, $contactName, $phoneNumber);
+
+    $messageContent = json_encode([
+        'name' => $contactName,
+        'phone' => $phoneNumber
+    ]);
+
+    $savedMessage = $conversationService->saveMessage(
+        $conversationId,
+        'admin',
+        'contacts',
+        $messageContent,
+        $sendResult['wamid'] ?? null
+    );
 
     if ($savedMessage) {
         $ws_url = 'http://127.0.0.1:8081/notify';

@@ -606,9 +606,15 @@ class WebhookHandler
                 } elseif (array_key_exists($selectedId, BranchConstants::ALL_NOMOR_TELEPON)) {
                     $namaKontak = "Asoka Baby Store " . $selectedId;
                     $nomorUntukDikirim = BranchConstants::ALL_NOMOR_TELEPON[$selectedId];
-                    $pesanKontak = sprintf(WhatsappConstants::SENDING_CONTACT_NOTICE, $namaKontak, $nomorUntukDikirim);
+
+                    $contactInfo = json_encode([
+                        'name' => $namaKontak,
+                        'phone' => $nomorUntukDikirim
+                    ]);
+
                     $sendResult = kirimPesanKontak($nomorPengirim, $namaKontak, $nomorUntukDikirim);
-                    $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanKontak, 'text', $sendResult['wamid'] ?? null);
+                    $this->logger->info("result: " . $sendResult);
+                    $this->saveAdminReply($conversation['id'], $nomorPengirim, $contactInfo, 'contacts', $sendResult['wamid'] ?? null);
                 } else {
                     $pesanError = WhatsappConstants::INVALID_OPTION;
                     $sendResult = kirimPesanTeks($nomorPengirim, $pesanError);

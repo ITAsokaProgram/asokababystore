@@ -323,6 +323,35 @@ function createMessageBubble(msg) {
         contentHTML = `<div class="message-content text-content">${p.outerHTML}</div>`;
       }
       break;
+    case "contacts":
+      try {
+        const contactInfo = JSON.parse(msg.isi_pesan);
+        const contactName = contactInfo.name || "Kontak";
+        const contactPhone = contactInfo.phone || "Tidak ada nomor";
+        let iconClass = "fas fa-user-circle";
+        let iconColor = "#3B82F6";
+        contentHTML = `
+                        <div class="message-content contact-content" style="display: flex; align-items: center; background-color: ${
+                          isUser ? "#EBF5FF" : "#F3F4F6"
+                        }; border-radius: 8px; padding: 4px; max-width: 280px; word-break: break-all;">
+                            <div  style="display: flex; align-items: center; text-decoration: none; color: #333; width: 100%;">
+                                <i class="${iconClass}" style="font-size: 1.6em; color: ${iconColor}; margin-right: 12px; flex-shrink: 0;"></i>
+                                <div style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: normal;">
+                                    <span style="font-weight: 500; color: #1F2937; display: block;">${contactName}</span>
+                                    <span style="font-size: 0.9em; color: #6B7280; display: block;">${contactPhone}</span>
+                                </div>
+                            </div>
+                        </div>`;
+        bubble.classList.add("file-bubble");
+      } catch (e) {
+        console.error("Gagal parse JSON kontak:", e, msg.isi_pesan);
+        const p = document.createElement("p");
+        p.style.whiteSpace = "pre-wrap";
+        p.style.marginBottom = "0";
+        p.appendChild(document.createTextNode("[Kontak] " + msg.isi_pesan));
+        contentHTML = `<div class="message-content text-content">${p.outerHTML}</div>`;
+      }
+      break;
     default:
       const p = document.createElement("p");
       p.style.whiteSpace = "pre-wrap";
@@ -395,6 +424,15 @@ function formatLatestMessage(convo) {
         text = docInfo.filename || "Dokumen";
       } catch (e) {
         text = "Dokumen";
+      }
+      break;
+    case "contacts":
+      icon = '<i class="fas fa-user-circle text-gray-400 mr-1.5"></i>';
+      try {
+        const contactInfo = JSON.parse(convo.latest_message_content);
+        text = contactInfo.name || "Kontak";
+      } catch (e) {
+        text = "Kontak";
       }
       break;
     default:

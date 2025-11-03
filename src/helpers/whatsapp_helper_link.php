@@ -95,7 +95,9 @@ function kirimPesanKontak($nomorPenerima, $namaKontak, $nomorTeleponKontak)
 {
     $logger = new AppLogger('whatsapp_contact_message.log');
     $nomorPenerima = normalizePhoneNumber($nomorPenerima);
+
     $nomorTeleponBersih = preg_replace('/[^0-9]/', '', $nomorTeleponKontak);
+    $nomorTeleponBersih = normalizePhoneNumber($nomorTeleponBersih);
 
     $data = [
         'messaging_product' => 'whatsapp',
@@ -122,7 +124,9 @@ function kirimPesanKontak($nomorPenerima, $namaKontak, $nomorTeleponKontak)
 
     if ($result['httpcode'] >= 200 && $result['httpcode'] < 300) {
         $logger->success("Pesan kontak '{$namaKontak}' berhasil dikirim ke {$nomorPenerima}.");
+        $logger->info("WAMDID DITERIMA: " . $result['wamid']);
         return ['success' => true, 'wamid' => $result['wamid']];
+
     } else {
         $logger->error("Gagal kirim pesan kontak ke {$nomorPenerima}. HTTP: {$result['httpcode']}. Response: {$result['response']}");
         return ['success' => false, 'wamid' => null];
