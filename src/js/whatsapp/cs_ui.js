@@ -246,10 +246,21 @@ function getStatusIcon(status) {
 function createMessageBubble(msg) {
   const bubble = document.createElement("div");
   const isUser = msg.pengirim === "user";
-  bubble.className = `message-bubble ${
-    isUser ? "user-bubble" : "admin-bubble"
-  }`;
+
+  let bubbleTypeClass = "";
+  if (isUser) {
+    bubbleTypeClass = "user-bubble";
+  } else {
+    if (msg.dikirim_oleh_bot == 1) {
+      bubbleTypeClass = "admin-bubble-bot";
+    } else {
+      bubbleTypeClass = "admin-bubble";
+    }
+  }
+
+  bubble.className = `message-bubble ${bubbleTypeClass}`;
   bubble.dataset.timestamp = msg.timestamp;
+
   if (!isUser && msg.wamid) {
     bubble.dataset.wamid = msg.wamid;
   }
@@ -303,10 +314,16 @@ function createMessageBubble(msg) {
           iconClass = "fas fa-file-excel";
           iconColor = "#10B981";
         }
+
+        let bgColor = "#F3F4F6";
+        if (isUser) {
+          bgColor = "#EBF5FF";
+        } else if (msg.dikirim_oleh_bot == 1) {
+          bgColor = "#F0FFF4";
+        }
+
         contentHTML = `
-                    <div class="message-content document-content" style="display: flex; align-items: center; background-color: ${
-                      isUser ? "#EBF5FF" : "#F3F4F6"
-                    }; border-radius: 8px; padding: 10px 14px; max-width: 280px; word-break: break-all;">
+                    <div class="message-content document-content" style="display: flex; align-items: center; background-color: ${bgColor}; border-radius: 8px; padding: 10px 14px; max-width: 280px; word-break: break-all;">
                         <a href="${url}" target="_blank" rel="noopener noreferrer" download="${filename}" style="display: flex; align-items: center; text-decoration: none; color: #333; width: 100%;">
                             <i class="${iconClass}" style="font-size: 1.6em; color: ${iconColor}; margin-right: 12px; flex-shrink: 0;"></i>
                             <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; color: #1F2937;">${filename}</span>
@@ -330,18 +347,24 @@ function createMessageBubble(msg) {
         const contactPhone = contactInfo.phone || "Tidak ada nomor";
         let iconClass = "fas fa-user-circle";
         let iconColor = "#3B82F6";
+
+        let bgColor = "#F3F4F6";
+        if (isUser) {
+          bgColor = "#EBF5FF";
+        } else if (msg.dikirim_oleh_bot == 1) {
+          bgColor = "#F0FFF4";
+        }
+
         contentHTML = `
-                        <div class="message-content contact-content" style="display: flex; align-items: center; background-color: ${
-                          isUser ? "#EBF5FF" : "#F3F4F6"
-                        }; border-radius: 8px; padding: 4px; max-width: 280px; word-break: break-all;">
-                            <div  style="display: flex; align-items: center; text-decoration: none; color: #333; width: 100%;">
-                                <i class="${iconClass}" style="font-size: 1.6em; color: ${iconColor}; margin-right: 12px; flex-shrink: 0;"></i>
-                                <div style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: normal;">
-                                    <span style="font-weight: 500; color: #1F2937; display: block;">${contactName}</span>
-                                    <span style="font-size: 0.9em; color: #6B7280; display: block;">${contactPhone}</span>
-                                </div>
-                            </div>
-                        </div>`;
+                                <div class="message-content contact-content" style="display: flex; align-items: center; background-color: ${bgColor}; border-radius: 8px; padding: 4px; max-width: 280px; word-break: break-all;">
+                                    <div  style="display: flex; align-items: center; text-decoration: none; color: #333; width: 100%;">
+                                        <i class="${iconClass}" style="font-size: 1.6em; color: ${iconColor}; margin-right: 12px; flex-shrink: 0;"></i>
+                                        <div style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: normal;">
+                                            <span style="font-weight: 500; color: #1F2937; display: block;">${contactName}</span>
+                                            <span style="font-size: 0.9em; color: #6B7280; display: block;">${contactPhone}</span>
+                                        </div>
+                                    </div>
+                                </div>`;
         bubble.classList.add("file-bubble");
       } catch (e) {
         console.error("Gagal parse JSON kontak:", e, msg.isi_pesan);

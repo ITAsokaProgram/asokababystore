@@ -685,12 +685,10 @@ if (!$menuHandler->initialize()) {
       font-size: 1.5em;
       margin-right: 10px;
       color: #4B5563;
-      /* gray-600 */
     }
 
     .admin-bubble .document-content .document-icon {
       color: #E5E7EB;
-      /* gray-200 */
     }
 
     .document-content .document-filename {
@@ -700,10 +698,8 @@ if (!$menuHandler->initialize()) {
       overflow: hidden;
       text-overflow: ellipsis;
       max-width: 200px;
-      /* Batasi lebar nama file */
     }
 
-    /* Perbaikan untuk link di bubble teks */
     .message-bubble .text-content a {
       color: inherit;
       text-decoration: underline;
@@ -711,6 +707,18 @@ if (!$menuHandler->initialize()) {
 
     .admin-bubble .text-content a {
       font-weight: 600;
+    }
+
+    .admin-bubble-bot {
+      background-color: #dcf8c6;
+      align-self: flex-end;
+      border-radius: 12px 12px 0 12px;
+      padding: 8px 12px;
+      margin-bottom: 4px;
+      max-width: 75%;
+      word-wrap: break-word;
+      box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+      position: relative;
     }
   </style>
 </head>

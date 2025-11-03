@@ -378,9 +378,6 @@ class WebhookHandler
                 if ($conversation['menu_utama_terkirim'] == 0) {
                     $this->processTextMessage($message, $conversation);
                     $this->conversationService->setMenuSent($nomorPengirim);
-                } else {
-                    // Opsional: Kirim menu lagi jika user mengetik teks bebas
-                    // $this->processTextMessage($message, $conversation);
                 }
             } elseif ($message['type'] === 'interactive' && $message['interactive']['type'] === 'list_reply') {
                 $this->processListReplyMessage($message, $conversation, $namaPengirim);
@@ -697,7 +694,7 @@ class WebhookHandler
 
     private function saveAdminReply($conversationId, $nomorPengirim, $messageContent, $messageType = 'text', $wamid = null)
     {
-        $savedMessage = $this->conversationService->saveMessage($conversationId, 'admin', $messageType, $messageContent, $wamid);
+        $savedMessage = $this->conversationService->saveMessage($conversationId, 'admin', $messageType, $messageContent, $wamid, 1);
 
         if ($savedMessage) {
             $this->notifyWebSocketServer([

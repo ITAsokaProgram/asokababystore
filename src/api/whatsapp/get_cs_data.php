@@ -185,7 +185,7 @@ try {
 
         $stmt_msgs = $conn->prepare("
             SELECT * FROM (
-                SELECT id, pengirim, isi_pesan, tipe_pesan, timestamp, status_baca, wamid, status_pengiriman
+                SELECT id, pengirim, isi_pesan, tipe_pesan, timestamp, status_baca, wamid, status_pengiriman, dikirim_oleh_bot
                 FROM wa_pesan
                 WHERE percakapan_id = ?
                 ORDER BY timestamp DESC, id DESC

@@ -78,6 +78,10 @@ function initWebSocket() {
             updateTotalUnreadBadge(data.total_unread_count);
           }
         } else if (data.event === "new_message") {
+          if (data.message.pengirim === "admin") {
+            data.message.isBot = true;
+          }
+
           if (data.conversation_id === currentConversationId) {
             appendMessage(data.message);
             fetch(
@@ -122,7 +126,6 @@ function initWebSocket() {
                 timeElement.dataset.timestamp = data.message.timestamp;
               }
 
-              // --- KODE BARU ---
               const latestMessagePreview = existingItem.querySelector(
                 ".latest-message-preview"
               );
@@ -134,7 +137,6 @@ function initWebSocket() {
                 latestMessagePreview.parentElement.innerHTML =
                   formatLatestMessage(pseudoConvo);
               }
-              // --- AKHIR KODE BARU ---
 
               if (currentConvoPage === 1 && currentSearchTerm === "") {
                 listElement.prepend(existingItem);
@@ -148,6 +150,8 @@ function initWebSocket() {
             }
           }
         } else if (data.event === "new_admin_reply") {
+          data.message.isBot = false;
+
           if (data.conversation_id === currentConversationId) {
             appendMessage(data.message);
           }
@@ -166,7 +170,6 @@ function initWebSocket() {
               timeElement.dataset.timestamp = data.message.timestamp;
             }
 
-            // --- KODE BARU ---
             const latestMessagePreview = existingItem.querySelector(
               ".latest-message-preview"
             );
@@ -178,7 +181,6 @@ function initWebSocket() {
               latestMessagePreview.parentElement.innerHTML =
                 formatLatestMessage(pseudoConvo);
             }
-            // --- AKHIR KODE BARU ---
 
             if (currentConvoPage === 1 && currentSearchTerm === "") {
               listElement.prepend(existingItem);
@@ -623,9 +625,6 @@ async function sendMessage() {
     if (!response.ok || !result.success) {
       throw new Error(result.message || "Gagal mengirim balasan.");
     }
-
-    // currentConvoPage = 1;
-    // fetchAndRenderConversations();
   } catch (error) {
     console.error(error);
     Swal.fire("Error", error.message, "error");

@@ -64,13 +64,16 @@ class ConversationService
         $stmt->execute();
         $stmt->close();
     }
-
-    public function saveMessage($conversationId, $senderType, $messageType, $messageContent, $wamid = null)
+    public function saveMessage($conversationId, $senderType, $messageType, $messageContent, $wamid = null, $isBot = 0)
     {
         $statusPengiriman = ($senderType === 'admin' && $wamid !== null) ? 'sent' : null;
 
-        $stmt = $this->conn->prepare("INSERT INTO wa_pesan (percakapan_id, pengirim, tipe_pesan, isi_pesan, wamid, status_pengiriman, timestamp) VALUES (?, ?, ?, ?, ?, ?, NOW())");
-        $stmt->bind_param("isssss", $conversationId, $senderType, $messageType, $messageContent, $wamid, $statusPengiriman);
+        if ($senderType === 'user') {
+            $isBot = 0;
+        }
+
+        $stmt = $this->conn->prepare("INSERT INTO wa_pesan (percakapan_id, pengirim, tipe_pesan, isi_pesan, wamid, status_pengiriman, dikirim_oleh_bot, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())");
+        $stmt->bind_param("isssssi", $conversationId, $senderType, $messageType, $messageContent, $wamid, $statusPengiriman, $isBot);
 
         $stmt->execute();
         $newId = $stmt->insert_id;
@@ -87,7 +90,7 @@ class ConversationService
             }
         }
 
-        $stmt = $this->conn->prepare("SELECT * FROM wa_pesan WHERE id = ?");
+        $stmt = $this->conn->prepare("SELECT id, pengirim, isi_pesan, tipe_pesan, timestamp, status_baca, wamid, status_pengiriman, dikirim_oleh_bot FROM wa_pesan WHERE id = ?");
         $stmt->bind_param("i", $newId);
         $stmt->execute();
         $result = $stmt->get_result();
