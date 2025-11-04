@@ -159,7 +159,11 @@ class ShopeeApiService
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
 
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 300); // mamenit
+        curl_setopt($ch, CURLOPT_TIMEOUT, 300); // 300 detik (5 menit)
+
+        curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+        curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+        curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
 
 
         if ($method === 'POST') {
@@ -172,6 +176,7 @@ class ShopeeApiService
         $response_str = curl_exec($ch);
         $curl_error = curl_error($ch);
         curl_close($ch);
+
 
         if ($curl_error) {
             $this->logger->error("❌ cURL Error: " . $curl_error);
@@ -242,7 +247,7 @@ class ShopeeApiService
                 }
             }
             // ! ini biar ga kena rate limiting dari shopee
-            usleep(50000);
+            usleep(200000);
         }
         return $merged_products;
     }

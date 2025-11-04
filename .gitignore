@@ -5,15 +5,13 @@ yarn-debug.log
 yarn-error.log
 pnpm-lock.yaml
 
-# PHP Composer
+# vendor
 vendor/
-composer.json
-composer.lock
 
 # Environment files
 *.env
 **/*.env
-
+.env.php
 # OS / Editor junk
 .DS_Store
 Thumbs.db
@@ -58,9 +56,6 @@ uploaded_img/
 coverage/
 .nyc_output/
 
-# Composer installer
-composer.phar
-composer-setup.php
 
 # Log files
 logs/
