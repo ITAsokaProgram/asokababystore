@@ -144,10 +144,11 @@ class VoucherService
         $buttonId = $buttonReply['id'];
         $buttonTitle = $buttonReply['title'];
         $this->saveMessage($percakapanId, 'user', 'text', $buttonTitle);
+
         if ($buttonId === 'VOUCHER_CONFIRM_YES') {
             $this->updateSessionStatus($session['id'], 'awaiting_location');
-            $pesanBody = "Baik Ayah/Bunda. Silakan *Share Location* Anda (Gunakan fitur 'Location' di WhatsApp, bukan kirim alamat) untuk menentukan lokasi penukaran voucher.";
-            $sendResult = kirimPesanTeks($nomorPengirim, $pesanBody);
+            $pesanBody = "Baik Ayah/Bunda. Silakan *Share Location* Anda dengan menekan tombol di bawah ini untuk menentukan lokasi penukaran voucher.";
+            $sendResult = kirimPesanRequestLokasi($nomorPengirim, $pesanBody);
             $this->saveMessage($percakapanId, 'admin', 'text', $pesanBody, $sendResult['wamid'] ?? null, 1);
         } else {
             $this->updateSessionStatus($session['id'], 'cancelled');
@@ -163,25 +164,35 @@ class VoucherService
         $userLat = $location['latitude'];
         $userLon = $location['longitude'];
         $this->saveMessage($percakapanId, 'user', 'location', json_encode($location));
+
         $nearbyBranches = $this->findNearbyBranches($userLat, $userLon, 5);
+
         if (empty($nearbyBranches)) {
             $pesanBody = "Maaf Ayah/Bunda, kami tidak menemukan cabang terdekat dari lokasi Anda.";
             $this->sendDefaultReply($conversation, $pesanBody);
             $this->updateSessionStatus($session['id'], 'cancelled');
             return;
         }
+
         $rows = [];
         foreach ($nearbyBranches as $branch) {
             $rowTitle = substr($branch['name'], 0, 24);
-            $rowDesc = substr(" (± " . number_format($branch['distance'], 1) . " km)", 0, 72);
+
+            $distText = "(± " . number_format($branch['distance'], 1) . " km)";
+            $addressText = $branch['address'];
+            $fullDesc = "{$distText} - {$addressText}";
+            $rowDesc = substr($fullDesc, 0, 72);
+
             $rows[] = [
                 'id' => 'VOUCHER_BRANCH_' . $branch['key'],
                 'title' => $rowTitle,
                 'description' => $rowDesc
             ];
         }
+
         $sections = [['title' => 'Cabang Terdekat', 'rows' => $rows]];
         $pesanBody = "Silakan pilih salah satu cabang Asoka terdekat Anda dari daftar di bawah ini.";
+
         $sendResult = kirimPesanList(
             $nomorPengirim,
             "Pilih Cabang",
@@ -190,6 +201,7 @@ class VoucherService
             "Lihat Cabang",
             $sections
         );
+
         $this->saveMessage($percakapanId, 'admin', 'text', $pesanBody, $sendResult['wamid'] ?? null, 1);
         $this->updateSessionStatus($session['id'], 'awaiting_branch');
     }

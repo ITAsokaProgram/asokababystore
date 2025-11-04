@@ -302,3 +302,31 @@ function kirimPesanCtaUrl($nomorPenerima, $pesanBody, $displayText, $url, $pesan
         return ['success' => false, 'wamid' => null];
     }
 }
+function kirimPesanRequestLokasi($nomorPenerima, $pesanBody)
+{
+    $logger = new AppLogger('whatsapp_location_request.log');
+    $nomorPenerima = normalizePhoneNumber($nomorPenerima);
+
+    $data = [
+        'messaging_product' => 'whatsapp',
+        'to' => $nomorPenerima,
+        'type' => 'interactive',
+        'interactive' => [
+            'type' => 'location_request_message',
+            'body' => ['text' => $pesanBody],
+            'action' => [
+                'name' => 'send_location'
+            ]
+        ]
+    ];
+
+    $result = sendWhatsAppMessage($data);
+
+    if ($result['httpcode'] >= 200 && $result['httpcode'] < 300) {
+        $logger->success("Pesan request lokasi berhasil dikirim ke {$nomorPenerima}.");
+        return ['success' => true, 'wamid' => $result['wamid']];
+    } else {
+        $logger->error("Gagal kirim pesan request lokasi ke {$nomorPenerima}. HTTP: {$result['httpcode']}. Response: {$result['response']}");
+        return ['success' => false, 'wamid' => null];
+    }
+}
