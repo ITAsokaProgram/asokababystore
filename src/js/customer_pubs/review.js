@@ -4,10 +4,10 @@ import { getCookie } from "/src/js/index/utils/cookies.js";
 // // Checking Direct Link Access
 const userObject = [];
 let currentBon = null;
-let currentKasir = null; 
+let currentKasir = null;
 export const handleReviewClick = (bon, namaKasir) => {
   currentBon = bon;
-  currentKasir = namaKasir; 
+  currentKasir = namaKasir;
   openReviewModal(bon, "reviewModal");
 };
 // // Checking Direct Link Access
@@ -59,7 +59,7 @@ if (!token) {
         userObject.push(data.data || data.user);
         const hp = userObject[0].no_hp;
         let qris = document.getElementById("qris");
-        if(!qris) {
+        if (!qris) {
           qris = "";
         } else {
           qris.setAttribute("href", `/customer/qris?number=${hp}`);
@@ -196,7 +196,6 @@ function updatePreview() {
   });
 }
 
-// ============ FORM SUBMIT ============
 export const postFormReview = () => {
   const reviewForm = document.getElementById("reviewForm");
   reviewForm.addEventListener("submit", function (e) {
@@ -221,7 +220,7 @@ export const postFormReview = () => {
       formData.append("photos[]", file);
     });
     showLoading();
-    console.log("SUCCESS")
+    console.log("SUCCESS");
     fetch("/src/api/review/send_review_pubs.php", {
       method: "POST",
       body: formData,
@@ -229,22 +228,41 @@ export const postFormReview = () => {
       .then((response) => response.json())
       .then((result) => {
         if (result.status === "success") {
+          const successMessage = result.message;
+
+          const waBanner = `
+<div class="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
+    <i class="fab fa-whatsapp text-2xl text-green-500 flex-shrink-0"></i>
+    <div>
+        <p class="text-sm text-gray-700" style="text-align: left;">
+            Jika ingin ditanggapi dengan cepat,
+            <a href="https://wa.me/62817171212" target="_blank" class="font-bold text-green-600 hover:underline">
+                klik disini untuk menghubungi Customer Service kami.
+            </a>
+        </p>
+    </div>
+</div>`;
+
+          let modalHtmlContent = `<p class="text-gray-600">${successMessage}</p>`;
+
+          if (selectedRating <= 3) {
+            modalHtmlContent += waBanner;
+          }
+
           Swal.fire({
             icon: "success",
             title: "Review Berhasil Dikirim",
-            text: result.message,
+            html: modalHtmlContent,
             confirmButtonText: "OK",
             customClass: {
               popup: "rounded-xl shadow-xl border-2 border-pink-100",
               title: "text-pink-600 font-bold",
-              content: "text-gray-600",
             },
           }).then(() => {
             hideLoading();
             window.location.reload();
           });
 
-          // Reset form & tutup modal
           resetReviewForm("reviewModal");
         } else {
           hideLoading();
