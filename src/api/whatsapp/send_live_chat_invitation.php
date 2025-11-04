@@ -17,7 +17,7 @@ try {
         echo json_encode(['success' => false, 'message' => 'Token tidak ditemukan atau format salah.']);
         exit;
     }
-    
+
     $token = $matches[1];
     $decoded = verify_token($token);
     $isTokenValidAdmin = (is_object($decoded) && isset($decoded->kode));
@@ -61,21 +61,21 @@ try {
         echo json_encode(['success' => false, 'message' => 'Percakapan tidak ditemukan.']);
         exit;
     }
-    
+
     $nomorTelepon = $conversation['nomor_telepon'];
-    
+
     $conversationService->startLiveChat($nomorTelepon);
-    
+
     $totalUnread = $conversationService->getTotalUnreadCount();
 
     $ws_url = 'http://127.0.0.1:8081/notify';
     $payload = json_encode([
-        'event' => 'new_live_chat', 
-        'conversation_id' => (int)$conversationId,
+        'event' => 'new_live_chat',
+        'conversation_id' => (int) $conversationId,
         'phone' => $nomorTelepon,
-        'total_unread_count' => $totalUnread 
+        'total_unread_count' => $totalUnread
     ]);
-    
+
     try {
         $ch = curl_init($ws_url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -85,19 +85,19 @@ try {
             'Content-Type: application/json',
             'Content-Length: ' . strlen($payload)
         ]);
-        curl_setopt($ch, CURLOPT_TIMEOUT_MS, 100);
+        curl_setopt($ch, CURLOPT_TIMEOUT_MS, 1000);
         curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
         curl_exec($ch);
         curl_close($ch);
     } catch (Exception $ws_e) {
         $logger->error("WebSocket broadcast failed for starting live chat: " . $ws_e->getMessage());
     }
-    
+
 
     echo json_encode(['success' => true, 'message' => 'Status percakapan diubah ke live chat.']);
 
 } catch (Exception $e) {
-    $logger->error("Error starting live chat: ". $e->getMessage());
+    $logger->error("Error starting live chat: " . $e->getMessage());
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'Terjadi kesalahan server: ' . $e->getMessage()]);
 } finally {

@@ -92,7 +92,7 @@ try {
             'Content-Type: application/json',
             'Content-Length: ' . strlen($payload)
         ]);
-        curl_setopt($ch, CURLOPT_TIMEOUT_MS, 100);
+        curl_setopt($ch, CURLOPT_TIMEOUT_MS, 1000);
         curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
         curl_exec($ch);
         curl_close($ch);

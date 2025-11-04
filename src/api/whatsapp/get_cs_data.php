@@ -141,8 +141,8 @@ try {
                         'Content-Length: ' . strlen($payload)
                     ]);
 
-                    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT_MS, 50);
-                    curl_setopt($ch, CURLOPT_TIMEOUT_MS, 100);
+                    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT_MS, 500);
+                    curl_setopt($ch, CURLOPT_TIMEOUT_MS, 1000);
 
                     curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
                     curl_exec($ch);
