@@ -125,7 +125,15 @@ require_once __DIR__ . '/produk_shopee.logic.php';
                                         <i class="fas fa-bolt text-sm"></i>
                                         <span>Sync Produk ke Cache</span>
                                     </button>
-                                    </div>
+                                    <button
+                                        id="force-sync-products-to-redis-btn"
+                                        class="px-5 btn-sync py-2.5 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 whitespace-nowrap"
+                                        title="PAKSA sinkronisasi semua produk dari Shopee ke cache. Ini akan menghentikan sync lain yang mungkin sedang berjalan.">
+                                        <i class="fas fa-exclamation-triangle text-sm"></i>
+                                        <span>Sync Produk paksa ke Cache</span>
+                                    </button>
+                                    
+                                </div>
                             </div>
                         </div>
                         <?php if (!empty($redis_error)): ?>
