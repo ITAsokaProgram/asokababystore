@@ -1,28 +1,30 @@
 <?php
 require_once __DIR__ . '/../../../../src/utils/Logger.php';
-class ShopeeApiService {
+class ShopeeApiService
+{
     private $partner_id;
     private $partner_key;
     private $host;
     private $access_token;
     private $shop_id;
-    private $logger; 
-    public function __construct($logger = null) {
+    private $logger;
+    public function __construct($logger = null)
+    {
         if ($logger) {
             $this->logger = $logger;
         } else {
             $this->logger = new AppLogger('shopee_api-service.log');
         }
         $env = parse_ini_file(__DIR__ . '/../../../../.env');
-        $this->partner_id = (int)$env['SHOPEE_PARTNER_ID'];
+        $this->partner_id = (int) $env['SHOPEE_PARTNER_ID'];
         $this->partner_key = trim($env['SHOPEE_PARTNER_KEY']);
         $this->host = trim($env['SHOPEE_HOST']);
         if (isset($_SESSION['access_token']) && isset($_SESSION['shop_id'])) {
             $this->access_token = $_SESSION['access_token'];
-            $this->shop_id = (int)$_SESSION['shop_id'];
+            $this->shop_id = (int) $_SESSION['shop_id'];
         } else {
             try {
-                include __DIR__ . '/../../../../aa_kon_sett.php'; 
+                include __DIR__ . '/../../../../aa_kon_sett.php';
                 if (isset($conn) && $conn) {
                     $stmt = $conn->prepare("SELECT access_token, shop_id FROM shopee_auth WHERE id = 1");
                     $stmt->execute();
@@ -30,7 +32,7 @@ class ShopeeApiService {
                     if ($row = $result->fetch_assoc()) {
                         if (!empty($row['access_token']) && !empty($row['shop_id'])) {
                             $this->access_token = $row['access_token'];
-                            $this->shop_id = (int)$row['shop_id'];
+                            $this->shop_id = (int) $row['shop_id'];
                             if (session_status() == PHP_SESSION_ACTIVE) {
                                 $_SESSION['access_token'] = $this->access_token;
                                 $_SESSION['shop_id'] = $this->shop_id;
@@ -44,10 +46,12 @@ class ShopeeApiService {
             }
         }
     }
-    public function isConnected() {
+    public function isConnected()
+    {
         return !empty($this->access_token) && !empty($this->shop_id);
     }
-    public function disconnect() {
+    public function disconnect()
+    {
         unset($_SESSION['access_token'], $_SESSION['shop_id']);
         try {
             include __DIR__ . '/../../../../aa_kon_sett.php';
@@ -60,16 +64,25 @@ class ShopeeApiService {
             $this->logger->error("Gagal menghapus kredensial Shopee dari DB: " . $t->getMessage());
         }
     }
-    public function getAuthUrl($redirect_uri) {
+    public function getAuthUrl($redirect_uri)
+    {
         $path = "/api/v2/shop/auth_partner";
         $timestamp = time();
         $base_string = sprintf("%s%s%s", $this->partner_id, $path, $timestamp);
         $sign = hash_hmac('sha256', $base_string, $this->partner_key);
-        $url = sprintf("%s%s?partner_id=%s&redirect=%s&timestamp=%s&sign=%s", 
-            $this->host, $path, $this->partner_id, urlencode($redirect_uri), $timestamp, $sign);
+        $url = sprintf(
+            "%s%s?partner_id=%s&redirect=%s&timestamp=%s&sign=%s",
+            $this->host,
+            $path,
+            $this->partner_id,
+            urlencode($redirect_uri),
+            $timestamp,
+            $sign
+        );
         return $url;
     }
-    public function handleOAuthCallback($code, $id, $is_main_account = false) {
+    public function handleOAuthCallback($code, $id, $is_main_account = false)
+    {
         $path = "/api/v2/auth/token/get";
         $timestamp = time();
         $base_string = sprintf("%s%s%s", $this->partner_id, $path, $timestamp);
@@ -88,18 +101,18 @@ class ShopeeApiService {
         $response_data = $this->executeCurl($url, 'POST', $body);
         if (isset($response_data['access_token'])) {
             $_SESSION['access_token'] = $response_data['access_token'];
-            $shop_id_to_save = 0; 
+            $shop_id_to_save = 0;
             if ($is_main_account) {
                 if (isset($response_data['shop_id_list']) && !empty($response_data['shop_id_list'])) {
-                    $_SESSION['shop_id'] = (int)$response_data['shop_id_list'][0];
-                    $shop_id_to_save = (int)$response_data['shop_id_list'][0]; 
+                    $_SESSION['shop_id'] = (int) $response_data['shop_id_list'][0];
+                    $shop_id_to_save = (int) $response_data['shop_id_list'][0];
                 }
             } else {
                 $_SESSION['shop_id'] = $id;
-                $shop_id_to_save = $id; 
+                $shop_id_to_save = $id;
             }
             if ($shop_id_to_save > 0) {
-                 try {
+                try {
                     include __DIR__ . '/../../../../aa_kon_sett.php';
                     if (isset($conn) && $conn) {
                         $stmt = $conn->prepare("UPDATE shopee_auth SET access_token = ?, shop_id = ? WHERE id = 1");
@@ -112,11 +125,12 @@ class ShopeeApiService {
                 }
             }
         } else {
-             $this->logger->error("OAuth Callback failed. Response: " . json_encode($response_data));
+            $this->logger->error("OAuth Callback failed. Response: " . json_encode($response_data));
         }
         return $response_data;
     }
-    public function call($path, $method = 'GET', $body = null) {
+    public function call($path, $method = 'GET', $body = null)
+    {
         if (!$this->isConnected()) {
             return ['error' => 'auth_error', 'message' => 'User not authenticated.'];
         }
@@ -137,16 +151,18 @@ class ShopeeApiService {
         }
         return $this->executeCurl($url, $method, json_encode($body));
     }
-    private function executeCurl($url, $method = 'GET', $payload = null) {
+    private function executeCurl($url, $method = 'GET', $payload = null)
+    {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
 
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30); 
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
         curl_setopt($ch, CURLOPT_TIMEOUT, 300); // 30 detik
 
-        curl_setopt($ch, CURLOPT_DNS_SERVERS, '8.8.8.8,1.1.1.1');
+        curl_setopt($ch, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
+
 
         if ($method === 'POST') {
             curl_setopt($ch, CURLOPT_POST, 1);
@@ -154,13 +170,13 @@ class ShopeeApiService {
                 curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
             }
         }
-        
+
         $response_str = curl_exec($ch);
-        $curl_error = curl_error($ch); 
+        $curl_error = curl_error($ch);
         curl_close($ch);
 
         if ($curl_error) {
-            $this->logger->error("❌ cURL Error: " . $curl_error); 
+            $this->logger->error("❌ cURL Error: " . $curl_error);
             return ['error' => 'curl_error', 'message' => $curl_error];
         }
 
@@ -176,13 +192,16 @@ class ShopeeApiService {
 
         return $response_data;
     }
-    public function getProductList($params) {
+    public function getProductList($params)
+    {
         return $this->call("/api/v2/product/get_item_list", 'GET', $params);
     }
-    public function searchProductList($params) {
+    public function searchProductList($params)
+    {
         return $this->call("/api/v2/product/search_item", 'GET', $params);
     }
-    public function getDetailedProductInfo($product_list_response) {
+    public function getDetailedProductInfo($product_list_response)
+    {
         if (!isset($product_list_response['response']['item']) || empty($product_list_response['response']['item'])) {
             return [];
         }
@@ -210,15 +229,15 @@ class ShopeeApiService {
                 if (isset($model_response['error']) && $model_response['error']) {
                     $error_message = $model_response['message'] ?? 'Unknown error';
                     $this->logger->warning("⚠️ Gagal get_model_list untuk item_id " . $item['item_id'] . ": " . $error_message . ". Melanjutkan tanpa data model.", $model_response);
-                    continue; 
+                    continue;
                 }
                 if (isset($model_response['response']['model']) && !empty($model_response['response']['model'])) {
                     $item['models'] = $model_response['response']['model'];
                     $total_stock = 0;
                     foreach ($item['models'] as $model) {
-                        $stock = $model['stock_info_v2']['summary_info']['total_available_stock'] 
-                                ?? $model['stock_info'][0]['seller_stock'] 
-                                ?? 0;
+                        $stock = $model['stock_info_v2']['summary_info']['total_available_stock']
+                            ?? $model['stock_info'][0]['seller_stock']
+                            ?? 0;
                         $total_stock += $stock;
                     }
                     $item['calculated_total_stock'] = $total_stock;
@@ -229,16 +248,17 @@ class ShopeeApiService {
         }
         return $merged_products;
     }
-    public function updateStock($item_id, $new_stock, $model_id = 0) {
+    public function updateStock($item_id, $new_stock, $model_id = 0)
+    {
         $body = [
-            "item_id" => (int)$item_id,
+            "item_id" => (int) $item_id,
             "stock_list" => [
                 [
-                    "model_id" => (int)$model_id,
+                    "model_id" => (int) $model_id,
                     "seller_stock" => [
                         [
-                            "location_id" => "IDZ", 
-                            "stock" => (int)$new_stock
+                            "location_id" => "IDZ",
+                            "stock" => (int) $new_stock
                         ]
                     ]
                 ]
@@ -246,17 +266,20 @@ class ShopeeApiService {
         ];
         return $this->call("/api/v2/product/update_stock", 'POST', $body);
     }
-    public function updatePrice($item_id, $new_price, $model_id = 0) {
+    public function updatePrice($item_id, $new_price, $model_id = 0)
+    {
         $body = [
             "item_id" => $item_id,
             "price_list" => [["model_id" => $model_id, "original_price" => $new_price]]
         ];
         return $this->call("/api/v2/product/update_price", 'POST', $body);
     }
-    public function getOrderList($params) {
+    public function getOrderList($params)
+    {
         return $this->call("/api/v2/order/get_order_list", 'GET', $params);
     }
-    public function getOrderDetail($params) {
+    public function getOrderDetail($params)
+    {
         return $this->call("/api/v2/order/get_order_detail", 'GET', $params);
     }
 }
