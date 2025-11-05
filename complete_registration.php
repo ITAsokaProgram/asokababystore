@@ -106,7 +106,7 @@ header("Pragma: no-cache");
                             <div class="relative">
                                 <i
                                     class="fas fa-user-check absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                                <input type="text" name="name" id="registerName" placeholder="Memuat nama..."
+                                <input type="text" name="name" id="registerName" placeholder="Masukkan nama Anda"
                                     class="w-full border-2 border-gray-200 pl-10 pr-4 py-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-300 text-lg" />
                             </div>
                         </div>
@@ -186,7 +186,7 @@ header("Pragma: no-cache");
                     <div class="text-center">
                         <div class="text-sm text-gray-600">
                             Sudah punya akun?
-                            <a href="/log_in_2.php"
+                            <a href="/log_in.php"
                                 class="text-pink-600 font-semibold hover:text-pink-700 hover:underline transition-colors">Login</a>
                         </div>
                     </div>
@@ -262,7 +262,7 @@ header("Pragma: no-cache");
             const token = urlParams.get('token');
 
             if (!token || !token.startsWith('final_reg_')) {
-                showSwal('error', 'Token Tidak Valid', 'Link yang Anda gunakan tidak valid atau telah kedaluwarsa.', '/log_in_2.php');
+                showSwal('error', 'Token Tidak Valid', 'Link yang Anda gunakan tidak valid atau telah kedaluwarsa.', '/log_in.php');
                 return;
             }
 
@@ -282,10 +282,10 @@ header("Pragma: no-cache");
                     phoneField.value = data.no_hp;
                     loadingScreen.classList.add('hidden');
                 } else {
-                    showSwal('error', 'Token Gagal Diverifikasi', data.message, '/log_in_2.php');
+                    showSwal('error', 'Token Gagal Diverifikasi', data.message, '/log_in.php');
                 }
             } catch (error) {
-                showSwal('error', 'Koneksi Gagal', 'Gagal terhubung ke server untuk verifikasi token.', '/log_in_2.php');
+                showSwal('error', 'Koneksi Gagal', 'Gagal terhubung ke server untuk verifikasi token.', '/log_in.php');
             }
         });
 

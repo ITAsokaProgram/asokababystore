@@ -33,12 +33,7 @@ export const registerCustomer = async (formData) => {
 
     if (response.ok && data.status === "success") {
       // Pendaftaran berhasil
-      showSwal(
-        "success",
-        "Pendaftaran Berhasil",
-        data.message,
-        "/log_in_2.php"
-      );
+      showSwal("success", "Pendaftaran Berhasil", data.message, "/log_in.php");
     } else {
       // Error dari server (misal: email duplicate, token expired, dll)
       showSwal("error", "Pendaftaran Gagal", data.message);

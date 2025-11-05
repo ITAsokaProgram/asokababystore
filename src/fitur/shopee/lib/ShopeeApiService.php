@@ -19,7 +19,7 @@ class ShopeeApiService
         $this->partner_id = (int) $env['SHOPEE_PARTNER_ID'];
         $this->partner_key = trim($env['SHOPEE_PARTNER_KEY']);
         $this->host = trim($env['SHOPEE_HOST']);
-        if (isset($_SESSION['access_token']) && isset($_SESSION['shop_id'])) {
+        if (session_status() == PHP_SESSION_ACTIVE && isset($_SESSION['access_token']) && isset($_SESSION['shop_id'])) {
             $this->access_token = $_SESSION['access_token'];
             $this->shop_id = (int) $_SESSION['shop_id'];
         } else {

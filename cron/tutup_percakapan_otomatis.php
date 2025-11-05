@@ -6,16 +6,33 @@ require_once __DIR__ . "/../src/utils/Logger.php";
 
 $logger = new AppLogger('tutup_percakapan_otomatis.log');
 
-$timeoutDuration = '5 MINUTE'; 
+$lockFile = __DIR__ . '/tutup_percakapan.lock';
+$lockHandle = fopen($lockFile, 'w');
 
-$sql = "SELECT nomor_telepon FROM wa_percakapan 
-        WHERE status_percakapan = 'open' 
+if (!$lockHandle) {
+    $logger->error("Tidak bisa membuat lock file.");
+    exit;
+}
+
+if (!flock($lockHandle, LOCK_EX | LOCK_NB)) {
+    $logger->info("Cron job 'tutup_percakapan' sudah berjalan. Melewatkan eksekusi ini.");
+    exit;
+}
+
+
+$timeoutDuration = '5 MINUTE';
+
+$sql = "SELECT nomor_telepon FROM wa_percakapan
+        WHERE status_percakapan = 'open'
         AND terakhir_interaksi_pada < NOW() - INTERVAL $timeoutDuration";
 
 $result = mysqli_query($conn, $sql);
 
 if (!$result) {
     $logger->error("Error query: " . mysqli_error($conn));
+
+    flock($lockHandle, LOCK_UN);
+    fclose($lockHandle);
     exit;
 }
 
@@ -24,8 +41,7 @@ $pesanPenutup = "Mohon maaf Ayah/Bunda karena tidak ada respon yang Kami terima 
 $count = 0;
 while ($row = mysqli_fetch_assoc($result)) {
     $nomorTelepon = $row['nomor_telepon'];
-    
-    // $logger->info("Menutup sesi untuk nomor: " . $nomorTelepon);
+
 
     kirimPesanTeks($nomorTelepon, $pesanPenutup);
 
@@ -33,10 +49,11 @@ while ($row = mysqli_fetch_assoc($result)) {
     $updateStmt->bind_param("s", $nomorTelepon);
     $updateStmt->execute();
     $updateStmt->close();
-    
+
     $count++;
 }
 
-// $logger->info("Cron job selesai. Menutup " . $count . " sesi.");
-
 mysqli_close($conn);
+
+flock($lockHandle, LOCK_UN);
+fclose($lockHandle);
