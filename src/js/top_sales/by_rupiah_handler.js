@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const summaryNetSales = document.getElementById("summary-net-sales");
   const summaryGrsMargin = document.getElementById("summary-grs-margin");
   const summaryHpp = document.getElementById("summary-hpp");
+  const pageSubtitle = document.getElementById("page-subtitle");
   const paginationContainer = document.getElementById("pagination-container");
   const paginationInfo = document.getElementById("pagination-info");
   const paginationLinks = document.getElementById("pagination-links");
@@ -16,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return "Rp 0";
     }
     return new Intl.NumberFormat("id-ID", {
-      style: "currency",
+      style: "decimal",
       currency: "IDR",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
@@ -30,18 +31,20 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   function formatPercent(number) {
     if (isNaN(number) || number === null) {
-      return "0.00 %";
+      return "0.00 ";
     }
-    return parseFloat(number).toFixed(2) + " %";
+    return parseFloat(number).toFixed(2) + " ";
   }
   function getUrlParams() {
     const params = new URLSearchParams(window.location.search);
+
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayString = yesterday.toISOString().split("T")[0];
+
     return {
-      tgl_mulai:
-        params.get("tgl_mulai") ||
-        new Date().toISOString().split("T")[0].slice(0, 8) + "01",
-      tgl_selesai:
-        params.get("tgl_selesai") || new Date().toISOString().split("T")[0],
+      tgl_mulai: params.get("tgl_mulai") || yesterdayString,
+      tgl_selesai: params.get("tgl_selesai") || yesterdayString,
       kd_store: params.get("kd_store") || "all",
       page: parseInt(params.get("page") || "1", 10),
     };
@@ -75,12 +78,26 @@ document.addEventListener("DOMContentLoaded", () => {
         throw new Error(data.error);
       }
       populateStoreFilter(data.stores, params.kd_store);
+      if (pageSubtitle) {
+        let storeName = "Seluruh Store";
+        if (
+          filterSelectStore.options.length > 0 &&
+          filterSelectStore.selectedIndex > -1
+        ) {
+          storeName =
+            filterSelectStore.options[filterSelectStore.selectedIndex].text;
+        }
+        pageSubtitle.textContent = `Top Sales by Rupiah Periode ${params.tgl_mulai} s/d ${params.tgl_selesai} - ${storeName}`;
+      }
       updateSummaryCards(data.summary);
       renderTable(data.tabel_data, data.pagination.offset);
       renderPagination(data.pagination);
     } catch (error) {
       console.error("Error loading top sales data:", error);
       showTableError(error.message);
+      if (pageSubtitle) {
+        pageSubtitle.textContent = "Gagal memuat data filter";
+      }
     } finally {
       setLoadingState(false);
     }
@@ -102,12 +119,12 @@ document.addEventListener("DOMContentLoaded", () => {
           filterSubmitButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i><span>Memuat...</span>`;
         if (tableBody)
           tableBody.innerHTML = `
-                        <tr>
-                            <td colspan="12" class="text-center p-8">
-                                <div class="spinner-simple"></div>
-                                <p class="mt-2 text-gray-500">Memuat data...</p>
-                            </td>
-                        </tr>`;
+                            <tr>
+                                <td colspan="11" class="text-center p-8">
+                                    <div class="spinner-simple"></div>
+                                    <p class="mt-2 text-gray-500">Memuat data...</p>
+                                </td>
+                            </tr>`;
         if (summaryNetSales) summaryNetSales.textContent = "-";
         if (summaryGrsMargin) summaryGrsMargin.textContent = "-";
         if (summaryHpp) summaryHpp.textContent = "-";
@@ -132,7 +149,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function showTableError(message) {
     tableBody.innerHTML = `
                 <tr>
-                    <td colspan="12" class="text-center p-8 text-red-600">
+                    <td colspan="11" class="text-center p-8 text-red-600">
                         <i class="fas fa-exclamation-triangle fa-lg mb-2"></i>
                         <p>Gagal memuat data: ${message}</p>
                     </td>
@@ -162,46 +179,49 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderTable(tabel_data, offset) {
     if (!tabel_data || tabel_data.length === 0) {
       tableBody.innerHTML = `
-                        <tr>
-                            <td colspan="12" class="text-center p-8 text-gray-500">
-                                <i class="fas fa-inbox fa-lg mb-2"></i>
-                                <p>Tidak ada data ditemukan untuk filter ini.</p>
-                            </td>
-                        </tr>`;
+                                <tr>
+                                    <td colspan="11" class="text-center p-8 text-gray-500">
+                                        <i class="fas fa-inbox fa-lg mb-2"></i>
+                                        <p>Tidak ada data ditemukan untuk filter ini.</p>
+                                    </td>
+                                </tr>`;
       return;
     }
     let htmlRows = "";
     tabel_data.forEach((row, index) => {
       htmlRows += `
-                        <tr>
-                            <td>${offset + index + 1}</td>
-                            <td>${row.plu}</td>
-                            <td class="text-left font-semibold">${
-                              row.descp
-                            }</td>
-                            <td class="text-right">${formatNumber(row.qty)}</td>
-                            <td class="text-right">${formatRupiah(
-                              row.gross_sales
-                            )}</td>
-                            <td class="text-right">${formatRupiah(row.ppn)}</td>
-                            <td class="text-right">${formatRupiah(
-                              row.total_diskon
-                            )}</td>
-                            <td class="text-right font-semibold">${formatRupiah(
-                              row.net_sales
-                            )}</td>
-                            <td class="text-right">${formatRupiah(
-                              row.bi_angkut
-                            )}</td>
-                            <td class="text-right">${formatRupiah(row.hpp)}</td>
-                            <td class="text-right">${formatRupiah(
-                              row.grs_margin
-                            )}</td>
-                            <td class="text-right">${formatPercent(
-                              row.margin_percent
-                            )}</td>
-                        </tr>
-                    `;
+                                <tr>
+                                    <td>${offset + index + 1}</td>
+                                    <td>${row.plu}</td>
+                                    <td class="text-left font-semibold">${
+                                      row.descp
+                                    }</td>
+                                    <td class="text-right">${formatNumber(
+                                      row.qty
+                                    )}</td>
+                                    <td class="text-right">${formatRupiah(
+                                      row.gross_sales
+                                    )}</td>
+                                    <td class="text-right">${formatRupiah(
+                                      row.ppn
+                                    )}</td>
+                                    <td class="text-right">${formatRupiah(
+                                      row.total_diskon
+                                    )}</td>
+                                    <td class="text-right font-semibold">${formatRupiah(
+                                      row.net_sales
+                                    )}</td>
+                                    <td class="text-right">${formatRupiah(
+                                      row.hpp
+                                    )}</td>
+                                    <td class="text-right">${formatRupiah(
+                                      row.grs_margin
+                                    )}</td>
+                                    <td class="text-right">${formatPercent(
+                                      row.margin_percent
+                                    )}</td>
+                                </tr>
+                            `;
     });
     tableBody.innerHTML = htmlRows;
   }
@@ -225,17 +245,17 @@ document.addEventListener("DOMContentLoaded", () => {
     paginationInfo.textContent = `Menampilkan ${start_row} - ${end_row} dari ${total_rows} data`;
     let linksHtml = "";
     linksHtml += `
-                <a href="${
-                  current_page > 1
-                    ? build_pagination_url(current_page - 1)
-                    : "#"
-                }" 
-                   class="pagination-link ${
-                     current_page === 1 ? "pagination-disabled" : ""
-                   }">
-                    <i class="fas fa-chevron-left"></i>
-                </a>
-            `;
+                    <a href="${
+                      current_page > 1
+                        ? build_pagination_url(current_page - 1)
+                        : "#"
+                    }" 
+                       class="pagination-link ${
+                         current_page === 1 ? "pagination-disabled" : ""
+                       }">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                `;
     const pages_to_show = [];
     const max_pages_around = 2;
     for (let i = 1; i <= total_pages; i++) {
@@ -254,29 +274,31 @@ document.addEventListener("DOMContentLoaded", () => {
         linksHtml += `<span class="pagination-ellipsis">...</span>`;
       }
       linksHtml += `
-                        <a href="${build_pagination_url(page_num)}" 
-                           class="pagination-link ${
-                             page_num === current_page
-                               ? "pagination-active"
-                               : ""
-                           }">
-                            ${page_num}
-                        </a>
-                    `;
+                                <a href="${build_pagination_url(page_num)}" 
+                                   class="pagination-link ${
+                                     page_num === current_page
+                                       ? "pagination-active"
+                                       : ""
+                                   }">
+                                    ${page_num}
+                                </a>
+                            `;
       last_page = page_num;
     }
     linksHtml += `
-                <a href="${
-                  current_page < total_pages
-                    ? build_pagination_url(current_page + 1)
-                    : "#"
-                }" 
-                   class="pagination-link ${
-                     current_page === total_pages ? "pagination-disabled" : ""
-                   }">
-                    <i class="fas fa-chevron-right"></i>
-                </a>
-            `;
+                    <a href="${
+                      current_page < total_pages
+                        ? build_pagination_url(current_page + 1)
+                        : "#"
+                    }" 
+                       class="pagination-link ${
+                         current_page === total_pages
+                           ? "pagination-disabled"
+                           : ""
+                       }">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                `;
     paginationLinks.innerHTML = linksHtml;
   }
   /**
@@ -352,7 +374,6 @@ document.addEventListener("DOMContentLoaded", () => {
         "PPN",
         "Disc",
         "Net Sales",
-        "Bi. Angkut",
         "HPP",
         "Grs Magin",
         "%",
@@ -366,7 +387,6 @@ document.addEventListener("DOMContentLoaded", () => {
         parseFloat(row.ppn),
         parseFloat(row.total_diskon),
         parseFloat(row.net_sales),
-        parseFloat(row.bi_angkut),
         parseFloat(row.hpp),
         parseFloat(row.grs_margin),
         parseFloat(row.margin_percent) / 100,
@@ -375,7 +395,7 @@ document.addEventListener("DOMContentLoaded", () => {
       XLSX.utils.sheet_add_aoa(ws, info, { origin: "A2" });
       XLSX.utils.sheet_add_aoa(ws, [headers], { origin: "A9" });
       XLSX.utils.sheet_add_aoa(ws, dataRows, { origin: "A10" });
-      ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 11 } }];
+      ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 10 } }];
       ws["A1"].s = {
         font: { bold: true, sz: 16 },
         alignment: { horizontal: "center" },
@@ -399,10 +419,10 @@ document.addEventListener("DOMContentLoaded", () => {
       dataRows.forEach((_, R_idx) => {
         const R = R_idx + 9;
         ws[XLSX.utils.encode_cell({ r: R, c: 3 })].s = { numFmt: numFormat };
-        [4, 5, 6, 7, 8, 9, 10].forEach((C) => {
+        [4, 5, 6, 7, 8, 9].forEach((C) => {
           ws[XLSX.utils.encode_cell({ r: R, c: C })].s = { numFmt: numFormat };
         });
-        ws[XLSX.utils.encode_cell({ r: R, c: 11 })].s = {
+        ws[XLSX.utils.encode_cell({ r: R, c: 10 })].s = {
           numFmt: percentFormat,
         };
       });
@@ -411,7 +431,6 @@ document.addEventListener("DOMContentLoaded", () => {
         { wch: 10 },
         { wch: 40 },
         { wch: 10 },
-        { wch: 15 },
         { wch: 15 },
         { wch: 15 },
         { wch: 15 },
@@ -476,7 +495,6 @@ document.addEventListener("DOMContentLoaded", () => {
           "PPN",
           "Disc",
           "Net Sales",
-          "Bi. Angkut",
           "HPP",
           "Grs Magin",
           "%",
@@ -491,7 +509,6 @@ document.addEventListener("DOMContentLoaded", () => {
         formatRupiah(row.ppn),
         formatRupiah(row.total_diskon),
         formatRupiah(row.net_sales),
-        formatRupiah(row.bi_angkut),
         formatRupiah(row.hpp),
         formatRupiah(row.grs_margin),
         formatPercent(row.margin_percent),
@@ -519,7 +536,6 @@ document.addEventListener("DOMContentLoaded", () => {
           8: { halign: "right" },
           9: { halign: "right" },
           10: { halign: "right" },
-          11: { halign: "right" },
         },
       });
       const fileName = `Top_Sales_Rupiah_${params.tgl_mulai}_sd_${params.tgl_selesai}.pdf`;

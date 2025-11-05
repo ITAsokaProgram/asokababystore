@@ -1,10 +1,10 @@
 <?php
 session_start();
 include '../../../aa_kon_sett.php';
+$tanggal_kemarin = date('Y-m-d', strtotime('-1 day'));
 
-
-$default_tgl_mulai = date('Y-m-01');
-$default_tgl_selesai = date('Y-m-d');
+$default_tgl_mulai = $tanggal_kemarin;
+$default_tgl_selesai = $tanggal_kemarin;
 $default_kd_store = 'all';
 $default_page = 1;
 
@@ -19,9 +19,7 @@ if ($page < 1) {
 function build_pagination_url($new_page)
 {
     $params = $_GET;
-
     $params['page'] = $new_page;
-
     return '?' . http_build_query($params);
 }
 ?>
@@ -54,71 +52,76 @@ function build_pagination_url($new_page)
     <?php include '../../component/navigation_report.php' ?>
     <?php include '../../component/sidebar_report.php' ?>
 
-    <main id="main-content" class="flex-1 p-6 ml-64">
+    <main id="main-content" class="flex-1 p-4 ml-64">
         <section class="min-h-screen">
             <div class="max-w-7xl mx-auto">
 
-                <div class="header-card p-6 rounded-2xl mb-6">
-                    <div class="flex items-center justify-between flex-wrap gap-4">
-                        <div class="flex items-center gap-4">
+                <div class="header-card p-4 rounded-2xl mb-4">
+                    <div class="flex items-center justify-between flex-wrap gap-3">
+                        <div class="flex items-center gap-3">
                             <div class="icon-wrapper">
                                 <i class="fas fa-dollar-sign fa-lg"></i>
                             </div>
                             <div>
-                                <h1 class="text-2xl font-bold text-gray-800 mb-1">Top Sales (Rupiah)</h1>
-                                <p class="text-sm text-gray-600">Laporan penjualan barang terlaris berdasarkan nilai
-                                    rupiah.</p>
+                                <h1 class="text-xl font-bold text-gray-800 mb-1">Top Sales by (Rupiah)</h1>
+                                <p id="page-subtitle" class="text-xs text-gray-600">Memuat detail periode...</p>
                             </div>
                         </div>
                     </div>
 
-                    <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="summary-card total">
+                    <div class="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        <div class="summary-card total flex gap-4 items-center">
                             <div class="summary-icon">
                                 <i class="fas fa-cash-register fa-lg"></i>
                             </div>
-                            <h3 class="text-sm font-semibold text-gray-600 mb-1">Total Net Sales</h3>
-                            <p id="summary-net-sales" class="text-3xl font-bold text-gray-900">-</p>
+                            <div>
+                                <h3 class="text-xs font-semibold text-gray-600 mb-1">Total Net Sales</h3>
+                                <p id="summary-net-sales" class="text-2xl font-bold truncate text-gray-900">-</p>
+                            </div>
                         </div>
-                        <div class="summary-card success">
+                        <div class="summary-card flex gap-4 items-center success">
                             <div class="summary-icon">
                                 <i class="fas fa-wallet fa-lg"></i>
                             </div>
-                            <h3 class="text-sm font-semibold text-gray-600 mb-1">Total Gross Margin</h3>
-                            <p id="summary-grs-margin" class="text-3xl font-bold text-green-600">-</p>
+                            <div>
+                                <h3 class="text-xs font-semibold text-gray-600 mb-1">Total Gross Margin</h3>
+                                <p id="summary-grs-margin" class="text-2xl font-bold truncate text-green-600">-</p>
+                            </div>
                         </div>
-                        <div class="summary-card danger">
+                        <div class="summary-card flex gap-4 items-center danger">
                             <div class="summary-icon">
                                 <i class="fas fa-boxes fa-lg"></i>
                             </div>
-                            <h3 class="text-sm font-semibold text-gray-600 mb-1">Total HPP</h3>
-                            <p id="summary-hpp" class="text-3xl font-bold text-red-600">-</p>
+                            <div>
+                                <h3 class="text-xs font-semibold text-gray-600 mb-1">Total HPP</h3>
+                                <p id="summary-hpp" class="text-2xl font-bold truncate text-red-600">-</p>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="filter-card-simple">
-                    <form id="filter-form" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end" method="GET"
+                    <form id="filter-form" class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end" method="GET"
                         action="by_rupiah.php">
                         <div>
-                            <label for="tgl_mulai" class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-calendar-alt text-pink-600 mr-1"></i>
+                            <label for="tgl_mulai" class="block text-xs font-semibold text-gray-700 mb-2"> <i
+                                    class="fas fa-calendar-alt text-pink-600 mr-1"></i>
                                 Dari Tanggal
                             </label>
                             <input type="date" name="tgl_mulai" id="tgl_mulai" class="input-modern w-full"
                                 value="<?php echo htmlspecialchars($tgl_mulai); ?>">
                         </div>
                         <div>
-                            <label for="tgl_selesai" class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-calendar-alt text-pink-600 mr-1"></i>
+                            <label for="tgl_selesai" class="block text-xs font-semibold text-gray-700 mb-2"> <i
+                                    class="fas fa-calendar-alt text-pink-600 mr-1"></i>
                                 Sampai Tanggal
                             </label>
                             <input type="date" name="tgl_selesai" id="tgl_selesai" class="input-modern w-full"
                                 value="<?php echo htmlspecialchars($tgl_selesai); ?>">
                         </div>
                         <div>
-                            <label for="kd_store" class="block text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-store text-pink-600 mr-1"></i>
+                            <label for="kd_store" class="block text-xs font-semibold text-gray-700 mb-2"> <i
+                                    class="fas fa-store text-pink-600 mr-1"></i>
                                 Pilih Cabang
                             </label>
                             <select name="kd_store" id="kd_store" class="input-modern w-full">
@@ -135,18 +138,18 @@ function build_pagination_url($new_page)
                 </div>
 
                 <div class="filter-card">
-                    <div class="flex flex-wrap justify-between items-center mb-4 gap-4">
+                    <div class="flex flex-wrap justify-between items-center mb-3 gap-3">
                         <h3 class="text-lg font-bold text-gray-800">
                             <i class="fas fa-list text-pink-600 mr-2"></i>
                             Hasil Laporan
                         </h3>
                         <div class="flex items-center gap-2">
-                            <button id="export-excel-btn" class="btn-secondary-outline px-4 py-2 rounded-md"
+                            <button id="export-excel-btn" class="btn-secondary-outline px-3 py-1.5 rounded-md"
                                 style="background-color: #E6F7F0; border-color: #107C41; color: #107C41;">
                                 <i class="fas fa-file-excel"></i>
                                 <span>Export Excel</span>
                             </button>
-                            <button id="export-pdf-btn" class="btn-secondary-outline px-4 py-2 rounded-md"
+                            <button id="export-pdf-btn" class="btn-secondary-outline px-3 py-1.5 rounded-md"
                                 style="background-color: #FFF0F0; border-color: #D93025; color: #D93025;">
                                 <i class="fas fa-file-pdf"></i>
                                 <span>Export PDF</span>
@@ -165,7 +168,6 @@ function build_pagination_url($new_page)
                                     <th>PPN</th>
                                     <th>Disc</th>
                                     <th>Net Sales</th>
-                                    <th>Bi. Angkut</th>
                                     <th>HPP</th>
                                     <th>Grs Magin</th>
                                     <th>%</th>
@@ -182,8 +184,8 @@ function build_pagination_url($new_page)
                         </table>
                     </div>
 
-                    <div id="pagination-container" class="flex justify-between items-center mt-6">
-                        <span id="pagination-info" class="text-sm text-gray-600"></span>
+                    <div id="pagination-container" class="flex justify-between items-center mt-4"> <span
+                            id="pagination-info" class="text-sm text-gray-600"></span>
 
                         <div id="pagination-links" class="flex items-center gap-2">
                         </div>

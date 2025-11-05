@@ -34,8 +34,10 @@ $response = [
     'error' => null,
 ];
 try {
-    $tgl_mulai = $_GET['tgl_mulai'] ?? date('Y-m-01');
-    $tgl_selesai = $_GET['tgl_selesai'] ?? date('Y-m-d');
+    $tanggal_kemarin = date('Y-m-d', strtotime('-1 day'));
+
+    $tgl_mulai = $_GET['tgl_mulai'] ?? $tanggal_kemarin;
+    $tgl_selesai = $_GET['tgl_selesai'] ?? $tanggal_kemarin;
     $kd_store = $_GET['kd_store'] ?? 'all';
     $page = 1;
     $limit = 10;
@@ -49,6 +51,9 @@ try {
         $response['pagination'] = null;
     }
     $offset = ($page - 1) * $limit;
+    if (isset($response['pagination'])) {
+        $response['pagination']['offset'] = $offset;
+    }
     $sql_stores = "SELECT kd_store, nm_alias FROM kode_store ORDER BY kd_store ASC";
     $result_stores = $conn->query($sql_stores);
     if ($result_stores) {
@@ -77,7 +82,7 @@ try {
     }
     $sql_data = "
         SELECT
-            $sql_calc_found_rows  
+            $sql_calc_found_rows 
             FLOOR(a.plu / 10) AS plu,
             a.descp,
             SUM(
@@ -94,7 +99,6 @@ try {
             (SUM((a.hrg_promo - (a.hrg_promo * (IFNULL(a.diskon1, 0) / 100))) * (IFNULL(a.diskon2, 0) / 100) * a.qty)) +
             (SUM(a.diskon3 * a.qty)) AS total_diskon,
             (IFNULL(SUM(a.harga * a.qty) - SUM((a.harga - a.hrg_promo) * a.qty) - SUM((a.hrg_promo * (IFNULL(a.diskon1, 0) / 100)) * a.qty) - SUM((a.hrg_promo - (a.hrg_promo * (IFNULL(a.diskon1, 0) / 100))) * (IFNULL(a.diskon2, 0) / 100) * a.qty), 0) - SUM(a.diskon3 * a.qty)) AS net_sales,
-            0 AS bi_angkut,
             SUM(a.avg_cost * a.qty) AS hpp,
             (( (SUM(a.hrg_promo * a.qty) - SUM((a.hrg_promo * (IFNULL(a.diskon1, 0) / 100)) * a.qty) - SUM((a.hrg_promo - (a.hrg_promo * (IFNULL(a.diskon1, 0) / 100))) * (IFNULL(a.diskon2, 0) / 100) * a.qty)) - SUM(IFNULL(a.avg_cost, 0) * IFNULL(a.qty, 0)) - SUM(IFNULL(a.ppn * a.qty, 0)) - SUM(a.diskon3 * a.qty) )) AS grs_margin,
             ( ( ( (SUM(a.hrg_promo * a.qty) - SUM((a.hrg_promo * (IFNULL(a.diskon1, 0) / 100)) * a.qty) - SUM((a.hrg_promo - (a.hrg_promo * (IFNULL(a.diskon1, 0) / 100))) * (IFNULL(a.diskon2, 0) / 100) * a.qty)) - SUM(IFNULL(a.avg_cost, 0) * IFNULL(a.qty, 0)) - SUM(IFNULL(a.ppn * a.qty, 0)) - SUM(a.diskon3 * a.qty) ) / NULLIF( ( (SUM(a.hrg_promo * a.qty) - SUM((a.hrg_promo * (IFNULL(a.diskon1, 0) / 100)) * a.qty) - SUM((a.hrg_promo - (a.hrg_promo * (IFNULL(a.diskon1, 0) / 100))) * (IFNULL(a.diskon2, 0) / 100) * a.qty)) - SUM(IFNULL(a.ppn * a.qty, 0)) - SUM(a.diskon3 * a.qty) ), 0) ) * 100 ) AS margin_percent
@@ -107,7 +111,7 @@ try {
             a.descp
         ORDER BY
             gross_sales DESC
-        $limit_offset_sql  
+        $limit_offset_sql 
     ";
     $stmt_data = $conn->prepare($sql_data);
     $stmt_data->bind_param(...$bind_params_data);

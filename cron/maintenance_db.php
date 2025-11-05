@@ -11,7 +11,6 @@ $sql_delete = "DELETE FROM master_backup WHERE DATE(TGL_BACKUP) <= DATE_SUB(CURD
 if (mysqli_query($conn, $sql_delete)) {
     $deleted_rows = mysqli_affected_rows($conn);
     if ($deleted_rows > 0) {
-        $logger->info("Berhasil menghapus " . $deleted_rows . " baris lama dari master_backup.");
     }
 } else {
     $logger->error("Gagal menghapus data master_backup: " . mysqli_error($conn));
@@ -27,8 +26,9 @@ $tables_to_optimize = [
 
 foreach ($tables_to_optimize as $table) {
     if (mysqli_query($conn, "OPTIMIZE TABLE $table")) {
+        $logger->info("Berhasil Optimize");
     } else {
-        $logger->error("Gagal optimasi tabel " . $table . ": " . mysqli_error($conn));
+        $logger->error(message: "Gagal optimasi tabel " . $table . ": " . mysqli_error($conn));
     }
 }
 
