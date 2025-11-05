@@ -92,7 +92,8 @@
         </div>
 
 
-        <div x-data="{ open: false, nestedOpenPenjualan: false, nestedOpenPelanggan: false }" class="relative ">
+        <div x-data="{ open: false, nestedOpenPenjualan: false, nestedOpenPelanggan: false , nestedOpenReceipt: false, nestedOpenKoreksi: false, nestedOpenReturn: false }"
+            class="relative ">
             <button @click="open = !open" id="laporan"
                 class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-purple-100 hover:to-purple-200 hover:text-purple-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-purple-300">
                 <div class="w-8 flex justify-center">
@@ -177,7 +178,55 @@
                                         </span>
                                     </a>
                                 </li>
-                            </ul>
+                                <li>
+                                    <a href="/src/fitur/top_sales/by_rupiah"
+                                        data-menu="laporan_topsales_rupiah"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-pink-100 hover:text-pink-600 transition-all duration-200 group rounded-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-dollar-sign mr-2 text-base text-green-400 group-hover:text-green-600 group-hover:scale-110 transition-all duration-200"></i>
+                                            Top Sales (Rp)
+                                        </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/src/fitur/top_sales/by_qty"
+                                        data-menu="laporan_topsales_qty"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-pink-100 hover:text-pink-600 transition-all duration-200 group rounded-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-boxes-stacked mr-2 text-base text-green-400 group-hover:text-green-600 group-hover:scale-110 transition-all duration-200"></i>
+                                            Top Sales (Qty)
+                                        </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/src/fitur/top_sales/by_supplier"
+                                        data-menu="laporan_topsales_supplier"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-pink-100 hover:text-pink-600 transition-all duration-200 group rounded-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-truck-field mr-2 text-base text-green-400 group-hover:text-green-600 group-hover:scale-110 transition-all duration-200"></i>
+                                            Top Sales (Supplier)
+                                        </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/src/fitur/top_sales/sales_per_kasir_bon"
+                                        data-menu="laporan_topsales_kasir"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-pink-100 hover:text-pink-600 transition-all duration-200 group rounded-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-cash-register mr-2 text-base text-green-400 group-hover:text-green-600 group-hover:scale-110 transition-all duration-200"></i>
+                                            Sales per Kasir
+                                        </span>
+                                    </a>
+                                </li>
+                                </ul>
                         </div>
                     </li>
                     <li>
@@ -237,6 +286,171 @@
                         </div>
                     </li>
                     <li>
+                        <button @click="nestedOpenReceipt = !nestedOpenReceipt"
+                            class="w-full text-left px-4 py-2.5 text-gray-700 hover:bg-blue-100 hover:text-blue-700 transition-all duration-200 flex items-center group cursor-pointer rounded-lg">
+                            <span
+                                class="transition-all duration-300 group-hover:translate-x-1 font-medium flex items-center">
+                                <i
+                                    class="fa-solid fa-file-invoice-dollar mr-2 text-lg text-blue-500 group-hover:text-blue-600 transition-all duration-200 group-hover:scale-110"></i>
+                                Penerimaan
+                            </span>
+                            <svg class="ml-auto w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1"
+                                :class="{ 'rotate-180': nestedOpenReceipt }" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div x-show="nestedOpenReceipt" @click.away="nestedOpenReceipt = false" class="ml-4 mt-1"
+                            style="display: none;">
+                            <ul
+                                class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg p-2 space-y-1 border border-blue-200">
+                                <li>
+                                    <a href="/src/fitur/penerimaan_receipt/detail"
+                                        data-menu="laporan_receipt_detail"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-pink-100 hover:text-pink-600 transition-all duration-200 group rounded-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-list-ol mr-2 text-base text-blue-400 group-hover:text-blue-600 group-hover:scale-110 transition-all duration-200"></i>
+                                            Detail Receipt
+                                        </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/src/fitur/penerimaan_receipt/by_supplier"
+                                        data-menu="laporan_receipt_supplier"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-pink-100 hover:text-pink-600 transition-all duration-200 group rounded-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-truck mr-2 text-base text-blue-400 group-hover:text-blue-600 group-hover:scale-110 transition-all duration-200"></i>
+                                            Receipt by Supplier
+                                        </span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+                    <li>
+                        <button @click="nestedOpenKoreksi = !nestedOpenKoreksi"
+                            class="w-full text-left px-4 py-2.5 text-gray-700 hover:bg-red-100 hover:text-red-700 transition-all duration-200 flex items-center group cursor-pointer rounded-lg">
+                            <span
+                                class="transition-all duration-300 group-hover:translate-x-1 font-medium flex items-center">
+                                <i
+                                    class="fa-solid fa-edit mr-2 text-lg text-red-500 group-hover:text-red-600 transition-all duration-200 group-hover:scale-110"></i>
+                                Koreksi Stok
+                            </span>
+                            <svg class="ml-auto w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1"
+                                :class="{ 'rotate-180': nestedOpenKoreksi }" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div x-show="nestedOpenKoreksi" @click.away="nestedOpenKoreksi = false" class="ml-4 mt-1"
+                            style="display: none;">
+                            <ul
+                                class="bg-gradient-to-br from-red-50 to-pink-50 rounded-lg p-2 space-y-1 border border-red-200">
+                                <li>
+                                    <a href="/src/fitur/koreksi_stock/by_supplier"
+                                        data-menu="laporan_koreksi_supplier"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-pink-100 hover:text-pink-600 transition-all duration-200 group rounded-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-truck-fast mr-2 text-base text-red-400 group-hover:text-red-600 group-hover:scale-110 transition-all duration-200"></i>
+                                            Koreksi (Supplier)
+                                        </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/src/fitur/koreksi_stock/by_plu"
+                                        data-menu="laporan_koreksi_plu"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-pink-100 hover:text-pink-600 transition-all duration-200 group rounded-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-barcode mr-2 text-base text-red-400 group-hover:text-red-600 group-hover:scale-110 transition-all duration-200"></i>
+                                            Koreksi (PLU)
+                                        </span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+                    <li>
+                        <button @click="nestedOpenReturn = !nestedOpenReturn"
+                            class="w-full text-left px-4 py-2.5 text-gray-700 hover:bg-yellow-100 hover:text-yellow-700 transition-all duration-200 flex items-center group cursor-pointer rounded-lg">
+                            <span
+                                class="transition-all duration-300 group-hover:translate-x-1 font-medium flex items-center">
+                                <i
+                                    class="fa-solid fa-undo mr-2 text-lg text-yellow-500 group-hover:text-yellow-600 transition-all duration-200 group-hover:scale-110"></i>
+                                Return Out
+                            </span>
+                            <svg class="ml-auto w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1"
+                                :class="{ 'rotate-180': nestedOpenReturn }" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div x-show="nestedOpenReturn" @click.away="nestedOpenReturn = false" class="ml-4 mt-1"
+                            style="display: none;">
+                            <ul
+                                class="bg-gradient-to-br from-yellow-50 to-amber-50 rounded-lg p-2 space-y-1 border border-yellow-200">
+                                <li>
+                                    <a href="/src/fitur/return_out/all_item"
+                                        data-menu="laporan_return_all"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-pink-100 hover:text-pink-600 transition-all duration-200 group rounded-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-boxes-alt mr-2 text-base text-yellow-400 group-hover:text-yellow-600 group-hover:scale-110 transition-all duration-200"></i>
+                                            All Item
+                                        </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/src/fitur/return_out/bad_stock"
+                                        data-menu="laporan_return_badstock"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-pink-100 hover:text-pink-600 transition-all duration-200 group rounded-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-box-damaged mr-2 text-base text-yellow-400 group-hover:text-yellow-600 group-hover:scale-110 transition-all duration-200"></i>
+                                            Bad Stock
+                                        </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/src/fitur/return_out/exp_produk"
+                                        data-menu="laporan_return_exp"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-pink-100 hover:text-pink-600 transition-all duration-200 group rounded-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-calendar-times mr-2 text-base text-yellow-400 group-hover:text-yellow-600 group-hover:scale-110 transition-all duration-200"></i>
+                                            Expired
+                                        </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/src/fitur/return_out/hilang_pasangan"
+                                        data-menu="laporan_return_hilang"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-pink-100 hover:text-pink-600 transition-all duration-200 group rounded-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-unlink mr-2 text-base text-yellow-400 group-hover:text-yellow-600 group-hover:scale-110 transition-all duration-200"></i>
+                                            Hilang Pasangan
+                                        </span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+                    <li>
                         <a href="/src/fitur/log_backup/index.php" data-menu="laporan_log_backup"
                             class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-blue-100 hover:text-blue-700 transition-all duration-200 group rounded-lg">
                             <span
@@ -250,7 +464,6 @@
                 </ul>
             </div>
         </div>
-
         <div x-data="{ open: false, nestedOpenTrans: false, nestedOpenTrans: false }" class="relative ">
             <button @click="open = !open" id="transaction"
                 class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-orange-100 hover:to-orange-200 hover:text-orange-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-orange-300">
@@ -468,6 +681,7 @@
         </div>
     </nav>
 </div>
+
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const currentPath = window.location.pathname; // Mengambil URL path saat ini
@@ -475,6 +689,8 @@
         // Menambahkan kelas "active" pada link yang sesuai
         if (currentPath.includes('/in_beranda')) {
             document.getElementById('berandaLink').classList.add('btn', 'active');
+
+        // --- BLOCK LAPORAN ---
         } else if (currentPath.includes('/src/fitur/laporan/in_laporan_sub_dept')) {
             document.getElementById('laporan').classList.add('btn', 'active');
         } else if (currentPath.includes('/src/fitur/laporan/in_sales_ratio')) {
@@ -483,15 +699,44 @@
             document.getElementById('laporan').classList.add('btn', 'active');
         } else if (currentPath.includes('/src/fitur/laporan/in_transaction')) {
             document.getElementById('laporan').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/log_backup/index.php')) { // <-- PENAMBAHAN SCRIPT ACTIVE
+        } else if (currentPath.includes('/src/fitur/log_backup/index.php')) {
             document.getElementById('laporan').classList.add('btn', 'active');
-        }
-        else if (currentPath.includes('/src/fitur/account/in_new_user')) {
+        
+        // START PENAMBAHAN SCRIPT ACTIVE BARU
+        } else if (currentPath.includes('/src/fitur/top_sales/by_rupiah')) {
+            document.getElementById('laporan').classList.add('btn', 'active');
+        } else if (currentPath.includes('/src/fitur/top_sales/by_qty')) {
+            document.getElementById('laporan').classList.add('btn', 'active');
+        } else if (currentPath.includes('/src/fitur/top_sales/by_supplier')) {
+            document.getElementById('laporan').classList.add('btn', 'active');
+        } else if (currentPath.includes('/src/fitur/top_sales/sales_per_kasir_bon')) {
+            document.getElementById('laporan').classList.add('btn', 'active');
+        } else if (currentPath.includes('/src/fitur/penerimaan_receipt/detail')) {
+            document.getElementById('laporan').classList.add('btn', 'active');
+        } else if (currentPath.includes('/src/fitur/penerimaan_receipt/by_supplier')) {
+            document.getElementById('laporan').classList.add('btn', 'active');
+        } else if (currentPath.includes('/src/fitur/koreksi_stock/by_supplier')) {
+            document.getElementById('laporan').classList.add('btn', 'active');
+        } else if (currentPath.includes('/src/fitur/koreksi_stock/by_plu')) {
+            document.getElementById('laporan').classList.add('btn', 'active');
+        } else if (currentPath.includes('/src/fitur/return_out/all_item')) {
+            document.getElementById('laporan').classList.add('btn', 'active');
+        } else if (currentPath.includes('/src/fitur/return_out/bad_stock')) {
+            document.getElementById('laporan').classList.add('btn', 'active');
+        } else if (currentPath.includes('/src/fitur/return_out/exp_produk')) {
+            document.getElementById('laporan').classList.add('btn', 'active');
+        } else if (currentPath.includes('/src/fitur/return_out/hilang_pasangan')) {
+            document.getElementById('laporan').classList.add('btn', 'active');
+        // END PENAMBAHAN SCRIPT ACTIVE BARU
+
+        // --- BLOCK ACCOUNT ---
+        } else if (currentPath.includes('/src/fitur/account/in_new_user')) {
             document.getElementById('account').classList.add('btn', 'active');
         } else if (currentPath.includes('/src/fitur/account/manajemen_user')) {
             document.getElementById('account').classList.add('btn', 'active');
-        }
-        else if (currentPath.includes('/src/fitur/transaction/view_promo')) {
+        
+        // --- BLOCK TRANSAKSI ---
+        } else if (currentPath.includes('/src/fitur/transaction/view_promo')) {
             document.getElementById('transaction').classList.add('btn', 'active');
         } else if (currentPath.includes('/src/fitur/transaction/view_promo')) {
             document.getElementById('transaction').classList.add('btn', 'active');
@@ -499,14 +744,20 @@
             document.getElementById('transaction').classList.add('btn', 'active');
         } else if (currentPath.includes('/src/fitur/transaction/margin')) {
             document.getElementById('transaction').classList.add('btn', 'active');
-        }
-        else if (currentPath.includes('/src/fitur/member/member_poin')) {
+        
+        // --- BLOCK MEMBER ---
+        } else if (currentPath.includes('/src/fitur/member/member_poin')) {
             document.getElementById('member').classList.add('btn', 'active');
-        }
-        else if (currentPath.includes('/src/fitur/banner/view_banner.php')) {
+        
+        // --- BLOCK UPLOAD ---
+        } else if (currentPath.includes('/src/fitur/banner/view_banner.php')) {
             document.getElementById('upload-menu').classList.add('btn', 'active');
+        
+        // --- BLOCK SHOPEE ---
         } else if (currentPath.includes('/src/fitur/shopee/dashboard_shopee')) {
             document.getElementById('shopeeLink').classList.add('btn', 'active');
+        
+        // --- BLOCK WHATSAPP ---
         } else if (currentPath.includes('/src/fitur/whatsapp_cs/dashboard_whatsapp')) {
             document.getElementById('whatsappLink').classList.add('btn', 'active');
         }
