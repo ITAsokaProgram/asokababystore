@@ -80,7 +80,6 @@ document.addEventListener("DOMContentLoaded", () => {
     summarySinkron.textContent = summary.total_sudah_sinkron || 0;
     summaryBelum.textContent = summary.total_belum_sinkron || 0;
   }
-
   function renderTable(tabel_data, selectedTanggal) {
     if (!tabel_data || tabel_data.length === 0) {
       tableBody.innerHTML = `
@@ -123,7 +122,8 @@ document.addEventListener("DOMContentLoaded", () => {
     tableBody.addEventListener("click", (e) => {
       const row = e.target.closest("tr.clickable-row");
       if (row) {
-        const alias = row.dataset.alias;
+        // TAMBAHKAN .trim() DI SINI
+        const alias = row.dataset.alias.trim();
         const tanggal = row.dataset.tanggal;
         if (alias && tanggal) {
           openModal(alias, tanggal);
@@ -134,11 +134,13 @@ document.addEventListener("DOMContentLoaded", () => {
   function openModal(alias, tanggal) {
     if (!modal || !modalCabangName || !modalBody) return;
     modal.dataset.modalType = "branch";
-    modalCabangName.textContent = alias;
+    // TAMBAHKAN .trim() DI SINI
+    modalCabangName.textContent = alias.trim();
     modalBody.innerHTML =
       '<p class="text-center text-slate-400">Memuat data...</p>';
     modal.style.display = "flex";
-    fetchLogDetail(alias, tanggal);
+    // DAN DI SINI
+    fetchLogDetail(alias.trim(), tanggal);
   }
   function closeModal() {
     if (!modal) return;
