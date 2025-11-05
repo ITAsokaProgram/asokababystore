@@ -45,7 +45,21 @@ function build_pagination_url($new_page)
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
+    <style>
+        /* Sembunyikan overlay by default */
+        #rotate-prompt {
+            display: none;
+        }
 
+        /* Tampilkan overlay HANYA di layar HP (max-width: 767px)
+           DAN HANYA jika orientasinya portrait */
+        @media screen and (max-width: 767px) and (orientation: portrait) {
+            #rotate-prompt {
+                /* Gunakan flex untuk memunculkan (Tailwind: "flex") */
+                display: flex;
+            }
+        }
+    </style>
 </head>
 
 <body class="bg-gray-50">
@@ -63,7 +77,8 @@ function build_pagination_url($new_page)
                                 <i class="fas fa-dollar-sign fa-lg"></i>
                             </div>
                             <div>
-                                <h1 class="text-xl font-bold text-gray-800 mb-1">Top Sales by (Rupiah)</h1>
+                                <h1 id="page-title" class="text-xl font-bold text-gray-800 mb-1">Top Sales by (Rupiah)
+                                </h1>
                                 <p id="page-subtitle" class="text-xs text-gray-600">Memuat detail periode...</p>
                             </div>
                         </div>
@@ -94,7 +109,7 @@ function build_pagination_url($new_page)
                             </div>
                             <div>
                                 <h3 class="text-xs font-semibold text-gray-600 mb-1">Total HPP</h3>
-                                <p id="summary-hpp" class="text-2xl font-bold truncate text-red-600">-</p>
+                                <p id="summary-hpp" class.="text-2xl font-bold truncate text-red-600">-</p>
                             </div>
                         </div>
                     </div>
@@ -202,6 +217,17 @@ function build_pagination_url($new_page)
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <div id="rotate-prompt" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-[9999]">
+        <div class="text-white text-center p-4">
+            <svg class="mx-auto h-12 w-12 text-white animate-pulse" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M12 18h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2zM12 8v4l-1.172-1.172a.999.999 0 10-1.414 1.414L12 15l2.586-2.586a.999.999 0 10-1.414-1.414L12 12V8z" />
+            </svg>
+            <p class="text-lg font-semibold mt-4">Harap putar perangkat Anda</p>
+            <p class="text-sm">Untuk tampilan laporan terbaik, gunakan mode landscape.</p>
+        </div>
+    </div>
 </body>
 
 </html>

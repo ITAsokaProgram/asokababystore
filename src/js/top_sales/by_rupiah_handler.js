@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const summaryNetSales = document.getElementById("summary-net-sales");
   const summaryGrsMargin = document.getElementById("summary-grs-margin");
   const summaryHpp = document.getElementById("summary-hpp");
+  const pageTitle = document.getElementById("page-title");
   const pageSubtitle = document.getElementById("page-subtitle");
   const paginationContainer = document.getElementById("pagination-container");
   const paginationInfo = document.getElementById("pagination-info");
@@ -37,11 +38,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   function getUrlParams() {
     const params = new URLSearchParams(window.location.search);
-
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayString = yesterday.toISOString().split("T")[0];
-
     return {
       tgl_mulai: params.get("tgl_mulai") || yesterdayString,
       tgl_selesai: params.get("tgl_selesai") || yesterdayString,
@@ -55,8 +54,9 @@ document.addEventListener("DOMContentLoaded", () => {
     return "?" + params.toString();
   }
   async function loadTopSalesData() {
-    setLoadingState(true);
     const params = getUrlParams();
+    const isPagination = params.page > 1;
+    setLoadingState(true, false, isPagination);
     const queryString = new URLSearchParams({
       tgl_mulai: params.tgl_mulai,
       tgl_selesai: params.tgl_selesai,
@@ -77,7 +77,9 @@ document.addEventListener("DOMContentLoaded", () => {
       if (data.error) {
         throw new Error(data.error);
       }
-      populateStoreFilter(data.stores, params.kd_store);
+      if (data.stores) {
+        populateStoreFilter(data.stores, params.kd_store);
+      }
       if (pageSubtitle) {
         let storeName = "Seluruh Store";
         if (
@@ -88,8 +90,13 @@ document.addEventListener("DOMContentLoaded", () => {
             filterSelectStore.options[filterSelectStore.selectedIndex].text;
         }
         pageSubtitle.textContent = `Top Sales by Rupiah Periode ${params.tgl_mulai} s/d ${params.tgl_selesai} - ${storeName}`;
+        if (pageTitle) {
+          pageTitle.textContent = `Top Sales by (Rupiah) - ${storeName}`;
+        }
       }
-      updateSummaryCards(data.summary);
+      if (data.summary) {
+        updateSummaryCards(data.summary);
+      }
       renderTable(data.tabel_data, data.pagination.offset);
       renderPagination(data.pagination);
     } catch (error) {
@@ -98,11 +105,18 @@ document.addEventListener("DOMContentLoaded", () => {
       if (pageSubtitle) {
         pageSubtitle.textContent = "Gagal memuat data filter";
       }
+      if (pageTitle) {
+        pageTitle.textContent = "Top Sales by (Rupiah)";
+      }
     } finally {
       setLoadingState(false);
     }
   }
-  function setLoadingState(isLoading, isExporting = false) {
+  function setLoadingState(
+    isLoading,
+    isExporting = false,
+    isPagination = false
+  ) {
     if (isLoading) {
       if (filterSubmitButton) filterSubmitButton.disabled = true;
       if (isExporting) {
@@ -119,15 +133,17 @@ document.addEventListener("DOMContentLoaded", () => {
           filterSubmitButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i><span>Memuat...</span>`;
         if (tableBody)
           tableBody.innerHTML = `
-                            <tr>
-                                <td colspan="11" class="text-center p-8">
-                                    <div class="spinner-simple"></div>
-                                    <p class="mt-2 text-gray-500">Memuat data...</p>
-                                </td>
-                            </tr>`;
-        if (summaryNetSales) summaryNetSales.textContent = "-";
-        if (summaryGrsMargin) summaryGrsMargin.textContent = "-";
-        if (summaryHpp) summaryHpp.textContent = "-";
+                                <tr>
+                                    <td colspan="11" class="text-center p-8">
+                                        <div class="spinner-simple"></div>
+                                        <p class="mt-2 text-gray-500">Memuat data...</p>
+                                    </td>
+                                </tr>`;
+        if (!isPagination) {
+          if (summaryNetSales) summaryNetSales.textContent = "-";
+          if (summaryGrsMargin) summaryGrsMargin.textContent = "-";
+          if (summaryHpp) summaryHpp.textContent = "-";
+        }
         if (paginationInfo) paginationInfo.textContent = "";
         if (paginationLinks) paginationLinks.innerHTML = "";
       }
@@ -245,17 +261,17 @@ document.addEventListener("DOMContentLoaded", () => {
     paginationInfo.textContent = `Menampilkan ${start_row} - ${end_row} dari ${total_rows} data`;
     let linksHtml = "";
     linksHtml += `
-                    <a href="${
-                      current_page > 1
-                        ? build_pagination_url(current_page - 1)
-                        : "#"
-                    }" 
-                       class="pagination-link ${
-                         current_page === 1 ? "pagination-disabled" : ""
-                       }">
-                        <i class="fas fa-chevron-left"></i>
-                    </a>
-                `;
+                        <a href="${
+                          current_page > 1
+                            ? build_pagination_url(current_page - 1)
+                            : "#"
+                        }" 
+                            class="pagination-link ${
+                              current_page === 1 ? "pagination-disabled" : ""
+                            }">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    `;
     const pages_to_show = [];
     const max_pages_around = 2;
     for (let i = 1; i <= total_pages; i++) {
@@ -275,30 +291,30 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       linksHtml += `
                                 <a href="${build_pagination_url(page_num)}" 
-                                   class="pagination-link ${
-                                     page_num === current_page
-                                       ? "pagination-active"
-                                       : ""
-                                   }">
+                                    class="pagination-link ${
+                                      page_num === current_page
+                                        ? "pagination-active"
+                                        : ""
+                                    }">
                                     ${page_num}
                                 </a>
                             `;
       last_page = page_num;
     }
     linksHtml += `
-                    <a href="${
-                      current_page < total_pages
-                        ? build_pagination_url(current_page + 1)
-                        : "#"
-                    }" 
-                       class="pagination-link ${
-                         current_page === total_pages
-                           ? "pagination-disabled"
-                           : ""
-                       }">
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                `;
+                        <a href="${
+                          current_page < total_pages
+                            ? build_pagination_url(current_page + 1)
+                            : "#"
+                        }" 
+                            class="pagination-link ${
+                              current_page === total_pages
+                                ? "pagination-disabled"
+                                : ""
+                            }">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    `;
     paginationLinks.innerHTML = linksHtml;
   }
   /**
