@@ -5,7 +5,7 @@ header('Content-Type: application/json');
 
 $selected_date = $_GET['tanggal'] ?? date('Y-m-d');
 
-$excluded_branches = ['ASKT', 'MAYA', 'ACE', 'ASP', 'ASIA'];
+$excluded_branches = ['ASKT', 'MAYA', 'ACE', 'ASP', 'ASIA', 'ASLI'];
 
 $log_stats = [];
 $tabel_data = [];
