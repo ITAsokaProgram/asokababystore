@@ -215,24 +215,7 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
       item_counter++;
     });
-    if (summary) {
-      htmlRows += `
-                <tr style="border-top: 4px solid #4A5568; background-color: #E2E8F0; font-weight: bold; font-size: 1.05em;">
-                    <td colspan="3" class="text-right px-4 py-3" style="font-style: italic;">
-                        GRAND TOTAL
-                    </td>
-                    <td class="text-right px-2 py-3">${formatRupiah(
-                      summary.total_netto
-                    )}</td>
-                    <td class="text-right px-2 py-3">${formatRupiah(
-                      summary.total_ppn
-                    )}</td>
-                    <td class="text-right px-2 py-3">${formatRupiah(
-                      summary.total_total
-                    )}</td>
-                </tr>
-            `;
-    }
+
     tableBody.innerHTML = htmlRows;
   }
   function renderPagination(pagination) {

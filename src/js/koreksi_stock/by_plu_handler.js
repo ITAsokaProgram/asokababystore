@@ -218,7 +218,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function buildSubtotalRow(no_faktur, qtykor, t_rp, t_selisih) {
       return `
                 <tr class="subtotal-row">
-                    <td colspan="6" class="text-right px-4 py-2" style="font-style: italic;"> </td>
+                    <td colspan="6" class="text-right px-4 py-2" style="font-style: italic; text-align: right;">${no_faktur}</td>
                     <td class="text-left px-2 py-2">${formatNumber(qtykor)}</td>
                     <td colspan="2"></td> 
                     <td class="text-left px-2 py-2">${formatRupiah(t_rp)}</td>
