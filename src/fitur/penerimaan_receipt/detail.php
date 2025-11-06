@@ -180,7 +180,6 @@ if ($page < 1) {
                             <thead>
                                 <tr>
                                     <th>No</th>
-                                    <th>No Faktur</th>
                                     <th>PLU</th>
                                     <th>Deskripsi</th>
                                     <th>Sat</th>

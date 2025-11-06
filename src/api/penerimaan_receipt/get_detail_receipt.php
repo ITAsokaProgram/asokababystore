@@ -35,7 +35,7 @@ $response = [
         'total_pages' => 1,
         'total_rows' => 0,
         'offset' => 0,
-        'limit' => 25,
+        'limit' => 10,
     ],
     'error' => null,
 ];
@@ -48,7 +48,7 @@ try {
     $kd_store = $_GET['kd_store'] ?? 'all';
 
     $page = 1;
-    $limit = 25;
+    $limit = 10;
 
     if (!$is_export) {
         $page = (int) ($_GET['page'] ?? 1);
@@ -102,6 +102,7 @@ try {
     $sql_data = "
         SELECT
             $sql_calc_found_rows
+            a.tgl_tiba, -- DITAMBAHKAN UNTUK GROUPING TANGGAL
             a.no_faktur,
             a.plu,
             a.descp AS deskripsi,
@@ -126,7 +127,7 @@ try {
         GROUP BY
             a.tgl_tiba, a.no_faktur, a.no_lpb, a.plu, a.descp, a.satuan, a.conv1, a.conv2, a.no_ord, a.kode_supp, b.nama_supp, a.qty_rec, a.timbang, a.ppn_bm, a.netto, a.ppn
         ORDER BY
-            a.no_faktur, a.plu
+            a.tgl_tiba, a.no_faktur, a.plu -- DIUBAH: Urutkan berdasarkan tgl_tiba dulu
         $limit_offset_sql
     ";
 

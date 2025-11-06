@@ -131,7 +131,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (tableBody)
           tableBody.innerHTML = `
                                 <tr>
-                                    <td colspan="11" class="text-center p-8">
+                                    <td colspan="10" class="text-center p-8">
                                         <div class="spinner-simple"></div>
                                         <p class="mt-2 text-gray-500">Memuat data...</p>
                                     </td>
@@ -162,7 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function showTableError(message) {
     tableBody.innerHTML = `
             <tr>
-                <td colspan="11" class="text-center p-8 text-red-600">
+                <td colspan="10" class="text-center p-8 text-red-600">
                     <i class="fas fa-exclamation-triangle fa-lg mb-2"></i>
                     <p>Gagal memuat data: ${message}</p>
                 </td>
@@ -193,7 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!tabel_data || tabel_data.length === 0) {
       tableBody.innerHTML = `
                 <tr>
-                    <td colspan="11" class="text-center p-8 text-gray-500">
+                    <td colspan="10" class="text-center p-8 text-gray-500">
                         <i class="fas fa-inbox fa-lg mb-2"></i>
                         <p>Tidak ada data ditemukan untuk filter ini.</p>
                     </td>
@@ -207,29 +207,62 @@ document.addEventListener("DOMContentLoaded", () => {
     let subtotal_netto = 0;
     let subtotal_ppn = 0;
     let subtotal_total = 0;
+    let current_tgl_tiba = null;
     function buildSubtotalRow(no_faktur, qty, netto, ppn, total) {
       return `
                 <tr class="subtotal-row">
-                    <td colspan="7" class="text-right px-4 py-2" style="font-style: italic;">${no_faktur}</td>
-                    <td class="text-right px-2 py-2">${formatNumber(qty)}</td>
-                    <td class="text-right px-2 py-2">${formatRupiah(netto)}</td>
-                    <td class="text-right px-2 py-2">${formatRupiah(ppn)}</td>
-                    <td class="text-right px-2 py-2">${formatRupiah(total)}</td>
+                    <td colspan="6" class=" px-4 py-2" style="font-style: italic; text-align:right;">Subtotal</td>
+                    <td class=" px-2 py-2">${formatNumber(qty)}</td>
+                    <td class=" px-2 py-2">${formatRupiah(netto)}</td>
+                    <td class=" px-2 py-2">${formatRupiah(ppn)}</td>
+                    <td class=" px-2 py-2">${formatRupiah(total)}</td>
+                </tr>
+            `;
+    }
+    function buildDateHeaderRow(tanggal) {
+      return `
+                <tr class="date-group-header" style="background-color: #CBD5E0; font-weight: bold; font-size: 1.05em;">
+                    <td colspan="10" class="px-4 py-2" style="font-style: italic;">Tanggal: ${tanggal}</td>
+                </tr>
+            `;
+    }
+    function buildFakturHeaderRow(no_faktur) {
+      return `
+                <tr class="faktur-group-header" style="background-color: #E2E8F0; font-weight: bold;">
+                    <td colspan="10" class="px-4 py-2">No Faktur: ${no_faktur}</td>
                 </tr>
             `;
     }
     tabel_data.forEach((row, index) => {
-      if (index === 0) {
-        current_no_faktur = row.no_faktur;
+      if (row.tgl_tiba !== current_tgl_tiba) {
+        if (current_no_faktur !== null) {
+          htmlRows += buildSubtotalRow(
+            current_no_faktur,
+            subtotal_qty,
+            subtotal_netto,
+            subtotal_ppn,
+            subtotal_total
+          );
+        }
+        htmlRows += buildDateHeaderRow(row.tgl_tiba);
+        current_tgl_tiba = row.tgl_tiba;
+        current_no_faktur = null;
+        subtotal_qty = 0;
+        subtotal_netto = 0;
+        subtotal_ppn = 0;
+        subtotal_total = 0;
       }
       if (row.no_faktur !== current_no_faktur) {
-        htmlRows += buildSubtotalRow(
-          current_no_faktur,
-          subtotal_qty,
-          subtotal_netto,
-          subtotal_ppn,
-          subtotal_total
-        );
+        if (current_no_faktur !== null) {
+          htmlRows += buildSubtotalRow(
+            current_no_faktur,
+            subtotal_qty,
+            subtotal_netto,
+            subtotal_ppn,
+            subtotal_total
+          );
+        }
+        htmlRows += buildFakturHeaderRow(row.no_faktur);
         current_no_faktur = row.no_faktur;
         subtotal_qty = 0;
         subtotal_netto = 0;
@@ -243,20 +276,15 @@ document.addEventListener("DOMContentLoaded", () => {
       htmlRows += `
                 <tr>
                     <td>${item_counter}</td>
-                    <td>${row.no_faktur}</td>
                     <td>${row.plu}</td>
                     <td class="text-left">${row.deskripsi}</td>
                     <td>${row.sat}</td>
-                    <td class="text-right">${formatNumber(row.conv1)}</td>
-                    <td class="text-right">${formatNumber(row.conv2)}</td>
-                    <td class="text-right font-semibold">${formatNumber(
-                      row.qty
-                    )}</td>
-                    <td class="text-right">${formatRupiah(row.netto)}</td>
-                    <td class="text-right">${formatRupiah(row.ppn)}</td>
-                    <td class="text-right font-semibold">${formatRupiah(
-                      row.total
-                    )}</td>
+                    <td class="">${formatNumber(row.conv1)}</td>
+                    <td class="">${formatNumber(row.conv2)}</td>
+                    <td class=" font-semibold">${formatNumber(row.qty)}</td>
+                    <td class="">${formatRupiah(row.netto)}</td>
+                    <td class="">${formatRupiah(row.ppn)}</td>
+                    <td class=" font-semibold">${formatRupiah(row.total)}</td>
                 </tr>
             `;
       item_counter++;
@@ -270,27 +298,7 @@ document.addEventListener("DOMContentLoaded", () => {
         subtotal_total
       );
     }
-    if (summary) {
-      htmlRows += `
-                <tr style="border-top: 4px solid #4A5568; background-color: #E2E8F0; font-weight: bold; font-size: 1.05em;">
-                    <td colspan="7" class="text-right px-4 py-3" style="font-style: italic;">
-                        GRAND TOTAL
-                    </td>
-                    <td class="text-right px-2 py-3">${formatNumber(
-                      summary.total_qty
-                    )}</td>
-                    <td class="text-right px-2 py-3">${formatRupiah(
-                      summary.total_netto
-                    )}</td>
-                    <td class="text-right px-2 py-3">${formatRupiah(
-                      summary.total_ppn
-                    )}</td>
-                    <td class="text-right px-2 py-3">${formatRupiah(
-                      summary.total_total
-                    )}</td>
-                </tr>
-            `;
-    }
+
     tableBody.innerHTML = htmlRows;
   }
   function renderPagination(pagination) {
@@ -360,9 +368,6 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
     paginationLinks.innerHTML = linksHtml;
   }
-  /**
-   * Mengambil semua data dari API untuk keperluan export.
-   */
   async function fetchAllDataForExport() {
     setLoadingState(true, true);
     const params = getUrlParams();
@@ -399,9 +404,6 @@ document.addEventListener("DOMContentLoaded", () => {
       setLoadingState(false);
     }
   }
-  /**
-   * Fungsi untuk export data ke Excel
-   */
   async function exportToExcel() {
     const data = await fetchAllDataForExport();
     if (!data || !data.tabel_data || data.tabel_data.length === 0) {
@@ -426,7 +428,6 @@ document.addEventListener("DOMContentLoaded", () => {
       ];
       const headers = [
         "No",
-        "No Faktur",
         "PLU",
         "Deskripsi",
         "Sat",
@@ -439,6 +440,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ];
       const dataRows = [];
       let item_counter = 1;
+      let current_tgl_tiba = null;
       let current_no_faktur = null;
       let subtotal_qty = 0,
         subtotal_netto = 0,
@@ -451,25 +453,64 @@ document.addEventListener("DOMContentLoaded", () => {
           "",
           "",
           "",
-          "",
-          `${current_no_faktur}`,
+          `Subtotal ${current_no_faktur}`,
           subtotal_qty,
           subtotal_netto,
           subtotal_ppn,
           subtotal_total,
         ]);
       };
+      const pushDateHeaderRow = (tanggal) => {
+        dataRows.push([
+          `Tanggal: ${tanggal}`,
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+        ]);
+      };
+      const pushFakturHeaderRow = (no_faktur) => {
+        dataRows.push([
+          `No Faktur: ${no_faktur}`,
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+        ]);
+      };
       tabel_data.forEach((row, index) => {
-        if (index === 0) {
-          current_no_faktur = row.no_faktur;
-        }
-        if (row.no_faktur !== current_no_faktur && current_no_faktur !== null) {
-          pushSubtotalRow();
+        if (row.tgl_tiba !== current_tgl_tiba) {
+          if (current_no_faktur !== null) {
+            pushSubtotalRow();
+          }
+          pushDateHeaderRow(row.tgl_tiba);
+          current_tgl_tiba = row.tgl_tiba;
+          current_no_faktur = null;
           subtotal_qty = 0;
           subtotal_netto = 0;
           subtotal_ppn = 0;
           subtotal_total = 0;
+        }
+        if (row.no_faktur !== current_no_faktur) {
+          if (current_no_faktur !== null) {
+            pushSubtotalRow();
+          }
+          pushFakturHeaderRow(row.no_faktur);
           current_no_faktur = row.no_faktur;
+          subtotal_qty = 0;
+          subtotal_netto = 0;
+          subtotal_ppn = 0;
+          subtotal_total = 0;
         }
         subtotal_qty += parseFloat(row.qty) || 0;
         subtotal_netto += parseFloat(row.netto) || 0;
@@ -477,7 +518,6 @@ document.addEventListener("DOMContentLoaded", () => {
         subtotal_total += parseFloat(row.total) || 0;
         dataRows.push([
           item_counter++,
-          row.no_faktur,
           row.plu,
           row.deskripsi,
           row.sat,
@@ -493,19 +533,7 @@ document.addEventListener("DOMContentLoaded", () => {
         pushSubtotalRow();
       }
       dataRows.push([]);
-      dataRows.push([
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "GRAND TOTAL",
-        summary.total_qty,
-        summary.total_netto,
-        summary.total_ppn,
-        summary.total_total,
-      ]);
+
       const ws = XLSX.utils.aoa_to_sheet(title);
       XLSX.utils.sheet_add_aoa(ws, info, { origin: "A2" });
       const headerOrigin = "A" + (info.length + 2);
@@ -513,7 +541,7 @@ document.addEventListener("DOMContentLoaded", () => {
       XLSX.utils.sheet_add_aoa(ws, dataRows, {
         origin: "A" + (info.length + 3),
       });
-      ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 10 } }];
+      ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 9 } }];
       ws["A1"].s = {
         font: { bold: true, sz: 16 },
         alignment: { horizontal: "center" },
@@ -536,12 +564,32 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       dataRows.forEach((row, R_idx) => {
         const R = R_idx + info.length + 2;
-        if (typeof row[6] === "string" && row[6].startsWith("Sub Total")) {
-          ws[XLSX.utils.encode_cell({ r: R, c: 6 })].s = {
+        if (typeof row[0] === "string" && row[0].startsWith("Tanggal:")) {
+          ws[XLSX.utils.encode_cell({ r: R, c: 0 })].s = {
+            font: { bold: true, italic: true, sz: 11 },
+            fill: { fgColor: { rgb: "CBD5E0" } },
+          };
+          ws["!merges"] = ws["!merges"] || [];
+          ws["!merges"].push({ s: { r: R, c: 0 }, e: { r: R, c: 9 } });
+        } else if (
+          typeof row[0] === "string" &&
+          row[0].startsWith("No Faktur:")
+        ) {
+          ws[XLSX.utils.encode_cell({ r: R, c: 0 })].s = {
+            font: { bold: true, sz: 10 },
+            fill: { fgColor: { rgb: "E2E8F0" } },
+          };
+          ws["!merges"] = ws["!merges"] || [];
+          ws["!merges"].push({ s: { r: R, c: 0 }, e: { r: R, c: 9 } });
+        } else if (
+          typeof row[5] === "string" &&
+          row[5].startsWith("Subtotal")
+        ) {
+          ws[XLSX.utils.encode_cell({ r: R, c: 5 })].s = {
             font: { bold: true, italic: true },
             alignment: { horizontal: "right" },
           };
-          ["H", "I", "J", "K"].forEach((col) => {
+          ["G", "H", "I", "J"].forEach((col) => {
             const cell = ws[col + (R + 1)];
             if (cell) {
               cell.t = "n";
@@ -549,13 +597,13 @@ document.addEventListener("DOMContentLoaded", () => {
             }
           });
           ws["!merges"] = ws["!merges"] || [];
-          ws["!merges"].push({ s: { r: R, c: 0 }, e: { r: R, c: 6 } });
-        } else if (typeof row[6] === "string" && row[6] === "GRAND TOTAL") {
-          ws[XLSX.utils.encode_cell({ r: R, c: 6 })].s = {
+          ws["!merges"].push({ s: { r: R, c: 0 }, e: { r: R, c: 5 } });
+        } else if (typeof row[5] === "string" && row[5] === "GRAND TOTAL") {
+          ws[XLSX.utils.encode_cell({ r: R, c: 5 })].s = {
             font: { bold: true, sz: 12 },
             alignment: { horizontal: "right" },
           };
-          ["H", "I", "J", "K"].forEach((col) => {
+          ["G", "H", "I", "J"].forEach((col) => {
             const cell = ws[col + (R + 1)];
             if (cell) {
               cell.t = "n";
@@ -563,14 +611,14 @@ document.addEventListener("DOMContentLoaded", () => {
             }
           });
           ws["!merges"] = ws["!merges"] || [];
-          ws["!merges"].push({ s: { r: R, c: 0 }, e: { r: R, c: 6 } });
+          ws["!merges"].push({ s: { r: R, c: 0 }, e: { r: R, c: 5 } });
         } else if (row.length > 0) {
+          ws[XLSX.utils.encode_cell({ r: R, c: 4 })].s = { numFmt: numFormat };
           ws[XLSX.utils.encode_cell({ r: R, c: 5 })].s = { numFmt: numFormat };
-          ws[XLSX.utils.encode_cell({ r: R, c: 6 })].s = { numFmt: numFormat };
-          ws[XLSX.utils.encode_cell({ r: R, c: 7 })].s = {
+          ws[XLSX.utils.encode_cell({ r: R, c: 6 })].s = {
             numFmt: numFormatDec,
           };
-          ["I", "J", "K"].forEach((col) => {
+          ["H", "I", "J"].forEach((col) => {
             const cell = ws[col + (R + 1)];
             if (cell) {
               cell.t = "n";
@@ -581,7 +629,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       ws["!cols"] = [
         { wch: 5 },
-        { wch: 15 },
         { wch: 12 },
         { wch: 35 },
         { wch: 6 },
@@ -601,9 +648,6 @@ document.addEventListener("DOMContentLoaded", () => {
       Swal.fire("Export Gagal", "Terjadi kesalahan: " + error.message, "error");
     }
   }
-  /**
-   * Fungsi untuk export data ke PDF
-   */
   async function exportToPDF() {
     const data = await fetchAllDataForExport();
     if (!data || !data.tabel_data || data.tabel_data.length === 0) {
@@ -644,7 +688,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const head = [
         [
           "No",
-          "No Faktur",
           "PLU",
           "Deskripsi",
           "Sat",
@@ -658,6 +701,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ];
       const body = [];
       let item_counter = 1;
+      let current_tgl_tiba = null;
       let current_no_faktur = null;
       let subtotal_qty = 0,
         subtotal_netto = 0,
@@ -666,8 +710,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const pushSubtotalRowPdf = () => {
         body.push([
           {
-            content: `${current_no_faktur}`,
-            colSpan: 7,
+            content: `Subtotal ${current_no_faktur}`,
+            colSpan: 6,
             styles: {
               halign: "right",
               fontStyle: "bolditalic",
@@ -708,17 +752,59 @@ document.addEventListener("DOMContentLoaded", () => {
           },
         ]);
       };
+      const pushDateHeaderRowPdf = (tanggal) => {
+        body.push([
+          {
+            content: `Tanggal: ${tanggal}`,
+            colSpan: 10,
+            styles: {
+              halign: "left",
+              fontStyle: "bolditalic",
+              fillColor: [203, 213, 224],
+              textColor: [0, 0, 0],
+              fontSize: 8,
+            },
+          },
+        ]);
+      };
+      const pushFakturHeaderRowPdf = (no_faktur) => {
+        body.push([
+          {
+            content: `No Faktur: ${no_faktur}`,
+            colSpan: 10,
+            styles: {
+              halign: "left",
+              fontStyle: "bold",
+              fillColor: [226, 232, 240],
+              textColor: [0, 0, 0],
+              fontSize: 7,
+            },
+          },
+        ]);
+      };
       tabel_data.forEach((row, index) => {
-        if (index === 0) {
-          current_no_faktur = row.no_faktur;
-        }
-        if (row.no_faktur !== current_no_faktur && current_no_faktur !== null) {
-          pushSubtotalRowPdf();
+        if (row.tgl_tiba !== current_tgl_tiba) {
+          if (current_no_faktur !== null) {
+            pushSubtotalRowPdf();
+          }
+          pushDateHeaderRowPdf(row.tgl_tiba);
+          current_tgl_tiba = row.tgl_tiba;
+          current_no_faktur = null;
           subtotal_qty = 0;
           subtotal_netto = 0;
           subtotal_ppn = 0;
           subtotal_total = 0;
+        }
+        if (row.no_faktur !== current_no_faktur) {
+          if (current_no_faktur !== null) {
+            pushSubtotalRowPdf();
+          }
+          pushFakturHeaderRowPdf(row.no_faktur);
           current_no_faktur = row.no_faktur;
+          subtotal_qty = 0;
+          subtotal_netto = 0;
+          subtotal_ppn = 0;
+          subtotal_total = 0;
         }
         subtotal_qty += parseFloat(row.qty) || 0;
         subtotal_netto += parseFloat(row.netto) || 0;
@@ -726,7 +812,6 @@ document.addEventListener("DOMContentLoaded", () => {
         subtotal_total += parseFloat(row.total) || 0;
         body.push([
           item_counter++,
-          row.no_faktur,
           row.plu,
           row.deskripsi,
           row.sat,
@@ -744,7 +829,7 @@ document.addEventListener("DOMContentLoaded", () => {
       body.push([
         {
           content: `GRAND TOTAL`,
-          colSpan: 7,
+          colSpan: 6,
           styles: {
             halign: "right",
             fontStyle: "bold",
@@ -802,16 +887,15 @@ document.addEventListener("DOMContentLoaded", () => {
         styles: { fontSize: 6, cellPadding: 1.5 },
         columnStyles: {
           0: { halign: "right", cellWidth: 7 },
-          1: { halign: "left", cellWidth: 20 },
-          2: { halign: "left", cellWidth: 15 },
-          3: { halign: "left", cellWidth: 45 },
-          4: { halign: "center", cellWidth: 7 },
+          1: { halign: "left", cellWidth: 15 },
+          2: { halign: "left", cellWidth: 45 },
+          3: { halign: "center", cellWidth: 7 },
+          4: { halign: "right", cellWidth: 10 },
           5: { halign: "right", cellWidth: 10 },
-          6: { halign: "right", cellWidth: 10 },
-          7: { halign: "right", cellWidth: 12 },
+          6: { halign: "right", cellWidth: 12 },
+          7: { halign: "right", cellWidth: 20 },
           8: { halign: "right", cellWidth: 20 },
-          9: { halign: "right", cellWidth: 20 },
-          10: { halign: "right", cellWidth: 22 },
+          9: { halign: "right", cellWidth: 22 },
         },
       });
       const fileName = `Detail_Receipt_${params.tgl_mulai}_sd_${params.tgl_selesai}.pdf`;
