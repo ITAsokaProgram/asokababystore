@@ -211,17 +211,13 @@ document.addEventListener("DOMContentLoaded", () => {
     let subtotal_total = 0;
     function buildSubtotalRow(no_bon, qty, diskon, total) {
       return `
-                <tr class="subtotal-row" style=" font-weight: bold; border-top: 2px solid #e2e8f0;">
-                    <td colspan="7" class="text-right px-4 py-2" style="font-style: italic; font-weight: bold;">${no_bon}</td>
-                    <td class="text-right px-2 font-bold py-2">${formatNumber(
-                      qty
-                    )}</td>
-                    <td class="px-2 py-2"></td> <td class="text-right px-2 py-2 font-bold">${formatRupiah(
+                <tr class="subtotal-row" style=" font-weight: bold; border-top: 2px solid #e2e8f0; background-color: aqua;">
+                    <td colspan="7" class=" px-4 py-2" style="font-style: italic; font-weight: bold; text-align: right;">${no_bon}</td>
+                    <td class=" px-2 font-bold py-2">${formatNumber(qty)}</td>
+                    <td class="px-2 py-2"></td> <td class=" px-2 py-2 font-bold">${formatRupiah(
                       diskon
                     )}</td>
-                    <td class="text-right px-2 py-2 font-bold">${formatRupiah(
-                      total
-                    )}</td>
+                    <td class=" px-2 py-2 font-bold">${formatRupiah(total)}</td>
                 </tr>
             `;
     }
@@ -253,14 +249,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     <td>${row.no_bon}</td>
                     <td>${row.plu}</td>
                     <td class="text-left font-semibold">${row.nama_barang}</td>
-                    <td class="text-right">${formatNumber(row.qty)}</td>
-                    <td class="text-right">${formatRupiah(row.harga)}</td>
-                    <td class="text-right">${formatRupiah(
-                      row.total_diskon
-                    )}</td>
-                    <td class="text-right font-semibold">${formatRupiah(
-                      row.total
-                    )}</td>
+                    <td class="">${formatNumber(row.qty)}</td>
+                    <td class="">${formatRupiah(row.harga)}</td>
+                    <td class="">${formatRupiah(row.total_diskon)}</td>
+                    <td class=" font-semibold">${formatRupiah(row.total)}</td>
                 </tr>
             `;
       item_counter++;

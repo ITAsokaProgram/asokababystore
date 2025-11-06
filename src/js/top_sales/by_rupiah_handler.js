@@ -212,28 +212,22 @@ document.addEventListener("DOMContentLoaded", () => {
                                     <td class="text-left font-semibold">${
                                       row.descp
                                     }</td>
-                                    <td class="text-right">${formatNumber(
-                                      row.qty
-                                    )}</td>
-                                    <td class="text-right">${formatRupiah(
+                                    <td class="">${formatNumber(row.qty)}</td>
+                                    <td class="">${formatRupiah(
                                       row.gross_sales
                                     )}</td>
-                                    <td class="text-right">${formatRupiah(
-                                      row.ppn
-                                    )}</td>
-                                    <td class="text-right">${formatRupiah(
+                                    <td class="">${formatRupiah(row.ppn)}</td>
+                                    <td class="">${formatRupiah(
                                       row.total_diskon
                                     )}</td>
-                                    <td class="text-right font-semibold">${formatRupiah(
+                                    <td class=" font-semibold">${formatRupiah(
                                       row.net_sales
                                     )}</td>
-                                    <td class="text-right">${formatRupiah(
-                                      row.hpp
-                                    )}</td>
-                                    <td class="text-right">${formatRupiah(
+                                    <td class="">${formatRupiah(row.hpp)}</td>
+                                    <td class="">${formatRupiah(
                                       row.grs_margin
                                     )}</td>
-                                    <td class="text-right">${formatPercent(
+                                    <td class="">${formatPercent(
                                       row.margin_percent
                                     )}</td>
                                 </tr>

@@ -210,7 +210,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function buildSubtotalRow(no_faktur, qty, netto, ppn, total) {
       return `
                 <tr class="subtotal-row">
-                    <td colspan="7" class="text-right px-4 py-2" style="font-style: italic;">Sub Total Faktur: ${no_faktur}</td>
+                    <td colspan="7" class="text-right px-4 py-2" style="font-style: italic;">${no_faktur}</td>
                     <td class="text-right px-2 py-2">${formatNumber(qty)}</td>
                     <td class="text-right px-2 py-2">${formatRupiah(netto)}</td>
                     <td class="text-right px-2 py-2">${formatRupiah(ppn)}</td>
@@ -452,7 +452,7 @@ document.addEventListener("DOMContentLoaded", () => {
           "",
           "",
           "",
-          `Sub Total Faktur: ${current_no_faktur}`,
+          `${current_no_faktur}`,
           subtotal_qty,
           subtotal_netto,
           subtotal_ppn,
@@ -666,7 +666,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const pushSubtotalRowPdf = () => {
         body.push([
           {
-            content: `Sub Total Faktur: ${current_no_faktur}`,
+            content: `${current_no_faktur}`,
             colSpan: 7,
             styles: {
               halign: "right",

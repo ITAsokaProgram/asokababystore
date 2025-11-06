@@ -54,7 +54,7 @@ if ($page < 1) {
         /* Style untuk subtotal row */
         .subtotal-row {
             font-weight: bold;
-            background-color: #f7fafc;
+            background-color: aqua;
             /* bg-gray-50 */
             border-top: 2px solid #e2e8f0;
             /* border-gray-200 */
