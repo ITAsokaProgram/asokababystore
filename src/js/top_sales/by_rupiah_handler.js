@@ -81,7 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
         populateStoreFilter(data.stores, params.kd_store);
       }
       if (pageSubtitle) {
-        let storeName = "Seluruh Store";
+        let storeName = "Seluruh Cabang";
         if (
           filterSelectStore.options.length > 0 &&
           filterSelectStore.selectedIndex > -1

@@ -109,7 +109,7 @@ function build_pagination_url($new_page)
                             </div>
                             <div>
                                 <h3 class="text-xs font-semibold text-gray-600 mb-1">Total HPP</h3>
-                                <p id="summary-hpp" class.="text-2xl font-bold truncate text-red-600">-</p>
+                                <p id="summary-hpp" class="text-2xl font-bold truncate text-red-600">-</p>
                             </div>
                         </div>
                     </div>
