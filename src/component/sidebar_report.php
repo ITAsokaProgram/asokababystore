@@ -179,8 +179,7 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="/src/fitur/top_sales/by_rupiah"
-                                        data-menu="laporan_topsales_rupiah"
+                                    <a href="/src/fitur/top_sales/by_rupiah" data-menu="laporan_topsales_rupiah"
                                         class="flex items-center px-3 py-2 text-gray-700 hover:bg-pink-100 hover:text-pink-600 transition-all duration-200 group rounded-md">
                                         <span
                                             class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
@@ -191,8 +190,7 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="/src/fitur/top_sales/by_qty"
-                                        data-menu="laporan_topsales_qty"
+                                    <a href="/src/fitur/top_sales/by_qty" data-menu="laporan_topsales_qty"
                                         class="flex items-center px-3 py-2 text-gray-700 hover:bg-pink-100 hover:text-pink-600 transition-all duration-200 group rounded-md">
                                         <span
                                             class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
@@ -203,8 +201,7 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="/src/fitur/top_sales/by_supplier"
-                                        data-menu="laporan_topsales_supplier"
+                                    <a href="/src/fitur/top_sales/by_supplier" data-menu="laporan_topsales_supplier"
                                         class="flex items-center px-3 py-2 text-gray-700 hover:bg-pink-100 hover:text-pink-600 transition-all duration-200 group rounded-md">
                                         <span
                                             class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
@@ -226,7 +223,7 @@
                                         </span>
                                     </a>
                                 </li>
-                                </ul>
+                            </ul>
                         </div>
                     </li>
                     <li>
@@ -306,8 +303,7 @@
                             <ul
                                 class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg p-2 space-y-1 border border-blue-200">
                                 <li>
-                                    <a href="/src/fitur/penerimaan_receipt/detail"
-                                        data-menu="laporan_receipt_detail"
+                                    <a href="/src/fitur/penerimaan_receipt/detail" data-menu="laporan_receipt_detail"
                                         class="flex items-center px-3 py-2 text-gray-700 hover:bg-pink-100 hover:text-pink-600 transition-all duration-200 group rounded-md">
                                         <span
                                             class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
@@ -353,8 +349,7 @@
                             <ul
                                 class="bg-gradient-to-br from-red-50 to-pink-50 rounded-lg p-2 space-y-1 border border-red-200">
                                 <li>
-                                    <a href="/src/fitur/koreksi_stock/by_supplier"
-                                        data-menu="laporan_koreksi_supplier"
+                                    <a href="/src/fitur/koreksi_stok/by_supplier" data-menu="laporan_koreksi_supplier"
                                         class="flex items-center px-3 py-2 text-gray-700 hover:bg-pink-100 hover:text-pink-600 transition-all duration-200 group rounded-md">
                                         <span
                                             class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
@@ -365,8 +360,7 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="/src/fitur/koreksi_stock/by_plu"
-                                        data-menu="laporan_koreksi_plu"
+                                    <a href="/src/fitur/koreksi_stok/by_plu" data-menu="laporan_koreksi_plu"
                                         class="flex items-center px-3 py-2 text-gray-700 hover:bg-pink-100 hover:text-pink-600 transition-all duration-200 group rounded-md">
                                         <span
                                             class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
@@ -400,8 +394,7 @@
                             <ul
                                 class="bg-gradient-to-br from-yellow-50 to-amber-50 rounded-lg p-2 space-y-1 border border-yellow-200">
                                 <li>
-                                    <a href="/src/fitur/return_out/all_item"
-                                        data-menu="laporan_return_all"
+                                    <a href="/src/fitur/return_out/all_item" data-menu="laporan_return_all"
                                         class="flex items-center px-3 py-2 text-gray-700 hover:bg-pink-100 hover:text-pink-600 transition-all duration-200 group rounded-md">
                                         <span
                                             class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
@@ -412,8 +405,7 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="/src/fitur/return_out/bad_stock"
-                                        data-menu="laporan_return_badstock"
+                                    <a href="/src/fitur/return_out/bad_stock" data-menu="laporan_return_badstock"
                                         class="flex items-center px-3 py-2 text-gray-700 hover:bg-pink-100 hover:text-pink-600 transition-all duration-200 group rounded-md">
                                         <span
                                             class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
@@ -424,8 +416,7 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="/src/fitur/return_out/exp_produk"
-                                        data-menu="laporan_return_exp"
+                                    <a href="/src/fitur/return_out/exp_produk" data-menu="laporan_return_exp"
                                         class="flex items-center px-3 py-2 text-gray-700 hover:bg-pink-100 hover:text-pink-600 transition-all duration-200 group rounded-md">
                                         <span
                                             class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
@@ -436,8 +427,7 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="/src/fitur/return_out/hilang_pasangan"
-                                        data-menu="laporan_return_hilang"
+                                    <a href="/src/fitur/return_out/hilang_pasangan" data-menu="laporan_return_hilang"
                                         class="flex items-center px-3 py-2 text-gray-700 hover:bg-pink-100 hover:text-pink-600 transition-all duration-200 group rounded-md">
                                         <span
                                             class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
@@ -690,7 +680,7 @@
         if (currentPath.includes('/in_beranda')) {
             document.getElementById('berandaLink').classList.add('btn', 'active');
 
-        // --- BLOCK LAPORAN ---
+            // --- BLOCK LAPORAN ---
         } else if (currentPath.includes('/src/fitur/laporan/in_laporan_sub_dept')) {
             document.getElementById('laporan').classList.add('btn', 'active');
         } else if (currentPath.includes('/src/fitur/laporan/in_sales_ratio')) {
@@ -701,8 +691,8 @@
             document.getElementById('laporan').classList.add('btn', 'active');
         } else if (currentPath.includes('/src/fitur/log_backup/index.php')) {
             document.getElementById('laporan').classList.add('btn', 'active');
-        
-        // START PENAMBAHAN SCRIPT ACTIVE BARU
+
+            // START PENAMBAHAN SCRIPT ACTIVE BARU
         } else if (currentPath.includes('/src/fitur/top_sales/by_rupiah')) {
             document.getElementById('laporan').classList.add('btn', 'active');
         } else if (currentPath.includes('/src/fitur/top_sales/by_qty')) {
@@ -715,9 +705,9 @@
             document.getElementById('laporan').classList.add('btn', 'active');
         } else if (currentPath.includes('/src/fitur/penerimaan_receipt/by_supplier')) {
             document.getElementById('laporan').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/koreksi_stock/by_supplier')) {
+        } else if (currentPath.includes('/src/fitur/koreksi_stok/by_supplier')) {
             document.getElementById('laporan').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/koreksi_stock/by_plu')) {
+        } else if (currentPath.includes('/src/fitur/koreksi_stok/by_plu')) {
             document.getElementById('laporan').classList.add('btn', 'active');
         } else if (currentPath.includes('/src/fitur/return_out/all_item')) {
             document.getElementById('laporan').classList.add('btn', 'active');
@@ -727,15 +717,15 @@
             document.getElementById('laporan').classList.add('btn', 'active');
         } else if (currentPath.includes('/src/fitur/return_out/hilang_pasangan')) {
             document.getElementById('laporan').classList.add('btn', 'active');
-        // END PENAMBAHAN SCRIPT ACTIVE BARU
+            // END PENAMBAHAN SCRIPT ACTIVE BARU
 
-        // --- BLOCK ACCOUNT ---
+            // --- BLOCK ACCOUNT ---
         } else if (currentPath.includes('/src/fitur/account/in_new_user')) {
             document.getElementById('account').classList.add('btn', 'active');
         } else if (currentPath.includes('/src/fitur/account/manajemen_user')) {
             document.getElementById('account').classList.add('btn', 'active');
-        
-        // --- BLOCK TRANSAKSI ---
+
+            // --- BLOCK TRANSAKSI ---
         } else if (currentPath.includes('/src/fitur/transaction/view_promo')) {
             document.getElementById('transaction').classList.add('btn', 'active');
         } else if (currentPath.includes('/src/fitur/transaction/view_promo')) {
@@ -744,20 +734,20 @@
             document.getElementById('transaction').classList.add('btn', 'active');
         } else if (currentPath.includes('/src/fitur/transaction/margin')) {
             document.getElementById('transaction').classList.add('btn', 'active');
-        
-        // --- BLOCK MEMBER ---
+
+            // --- BLOCK MEMBER ---
         } else if (currentPath.includes('/src/fitur/member/member_poin')) {
             document.getElementById('member').classList.add('btn', 'active');
-        
-        // --- BLOCK UPLOAD ---
+
+            // --- BLOCK UPLOAD ---
         } else if (currentPath.includes('/src/fitur/banner/view_banner.php')) {
             document.getElementById('upload-menu').classList.add('btn', 'active');
-        
-        // --- BLOCK SHOPEE ---
+
+            // --- BLOCK SHOPEE ---
         } else if (currentPath.includes('/src/fitur/shopee/dashboard_shopee')) {
             document.getElementById('shopeeLink').classList.add('btn', 'active');
-        
-        // --- BLOCK WHATSAPP ---
+
+            // --- BLOCK WHATSAPP ---
         } else if (currentPath.includes('/src/fitur/whatsapp_cs/dashboard_whatsapp')) {
             document.getElementById('whatsappLink').classList.add('btn', 'active');
         }
