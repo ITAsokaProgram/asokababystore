@@ -3,7 +3,6 @@ session_start();
 include '../../../aa_kon_sett.php';
 $tanggal_kemarin = date('Y-m-d', strtotime('-1 day'));
 
-// Ambil parameter GET untuk nilai default filter
 $default_tgl_mulai = $tanggal_kemarin;
 $default_tgl_selesai = $tanggal_kemarin;
 $default_kd_store = 'all';

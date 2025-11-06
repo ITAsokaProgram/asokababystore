@@ -28,7 +28,7 @@ foreach ($tables_to_optimize as $table) {
     if (mysqli_query($conn, "OPTIMIZE TABLE $table")) {
         $logger->info("Berhasil Optimize");
     } else {
-        $logger->error(message: "Gagal optimasi tabel " . $table . ": " . mysqli_error($conn));
+        $logger->error("Gagal optimasi tabel " . $table . ": " . mysqli_error($conn));
     }
 }
 
