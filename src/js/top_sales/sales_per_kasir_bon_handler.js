@@ -212,7 +212,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function buildSubtotalRow(no_bon, qty, diskon, total) {
       return `
                 <tr class="subtotal-row" style=" font-weight: bold; border-top: 2px solid #e2e8f0;">
-                    <td colspan="7" class="text-right px-4 py-2" style="font-style: italic; font-weight: bold;">Total Bon: ${no_bon}</td>
+                    <td colspan="7" class="text-right px-4 py-2" style="font-style: italic; font-weight: bold;">${no_bon}</td>
                     <td class="text-right px-2 font-bold py-2">${formatNumber(
                       qty
                     )}</td>
