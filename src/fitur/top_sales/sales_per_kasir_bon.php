@@ -176,10 +176,6 @@ function build_pagination_url($new_page)
                             <thead>
                                 <tr>
                                     <th>No</th>
-                                    <th>Tanggal</th>
-                                    <th>Kd Kasir</th>
-                                    <th>Nama Kasir</th>
-                                    <th>No Trans</th>
                                     <th>PLU</th>
                                     <th>Nama Barang</th>
                                     <th>Qty</th>

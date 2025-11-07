@@ -17,6 +17,9 @@ $is_export = $_GET['export'] ?? false;
 $is_export = ($is_export === 'true' || $is_export === true);
 $response = [
     'summary' => [
+        'total_qty' => 0,
+        'total_total_diskon' => 0,
+        'total_total' => 0,
         'total_net_sales' => 0,
         'total_grs_margin' => 0,
         'total_hpp' => 0,
@@ -135,6 +138,8 @@ try {
             $response['pagination']['offset'] = $offset;
         }
     }
+
+
     $sql_summary = "
         SELECT
             SUM((
@@ -156,12 +161,27 @@ try {
                 (IFNULL(a.avg_cost, 0) * IFNULL(a.qty, 0)) - 
                 (IFNULL(a.ppn * a.qty, 0)) - 
                 (a.diskon3 * a.qty)
-            )) AS total_grs_margin
+            )) AS total_grs_margin,
+            
+            SUM((CASE MOD(a.plu, 10)
+                WHEN 0 THEN a.qty * a.conv2
+                WHEN 1 THEN a.qty * (a.conv2 / a.conv1)
+                ELSE a.qty
+            END)) AS total_qty,
+            
+            SUM((
+                ((a.harga - a.hrg_promo) * a.qty) + 
+                (a.hrg_promo * (IFNULL(a.diskon1, 0) / 100) * a.qty) +
+                ((a.hrg_promo - (a.hrg_promo * (IFNULL(a.diskon1, 0) / 100))) * (IFNULL(a.diskon2, 0) / 100) * a.qty) +
+                (a.diskon3 * a.qty)
+            )) AS total_total_diskon
         FROM
             trans_b a
         WHERE
             $where_conditions
     ";
+
+
     $stmt_summary = $conn->prepare($sql_summary);
     if ($stmt_summary === false) {
         throw new Exception("Prepare failed (sql_summary): " . $conn->error);
@@ -171,11 +191,20 @@ try {
     $result_summary = $stmt_summary->get_result();
     $summary_data = $result_summary->fetch_assoc();
     $stmt_summary->close();
+
+
     if ($summary_data) {
         $response['summary']['total_net_sales'] = $summary_data['total_net_sales'] ?? 0;
         $response['summary']['total_grs_margin'] = $summary_data['total_grs_margin'] ?? 0;
         $response['summary']['total_hpp'] = $summary_data['total_hpp'] ?? 0;
+
+        $response['summary']['total_qty'] = $summary_data['total_qty'] ?? 0;
+        $response['summary']['total_total_diskon'] = $summary_data['total_total_diskon'] ?? 0;
+
+        $response['summary']['total_total'] = $summary_data['total_net_sales'] ?? 0;
     }
+
+
     $conn->close();
 } catch (Exception $e) {
     http_response_code(500);

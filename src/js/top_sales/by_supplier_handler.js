@@ -13,7 +13,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const paginationLinks = document.getElementById("pagination-links");
   const exportExcelButton = document.getElementById("export-excel-btn");
   const exportPdfButton = document.getElementById("export-pdf-btn");
-
   function formatRupiah(number) {
     if (isNaN(number) || number === null) {
       return "Rp 0";
@@ -25,21 +24,18 @@ document.addEventListener("DOMContentLoaded", () => {
       maximumFractionDigits: 0,
     }).format(number);
   }
-
   function formatNumber(number) {
     if (isNaN(number) || number === null) {
       return "0";
     }
     return new Intl.NumberFormat("id-ID").format(number);
   }
-
   function formatPercent(number) {
     if (isNaN(number) || number === null) {
       return "0.00 ";
     }
     return parseFloat(number).toFixed(2) + " ";
   }
-
   function getUrlParams() {
     const params = new URLSearchParams(window.location.search);
     const yesterday = new Date();
@@ -52,13 +48,11 @@ document.addEventListener("DOMContentLoaded", () => {
       page: parseInt(params.get("page") || "1", 10),
     };
   }
-
   function build_pagination_url(newPage) {
     const params = new URLSearchParams(window.location.search);
     params.set("page", newPage);
     return "?" + params.toString();
   }
-
   async function loadTopSalesData() {
     const params = getUrlParams();
     const isPagination = params.page > 1;
@@ -103,7 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (data.summary) {
         updateSummaryCards(data.summary);
       }
-      renderTable(data.tabel_data, data.pagination.offset);
+      renderTable(data.tabel_data, data.pagination, data.summary);
       renderPagination(data.pagination);
     } catch (error) {
       console.error("Error loading top sales data:", error);
@@ -118,7 +112,6 @@ document.addEventListener("DOMContentLoaded", () => {
       setLoadingState(false);
     }
   }
-
   function setLoadingState(
     isLoading,
     isExporting = false,
@@ -169,7 +162,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   }
-
   function showTableError(message) {
     tableBody.innerHTML = `
                 <tr>
@@ -179,7 +171,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     </td>
                 </tr>`;
   }
-
   function populateStoreFilter(stores, selectedStore) {
     if (!filterSelectStore || filterSelectStore.options.length > 1) {
       filterSelectStore.value = selectedStore;
@@ -196,14 +187,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     filterSelectStore.value = selectedStore;
   }
-
   function updateSummaryCards(summary) {
     summaryNetSales.textContent = formatRupiah(summary.total_net_sales);
     summaryGrsMargin.textContent = formatRupiah(summary.total_grs_margin);
     summaryHpp.textContent = formatRupiah(summary.total_hpp);
   }
-
-  function renderTable(tabel_data, offset) {
+  function renderTable(tabel_data, pagination, summary) {
     if (!tabel_data || tabel_data.length === 0) {
       tableBody.innerHTML = `
                                 <tr>
@@ -214,6 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 </tr>`;
       return;
     }
+    const offset = pagination.offset || 0;
     let htmlRows = "";
     tabel_data.forEach((row, index) => {
       htmlRows += `
@@ -244,9 +234,29 @@ document.addEventListener("DOMContentLoaded", () => {
                                 </tr>
                             `;
     });
+    const isLastPage =
+      pagination && pagination.current_page === pagination.total_pages;
+    if (tabel_data && tabel_data.length > 0 && summary && isLastPage) {
+      htmlRows += `
+                <tr class="bg-blue-100 font-bold text-blue-900">
+                    <td colspan="3" class="text-right font-bold pr-2">GRAND TOTAL</td>
+                    <td class="">${formatNumber(summary.total_qty)}</td>
+                    <td class="">${formatRupiah(summary.total_gross_sales)}</td>
+                    <td class="">${formatRupiah(summary.total_ppn)}</td>
+                    <td class="">${formatRupiah(
+                      summary.total_total_diskon
+                    )}</td>
+                    <td class="font-semibold">${formatRupiah(
+                      summary.total_net_sales
+                    )}</td>
+                    <td class="">${formatRupiah(summary.total_hpp)}</td>
+                    <td class="">${formatRupiah(summary.total_grs_margin)}</td>
+                    <td class=""></td>
+                </tr>
+            `;
+    }
     tableBody.innerHTML = htmlRows;
   }
-
   /**
    * Merender navigasi pagination.
    */
@@ -325,7 +335,6 @@ document.addEventListener("DOMContentLoaded", () => {
                             `;
     paginationLinks.innerHTML = linksHtml;
   }
-
   /**
    * Mengambil semua data dari API untuk keperluan export.
    */
@@ -365,7 +374,6 @@ document.addEventListener("DOMContentLoaded", () => {
       setLoadingState(false);
     }
   }
-
   /**
    * Fungsi untuk export data ke Excel
    */
@@ -386,6 +394,7 @@ document.addEventListener("DOMContentLoaded", () => {
           filterSelectStore.options[filterSelectStore.selectedIndex].text,
         ],
         [],
+        ["Total Qty", parseFloat(summary.total_qty) || 0],
         ["Total Net Sales", parseFloat(summary.total_net_sales) || 0],
         ["Total Gross Margin", parseFloat(summary.total_grs_margin) || 0],
         ["Total HPP", parseFloat(summary.total_hpp) || 0],
@@ -417,11 +426,31 @@ document.addEventListener("DOMContentLoaded", () => {
         parseFloat(row.grs_margin),
         parseFloat(row.margin_percent) / 100,
       ]);
+      const totalRow = [
+        "",
+        "GRAND TOTAL",
+        "",
+        parseFloat(summary.total_qty) || 0,
+        parseFloat(summary.total_gross_sales) || 0,
+        parseFloat(summary.total_ppn) || 0,
+        parseFloat(summary.total_total_diskon) || 0,
+        parseFloat(summary.total_net_sales) || 0,
+        parseFloat(summary.total_hpp) || 0,
+        parseFloat(summary.total_grs_margin) || 0,
+        "",
+      ];
+      dataRows.push(totalRow);
       const ws = XLSX.utils.aoa_to_sheet(title);
       XLSX.utils.sheet_add_aoa(ws, info, { origin: "A2" });
       XLSX.utils.sheet_add_aoa(ws, [headers], { origin: "A9" });
       XLSX.utils.sheet_add_aoa(ws, dataRows, { origin: "A10" });
-      ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 10 } }];
+      ws["!merges"] = [
+        { s: { r: 0, c: 0 }, e: { r: 0, c: 10 } },
+        {
+          s: { r: 9 + dataRows.length, c: 0 },
+          e: { r: 9 + dataRows.length, c: 2 },
+        },
+      ];
       ws["A1"].s = {
         font: { bold: true, sz: 16 },
         alignment: { horizontal: "center" },
@@ -432,6 +461,14 @@ document.addEventListener("DOMContentLoaded", () => {
         font: { bold: true },
         fill: { fgColor: { rgb: "E0E0E0" } },
       };
+      const totalRowStyle = {
+        font: { bold: true },
+        fill: { fgColor: { rgb: "F0F0F0" } },
+      };
+      if (ws["B4"]) {
+        ws["B4"].t = "n";
+        ws["B4"].s = { numFmt: numFormat };
+      }
       ["B5", "B6", "B7"].forEach((cell) => {
         if (ws[cell]) {
           ws[cell].t = "n";
@@ -444,13 +481,33 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       dataRows.forEach((_, R_idx) => {
         const R = R_idx + 9;
-        ws[XLSX.utils.encode_cell({ r: R, c: 3 })].s = { numFmt: numFormat };
-        [4, 5, 6, 7, 8, 9].forEach((C) => {
-          ws[XLSX.utils.encode_cell({ r: R, c: C })].s = { numFmt: numFormat };
-        });
-        ws[XLSX.utils.encode_cell({ r: R, c: 10 })].s = {
-          numFmt: percentFormat,
-        };
+        if (R_idx < dataRows.length - 1) {
+          ws[XLSX.utils.encode_cell({ r: R, c: 3 })].s = { numFmt: numFormat };
+          [4, 5, 6, 7, 8, 9].forEach((C) => {
+            ws[XLSX.utils.encode_cell({ r: R, c: C })].s = {
+              numFmt: numFormat,
+            };
+          });
+          ws[XLSX.utils.encode_cell({ r: R, c: 10 })].s = {
+            numFmt: percentFormat,
+          };
+        } else {
+          ws[XLSX.utils.encode_cell({ r: R, c: 1 })].v = "GRAND TOTAL";
+          ws[XLSX.utils.encode_cell({ r: R, c: 1 })].s = totalRowStyle;
+          ws[XLSX.utils.encode_cell({ r: R, c: 0 })].s = totalRowStyle;
+          ws[XLSX.utils.encode_cell({ r: R, c: 2 })].s = totalRowStyle;
+          ws[XLSX.utils.encode_cell({ r: R, c: 3 })].s = {
+            ...totalRowStyle,
+            numFmt: numFormat,
+          };
+          [4, 5, 6, 7, 8, 9].forEach((C) => {
+            ws[XLSX.utils.encode_cell({ r: R, c: C })].s = {
+              ...totalRowStyle,
+              numFmt: numFormat,
+            };
+          });
+          ws[XLSX.utils.encode_cell({ r: R, c: 10 })].s = totalRowStyle;
+        }
       });
       ws["!cols"] = [
         { wch: 5 },
@@ -474,7 +531,6 @@ document.addEventListener("DOMContentLoaded", () => {
       Swal.fire("Export Gagal", "Terjadi kesalahan: " + error.message, "error");
     }
   }
-
   /**
    * Fungsi untuk export data ke PDF
    */
@@ -501,17 +557,18 @@ document.addEventListener("DOMContentLoaded", () => {
       const storeText =
         filterSelectStore.options[filterSelectStore.selectedIndex].text;
       doc.text(`Cabang: ${storeText}`, 14, 36);
+      doc.text(`Total Quantity: ${formatNumber(summary.total_qty)}`, 180, 22);
       doc.text(
         `Total Net Sales: ${formatRupiah(summary.total_net_sales)}`,
         180,
-        22
+        28
       );
       doc.text(
         `Total Gross Margin: ${formatRupiah(summary.total_grs_margin)}`,
         180,
-        30
+        34
       );
-      doc.text(`Total HPP: ${formatRupiah(summary.total_hpp)}`, 180, 36);
+      doc.text(`Total HPP: ${formatRupiah(summary.total_hpp)}`, 180, 40);
       const head = [
         [
           "No",
@@ -540,6 +597,35 @@ document.addEventListener("DOMContentLoaded", () => {
         formatRupiah(row.grs_margin),
         formatPercent(row.margin_percent),
       ]);
+      const totalRowStyles = {
+        halign: "right",
+        fontStyle: "bold",
+        fillColor: [230, 230, 230],
+      };
+      const totalRow = [
+        { content: "GRAND TOTAL", colSpan: 3, styles: totalRowStyles },
+        { content: formatNumber(summary.total_qty), styles: totalRowStyles },
+        {
+          content: formatRupiah(summary.total_gross_sales),
+          styles: totalRowStyles,
+        },
+        { content: formatRupiah(summary.total_ppn), styles: totalRowStyles },
+        {
+          content: formatRupiah(summary.total_total_diskon),
+          styles: totalRowStyles,
+        },
+        {
+          content: formatRupiah(summary.total_net_sales),
+          styles: totalRowStyles,
+        },
+        { content: formatRupiah(summary.total_hpp), styles: totalRowStyles },
+        {
+          content: formatRupiah(summary.total_grs_margin),
+          styles: totalRowStyles,
+        },
+        { content: "", styles: totalRowStyles },
+      ];
+      body.push(totalRow);
       doc.autoTable({
         startY: 44,
         head: head,
@@ -572,14 +658,11 @@ document.addEventListener("DOMContentLoaded", () => {
       Swal.fire("Export Gagal", "Terjadi kesalahan: " + error.message, "error");
     }
   }
-
   if (exportExcelButton) {
     exportExcelButton.addEventListener("click", exportToExcel);
   }
-
   if (exportPdfButton) {
     exportPdfButton.addEventListener("click", exportToPDF);
   }
-
   loadTopSalesData();
 });
