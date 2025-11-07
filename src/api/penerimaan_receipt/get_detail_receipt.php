@@ -30,6 +30,7 @@ $response = [
     ],
     'stores' => [],
     'tabel_data' => [],
+    'date_subtotals' => [],
     'pagination' => [
         'current_page' => 1,
         'total_pages' => 1,
@@ -75,7 +76,10 @@ try {
     }
 
 
-    $where_conditions = "a.tgl_tiba BETWEEN ? AND ?";
+
+    $where_conditions = "DATE(a.tgl_tiba) BETWEEN ? AND ?";
+
+
     $bind_params_data = ['ss', $tgl_mulai, $tgl_selesai];
     $bind_params_summary = ['ss', $tgl_mulai, $tgl_selesai];
 
@@ -102,7 +106,7 @@ try {
     $sql_data = "
         SELECT
             $sql_calc_found_rows
-            a.tgl_tiba, -- DITAMBAHKAN UNTUK GROUPING TANGGAL
+            DATE(a.tgl_tiba) AS tgl_tiba, -- <-- UBAH DISINI
             a.no_faktur,
             a.plu,
             a.descp AS deskripsi,
@@ -112,11 +116,9 @@ try {
             a.qty_rec AS qty,
             (a.netto * (CASE WHEN a.timbang='true' THEN a.qty_rec/1000 ELSE a.qty_rec END)) AS netto,
             (IFNULL(a.ppn,0) * (CASE WHEN a.timbang='true' THEN a.qty_rec/1000 ELSE a.qty_rec END)) AS ppn,
-            -- (IFNULL(a.ppn_bm,0) * (CASE WHEN a.timbang='true' THEN a.qty_rec/1000 ELSE a.qty_rec END)) AS ppnbm, -- Dihapus
             (
                 (a.netto * (CASE WHEN a.timbang='true' THEN a.qty_rec/1000 ELSE a.qty_rec END)) +
                 (IFNULL(a.ppn,0) * (CASE WHEN a.timbang='true' THEN a.qty_rec/1000 ELSE a.qty_rec END))
-                -- (IFNULL(a.ppn_bm,0) * (CASE WHEN a.timbang='true' THEN a.qty_rec/1000 ELSE a.qty_rec END)) -- Dihapus
             ) AS total
         FROM
             receipt a
@@ -125,9 +127,9 @@ try {
         WHERE
             $where_conditions
         GROUP BY
-            a.tgl_tiba, a.no_faktur, a.no_lpb, a.plu, a.descp, a.satuan, a.conv1, a.conv2, a.no_ord, a.kode_supp, b.nama_supp, a.qty_rec, a.timbang, a.ppn_bm, a.netto, a.ppn
+            DATE(a.tgl_tiba), a.no_faktur, a.no_lpb, a.plu, a.descp, a.satuan, a.conv1, a.conv2, a.no_ord, a.kode_supp, b.nama_supp, a.qty_rec, a.timbang, a.ppn_bm, a.netto, a.ppn -- <-- UBAH DISINI
         ORDER BY
-            a.tgl_tiba, a.no_faktur, a.plu -- DIUBAH: Urutkan berdasarkan tgl_tiba dulu
+            DATE(a.tgl_tiba), a.no_faktur, a.plu -- <-- UBAH DISINI
         $limit_offset_sql
     ";
 
@@ -171,11 +173,9 @@ try {
             SUM(a.qty_rec) AS total_qty,
             SUM(a.netto * (CASE WHEN a.timbang='true' THEN a.qty_rec/1000 ELSE a.qty_rec END)) AS total_netto,
             SUM(IFNULL(a.ppn,0) * (CASE WHEN a.timbang='true' THEN a.qty_rec/1000 ELSE a.qty_rec END)) AS total_ppn,
-            -- SUM(IFNULL(a.ppn_bm,0) * (CASE WHEN a.timbang='true' THEN a.qty_rec/1000 ELSE a.qty_rec END)) AS total_ppnbm, -- Dihapus
             SUM(
                 (a.netto * (CASE WHEN a.timbang='true' THEN a.qty_rec/1000 ELSE a.qty_rec END)) +
                 (IFNULL(a.ppn,0) * (CASE WHEN a.timbang='true' THEN a.qty_rec/1000 ELSE a.qty_rec END))
-                -- (IFNULL(a.ppn_bm,0) * (CASE WHEN a.timbang='true' THEN a.qty_rec/1000 ELSE a.qty_rec END)) -- Dihapus
             ) AS total_total
         FROM
             receipt a
@@ -199,6 +199,47 @@ try {
         $response['summary']['total_ppn'] = $summary_data['total_ppn'] ?? 0;
         $response['summary']['total_total'] = $summary_data['total_total'] ?? 0;
     }
+
+
+    $sql_date_summary = "
+        SELECT
+            DATE(a.tgl_tiba) AS tanggal, -- <-- UBAH DISINI
+            SUM(a.qty_rec) AS total_qty,
+            SUM(a.netto * (CASE WHEN a.timbang='true' THEN a.qty_rec/1000 ELSE a.qty_rec END)) AS total_netto,
+            SUM(IFNULL(a.ppn,0) * (CASE WHEN a.timbang='true' THEN a.qty_rec/1000 ELSE a.qty_rec END)) AS total_ppn,
+            SUM(
+                (a.netto * (CASE WHEN a.timbang='true' THEN a.qty_rec/1000 ELSE a.qty_rec END)) +
+                (IFNULL(a.ppn,0) * (CASE WHEN a.timbang='true' THEN a.qty_rec/1000 ELSE a.qty_rec END))
+            ) AS total_total
+        FROM
+            receipt a
+        WHERE
+            $where_conditions
+        GROUP BY
+            DATE(a.tgl_tiba) -- <-- UBAH DISINI
+        ORDER BY
+            tanggal
+    ";
+
+    $stmt_date_summary = $conn->prepare($sql_date_summary);
+    if ($stmt_date_summary === false) {
+        throw new Exception("Prepare failed (sql_date_summary): " . $conn->error);
+    }
+
+    $stmt_date_summary->bind_param(...$bind_params_summary);
+    $stmt_date_summary->execute();
+    $result_date_summary = $stmt_date_summary->get_result();
+
+    while ($date_row = $result_date_summary->fetch_assoc()) {
+        $response['date_subtotals'][$date_row['tanggal']] = [
+            'total_qty' => $date_row['total_qty'] ?? 0,
+            'total_netto' => $date_row['total_netto'] ?? 0,
+            'total_ppn' => $date_row['total_ppn'] ?? 0,
+            'total_total' => $date_row['total_total'] ?? 0,
+        ];
+    }
+    $stmt_date_summary->close();
+
 
     $conn->close();
 

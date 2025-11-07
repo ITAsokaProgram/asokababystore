@@ -39,32 +39,7 @@ if ($page < 1) {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
-    <style>
-        /* Peringatan rotasi di HP */
-        #rotate-prompt {
-            display: none;
-        }
 
-        @media screen and (max-width: 767px) and (orientation: portrait) {
-            #rotate-prompt {
-                display: flex;
-            }
-        }
-
-        /* Style untuk subtotal row */
-        .subtotal-row {
-            font-weight: bold;
-            background-color: aqua;
-            /* bg-gray-50 */
-            border-top: 2px solid #e2e8f0;
-            /* border-gray-200 */
-        }
-
-        .subtotal-row td {
-            padding-top: 0.75rem;
-            padding-bottom: 0.75rem;
-        }
-    </style>
 </head>
 
 <body class="bg-gray-50">
