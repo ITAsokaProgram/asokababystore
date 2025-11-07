@@ -619,6 +619,9 @@ document.addEventListener("DOMContentLoaded", () => {
   /**
    * Fungsi untuk export data ke PDF
    */
+  /**
+   * Fungsi untuk export data ke PDF
+   */
   async function exportToPDF() {
     const data = await fetchAllDataForExport();
     if (!data || !data.tabel_data || data.tabel_data.length === 0) {
@@ -689,11 +692,14 @@ document.addEventListener("DOMContentLoaded", () => {
       let subtotal_qtykor = 0,
         subtotal_t_rp = 0,
         subtotal_t_selisih = 0;
+
       const pushSubtotalRowPdf = () => {
         body.push([
           {
             content: `${current_no_faktur}`,
-            colSpan: 6,
+            // ================== PERUBAHAN 1 ==================
+            // Diubah dari 6 menjadi 7, untuk mencakup kolom HPP
+            colSpan: 7,
             styles: {
               halign: "right",
               fontStyle: "bolditalic",
@@ -701,6 +707,7 @@ document.addEventListener("DOMContentLoaded", () => {
             },
           },
           {
+            // Data ini sekarang masuk ke kolom 8 (QtyKor) - BENAR
             content: formatNumber(subtotal_qtykor),
             styles: {
               halign: "right",
@@ -708,9 +715,12 @@ document.addEventListener("DOMContentLoaded", () => {
               fillColor: [247, 250, 252],
             },
           },
+          // Kolom 9 (Stock) - kosong
           { content: "", styles: { fillColor: [247, 250, 252] } },
+          // Kolom 10 (SelQty) - kosong
           { content: "", styles: { fillColor: [247, 250, 252] } },
           {
+            // Data ini sekarang masuk ke kolom 11 (T.Rp Kor) - BENAR
             content: formatRupiah(subtotal_t_rp),
             styles: {
               halign: "right",
@@ -719,6 +729,7 @@ document.addEventListener("DOMContentLoaded", () => {
             },
           },
           {
+            // Data ini sekarang masuk ke kolom 12 (T.Rp Sel) - BENAR
             content: formatRupiah(subtotal_t_selisih),
             styles: {
               halign: "right",
@@ -726,9 +737,12 @@ document.addEventListener("DOMContentLoaded", () => {
               fillColor: [247, 250, 252],
             },
           },
+          // ================== PERUBAHAN 2 ==================
+          // Menambahkan 1 sel kosong untuk kolom ke-13 (Ket)
           { content: "", styles: { fillColor: [247, 250, 252] } },
         ]);
       };
+
       tabel_data.forEach((row, index) => {
         if (index === 0) {
           current_no_faktur = row.no_faktur;
@@ -743,6 +757,7 @@ document.addEventListener("DOMContentLoaded", () => {
         subtotal_qtykor += parseFloat(row.qtykor) || 0;
         subtotal_t_rp += parseFloat(row.t_rp) || 0;
         subtotal_t_selisih += parseFloat(row.t_selisih) || 0;
+
         body.push([
           item_counter++,
           row.no_faktur,
@@ -759,13 +774,17 @@ document.addEventListener("DOMContentLoaded", () => {
           row.ket,
         ]);
       });
+
       if (current_no_faktur !== null) {
         pushSubtotalRowPdf();
       }
+
       body.push([
         {
           content: `GRAND TOTAL`,
-          colSpan: 6,
+          // ================== PERUBAHAN 3 ==================
+          // Diubah dari 6 menjadi 7
+          colSpan: 7,
           styles: {
             halign: "right",
             fontStyle: "bold",
@@ -774,6 +793,7 @@ document.addEventListener("DOMContentLoaded", () => {
           },
         },
         {
+          // Kolom 8 (QtyKor)
           content: formatNumber(summary.total_qtykor),
           styles: {
             halign: "right",
@@ -782,9 +802,12 @@ document.addEventListener("DOMContentLoaded", () => {
             fontSize: 8,
           },
         },
+        // Kolom 9 (Stock)
         { content: "", styles: { fillColor: [226, 232, 240] } },
+        // Kolom 10 (SelQty)
         { content: "", styles: { fillColor: [226, 232, 240] } },
         {
+          // Kolom 11 (T.Rp Kor)
           content: formatRupiah(summary.total_rp_koreksi),
           styles: {
             halign: "right",
@@ -794,6 +817,7 @@ document.addEventListener("DOMContentLoaded", () => {
           },
         },
         {
+          // Kolom 12 (T.Rp Sel)
           content: formatRupiah(summary.total_rp_selisih),
           styles: {
             halign: "right",
@@ -802,8 +826,11 @@ document.addEventListener("DOMContentLoaded", () => {
             fontSize: 8,
           },
         },
+        // ================== PERUBAHAN 4 ==================
+        // Menambahkan 1 sel kosong untuk kolom ke-13 (Ket)
         { content: "", styles: { fillColor: [226, 232, 240] } },
       ]);
+
       doc.autoTable({
         startY: 44,
         head: head,

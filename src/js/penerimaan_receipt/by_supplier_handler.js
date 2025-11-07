@@ -551,12 +551,12 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         styles: { fontSize: 7, cellPadding: 1.5 },
         columnStyles: {
-          0: { halign: "right", cellWidth: 7 },
-          1: { halign: "left", cellWidth: 20 },
-          2: { halign: "left", cellWidth: 100 },
-          3: { halign: "right", cellWidth: 40 },
-          4: { halign: "right", cellWidth: 40 },
-          5: { halign: "right", cellWidth: 40 },
+          0: { halign: "right" },
+          1: { halign: "left" },
+          2: { halign: "left" },
+          3: { halign: "right" },
+          4: { halign: "right" },
+          5: { halign: "right" },
         },
       });
       const fileName = `Receipt_by_Supplier_${params.tgl_mulai}_sd_${params.tgl_selesai}.pdf`;

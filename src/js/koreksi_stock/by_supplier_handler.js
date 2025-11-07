@@ -13,7 +13,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const paginationLinks = document.getElementById("pagination-links");
   const exportExcelButton = document.getElementById("export-excel-btn");
   const exportPdfButton = document.getElementById("export-pdf-btn");
-
   function formatRupiah(number) {
     if (isNaN(number) || number === null) {
       return "Rp 0";
@@ -25,7 +24,6 @@ document.addEventListener("DOMContentLoaded", () => {
       maximumFractionDigits: 0,
     }).format(number);
   }
-
   function formatNumber(number) {
     if (isNaN(number) || number === null) {
       return "0";
@@ -35,13 +33,11 @@ document.addEventListener("DOMContentLoaded", () => {
       maximumFractionDigits: 2,
     }).format(number);
   }
-
   function getUrlParams() {
     const params = new URLSearchParams(window.location.search);
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayString = yesterday.toISOString().split("T")[0];
-
     return {
       tgl_mulai: params.get("tgl_mulai") || yesterdayString,
       tgl_selesai: params.get("tgl_selesai") || yesterdayString,
@@ -49,25 +45,21 @@ document.addEventListener("DOMContentLoaded", () => {
       page: parseInt(params.get("page") || "1", 10),
     };
   }
-
   function build_pagination_url(newPage) {
     const params = new URLSearchParams(window.location.search);
     params.set("page", newPage);
     return "?" + params.toString();
   }
-
   async function loadData() {
     const params = getUrlParams();
     const isPagination = params.page > 1;
     setLoadingState(true, false, isPagination);
-
     const queryString = new URLSearchParams({
       tgl_mulai: params.tgl_mulai,
       tgl_selesai: params.tgl_selesai,
       kd_store: params.kd_store,
       page: params.page,
     }).toString();
-
     try {
       const response = await fetch(
         `/src/api/koreksi_stock/get_by_supplier.php?${queryString}`
@@ -117,7 +109,6 @@ document.addEventListener("DOMContentLoaded", () => {
       setLoadingState(false);
     }
   }
-
   function setLoadingState(
     isLoading,
     isExporting = false,
@@ -168,7 +159,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   }
-
   function showTableError(message) {
     tableBody.innerHTML = `
             <tr>
@@ -178,7 +168,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 </td>
             </tr>`;
   }
-
   function populateStoreFilter(stores, selectedStore) {
     if (!filterSelectStore || filterSelectStore.options.length > 1) {
       filterSelectStore.value = selectedStore;
@@ -195,13 +184,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     filterSelectStore.value = selectedStore;
   }
-
   function updateSummaryCards(summary) {
     summaryQty.textContent = formatNumber(summary.total_qtykor);
     summaryRp.textContent = formatRupiah(summary.total_rp_koreksi);
     summarySelisih.textContent = formatRupiah(summary.total_rp_selisih);
   }
-
   function renderTable(tabel_data, offset, summary) {
     if (!tabel_data || tabel_data.length === 0) {
       tableBody.innerHTML = `
@@ -213,7 +200,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tr>`;
       return;
     }
-
     let htmlRows = "";
     let item_counter = offset + 1;
     let current_kode_supp = null;
@@ -221,7 +207,6 @@ document.addEventListener("DOMContentLoaded", () => {
     let subtotal_qtykor = 0;
     let subtotal_t_rp = 0;
     let subtotal_t_selisih = 0;
-
     function buildSupplierHeaderRow(kode_supp, nama_supp) {
       return `
                 <tr class="faktur-header-row" style="background-color: #f3f4f6; font-weight: bold;">
@@ -233,7 +218,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tr>
             `;
     }
-
     function buildSubtotalRow(nama_supp, qtykor, t_rp, t_selisih) {
       return `
                 <tr class="subtotal-row">
@@ -248,7 +232,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tr>
             `;
     }
-
     tabel_data.forEach((row, index) => {
       if (row.kode_supp !== current_kode_supp) {
         if (index > 0) {
@@ -266,11 +249,9 @@ document.addEventListener("DOMContentLoaded", () => {
         current_nama_supp = row.nama_supp;
         htmlRows += buildSupplierHeaderRow(row.kode_supp, row.nama_supp);
       }
-
       subtotal_qtykor += parseFloat(row.qtykor) || 0;
       subtotal_t_rp += parseFloat(row.t_rp) || 0;
       subtotal_t_selisih += parseFloat(row.t_selisih) || 0;
-
       htmlRows += `
                 <tr>
                     <td>${item_counter}</td>
@@ -295,7 +276,6 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
       item_counter++;
     });
-
     if (current_kode_supp !== null) {
       htmlRows += buildSubtotalRow(
         current_nama_supp,
@@ -304,7 +284,6 @@ document.addEventListener("DOMContentLoaded", () => {
         subtotal_t_selisih
       );
     }
-
     if (summary) {
       htmlRows += `
                 <tr style="border-top: 4px solid #4A5568; background-color: #E2E8F0; font-weight: bold; font-size: 1.05em;">
@@ -325,10 +304,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tr>
             `;
     }
-
     tableBody.innerHTML = htmlRows;
   }
-
   function renderPagination(pagination) {
     if (!pagination) {
       paginationInfo.textContent = "";
@@ -344,9 +321,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const start_row = offset + 1;
     const end_row = Math.min(offset + limit, total_rows);
     paginationInfo.textContent = `Menampilkan ${start_row} - ${end_row} dari ${total_rows} data`;
-
     let linksHtml = "";
-
     linksHtml += `
             <a href="${
               current_page > 1 ? build_pagination_url(current_page - 1) : "#"
@@ -357,7 +332,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 <i class="fas fa-chevron-left"></i>
             </a>
         `;
-
     const pages_to_show = [];
     const max_pages_around = 2;
     for (let i = 1; i <= total_pages; i++) {
@@ -370,7 +344,6 @@ document.addEventListener("DOMContentLoaded", () => {
         pages_to_show.push(i);
       }
     }
-
     let last_page = 0;
     for (const page_num of pages_to_show) {
       if (last_page !== 0 && page_num > last_page + 1) {
@@ -386,7 +359,6 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
       last_page = page_num;
     }
-
     linksHtml += `
             <a href="${
               current_page < total_pages
@@ -399,10 +371,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 <i class="fas fa-chevron-right"></i>
             </a>
         `;
-
     paginationLinks.innerHTML = linksHtml;
   }
-
   /**
    * Mengambil semua data dari API untuk keperluan export.
    */
@@ -415,7 +385,6 @@ document.addEventListener("DOMContentLoaded", () => {
       kd_store: params.kd_store,
       export: true,
     }).toString();
-
     try {
       const response = await fetch(
         `/src/api/koreksi_stock/get_by_supplier.php?${queryString}`
@@ -443,7 +412,6 @@ document.addEventListener("DOMContentLoaded", () => {
       setLoadingState(false);
     }
   }
-
   /**
    * Fungsi untuk export data ke Excel
    */
@@ -453,11 +421,9 @@ document.addEventListener("DOMContentLoaded", () => {
       Swal.fire("Tidak Ada Data", "Tidak ada data untuk diekspor.", "info");
       return;
     }
-
     try {
       const { tabel_data, summary } = data;
       const params = getUrlParams();
-
       const title = [["Laporan Koreksi (Supplier)"]];
       const info = [
         ["Periode", `${params.tgl_mulai} s/d ${params.tgl_selesai}`],
@@ -471,7 +437,6 @@ document.addEventListener("DOMContentLoaded", () => {
         ["Total Rp Selisih", parseFloat(summary.total_rp_selisih) || 0],
         [],
       ];
-
       const headers = [
         "No",
         "No Faktur",
@@ -487,7 +452,6 @@ document.addEventListener("DOMContentLoaded", () => {
         "Total Rp Selisih",
         "Keterangan",
       ];
-
       const dataRows = [];
       let item_counter = 1;
       let current_kode_supp = null;
@@ -495,7 +459,6 @@ document.addEventListener("DOMContentLoaded", () => {
       let subtotal_qtykor = 0,
         subtotal_t_rp = 0,
         subtotal_t_selisih = 0;
-
       const pushSubtotalRow = () => {
         dataRows.push([
           "",
@@ -513,13 +476,11 @@ document.addEventListener("DOMContentLoaded", () => {
           "",
         ]);
       };
-
       tabel_data.forEach((row, index) => {
         if (index === 0) {
           current_kode_supp = row.kode_supp;
           current_nama_supp = row.nama_supp;
         }
-
         if (row.kode_supp !== current_kode_supp && current_kode_supp !== null) {
           pushSubtotalRow();
           subtotal_qtykor = 0;
@@ -528,11 +489,9 @@ document.addEventListener("DOMContentLoaded", () => {
           current_kode_supp = row.kode_supp;
           current_nama_supp = row.nama_supp;
         }
-
         subtotal_qtykor += parseFloat(row.qtykor) || 0;
         subtotal_t_rp += parseFloat(row.t_rp) || 0;
         subtotal_t_selisih += parseFloat(row.t_selisih) || 0;
-
         dataRows.push([
           item_counter++,
           row.no_faktur,
@@ -549,11 +508,9 @@ document.addEventListener("DOMContentLoaded", () => {
           row.ket,
         ]);
       });
-
       if (current_kode_supp !== null) {
         pushSubtotalRow();
       }
-
       dataRows.push([]);
       dataRows.push([
         "",
@@ -570,7 +527,6 @@ document.addEventListener("DOMContentLoaded", () => {
         summary.total_rp_selisih,
         "",
       ]);
-
       const ws = XLSX.utils.aoa_to_sheet(title);
       XLSX.utils.sheet_add_aoa(ws, info, { origin: "A2" });
       const headerOrigin = "A" + (info.length + 2);
@@ -578,32 +534,27 @@ document.addEventListener("DOMContentLoaded", () => {
       XLSX.utils.sheet_add_aoa(ws, dataRows, {
         origin: "A" + (info.length + 3),
       });
-
       ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 12 } }];
       ws["A1"].s = {
         font: { bold: true, sz: 16 },
         alignment: { horizontal: "center" },
       };
-
       const numFormat = "#,##0";
       const numFormatDec = "#,##0.00";
       const headerStyle = {
         font: { bold: true },
         fill: { fgColor: { rgb: "E0E0E0" } },
       };
-
       ["B5", "B6", "B7"].forEach((cell) => {
         if (ws[cell]) {
           ws[cell].t = "n";
           ws[cell].s = { numFmt: numFormat };
         }
       });
-
       headers.forEach((_, C) => {
         const cell = ws[XLSX.utils.encode_cell({ r: info.length + 1, c: C })];
         if (cell) cell.s = headerStyle;
       });
-
       dataRows.forEach((row, R_idx) => {
         const R = R_idx + info.length + 2;
         if (
@@ -652,7 +603,6 @@ document.addEventListener("DOMContentLoaded", () => {
           });
         }
       });
-
       ws["!cols"] = [
         { wch: 5 },
         { wch: 18 },
@@ -668,10 +618,8 @@ document.addEventListener("DOMContentLoaded", () => {
         { wch: 17 },
         { wch: 15 },
       ];
-
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Koreksi Supplier");
-
       const fileName = `Koreksi_Supplier_${params.tgl_mulai}_sd_${params.tgl_selesai}.xlsx`;
       XLSX.writeFile(wb, fileName);
     } catch (error) {
@@ -679,7 +627,9 @@ document.addEventListener("DOMContentLoaded", () => {
       Swal.fire("Export Gagal", "Terjadi kesalahan: " + error.message, "error");
     }
   }
-
+  /**
+   * Fungsi untuk export data ke PDF
+   */
   /**
    * Fungsi untuk export data ke PDF
    */
@@ -689,18 +639,15 @@ document.addEventListener("DOMContentLoaded", () => {
       Swal.fire("Tidak Ada Data", "Tidak ada data untuk diekspor.", "info");
       return;
     }
-
     try {
       const { tabel_data, summary } = data;
       const params = getUrlParams();
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF("landscape");
-
       doc.setFontSize(18);
       doc.text("Laporan Koreksi (Supplier)", 14, 22);
       doc.setFontSize(11);
       doc.setTextColor(100);
-
       doc.text(
         `Periode: ${params.tgl_mulai} s/d ${params.tgl_selesai}`,
         14,
@@ -709,7 +656,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const storeText =
         filterSelectStore.options[filterSelectStore.selectedIndex].text;
       doc.text(`Cabang: ${storeText}`, 14, 36);
-
       doc.text(
         `Total Qty Koreksi: ${formatNumber(summary.total_qtykor)}`,
         280,
@@ -734,7 +680,6 @@ document.addEventListener("DOMContentLoaded", () => {
           align: "right",
         }
       );
-
       const head = [
         [
           "No",
@@ -752,7 +697,6 @@ document.addEventListener("DOMContentLoaded", () => {
           "Ket",
         ],
       ];
-
       const body = [];
       let item_counter = 1;
       let current_kode_supp = null;
@@ -760,12 +704,11 @@ document.addEventListener("DOMContentLoaded", () => {
       let subtotal_qtykor = 0,
         subtotal_t_rp = 0,
         subtotal_t_selisih = 0;
-
       const pushSubtotalRowPdf = () => {
         body.push([
           {
-            content: `${current_nama_supp}`,
-            colSpan: 6,
+            content: `Sub-Total: ${current_nama_supp ?? ""}`,
+            colSpan: 7,
             styles: {
               halign: "right",
               fontStyle: "bolditalic",
@@ -801,13 +744,11 @@ document.addEventListener("DOMContentLoaded", () => {
           { content: "", styles: { fillColor: [247, 250, 252] } },
         ]);
       };
-
       tabel_data.forEach((row, index) => {
         if (index === 0) {
           current_kode_supp = row.kode_supp;
           current_nama_supp = row.nama_supp;
         }
-
         if (row.kode_supp !== current_kode_supp && current_kode_supp !== null) {
           pushSubtotalRowPdf();
           subtotal_qtykor = 0;
@@ -816,11 +757,9 @@ document.addEventListener("DOMContentLoaded", () => {
           current_kode_supp = row.kode_supp;
           current_nama_supp = row.nama_supp;
         }
-
         subtotal_qtykor += parseFloat(row.qtykor) || 0;
         subtotal_t_rp += parseFloat(row.t_rp) || 0;
         subtotal_t_selisih += parseFloat(row.t_selisih) || 0;
-
         body.push([
           item_counter++,
           row.no_faktur,
@@ -837,15 +776,13 @@ document.addEventListener("DOMContentLoaded", () => {
           row.ket,
         ]);
       });
-
       if (current_kode_supp !== null) {
         pushSubtotalRowPdf();
       }
-
       body.push([
         {
           content: `GRAND TOTAL`,
-          colSpan: 6,
+          colSpan: 7,
           styles: {
             halign: "right",
             fontStyle: "bold",
@@ -884,7 +821,6 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         { content: "", styles: { fillColor: [226, 232, 240] } },
       ]);
-
       doc.autoTable({
         startY: 44,
         head: head,
@@ -897,22 +833,21 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         styles: { fontSize: 6, cellPadding: 1.5 },
         columnStyles: {
-          0: { halign: "right", cellWidth: 7 },
-          1: { halign: "left", cellWidth: 20 },
-          2: { halign: "left", cellWidth: 15 },
-          3: { halign: "left", cellWidth: 45 },
-          4: { halign: "right", cellWidth: 7 },
-          5: { halign: "right", cellWidth: 7 },
-          6: { halign: "right", cellWidth: 18 },
-          7: { halign: "right", cellWidth: 10 },
-          8: { halign: "right", cellWidth: 10 },
-          9: { halign: "right", cellWidth: 10 },
-          10: { halign: "right", cellWidth: 20 },
-          11: { halign: "right", cellWidth: 20 },
-          12: { halign: "left", cellWidth: 18 },
+          0: { halign: "right" },
+          1: { halign: "left" },
+          2: { halign: "left" },
+          3: { halign: "left" },
+          4: { halign: "right" },
+          5: { halign: "right" },
+          6: { halign: "right" },
+          7: { halign: "right" },
+          8: { halign: "right" },
+          9: { halign: "right" },
+          10: { halign: "right" },
+          11: { halign: "right" },
+          12: { halign: "left" },
         },
       });
-
       const fileName = `Koreksi_Supplier_${params.tgl_mulai}_sd_${params.tgl_selesai}.pdf`;
       doc.save(fileName);
     } catch (error) {
@@ -920,15 +855,12 @@ document.addEventListener("DOMContentLoaded", () => {
       Swal.fire("Export Gagal", "Terjadi kesalahan: " + error.message, "error");
     }
   }
-
   if (exportExcelButton) {
     exportExcelButton.addEventListener("click", exportToExcel);
   }
-
   if (exportPdfButton) {
     exportPdfButton.addEventListener("click", exportToPDF);
   }
-
   if (filterForm) {
     filterForm.addEventListener("submit", (e) => {
       e.preventDefault();
@@ -939,6 +871,5 @@ document.addEventListener("DOMContentLoaded", () => {
       loadData();
     });
   }
-
   loadData();
 });
