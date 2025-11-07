@@ -94,7 +94,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (data.summary) {
         updateSummaryCards(data.summary);
       }
-
       renderTable(
         data.tabel_data,
         data.pagination.offset,
@@ -102,7 +101,6 @@ document.addEventListener("DOMContentLoaded", () => {
         data.date_subtotals,
         data.pagination
       );
-
       renderPagination(data.pagination);
     } catch (error) {
       console.error("Error loading data:", error);
@@ -197,7 +195,6 @@ document.addEventListener("DOMContentLoaded", () => {
     summaryPpn.textContent = formatRupiah(summary.total_ppn);
     summaryTotal.textContent = formatRupiah(summary.total_total);
   }
-
   function renderTable(
     tabel_data,
     offset,
@@ -215,16 +212,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tr>`;
       return;
     }
-
     let htmlRows = "";
-    let item_counter = offset + 1;
+    let faktur_item_counter = 0;
     let current_no_faktur = null;
     let subtotal_qty = 0;
     let subtotal_netto = 0;
     let subtotal_ppn = 0;
     let subtotal_total = 0;
     let current_tgl_tiba = null;
-
     function buildSubtotalFakturRow(qty, netto, ppn, total) {
       return `
                 <tr class="subtotal-row">
@@ -238,7 +233,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tr>
             `;
     }
-
     function buildDateHeaderRow(tanggal) {
       return `
                 <tr class="header-tanggal-row">
@@ -248,7 +242,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tr>
             `;
     }
-
     function buildFakturHeaderRow(no_faktur) {
       return `
                 <tr class="header-faktur-row">
@@ -256,7 +249,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tr>
             `;
     }
-
     function buildSubtotalTanggalRow(tanggal, date_subtotals) {
       const subtotal = date_subtotals[tanggal] || {
         total_qty: 0,
@@ -282,7 +274,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tr>
             `;
     }
-
     tabel_data.forEach((row, index) => {
       if (row.tgl_tiba !== current_tgl_tiba) {
         if (current_no_faktur !== null) {
@@ -293,11 +284,9 @@ document.addEventListener("DOMContentLoaded", () => {
             subtotal_total
           );
         }
-
         if (current_tgl_tiba !== null && date_subtotals) {
           htmlRows += buildSubtotalTanggalRow(current_tgl_tiba, date_subtotals);
         }
-
         htmlRows += buildDateHeaderRow(row.tgl_tiba);
         current_tgl_tiba = row.tgl_tiba;
         current_no_faktur = null;
@@ -306,7 +295,6 @@ document.addEventListener("DOMContentLoaded", () => {
         subtotal_ppn = 0;
         subtotal_total = 0;
       }
-
       if (row.no_faktur !== current_no_faktur) {
         if (current_no_faktur !== null) {
           htmlRows += buildSubtotalFakturRow(
@@ -318,20 +306,19 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         htmlRows += buildFakturHeaderRow(row.no_faktur);
         current_no_faktur = row.no_faktur;
+        faktur_item_counter = 1;
         subtotal_qty = 0;
         subtotal_netto = 0;
         subtotal_ppn = 0;
         subtotal_total = 0;
       }
-
       subtotal_qty += parseFloat(row.qty) || 0;
       subtotal_netto += parseFloat(row.netto) || 0;
       subtotal_ppn += parseFloat(row.ppn) || 0;
       subtotal_total += parseFloat(row.total) || 0;
-
       htmlRows += `
                 <tr>
-                    <td>${item_counter}</td>
+                    <td>${faktur_item_counter}</td>
                     <td>${row.plu}</td>
                     <td class="text-left">${row.deskripsi}</td>
                     <td>${row.sat}</td>
@@ -343,9 +330,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     <td class=" font-semibold">${formatRupiah(row.total)}</td>
                 </tr>
             `;
-      item_counter++;
+      faktur_item_counter++;
     });
-
     if (current_no_faktur !== null) {
       htmlRows += buildSubtotalFakturRow(
         subtotal_qty,
@@ -354,7 +340,6 @@ document.addEventListener("DOMContentLoaded", () => {
         subtotal_total
       );
     }
-
     if (current_tgl_tiba !== null && date_subtotals) {
       const isLastPage =
         pagination && pagination.current_page === pagination.total_pages;
@@ -362,10 +347,8 @@ document.addEventListener("DOMContentLoaded", () => {
         htmlRows += buildSubtotalTanggalRow(current_tgl_tiba, date_subtotals);
       }
     }
-
     tableBody.innerHTML = htmlRows;
   }
-
   function renderPagination(pagination) {
     if (!pagination) {
       paginationInfo.textContent = "";
@@ -505,7 +488,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ];
       const dataRows = [];
       const merges = [];
-      let item_counter = 1;
+      let faktur_item_counter = 0;
       let current_tgl_tiba = null;
       let current_no_faktur = null;
       let s_fak_qty = 0,
@@ -516,9 +499,7 @@ document.addEventListener("DOMContentLoaded", () => {
         s_tgl_netto = 0,
         s_tgl_ppn = 0,
         s_tgl_total = 0;
-
       const rowOffset = info.length + 2;
-
       const pushSubtotalFakturRow = () => {
         dataRows.push([
           "",
@@ -541,7 +522,6 @@ document.addEventListener("DOMContentLoaded", () => {
         s_fak_ppn = 0;
         s_fak_total = 0;
       };
-
       const pushSubtotalTanggalRow = () => {
         dataRows.push([
           "",
@@ -564,7 +544,6 @@ document.addEventListener("DOMContentLoaded", () => {
         s_tgl_ppn = 0;
         s_tgl_total = 0;
       };
-
       const pushDateHeaderRow = (tanggal) => {
         dataRows.push([`Tanggal: ${tanggal}`]);
         merges.push({
@@ -572,7 +551,6 @@ document.addEventListener("DOMContentLoaded", () => {
           e: { r: dataRows.length + rowOffset - 1, c: 9 },
         });
       };
-
       const pushFakturHeaderRow = (no_faktur) => {
         dataRows.push([`No Faktur: ${no_faktur}`]);
         merges.push({
@@ -580,13 +558,11 @@ document.addEventListener("DOMContentLoaded", () => {
           e: { r: dataRows.length + rowOffset - 1, c: 9 },
         });
       };
-
       tabel_data.forEach((row, index) => {
         const qty = parseFloat(row.qty) || 0;
         const netto = parseFloat(row.netto) || 0;
         const ppn = parseFloat(row.ppn) || 0;
         const total = parseFloat(row.total) || 0;
-
         if (row.tgl_tiba !== current_tgl_tiba) {
           if (current_no_faktur !== null) {
             pushSubtotalFakturRow();
@@ -598,15 +574,14 @@ document.addEventListener("DOMContentLoaded", () => {
           current_tgl_tiba = row.tgl_tiba;
           current_no_faktur = null;
         }
-
         if (row.no_faktur !== current_no_faktur) {
           if (current_no_faktur !== null) {
             pushSubtotalFakturRow();
           }
           pushFakturHeaderRow(row.no_faktur);
           current_no_faktur = row.no_faktur;
+          faktur_item_counter = 1;
         }
-
         s_fak_qty += qty;
         s_fak_netto += netto;
         s_fak_ppn += ppn;
@@ -615,9 +590,8 @@ document.addEventListener("DOMContentLoaded", () => {
         s_tgl_netto += netto;
         s_tgl_ppn += ppn;
         s_tgl_total += total;
-
         dataRows.push([
-          item_counter++,
+          faktur_item_counter++,
           row.plu,
           row.deskripsi,
           row.sat,
@@ -629,14 +603,12 @@ document.addEventListener("DOMContentLoaded", () => {
           total,
         ]);
       });
-
       if (current_no_faktur !== null) {
         pushSubtotalFakturRow();
       }
       if (current_tgl_tiba !== null) {
         pushSubtotalTanggalRow();
       }
-
       dataRows.push([]);
       dataRows.push([
         "",
@@ -654,7 +626,6 @@ document.addEventListener("DOMContentLoaded", () => {
         s: { r: dataRows.length + rowOffset - 1, c: 0 },
         e: { r: dataRows.length + rowOffset - 1, c: 5 },
       });
-
       const ws = XLSX.utils.aoa_to_sheet(title);
       XLSX.utils.sheet_add_aoa(ws, info, { origin: "A2" });
       const headerOrigin = "A" + (info.length + 2);
@@ -662,37 +633,31 @@ document.addEventListener("DOMContentLoaded", () => {
       XLSX.utils.sheet_add_aoa(ws, dataRows, {
         origin: "A" + (info.length + 3),
       });
-
       ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 9 } }, ...merges];
       ws["A1"].s = {
         font: { bold: true, sz: 16 },
         alignment: { horizontal: "center" },
       };
-
       const numFormat = "#,##0";
       const numFormatDec = "#,##0.00";
       const headerStyle = {
         font: { bold: true },
         fill: { fgColor: { rgb: "E0E0E0" } },
       };
-
-      ["B5", "B6", "B7"].forEach((cell) => {
+      ["B4", "B5", "B6"].forEach((cell) => {
         if (ws[cell]) {
           ws[cell].t = "n";
           ws[cell].s = { numFmt: numFormat };
         }
       });
-
       headers.forEach((_, C) => {
         const cell = ws[XLSX.utils.encode_cell({ r: info.length + 1, c: C })];
         if (cell) cell.s = headerStyle;
       });
-
       const dataRowStartIndex = info.length + 2;
       dataRows.forEach((row, R_idx) => {
         const R = R_idx + dataRowStartIndex;
         if (row.length === 0) return;
-
         const label = row[0] || row[5];
         if (typeof label === "string") {
           if (label.startsWith("Tanggal:")) {
@@ -775,7 +740,6 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }
       });
-
       ws["!cols"] = [
         { wch: 5 },
         { wch: 12 },
@@ -788,7 +752,6 @@ document.addEventListener("DOMContentLoaded", () => {
         { wch: 15 },
         { wch: 17 },
       ];
-
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Detail Receipt");
       const fileName = `Detail_Receipt_${params.tgl_mulai}_sd_${params.tgl_selesai}.xlsx`;
@@ -798,7 +761,6 @@ document.addEventListener("DOMContentLoaded", () => {
       Swal.fire("Export Gagal", "Terjadi kesalahan: " + error.message, "error");
     }
   }
-
   async function exportToPDF() {
     const data = await fetchAllDataForExport();
     if (!data || !data.tabel_data || data.tabel_data.length === 0) {
@@ -810,7 +772,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const params = getUrlParams();
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF("landscape");
-
       doc.setFontSize(18);
       doc.text("Laporan Detail Receipt", 14, 22);
       doc.setFontSize(11);
@@ -837,7 +798,6 @@ document.addEventListener("DOMContentLoaded", () => {
           align: "right",
         }
       );
-
       const head = [
         [
           "No",
@@ -853,7 +813,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ],
       ];
       const body = [];
-      let item_counter = 1;
+      let faktur_item_counter = 0;
       let current_tgl_tiba = null;
       let current_no_faktur = null;
       let s_fak_qty = 0,
@@ -864,7 +824,6 @@ document.addEventListener("DOMContentLoaded", () => {
         s_tgl_netto = 0,
         s_tgl_ppn = 0,
         s_tgl_total = 0;
-
       const headerTanggalStyles = {
         fontStyle: "bold",
         fillColor: [235, 248, 255],
@@ -900,26 +859,25 @@ document.addEventListener("DOMContentLoaded", () => {
         fontSize: 6,
       };
       const subtotalFakturValuesStyles = {
-        halign: "left",
+        halign: "right",
         fontStyle: "bolditalic",
         fillColor: [254, 253, 232],
         textColor: [113, 63, 18],
         fontSize: 5,
       };
       const subtotalTanggalValuesStyles = {
-        halign: "left",
+        halign: "right",
         fontStyle: "bolditalic",
         fillColor: [240, 253, 244],
         textColor: [22, 101, 52],
         fontSize: 6,
       };
       const grandTotalValuesStyles = {
-        halign: "left",
+        halign: "right",
         fontStyle: "bold",
         fillColor: [226, 232, 240],
         fontSize: 6,
       };
-
       const pushSubtotalFakturRowPdf = () => {
         body.push([
           {
@@ -949,7 +907,6 @@ document.addEventListener("DOMContentLoaded", () => {
         s_fak_ppn = 0;
         s_fak_total = 0;
       };
-
       const pushDateHeaderRowPdf = (tanggal) => {
         body.push([
           {
@@ -959,7 +916,6 @@ document.addEventListener("DOMContentLoaded", () => {
           },
         ]);
       };
-
       const pushFakturHeaderRowPdf = (no_faktur) => {
         body.push([
           {
@@ -969,7 +925,6 @@ document.addEventListener("DOMContentLoaded", () => {
           },
         ]);
       };
-
       const pushSubtotalTanggalRowPdf = (tanggal) => {
         const subtotal = date_subtotals[tanggal] || {
           total_qty: 0,
@@ -1005,13 +960,11 @@ document.addEventListener("DOMContentLoaded", () => {
         s_tgl_ppn = 0;
         s_tgl_total = 0;
       };
-
       tabel_data.forEach((row, index) => {
         const qty = parseFloat(row.qty) || 0;
         const netto = parseFloat(row.netto) || 0;
         const ppn = parseFloat(row.ppn) || 0;
         const total = parseFloat(row.total) || 0;
-
         if (row.tgl_tiba !== current_tgl_tiba) {
           if (current_no_faktur !== null) {
             pushSubtotalFakturRowPdf();
@@ -1023,15 +976,14 @@ document.addEventListener("DOMContentLoaded", () => {
           current_tgl_tiba = row.tgl_tiba;
           current_no_faktur = null;
         }
-
         if (row.no_faktur !== current_no_faktur) {
           if (current_no_faktur !== null) {
             pushSubtotalFakturRowPdf();
           }
           pushFakturHeaderRowPdf(row.no_faktur);
           current_no_faktur = row.no_faktur;
+          faktur_item_counter = 1;
         }
-
         s_fak_qty += qty;
         s_fak_netto += netto;
         s_fak_ppn += ppn;
@@ -1040,9 +992,8 @@ document.addEventListener("DOMContentLoaded", () => {
         s_tgl_netto += netto;
         s_tgl_ppn += ppn;
         s_tgl_total += total;
-
         body.push([
-          item_counter++,
+          faktur_item_counter++,
           row.plu,
           row.deskripsi,
           row.sat,
@@ -1054,14 +1005,12 @@ document.addEventListener("DOMContentLoaded", () => {
           formatRupiah(total),
         ]);
       });
-
       if (current_no_faktur !== null) {
         pushSubtotalFakturRowPdf();
       }
       if (current_tgl_tiba !== null) {
         pushSubtotalTanggalRowPdf(current_tgl_tiba);
       }
-
       body.push([
         { content: "GRAND TOTAL", colSpan: 6, styles: grandTotalStyles },
         {
@@ -1081,7 +1030,6 @@ document.addEventListener("DOMContentLoaded", () => {
           styles: grandTotalValuesStyles,
         },
       ]);
-
       doc.autoTable({
         startY: 44,
         head: head,
@@ -1094,16 +1042,16 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         styles: { fontSize: 6, cellPadding: 1.5 },
         columnStyles: {
-          0: { halign: "right" },
-          1: { halign: "left" },
-          2: { halign: "left" },
-          3: { halign: "center" },
-          4: { halign: "right" },
-          5: { halign: "right" },
-          6: { halign: "right" },
-          7: { halign: "right" },
-          8: { halign: "right" },
-          9: { halign: "right" },
+          0: { halign: "right", cellWidth: 8 },
+          1: { halign: "left", cellWidth: 20 },
+          2: { halign: "left", cellWidth: 87 },
+          3: { halign: "center", cellWidth: 10 },
+          4: { halign: "right", cellWidth: 15 },
+          5: { halign: "right", cellWidth: 15 },
+          6: { halign: "right", cellWidth: 20 },
+          7: { halign: "right", cellWidth: 30 },
+          8: { halign: "right", cellWidth: 30 },
+          9: { halign: "right", cellWidth: 33 },
         },
       });
       const fileName = `Detail_Receipt_${params.tgl_mulai}_sd_${params.tgl_selesai}.pdf`;
@@ -1113,7 +1061,6 @@ document.addEventListener("DOMContentLoaded", () => {
       Swal.fire("Export Gagal", "Terjadi kesalahan: " + error.message, "error");
     }
   }
-
   if (exportExcelButton) {
     exportExcelButton.addEventListener("click", exportToExcel);
   }
