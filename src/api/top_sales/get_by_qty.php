@@ -33,7 +33,7 @@ $response = [
         'total_pages' => 1,
         'total_rows' => 0,
         'offset' => 0,
-        'limit' => 10,
+        'limit' => 100,
     ],
     'error' => null,
 ];
@@ -44,7 +44,7 @@ try {
     $tgl_selesai = $_GET['tgl_selesai'] ?? $tanggal_kemarin;
     $kd_store = $_GET['kd_store'] ?? 'all';
     $page = 1;
-    $limit = 10;
+    $limit = 100;
     if (!$is_export) {
         $page = (int) ($_GET['page'] ?? 1);
         if ($page < 1)
