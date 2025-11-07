@@ -1,0 +1,217 @@
+<?php
+session_start();
+include '../../../aa_kon_sett.php';
+
+
+register_shutdown_function(function () {
+    $error = error_get_last();
+    if ($error !== null && in_array($error['type'], [E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR, E_RECOVERABLE_ERROR])) {
+        if (!headers_sent()) {
+            http_response_code(500);
+            echo json_encode([
+                'error' => 'Fatal Server Error. Pesan: ' . $error['message'] . ' in ' . $error['file'] . ' on line ' . $error['line']
+            ]);
+        }
+    }
+});
+
+header('Content-Type: application/json');
+
+$is_export = $_GET['export'] ?? false;
+$is_export = ($is_export === 'true' || $is_export === true);
+
+
+$response = [
+    'summary' => [
+        'total_qtykor' => 0,
+        'total_rp_koreksi' => 0,
+        'total_rp_selisih' => 0,
+    ],
+    'stores' => [],
+    'tabel_data' => [],
+    'pagination' => [
+        'current_page' => 1,
+        'total_pages' => 1,
+        'total_rows' => 0,
+        'offset' => 0,
+        'limit' => 10,
+    ],
+    'error' => null,
+];
+
+try {
+
+    $tanggal_kemarin = date('Y-m-d', strtotime('-1 day'));
+    $tgl_mulai = $_GET['tgl_mulai'] ?? $tanggal_kemarin;
+    $tgl_selesai = $_GET['tgl_selesai'] ?? $tanggal_kemarin;
+    $kd_store = $_GET['kd_store'] ?? 'all';
+
+    $page = 1;
+    $limit = 10;
+
+    if (!$is_export) {
+        $page = (int) ($_GET['page'] ?? 1);
+        if ($page < 1)
+            $page = 1;
+        $response['pagination']['limit'] = $limit;
+        $response['pagination']['current_page'] = $page;
+    } else {
+        $response['pagination'] = null;
+    }
+
+    $offset = ($page - 1) * $limit;
+    if (isset($response['pagination'])) {
+        $response['pagination']['offset'] = $offset;
+    }
+
+
+    $sql_stores = "SELECT kd_store, nm_alias FROM kode_store ORDER BY kd_store ASC";
+    $result_stores = $conn->query($sql_stores);
+    if ($result_stores) {
+        while ($row = $result_stores->fetch_assoc()) {
+            $response['stores'][] = $row;
+        }
+    }
+
+    // Menambahkan alias 'k.' pada field di WHERE
+    $where_conditions = "DATE(k.tgl_koreksi) BETWEEN ? AND ?";
+    $bind_params_data = ['ss', $tgl_mulai, $tgl_selesai];
+    $bind_params_summary = ['ss', $tgl_mulai, $tgl_selesai];
+
+    if ($kd_store != 'all') {
+        $where_conditions .= " AND k.kd_store = ?"; // Menambahkan alias 'k.'
+        $bind_params_data[0] .= 's';
+        $bind_params_data[] = $kd_store;
+        $bind_params_summary[0] .= 's';
+        $bind_params_summary[] = $kd_store;
+    }
+
+
+    $sql_calc_found_rows = "";
+    $limit_offset_sql = "";
+    if (!$is_export) {
+        $sql_calc_found_rows = "SQL_CALC_FOUND_ROWS";
+        $limit_offset_sql = "LIMIT ? OFFSET ?";
+        $bind_params_data[0] .= 'ii';
+        $bind_params_data[] = $limit;
+        $bind_params_data[] = $offset;
+    }
+
+
+    $sql_data = "
+        SELECT
+            $sql_calc_found_rows
+            k.no_faktur,
+            k.plu,
+            k.deskripsi,
+            k.isi1 AS conv1,
+            k.isi2 AS conv2,
+            k.avg_cost AS hpp,
+            k.qty_kor AS qtykor,
+            k.stock,
+            k.sel_qty AS selqty,
+            (k.qty_kor * k.avg_cost) AS t_rp,
+            (k.sel_qty * k.avg_cost) AS t_selisih,
+            CASE k.type_kor
+                WHEN 0 THEN 'Manual GS'
+                WHEN 1 THEN 'Manual BS'
+                WHEN 2 THEN 'SO GS'
+                WHEN 3 THEN 'SO BS'
+                ELSE 'Lainnya'
+            END AS ket,
+            k.kode_supp,
+            COALESCE(s.nama_supp, 'SUPPLIER LAIN/NON-AKTIF') AS nama_supp
+        FROM
+            koreksi AS k
+        LEFT JOIN
+            supplier AS s ON k.kode_supp = s.kode_supp AND k.kd_store = s.kd_store
+        WHERE
+            $where_conditions
+        ORDER BY
+            nama_supp, k.kode_supp, k.plu
+        $limit_offset_sql
+    ";
+
+    $stmt_data = $conn->prepare($sql_data);
+    if ($stmt_data === false) {
+        throw new Exception("Prepare failed (sql_data): " . $conn->error);
+    }
+    $stmt_data->bind_param(...$bind_params_data);
+    $stmt_data->execute();
+    $result_data = $stmt_data->get_result();
+
+    while ($row = $result_data->fetch_assoc()) {
+        foreach ($row as $key => $value) {
+            if (is_string($value)) {
+                $row[$key] = iconv('UTF-8', 'UTF-8//IGNORE', $value);
+            }
+        }
+        $response['tabel_data'][] = $row;
+    }
+    $stmt_data->close();
+
+
+    if (!$is_export) {
+        $sql_count_result = "SELECT FOUND_ROWS() AS total_rows";
+        $result_count = $conn->query($sql_count_result);
+        $total_rows = $result_count->fetch_assoc()['total_rows'] ?? 0;
+        $response['pagination']['total_rows'] = (int) $total_rows;
+        $response['pagination']['total_pages'] = ceil($total_rows / $limit);
+
+        if ($page > $response['pagination']['total_pages'] && $total_rows > 0) {
+            $page = $response['pagination']['total_pages'];
+            $response['pagination']['current_page'] = $page;
+            $offset = ($page - 1) * $limit;
+            $response['pagination']['offset'] = $offset;
+        }
+    }
+
+
+    $sql_summary = "
+        SELECT
+            SUM(k.qty_kor) AS total_qtykor,
+            SUM(k.qty_kor * k.avg_cost) AS total_rp_koreksi,
+            SUM(k.sel_qty * k.avg_cost) AS total_rp_selisih
+        FROM
+            koreksi AS k
+        WHERE
+            $where_conditions
+    ";
+
+    $stmt_summary = $conn->prepare($sql_summary);
+    if ($stmt_summary === false) {
+        throw new Exception("Prepare failed (sql_summary): " . $conn->error);
+    }
+    $stmt_summary->bind_param(...$bind_params_summary);
+    $stmt_summary->execute();
+    $result_summary = $stmt_summary->get_result();
+    $summary_data = $result_summary->fetch_assoc();
+    $stmt_summary->close();
+
+    if ($summary_data) {
+        $response['summary']['total_qtykor'] = $summary_data['total_qtykor'] ?? 0;
+        $response['summary']['total_rp_koreksi'] = $summary_data['total_rp_koreksi'] ?? 0;
+        $response['summary']['total_rp_selisih'] = $summary_data['total_rp_selisih'] ?? 0;
+    }
+
+    $conn->close();
+
+} catch (Exception $e) {
+    http_response_code(500);
+    $response['error'] = $e->getMessage();
+}
+
+
+$json_output = json_encode($response);
+if ($json_output === false) {
+    $json_error_code = json_last_error();
+    $json_error_msg = json_last_error_msg();
+    http_response_code(500);
+    echo json_encode([
+        'error' => "Gagal melakukan encode JSON. Pesan: " . $json_error_msg,
+        'json_error_code' => $json_error_code
+    ]);
+} else {
+    echo $json_output;
+}
+?>
