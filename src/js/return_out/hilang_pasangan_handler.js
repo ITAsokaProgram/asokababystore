@@ -1033,21 +1033,21 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         styles: { fontSize: 5, cellPadding: 1.5 },
         columnStyles: {
-          0: { halign: "right", cellWidth: 7 }, // No
-          1: { halign: "left", cellWidth: 10 }, // Tgl
-          2: { halign: "left", cellWidth: 18 }, // Faktur
-          3: { halign: "left", cellWidth: 10 }, // Kd Supp
-          4: { halign: "left", cellWidth: 20 }, // Nama Supp
-          5: { halign: "left", cellWidth: 12 }, // PLU
-          6: { halign: "left", cellWidth: 35 }, // Deskripsi
-          7: { halign: "left", cellWidth: 5 }, // Sat
-          8: { halign: "right", cellWidth: 7 }, // C1
-          9: { halign: "right", cellWidth: 7 }, // C2
-          10: { halign: "right", cellWidth: 10 }, // Qty
-          11: { halign: "right", cellWidth: 18 }, // Netto
-          12: { halign: "right", cellWidth: 18 }, // PPN
-          13: { halign: "right", cellWidth: 18 }, // PPNBM
-          14: { halign: "right", cellWidth: 20 }, // Total
+          0: { halign: "right" }, // No
+          1: { halign: "left" }, // Tgl
+          2: { halign: "left" }, // Faktur
+          3: { halign: "left" }, // Kd Supp
+          4: { halign: "left" }, // Nama Supp
+          5: { halign: "left" }, // PLU
+          6: { halign: "left" }, // Deskripsi
+          7: { halign: "left" }, // Sat
+          8: { halign: "right" }, // C1
+          9: { halign: "right" }, // C2
+          10: { halign: "right" }, // Qty
+          11: { halign: "right" }, // Netto
+          12: { halign: "right" }, // PPN
+          13: { halign: "right" }, // PPNBM
+          14: { halign: "right" }, // Total
         },
       });
       const fileName = `Return_Out_Hilang_Pasangan_${params.tgl_mulai}_sd_${params.tgl_selesai}.pdf`;
