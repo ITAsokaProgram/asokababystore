@@ -97,7 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (data.summary) {
         updateSummaryCards(data.summary);
       }
-      renderTable(data.tabel_data, data.pagination.offset);
+      renderTable(data.tabel_data, data.pagination, data.summary);
       renderPagination(data.pagination);
     } catch (error) {
       console.error("Error loading top sales data:", error);
@@ -133,12 +133,12 @@ document.addEventListener("DOMContentLoaded", () => {
           filterSubmitButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i><span>Memuat...</span>`;
         if (tableBody)
           tableBody.innerHTML = `
-                        <tr>
-                            <td colspan="11" class="text-center p-8">
-                                <div class="spinner-simple"></div>
-                                <p class="mt-2 text-gray-500">Memuat data...</p>
-                            </td>
-                        </tr>`;
+                                <tr>
+                                    <td colspan="11" class="text-center p-8">
+                                        <div class="spinner-simple"></div>
+                                        <p class="mt-2 text-gray-500">Memuat data...</p>
+                                    </td>
+                                </tr>`;
         if (!isPagination) {
           if (summaryTotalQty) summaryTotalQty.textContent = "-";
           if (summaryNetSales) summaryNetSales.textContent = "-";
@@ -164,12 +164,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   function showTableError(message) {
     tableBody.innerHTML = `
-            <tr>
-                <td colspan="11" class="text-center p-8 text-red-600">
-                    <i class="fas fa-exclamation-triangle fa-lg mb-2"></i>
-                    <p>Gagal memuat data: ${message}</p>
-                </td>
-            </tr>`;
+                <tr>
+                    <td colspan="11" class="text-center p-8 text-red-600">
+                        <i class="fas fa-exclamation-triangle fa-lg mb-2"></i>
+                        <p>Gagal memuat data: ${message}</p>
+                    </td>
+                </tr>`;
   }
   function populateStoreFilter(stores, selectedStore) {
     if (!filterSelectStore || filterSelectStore.options.length > 1) {
@@ -192,44 +192,73 @@ document.addEventListener("DOMContentLoaded", () => {
     summaryNetSales.textContent = formatRupiah(summary.total_net_sales);
     summaryGrsMargin.textContent = formatRupiah(summary.total_grs_margin);
   }
-  function renderTable(tabel_data, offset) {
+  function renderTable(tabel_data, pagination, summary) {
     if (!tabel_data || tabel_data.length === 0) {
       tableBody.innerHTML = `
-                        <tr>
-                            <td colspan="11" class="text-center p-8 text-gray-500">
-                                <i class="fas fa-inbox fa-lg mb-2"></i>
-                                <p>Tidak ada data ditemukan untuk filter ini.</p>
-                            </td>
-                        </tr>`;
+                                <tr>
+                                    <td colspan="11" class="text-center p-8 text-gray-500">
+                                        <i class="fas fa-inbox fa-lg mb-2"></i>
+                                        <p>Tidak ada data ditemukan untuk filter ini.</p>
+                                    </td>
+                                </tr>`;
       return;
     }
+    const offset = pagination.offset || 0;
     let htmlRows = "";
     tabel_data.forEach((row, index) => {
       htmlRows += `
-                        <tr>
-                            <td>${offset + index + 1}</td>
-                            <td>${row.plu}</td>
-                            <td class="text-left font-semibold">${
-                              row.descp
-                            }</td>
-                            <td class="">${formatNumber(row.qty)}</td>
-                            <td class="">${formatRupiah(row.gross_sales)}</td>
-                            <td class="">${formatRupiah(row.ppn)}</td>
-                            <td class="">${formatRupiah(row.total_diskon)}</td>
-                            <td class=" font-semibold">${formatRupiah(
-                              row.net_sales
-                            )}</td>
-                            <td class="">${formatRupiah(row.hpp)}</td>
-                            <td class="">${formatRupiah(row.grs_margin)}</td>
-                            <td class="">${formatPercent(
-                              row.margin_percent
-                            )}</td>
-                        </tr>
-                    `;
+                                <tr>
+                                    <td>${offset + index + 1}</td>
+                                    <td>${row.plu}</td>
+                                    <td class="text-left font-semibold">${
+                                      row.descp
+                                    }</td>
+                                    <td class="font-bold">${formatNumber(
+                                      row.qty
+                                    )}</td>
+                                    <td class="">${formatRupiah(
+                                      row.gross_sales
+                                    )}</td>
+                                    <td class="">${formatRupiah(row.ppn)}</td>
+                                    <td class="">${formatRupiah(
+                                      row.total_diskon
+                                    )}</td>
+                                    <td class="">${formatRupiah(
+                                      row.net_sales
+                                    )}</td>
+                                    <td class="">${formatRupiah(row.hpp)}</td>
+                                    <td class="">${formatRupiah(
+                                      row.grs_margin
+                                    )}</td>
+                                    <td class="">${formatPercent(
+                                      row.margin_percent
+                                    )}</td>
+                                </tr>
+                            `;
     });
+    const isLastPage =
+      pagination && pagination.current_page === pagination.total_pages;
+    if (tabel_data && tabel_data.length > 0 && summary && isLastPage) {
+      htmlRows += `
+                <tr class="bg-blue-100 font-bold text-blue-900">
+                    <td colspan="3" class="text-right font-bold pr-2">GRAND TOTAL</td>
+                    <td class="font-bold">${formatNumber(
+                      summary.total_qty
+                    )}</td>
+                    <td class="">${formatRupiah(summary.total_gross_sales)}</td>
+                    <td class="">${formatRupiah(summary.total_ppn)}</td>
+                    <td class="">${formatRupiah(
+                      summary.total_total_diskon
+                    )}</td>
+                    <td class="">${formatRupiah(summary.total_net_sales)}</td>
+                    <td class="">${formatRupiah(summary.total_hpp)}</td>
+                    <td class="">${formatRupiah(summary.total_grs_margin)}</td>
+                    <td class=""></td>
+                </tr>
+            `;
+    }
     tableBody.innerHTML = htmlRows;
   }
-
   function renderPagination(pagination) {
     if (!pagination) {
       paginationInfo.textContent = "";
@@ -247,17 +276,19 @@ document.addEventListener("DOMContentLoaded", () => {
     paginationInfo.textContent = `Menampilkan ${start_row} - ${end_row} dari ${total_rows} data`;
     let linksHtml = "";
     linksHtml += `
-                    <a href="${
-                      current_page > 1
-                        ? build_pagination_url(current_page - 1)
-                        : "#"
-                    }" 
-                        class="pagination-link ${
-                          current_page === 1 ? "pagination-disabled" : ""
-                        }">
-                        <i class="fas fa-chevron-left"></i>
-                    </a>
-                `;
+                                <a href="${
+                                  current_page > 1
+                                    ? build_pagination_url(current_page - 1)
+                                    : "#"
+                                }" 
+                                    class="pagination-link ${
+                                      current_page === 1
+                                        ? "pagination-disabled"
+                                        : ""
+                                    }">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            `;
     const pages_to_show = [];
     const max_pages_around = 2;
     for (let i = 1; i <= total_pages; i++) {
@@ -276,34 +307,33 @@ document.addEventListener("DOMContentLoaded", () => {
         linksHtml += `<span class="pagination-ellipsis">...</span>`;
       }
       linksHtml += `
-                        <a href="${build_pagination_url(page_num)}" 
-                           class="pagination-link ${
-                             page_num === current_page
-                               ? "pagination-active"
-                               : ""
-                           }">
-                            ${page_num}
-                        </a>
-                    `;
+                                    <a href="${build_pagination_url(page_num)}" 
+                                        class="pagination-link ${
+                                          page_num === current_page
+                                            ? "pagination-active"
+                                            : ""
+                                        }">
+                                        ${page_num}
+                                    </a>
+                                `;
       last_page = page_num;
     }
     linksHtml += `
-                    <a href="${
-                      current_page < total_pages
-                        ? build_pagination_url(current_page + 1)
-                        : "#"
-                    }" 
-                        class="pagination-link ${
-                          current_page === total_pages
-                            ? "pagination-disabled"
-                            : ""
-                        }">
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                `;
+                                <a href="${
+                                  current_page < total_pages
+                                    ? build_pagination_url(current_page + 1)
+                                    : "#"
+                                }" 
+                                    class="pagination-link ${
+                                      current_page === total_pages
+                                        ? "pagination-disabled"
+                                        : ""
+                                    }">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            `;
     paginationLinks.innerHTML = linksHtml;
   }
-
   async function fetchAllDataForExport() {
     setLoadingState(true, true);
     const params = getUrlParams();
@@ -340,7 +370,6 @@ document.addEventListener("DOMContentLoaded", () => {
       setLoadingState(false);
     }
   }
-
   async function exportToExcel() {
     const data = await fetchAllDataForExport();
     if (!data || !data.tabel_data || data.tabel_data.length === 0) {
@@ -389,11 +418,31 @@ document.addEventListener("DOMContentLoaded", () => {
         parseFloat(row.grs_margin),
         parseFloat(row.margin_percent) / 100,
       ]);
+      const totalRow = [
+        "",
+        "",
+        "GRAND TOTAL",
+        parseFloat(summary.total_qty) || 0,
+        parseFloat(summary.total_gross_sales) || 0,
+        parseFloat(summary.total_ppn) || 0,
+        parseFloat(summary.total_total_diskon) || 0,
+        parseFloat(summary.total_net_sales) || 0,
+        parseFloat(summary.total_hpp) || 0,
+        parseFloat(summary.total_grs_margin) || 0,
+        "",
+      ];
+      dataRows.push(totalRow);
       const ws = XLSX.utils.aoa_to_sheet(title);
       XLSX.utils.sheet_add_aoa(ws, info, { origin: "A2" });
       XLSX.utils.sheet_add_aoa(ws, [headers], { origin: "A9" });
       XLSX.utils.sheet_add_aoa(ws, dataRows, { origin: "A10" });
-      ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 10 } }];
+      ws["!merges"] = [
+        { s: { r: 0, c: 0 }, e: { r: 0, c: 10 } },
+        {
+          s: { r: 9 + dataRows.length, c: 0 },
+          e: { r: 9 + dataRows.length, c: 2 },
+        },
+      ];
       ws["A1"].s = {
         font: { bold: true, sz: 16 },
         alignment: { horizontal: "center" },
@@ -403,6 +452,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const headerStyle = {
         font: { bold: true },
         fill: { fgColor: { rgb: "E0E0E0" } },
+      };
+      const totalRowStyle = {
+        font: { bold: true },
+        fill: { fgColor: { rgb: "F0F0F0" } },
       };
       if (ws["B4"]) {
         ws["B4"].t = "n";
@@ -420,13 +473,35 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       dataRows.forEach((_, R_idx) => {
         const R = R_idx + 9;
-        ws[XLSX.utils.encode_cell({ r: R, c: 3 })].s = { numFmt: numFormat };
-        [4, 5, 6, 7, 8, 9].forEach((C) => {
-          ws[XLSX.utils.encode_cell({ r: R, c: C })].s = { numFmt: numFormat };
-        });
-        ws[XLSX.utils.encode_cell({ r: R, c: 10 })].s = {
-          numFmt: percentFormat,
-        };
+        if (R_idx < dataRows.length - 1) {
+          ws[XLSX.utils.encode_cell({ r: R, c: 3 })].s = { numFmt: numFormat };
+          [4, 5, 6, 7, 8, 9].forEach((C) => {
+            ws[XLSX.utils.encode_cell({ r: R, c: C })].s = {
+              numFmt: numFormat,
+            };
+          });
+          ws[XLSX.utils.encode_cell({ r: R, c: 10 })].s = {
+            numFmt: percentFormat,
+          };
+        } else {
+          ws[XLSX.utils.encode_cell({ r: R, c: 0 })].s = {
+            ...totalRowStyle,
+            alignment: { horizontal: "right" },
+          };
+          ws[XLSX.utils.encode_cell({ r: R, c: 2 })].v = "GRAND TOTAL";
+          ws[XLSX.utils.encode_cell({ r: R, c: 2 })].s = totalRowStyle;
+          ws[XLSX.utils.encode_cell({ r: R, c: 3 })].s = {
+            ...totalRowStyle,
+            numFmt: numFormat,
+          };
+          [4, 5, 6, 7, 8, 9].forEach((C) => {
+            ws[XLSX.utils.encode_cell({ r: R, c: C })].s = {
+              ...totalRowStyle,
+              numFmt: numFormat,
+            };
+          });
+          ws[XLSX.utils.encode_cell({ r: R, c: 10 })].s = totalRowStyle;
+        }
       });
       ws["!cols"] = [
         { wch: 5 },
@@ -515,6 +590,35 @@ document.addEventListener("DOMContentLoaded", () => {
         formatRupiah(row.grs_margin),
         formatPercent(row.margin_percent),
       ]);
+      const totalRowStyles = {
+        halign: "right",
+        fontStyle: "bold",
+        fillColor: [230, 230, 230],
+      };
+      const totalRow = [
+        { content: "GRAND TOTAL", colSpan: 3, styles: totalRowStyles },
+        { content: formatNumber(summary.total_qty), styles: totalRowStyles },
+        {
+          content: formatRupiah(summary.total_gross_sales),
+          styles: totalRowStyles,
+        },
+        { content: formatRupiah(summary.total_ppn), styles: totalRowStyles },
+        {
+          content: formatRupiah(summary.total_total_diskon),
+          styles: totalRowStyles,
+        },
+        {
+          content: formatRupiah(summary.total_net_sales),
+          styles: totalRowStyles,
+        },
+        { content: formatRupiah(summary.total_hpp), styles: totalRowStyles },
+        {
+          content: formatRupiah(summary.total_grs_margin),
+          styles: totalRowStyles,
+        },
+        { content: "", styles: totalRowStyles },
+      ];
+      body.push(totalRow);
       doc.autoTable({
         startY: 44,
         head: head,

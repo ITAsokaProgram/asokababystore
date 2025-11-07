@@ -19,6 +19,9 @@ $is_export = ($is_export === 'true' || $is_export === true);
 $response = [
     'summary' => [
         'total_qty' => 0,
+        'total_gross_sales' => 0,
+        'total_ppn' => 0,
+        'total_total_diskon' => 0,
         'total_net_sales' => 0,
         'total_grs_margin' => 0,
         'total_hpp' => 0,
@@ -112,7 +115,7 @@ try {
             FLOOR(a.plu / 10),
             a.descp
         ORDER BY
-            qty DESC -- UBAH INI
+            qty DESC
         $limit_offset_sql 
     ";
     $stmt_data = $conn->prepare($sql_data);
@@ -142,14 +145,24 @@ try {
         }
     }
 
+
     $sql_summary = "
         SELECT
             SUM(tbl.qty) AS total_qty,
+            SUM(tbl.gross_sales) AS total_gross_sales,
+            SUM(tbl.ppn) AS total_ppn,
+            SUM(tbl.total_diskon) AS total_total_diskon,
             SUM(tbl.net_sales) AS total_net_sales,
             SUM(tbl.grs_margin) AS total_grs_margin,
             SUM(tbl.hpp) AS total_hpp
         FROM (
             SELECT
+                SUM(a.harga * a.qty) AS gross_sales,
+                SUM(IFNULL(a.ppn * a.qty, 0)) AS ppn,
+                (SUM((a.harga - a.hrg_promo) * a.qty)) + 
+                (SUM((a.hrg_promo * (IFNULL(a.diskon1, 0) / 100)) * a.qty)) +
+                (SUM((a.hrg_promo - (a.hrg_promo * (IFNULL(a.diskon1, 0) / 100))) * (IFNULL(a.diskon2, 0) / 100) * a.qty)) +
+                (SUM(a.diskon3 * a.qty)) AS total_diskon,
                 (IFNULL(SUM(a.harga * a.qty) - SUM((a.harga - a.hrg_promo) * a.qty) - SUM((a.hrg_promo * (IFNULL(a.diskon1, 0) / 100)) * a.qty) - SUM((a.hrg_promo - (a.hrg_promo * (IFNULL(a.diskon1, 0) / 100))) * (IFNULL(a.diskon2, 0) / 100) * a.qty), 0) - SUM(a.diskon3 * a.qty)) AS net_sales,
                 SUM(a.avg_cost * a.qty) AS hpp,
                 (( (SUM(a.hrg_promo * a.qty) - SUM((a.hrg_promo * (IFNULL(a.diskon1, 0) / 100)) * a.qty) - SUM((a.hrg_promo - (a.hrg_promo * (IFNULL(a.diskon1, 0) / 100))) * (IFNULL(a.diskon2, 0) / 100) * a.qty)) - SUM(IFNULL(a.avg_cost, 0) * IFNULL(a.qty, 0)) - SUM(IFNULL(a.ppn * a.qty, 0)) - SUM(a.diskon3 * a.qty) )) AS grs_margin,
@@ -159,7 +172,7 @@ try {
                         WHEN 1 THEN a.qty * (a.conv2 / a.conv1)
                         ELSE a.qty
                     END
-                ) AS qty -- TAMBAHKAN BLOK INI
+                ) AS qty
             FROM
                 trans_b a
             WHERE
@@ -168,18 +181,27 @@ try {
                 FLOOR(a.plu / 10), a.descp
         ) AS tbl
     ";
+
+
     $stmt_summary = $conn->prepare($sql_summary);
     $stmt_summary->bind_param(...$bind_params_summary);
     $stmt_summary->execute();
     $result_summary = $stmt_summary->get_result();
     $summary_data = $result_summary->fetch_assoc();
     $stmt_summary->close();
+
+
     if ($summary_data) {
         $response['summary']['total_qty'] = $summary_data['total_qty'] ?? 0;
+        $response['summary']['total_gross_sales'] = $summary_data['total_gross_sales'] ?? 0;
+        $response['summary']['total_ppn'] = $summary_data['total_ppn'] ?? 0;
+        $response['summary']['total_total_diskon'] = $summary_data['total_total_diskon'] ?? 0;
         $response['summary']['total_net_sales'] = $summary_data['total_net_sales'] ?? 0;
         $response['summary']['total_grs_margin'] = $summary_data['total_grs_margin'] ?? 0;
         $response['summary']['total_hpp'] = $summary_data['total_hpp'] ?? 0;
     }
+
+
     $conn->close();
 } catch (Exception $e) {
     http_response_code(500);
