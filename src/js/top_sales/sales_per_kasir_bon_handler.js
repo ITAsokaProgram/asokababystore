@@ -13,7 +13,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const paginationLinks = document.getElementById("pagination-links");
   const exportExcelButton = document.getElementById("export-excel-btn");
   const exportPdfButton = document.getElementById("export-pdf-btn");
-
   function formatRupiah(number) {
     if (isNaN(number) || number === null) {
       return "0";
@@ -25,7 +24,6 @@ document.addEventListener("DOMContentLoaded", () => {
       maximumFractionDigits: 0,
     }).format(number);
   }
-
   function formatNumber(number) {
     if (isNaN(number) || number === null) {
       return "0";
@@ -35,7 +33,6 @@ document.addEventListener("DOMContentLoaded", () => {
       maximumFractionDigits: 2,
     }).format(number);
   }
-
   function getUrlParams() {
     const params = new URLSearchParams(window.location.search);
     const yesterday = new Date();
@@ -48,13 +45,11 @@ document.addEventListener("DOMContentLoaded", () => {
       page: parseInt(params.get("page") || "1", 10),
     };
   }
-
   function build_pagination_url(newPage) {
     const params = new URLSearchParams(window.location.search);
     params.set("page", newPage);
     return "?" + params.toString();
   }
-
   async function loadTopSalesData() {
     const params = getUrlParams();
     const isPagination = params.page > 1;
@@ -114,7 +109,6 @@ document.addEventListener("DOMContentLoaded", () => {
       setLoadingState(false);
     }
   }
-
   function setLoadingState(
     isLoading,
     isExporting = false,
@@ -165,7 +159,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   }
-
   function showTableError(message) {
     tableBody.innerHTML = `
                 <tr>
@@ -175,7 +168,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     </td>
                 </tr>`;
   }
-
   function populateStoreFilter(stores, selectedStore) {
     if (!filterSelectStore || filterSelectStore.options.length > 1) {
       filterSelectStore.value = selectedStore;
@@ -192,13 +184,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     filterSelectStore.value = selectedStore;
   }
-
   function updateSummaryCards(summary) {
     summaryNetSales.textContent = formatRupiah(summary.total_net_sales);
     summaryGrsMargin.textContent = formatRupiah(summary.total_grs_margin);
     summaryHpp.textContent = formatRupiah(summary.total_hpp);
   }
-
   function renderTable(tabel_data, pagination, summary) {
     if (!tabel_data || tabel_data.length === 0) {
       tableBody.innerHTML = `
@@ -210,16 +200,13 @@ document.addEventListener("DOMContentLoaded", () => {
                                 </tr>`;
       return;
     }
-
     const offset = pagination ? pagination.offset : 0;
     let htmlRows = "";
-    let item_counter = offset + 1;
+    let bon_item_counter = 0;
     let current_no_bon = null;
-
     let subtotal_qty = 0;
     let subtotal_diskon = 0;
     let subtotal_total = 0;
-
     function buildBonHeaderRow(row) {
       return `
                 <tr class="header-faktur-row" style="background-color: #f7fafc; font-size: 13px;">
@@ -232,7 +219,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tr>
             `;
     }
-
     function buildBonSubtotalRow(qty, diskon, total) {
       return `
                 <tr class="subtotal-row" style="font-style: italic; font-weight: bold; background-color: #feffe4;">
@@ -246,44 +232,32 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tr>
             `;
     }
-
     tabel_data.forEach((row, index) => {
       const qty = parseFloat(row.qty) || 0;
       const diskon = parseFloat(row.total_diskon) || 0;
       const total = parseFloat(row.total) || 0;
-
       if (row.no_bon !== current_no_bon) {
         if (current_no_bon !== null) {
-          // Tampilkan subtotal untuk grup sebelumnya
           htmlRows += buildBonSubtotalRow(
             subtotal_qty,
             subtotal_diskon,
             subtotal_total
           );
-          // Tambahkan baris kosong untuk spasi
           htmlRows += `<tr class="group-spacer"><td colspan="7" style="padding: 2px; background-color: #f1f5f9;"></td></tr>`;
         }
-
-        // Reset untuk grup baru
         current_no_bon = row.no_bon;
+        bon_item_counter = 1;
         subtotal_qty = 0;
         subtotal_diskon = 0;
         subtotal_total = 0;
-
-        // Tampilkan header untuk grup baru
         htmlRows += buildBonHeaderRow(row);
       }
-
-      // Akumulasi subtotal
       subtotal_qty += qty;
       subtotal_diskon += diskon;
       subtotal_total += total;
-
-      // Tampilkan baris item
       htmlRows += `
                 <tr>
-                    <td>${item_counter}</td>
-                    <td>${row.plu}</td>
+                    <td>${bon_item_counter}</td> <td>${row.plu}</td>
                     <td class="text-left">${row.nama_barang}</td>
                     <td class="">${formatNumber(qty)}</td>
                     <td class="">${formatRupiah(row.harga)}</td>
@@ -291,10 +265,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     <td class="font-semibold">${formatRupiah(total)}</td>
                 </tr>
             `;
-      item_counter++;
+      bon_item_counter++;
     });
-
-    // Tampilkan subtotal terakhir setelah loop selesai
     if (current_no_bon !== null) {
       htmlRows += buildBonSubtotalRow(
         subtotal_qty,
@@ -302,12 +274,9 @@ document.addEventListener("DOMContentLoaded", () => {
         subtotal_total
       );
     }
-
-    // Tampilkan Grand Total jika ini halaman terakhir
     const isLastPage =
       pagination && pagination.current_page === pagination.total_pages;
-    const isExport = pagination === null; // Menandakan ini dari export
-
+    const isExport = pagination === null;
     if (tabel_data.length > 0 && summary && (isLastPage || isExport)) {
       htmlRows += `
                 <tr class="grand-total-row" style="background-color: #EBF8FF; font-weight: bold; color: #2C5282; font-size: 14px;">
@@ -325,10 +294,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tr>
             `;
     }
-
     tableBody.innerHTML = htmlRows;
   }
-
   function renderPagination(pagination) {
     if (!pagination) {
       paginationInfo.textContent = "";
@@ -404,7 +371,6 @@ document.addEventListener("DOMContentLoaded", () => {
                             `;
     paginationLinks.innerHTML = linksHtml;
   }
-
   /**
    * Mengambil semua data dari API untuk keperluan export.
    */
@@ -444,7 +410,6 @@ document.addEventListener("DOMContentLoaded", () => {
       setLoadingState(false);
     }
   }
-
   /**
    * Fungsi untuk export data ke Excel
    */
@@ -472,8 +437,6 @@ document.addEventListener("DOMContentLoaded", () => {
         ["Total Grs Margin", parseFloat(summary.total_grs_margin) || 0],
         [],
       ];
-
-      // Header tabel baru
       const headers = [
         "No",
         "PLU",
@@ -483,16 +446,13 @@ document.addEventListener("DOMContentLoaded", () => {
         "Disc",
         "Total",
       ];
-
       const dataRows = [];
       const merges = [];
-      let item_counter = 1;
+      let bon_item_counter = 0;
       let current_no_bon = null;
-
       let subtotal_qty = 0;
       let subtotal_diskon = 0;
       let subtotal_total = 0;
-
       const pushSubtotalRow = () => {
         dataRows.push([
           "",
@@ -508,23 +468,20 @@ document.addEventListener("DOMContentLoaded", () => {
           e: { r: dataRows.length + info.length + 1, c: 2 },
         });
       };
-
       tabel_data.forEach((row, index) => {
         const qty = parseFloat(row.qty) || 0;
         const diskon = parseFloat(row.total_diskon) || 0;
         const total = parseFloat(row.total) || 0;
-
         if (row.no_bon !== current_no_bon) {
           if (current_no_bon !== null) {
             pushSubtotalRow();
-            dataRows.push([]); // Baris kosong
+            dataRows.push([]);
           }
           current_no_bon = row.no_bon;
+          bon_item_counter = 1;
           subtotal_qty = 0;
           subtotal_diskon = 0;
           subtotal_total = 0;
-
-          // Baris Header Bon
           dataRows.push([
             `No Trans: ${row.no_bon}`,
             "",
@@ -545,15 +502,11 @@ document.addEventListener("DOMContentLoaded", () => {
             e: { r: dataRows.length + info.length + 1, c: 6 },
           });
         }
-
-        // Akumulasi subtotal
         subtotal_qty += qty;
         subtotal_diskon += diskon;
         subtotal_total += total;
-
-        // Baris Item
         dataRows.push([
-          item_counter++,
+          bon_item_counter++,
           row.plu,
           row.nama_barang,
           qty,
@@ -562,14 +515,10 @@ document.addEventListener("DOMContentLoaded", () => {
           total,
         ]);
       });
-
-      // Push subtotal terakhir
       if (current_no_bon !== null) {
         pushSubtotalRow();
       }
-
-      // Baris Grand Total
-      dataRows.push([]); // Spasi
+      dataRows.push([]);
       dataRows.push([
         "",
         "",
@@ -583,7 +532,6 @@ document.addEventListener("DOMContentLoaded", () => {
         s: { r: dataRows.length + info.length + 1, c: 0 },
         e: { r: dataRows.length + info.length + 1, c: 2 },
       });
-
       const ws = XLSX.utils.aoa_to_sheet(title);
       XLSX.utils.sheet_add_aoa(ws, info, { origin: "A2" });
       const headerOrigin = "A" + (info.length + 2);
@@ -591,23 +539,15 @@ document.addEventListener("DOMContentLoaded", () => {
       XLSX.utils.sheet_add_aoa(ws, dataRows, {
         origin: "A" + (info.length + 3),
       });
-
-      // Perbaiki merges (tambahkan offset)
       const newMerges = merges.map((m) => ({
         s: { r: m.s.r, c: m.s.c },
         e: { r: m.e.r, c: m.e.c },
       }));
-
-      ws["!merges"] = [
-        { s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }, // Title
-        ...newMerges,
-      ];
-
+      ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }, ...newMerges];
       ws["A1"].s = {
         font: { bold: true, sz: 16 },
         alignment: { horizontal: "center" },
       };
-
       const numFormat = "#,##0";
       const numFormatDec = "#,##0.00";
       const headerStyle = {
@@ -628,67 +568,54 @@ document.addEventListener("DOMContentLoaded", () => {
         fill: { fgColor: { rgb: "FEFFE4" } },
         alignment: { horizontal: "right" },
       };
-
-      // Format Info Summary
       ["B4", "B5", "B6", "B7", "B8"].forEach((cell) => {
         if (ws[cell]) {
           ws[cell].t = "n";
           ws[cell].s = { numFmt: numFormat };
         }
       });
-
-      // Format Header Tabel
       headers.forEach((_, C) => {
         const cell = ws[XLSX.utils.encode_cell({ r: info.length + 1, c: C })];
         if (cell) cell.s = headerStyle;
       });
-
-      // Format Data Rows
       const dataRowStartIndex = info.length + 2;
       dataRows.forEach((row, R_idx) => {
         const R = R_idx + dataRowStartIndex;
-        if (row.length === 0) return; // Baris spasi
-
+        if (row.length === 0) return;
         const label = row[0] || row[2];
         if (typeof label === "string") {
           if (label.startsWith("No Trans:")) {
-            // Baris Header Bon
             ["A", "C", "E"].forEach((col) => {
               const cell = ws[col + (R + 1)];
               if (cell) cell.s = bonHeaderStyle;
             });
           } else if (label.startsWith("Sub Total Bon:")) {
-            // Baris Subtotal
             ws["C" + (R + 1)].s = { ...subtotalStyle, numFmt: numFormat };
             ws["D" + (R + 1)].s = { ...subtotalStyle, numFmt: numFormatDec };
             ws["F" + (R + 1)].s = { ...subtotalStyle, numFmt: numFormat };
             ws["G" + (R + 1)].s = { ...subtotalStyle, numFmt: numFormat };
           } else if (label.startsWith("GRAND TOTAL")) {
-            // Baris Grand Total
             ws["C" + (R + 1)].s = { ...grandTotalStyle, numFmt: numFormat };
             ws["D" + (R + 1)].s = { ...grandTotalStyle, numFmt: numFormatDec };
             ws["F" + (R + 1)].s = { ...grandTotalStyle, numFmt: numFormat };
             ws["G" + (R + 1)].s = { ...grandTotalStyle, numFmt: numFormat };
           } else if (row[0] && typeof row[0] === "number") {
-            // Baris Item
-            ws["D" + (R + 1)].s = { numFmt: numFormatDec }; // Qty
-            ws["E" + (R + 1)].s = { numFmt: numFormat }; // Harga
-            ws["F" + (R + 1)].s = { numFmt: numFormat }; // Disc
-            ws["G" + (R + 1)].s = { numFmt: numFormat }; // Total
+            ws["D" + (R + 1)].s = { numFmt: numFormatDec };
+            ws["E" + (R + 1)].s = { numFmt: numFormat };
+            ws["F" + (R + 1)].s = { numFmt: numFormat };
+            ws["G" + (R + 1)].s = { numFmt: numFormat };
           }
         }
       });
-
       ws["!cols"] = [
-        { wch: 5 }, // No
-        { wch: 12 }, // PLU
-        { wch: 35 }, // Nama Barang
-        { wch: 10 }, // Qty
-        { wch: 15 }, // Harga
-        { wch: 15 }, // Disc
-        { wch: 17 }, // Total
+        { wch: 5 },
+        { wch: 12 },
+        { wch: 35 },
+        { wch: 10 },
+        { wch: 15 },
+        { wch: 15 },
+        { wch: 17 },
       ];
-
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Sales Kasir Bon");
       const fileName = `Sales_Kasir_Bon_${params.tgl_mulai}_sd_${params.tgl_selesai}.xlsx`;
@@ -698,7 +625,6 @@ document.addEventListener("DOMContentLoaded", () => {
       Swal.fire("Export Gagal", "Terjadi kesalahan: " + error.message, "error");
     }
   }
-
   /**
    * Fungsi untuk export data ke PDF
    */
@@ -713,7 +639,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const params = getUrlParams();
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF("landscape");
-
       doc.setFontSize(18);
       doc.text("Laporan Sales per Kasir & Bon", 14, 22);
       doc.setFontSize(11);
@@ -726,7 +651,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const storeText =
         filterSelectStore.options[filterSelectStore.selectedIndex].text;
       doc.text(`Cabang: ${storeText}`, 14, 36);
-
       doc.text(`Total Qty: ${formatNumber(summary.total_qty)}`, 280, 22, {
         align: "right",
       });
@@ -751,20 +675,15 @@ document.addEventListener("DOMContentLoaded", () => {
         46,
         { align: "right" }
       );
-
-      // Header tabel baru
       const head = [
         ["No", "PLU", "Nama Barang", "Qty", "Harga", "Disc", "Total"],
       ];
-
       const body = [];
-      let item_counter = 1;
+      let bon_item_counter = 0;
       let current_no_bon = null;
-
       let subtotal_qty = 0;
       let subtotal_diskon = 0;
       let subtotal_total = 0;
-
       const headerBonStyles = {
         fontStyle: "bold",
         fillColor: [247, 250, 252],
@@ -793,7 +712,6 @@ document.addEventListener("DOMContentLoaded", () => {
         ...grandTotalStyles,
         halign: "right",
       };
-
       const pushSubtotalRowPdf = () => {
         body.push([
           {
@@ -816,22 +734,19 @@ document.addEventListener("DOMContentLoaded", () => {
           },
         ]);
       };
-
       tabel_data.forEach((row, index) => {
         const qty = parseFloat(row.qty) || 0;
         const diskon = parseFloat(row.total_diskon) || 0;
         const total = parseFloat(row.total) || 0;
-
         if (row.no_bon !== current_no_bon) {
           if (current_no_bon !== null) {
             pushSubtotalRowPdf();
           }
           current_no_bon = row.no_bon;
+          bon_item_counter = 1;
           subtotal_qty = 0;
           subtotal_diskon = 0;
           subtotal_total = 0;
-
-          // Baris Header Bon
           body.push([
             {
               content: `No Trans: ${row.no_bon}`,
@@ -845,15 +760,11 @@ document.addEventListener("DOMContentLoaded", () => {
             },
           ]);
         }
-
-        // Akumulasi subtotal
         subtotal_qty += qty;
         subtotal_diskon += diskon;
         subtotal_total += total;
-
-        // Baris Item
         body.push([
-          item_counter++,
+          bon_item_counter++,
           row.plu,
           row.nama_barang,
           formatNumber(qty),
@@ -862,13 +773,9 @@ document.addEventListener("DOMContentLoaded", () => {
           formatRupiah(total),
         ]);
       });
-
-      // Push subtotal terakhir
       if (current_no_bon !== null) {
         pushSubtotalRowPdf();
       }
-
-      // Baris Grand Total
       body.push([
         {
           content: "GRAND TOTAL",
@@ -889,7 +796,6 @@ document.addEventListener("DOMContentLoaded", () => {
           styles: grandTotalValuesStyles,
         },
       ]);
-
       doc.autoTable({
         startY: 52,
         head: head,
@@ -902,13 +808,13 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         styles: { fontSize: 7, cellPadding: 1.5 },
         columnStyles: {
-          0: { halign: "right", cellWidth: 8 }, // No
-          1: { halign: "left", cellWidth: 20 }, // PLU
-          2: { halign: "left", cellWidth: 100 }, // Nama Barang
-          3: { halign: "right", cellWidth: 20 }, // Qty
-          4: { halign: "right", cellWidth: 35 }, // Harga
-          5: { halign: "right", cellWidth: 35 }, // Disc
-          6: { halign: "right", cellWidth: 40 }, // Total
+          0: { halign: "right", cellWidth: 8 },
+          1: { halign: "left", cellWidth: 20 },
+          2: { halign: "left", cellWidth: 100 },
+          3: { halign: "right", cellWidth: 20 },
+          4: { halign: "right", cellWidth: 35 },
+          5: { halign: "right", cellWidth: 35 },
+          6: { halign: "right", cellWidth: 40 },
         },
       });
       const fileName = `Sales_Kasir_Bon_${params.tgl_mulai}_sd_${params.tgl_selesai}.pdf`;
@@ -918,14 +824,12 @@ document.addEventListener("DOMContentLoaded", () => {
       Swal.fire("Export Gagal", "Terjadi kesalahan: " + error.message, "error");
     }
   }
-
   if (exportExcelButton) {
     exportExcelButton.addEventListener("click", exportToExcel);
   }
   if (exportPdfButton) {
     exportPdfButton.addEventListener("click", exportToPDF);
   }
-
   if (filterForm) {
     filterForm.addEventListener("submit", (e) => {
       e.preventDefault();
@@ -936,6 +840,5 @@ document.addEventListener("DOMContentLoaded", () => {
       loadTopSalesData();
     });
   }
-
   loadTopSalesData();
 });
