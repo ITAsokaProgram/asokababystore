@@ -1,8 +1,6 @@
 <?php
 session_start();
 include '../../../aa_kon_sett.php';
-
-
 register_shutdown_function(function () {
     $error = error_get_last();
     if ($error !== null && in_array($error['type'], [E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR, E_RECOVERABLE_ERROR])) {
@@ -14,13 +12,9 @@ register_shutdown_function(function () {
         }
     }
 });
-
 header('Content-Type: application/json');
-
 $is_export = $_GET['export'] ?? false;
 $is_export = ($is_export === 'true' || $is_export === true);
-
-
 $response = [
     'summary' => [
         'total_qtykor' => 0,
@@ -29,26 +23,23 @@ $response = [
     ],
     'stores' => [],
     'tabel_data' => [],
+    'date_subtotals' => [],
     'pagination' => [
         'current_page' => 1,
         'total_pages' => 1,
         'total_rows' => 0,
         'offset' => 0,
-        'limit' => 10,
+        'limit' => 100,
     ],
     'error' => null,
 ];
-
 try {
-
     $tanggal_kemarin = date('Y-m-d', strtotime('-1 day'));
     $tgl_mulai = $_GET['tgl_mulai'] ?? $tanggal_kemarin;
     $tgl_selesai = $_GET['tgl_selesai'] ?? $tanggal_kemarin;
     $kd_store = $_GET['kd_store'] ?? 'all';
-
     $page = 1;
-    $limit = 10;
-
+    $limit = 100;
     if (!$is_export) {
         $page = (int) ($_GET['page'] ?? 1);
         if ($page < 1)
@@ -58,13 +49,10 @@ try {
     } else {
         $response['pagination'] = null;
     }
-
     $offset = ($page - 1) * $limit;
     if (isset($response['pagination'])) {
         $response['pagination']['offset'] = $offset;
     }
-
-
     $sql_stores = "SELECT kd_store, nm_alias FROM kode_store ORDER BY kd_store ASC";
     $result_stores = $conn->query($sql_stores);
     if ($result_stores) {
@@ -72,12 +60,9 @@ try {
             $response['stores'][] = $row;
         }
     }
-
-
     $where_conditions = "DATE(tgl_koreksi) BETWEEN ? AND ?";
     $bind_params_data = ['ss', $tgl_mulai, $tgl_selesai];
     $bind_params_summary = ['ss', $tgl_mulai, $tgl_selesai];
-
     if ($kd_store != 'all') {
         $where_conditions .= " AND kd_store = ?";
         $bind_params_data[0] .= 's';
@@ -85,8 +70,6 @@ try {
         $bind_params_summary[0] .= 's';
         $bind_params_summary[] = $kd_store;
     }
-
-
     $sql_calc_found_rows = "";
     $limit_offset_sql = "";
     if (!$is_export) {
@@ -96,11 +79,10 @@ try {
         $bind_params_data[] = $limit;
         $bind_params_data[] = $offset;
     }
-
-
     $sql_data = "
         SELECT
             $sql_calc_found_rows
+            DATE(tgl_koreksi) AS tanggal, -- <-- TAMBAHKAN TANGGAL
             no_faktur,
             plu,
             deskripsi,
@@ -124,10 +106,9 @@ try {
         WHERE
             $where_conditions
         ORDER BY
-            no_faktur, plu
+            tanggal, no_faktur, plu -- <-- UBAH ORDER BY
         $limit_offset_sql
     ";
-
     $stmt_data = $conn->prepare($sql_data);
     if ($stmt_data === false) {
         throw new Exception("Prepare failed (sql_data): " . $conn->error);
@@ -135,7 +116,6 @@ try {
     $stmt_data->bind_param(...$bind_params_data);
     $stmt_data->execute();
     $result_data = $stmt_data->get_result();
-
     while ($row = $result_data->fetch_assoc()) {
         foreach ($row as $key => $value) {
             if (is_string($value)) {
@@ -145,15 +125,12 @@ try {
         $response['tabel_data'][] = $row;
     }
     $stmt_data->close();
-
-
     if (!$is_export) {
         $sql_count_result = "SELECT FOUND_ROWS() AS total_rows";
         $result_count = $conn->query($sql_count_result);
         $total_rows = $result_count->fetch_assoc()['total_rows'] ?? 0;
         $response['pagination']['total_rows'] = (int) $total_rows;
         $response['pagination']['total_pages'] = ceil($total_rows / $limit);
-
         if ($page > $response['pagination']['total_pages'] && $total_rows > 0) {
             $page = $response['pagination']['total_pages'];
             $response['pagination']['current_page'] = $page;
@@ -161,8 +138,6 @@ try {
             $response['pagination']['offset'] = $offset;
         }
     }
-
-
     $sql_summary = "
         SELECT
             SUM(qty_kor) AS total_qtykor,
@@ -173,7 +148,6 @@ try {
         WHERE
             $where_conditions
     ";
-
     $stmt_summary = $conn->prepare($sql_summary);
     if ($stmt_summary === false) {
         throw new Exception("Prepare failed (sql_summary): " . $conn->error);
@@ -183,21 +157,46 @@ try {
     $result_summary = $stmt_summary->get_result();
     $summary_data = $result_summary->fetch_assoc();
     $stmt_summary->close();
-
     if ($summary_data) {
         $response['summary']['total_qtykor'] = $summary_data['total_qtykor'] ?? 0;
         $response['summary']['total_rp_koreksi'] = $summary_data['total_rp_koreksi'] ?? 0;
         $response['summary']['total_rp_selisih'] = $summary_data['total_rp_selisih'] ?? 0;
     }
-
+    $sql_date_summary = "
+        SELECT
+            DATE(tgl_koreksi) AS tanggal,
+            SUM(qty_kor) AS total_qtykor,
+            SUM(qty_kor * avg_cost) AS total_rp_koreksi,
+            SUM(sel_qty * avg_cost) AS total_rp_selisih
+        FROM
+            koreksi
+        WHERE
+            $where_conditions
+        GROUP BY
+            DATE(tgl_koreksi)
+        ORDER BY
+            tanggal
+    ";
+    $stmt_date_summary = $conn->prepare($sql_date_summary);
+    if ($stmt_date_summary === false) {
+        throw new Exception("Prepare failed (sql_date_summary): " . $conn->error);
+    }
+    $stmt_date_summary->bind_param(...$bind_params_summary);
+    $stmt_date_summary->execute();
+    $result_date_summary = $stmt_date_summary->get_result();
+    while ($date_row = $result_date_summary->fetch_assoc()) {
+        $response['date_subtotals'][$date_row['tanggal']] = [
+            'total_qtykor' => $date_row['total_qtykor'] ?? 0,
+            'total_rp_koreksi' => $date_row['total_rp_koreksi'] ?? 0,
+            'total_rp_selisih' => $date_row['total_rp_selisih'] ?? 0,
+        ];
+    }
+    $stmt_date_summary->close();
     $conn->close();
-
 } catch (Exception $e) {
     http_response_code(500);
     $response['error'] = $e->getMessage();
 }
-
-
 $json_output = json_encode($response);
 if ($json_output === false) {
     $json_error_code = json_last_error();

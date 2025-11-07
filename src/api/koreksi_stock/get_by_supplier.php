@@ -29,12 +29,13 @@ $response = [
     ],
     'stores' => [],
     'tabel_data' => [],
+    'date_subtotals' => [],
     'pagination' => [
         'current_page' => 1,
         'total_pages' => 1,
         'total_rows' => 0,
         'offset' => 0,
-        'limit' => 10,
+        'limit' => 100,
     ],
     'error' => null,
 ];
@@ -47,7 +48,7 @@ try {
     $kd_store = $_GET['kd_store'] ?? 'all';
 
     $page = 1;
-    $limit = 10;
+    $limit = 100;
 
     if (!$is_export) {
         $page = (int) ($_GET['page'] ?? 1);
@@ -73,13 +74,13 @@ try {
         }
     }
 
-    // Menambahkan alias 'k.' pada field di WHERE
+
     $where_conditions = "DATE(k.tgl_koreksi) BETWEEN ? AND ?";
     $bind_params_data = ['ss', $tgl_mulai, $tgl_selesai];
     $bind_params_summary = ['ss', $tgl_mulai, $tgl_selesai];
 
     if ($kd_store != 'all') {
-        $where_conditions .= " AND k.kd_store = ?"; // Menambahkan alias 'k.'
+        $where_conditions .= " AND k.kd_store = ?";
         $bind_params_data[0] .= 's';
         $bind_params_data[] = $kd_store;
         $bind_params_summary[0] .= 's';
@@ -101,6 +102,7 @@ try {
     $sql_data = "
         SELECT
             $sql_calc_found_rows
+            DATE(k.tgl_koreksi) AS tanggal, -- <-- TAMBAHKAN TANGGAL
             k.no_faktur,
             k.plu,
             k.deskripsi,
@@ -127,8 +129,10 @@ try {
             supplier AS s ON k.kode_supp = s.kode_supp AND k.kd_store = s.kd_store
         WHERE
             $where_conditions
+        GROUP BY -- <-- TAMBAHKAN GROUP BY TANGGAL
+            tanggal, k.no_faktur, k.plu, k.deskripsi, k.isi1, k.isi2, k.avg_cost, k.qty_kor, k.stock, k.sel_qty, k.type_kor, k.kode_supp, s.nama_supp
         ORDER BY
-            nama_supp, k.kode_supp, k.plu
+            tanggal, nama_supp, k.kode_supp, k.plu -- <-- UBAH ORDER BY
         $limit_offset_sql
     ";
 
@@ -152,9 +156,23 @@ try {
 
 
     if (!$is_export) {
-        $sql_count_result = "SELECT FOUND_ROWS() AS total_rows";
-        $result_count = $conn->query($sql_count_result);
-        $total_rows = $result_count->fetch_assoc()['total_rows'] ?? 0;
+
+        $sql_count_total = "
+            SELECT COUNT(DISTINCT DATE(k.tgl_koreksi), k.kode_supp, k.plu) AS total_rows
+            FROM koreksi AS k
+            LEFT JOIN supplier AS s ON k.kode_supp = s.kode_supp AND k.kd_store = s.kd_store
+            WHERE $where_conditions
+        ";
+        $stmt_count = $conn->prepare($sql_count_total);
+        if ($stmt_count === false) {
+            throw new Exception("Prepare failed (sql_count_total): " . $conn->error);
+        }
+        $stmt_count->bind_param(...$bind_params_summary);
+        $stmt_count->execute();
+        $total_rows = $stmt_count->get_result()->fetch_assoc()['total_rows'] ?? 0;
+        $stmt_count->close();
+
+
         $response['pagination']['total_rows'] = (int) $total_rows;
         $response['pagination']['total_pages'] = ceil($total_rows / $limit);
 
@@ -193,6 +211,42 @@ try {
         $response['summary']['total_rp_koreksi'] = $summary_data['total_rp_koreksi'] ?? 0;
         $response['summary']['total_rp_selisih'] = $summary_data['total_rp_selisih'] ?? 0;
     }
+
+
+    $sql_date_summary = "
+        SELECT
+            DATE(k.tgl_koreksi) AS tanggal,
+            SUM(k.qty_kor) AS total_qtykor,
+            SUM(k.qty_kor * k.avg_cost) AS total_rp_koreksi,
+            SUM(k.sel_qty * k.avg_cost) AS total_rp_selisih
+        FROM
+            koreksi AS k
+        WHERE
+            $where_conditions
+        GROUP BY
+            DATE(k.tgl_koreksi)
+        ORDER BY
+            tanggal
+    ";
+
+    $stmt_date_summary = $conn->prepare($sql_date_summary);
+    if ($stmt_date_summary === false) {
+        throw new Exception("Prepare failed (sql_date_summary): " . $conn->error);
+    }
+
+    $stmt_date_summary->bind_param(...$bind_params_summary);
+    $stmt_date_summary->execute();
+    $result_date_summary = $stmt_date_summary->get_result();
+
+    while ($date_row = $result_date_summary->fetch_assoc()) {
+        $response['date_subtotals'][$date_row['tanggal']] = [
+            'total_qtykor' => $date_row['total_qtykor'] ?? 0,
+            'total_rp_koreksi' => $date_row['total_rp_koreksi'] ?? 0,
+            'total_rp_selisih' => $date_row['total_rp_selisih'] ?? 0,
+        ];
+    }
+    $stmt_date_summary->close();
+
 
     $conn->close();
 
