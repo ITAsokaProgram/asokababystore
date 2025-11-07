@@ -26,17 +26,18 @@ $response = [
         'total_qty' => 0,
         'total_netto' => 0,
         'total_ppn' => 0,
-        'total_ppnbm' => 0,
+
         'total_grand' => 0,
     ],
     'stores' => [],
     'tabel_data' => [],
+    'date_subtotals' => [],
     'pagination' => [
         'current_page' => 1,
         'total_pages' => 1,
         'total_rows' => 0,
         'offset' => 0,
-        'limit' => 10, // Anda bisa sesuaikan limit per halaman
+        'limit' => 10,
     ],
     'error' => null,
 ];
@@ -49,7 +50,7 @@ try {
     $kd_store = $_GET['kd_store'] ?? 'all';
 
     $page = 1;
-    $limit = 10; // Sesuaikan dengan $response['pagination']['limit']
+    $limit = 10;
 
     if (!$is_export) {
         $page = (int) ($_GET['page'] ?? 1);
@@ -76,7 +77,7 @@ try {
     }
 
 
-    // GANTI KOLOM TANGGAL
+
     $where_conditions = "DATE(a.tgl_expproduk) BETWEEN ? AND ?";
     $bind_params_data = ['ss', $tgl_mulai, $tgl_selesai];
     $bind_params_summary = ['ss', $tgl_mulai, $tgl_selesai];
@@ -100,8 +101,8 @@ try {
         $bind_params_data[] = $offset;
     }
 
-    // Query utama untuk mengambil data detail
-    // GANTI QUERY KE TABEL exp_produk
+
+
     $sql_data = "
         SELECT
             $sql_calc_found_rows
@@ -118,10 +119,8 @@ try {
             a.qty,
             SUM(a.netto * (CASE WHEN a.timbang='True' THEN a.qty/1000 ELSE a.qty END)) AS netto,
             SUM(IFNULL(a.ppn,0) * (CASE WHEN a.timbang='True' THEN a.qty/1000 ELSE a.qty END)) AS ppn,
-            SUM(IFNULL(a.ppn_bm,0) * (CASE WHEN a.timbang='True' THEN a.qty/1000 ELSE a.qty END)) AS ppnbm,
             (SUM(a.netto * (CASE WHEN a.timbang='True' THEN a.qty/1000 ELSE a.qty END)) +
-             SUM(IFNULL(a.ppn,0) * (CASE WHEN a.timbang='True' THEN a.qty/1000 ELSE a.qty END)) +
-             SUM(IFNULL(a.ppn_bm,0) * (CASE WHEN a.timbang='True' THEN a.qty/1000 ELSE a.qty END))) AS total
+             SUM(IFNULL(a.ppn,0) * (CASE WHEN a.timbang='True' THEN a.qty/1000 ELSE a.qty END))) AS total
         FROM exp_produk a
         LEFT JOIN supplier b ON a.kode_supp = b.kode_supp AND a.kd_store = b.kd_store
         WHERE
@@ -170,28 +169,22 @@ try {
         $response['pagination']['total_pages'] = ceil($total_rows / $limit);
 
         if ($page > $response['pagination']['total_pages'] && $total_rows > 0) {
-            // Halaman yang diminta lebih besar dari total halaman, (mis. setelah filter)
-            // Anda bisa setel ulang ke halaman 1 atau halaman terakhir. Kita setel ke halaman terakhir.
             $page = $response['pagination']['total_pages'];
             $response['pagination']['current_page'] = $page;
             $offset = ($page - 1) * $limit;
             $response['pagination']['offset'] = $offset;
-            // NOTE: Anda mungkin perlu menjalankan ulang query data jika ini terjadi.
-            // Untuk saat ini, kita biarkan (data akan kosong), tapi pagination akan benar.
         }
     }
 
-    // Query untuk summary (Grand Total)
-    // GANTI TABEL DI SUMMARY
+
+
     $sql_summary = "
         SELECT
             SUM(a.qty) AS total_qty,
             SUM(a.netto * (CASE WHEN a.timbang='True' THEN a.qty/1000 ELSE a.qty END)) AS total_netto,
             SUM(IFNULL(a.ppn,0) * (CASE WHEN a.timbang='True' THEN a.qty/1000 ELSE a.qty END)) AS total_ppn,
-            SUM(IFNULL(a.ppn_bm,0) * (CASE WHEN a.timbang='True' THEN a.qty/1000 ELSE a.qty END)) AS total_ppnbm,
             (SUM(a.netto * (CASE WHEN a.timbang='True' THEN a.qty/1000 ELSE a.qty END)) +
-             SUM(IFNULL(a.ppn,0) * (CASE WHEN a.timbang='True' THEN a.qty/1000 ELSE a.qty END)) +
-             SUM(IFNULL(a.ppn_bm,0) * (CASE WHEN a.timbang='True' THEN a.qty/1000 ELSE a.qty END))) AS total_grand
+             SUM(IFNULL(a.ppn,0) * (CASE WHEN a.timbang='True' THEN a.qty/1000 ELSE a.qty END))) AS total_grand
         FROM
             exp_produk a
         WHERE
@@ -212,9 +205,49 @@ try {
         $response['summary']['total_qty'] = $summary_data['total_qty'] ?? 0;
         $response['summary']['total_netto'] = $summary_data['total_netto'] ?? 0;
         $response['summary']['total_ppn'] = $summary_data['total_ppn'] ?? 0;
-        $response['summary']['total_ppnbm'] = $summary_data['total_ppnbm'] ?? 0;
+
         $response['summary']['total_grand'] = $summary_data['total_grand'] ?? 0;
     }
+
+
+    $sql_date_summary = "
+        SELECT
+            DATE(a.tgl_expproduk) AS tanggal,
+            SUM(a.qty) AS total_qty,
+            SUM(a.netto * (CASE WHEN a.timbang='True' THEN a.qty/1000 ELSE a.qty END)) AS total_netto,
+            SUM(IFNULL(a.ppn,0) * (CASE WHEN a.timbang='True' THEN a.qty/1000 ELSE a.qty END)) AS total_ppn,
+            (SUM(a.netto * (CASE WHEN a.timbang='True' THEN a.qty/1000 ELSE a.qty END)) +
+             SUM(IFNULL(a.ppn,0) * (CASE WHEN a.timbang='True' THEN a.qty/1000 ELSE a.qty END))) AS total_grand
+        FROM
+            exp_produk a
+        WHERE
+            $where_conditions
+        GROUP BY
+            DATE(a.tgl_expproduk)
+        ORDER BY
+            tanggal
+    ";
+
+    $stmt_date_summary = $conn->prepare($sql_date_summary);
+    if ($stmt_date_summary === false) {
+        throw new Exception("Prepare failed (sql_date_summary): " . $conn->error);
+    }
+
+    $stmt_date_summary->bind_param(...$bind_params_summary);
+    $stmt_date_summary->execute();
+    $result_date_summary = $stmt_date_summary->get_result();
+
+    while ($date_row = $result_date_summary->fetch_assoc()) {
+        $response['date_subtotals'][$date_row['tanggal']] = [
+            'total_qty' => $date_row['total_qty'] ?? 0,
+            'total_netto' => $date_row['total_netto'] ?? 0,
+            'total_ppn' => $date_row['total_ppn'] ?? 0,
+            'total_grand' => $date_row['total_grand'] ?? 0,
+        ];
+    }
+    $stmt_date_summary->close();
+
+
 
     $conn->close();
 

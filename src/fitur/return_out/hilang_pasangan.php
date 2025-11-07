@@ -39,62 +39,6 @@ if ($page < 1) {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
-    <style>
-        /* Peringatan rotasi di HP */
-        #rotate-prompt {
-            display: none;
-        }
-
-        @media screen and (max-width: 767px) and (orientation: portrait) {
-            #rotate-prompt {
-                display: flex;
-            }
-        }
-
-        /* Style untuk subtotal row */
-        .subtotal-row {
-            font-weight: bold;
-            background-color: #f7fafc;
-            /* bg-gray-50 */
-            border-top: 1px solid #e2e8f0;
-            /* border-gray-200 */
-        }
-
-        .subtotal-row td {
-            padding-top: 0.75rem;
-            padding-bottom: 0.75rem;
-        }
-
-        .subtotal-tanggal-row {
-            font-weight: bold;
-            font-size: 1.05em;
-            background-color: #EBF8FF;
-            /* bg-blue-50 */
-            border-top: 2px solid #90CDF4;
-            /* border-blue-300 */
-            color: #2C5282;
-            /* text-blue-800 */
-        }
-
-        .header-tanggal-row {
-            font-weight: bold;
-            font-size: 1.05em;
-            background-color: #EBF8FF;
-            /* bg-blue-50 */
-            border-top: 2px solid #63B3ED;
-            /* border-blue-400 */
-            color: #2C5282;
-            /* text-blue-800 */
-        }
-
-        .header-faktur-row {
-            font-weight: 500;
-            background-color: #F7FAFC;
-            /* bg-gray-50 */
-            color: #4A5568;
-            /* text-gray-700 */
-        }
-    </style>
 </head>
 
 <body class="bg-gray-50">
@@ -163,7 +107,7 @@ if ($page < 1) {
 
                 <div class="filter-card-simple">
                     <form id="filter-form" class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end" method="GET"
-                        action="index.php">
+                        action="hilang_pasangan.php">
                         <div>
                             <label for="tgl_mulai" class="block text-xs font-semibold text-gray-700 mb-2"> <i
                                     class="fas fa-calendar-alt text-pink-600 mr-1"></i>
@@ -230,13 +174,12 @@ if ($page < 1) {
                                     <th>Qty</th>
                                     <th>Netto</th>
                                     <th>PPN</th>
-                                    <th>PPNBM</th>
                                     <th>Total</th>
                                 </tr>
                             </thead>
                             <tbody id="return-out-table-body">
                                 <tr>
-                                    <td colspan="11" class="text-center p-8">
+                                    <td colspan="10" class="text-center p-8">
                                         <div class="spinner-simple"></div>
                                         <p class="mt-3 text-gray-500 font-medium">Memuat data...</p>
                                     </td>
