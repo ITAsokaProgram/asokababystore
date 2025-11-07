@@ -94,7 +94,12 @@ document.addEventListener("DOMContentLoaded", () => {
       if (data.summary) {
         updateSummaryCards(data.summary);
       }
-      renderTable(data.tabel_data, data.pagination, data.summary);
+      renderTable(
+        data.tabel_data,
+        data.pagination,
+        data.summary,
+        data.date_subtotals
+      );
       renderPagination(data.pagination);
     } catch (error) {
       console.error("Error loading top sales data:", error);
@@ -130,12 +135,12 @@ document.addEventListener("DOMContentLoaded", () => {
           filterSubmitButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i><span>Memuat...</span>`;
         if (tableBody)
           tableBody.innerHTML = `
-                                        <tr>
-                                            <td colspan="7" class="text-center p-8">
-                                                <div class="spinner-simple"></div>
-                                                <p class="mt-2 text-gray-500">Memuat data...</p>
-                                            </td>
-                                        </tr>`;
+                                    <tr>
+                                        <td colspan="7" class="text-center p-8">
+                                            <div class="spinner-simple"></div>
+                                            <p class="mt-2 text-gray-500">Memuat data...</p>
+                                        </td>
+                                    </tr>`;
         if (!isPagination) {
           if (summaryNetSales) summaryNetSales.textContent = "-";
           if (summaryGrsMargin) summaryGrsMargin.textContent = "-";
@@ -189,7 +194,7 @@ document.addEventListener("DOMContentLoaded", () => {
     summaryGrsMargin.textContent = formatRupiah(summary.total_grs_margin);
     summaryHpp.textContent = formatRupiah(summary.total_hpp);
   }
-  function renderTable(tabel_data, pagination, summary) {
+  function renderTable(tabel_data, pagination, summary, date_subtotals) {
     if (!tabel_data || tabel_data.length === 0) {
       tableBody.innerHTML = `
                                 <tr>
@@ -200,17 +205,48 @@ document.addEventListener("DOMContentLoaded", () => {
                                 </tr>`;
       return;
     }
-    const offset = pagination ? pagination.offset : 0;
     let htmlRows = "";
     let bon_item_counter = 0;
     let current_no_bon = null;
+    let current_tanggal = null;
     let subtotal_qty = 0;
     let subtotal_diskon = 0;
     let subtotal_total = 0;
+    function buildTanggalHeaderRow(tanggal) {
+      return `
+                <tr class="header-tanggal-row">
+                    <td colspan="7" class="px-4 py-2">
+                        Tanggal: <span class="font-bold"> ${tanggal} </span>
+                    </td>
+                </tr>
+            `;
+    }
+    function buildSubtotalTanggalRow(tanggal) {
+      const subtotal = date_subtotals[tanggal] || {
+        total_qty: 0,
+        total_total_diskon: 0,
+        total_total: 0,
+      };
+      return `
+                <tr class="subtotal-tanggal-row">
+                    <td colspan="3" class=" px-4 py-2 text-right font-bold" style="font-style: italic;">Sub Total Tanggal:</td>
+                    <td class=" px-2 py-2">${formatNumber(
+                      subtotal.total_qty
+                    )}</td>
+                    <td class=" px-2 py-2"></td>
+                    <td class=" px-2 py-2">${formatRupiah(
+                      subtotal.total_total_diskon
+                    )}</td>
+                    <td class=" px-2 py-2">${formatRupiah(
+                      subtotal.total_total
+                    )}</td>
+                </tr>
+            `;
+    }
     function buildBonHeaderRow(row) {
       return `
-                <tr class="header-faktur-row" style="background-color: #f7fafc; font-size: 13px;">
-                    <td colspan="3" class="px-4 py-1 pl-3">
+                <tr class="header-faktur-row">
+                    <td colspan="3" class="px-4 py-1 pl-6">
                         No Trans: <strong>${row.no_bon}</strong>
                     </td>
                     <td colspan="4" class="px-4 py-1">
@@ -221,8 +257,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     function buildBonSubtotalRow(qty, diskon, total) {
       return `
-                <tr class="subtotal-row" style="font-style: italic; font-weight: bold; background-color: #feffe4;">
-                    <td colspan="3" class="text-right px-4 py-2 font-bold">
+                <tr class="subtotal-row">
+                    <td colspan="3" class="text-right px-4 py-2 font-bold" style="font-style: italic;">
                         Sub Total Bon:
                     </td>
                     <td class="px-2 py-2">${formatNumber(qty)}</td>
@@ -236,6 +272,22 @@ document.addEventListener("DOMContentLoaded", () => {
       const qty = parseFloat(row.qty) || 0;
       const diskon = parseFloat(row.total_diskon) || 0;
       const total = parseFloat(row.total) || 0;
+      if (row.tanggal !== current_tanggal) {
+        if (current_no_bon !== null) {
+          htmlRows += buildBonSubtotalRow(
+            subtotal_qty,
+            subtotal_diskon,
+            subtotal_total
+          );
+          htmlRows += `<tr class="group-spacer"><td colspan="7" style="padding: 2px; background-color: #f1f5f9;"></td></tr>`;
+        }
+        if (current_tanggal !== null && date_subtotals) {
+          htmlRows += buildSubtotalTanggalRow(current_tanggal);
+        }
+        current_tanggal = row.tanggal;
+        current_no_bon = null;
+        htmlRows += buildTanggalHeaderRow(current_tanggal);
+      }
       if (row.no_bon !== current_no_bon) {
         if (current_no_bon !== null) {
           htmlRows += buildBonSubtotalRow(
@@ -273,6 +325,14 @@ document.addEventListener("DOMContentLoaded", () => {
         subtotal_diskon,
         subtotal_total
       );
+    }
+    if (current_tanggal !== null && date_subtotals) {
+      const isLastPage =
+        pagination && pagination.current_page === pagination.total_pages;
+      const isExport = pagination === null;
+      if (isLastPage || isExport) {
+        htmlRows += buildSubtotalTanggalRow(current_tanggal);
+      }
     }
     const isLastPage =
       pagination && pagination.current_page === pagination.total_pages;
@@ -371,9 +431,6 @@ document.addEventListener("DOMContentLoaded", () => {
                             `;
     paginationLinks.innerHTML = linksHtml;
   }
-  /**
-   * Mengambil semua data dari API untuk keperluan export.
-   */
   async function fetchAllDataForExport() {
     setLoadingState(true, true);
     const params = getUrlParams();
@@ -410,9 +467,6 @@ document.addEventListener("DOMContentLoaded", () => {
       setLoadingState(false);
     }
   }
-  /**
-   * Fungsi untuk export data ke Excel
-   */
   async function exportToExcel() {
     const data = await fetchAllDataForExport();
     if (!data || !data.tabel_data || data.tabel_data.length === 0) {
@@ -420,7 +474,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     try {
-      const { tabel_data, summary } = data;
+      const { tabel_data, summary, date_subtotals } = data;
       const params = getUrlParams();
       const title = [["Laporan Sales per Kasir & Bon"]];
       const info = [
@@ -450,61 +504,100 @@ document.addEventListener("DOMContentLoaded", () => {
       const merges = [];
       let bon_item_counter = 0;
       let current_no_bon = null;
-      let subtotal_qty = 0;
-      let subtotal_diskon = 0;
-      let subtotal_total = 0;
-      const pushSubtotalRow = () => {
+      let current_tanggal = null;
+      let s_bon_qty = 0,
+        s_bon_diskon = 0,
+        s_bon_total = 0;
+      const rowOffset = info.length + 2;
+      const pushSubtotalBonRow = () => {
         dataRows.push([
           "",
           "",
           "Sub Total Bon:",
-          subtotal_qty,
+          s_bon_qty,
           "",
-          subtotal_diskon,
-          subtotal_total,
+          s_bon_diskon,
+          s_bon_total,
         ]);
         merges.push({
-          s: { r: dataRows.length + info.length + 1, c: 0 },
-          e: { r: dataRows.length + info.length + 1, c: 2 },
+          s: { r: dataRows.length + rowOffset - 1, c: 0 },
+          e: { r: dataRows.length + rowOffset - 1, c: 2 },
+        });
+        s_bon_qty = 0;
+        s_bon_diskon = 0;
+        s_bon_total = 0;
+      };
+      const pushSubtotalTanggalRow = () => {
+        const subtotal = date_subtotals[current_tanggal] || {
+          total_qty: 0,
+          total_total_diskon: 0,
+          total_total: 0,
+        };
+        dataRows.push([
+          "",
+          "",
+          "Sub Total Tanggal:",
+          subtotal.total_qty,
+          "",
+          subtotal.total_total_diskon,
+          subtotal.total_total,
+        ]);
+        merges.push({
+          s: { r: dataRows.length + rowOffset - 1, c: 0 },
+          e: { r: dataRows.length + rowOffset - 1, c: 2 },
+        });
+      };
+      const pushTanggalHeaderRow = (tanggal) => {
+        dataRows.push([`Tanggal: ${tanggal}`]);
+        merges.push({
+          s: { r: dataRows.length + rowOffset - 1, c: 0 },
+          e: { r: dataRows.length + rowOffset - 1, c: 6 },
+        });
+      };
+      const pushBonHeaderRow = (row) => {
+        dataRows.push([
+          `No Trans: ${row.no_bon}`,
+          "",
+          ``,
+          "",
+          `Kasir: ${row.kode_kasir} - ${row.nama_kasir}`,
+        ]);
+        merges.push({
+          s: { r: dataRows.length + rowOffset - 1, c: 0 },
+          e: { r: dataRows.length + rowOffset - 1, c: 1 },
+        });
+        merges.push({
+          s: { r: dataRows.length + rowOffset - 1, c: 2 },
+          e: { r: dataRows.length + rowOffset - 1, c: 3 },
+        });
+        merges.push({
+          s: { r: dataRows.length + rowOffset - 1, c: 4 },
+          e: { r: dataRows.length + rowOffset - 1, c: 6 },
         });
       };
       tabel_data.forEach((row, index) => {
         const qty = parseFloat(row.qty) || 0;
         const diskon = parseFloat(row.total_diskon) || 0;
         const total = parseFloat(row.total) || 0;
+        if (row.tanggal !== current_tanggal) {
+          if (current_no_bon !== null) pushSubtotalBonRow();
+          if (current_tanggal !== null) pushSubtotalTanggalRow();
+          pushTanggalHeaderRow(row.tanggal);
+          current_tanggal = row.tanggal;
+          current_no_bon = null;
+        }
         if (row.no_bon !== current_no_bon) {
-          if (current_no_bon !== null) {
-            pushSubtotalRow();
-            dataRows.push([]);
-          }
+          if (current_no_bon !== null) pushSubtotalBonRow();
+          pushBonHeaderRow(row);
           current_no_bon = row.no_bon;
           bon_item_counter = 1;
-          subtotal_qty = 0;
-          subtotal_diskon = 0;
-          subtotal_total = 0;
-          dataRows.push([
-            `No Trans: ${row.no_bon}`,
-            "",
-            ``,
-            "",
-            `Kasir: ${row.kode_kasir} - ${row.nama_kasir}`,
-          ]);
-          merges.push({
-            s: { r: dataRows.length + info.length + 1, c: 0 },
-            e: { r: dataRows.length + info.length + 1, c: 1 },
-          });
-          merges.push({
-            s: { r: dataRows.length + info.length + 1, c: 2 },
-            e: { r: dataRows.length + info.length + 1, c: 3 },
-          });
-          merges.push({
-            s: { r: dataRows.length + info.length + 1, c: 4 },
-            e: { r: dataRows.length + info.length + 1, c: 6 },
-          });
+          s_bon_qty = 0;
+          s_bon_diskon = 0;
+          s_bon_total = 0;
         }
-        subtotal_qty += qty;
-        subtotal_diskon += diskon;
-        subtotal_total += total;
+        s_bon_qty += qty;
+        s_bon_diskon += diskon;
+        s_bon_total += total;
         dataRows.push([
           bon_item_counter++,
           row.plu,
@@ -515,9 +608,8 @@ document.addEventListener("DOMContentLoaded", () => {
           total,
         ]);
       });
-      if (current_no_bon !== null) {
-        pushSubtotalRow();
-      }
+      if (current_no_bon !== null) pushSubtotalBonRow();
+      if (current_tanggal !== null) pushSubtotalTanggalRow();
       dataRows.push([]);
       dataRows.push([
         "",
@@ -529,8 +621,8 @@ document.addEventListener("DOMContentLoaded", () => {
         parseFloat(summary.total_total) || 0,
       ]);
       merges.push({
-        s: { r: dataRows.length + info.length + 1, c: 0 },
-        e: { r: dataRows.length + info.length + 1, c: 2 },
+        s: { r: dataRows.length + rowOffset - 1, c: 0 },
+        e: { r: dataRows.length + rowOffset - 1, c: 2 },
       });
       const ws = XLSX.utils.aoa_to_sheet(title);
       XLSX.utils.sheet_add_aoa(ws, info, { origin: "A2" });
@@ -539,11 +631,7 @@ document.addEventListener("DOMContentLoaded", () => {
       XLSX.utils.sheet_add_aoa(ws, dataRows, {
         origin: "A" + (info.length + 3),
       });
-      const newMerges = merges.map((m) => ({
-        s: { r: m.s.r, c: m.s.c },
-        e: { r: m.e.r, c: m.e.c },
-      }));
-      ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }, ...newMerges];
+      ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }, ...merges];
       ws["A1"].s = {
         font: { bold: true, sz: 16 },
         alignment: { horizontal: "center" },
@@ -554,18 +642,27 @@ document.addEventListener("DOMContentLoaded", () => {
         font: { bold: true },
         fill: { fgColor: { rgb: "E0E0E0" } },
       };
-      const grandTotalStyle = {
-        font: { bold: true, sz: 12 },
+      const headerTanggalStyle = {
+        font: { bold: true, sz: 11, color: { rgb: "2C5282" } },
         fill: { fgColor: { rgb: "EBF8FF" } },
-        alignment: { horizontal: "right" },
       };
-      const bonHeaderStyle = {
+      const headerBonStyle = {
         font: { bold: true },
         fill: { fgColor: { rgb: "F7FAFC" } },
       };
-      const subtotalStyle = {
+      const subtotalBonStyle = {
         font: { bold: true, italic: true },
         fill: { fgColor: { rgb: "FEFFE4" } },
+        alignment: { horizontal: "right" },
+      };
+      const subtotalTanggalStyle = {
+        font: { bold: true, italic: true, sz: 11, color: { rgb: "2C5282" } },
+        fill: { fgColor: { rgb: "EBF8FF" } },
+        alignment: { horizontal: "right" },
+      };
+      const grandTotalStyle = {
+        font: { bold: true, sz: 12 },
+        fill: { fgColor: { rgb: "E2E8F0" } },
         alignment: { horizontal: "right" },
       };
       ["B4", "B5", "B6", "B7", "B8"].forEach((cell) => {
@@ -574,6 +671,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ws[cell].s = { numFmt: numFormat };
         }
       });
+      ws["B4"].s = { numFmt: numFormatDec };
       headers.forEach((_, C) => {
         const cell = ws[XLSX.utils.encode_cell({ r: info.length + 1, c: C })];
         if (cell) cell.s = headerStyle;
@@ -584,16 +682,33 @@ document.addEventListener("DOMContentLoaded", () => {
         if (row.length === 0) return;
         const label = row[0] || row[2];
         if (typeof label === "string") {
-          if (label.startsWith("No Trans:")) {
-            ["A", "C", "E"].forEach((col) => {
-              const cell = ws[col + (R + 1)];
-              if (cell) cell.s = bonHeaderStyle;
-            });
+          if (label.startsWith("Tanggal:")) {
+            ws[XLSX.utils.encode_cell({ r: R, c: 0 })].s = headerTanggalStyle;
+          } else if (label.startsWith("No Trans:")) {
+            ws[XLSX.utils.encode_cell({ r: R, c: 0 })].s = headerBonStyle;
+            ws[XLSX.utils.encode_cell({ r: R, c: 4 })].s = headerBonStyle;
           } else if (label.startsWith("Sub Total Bon:")) {
-            ws["C" + (R + 1)].s = { ...subtotalStyle, numFmt: numFormat };
-            ws["D" + (R + 1)].s = { ...subtotalStyle, numFmt: numFormatDec };
-            ws["F" + (R + 1)].s = { ...subtotalStyle, numFmt: numFormat };
-            ws["G" + (R + 1)].s = { ...subtotalStyle, numFmt: numFormat };
+            ws["C" + (R + 1)].s = { ...subtotalBonStyle, numFmt: numFormat };
+            ws["D" + (R + 1)].s = { ...subtotalBonStyle, numFmt: numFormatDec };
+            ws["F" + (R + 1)].s = { ...subtotalBonStyle, numFmt: numFormat };
+            ws["G" + (R + 1)].s = { ...subtotalBonStyle, numFmt: numFormat };
+          } else if (label.startsWith("Sub Total Tanggal:")) {
+            ws["C" + (R + 1)].s = {
+              ...subtotalTanggalStyle,
+              numFmt: numFormat,
+            };
+            ws["D" + (R + 1)].s = {
+              ...subtotalTanggalStyle,
+              numFmt: numFormatDec,
+            };
+            ws["F" + (R + 1)].s = {
+              ...subtotalTanggalStyle,
+              numFmt: numFormat,
+            };
+            ws["G" + (R + 1)].s = {
+              ...subtotalTanggalStyle,
+              numFmt: numFormat,
+            };
           } else if (label.startsWith("GRAND TOTAL")) {
             ws["C" + (R + 1)].s = { ...grandTotalStyle, numFmt: numFormat };
             ws["D" + (R + 1)].s = { ...grandTotalStyle, numFmt: numFormatDec };
@@ -625,9 +740,6 @@ document.addEventListener("DOMContentLoaded", () => {
       Swal.fire("Export Gagal", "Terjadi kesalahan: " + error.message, "error");
     }
   }
-  /**
-   * Fungsi untuk export data ke PDF
-   */
   async function exportToPDF() {
     const data = await fetchAllDataForExport();
     if (!data || !data.tabel_data || data.tabel_data.length === 0) {
@@ -635,7 +747,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     try {
-      const { tabel_data, summary } = data;
+      const { tabel_data, summary, date_subtotals } = data;
       const params = getUrlParams();
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF("landscape");
@@ -681,14 +793,22 @@ document.addEventListener("DOMContentLoaded", () => {
       const body = [];
       let bon_item_counter = 0;
       let current_no_bon = null;
-      let subtotal_qty = 0;
-      let subtotal_diskon = 0;
-      let subtotal_total = 0;
+      let current_tanggal = null;
+      let s_bon_qty = 0,
+        s_bon_diskon = 0,
+        s_bon_total = 0;
+      const headerTanggalStyles = {
+        fontStyle: "bold",
+        fillColor: [235, 248, 255],
+        textColor: [44, 82, 130],
+        fontSize: 6,
+        halign: "left",
+      };
       const headerBonStyles = {
         fontStyle: "bold",
         fillColor: [247, 250, 252],
         textColor: [74, 85, 104],
-        fontSize: 6,
+        fontSize: 5,
         halign: "left",
       };
       const subtotalBonStyles = {
@@ -696,11 +816,14 @@ document.addEventListener("DOMContentLoaded", () => {
         fontStyle: "bolditalic",
         fillColor: [254, 253, 232],
         textColor: [113, 63, 18],
-        fontSize: 6,
+        fontSize: 5,
       };
-      const subtotalBonValuesStyles = {
-        ...subtotalBonStyles,
+      const subtotalTanggalStyles = {
         halign: "right",
+        fontStyle: "bolditalic",
+        fillColor: [240, 253, 244],
+        textColor: [22, 101, 52],
+        fontSize: 6,
       };
       const grandTotalStyles = {
         halign: "right",
@@ -708,29 +831,83 @@ document.addEventListener("DOMContentLoaded", () => {
         fillColor: [226, 232, 240],
         fontSize: 7,
       };
+      const subtotalBonValuesStyles = {
+        ...subtotalBonStyles,
+        halign: "left",
+      };
+      const subtotalTanggalValuesStyles = {
+        ...subtotalTanggalStyles,
+        halign: "left",
+      };
       const grandTotalValuesStyles = {
         ...grandTotalStyles,
-        halign: "right",
+        halign: "left",
       };
-      const pushSubtotalRowPdf = () => {
+      const pushSubtotalBonRowPdf = () => {
+        body.push([
+          { content: "Sub Total Bon:", colSpan: 3, styles: subtotalBonStyles },
+          { content: formatNumber(s_bon_qty), styles: subtotalBonValuesStyles },
+          { content: "", styles: subtotalBonValuesStyles },
+          {
+            content: formatRupiah(s_bon_diskon),
+            styles: subtotalBonValuesStyles,
+          },
+          {
+            content: formatRupiah(s_bon_total),
+            styles: subtotalBonValuesStyles,
+          },
+        ]);
+        s_bon_qty = 0;
+        s_bon_diskon = 0;
+        s_bon_total = 0;
+      };
+      const pushSubtotalTanggalRowPdf = (tanggal) => {
+        const subtotal = date_subtotals[tanggal] || {
+          total_qty: 0,
+          total_total_diskon: 0,
+          total_total: 0,
+        };
         body.push([
           {
-            content: "Sub Total Bon:",
+            content: "Sub Total Tanggal:",
             colSpan: 3,
-            styles: subtotalBonStyles,
+            styles: subtotalTanggalStyles,
           },
           {
-            content: formatNumber(subtotal_qty),
-            styles: subtotalBonValuesStyles,
+            content: formatNumber(subtotal.total_qty),
+            styles: subtotalTanggalValuesStyles,
           },
-          { content: "", styles: subtotalBonStyles },
+          { content: "", styles: subtotalTanggalValuesStyles },
           {
-            content: formatRupiah(subtotal_diskon),
-            styles: subtotalBonValuesStyles,
+            content: formatRupiah(subtotal.total_total_diskon),
+            styles: subtotalTanggalValuesStyles,
           },
           {
-            content: formatRupiah(subtotal_total),
-            styles: subtotalBonValuesStyles,
+            content: formatRupiah(subtotal.total_total),
+            styles: subtotalTanggalValuesStyles,
+          },
+        ]);
+      };
+      const pushTanggalHeaderRowPdf = (tanggal) => {
+        body.push([
+          {
+            content: `Tanggal: ${tanggal}`,
+            colSpan: 7,
+            styles: headerTanggalStyles,
+          },
+        ]);
+      };
+      const pushBonHeaderRowPdf = (row) => {
+        body.push([
+          {
+            content: `No Trans: ${row.no_bon}`,
+            colSpan: 3,
+            styles: headerBonStyles,
+          },
+          {
+            content: `Kasir: ${row.kode_kasir} - ${row.nama_kasir}`,
+            colSpan: 4,
+            styles: headerBonStyles,
           },
         ]);
       };
@@ -738,31 +915,26 @@ document.addEventListener("DOMContentLoaded", () => {
         const qty = parseFloat(row.qty) || 0;
         const diskon = parseFloat(row.total_diskon) || 0;
         const total = parseFloat(row.total) || 0;
+        if (row.tanggal !== current_tanggal) {
+          if (current_no_bon !== null) pushSubtotalBonRowPdf();
+          if (current_tanggal !== null)
+            pushSubtotalTanggalRowPdf(current_tanggal);
+          pushTanggalHeaderRowPdf(row.tanggal);
+          current_tanggal = row.tanggal;
+          current_no_bon = null;
+        }
         if (row.no_bon !== current_no_bon) {
-          if (current_no_bon !== null) {
-            pushSubtotalRowPdf();
-          }
+          if (current_no_bon !== null) pushSubtotalBonRowPdf();
+          pushBonHeaderRowPdf(row);
           current_no_bon = row.no_bon;
           bon_item_counter = 1;
-          subtotal_qty = 0;
-          subtotal_diskon = 0;
-          subtotal_total = 0;
-          body.push([
-            {
-              content: `No Trans: ${row.no_bon}`,
-              colSpan: 3,
-              styles: headerBonStyles,
-            },
-            {
-              content: `Kasir: ${row.kode_kasir} - ${row.nama_kasir}`,
-              colSpan: 4,
-              styles: headerBonStyles,
-            },
-          ]);
+          s_bon_qty = 0;
+          s_bon_diskon = 0;
+          s_bon_total = 0;
         }
-        subtotal_qty += qty;
-        subtotal_diskon += diskon;
-        subtotal_total += total;
+        s_bon_qty += qty;
+        s_bon_diskon += diskon;
+        s_bon_total += total;
         body.push([
           bon_item_counter++,
           row.plu,
@@ -773,9 +945,8 @@ document.addEventListener("DOMContentLoaded", () => {
           formatRupiah(total),
         ]);
       });
-      if (current_no_bon !== null) {
-        pushSubtotalRowPdf();
-      }
+      if (current_no_bon !== null) pushSubtotalBonRowPdf();
+      if (current_tanggal !== null) pushSubtotalTanggalRowPdf(current_tanggal);
       body.push([
         {
           content: "GRAND TOTAL",
@@ -811,10 +982,10 @@ document.addEventListener("DOMContentLoaded", () => {
           0: { halign: "right", cellWidth: 8 },
           1: { halign: "left", cellWidth: 20 },
           2: { halign: "left", cellWidth: 100 },
-          3: { halign: "right", cellWidth: 20 },
-          4: { halign: "right", cellWidth: 35 },
-          5: { halign: "right", cellWidth: 35 },
-          6: { halign: "right", cellWidth: 40 },
+          3: { halign: "left", cellWidth: 20 },
+          4: { halign: "left", cellWidth: 35 },
+          5: { halign: "left", cellWidth: 35 },
+          6: { halign: "left", cellWidth: 40 },
         },
       });
       const fileName = `Sales_Kasir_Bon_${params.tgl_mulai}_sd_${params.tgl_selesai}.pdf`;

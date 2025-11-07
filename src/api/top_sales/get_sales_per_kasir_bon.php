@@ -26,6 +26,7 @@ $response = [
     ],
     'stores' => [],
     'tabel_data' => [],
+    'date_subtotals' => [],
     'pagination' => [
         'current_page' => 1,
         'total_pages' => 1,
@@ -84,7 +85,7 @@ try {
     $sql_data = "
         SELECT
             $sql_calc_found_rows
-            DATE_FORMAT(a.tgl_trans, '%Y-%m-%d') AS tanggal,
+            DATE(a.tgl_trans) AS tanggal, -- <-- UBAH KE DATE()
             a.kode_kasir,
             a.nama_kasir,
             a.no_bon,
@@ -106,8 +107,8 @@ try {
         WHERE
             $where_conditions
         ORDER BY
-            a.tgl_trans ASC, a.no_bon ASC, a.kode_kasir ASC
-        $limit_offset_sql  
+            tanggal ASC, a.no_bon ASC, a.kode_kasir ASC -- <-- UBAH ORDER BY
+        $limit_offset_sql   
     ";
     $stmt_data = $conn->prepare($sql_data);
     if ($stmt_data === false) {
@@ -126,11 +127,24 @@ try {
     }
     $stmt_data->close();
     if (!$is_export) {
-        $sql_count_result = "SELECT FOUND_ROWS() AS total_rows";
-        $result_count = $conn->query($sql_count_result);
-        $total_rows = $result_count->fetch_assoc()['total_rows'] ?? 0;
+
+        $sql_count_total = "
+            SELECT COUNT(*) AS total_rows
+            FROM trans_b a
+            WHERE $where_conditions
+        ";
+        $stmt_count = $conn->prepare($sql_count_total);
+        if ($stmt_count === false) {
+            throw new Exception("Prepare failed (sql_count_total): " . $conn->error);
+        }
+        $stmt_count->bind_param(...$bind_params_summary);
+        $stmt_count->execute();
+        $total_rows = $stmt_count->get_result()->fetch_assoc()['total_rows'] ?? 0;
+        $stmt_count->close();
+
         $response['pagination']['total_rows'] = (int) $total_rows;
         $response['pagination']['total_pages'] = ceil($total_rows / $limit);
+
         if ($page > $response['pagination']['total_pages'] && $total_rows > 0) {
             $page = $response['pagination']['total_pages'];
             $response['pagination']['current_page'] = $page;
@@ -203,6 +217,61 @@ try {
 
         $response['summary']['total_total'] = $summary_data['total_net_sales'] ?? 0;
     }
+
+
+    $sql_date_summary = "
+        SELECT
+            DATE(a.tgl_trans) AS tanggal,
+            SUM((CASE MOD(a.plu, 10)
+                WHEN 0 THEN a.qty * a.conv2
+                WHEN 1 THEN a.qty * (a.conv2 / a.conv1)
+                ELSE a.qty
+            END)) AS total_qty,
+            
+            SUM((
+                ((a.harga - a.hrg_promo) * a.qty) + 
+                (a.hrg_promo * (IFNULL(a.diskon1, 0) / 100) * a.qty) +
+                ((a.hrg_promo - (a.hrg_promo * (IFNULL(a.diskon1, 0) / 100))) * (IFNULL(a.diskon2, 0) / 100) * a.qty) +
+                (a.diskon3 * a.qty)
+            )) AS total_total_diskon,
+
+            SUM((
+                IFNULL(
+                    (a.harga * a.qty) - 
+                    ((a.harga - a.hrg_promo) * a.qty) - 
+                    (a.hrg_promo * (IFNULL(a.diskon1, 0) / 100) * a.qty) - 
+                    ((a.hrg_promo - (a.hrg_promo * (IFNULL(a.diskon1, 0) / 100))) * (IFNULL(a.diskon2, 0) / 100) * a.qty), 
+                    0
+                ) - (a.diskon3 * a.qty)
+            )) AS total_total
+        FROM
+            trans_b a
+        WHERE
+            $where_conditions
+        GROUP BY
+            DATE(a.tgl_trans)
+        ORDER BY
+            tanggal
+    ";
+
+    $stmt_date_summary = $conn->prepare($sql_date_summary);
+    if ($stmt_date_summary === false) {
+        throw new Exception("Prepare failed (sql_date_summary): " . $conn->error);
+    }
+
+    $stmt_date_summary->bind_param(...$bind_params_summary);
+    $stmt_date_summary->execute();
+    $result_date_summary = $stmt_date_summary->get_result();
+
+    while ($date_row = $result_date_summary->fetch_assoc()) {
+        $response['date_subtotals'][$date_row['tanggal']] = [
+            'total_qty' => $date_row['total_qty'] ?? 0,
+            'total_total_diskon' => $date_row['total_total_diskon'] ?? 0,
+            'total_total' => $date_row['total_total'] ?? 0,
+        ];
+    }
+    $stmt_date_summary->close();
+
 
 
     $conn->close();
