@@ -110,10 +110,10 @@ class VoucherService
         $resultCheck = $stmtCheck->get_result();
         $existingSession = $resultCheck->fetch_assoc();
         $stmtCheck->close();
-        if ($existingSession && $existingSession['status_flow'] === 'redeemed') {
-            $this->sendDefaultReply($conversation, "Maaf Ayah/Bunda, kode voucher {$kode_voucher} sudah pernah Anda gunakan sebelumnya.");
-            return;
-        }
+        // if ($existingSession && $existingSession['status_flow'] === 'redeemed') {
+        //     $this->sendDefaultReply($conversation, "Maaf Ayah/Bunda, kode voucher {$kode_voucher} sudah pernah Anda gunakan sebelumnya.");
+        //     return;
+        // }
         $status_flow = 'awaiting_confirmation';
         $stmtUpsert = $this->conn->prepare("
             INSERT INTO wa_promo_sessions (percakapan_id, nomor_telepon, kode_voucher, status_flow)
@@ -263,13 +263,7 @@ class VoucherService
         $stmt->execute();
         $finalSession = $stmt->get_result()->fetch_assoc();
         $stmt->close();
-        $qrData = json_encode([
-            'session_id' => $finalSession['id'],
-            'voucher' => $finalSession['kode_voucher'],
-            'user' => $finalSession['nomor_telepon'],
-            'plu' => $finalSession['plu_terpilih'],
-            'cabang' => $finalSession['cabang_terpilih']
-        ]);
+        $qrData = $finalSession['kode_voucher'];
         $qrUrl = $this->generateAndUploadQrCode($finalSession['id'], $qrData);
         if (!$qrUrl) {
             $this->sendDefaultReply($conversation, "Maaf, terjadi kesalahan saat membuat QR Code. Silakan hubungi CS.");
@@ -279,11 +273,11 @@ class VoucherService
         $potonganHarga = number_format($voucherDetails['potongan_harga'], 0, ',', '.');
         $caption = "🎉 *Voucher Promo Berhasil Dibuat* 🎉\n\n" .
             "Scan QR Code ini di kasir untuk mendapatkan potongan harga.\n\n" .
-            "*- Detail Voucher -*\n" .
-            "**Kode:** `{$finalSession['kode_voucher']}`\n" .
-            "**Produk:** {$finalSession['nama_produk_terpilih']}\n" .
-            "**Potongan:** Rp {$potonganHarga}\n" .
-            "**Cabang:** {$finalSession['cabang_terpilih']}";
+            "*Detail Voucher*\n" .
+            "*Kode:* `{$finalSession['kode_voucher']}`\n" .
+            "*Produk:* {$finalSession['nama_produk_terpilih']}\n" .
+            "*Potongan:* Rp {$potonganHarga}\n" .
+            "*Cabang:* {$finalSession['cabang_terpilih']}";
         $sendResult = kirimPesanMedia($nomorPengirim, $qrUrl, 'image', $caption);
         $this->saveMessage($percakapanId, 'admin', 'image', $qrUrl, $sendResult['wamid'] ?? null, 1);
         $pesanFinal = "Tunjukan QR ini ke kasir untuk mendapatkan potongan harga. Voucher hanya berlaku untuk 1 kali pemakaian.";

@@ -32,7 +32,12 @@ try {
     $products_to_sync = [];
     $kd_store = '3190';
     $kd_store_ol = '9998';
+
+
     $redisKey = 'shopee_all_products';
+    $lockKey = 'shopee_sync_in_progress';
+
+
     $all_products_from_redis = [];
     try {
         if (!isset($redis) || !$redis->ping()) {
@@ -212,6 +217,48 @@ try {
         }
         usleep(100000);
     }
+
+
+    $cache_refresh_result = [
+        'success' => false,
+        'message' => 'Tidak dijalankan.',
+        'total_items_saved' => 0
+    ];
+
+
+    if ($results['synced'] > 0) {
+        $logger->info("Stock sync selesai. {$results['synced']} item diupdate. Memulai refresh cache Redis '{$redisKey}'...");
+        try {
+
+            $expiry_seconds = 86400;
+
+
+
+            $total_saved = $shopeeService->fetchAndCacheAllProducts(
+                $redis,
+                $redisKey,
+                $lockKey,
+                $expiry_seconds,
+                false
+            );
+
+            $cache_refresh_result['success'] = true;
+            $cache_refresh_result['message'] = "Cache Redis berhasil di-refresh.";
+            $cache_refresh_result['total_items_saved'] = $total_saved;
+            $logger->info("✅ Cache Redis '{$redisKey}' berhasil di-refresh, {$total_saved} item disimpan.");
+
+        } catch (Throwable $t) {
+
+            $error_msg = $t->getMessage();
+            $logger->error("❌ Gagal me-refresh cache Redis setelah sync: " . $error_msg);
+            $cache_refresh_result['message'] = "Gagal me-refresh cache: " . $error_msg;
+        }
+    } else {
+        $logger->info("Stock sync selesai. Tidak ada item yang diupdate (synced: 0). Refresh cache dilewati.");
+        $cache_refresh_result['message'] = "Refresh cache dilewati (tidak ada item yang disinkronkan).";
+    }
+
+
     echo json_encode([
         'success' => true,
         'message' => 'Sinkronisasi massal selesai.',
@@ -219,6 +266,7 @@ try {
         'synced' => $results['synced'],
         'failed' => $results['failed'],
         'skipped' => $results['skipped'],
+        'cache_refresh' => $cache_refresh_result,
         'failed_details' => $results['failed_details'],
         'skipped_details' => $results['skipped_details']
     ]);

@@ -14,12 +14,12 @@ class VoucherConstants
                 '80010003' => 'SGM EKSPLOR 5+ VANILA 900G',
             ]
         ],
-        'VCR:DISKON5K' => [
-            'nama_promo' => 'Promo Susu Lain',
-            'potongan_harga' => 5000,
+        'VCR:STRLR50K' => [
+            'nama_promo' => 'Promo Stroller',
+            'potongan_harga' => 50000,
             'produk' => [
-                '90010011' => 'PRODUK A',
-                '90010012' => 'PRODUK B',
+                '90010011' => 'Stroller Cocollate',
+                '90010012' => 'Stroller BabyElle',
             ]
         ],
     ];
