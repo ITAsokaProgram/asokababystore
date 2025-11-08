@@ -51,13 +51,6 @@ $token = $menuHandler->getToken();
   <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
   <!-- <link rel="stylesheet" href="src/style/output.css"> -->
   <style>
-    .btn.active {
-      background-color: transparent;
-      color: #ec4899;
-      outline: 2px solid #ec4899;
-      outline-offset: 1px;
-    }
-
     /* --- Enhanced Card & Glass Styles --- */
     .glass-container {
       background: rgba(255, 255, 255, 0.80);
@@ -359,7 +352,7 @@ $token = $menuHandler->getToken();
             <i class="fa-solid fa-spinner fa-spin mr-1"></i> Loading...
           </div>
         </div>
-      </div>  
+      </div>
     </section>
 
     <section class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-3 gap-4 mb-8">
@@ -374,7 +367,7 @@ $token = $menuHandler->getToken();
           </h2>
           <div class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
         </div>
-        
+
         <div class="space-y-4">
           <div id="featured-review-container">
           </div>
@@ -405,7 +398,8 @@ $token = $menuHandler->getToken();
             <div class="flex items-center justify-between mb-1">
               <div class="flex items-center gap-2">
                 <div class="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
-                <span class="font-semibold text-xs text-gray-800 whitespace-nowrap" title="Review Pending">Review Pending</span>
+                <span class="font-semibold text-xs text-gray-800 whitespace-nowrap" title="Review Pending">Review
+                  Pending</span>
               </div>
             </div>
             <div class="flex items-center justify-between text-xs text-gray-600">
@@ -421,17 +415,17 @@ $token = $menuHandler->getToken();
 
 
     <!-- <section class="animate-fade-in-up "> -->
-      <!-- WRAPPER yang selalu center -->
-      <!-- <div class="flex items-center justify-center"> -->
-        <!-- CONTAINER yang lebarnya fleksibel -->
-        <!-- <div class="flex items-center gap-3 px-4 py-3 -->
-              <!-- backdrop-blur-sm bg-white/90 rounded-xl shadow-xl -->
-              <!-- w-auto max-w-[90vw]"> -->
-          <!-- <span -->
-            <!-- class="text-2xl text-yellow-400 transition-all duration-200 hover:text-yellow-300 hover:opacity-80 cursor-pointer" -->
-            <!-- onclick="window.location.href='/src/fitur/laporan/in_review_cust'" title="Review"> -->
-            <!-- <i class="fa fa-star"></i> -->
-          <!-- </span>
+    <!-- WRAPPER yang selalu center -->
+    <!-- <div class="flex items-center justify-center"> -->
+    <!-- CONTAINER yang lebarnya fleksibel -->
+    <!-- <div class="flex items-center gap-3 px-4 py-3 -->
+    <!-- backdrop-blur-sm bg-white/90 rounded-xl shadow-xl -->
+    <!-- w-auto max-w-[90vw]"> -->
+    <!-- <span -->
+    <!-- class="text-2xl text-yellow-400 transition-all duration-200 hover:text-yellow-300 hover:opacity-80 cursor-pointer" -->
+    <!-- onclick="window.location.href='/src/fitur/laporan/in_review_cust'" title="Review"> -->
+    <!-- <i class="fa fa-star"></i> -->
+    <!-- </span>
         </div>
       </div>
     </section> -->
@@ -555,14 +549,14 @@ $token = $menuHandler->getToken();
       });
 
       gsap.timeline()
-      .to('.dashboard-card', { // Menargetkan semua kartu, termasuk "Review Customer"
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        duration: 0.6,
-        ease: 'back.out(1.7)',
-        stagger: 0.2 // Memberi jeda 0.2 detik antar animasi setiap kartu
-      });
+        .to('.dashboard-card', { // Menargetkan semua kartu, termasuk "Review Customer"
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.6,
+          ease: 'back.out(1.7)',
+          stagger: 0.2 // Memberi jeda 0.2 detik antar animasi setiap kartu
+        });
 
       // Hover animations for cards
       const cards = document.querySelectorAll('.dashboard-card');

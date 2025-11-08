@@ -2,7 +2,7 @@
     class="bg-white text-gray-700 w-64 h-screen flex flex-col p-6 fixed left-0 top-0 transition-all duration-300 shadow-2xl border-r border-blue-200 z-40">
     <button id="closeSidebar"
         class="absolute top-2 right-4 text-gray-600 hover:text-gray-800 text-2xl font-bold transition-colors duration-200 hover:scale-110">&times;</button>
-    <nav class="text-sm md:mt-20 mt-6 space-y-2 flex-1 overflow-y-auto">
+    <nav class="text-sm mt-20 space-y-2 flex-1 overflow-y-auto">
 
         <a href="/in_beranda" id="berandaLink" data-menu="dashboard"
             class="group flex items-center py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-blue-100 hover:to-blue-200 hover:text-blue-700 hover:shadow-lg transition-all duration-300  border border-transparent hover:border-blue-300">
