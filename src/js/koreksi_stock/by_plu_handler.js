@@ -213,12 +213,13 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     let htmlRows = "";
-    let item_counter = offset + 1;
+    let faktur_item_counter = 0; 
     let current_no_faktur = null;
     let current_tanggal = null;
     let subtotal_qtykor = 0;
     let subtotal_t_rp = 0;
     let subtotal_t_selisih = 0;
+
     function buildTanggalHeaderRow(tanggal) {
       return `
                 <tr class="header-tanggal-row">
@@ -228,6 +229,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tr>
             `;
     }
+
     function buildHeaderFakturRow(no_faktur) {
       return `
                 <tr class="header-faktur-row"> 
@@ -235,6 +237,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tr>
             `;
     }
+
     function buildSubtotalFakturRow() {
       return `
                 <tr class="subtotal-row">
@@ -252,6 +255,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tr>
             `;
     }
+
     function buildSubtotalTanggalRow(tanggal) {
       const subtotal = date_subtotals[tanggal] || {
         total_qtykor: 0,
@@ -305,6 +309,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         current_no_faktur = row.no_faktur;
         htmlRows += buildHeaderFakturRow(current_no_faktur);
+        faktur_item_counter = 1; 
         subtotal_qtykor = 0;
         subtotal_t_rp = 0;
         subtotal_t_selisih = 0;
@@ -314,7 +319,7 @@ document.addEventListener("DOMContentLoaded", () => {
       subtotal_t_selisih += t_selisih;
       htmlRows += `
                 <tr>
-                    <td>${item_counter}</td>
+                    <td>${faktur_item_counter}</td>
                     <td>${row.plu}</td> 
                     <td class="text-left">${row.deskripsi}</td>
                     <td class="text-left">${formatNumber(row.conv1)}</td>
@@ -334,7 +339,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <td class="text-left">${row.ket}</td>
                 </tr>
             `;
-      item_counter++;
+      faktur_item_counter++; 
     });
     if (current_no_faktur !== null) {
       htmlRows += buildSubtotalFakturRow(
@@ -515,7 +520,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ];
       const dataRows = [];
       const merges = [];
-      let item_counter = 1;
+      let faktur_item_counter = 0; 
       let current_tanggal = null;
       let current_no_faktur = null;
       let s_fak_qty = 0,
@@ -601,6 +606,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (current_no_faktur !== null) pushSubtotalFakturRow();
           pushFakturHeaderRow(row.no_faktur);
           current_no_faktur = row.no_faktur;
+          faktur_item_counter = 1; 
           s_fak_qty = 0;
           s_fak_rp = 0;
           s_fak_selisih = 0;
@@ -609,7 +615,7 @@ document.addEventListener("DOMContentLoaded", () => {
         s_fak_rp += t_rp;
         s_fak_selisih += t_selisih;
         dataRows.push([
-          item_counter++,
+          faktur_item_counter++, 
           row.no_faktur,
           row.plu,
           row.deskripsi,
@@ -780,6 +786,7 @@ document.addEventListener("DOMContentLoaded", () => {
       Swal.fire("Export Gagal", "Terjadi kesalahan: " + error.message, "error");
     }
   }
+
   async function exportToPDF() {
     const data = await fetchAllDataForExport();
     if (!data || !data.tabel_data || data.tabel_data.length === 0) {
@@ -845,7 +852,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ],
       ];
       const body = [];
-      let item_counter = 1;
+      let faktur_item_counter = 0; 
       let current_tanggal = null;
       let current_no_faktur = null;
       let s_fak_qty = 0,
@@ -886,21 +893,21 @@ document.addEventListener("DOMContentLoaded", () => {
         fontSize: 6,
       };
       const subtotalFakturValuesStyles = {
-        halign: "left",
+        halign: "right", 
         fontStyle: "bolditalic",
         fillColor: [254, 253, 232],
         textColor: [113, 63, 18],
         fontSize: 5,
       };
       const subtotalTanggalValuesStyles = {
-        halign: "left",
+        halign: "right", 
         fontStyle: "bolditalic",
         fillColor: [240, 253, 244],
         textColor: [22, 101, 52],
         fontSize: 6,
       };
       const grandTotalValuesStyles = {
-        halign: "left",
+        halign: "right", 
         fontStyle: "bold",
         fillColor: [226, 232, 240],
         fontSize: 6,
@@ -909,7 +916,7 @@ document.addEventListener("DOMContentLoaded", () => {
         body.push([
           {
             content: "Sub Total Faktur:",
-            colSpan: 6,
+            colSpan: 7, 
             styles: subtotalFakturStyles,
           },
           {
@@ -941,7 +948,7 @@ document.addEventListener("DOMContentLoaded", () => {
         body.push([
           {
             content: "Sub Total Tanggal:",
-            colSpan: 6,
+            colSpan: 7, 
             styles: subtotalTanggalStyles,
           },
           {
@@ -965,7 +972,7 @@ document.addEventListener("DOMContentLoaded", () => {
         body.push([
           {
             content: `Tanggal: ${tanggal}`,
-            colSpan: 12,
+            colSpan: 13, 
             styles: headerTanggalStyles,
           },
         ]);
@@ -974,7 +981,7 @@ document.addEventListener("DOMContentLoaded", () => {
         body.push([
           {
             content: `No Faktur: ${no_faktur}`,
-            colSpan: 12,
+            colSpan: 13, 
             styles: headerFakturStyles,
           },
         ]);
@@ -995,6 +1002,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (current_no_faktur !== null) pushSubtotalFakturRowPdf();
           pushFakturHeaderRowPdf(row.no_faktur);
           current_no_faktur = row.no_faktur;
+          faktur_item_counter = 1; 
           s_fak_qty = 0;
           s_fak_rp = 0;
           s_fak_selisih = 0;
@@ -1003,7 +1011,7 @@ document.addEventListener("DOMContentLoaded", () => {
         s_fak_rp += t_rp;
         s_fak_selisih += t_selisih;
         body.push([
-          item_counter++,
+          faktur_item_counter++, 
           row.no_faktur,
           row.plu,
           row.deskripsi,
@@ -1021,7 +1029,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (current_no_faktur !== null) pushSubtotalFakturRowPdf();
       if (current_tanggal !== null) pushSubtotalTanggalRowPdf(current_tanggal);
       body.push([
-        { content: "GRAND TOTAL", colSpan: 6, styles: grandTotalStyles },
+        { content: "GRAND TOTAL", colSpan: 7, styles: grandTotalStyles }, 
         {
           content: formatNumber(summary.total_qtykor),
           styles: grandTotalValuesStyles,
@@ -1050,19 +1058,21 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         styles: { fontSize: 5, cellPadding: 1.5 },
         columnStyles: {
-          0: { halign: "left" },
-          1: { halign: "left" },
-          2: { halign: "left" },
-          3: { halign: "left" },
-          4: { halign: "left" },
-          5: { halign: "left" },
-          6: { halign: "left" },
-          7: { halign: "left" },
-          8: { halign: "left" },
-          9: { halign: "left" },
-          10: { halign: "left" },
-          11: { halign: "left" },
-          12: { halign: "left" },
+          0: { halign: "right", cellWidth: 7 }, 
+          1: { halign: "left", cellWidth: 25 }, 
+          2: { halign: "left", cellWidth: 15 }, 
+          3: { halign: "left", cellWidth: 68 }, 
+          4: { halign: "right", cellWidth: 10 }, 
+          5: { halign: "right", cellWidth: 10 }, 
+          6: { halign: "right", cellWidth: 20 }, 
+          7: { halign: "right", cellWidth: 15 }, 
+          8: { halign: "right", cellWidth: 15 }, 
+          9: { halign: "right", cellWidth: 15 }, 
+          10: { halign: "right", cellWidth: 25 }, 
+          11: { halign: "right", cellWidth: 25 }, 
+
+          12: { halign: "left", cellWidth: 20 }, 
+          
         },
       });
       const fileName = `Koreksi_PLU_${params.tgl_mulai}_sd_${params.tgl_selesai}.pdf`;
