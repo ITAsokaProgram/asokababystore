@@ -92,7 +92,7 @@
         </div>
 
 
-        <div x-data="{ open: false, nestedOpenPenjualan: false, nestedOpenPelanggan: false , nestedOpenReceipt: false, nestedOpenKoreksi: false, nestedOpenReturn: false }"
+        <div x-data="{ open: false, nestedOpenPenjualan: false, nestedOpenPelanggan: false , nestedOpenReceipt: false, nestedOpenKoreksi: false, nestedOpenReturn: false, nestedOpenTransaksi: false }"
             class="relative ">
             <button @click="open = !open" id="laporan"
                 class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-purple-100 hover:to-purple-200 hover:text-purple-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-purple-300">
@@ -441,6 +441,73 @@
                         </div>
                     </li>
                     <li>
+                        <button @click="nestedOpenTransaksi = !nestedOpenTransaksi" id="transaction"
+                            class="w-full text-left px-4 py-2.5 text-gray-700 hover:bg-orange-100 hover:text-orange-700 transition-all duration-200 flex items-center group cursor-pointer rounded-lg">
+                            <span
+                                class="transition-all duration-300 group-hover:translate-x-1 font-medium flex items-center">
+                                <i
+                                    class="fa-solid fa-money-bill-transfer mr-2 text-lg text-orange-500 group-hover:text-orange-600 transition-all duration-200 group-hover:scale-110"></i>
+                                Transaksi
+                            </span>
+                            <svg class="ml-auto w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1"
+                                :class="{ 'rotate-180': nestedOpenTransaksi }" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div x-show="nestedOpenTransaksi" @click.away="nestedOpenTransaksi = false" class="ml-4 mt-1"
+                            style="display: none;">
+                            <ul
+                                class="bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg p-2 space-y-1 border border-orange-200">
+                                <li>
+                                    <a href="/src/fitur/transaction/view_promo" data-menu="transaksi_promo"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-orange-100 hover:text-orange-700 transition-all duration-200 group rounded-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-percent mr-2 text-base text-orange-400 group-hover:text-orange-600 group-hover:scale-110 transition-all duration-200"></i>
+                                            Promo
+                                        </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/src/fitur/transaction/invalid_trans" data-menu="transaksi_invalid"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-orange-100 hover:text-orange-700 transition-all duration-200 group rounded-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-ban mr-2 text-base text-orange-400 group-hover:text-orange-600 group-hover:scale-110 transition-all duration-200"></i>
+                                            Invalid
+                                        </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/src/fitur/transaction/margin" data-menu="transaksi_margin"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-orange-100 hover:text-orange-700 transition-all duration-200 group rounded-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-coins mr-2 text-base text-orange-400 group-hover:text-orange-600 group-hover:scale-110 transition-all duration-200"></i>
+                                            Margin
+                                        </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/src/fitur/transaction/reward_give" data-menu="reward_give"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-orange-100 hover:text-orange-700 transition-all duration-200 group rounded-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-gift mr-2 text-base text-orange-400 group-hover:text-orange-600 group-hover:scale-110 transition-all duration-200"></i>
+                                            Hadiah
+                                        </span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+                    <li>
                         <a href="/src/fitur/log_backup/index.php" data-menu="laporan_log_backup"
                             class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-blue-100 hover:text-blue-700 transition-all duration-200 group rounded-lg">
                             <span
@@ -454,72 +521,7 @@
                 </ul>
             </div>
         </div>
-        <div x-data="{ open: false, nestedOpenTrans: false, nestedOpenTrans: false }" class="relative ">
-            <button @click="open = !open" id="transaction"
-                class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-orange-100 hover:to-orange-200 hover:text-orange-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-orange-300">
-                <div class="w-8 flex justify-center">
-                    <i
-                        class="fa-solid fa-money-bill-transfer text-xl text-orange-600 group-hover:text-orange-700 transition-all duration-300 group-hover:scale-125 group-hover:-rotate-12 group-hover:drop-shadow-lg"></i>
-                </div>
-                <span
-                    class="sidebar-text ml-3 font-medium transition-all duration-300 group-hover:translate-x-1">Transaksi</span>
-                <svg class="ml-auto w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1"
-                    :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                </svg>
-            </button>
 
-            <div x-show="open" @click.away="open = false"
-                class="mt-3 ml-4 bg-gradient-to-br from-white to-orange-50 rounded-xl shadow-xl border border-orange-200 z-10 backdrop-blur-sm"
-                style="display: none;">
-                <ul class="py-2 space-y-1">
-                    <li>
-                        <a href="/src/fitur/transaction/view_promo" data-menu="transaksi_promo"
-                            class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-orange-100 hover:text-orange-700 transition-all duration-200 group rounded-lg">
-                            <span
-                                class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
-                                <i
-                                    class="fa-solid fa-percent mr-2 text-base text-orange-400 group-hover:text-orange-600 group-hover:scale-110 transition-all duration-200"></i>
-                                Promo
-                            </span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/src/fitur/transaction/invalid_trans" data-menu="transaksi_invalid"
-                            class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-all duration-200 group rounded-lg">
-                            <span
-                                class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
-                                <i
-                                    class="fa-solid fa-ban mr-2 text-base text-orange-400 group-hover:text-orange-600 group-hover:scale-110 transition-all duration-200"></i>
-                                Invalid
-                            </span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/src/fitur/transaction/margin" data-menu="transaksi_margin"
-                            class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-all duration-200 group rounded-lg">
-                            <span
-                                class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
-                                <i
-                                    class="fa-solid fa-coins mr-2 text-base text-orange-400 group-hover:text-orange-600 group-hover:scale-110 transition-all duration-200"></i>
-                                Margin
-                            </span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/src/fitur/transaction/reward_give" data-menu="reward_give"
-                            class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-all duration-200 group rounded-lg">
-                            <span
-                                class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
-                                <i
-                                    class="fa-solid fa-gift mr-2 text-base text-orange-400 group-hover:text-orange-600 group-hover:scale-110 transition-all duration-200"></i>
-                                Hadiah
-                            </span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
 
         <div x-data="{ open: false, nestedOpenMember: false, nestedOpenMember: false }" class="relative ">
             <button @click="open = !open" id="member"
@@ -725,14 +727,18 @@
         } else if (currentPath.includes('/src/fitur/account/manajemen_user')) {
             document.getElementById('account').classList.add('btn', 'active');
 
-            // --- BLOCK TRANSAKSI ---
+            // --- BLOCK TRANSAKSI (NOW INSIDE LAPORAN) ---
         } else if (currentPath.includes('/src/fitur/transaction/view_promo')) {
-            document.getElementById('transaction').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/transaction/view_promo')) {
+            document.getElementById('laporan').classList.add('btn', 'active');
             document.getElementById('transaction').classList.add('btn', 'active');
         } else if (currentPath.includes('/src/fitur/transaction/invalid_trans')) {
+            document.getElementById('laporan').classList.add('btn', 'active');
             document.getElementById('transaction').classList.add('btn', 'active');
         } else if (currentPath.includes('/src/fitur/transaction/margin')) {
+            document.getElementById('laporan').classList.add('btn', 'active');
+            document.getElementById('transaction').classList.add('btn', 'active');
+        } else if (currentPath.includes('/src/fitur/transaction/reward_give')) {
+            document.getElementById('laporan').classList.add('btn', 'active');
             document.getElementById('transaction').classList.add('btn', 'active');
 
             // --- BLOCK MEMBER ---
@@ -755,35 +761,26 @@
     });
 </script>
 <style>
-    /* Menargetkan <nav> di dalam #sidebar agar tidak semua scrollbar berubah */
     #sidebar nav::-webkit-scrollbar {
         width: 8px;
-        /* Lebar scrollbar */
     }
 
-    /* Track (jalur) scrollbar */
     #sidebar nav::-webkit-scrollbar-track {
         background-color: #f8fafc;
-        /* Warna netral, misal: Tailwind 'slate-50' */
         border-radius: 8px;
     }
 
-    /* Thumb (gagang) scrollbar */
     #sidebar nav::-webkit-scrollbar-thumb {
         background-image: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);
         border-radius: 8px;
         transition: all 0.2s ease-in-out;
     }
 
-    /* Thumb saat di-hover */
     #sidebar nav::-webkit-scrollbar-thumb:hover {
         filter: brightness(115%);
-        /* Membuat gradient sedikit lebih cerah */
         box-shadow: 0 0 10px rgba(236, 72, 153, 0.5);
-        /* Efek glow */
     }
 
-    /* Professional icon animations */
     .group:hover i {
         animation: iconBounce 0.6s ease-in-out;
     }

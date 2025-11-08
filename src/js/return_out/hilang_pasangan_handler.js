@@ -198,166 +198,169 @@ document.addEventListener("DOMContentLoaded", () => {
     summaryPPN.textContent = formatRupiah(summary.total_ppn);
     summaryTotal.textContent = formatRupiah(summary.total_grand);
   }
-  function renderTable(
+  
+function renderTable(
     tabel_data,
     offset,
     summary,
     date_subtotals,
     pagination
-  ) {
+) {
     if (!tabel_data || tabel_data.length === 0) {
-      tableBody.innerHTML = `
-                        <tr>
-                            <td colspan="10" class="text-center p-8 text-gray-500">
-                                <i class="fas fa-inbox fa-lg mb-2"></i>
-                                <p>Tidak ada data ditemukan untuk filter ini.</p>
-                            </td>
-                        </tr>`;
-      return;
+        tableBody.innerHTML = `
+                                <tr>
+                                    <td colspan="10" class="text-center p-8 text-gray-500">
+                                        <i class="fas fa-inbox fa-lg mb-2"></i>
+                                        <p>Tidak ada data ditemukan untuk filter ini.</p>
+                                    </td>
+                                </tr>`;
+        return;
     }
     let htmlRows = "";
-    let item_counter = offset + 1;
+    let faktur_item_counter = 0; 
     let current_tanggal = null;
     let current_faktur = null;
     let subtotal_faktur_qty = 0,
-      subtotal_faktur_netto = 0,
-      subtotal_faktur_ppn = 0,
-      subtotal_faktur_total = 0;
+        subtotal_faktur_netto = 0,
+        subtotal_faktur_ppn = 0,
+        subtotal_faktur_total = 0;
     function buildTanggalHeaderRow(tanggal) {
-      return `
-                        <tr class="header-tanggal-row">
-                            <td colspan="10" class="px-4 py-2">
-                                Tanggal: <span class="font-bold"> ${tanggal} </span>
-                            </td>
-                        </tr>
-                    `;
+        return `
+                                <tr class="header-tanggal-row">
+                                    <td colspan="10" class="px-4 py-2">
+                                        Tanggal: <span class="font-bold"> ${tanggal} </span>
+                                    </td>
+                                </tr>
+                            `;
     }
     function buildFakturHeaderRow(faktur, kodesupp, namasupp, nama_inisial) {
-      const inisial = nama_inisial ? `(${nama_inisial})` : "";
-      return `
-                        <tr class="header-faktur-row">
-                            <td colspan="3" class="px-4 py-1 pl-6">No Faktur: <strong>${faktur}</strong></td>
-                            <td colspan="7" class="px-4 py-1">Supplier: <strong>${kodesupp} ${
-        namasupp ? "-" : ""
-      } ${namasupp || ""} ${inisial}</strong></td>
-                        </tr>
-                    `;
+        const inisial = nama_inisial ? `(${nama_inisial})` : "";
+        return `
+                                <tr class="header-faktur-row">
+                                    <td colspan="3" class="px-4 py-1 pl-6">No Faktur: <strong>${faktur}</strong></td>
+                                    <td colspan="7" class="px-4 py-1">Supplier: <strong>${kodesupp} ${
+            namasupp ? "-" : ""
+        } ${namasupp || ""} ${inisial}</strong></td>
+                                </tr>
+                            `;
     }
     function buildSubtotalFakturRow() {
-      return `
-                        <tr class="subtotal-row">
-                            <td colspan="6" class="text-right px-4 py-2 font-bold" style="font-style: italic;">
-                                Sub Total Faktur: 
-                            </td>
-                            <td class=" px-2 py-2">${formatNumber(
-                              subtotal_faktur_qty
-                            )}</td>
-                            <td class=" px-2 py-2">${formatRupiah(
-                              subtotal_faktur_netto
-                            )}</td>
-                            <td class=" px-2 py-2">${formatRupiah(
-                              subtotal_faktur_ppn
-                            )}</td>
-                            <td class=" px-2 py-2">${formatRupiah(
-                              subtotal_faktur_total
-                            )}</td>
-                        </tr>
-                    `;
+        return `
+                                <tr class="subtotal-row">
+                                    <td colspan="6" class="text-right px-4 py-2 font-bold" style="font-style: italic;">
+                                        Sub Total Faktur: 
+                                    </td>
+                                    <td class=" px-2 py-2">${formatNumber(
+            subtotal_faktur_qty
+        )}</td>
+                                    <td class=" px-2 py-2">${formatRupiah(
+            subtotal_faktur_netto
+        )}</td>
+                                    <td class=" px-2 py-2">${formatRupiah(
+            subtotal_faktur_ppn
+        )}</td>
+                                    <td class=" px-2 py-2">${formatRupiah(
+            subtotal_faktur_total
+        )}</td>
+                                </tr>
+                            `;
     }
     function buildSubtotalTanggalRow(tanggal) {
-      const subtotal = date_subtotals[tanggal] || {
-        total_qty: 0,
-        total_netto: 0,
-        total_ppn: 0,
-        total_grand: 0,
-      };
-      return `
-                        <tr class="subtotal-tanggal-row">
-                            <td colspan="6" class=" px-4 py-2 text-right font-bold" style="font-style: italic;">Sub Total Tanggal:</td>
-                            <td class=" px-2 py-2">${formatNumber(
-                              subtotal.total_qty
-                            )}</td>
-                            <td class=" px-2 py-2">${formatRupiah(
-                              subtotal.total_netto
-                            )}</td>
-                            <td class=" px-2 py-2">${formatRupiah(
-                              subtotal.total_ppn
-                            )}</td>
-                            <td class=" px-2 py-2">${formatRupiah(
-                              subtotal.total_grand
-                            )}</td>
-                        </tr>
-                    `;
+        const subtotal = date_subtotals[tanggal] || {
+            total_qty: 0,
+            total_netto: 0,
+            total_ppn: 0,
+            total_grand: 0,
+        };
+        return `
+                                <tr class="subtotal-tanggal-row">
+                                    <td colspan="6" class=" px-4 py-2 text-right font-bold" style="font-style: italic;">Sub Total Tanggal:</td>
+                                    <td class=" px-2 py-2">${formatNumber(
+            subtotal.total_qty
+        )}</td>
+                                    <td class=" px-2 py-2">${formatRupiah(
+            subtotal.total_netto
+        )}</td>
+                                    <td class=" px-2 py-2">${formatRupiah(
+            subtotal.total_ppn
+        )}</td>
+                                    <td class=" px-2 py-2">${formatRupiah(
+            subtotal.total_grand
+        )}</td>
+                                </tr>
+                            `;
     }
     tabel_data.forEach((row, index) => {
-      const qty = parseFloat(row.qty) || 0;
-      const netto = parseFloat(row.netto) || 0;
-      const ppn = parseFloat(row.ppn) || 0;
-      const total = parseFloat(row.total) || 0;
-      if (row.tanggal !== current_tanggal) {
-        if (current_tanggal !== null) {
-          if (current_faktur !== null) {
-            htmlRows += buildSubtotalFakturRow();
-            subtotal_faktur_qty = 0;
-            subtotal_faktur_netto = 0;
-            subtotal_faktur_ppn = 0;
-            subtotal_faktur_total = 0;
-          }
-          htmlRows += buildSubtotalTanggalRow(current_tanggal);
+        const qty = parseFloat(row.qty) || 0;
+        const netto = parseFloat(row.netto) || 0;
+        const ppn = parseFloat(row.ppn) || 0;
+        const total = parseFloat(row.total) || 0;
+        if (row.tanggal !== current_tanggal) {
+            if (current_tanggal !== null) {
+                if (current_faktur !== null) {
+                    htmlRows += buildSubtotalFakturRow();
+                    subtotal_faktur_qty = 0;
+                    subtotal_faktur_netto = 0;
+                    subtotal_faktur_ppn = 0;
+                    subtotal_faktur_total = 0;
+                }
+                htmlRows += buildSubtotalTanggalRow(current_tanggal);
+            }
+            current_tanggal = row.tanggal;
+            current_faktur = null;
+            htmlRows += buildTanggalHeaderRow(current_tanggal);
         }
-        current_tanggal = row.tanggal;
-        current_faktur = null;
-        htmlRows += buildTanggalHeaderRow(current_tanggal);
-      }
-      if (row.faktur !== current_faktur) {
-        if (current_faktur !== null) {
-          htmlRows += buildSubtotalFakturRow();
-          subtotal_faktur_qty = 0;
-          subtotal_faktur_netto = 0;
-          subtotal_faktur_ppn = 0;
-          subtotal_faktur_total = 0;
+        if (row.faktur !== current_faktur) {
+            if (current_faktur !== null) {
+                htmlRows += buildSubtotalFakturRow();
+                subtotal_faktur_qty = 0;
+                subtotal_faktur_netto = 0;
+                subtotal_faktur_ppn = 0;
+                subtotal_faktur_total = 0;
+            }
+            current_faktur = row.faktur;
+            faktur_item_counter = 1; 
+            htmlRows += buildFakturHeaderRow(
+                row.faktur,
+                row.kodesupp,
+                row.namasupp,
+                row.nama_inisial
+            );
         }
-        current_faktur = row.faktur;
-        htmlRows += buildFakturHeaderRow(
-          row.faktur,
-          row.kodesupp,
-          row.namasupp,
-          row.nama_inisial
-        );
-      }
-      subtotal_faktur_qty += qty;
-      subtotal_faktur_netto += netto;
-      subtotal_faktur_ppn += ppn;
-      subtotal_faktur_total += total;
-      htmlRows += `
-                        <tr>
-                            <td>${item_counter}</td>
-                            <td>${row.plu}</td>
-                            <td class="text-left">${row.descp}</td>
-                            <td class="text-left">${row.satuan}</td>
-                            <td class="">${formatNumber(row.conv1)}</td>
-                            <td class="">${formatNumber(row.conv2)}</td>
-                            <td class="">${formatNumber(qty)}</td>
-                            <td class="">${formatRupiah(netto)}</td>
-                            <td class="">${formatRupiah(ppn)}</td>
-                            <td class="">${formatRupiah(total)}</td>
-                        </tr>
-                    `;
-      item_counter++;
+        subtotal_faktur_qty += qty;
+        subtotal_faktur_netto += netto;
+        subtotal_faktur_ppn += ppn;
+        subtotal_faktur_total += total;
+        htmlRows += `
+                                <tr>
+                                    <td>${faktur_item_counter}</td>
+                                    <td>${row.plu}</td>
+                                    <td class="text-left">${row.descp}</td>
+                                    <td class="text-left">${row.satuan}</td>
+                                    <td class="">${formatNumber(row.conv1)}</td>
+                                    <td class="">${formatNumber(row.conv2)}</td>
+                                    <td class="">${formatNumber(qty)}</td>
+                                    <td class="">${formatRupiah(netto)}</td>
+                                    <td class="">${formatRupiah(ppn)}</td>
+                                    <td class="">${formatRupiah(total)}</td>
+                                </tr>
+                            `;
+        faktur_item_counter++; 
     });
     if (current_faktur !== null) {
-      htmlRows += buildSubtotalFakturRow();
+        htmlRows += buildSubtotalFakturRow();
     }
     if (current_tanggal !== null) {
-      const isLastPage =
-        pagination && pagination.current_page === pagination.total_pages;
-      const isExport = pagination === null;
-      if (isLastPage || isExport) {
-        htmlRows += buildSubtotalTanggalRow(current_tanggal);
-      }
+        const isLastPage =
+            pagination && pagination.current_page === pagination.total_pages;
+        const isExport = pagination === null;
+        if (isLastPage || isExport) {
+            htmlRows += buildSubtotalTanggalRow(current_tanggal);
+        }
     }
     tableBody.innerHTML = htmlRows;
-  }
+}
+
   function renderPagination(pagination) {
     if (!pagination) {
       paginationInfo.textContent = "";
@@ -464,585 +467,590 @@ document.addEventListener("DOMContentLoaded", () => {
   async function exportToExcel() {
     const data = await fetchAllDataForExport();
     if (!data || !data.tabel_data || data.tabel_data.length === 0) {
-      Swal.fire("Tidak Ada Data", "Tidak ada data untuk diekspor.", "info");
-      return;
+        Swal.fire("Tidak Ada Data", "Tidak ada data untuk diekspor.", "info");
+        return;
     }
     try {
-      const { tabel_data, summary } = data;
-      const params = getUrlParams();
-      const title = [["Laporan Return Out (Hilang Pasangan)"]];
-      const info = [
-        ["Periode", `${params.tgl_mulai} s/d ${params.tgl_selesai}`],
-        [
-          "Cabang",
-          filterSelectStore.options[filterSelectStore.selectedIndex].text,
-        ],
-        [],
-        ["Total Qty", parseFloat(summary.total_qty) || 0],
-        ["Total Netto", parseFloat(summary.total_netto) || 0],
-        ["Total PPN", parseFloat(summary.total_ppn) || 0],
-        ["Grand Total", parseFloat(summary.total_grand) || 0],
-        [],
-      ];
-      const headers = [
-        "No",
-        "PLU",
-        "Deskripsi",
-        "Sat",
-        "Conv1",
-        "Conv2",
-        "Qty",
-        "Netto",
-        "PPN",
-        "Total",
-      ];
-      const dataRows = [];
-      const merges = [];
-      let item_counter = 1;
-      let current_tanggal = null,
-        current_faktur = null;
-      let s_fak_qty = 0,
-        s_fak_netto = 0,
-        s_fak_ppn = 0,
-        s_fak_total = 0;
-      let s_tgl_qty = 0,
-        s_tgl_netto = 0,
-        s_tgl_ppn = 0,
-        s_tgl_total = 0;
-      const pushSubtotalFakturRow = () => {
-        dataRows.push([
-          "",
-          "",
-          "",
-          "",
-          "",
-          "Sub Total Faktur:",
-          s_fak_qty,
-          s_fak_netto,
-          s_fak_ppn,
-          s_fak_total,
-        ]);
-        merges.push({
-          s: { r: dataRows.length + info.length + 1, c: 0 },
-          e: { r: dataRows.length + info.length + 1, c: 5 },
-        });
-      };
-      const pushSubtotalTanggalRow = () => {
-        dataRows.push([
-          "",
-          "",
-          "",
-          "",
-          "",
-          "Sub Total Tanggal:",
-          s_tgl_qty,
-          s_tgl_netto,
-          s_tgl_ppn,
-          s_tgl_total,
-        ]);
-        merges.push({
-          s: { r: dataRows.length + info.length + 1, c: 0 },
-          e: { r: dataRows.length + info.length + 1, c: 5 },
-        });
-      };
-      tabel_data.forEach((row, index) => {
-        const qty = parseFloat(row.qty) || 0;
-        const netto = parseFloat(row.netto) || 0;
-        const ppn = parseFloat(row.ppn) || 0;
-        const total = parseFloat(row.total) || 0;
-        if (row.tanggal !== current_tanggal) {
-          if (current_faktur !== null) {
-            pushSubtotalFakturRow();
-            s_fak_qty = 0;
-            s_fak_netto = 0;
-            s_fak_ppn = 0;
+        const { tabel_data, summary } = data;
+        const params = getUrlParams();
+        const title = [["Laporan Return Out (Hilang Pasangan)"]];
+        const info = [
+            ["Periode", `${params.tgl_mulai} s/d ${params.tgl_selesai}`],
+            [
+                "Cabang",
+                filterSelectStore.options[filterSelectStore.selectedIndex].text,
+            ],
+            [],
+            ["Total Qty", parseFloat(summary.total_qty) || 0],
+            ["Total Netto", parseFloat(summary.total_netto) || 0],
+            ["Total PPN", parseFloat(summary.total_ppn) || 0],
+            ["Grand Total", parseFloat(summary.total_grand) || 0],
+            [],
+        ];
+        const headers = [
+            "No",
+            "PLU",
+            "Deskripsi",
+            "Sat",
+            "Conv1",
+            "Conv2",
+            "Qty",
+            "Netto",
+            "PPN",
+            "Total",
+        ];
+        const dataRows = [];
+        const merges = [];
+        let faktur_item_counter = 0; 
+        let current_tanggal = null,
+            current_faktur = null;
+        let s_fak_qty = 0,
+            s_fak_netto = 0,
+            s_fak_ppn = 0,
             s_fak_total = 0;
-          }
-          if (current_tanggal !== null) {
-            pushSubtotalTanggalRow();
-            s_tgl_qty = 0;
-            s_tgl_netto = 0;
-            s_tgl_ppn = 0;
+        let s_tgl_qty = 0,
+            s_tgl_netto = 0,
+            s_tgl_ppn = 0,
             s_tgl_total = 0;
-          }
-          current_tanggal = row.tanggal;
-          current_faktur = null;
-          dataRows.push([`Tanggal: ${current_tanggal}`]);
-          merges.push({
-            s: { r: dataRows.length + info.length + 1, c: 0 },
-            e: { r: dataRows.length + info.length + 1, c: 9 },
-          });
-        }
-        if (row.faktur !== current_faktur) {
-          if (current_faktur !== null) {
-            pushSubtotalFakturRow();
-            s_fak_qty = 0;
-            s_fak_netto = 0;
-            s_fak_ppn = 0;
-            s_fak_total = 0;
-          }
-          current_faktur = row.faktur;
-          const inisial = row.nama_inisial ? `(${row.nama_inisial})` : "";
-          const namaSupp = `${row.kodesupp} - ${row.namasupp || ""} ${inisial}`;
-          dataRows.push([`No Faktur: ${current_faktur}`, "", "", namaSupp]);
-          merges.push({
-            s: { r: dataRows.length + info.length + 1, c: 0 },
-            e: { r: dataRows.length + info.length + 1, c: 2 },
-          });
-          merges.push({
-            s: { r: dataRows.length + info.length + 1, c: 3 },
-            e: { r: dataRows.length + info.length + 1, c: 9 },
-          });
-        }
-        s_fak_qty += qty;
-        s_fak_netto += netto;
-        s_fak_ppn += ppn;
-        s_fak_total += total;
-        s_tgl_qty += qty;
-        s_tgl_netto += netto;
-        s_tgl_ppn += ppn;
-        s_tgl_total += total;
+        const pushSubtotalFakturRow = () => {
+            dataRows.push([
+                "",
+                "",
+                "",
+                "",
+                "",
+                "Sub Total Faktur:",
+                s_fak_qty,
+                s_fak_netto,
+                s_fak_ppn,
+                s_fak_total,
+            ]);
+            merges.push({
+                s: { r: dataRows.length + info.length + 1, c: 0 },
+                e: { r: dataRows.length + info.length + 1, c: 5 },
+            });
+        };
+        const pushSubtotalTanggalRow = () => {
+            dataRows.push([
+                "",
+                "",
+                "",
+                "",
+                "",
+                "Sub Total Tanggal:",
+                s_tgl_qty,
+                s_tgl_netto,
+                s_tgl_ppn,
+                s_tgl_total,
+            ]);
+            merges.push({
+                s: { r: dataRows.length + info.length + 1, c: 0 },
+                e: { r: dataRows.length + info.length + 1, c: 5 },
+            });
+        };
+        tabel_data.forEach((row, index) => {
+            const qty = parseFloat(row.qty) || 0;
+            const netto = parseFloat(row.netto) || 0;
+            const ppn = parseFloat(row.ppn) || 0;
+            const total = parseFloat(row.total) || 0;
+            if (row.tanggal !== current_tanggal) {
+                if (current_faktur !== null) {
+                    pushSubtotalFakturRow();
+                    s_fak_qty = 0;
+                    s_fak_netto = 0;
+                    s_fak_ppn = 0;
+                    s_fak_total = 0;
+                }
+                if (current_tanggal !== null) {
+                    pushSubtotalTanggalRow();
+                    s_tgl_qty = 0;
+                    s_tgl_netto = 0;
+                    s_tgl_ppn = 0;
+                    s_tgl_total = 0;
+                }
+                current_tanggal = row.tanggal;
+                current_faktur = null;
+                dataRows.push([`Tanggal: ${current_tanggal}`]);
+                merges.push({
+                    s: { r: dataRows.length + info.length + 1, c: 0 },
+                    e: { r: dataRows.length + info.length + 1, c: 9 },
+                });
+            }
+            if (row.faktur !== current_faktur) {
+                if (current_faktur !== null) {
+                    pushSubtotalFakturRow();
+                    s_fak_qty = 0;
+                    s_fak_netto = 0;
+                    s_fak_ppn = 0;
+                    s_fak_total = 0;
+                }
+                current_faktur = row.faktur;
+                faktur_item_counter = 1; 
+                const inisial = row.nama_inisial ? `(${row.nama_inisial})` : "";
+                const namaSupp = `${row.kodesupp} - ${row.namasupp || ""} ${inisial}`;
+                dataRows.push([`No Faktur: ${current_faktur}`, "", "", namaSupp]);
+                merges.push({
+                    s: { r: dataRows.length + info.length + 1, c: 0 },
+                    e: { r: dataRows.length + info.length + 1, c: 2 },
+                });
+                merges.push({
+                    s: { r: dataRows.length + info.length + 1, c: 3 },
+                    e: { r: dataRows.length + info.length + 1, c: 9 },
+                });
+            }
+            s_fak_qty += qty;
+            s_fak_netto += netto;
+            s_fak_ppn += ppn;
+            s_fak_total += total;
+            s_tgl_qty += qty;
+            s_tgl_netto += netto;
+            s_tgl_ppn += ppn;
+            s_tgl_total += total;
+            dataRows.push([
+                faktur_item_counter++, 
+                row.plu,
+                row.descp,
+                row.satuan,
+                parseFloat(row.conv1),
+                parseFloat(row.conv2),
+                qty,
+                netto,
+                ppn,
+                total,
+            ]);
+        });
+        if (current_faktur !== null) pushSubtotalFakturRow();
+        if (current_tanggal !== null) pushSubtotalTanggalRow();
+        dataRows.push([]);
         dataRows.push([
-          item_counter++,
-          row.plu,
-          row.descp,
-          row.satuan,
-          parseFloat(row.conv1),
-          parseFloat(row.conv2),
-          qty,
-          netto,
-          ppn,
-          total,
+            "",
+            "",
+            "",
+            "",
+            "",
+            "GRAND TOTAL:",
+            parseFloat(summary.total_qty) || 0,
+            parseFloat(summary.total_netto) || 0,
+            parseFloat(summary.total_ppn) || 0,
+            parseFloat(summary.total_grand) || 0,
         ]);
-      });
-      if (current_faktur !== null) pushSubtotalFakturRow();
-      if (current_tanggal !== null) pushSubtotalTanggalRow();
-      dataRows.push([]);
-      dataRows.push([
-        "",
-        "",
-        "",
-        "",
-        "",
-        "GRAND TOTAL:",
-        parseFloat(summary.total_qty) || 0,
-        parseFloat(summary.total_netto) || 0,
-        parseFloat(summary.total_ppn) || 0,
-        parseFloat(summary.total_grand) || 0,
-      ]);
-      merges.push({
-        s: { r: dataRows.length + info.length + 1, c: 0 },
-        e: { r: dataRows.length + info.length + 1, c: 5 },
-      });
-      const ws = XLSX.utils.aoa_to_sheet(title);
-      XLSX.utils.sheet_add_aoa(ws, info, { origin: "A2" });
-      const headerOrigin = "A" + (info.length + 2);
-      XLSX.utils.sheet_add_aoa(ws, [headers], { origin: headerOrigin });
-      XLSX.utils.sheet_add_aoa(ws, dataRows, {
-        origin: "A" + (info.length + 3),
-      });
-      ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 9 } }, ...merges];
-      ws["A1"].s = {
-        font: { bold: true, sz: 16 },
-        alignment: { horizontal: "center" },
-      };
-      const numFormat = "#,##0";
-      const numFormatDec = "#,##0.00";
-      const headerStyle = {
-        font: { bold: true },
-        fill: { fgColor: { rgb: "E0E0E0" } },
-      };
-      ["B4", "B5", "B6", "B7"].forEach((cell) => {
-        if (ws[cell]) {
-          ws[cell].t = "n";
-          ws[cell].s = { numFmt: numFormat };
-        }
-      });
-      headers.forEach((_, C) => {
-        const cell = ws[XLSX.utils.encode_cell({ r: info.length + 1, c: C })];
-        if (cell) cell.s = headerStyle;
-      });
-      const dataRowStartIndex = info.length + 2;
-      dataRows.forEach((row, R_idx) => {
-        const R = R_idx + dataRowStartIndex;
-        if (row.length === 0) return;
-        const label = row[0] || row[5];
-        if (typeof label === "string") {
-          if (label.startsWith("Tanggal:")) {
-            ws[XLSX.utils.encode_cell({ r: R, c: 0 })].s = {
-              font: { bold: true, sz: 11, color: { rgb: "2C5282" } },
-              fill: { fgColor: { rgb: "EBF8FF" } },
-            };
-          } else if (label.startsWith("No Faktur:")) {
-            ws[XLSX.utils.encode_cell({ r: R, c: 0 })].s = {
-              font: { bold: true },
-              fill: { fgColor: { rgb: "F7FAFC" } },
-            };
-            ws[XLSX.utils.encode_cell({ r: R, c: 3 })].s = {
-              font: { bold: true },
-              fill: { fgColor: { rgb: "F7FAFC" } },
-            };
-          } else if (label.startsWith("Sub Total Faktur:")) {
-            const style = {
-              font: { bold: true, italic: true },
-              fill: { fgColor: { rgb: "F7FAFC" } },
-            };
-            ws[XLSX.utils.encode_cell({ r: R, c: 5 })].s = style;
-            ["G", "H", "I", "J"].forEach((col) => {
-              const cell = ws[col + (R + 1)];
-              if (cell) cell.s = { numFmt: numFormat, ...style };
-            });
-            ws["G" + (R + 1)].s = { numFmt: numFormatDec, ...style };
-          } else if (label.startsWith("Sub Total Tanggal:")) {
-            const style = {
-              font: {
-                bold: true,
-                italic: true,
-                sz: 11,
-                color: { rgb: "2C5282" },
-              },
-              fill: { fgColor: { rgb: "EBF8FF" } },
-            };
-            ws[XLSX.utils.encode_cell({ r: R, c: 5 })].s = style;
-            ["G", "H", "I", "J"].forEach((col) => {
-              const cell = ws[col + (R + 1)];
-              if (cell) cell.s = { numFmt: numFormat, ...style };
-            });
-            ws["G" + (R + 1)].s = { numFmt: numFormatDec, ...style };
-          } else if (label.startsWith("GRAND TOTAL:")) {
-            const style = {
-              font: { bold: true, sz: 12 },
-              fill: { fgColor: { rgb: "E2E8F0" } },
-            };
-            ws[XLSX.utils.encode_cell({ r: R, c: 5 })].s = style;
-            ["G", "H", "I", "J"].forEach((col) => {
-              const cell = ws[col + (R + 1)];
-              if (cell) cell.s = { numFmt: numFormat, ...style };
-            });
-            ws["G" + (R + 1)].s = { numFmt: numFormatDec, ...style };
-          } else if (row[0] && typeof row[0] === "number") {
-            ["E", "F", "G"].forEach((col) => {
-              const cell = ws[col + (R + 1)];
-              if (cell) cell.s = { numFmt: numFormatDec };
-            });
-            ["H", "I", "J"].forEach((col) => {
-              const cell = ws[col + (R + 1)];
-              if (cell) cell.s = { numFmt: numFormat };
-            });
-          }
-        }
-      });
-      ws["!cols"] = [
-        { wch: 5 },
-        { wch: 12 },
-        { wch: 35 },
-        { wch: 5 },
-        { wch: 8 },
-        { wch: 8 },
-        { wch: 10 },
-        { wch: 15 },
-        { wch: 15 },
-        { wch: 17 },
-      ];
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Return Hilang Pasangan");
-      const fileName = `Return_Out_Hilang_Pasangan_${params.tgl_mulai}_sd_${params.tgl_selesai}.xlsx`;
-      XLSX.writeFile(wb, fileName);
+        merges.push({
+            s: { r: dataRows.length + info.length + 1, c: 0 },
+            e: { r: dataRows.length + info.length + 1, c: 5 },
+        });
+        const ws = XLSX.utils.aoa_to_sheet(title);
+        XLSX.utils.sheet_add_aoa(ws, info, { origin: "A2" });
+        const headerOrigin = "A" + (info.length + 2);
+        XLSX.utils.sheet_add_aoa(ws, [headers], { origin: headerOrigin });
+        XLSX.utils.sheet_add_aoa(ws, dataRows, {
+            origin: "A" + (info.length + 3),
+        });
+        ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 9 } }, ...merges];
+        ws["A1"].s = {
+            font: { bold: true, sz: 16 },
+            alignment: { horizontal: "center" },
+        };
+        const numFormat = "#,##0";
+        const numFormatDec = "#,##0.00";
+        const headerStyle = {
+            font: { bold: true },
+            fill: { fgColor: { rgb: "E0E0E0" } },
+        };
+        ["B4", "B5", "B6", "B7"].forEach((cell) => {
+            if (ws[cell]) {
+                ws[cell].t = "n";
+                ws[cell].s = { numFmt: numFormat };
+            }
+        });
+        headers.forEach((_, C) => {
+            const cell = ws[XLSX.utils.encode_cell({ r: info.length + 1, c: C })];
+            if (cell) cell.s = headerStyle;
+        });
+        const dataRowStartIndex = info.length + 2;
+        dataRows.forEach((row, R_idx) => {
+            const R = R_idx + dataRowStartIndex;
+            if (row.length === 0) return;
+            const label = row[0] || row[5];
+            if (typeof label === "string") {
+                if (label.startsWith("Tanggal:")) {
+                    ws[XLSX.utils.encode_cell({ r: R, c: 0 })].s = {
+                        font: { bold: true, sz: 11, color: { rgb: "2C5282" } },
+                        fill: { fgColor: { rgb: "EBF8FF" } },
+                    };
+                } else if (label.startsWith("No Faktur:")) {
+                    ws[XLSX.utils.encode_cell({ r: R, c: 0 })].s = {
+                        font: { bold: true },
+                        fill: { fgColor: { rgb: "F7FAFC" } },
+                    };
+                    ws[XLSX.utils.encode_cell({ r: R, c: 3 })].s = {
+                        font: { bold: true },
+                        fill: { fgColor: { rgb: "F7FAFC" } },
+                    };
+                } else if (label.startsWith("Sub Total Faktur:")) {
+                    const style = {
+                        font: { bold: true, italic: true },
+                        fill: { fgColor: { rgb: "F7FAFC" } },
+                    };
+                    ws[XLSX.utils.encode_cell({ r: R, c: 5 })].s = style;
+                    ["G", "H", "I", "J"].forEach((col) => {
+                        const cell = ws[col + (R + 1)];
+                        if (cell) cell.s = { numFmt: numFormat, ...style };
+                    });
+                    ws["G" + (R + 1)].s = { numFmt: numFormatDec, ...style };
+                } else if (label.startsWith("Sub Total Tanggal:")) {
+                    const style = {
+                        font: {
+                            bold: true,
+                            italic: true,
+                            sz: 11,
+                            color: { rgb: "2C5282" },
+                        },
+                        fill: { fgColor: { rgb: "EBF8FF" } },
+                    };
+                    ws[XLSX.utils.encode_cell({ r: R, c: 5 })].s = style;
+                    ["G", "H", "I", "J"].forEach((col) => {
+                        const cell = ws[col + (R + 1)];
+                        if (cell) cell.s = { numFmt: numFormat, ...style };
+                    });
+                    ws["G" + (R + 1)].s = { numFmt: numFormatDec, ...style };
+                } else if (label.startsWith("GRAND TOTAL:")) {
+                    const style = {
+                        font: { bold: true, sz: 12 },
+                        fill: { fgColor: { rgb: "E2E8F0" } },
+                    };
+                    ws[XLSX.utils.encode_cell({ r: R, c: 5 })].s = style;
+                    ["G", "H", "I", "J"].forEach((col) => {
+                        const cell = ws[col + (R + 1)];
+                        if (cell) cell.s = { numFmt: numFormat, ...style };
+                    });
+                    ws["G" + (R + 1)].s = { numFmt: numFormatDec, ...style };
+                } else if (row[0] && typeof row[0] === "number") {
+                    ["E", "F", "G"].forEach((col) => {
+                        const cell = ws[col + (R + 1)];
+                        if (cell) cell.s = { numFmt: numFormatDec };
+                    });
+                    ["H", "I", "J"].forEach((col) => {
+                        const cell = ws[col + (R + 1)];
+                        if (cell) cell.s = { numFmt: numFormat };
+                    });
+                }
+            }
+        });
+        ws["!cols"] = [
+            { wch: 5 },
+            { wch: 12 },
+            { wch: 35 },
+            { wch: 5 },
+            { wch: 8 },
+            { wch: 8 },
+            { wch: 10 },
+            { wch: 15 },
+            { wch: 15 },
+            { wch: 17 },
+        ];
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Return Hilang Pasangan");
+        const fileName = `Return_Out_Hilang_Pasangan_${params.tgl_mulai}_sd_${params.tgl_selesai}.xlsx`;
+        XLSX.writeFile(wb, fileName);
     } catch (error) {
-      console.error("Error exporting to Excel:", error);
-      Swal.fire("Export Gagal", "Terjadi kesalahan: " + error.message, "error");
+        console.error("Error exporting to Excel:", error);
+        Swal.fire("Export Gagal", "Terjadi kesalahan: " + error.message, "error");
     }
-  }
+}
   async function exportToPDF() {
     const data = await fetchAllDataForExport();
     if (!data || !data.tabel_data || data.tabel_data.length === 0) {
-      Swal.fire("Tidak Ada Data", "Tidak ada data untuk diekspor.", "info");
-      return;
+        Swal.fire("Tidak Ada Data", "Tidak ada data untuk diekspor.", "info");
+        return;
     }
     try {
-      const { tabel_data, summary } = data;
-      const params = getUrlParams();
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF("landscape");
-      doc.setFontSize(18);
-      doc.text("Laporan Return Out (Hilang Pasangan)", 14, 22);
-      doc.setFontSize(11);
-      doc.setTextColor(100);
-      doc.text(
-        `Periode: ${params.tgl_mulai} s/d ${params.tgl_selesai}`,
-        14,
-        30
-      );
-      const storeText =
-        filterSelectStore.options[filterSelectStore.selectedIndex].text;
-      doc.text(`Cabang: ${storeText}`, 14, 36);
-      doc.text(`Total Qty: ${formatNumber(summary.total_qty)}`, 280, 22, {
-        align: "right",
-      });
-      doc.text(`Total Netto: ${formatRupiah(summary.total_netto)}`, 280, 30, {
-        align: "right",
-      });
-      doc.text(`Grand Total: ${formatRupiah(summary.total_grand)}`, 280, 36, {
-        align: "right",
-      });
-      const head = [
-        [
-          "No",
-          "PLU",
-          "Deskripsi",
-          "Sat",
-          "C1",
-          "C2",
-          "Qty",
-          "Netto",
-          "PPN",
-          "Total",
-        ],
-      ];
-      const body = [];
-      let item_counter = 1;
-      let current_tanggal = null,
-        current_faktur = null;
-      let s_fak_qty = 0,
-        s_fak_netto = 0,
-        s_fak_ppn = 0,
-        s_fak_total = 0;
-      let s_tgl_qty = 0,
-        s_tgl_netto = 0,
-        s_tgl_ppn = 0,
-        s_tgl_total = 0;
-      const headerTanggalStyles = {
-        fontStyle: "bold",
-        fillColor: [235, 248, 255],
-        textColor: [44, 82, 130],
-        fontSize: 6,
-        halign: "left",
-      };
-      const headerFakturStyles = {
-        fontStyle: "bold",
-        fillColor: [247, 250, 252],
-        textColor: [74, 85, 104],
-        fontSize: 5,
-        halign: "left",
-      };
-      const subtotalFakturStyles = {
-        halign: "right",
-        fontStyle: "bolditalic",
-        fillColor: [254, 253, 232],
-        textColor: [113, 63, 18],
-        fontSize: 5,
-      };
-      const subtotalTanggalStyles = {
-        halign: "right",
-        fontStyle: "bolditalic",
-        fillColor: [240, 253, 244],
-        textColor: [22, 101, 52],
-        fontSize: 6,
-      };
-      const grandTotalStyles = {
-        halign: "right",
-        fontStyle: "bold",
-        fillColor: [226, 232, 240],
-        fontSize: 6,
-      };
-      const subtotalFakturValuesStyles = {
-        halign: "left",
-        fontStyle: "bolditalic",
-        fillColor: [254, 253, 232],
-        textColor: [113, 63, 18],
-        fontSize: 5,
-      };
-      const subtotalTanggalValuesStyles = {
-        halign: "left",
-        fontStyle: "bolditalic",
-        fillColor: [240, 253, 244],
-        textColor: [22, 101, 52],
-        fontSize: 6,
-      };
-      const grandTotalValuesStyles = {
-        halign: "left",
-        fontStyle: "bold",
-        fillColor: [226, 232, 240],
-        fontSize: 6,
-      };
-      const pushSubtotalFakturRowPdf = () => {
-        body.push([
-          {
-            content: "Sub Total Faktur:",
-            colSpan: 6,
-            styles: subtotalFakturStyles,
-          },
-          {
-            content: formatNumber(s_fak_qty),
-            styles: subtotalFakturValuesStyles,
-          },
-          {
-            content: formatRupiah(s_fak_netto),
-            styles: subtotalFakturValuesStyles,
-          },
-          {
-            content: formatRupiah(s_fak_ppn),
-            styles: subtotalFakturValuesStyles,
-          },
-          {
-            content: formatRupiah(s_fak_total),
-            styles: subtotalFakturValuesStyles,
-          },
-        ]);
-      };
-      const pushSubtotalTanggalRowPdf = () => {
-        body.push([
-          {
-            content: "Sub Total Tanggal:",
-            colSpan: 6,
-            styles: subtotalTanggalStyles,
-          },
-          {
-            content: formatNumber(s_tgl_qty),
-            styles: subtotalTanggalValuesStyles,
-          },
-          {
-            content: formatRupiah(s_tgl_netto),
-            styles: subtotalTanggalValuesStyles,
-          },
-          {
-            content: formatRupiah(s_tgl_ppn),
-            styles: subtotalTanggalValuesStyles,
-          },
-          {
-            content: formatRupiah(s_tgl_total),
-            styles: subtotalTanggalValuesStyles,
-          },
-        ]);
-      };
-      tabel_data.forEach((row, index) => {
-        const qty = parseFloat(row.qty) || 0;
-        const netto = parseFloat(row.netto) || 0;
-        const ppn = parseFloat(row.ppn) || 0;
-        const total = parseFloat(row.total) || 0;
-        if (row.tanggal !== current_tanggal) {
-          if (current_faktur !== null) {
-            pushSubtotalFakturRowPdf();
-            s_fak_qty = 0;
-            s_fak_netto = 0;
-            s_fak_ppn = 0;
+        const { tabel_data, summary } = data;
+        const params = getUrlParams();
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF("landscape");
+        doc.setFontSize(18);
+        doc.text("Laporan Return Out (Hilang Pasangan)", 14, 22);
+        doc.setFontSize(11);
+        doc.setTextColor(100);
+        doc.text(
+            `Periode: ${params.tgl_mulai} s/d ${params.tgl_selesai}`,
+            14,
+            30
+        );
+        const storeText =
+            filterSelectStore.options[filterSelectStore.selectedIndex].text;
+        doc.text(`Cabang: ${storeText}`, 14, 36);
+        doc.text(`Total Qty: ${formatNumber(summary.total_qty)}`, 280, 22, {
+            align: "right",
+        });
+        doc.text(`Total Netto: ${formatRupiah(summary.total_netto)}`, 280, 28, { 
+            align: "right",
+        });
+        doc.text(`Total PPN: ${formatRupiah(summary.total_ppn)}`, 280, 34, { 
+            align: "right",
+        });
+        doc.text(`Grand Total: ${formatRupiah(summary.total_grand)}`, 280, 40, { 
+            align: "right",
+        });
+        const head = [
+            [
+                "No",
+                "PLU",
+                "Deskripsi",
+                "Sat",
+                "C1",
+                "C2",
+                "Qty",
+                "Netto",
+                "PPN",
+                "Total",
+            ],
+        ];
+        const body = [];
+        let faktur_item_counter = 0; 
+        let current_tanggal = null,
+            current_faktur = null;
+        let s_fak_qty = 0,
+            s_fak_netto = 0,
+            s_fak_ppn = 0,
             s_fak_total = 0;
-          }
-          if (current_tanggal !== null) {
-            pushSubtotalTanggalRowPdf();
-            s_tgl_qty = 0;
-            s_tgl_netto = 0;
-            s_tgl_ppn = 0;
+        let s_tgl_qty = 0,
+            s_tgl_netto = 0,
+            s_tgl_ppn = 0,
             s_tgl_total = 0;
-          }
-          current_tanggal = row.tanggal;
-          current_faktur = null;
-          body.push([
-            {
-              content: `Tanggal: ${current_tanggal}`,
-              colSpan: 10,
-              styles: headerTanggalStyles,
-            },
-          ]);
-        }
-        if (row.faktur !== current_faktur) {
-          if (current_faktur !== null) {
-            pushSubtotalFakturRowPdf();
-            s_fak_qty = 0;
-            s_fak_netto = 0;
-            s_fak_ppn = 0;
-            s_fak_total = 0;
-          }
-          current_faktur = row.faktur;
-          const inisial = row.nama_inisial ? `(${row.nama_inisial})` : "";
-          const namaSupp = `${row.kodesupp} - ${row.namasupp || ""} ${inisial}`;
-          body.push([
-            {
-              content: `No Faktur: ${current_faktur}`,
-              colSpan: 3,
-              styles: headerFakturStyles,
-            },
-            {
-              content: `Supplier: ${namaSupp}`,
-              colSpan: 7,
-              styles: headerFakturStyles,
-            },
-          ]);
-        }
-        s_fak_qty += qty;
-        s_fak_netto += netto;
-        s_fak_ppn += ppn;
-        s_fak_total += total;
-        s_tgl_qty += qty;
-        s_tgl_netto += netto;
-        s_tgl_ppn += ppn;
-        s_tgl_total += total;
+        const headerTanggalStyles = {
+            fontStyle: "bold",
+            fillColor: [235, 248, 255],
+            textColor: [44, 82, 130],
+            fontSize: 6,
+            halign: "left",
+        };
+        const headerFakturStyles = {
+            fontStyle: "bold",
+            fillColor: [247, 250, 252],
+            textColor: [74, 85, 104],
+            fontSize: 5,
+            halign: "left",
+        };
+        const subtotalFakturStyles = {
+            halign: "right",
+            fontStyle: "bolditalic",
+            fillColor: [254, 253, 232],
+            textColor: [113, 63, 18],
+            fontSize: 5,
+        };
+        const subtotalTanggalStyles = {
+            halign: "right",
+            fontStyle: "bolditalic",
+            fillColor: [240, 253, 244],
+            textColor: [22, 101, 52],
+            fontSize: 6,
+        };
+        const grandTotalStyles = {
+            halign: "right",
+            fontStyle: "bold",
+            fillColor: [226, 232, 240],
+            fontSize: 6,
+        };
+        const subtotalFakturValuesStyles = {
+            halign: "right", 
+            fontStyle: "bolditalic",
+            fillColor: [254, 253, 232],
+            textColor: [113, 63, 18],
+            fontSize: 5,
+        };
+        const subtotalTanggalValuesStyles = {
+            halign: "right", 
+            fontStyle: "bolditalic",
+            fillColor: [240, 253, 244],
+            textColor: [22, 101, 52],
+            fontSize: 6,
+        };
+        const grandTotalValuesStyles = {
+            halign: "right", 
+            fontStyle: "bold",
+            fillColor: [226, 232, 240],
+            fontSize: 6,
+        };
+        const pushSubtotalFakturRowPdf = () => {
+            body.push([
+                {
+                    content: "Sub Total Faktur:",
+                    colSpan: 6,
+                    styles: subtotalFakturStyles,
+                },
+                {
+                    content: formatNumber(s_fak_qty),
+                    styles: subtotalFakturValuesStyles,
+                },
+                {
+                    content: formatRupiah(s_fak_netto),
+                    styles: subtotalFakturValuesStyles,
+                },
+                {
+                    content: formatRupiah(s_fak_ppn),
+                    styles: subtotalFakturValuesStyles,
+                },
+                {
+                    content: formatRupiah(s_fak_total),
+                    styles: subtotalFakturValuesStyles,
+                },
+            ]);
+        };
+        const pushSubtotalTanggalRowPdf = () => {
+            body.push([
+                {
+                    content: "Sub Total Tanggal:",
+                    colSpan: 6,
+                    styles: subtotalTanggalStyles,
+                },
+                {
+                    content: formatNumber(s_tgl_qty),
+                    styles: subtotalTanggalValuesStyles,
+                },
+                {
+                    content: formatRupiah(s_tgl_netto),
+                    styles: subtotalTanggalValuesStyles,
+                },
+                {
+                    content: formatRupiah(s_tgl_ppn),
+                    styles: subtotalTanggalValuesStyles,
+                },
+                {
+                    content: formatRupiah(s_tgl_total),
+                    styles: subtotalTanggalValuesStyles,
+                },
+            ]);
+        };
+        tabel_data.forEach((row, index) => {
+            const qty = parseFloat(row.qty) || 0;
+            const netto = parseFloat(row.netto) || 0;
+            const ppn = parseFloat(row.ppn) || 0;
+            const total = parseFloat(row.total) || 0;
+            if (row.tanggal !== current_tanggal) {
+                if (current_faktur !== null) {
+                    pushSubtotalFakturRowPdf();
+                    s_fak_qty = 0;
+                    s_fak_netto = 0;
+                    s_fak_ppn = 0;
+                    s_fak_total = 0;
+                }
+                if (current_tanggal !== null) {
+                    pushSubtotalTanggalRowPdf();
+                    s_tgl_qty = 0;
+                    s_tgl_netto = 0;
+                    s_tgl_ppn = 0;
+                    s_tgl_total = 0;
+                }
+                current_tanggal = row.tanggal;
+                current_faktur = null;
+                body.push([
+                    {
+                        content: `Tanggal: ${current_tanggal}`,
+                        colSpan: 10,
+                        styles: headerTanggalStyles,
+                    },
+                ]);
+            }
+            if (row.faktur !== current_faktur) {
+                if (current_faktur !== null) {
+                    pushSubtotalFakturRowPdf();
+                    s_fak_qty = 0;
+                    s_fak_netto = 0;
+                    s_fak_ppn = 0;
+                    s_fak_total = 0;
+                }
+                current_faktur = row.faktur;
+                faktur_item_counter = 1; 
+                const inisial = row.nama_inisial ? `(${row.nama_inisial})` : "";
+                const namaSupp = `${row.kodesupp} - ${row.namasupp || ""} ${inisial}`;
+                body.push([
+                    {
+                        content: `No Faktur: ${current_faktur}`,
+                        colSpan: 3,
+                        styles: headerFakturStyles,
+                    },
+                    {
+                        content: `Supplier: ${namaSupp}`,
+                        colSpan: 7,
+                        styles: headerFakturStyles,
+                    },
+                ]);
+            }
+            s_fak_qty += qty;
+            s_fak_netto += netto;
+            s_fak_ppn += ppn;
+            s_fak_total += total;
+            s_tgl_qty += qty;
+            s_tgl_netto += netto;
+            s_tgl_ppn += ppn;
+            s_tgl_total += total;
+            body.push([
+                faktur_item_counter++, 
+                row.plu,
+                row.descp,
+                row.satuan,
+                formatNumber(row.conv1),
+                formatNumber(row.conv2),
+                formatNumber(qty),
+                formatRupiah(netto),
+                formatRupiah(ppn),
+                formatRupiah(total),
+            ]);
+        });
+        if (current_faktur !== null) pushSubtotalFakturRowPdf();
+        if (current_tanggal !== null) pushSubtotalTanggalRowPdf();
         body.push([
-          item_counter++,
-          row.plu,
-          row.descp,
-          row.satuan,
-          formatNumber(row.conv1),
-          formatNumber(row.conv2),
-          formatNumber(qty),
-          formatRupiah(netto),
-          formatRupiah(ppn),
-          formatRupiah(total),
+            { content: "GRAND TOTAL", colSpan: 6, styles: grandTotalStyles },
+            {
+                content: formatNumber(summary.total_qty),
+                styles: grandTotalValuesStyles,
+            },
+            {
+                content: formatRupiah(summary.total_netto),
+                styles: grandTotalValuesStyles,
+            },
+            {
+                content: formatRupiah(summary.total_ppn),
+                styles: grandTotalValuesStyles,
+            },
+            {
+                content: formatRupiah(summary.total_grand),
+                styles: grandTotalValuesStyles,
+            },
         ]);
-      });
-      if (current_faktur !== null) pushSubtotalFakturRowPdf();
-      if (current_tanggal !== null) pushSubtotalTanggalRowPdf();
-      body.push([
-        { content: "GRAND TOTAL", colSpan: 6, styles: grandTotalStyles },
-        {
-          content: formatNumber(summary.total_qty),
-          styles: grandTotalValuesStyles,
-        },
-        {
-          content: formatRupiah(summary.total_netto),
-          styles: grandTotalValuesStyles,
-        },
-        {
-          content: formatRupiah(summary.total_ppn),
-          styles: grandTotalValuesStyles,
-        },
-        {
-          content: formatRupiah(summary.total_grand),
-          styles: grandTotalValuesStyles,
-        },
-      ]);
-      doc.autoTable({
-        margin: { top: 44, left: 14 },
-        tableWidth: 266,
-        head: head,
-        body: body,
-        theme: "grid",
-        headStyles: {
-          fillColor: [220, 220, 220],
-          textColor: [0, 0, 0],
-          fontSize: 6,
-        },
-        styles: { fontSize: 5, cellPadding: 1.5 },
-        columnStyles: {
-          0: { halign: "left" },
-          1: { halign: "left" },
-          2: { halign: "left" },
-          3: { halign: "left" },
-          4: { halign: "left" },
-          5: { halign: "left" },
-          6: { halign: "left" },
-          7: { halign: "left" },
-          8: { halign: "left" },
-          9: { halign: "left" },
-        },
-      });
-      const fileName = `Return_Out_Hilang_Pasangan_${params.tgl_mulai}_sd_${params.tgl_selesai}.pdf`;
-      doc.save(fileName);
+        doc.autoTable({
+            margin: { top: 48, left: 14 }, 
+            tableWidth: 266,
+            head: head,
+            body: body,
+            theme: "grid",
+            headStyles: {
+                fillColor: [220, 220, 220],
+                textColor: [0, 0, 0],
+                fontSize: 6,
+            },
+            styles: { fontSize: 5, cellPadding: 1.5 },
+            columnStyles: {
+                0: { halign: "right", cellWidth: 8 }, 
+                1: { halign: "left", cellWidth: 20 }, 
+                2: { halign: "left", cellWidth: 98 }, 
+                3: { halign: "center", cellWidth: 10 }, 
+                4: { halign: "right", cellWidth: 15 }, 
+                5: { halign: "right", cellWidth: 15 }, 
+                6: { halign: "right", cellWidth: 20 }, 
+                7: { halign: "right", cellWidth: 30 }, 
+                8: { halign: "right", cellWidth: 25 }, 
+                9: { halign: "right", cellWidth: 25 }, 
+            },
+        });
+        const fileName = `Return_Out_Hilang_Pasangan_${params.tgl_mulai}_sd_${params.tgl_selesai}.pdf`;
+        doc.save(fileName);
     } catch (error) {
-      console.error("Error exporting to PDF:", error);
-      Swal.fire("Export Gagal", "Terjadi kesalahan: " + error.message, "error");
+        console.error("Error exporting to PDF:", error);
+        Swal.fire("Export Gagal", "Terjadi kesalahan: " + error.message, "error");
     }
-  }
+}
   if (exportExcelButton) {
     exportExcelButton.addEventListener("click", exportToExcel);
   }
