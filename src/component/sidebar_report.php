@@ -1,8 +1,8 @@
 <div id="sidebar"
-    class="bg-white text-gray-700 w-64 min-h-screen p-6 fixed left-0 top-0 transition-all duration-300 shadow-2xl border-r border-blue-200 z-40">
+    class="bg-white text-gray-700 w-64 h-screen flex flex-col p-6 fixed left-0 top-0 transition-all duration-300 shadow-2xl border-r border-blue-200 z-40">
     <button id="closeSidebar"
         class="absolute top-2 right-4 text-gray-600 hover:text-gray-800 text-2xl font-bold transition-colors duration-200 hover:scale-110">&times;</button>
-    <nav class="text-sm mt-20 space-y-2">
+    <nav class="text-sm mt-20 space-y-2 flex-1 overflow-y-auto">
 
         <a href="/in_beranda" id="berandaLink" data-menu="dashboard"
             class="group flex items-center py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-blue-100 hover:to-blue-200 hover:text-blue-700 hover:shadow-lg transition-all duration-300  border border-transparent hover:border-blue-300">
@@ -755,6 +755,34 @@
     });
 </script>
 <style>
+    /* Menargetkan <nav> di dalam #sidebar agar tidak semua scrollbar berubah */
+    #sidebar nav::-webkit-scrollbar {
+        width: 8px;
+        /* Lebar scrollbar */
+    }
+
+    /* Track (jalur) scrollbar */
+    #sidebar nav::-webkit-scrollbar-track {
+        background-color: #f8fafc;
+        /* Warna netral, misal: Tailwind 'slate-50' */
+        border-radius: 8px;
+    }
+
+    /* Thumb (gagang) scrollbar */
+    #sidebar nav::-webkit-scrollbar-thumb {
+        background-image: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);
+        border-radius: 8px;
+        transition: all 0.2s ease-in-out;
+    }
+
+    /* Thumb saat di-hover */
+    #sidebar nav::-webkit-scrollbar-thumb:hover {
+        filter: brightness(115%);
+        /* Membuat gradient sedikit lebih cerah */
+        box-shadow: 0 0 10px rgba(236, 72, 153, 0.5);
+        /* Efek glow */
+    }
+
     /* Professional icon animations */
     .group:hover i {
         animation: iconBounce 0.6s ease-in-out;
