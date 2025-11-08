@@ -1,5 +1,37 @@
-<!doctype html>
+<?php
+session_start();
+include '../../../aa_kon_sett.php';
+
+// Tentukan nilai default
+$default_tgl = ''; // Kosongkan default tanggal
+$default_kd_store = ''; // Default 'Semua Cabang'
+$default_page = 1;
+
+// Ambil parameter dari URL
+$kd_store = $_GET['kd_store'] ?? $default_kd_store;
+$status_aset = $_GET['status_aset'] ?? '';
+$search = $_GET['search'] ?? '';
+$group_aset = $_GET['group_aset'] ?? ''; // <-- Filter group_aset baru
+$page = (int) ($_GET['page'] ?? $default_page);
+if ($page < 1) {
+    $page = 1;
+}
+
+// Ambil parameter tanggal
+$tanggal_beli_from = $_GET['tanggal_beli_from'] ?? $default_tgl;
+$tanggal_beli_to = $_GET['tanggal_beli_to'] ?? $default_tgl;
+$tanggal_perbaikan_from = $_GET['tanggal_perbaikan_from'] ?? $default_tgl;
+$tanggal_perbaikan_to = $_GET['tanggal_perbaikan_to'] ?? $default_tgl;
+$tanggal_rusak_from = $_GET['tanggal_rusak_from'] ?? $default_tgl;
+$tanggal_rusak_to = $_GET['tanggal_rusak_to'] ?? $default_tgl;
+$tanggal_mutasi_from = $_GET['tanggal_mutasi_from'] ?? $default_tgl;
+$tanggal_mutasi_to = $_GET['tanggal_mutasi_to'] ?? $default_tgl;
+
+// Tentukan colspan untuk tabel
+$colspan = ($kd_store == '') ? 20 : 19; // 19 kolom default + 1 (jika semua cabang)
+?><!doctype html>
 <html lang="id">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -13,7 +45,7 @@
     <link rel="stylesheet" href="../../output2.css">
     <link rel="stylesheet" href="../../style/pink-theme.css">
     <link rel="icon" type="image/png" href="../../../public/images/logo1.png">
-    
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js"></script>
@@ -25,7 +57,7 @@
             font-weight: bold;
             border-bottom: 2px solid #3b82f6;
         }
-        
+
         .group-header-row td {
             padding: 0.5rem 0.75rem;
             font-size: 0.875rem;
@@ -42,7 +74,6 @@
         <section class="min-h-screen">
             <div class="max-w-7xl mx-auto">
 
-                <!-- Header Card -->
                 <div class="header-card p-4 rounded-2xl mb-4">
                     <div class="flex items-center justify-between flex-wrap gap-3">
                         <div class="flex items-center gap-3">
@@ -61,140 +92,171 @@
                     </div>
                 </div>
 
-                <!-- Filter Card -->
                 <div class="filter-card-simple">
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
-                        <div>
-                            <label for="filterCabang" class="block text-xs font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-store text-pink-600 mr-1"></i>
-                                Cabang
-                            </label>
-                            <select id="filterCabang" class="input-modern w-full">
-                                <option value="" disabled selected>Memuat cabang...</option>
-                            </select>
-                        </div>
-                        
-                        <div>
-                            <label for="filterStatus" class="block text-xs font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-circle-check text-pink-600 mr-1"></i>
-                                Status
-                            </label>
-                            <select id="filterStatus" class="input-modern w-full">
-                                <option value="">Semua Status</option>
-                                <option value="Baru">Baru</option>
-                                <option value="Bekas">Bekas</option>
-                                <option value="Services">Services</option>
-                                <option value="Rusak">Rusak</option>
-                                <option value="Mutasi">Mutasi</option>
-                            </select>
+                    <form id="filter-form" method="GET" action="history_aset.php">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+                            <div>
+                                <label for="filterCabang" class="block text-xs font-semibold text-gray-700 mb-2">
+                                    <i class="fas fa-store text-pink-600 mr-1"></i>
+                                    Cabang
+                                </label>
+                                <select id="filterCabang" name="kd_store" class="input-modern w-full">
+                                    <option value="" disabled>Memuat cabang...</option>
+                                </select>
+                                <script>
+                                    // Skrip kecil untuk set selected value dari PHP
+                                    document.getElementById('filterCabang').value = "<?php echo htmlspecialchars($kd_store); ?>";
+                                </script>
+                            </div>
+
+                            <div>
+                                <label for="filterStatus" class="block text-xs font-semibold text-gray-700 mb-2">
+                                    <i class="fas fa-circle-check text-pink-600 mr-1"></i>
+                                    Status
+                                </label>
+                                <select id="filterStatus" name="status_aset" class="input-modern w-full">
+                                    <option value="">Semua Status</option>
+                                    <option value="Baru" <?php echo ($status_aset == 'Baru') ? 'selected' : ''; ?>>Baru
+                                    </option>
+                                    <option value="Bekas" <?php echo ($status_aset == 'Bekas') ? 'selected' : ''; ?>>Bekas
+                                    </option>
+                                    <option value="Services" <?php echo ($status_aset == 'Services') ? 'selected' : ''; ?>>Services</option>
+                                    <option value="Rusak" <?php echo ($status_aset == 'Rusak') ? 'selected' : ''; ?>>Rusak
+                                    </option>
+                                    <option value="Mutasi" <?php echo ($status_aset == 'Mutasi') ? 'selected' : ''; ?>>
+                                        Mutasi</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label for="filter_group_aset" class="block text-xs font-semibold text-gray-700 mb-2">
+                                    <i class="fas fa-layer-group text-pink-600 mr-1"></i>
+                                    Group Aset
+                                </label>
+                                <select id="filter_group_aset" name="group_aset" class="input-modern w-full">
+                                    <option value="">Semua Group</option>
+                                </select>
+                                <script>
+                                    document.getElementById('filter_group_aset').value = "<?php echo htmlspecialchars($group_aset); ?>";
+                                </script>
+                            </div>
+
+
                         </div>
 
-                        <div>
-                            <label for="filterSearch" class="block text-xs font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-search text-pink-600 mr-1"></i>
-                                Pencarian
-                            </label>
-                            <input type="text" id="filterSearch" placeholder="Cari nama aset"
-                                class="input-modern w-full">
-                        </div>
+                        <div class="mt-3">
+                            <button type="button" id="toggleDateFilters"
+                                class="w-full flex items-center justify-between px-3 py-2 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors border-2 border-slate-200">
+                                <span class="text-xs font-semibold text-gray-700">
+                                    <i class="fa-solid fa-calendar text-pink-600 mr-1"></i>
+                                    Filter Tanggal (Opsional)
+                                </span>
+                                <i class="fa-solid fa-chevron-down text-slate-600 transition-transform duration-300 text-xs"
+                                    id="dateFilterIcon"></i>
+                            </button>
 
-                        <div>
-                            <label for="filter_group_aset" class="block text-xs font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-layer-group text-pink-600 mr-1"></i>
-                                Group Aset
-                            </label>
-                            <div class="relative">
-                                <input type="text" id="filter_group_aset" placeholder="Ketik group"
-                                    class="input-modern w-full" autocomplete="off">
-                                <div id="group_suggestions"
-                                    class="absolute top-full left-0 right-0 z-10 bg-white border border-gray-200 mt-1 rounded-lg shadow-lg hidden max-h-40 overflow-auto">
+                            <div id="dateFiltersContent" class="overflow-hidden transition-all duration-300"
+                                style="max-height: 0;">
+                                <div class="pt-3 grid grid-cols-1 md:grid-cols-2 gap-2">
+                                    <div>
+                                        <label for="filter_tanggal_beli_from"
+                                            class="block text-xs font-semibold text-gray-700 mb-1">
+                                            <i class="fa-solid fa-calendar-plus text-pink-600 mr-1"></i>
+                                            Tanggal Beli (Dari)
+                                        </label>
+                                        <input type="date" id="filter_tanggal_beli_from" name="tanggal_beli_from"
+                                            class="input-modern w-full"
+                                            value="<?php echo htmlspecialchars($tanggal_beli_from); ?>">
+                                    </div>
+                                    <div>
+                                        <label for="filter_tanggal_beli_to"
+                                            class="block text-xs font-semibold text-gray-700 mb-1">
+                                            <i class="fa-solid fa-calendar-check text-pink-600 mr-1"></i>
+                                            Tanggal Beli (Sampai)
+                                        </label>
+                                        <input type="date" id="filter_tanggal_beli_to" name="tanggal_beli_to"
+                                            class="input-modern w-full"
+                                            value="<?php echo htmlspecialchars($tanggal_beli_to); ?>">
+                                    </div>
+                                    <div>
+                                        <label for="filter_tanggal_perbaikan_from"
+                                            class="block text-xs font-semibold text-gray-700 mb-1">
+                                            <i class="fa-solid fa-wrench text-pink-600 mr-1"></i>
+                                            Tanggal Perbaikan (Dari)
+                                        </label>
+                                        <input type="date" id="filter_tanggal_perbaikan_from"
+                                            name="tanggal_perbaikan_from" class="input-modern w-full"
+                                            value="<?php echo htmlspecialchars($tanggal_perbaikan_from); ?>">
+                                    </div>
+                                    <div>
+                                        <label for="filter_tanggal_perbaikan_to"
+                                            class="block text-xs font-semibold text-gray-700 mb-1">
+                                            <i class="fa-solid fa-tools text-pink-600 mr-1"></i>
+                                            Tanggal Perbaikan (Sampai)
+                                        </label>
+                                        <input type="date" id="filter_tanggal_perbaikan_to" name="tanggal_perbaikan_to"
+                                            class="input-modern w-full"
+                                            value="<?php echo htmlspecialchars($tanggal_perbaikan_to); ?>">
+                                    </div>
+                                    <div>
+                                        <label for="filter_tanggal_rusak_from"
+                                            class="block text-xs font-semibold text-gray-700 mb-1">
+                                            <i class="fa-solid fa-exclamation-triangle text-pink-600 mr-1"></i>
+                                            Tanggal Rusak (Dari)
+                                        </label>
+                                        <input type="date" id="filter_tanggal_rusak_from" name="tanggal_rusak_from"
+                                            class="input-modern w-full"
+                                            value="<?php echo htmlspecialchars($tanggal_rusak_from); ?>">
+                                    </div>
+                                    <div>
+                                        <label for="filter_tanggal_rusak_to"
+                                            class="block text-xs font-semibold text-gray-700 mb-1">
+                                            <i class="fa-solid fa-times-circle text-pink-600 mr-1"></i>
+                                            Tanggal Rusak (Sampai)
+                                        </label>
+                                        <input type="date" id="filter_tanggal_rusak_to" name="tanggal_rusak_to"
+                                            class="input-modern w-full"
+                                            value="<?php echo htmlspecialchars($tanggal_rusak_to); ?>">
+                                    </div>
+                                    <div>
+                                        <label for="filter_tanggal_mutasi_from"
+                                            class="block text-xs font-semibold text-gray-700 mb-1">
+                                            <i class="fa-solid fa-exchange-alt text-pink-600 mr-1"></i>
+                                            Tanggal Mutasi (Dari)
+                                        </label>
+                                        <input type="date" id="filter_tanggal_mutasi_from" name="tanggal_mutasi_from"
+                                            class="input-modern w-full"
+                                            value="<?php echo htmlspecialchars($tanggal_mutasi_from); ?>">
+                                    </div>
+                                    <div>
+                                        <label for="filter_tanggal_mutasi_to"
+                                            class="block text-xs font-semibold text-gray-700 mb-1">
+                                            <i class="fa-solid fa-arrow-right text-pink-600 mr-1"></i>
+                                            Tanggal Mutasi (Sampai)
+                                        </label>
+                                        <input type="date" id="filter_tanggal_mutasi_to" name="tanggal_mutasi_to"
+                                            class="input-modern w-full"
+                                            value="<?php echo htmlspecialchars($tanggal_mutasi_to); ?>">
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Date Filters Toggle -->
-                    <div class="mt-3">
-                        <button type="button" id="toggleDateFilters" 
-                            class="w-full flex items-center justify-between px-3 py-2 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors border-2 border-slate-200">
-                            <span class="text-xs font-semibold text-gray-700">
-                                <i class="fa-solid fa-calendar text-pink-600 mr-1"></i>
-                                Filter Tanggal (Opsional)
-                            </span>
-                            <i class="fa-solid fa-chevron-down text-slate-600 transition-transform duration-300 text-xs" id="dateFilterIcon"></i>
-                        </button>
-                        
-                        <div id="dateFiltersContent" class="overflow-hidden transition-all duration-300" style="max-height: 0;">
-                            <div class="pt-3 grid grid-cols-1 md:grid-cols-2 gap-2">
-                                <div>
-                                    <label for="filter_tanggal_beli_from" class="block text-xs font-semibold text-gray-700 mb-1">
-                                        <i class="fa-solid fa-calendar-plus text-pink-600 mr-1"></i>
-                                        Tanggal Beli (Dari)
-                                    </label>
-                                    <input type="date" id="filter_tanggal_beli_from" class="input-modern w-full">
-                                </div>
-                                <div>
-                                    <label for="filter_tanggal_beli_to" class="block text-xs font-semibold text-gray-700 mb-1">
-                                        <i class="fa-solid fa-calendar-check text-pink-600 mr-1"></i>
-                                        Tanggal Beli (Sampai)
-                                    </label>
-                                    <input type="date" id="filter_tanggal_beli_to" class="input-modern w-full">
-                                </div>
-                                <div>
-                                    <label for="filter_tanggal_perbaikan_from" class="block text-xs font-semibold text-gray-700 mb-1">
-                                        <i class="fa-solid fa-wrench text-pink-600 mr-1"></i>
-                                        Tanggal Perbaikan (Dari)
-                                    </label>
-                                    <input type="date" id="filter_tanggal_perbaikan_from" class="input-modern w-full">
-                                </div>
-                                <div>
-                                    <label for="filter_tanggal_perbaikan_to" class="block text-xs font-semibold text-gray-700 mb-1">
-                                        <i class="fa-solid fa-tools text-pink-600 mr-1"></i>
-                                        Tanggal Perbaikan (Sampai)
-                                    </label>
-                                    <input type="date" id="filter_tanggal_perbaikan_to" class="input-modern w-full">
-                                </div>
-                                <div>
-                                    <label for="filter_tanggal_rusak_from" class="block text-xs font-semibold text-gray-700 mb-1">
-                                        <i class="fa-solid fa-exclamation-triangle text-pink-600 mr-1"></i>
-                                        Tanggal Rusak (Dari)
-                                    </label>
-                                    <input type="date" id="filter_tanggal_rusak_from" class="input-modern w-full">
-                                </div>
-                                <div>
-                                    <label for="filter_tanggal_rusak_to" class="block text-xs font-semibold text-gray-700 mb-1">
-                                        <i class="fa-solid fa-times-circle text-pink-600 mr-1"></i>
-                                        Tanggal Rusak (Sampai)
-                                    </label>
-                                    <input type="date" id="filter_tanggal_rusak_to" class="input-modern w-full">
-                                </div>
-                                <div>
-                                    <label for="filter_tanggal_mutasi_from" class="block text-xs font-semibold text-gray-700 mb-1">
-                                        <i class="fa-solid fa-exchange-alt text-pink-600 mr-1"></i>
-                                        Tanggal Mutasi (Dari)
-                                    </label>
-                                    <input type="date" id="filter_tanggal_mutasi_from" class="input-modern w-full">
-                                </div>
-                                <div>
-                                    <label for="filter_tanggal_mutasi_to" class="block text-xs font-semibold text-gray-700 mb-1">
-                                        <i class="fa-solid fa-arrow-right text-pink-600 mr-1"></i>
-                                        Tanggal Mutasi (Sampai)
-                                    </label>
-                                    <input type="date" id="filter_tanggal_mutasi_to" class="input-modern w-full">
-                                </div>
-                            </div>
+                        <div class="mt-4 flex items-center justify-between">
+                            <button id="clearFilters" type="button" class="btn-secondary px-4 py-2">
+                                <i class="fa-solid fa-eraser mr-2"></i>
+                                Clear Filters
+                            </button>
+                            <button type="submit" id="filter-submit-button"
+                                class="btn-primary inline-flex items-center justify-center gap-2">
+                                <i class="fas fa-filter"></i>
+                                <span>Tampilkan</span>
+                            </button>
                         </div>
-                    </div>
 
-                    <div class="mt-3">
-                        <button id="clearFilters" type="button" class="btn-secondary px-4 py-2">
-                            <i class="fa-solid fa-eraser mr-2"></i>
-                            Clear Filters
-                        </button>
-                    </div>
+                        <input type="hidden" name="page" value="1">
+                    </form>
                 </div>
-
-                <!-- Table Card -->
                 <div class="filter-card">
                     <div class="flex flex-wrap justify-between items-center mb-3 gap-3">
                         <h3 class="text-lg font-bold text-gray-800">
@@ -216,6 +278,8 @@
                                     <th>Nama Barang</th>
                                     <th>Group Aset</th>
                                     <th>Merk</th>
+                                    <th>Nama Cabang</th>
+
                                     <th>Tgl Rusak</th>
                                     <th>Tgl Perbaikan</th>
                                     <th>Tgl Ganti</th>
@@ -227,7 +291,6 @@
                                     <th>Tgl Mutasi</th>
                                     <th>Status</th>
                                     <th>Foto</th>
-                                    <th>Nama Cabang</th>
                                     <th>Keterangan</th>
                                     <th>Action</th>
                                 </tr>
@@ -244,15 +307,8 @@
                     </div>
 
                     <div id="pagination-container" class="flex justify-between items-center mt-4">
-                        <span id="pagination-info" class="text-sm text-gray-600" id="countText2">Menampilkan 1-10 dari 100 produk</span>
+                        <span id="pagination-info" class="text-sm text-gray-600"></span>
                         <div id="pagination-links" class="flex items-center gap-2">
-                            <button id="prevBtn" class="pagination-link">
-                                <i class="fas fa-chevron-left"></i>
-                            </button>
-                            <span id="pageText" class="pagination-link pagination-active">Hal 1 dari 10</span>
-                            <button id="nextBtn" class="pagination-link">
-                                <i class="fas fa-chevron-right"></i>
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -262,25 +318,40 @@
     </main>
 
     <script>
-        const toggleDateFilters = document.getElementById('toggleDateFilters');
-        const dateFiltersContent = document.getElementById('dateFiltersContent');
-        const dateFilterIcon = document.getElementById('dateFilterIcon');
-        let isDateFilterOpen = false;
+        // Skrip untuk toggle filter tanggal (biarkan apa adanya)
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggleDateFilters = document.getElementById('toggleDateFilters');
+            const dateFiltersContent = document.getElementById('dateFiltersContent');
+            const dateFilterIcon = document.getElementById('dateFilterIcon');
+            let isDateFilterOpen = false;
 
-        toggleDateFilters.addEventListener('click', () => {
-            isDateFilterOpen = !isDateFilterOpen;
-            
-            if (isDateFilterOpen) {
+            // Cek jika ada filter tanggal yang aktif, buka foldernya
+            const dateInputs = dateFiltersContent.querySelectorAll('input[type="date"]');
+            const hasActiveDateFilter = Array.from(dateInputs).some(input => input.value !== '');
+
+            if (hasActiveDateFilter) {
+                isDateFilterOpen = true;
                 dateFiltersContent.style.maxHeight = dateFiltersContent.scrollHeight + 'px';
                 dateFilterIcon.style.transform = 'rotate(180deg)';
             } else {
                 dateFiltersContent.style.maxHeight = '0';
                 dateFilterIcon.style.transform = 'rotate(0deg)';
             }
+
+            toggleDateFilters.addEventListener('click', () => {
+                isDateFilterOpen = !isDateFilterOpen;
+
+                if (isDateFilterOpen) {
+                    dateFiltersContent.style.maxHeight = dateFiltersContent.scrollHeight + 'px';
+                    dateFilterIcon.style.transform = 'rotate(180deg)';
+                } else {
+                    dateFiltersContent.style.maxHeight = '0';
+                    dateFilterIcon.style.transform = 'rotate(0deg)';
+                }
+            });
         });
     </script>
 
-     <!-- Tambah Asset Modal -->
     <div id="addAssetModal" class="fixed inset-0 z-50 overflow-y-auto hidden">
         <div class="flex items-center justify-center min-h-screen p-4">
             <div class="fixed inset-0 bg-black opacity-50"></div>
@@ -295,7 +366,6 @@
 
                 <form id="assetForm" class="space-y-6">
                     <input type="hidden" name="idhistory_aset" id="idhistory_aset" value="">
-                    <!-- Basic Info Section -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -344,7 +414,7 @@
                             <select name="kd_store" required
                                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                 <option value="">Pilih Store...</option>
-                                </select>
+                            </select>
                         </div>
 
                         <div>
@@ -366,7 +436,7 @@
                         </div>
 
 
-                         <div>
+                        <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Tanggal Rusak
                             </label>
@@ -382,7 +452,7 @@
                                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         </div>
 
-                        
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Tanggal Mutasi
@@ -436,7 +506,6 @@
                         </div>
                     </div>
 
-                    <!-- Image Upload Section -->
                     <div class="mt-6">
                         <label class="block text-sm font-medium text-gray-700 mb-2">
                             Foto Aset
@@ -461,7 +530,6 @@
                                 <p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
                             </div>
 
-                            <!-- Image Preview -->
                             <div id="imagePreview" class="mt-4 hidden">
                                 <img src="" alt="Preview" class="max-h-48 rounded-lg mx-auto shadow-md">
                             </div>
@@ -483,7 +551,6 @@
         </div>
     </div>
 
-    <!-- Edit Asset Modal -->
     <div id="editAssetModal" class="fixed inset-0 z-50 overflow-y-auto hidden">
         <div class="flex items-center justify-center min-h-screen p-4">
             <div class="fixed inset-0 bg-black opacity-50"></div>
@@ -498,7 +565,6 @@
 
                 <form id="editAssetForm" class="space-y-6">
                     <input type="hidden" name="edit_idhistory_aset" id="edit_idhistory_aset" value="">
-                    <!-- Basic Info Section -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -546,7 +612,7 @@
                             <select name="edit_kd_store" required
                                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                 <option value="">Pilih Store...</option>
-                                </select>
+                            </select>
                         </div>
 
 
@@ -567,7 +633,7 @@
                         </div>
 
 
-                         <div>
+                        <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Tanggal Rusak
                             </label>
@@ -583,7 +649,7 @@
                                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         </div>
 
-                        
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Tanggal Mutasi
@@ -594,7 +660,8 @@
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Group Aset</label>
-                            <input type="text" name="edit_group_aset" id="input_group_aset" placeholder="Isi group manual"
+                            <input type="text" name="edit_group_aset" id="input_group_aset"
+                                placeholder="Isi group manual"
                                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         </div>
 
@@ -637,7 +704,6 @@
                         </div>
                     </div>
 
-                    <!-- Image Upload Section -->
                     <div class="mt-6">
                         <label class="block text-sm font-medium text-gray-700 mb-2">
                             Foto Aset
@@ -655,14 +721,14 @@
                                     <label for="edit_image"
                                         class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
                                         <span>Upload a file</span>
-                                        <input id="edit_image" name="edit_image" type="file" class="sr-only" accept="image/*">
+                                        <input id="edit_image" name="edit_image" type="file" class="sr-only"
+                                            accept="image/*">
                                     </label>
                                     <p class="pl-1">or drag and drop</p>
                                 </div>
                                 <p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
                             </div>
 
-                            <!-- Image Preview -->
                             <div id="editImagePreview" class="mt-4 hidden">
                                 <img src="" alt="Preview" class="max-h-48 rounded-lg mx-auto shadow-md">
                             </div>
@@ -684,7 +750,6 @@
         </div>
     </div>
 
-        <!-- History Log Modal -->
     <div id="historyLogModal" class="fixed inset-0 z-50 overflow-y-auto hidden">
         <div class="flex items-center justify-center min-h-screen p-4">
             <div class="fixed inset-0 bg-black opacity-50"></div>
@@ -694,7 +759,6 @@
                     <button id="closeHistoryModal" class="text-gray-500 hover:text-gray-800">Tutup ✕</button>
                 </div>
 
-                <!-- make the log area scrollable with a max height -->
                 <div class="overflow-x-auto" style="max-height:60vh; overflow:auto;">
                     <table class="w-full table-auto border-collapse">
                         <thead class="table-header text-left"
@@ -708,7 +772,6 @@
                             </tr>
                         </thead>
                         <tbody id="historyLogBody">
-                            <!-- rows inserted dynamically -->
                         </tbody>
                     </table>
                 </div>
@@ -743,4 +806,5 @@
     <script src="../../js/shared/internal/sidebar-profile.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </body>
+
 </html>
