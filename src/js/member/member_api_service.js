@@ -4,7 +4,7 @@ const API_BASE_URL = "/src/api/member/product";
 const API_TRANSACTION_URL = "/src/api/transaction";
 const API_MANAGEMENT_URL = "/src/api/member/management";
 const API_MEMBER_URL = "/src/api/member";
-const API_DASHBOARD_URL = "/src/api/dashboard"; // <-- TAMBAHKAN INI
+const API_DASHBOARD_URL = "/src/api/dashboard";
 
 export const getProductFav = (startDate = null, endDate = null) => {
   const params = new URLSearchParams();
@@ -50,7 +50,6 @@ export const getCityMember = () => {
   return sendRequestGET(`${API_MANAGEMENT_URL}/get_city_member.php`);
 };
 
-// --- TAMBAHKAN FUNGSI BARU DI BAWAH INI ---
 export const getTransactionDashboardData = () => {
   return sendRequestGET(`${API_DASHBOARD_URL}/get_data_transaction.php`);
 };

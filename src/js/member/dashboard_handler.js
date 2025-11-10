@@ -1,16 +1,14 @@
 import * as api from "./member_api_service.js";
-
 document.addEventListener("DOMContentLoaded", () => {
   loadMemberSummaryData();
   loadProdukFavoritData();
   loadProdukTerlarisData();
   loadMemberPoinData();
-  loadCombinedDashboardData(); // Tetap panggil ini untuk Ringkasan Transaksi
-  loadSebaranMemberData(); // <-- MEMANGGIL FUNGSI BARU
+  loadCombinedDashboardData();
+  loadSebaranMemberData();
   loadTopMemberSalesData();
   loadSebaranMember3BulanData();
 });
-
 function updatePlaceholder(id, value, isError = false) {
   const el = document.getElementById(id);
   if (el) {
@@ -27,29 +25,21 @@ function updatePlaceholder(id, value, isError = false) {
 }
 async function loadMemberPoinData() {
   const placeholder = document.getElementById("poin-tertinggi-placeholder");
-
   try {
     const result = await api.getMemberPoinList(5, 1);
-
     if (result.success === true && result.data && result.data.length > 0) {
       placeholder.innerHTML = "";
-
       result.data.forEach((member) => {
         const nama = member.nama_cust || "Nama tidak diketahui";
         const poin = member.total_poin || 0;
         const kd_cust = member.kd_cust || member.no_hp;
-
         const itemDiv = document.createElement("div");
         itemDiv.className = "flex justify-between items-center";
-
         const nameLink = document.createElement("a");
-
-        // --- MODIFIKASI DI SINI: Tambahkan hover:underline ---
         nameLink.className =
-          "text-gray-500 truncate hover:text-blue-600 hover:font-semibold hover:underline transition-all"; // --- SELESAI MODIFIKASI ---
+          "text-gray-500 truncate hover:text-blue-600 hover:font-semibold hover:underline transition-all";
         nameLink.textContent = nama;
         nameLink.title = `Lihat detail ${nama}`;
-
         if (kd_cust) {
           nameLink.href = `management_member?kd_cust=${encodeURIComponent(
             kd_cust
@@ -59,15 +49,12 @@ async function loadMemberPoinData() {
           nameLink.style.cursor = "default";
           nameLink.title = `${nama} (ID tidak ditemukan)`;
         }
-
         const poinSpan = document.createElement("span");
         poinSpan.className = "font-semibold text-gray-700";
-
         poinSpan.textContent = `${new Intl.NumberFormat("id-ID").format(
           poin
         )} Poin`;
-
-        itemDiv.appendChild(nameLink); // 4. Tambahkan link (bukan span lagi)
+        itemDiv.appendChild(nameLink);
         itemDiv.appendChild(poinSpan);
         placeholder.appendChild(itemDiv);
       });
@@ -80,7 +67,6 @@ async function loadMemberPoinData() {
     }
   } catch (error) {
     console.error("Error loading member poin:", error);
-
     placeholder.innerHTML = "";
     const errorSpan = document.createElement("span");
     errorSpan.className = "text-red-500";
@@ -88,7 +74,6 @@ async function loadMemberPoinData() {
     placeholder.appendChild(errorSpan);
   }
 }
-
 async function loadMemberSummaryData() {
   try {
     const result = await api.getMemberSummary();
@@ -116,7 +101,6 @@ async function loadMemberSummaryData() {
     updatePlaceholder("non-active-member-placeholder", "Gagal", true);
   }
 }
-
 async function loadProdukFavoritData() {
   try {
     const tren = await api.getTrendPembelian();
@@ -128,7 +112,6 @@ async function loadProdukFavoritData() {
     console.error("Error loading tren penjualan:", error);
     updatePlaceholder("tren-penjualan-placeholder", "Gagal", true);
   }
-
   try {
     const performa = await api.getProductPerforma();
     updatePlaceholder(
@@ -139,7 +122,6 @@ async function loadProdukFavoritData() {
     console.error("Error loading produk performa:", error);
     updatePlaceholder("produk-terlaris-placeholder", "Gagal", true);
   }
-
   try {
     const favorit = await api.getProductFav();
     updatePlaceholder(
@@ -151,27 +133,22 @@ async function loadProdukFavoritData() {
     updatePlaceholder("daftar-favorit-placeholder", "Gagal", true);
   }
 }
-
 async function loadProdukTerlarisData() {
   try {
     const result = await api.getTransactionBranchDetail("all");
     const data = result.data;
-
     if (data.top_10_member && data.top_10_member.length > 0) {
       const barang = data.top_10_member[0].barang || "Data kosong";
       updatePlaceholder("top-barang-member-placeholder", barang);
-      // Atur title untuk truncate
       document
         .getElementById("top-barang-member-placeholder")
         ?.setAttribute("title", barang);
     } else {
       updatePlaceholder("top-barang-member-placeholder", "Data kosong");
     }
-
     if (data.top_10_non && data.top_10_non.length > 0) {
       const barang = data.top_10_non[0].barang || "Data kosong";
       updatePlaceholder("top-barang-non-member-placeholder", barang);
-      // Atur title untuk truncate
       document
         .getElementById("top-barang-non-member-placeholder")
         ?.setAttribute("title", barang);
@@ -185,47 +162,35 @@ async function loadProdukTerlarisData() {
   }
 }
 async function loadCombinedDashboardData() {
-  // --- AMBIL ID PLACEHOLDER YANG BARU ---
   const cabangPlaceholder = document.getElementById(
     "top-member-cabang-placeholder"
   );
-
   try {
-    // Panggil API SATU KALI SAJA (untuk 2 kartu)
     const result = await api.getTransactionDashboardData();
-
     if (result.status === true && result.data) {
       const data = result.data;
       const formatter = new Intl.NumberFormat("id-ID");
-
-      // --- Bagian 1: Logika untuk "Top Member (Cabang)" (KARTU BARU) ---
       if (
         cabangPlaceholder &&
         data.jumlah_member_per_cabang &&
         data.jumlah_member_per_cabang.length > 0
       ) {
         cabangPlaceholder.innerHTML = "";
-
         const sortedData = data.jumlah_member_per_cabang
           .sort((a, b) => parseInt(b.jumlah_member) - parseInt(a.jumlah_member))
-          .slice(0, 5); // Mengambil 5 teratas
-
+          .slice(0, 5);
         sortedData.forEach((item) => {
           const cabang = item.cabang || "Tidak Diketahui";
           const jumlah = item.jumlah_member || 0;
-
           const itemDiv = document.createElement("div");
           itemDiv.className = "flex justify-between items-center";
-
           const nameSpan = document.createElement("span");
           nameSpan.className = "text-gray-500 truncate";
           nameSpan.textContent = cabang;
           nameSpan.title = cabang;
-
           const valueSpan = document.createElement("span");
           valueSpan.className = "font-semibold text-gray-700";
           valueSpan.textContent = `${formatter.format(jumlah)} Member`;
-
           itemDiv.appendChild(nameSpan);
           itemDiv.appendChild(valueSpan);
           cabangPlaceholder.appendChild(itemDiv);
@@ -237,8 +202,6 @@ async function loadCombinedDashboardData() {
         noData.textContent = "Belum ada data cabang.";
         cabangPlaceholder.appendChild(noData);
       }
-
-      // --- Bagian 2: Logika untuk "Ringkasan Transaksi" (KARTU LAMA) ---
       if (data.total_trans && data.total_trans.length > 0) {
         const trans = data.total_trans[0];
         updatePlaceholder(
@@ -263,8 +226,6 @@ async function loadCombinedDashboardData() {
     }
   } catch (error) {
     console.error("Error loading combined dashboard data:", error);
-
-    // Tampilkan error untuk KEDUA kartu yang dikelola fungsi ini
     if (cabangPlaceholder) {
       cabangPlaceholder.innerHTML = "";
       const errorSpan = document.createElement("span");
@@ -277,43 +238,29 @@ async function loadCombinedDashboardData() {
     updatePlaceholder("transaksi-non-member-placeholder", "Gagal", true);
   }
 }
-// --- FUNGSI BARU UNTUK SEBARAN MEMBER (TOP 5 KOTA) ---
 async function loadSebaranMemberData() {
   const sebaranPlaceholder = document.getElementById(
     "sebaran-member-placeholder"
   );
-  if (!sebaranPlaceholder) return; // Guard clause
-
+  if (!sebaranPlaceholder) return;
   const formatter = new Intl.NumberFormat("id-ID");
-
   try {
-    // Panggil API yang benar untuk sebaran member
     const result = await api.getCityMember();
-
-    // Sesuaikan dengan struktur JSON yang Anda berikan (success: true, data: [...])
     if (result.success === true && result.data && result.data.length > 0) {
       sebaranPlaceholder.innerHTML = "";
-
-      // Ambil 5 data teratas (data dari API sepertinya sudah diurutkan)
       const top5Data = result.data.slice(0, 5);
-
       top5Data.forEach((item) => {
-        // Gunakan key 'kota' dan 'total' dari JSON
         const kota = item.kota || "Tidak Diketahui";
         const jumlah = item.total || 0;
-
         const itemDiv = document.createElement("div");
         itemDiv.className = "flex justify-between items-center";
-
         const nameSpan = document.createElement("span");
         nameSpan.className = "text-gray-500 truncate";
         nameSpan.textContent = kota;
         nameSpan.title = kota;
-
         const valueSpan = document.createElement("span");
         valueSpan.className = "font-semibold text-gray-700";
         valueSpan.textContent = `${formatter.format(jumlah)} Member`;
-
         itemDiv.appendChild(nameSpan);
         itemDiv.appendChild(valueSpan);
         sebaranPlaceholder.appendChild(itemDiv);
@@ -334,15 +281,11 @@ async function loadSebaranMemberData() {
     sebaranPlaceholder.appendChild(errorSpan);
   }
 }
-
 async function loadTopMemberSalesData() {
   const placeholder = document.getElementById("top-member-sales-placeholder");
-  if (!placeholder) return; // Guard clause
-
+  if (!placeholder) return;
   try {
     const result = await api.getTopMemberBySales();
-
-    // ... penanganan "Data belum tersedia" unchanged ...
     if (result.success === false && result.message === "Data belum tersedia") {
       placeholder.innerHTML = "";
       const noData = document.createElement("span");
@@ -351,13 +294,9 @@ async function loadTopMemberSalesData() {
       placeholder.appendChild(noData);
       return;
     }
-
-    // ... penanganan error lain unchanged ...
     if (result.success === false) {
       throw new Error(result.message || "Format data tidak valid");
     }
-
-    // Menangani data sukses (data dari cache Redis)
     if (result.data && result.data.length > 0) {
       placeholder.innerHTML = "";
       const salesFormatter = new Intl.NumberFormat("id-ID", {
@@ -366,26 +305,19 @@ async function loadTopMemberSalesData() {
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
       });
-
-      // Mengambil 5 data teratas saja
       const top5Data = result.data.slice(0, 5);
-
       top5Data.forEach((member) => {
         const nama = member.nama_cust || "Nama tidak diketahui";
         const sales = parseFloat(member.total_penjualan) || 0;
-
         const itemDiv = document.createElement("div");
         itemDiv.className = "flex justify-between items-center";
-
         const nameSpan = document.createElement("span");
         nameSpan.className = "text-gray-500 truncate";
         nameSpan.textContent = nama;
         nameSpan.title = nama;
-
         const salesSpan = document.createElement("span");
         salesSpan.className = "font-semibold text-gray-700";
         salesSpan.textContent = salesFormatter.format(sales);
-
         itemDiv.appendChild(nameSpan);
         itemDiv.appendChild(salesSpan);
         placeholder.appendChild(itemDiv);
@@ -398,9 +330,7 @@ async function loadTopMemberSalesData() {
       placeholder.appendChild(noData);
     }
   } catch (error) {
-    // ... error handling unchanged ...
     console.error("Error loading top member sales:", error);
-
     placeholder.innerHTML = "";
     const errorSpan = document.createElement("span");
     errorSpan.className = "text-red-500";
@@ -408,7 +338,6 @@ async function loadTopMemberSalesData() {
     placeholder.appendChild(errorSpan);
   }
 }
-
 async function loadSebaranMember3BulanData() {
   const totalMemberEl = document.getElementById(
     "sebaran-total-member-placeholder"
@@ -416,30 +345,21 @@ async function loadSebaranMember3BulanData() {
   const totalKotaEl = document.getElementById("sebaran-total-kota-placeholder");
   const kotaTerbesarEl = document.getElementById(
     "sebaran-kota-terbesar-placeholder"
-  ); // Guard clause jika elemen tidak ditemukan
-
+  );
   if (!totalMemberEl || !totalKotaEl || !kotaTerbesarEl) {
     console.error("Elemen placeholder sebaran 3 bulan tidak ditemukan.");
     return;
   }
-
   const formatter = new Intl.NumberFormat("id-ID");
-
   try {
-    // Panggil API BARU (getCityMemberAll)
     const result = await api.getCityMemberAll();
-
     if (result.success === true && result.data && result.data.length > 0) {
-      // 1. Total Member: Sum dari 'total' semua kota
       const totalMember = result.data.reduce(
         (acc, city) => acc + (city.total || 0),
         0
-      ); // 2. Total Kota: Jumlah item dalam array data
-
-      const totalKota = result.data.length; // 3. Kota Terbesar: Item pertama (karena API sudah ORDER BY DESC)
-
+      );
+      const totalKota = result.data.length;
       const kotaTerbesar = result.data[0].kota || "Tidak Diketahui";
-
       updatePlaceholder(
         "sebaran-total-member-placeholder",
         formatter.format(totalMember)
@@ -448,11 +368,9 @@ async function loadSebaranMember3BulanData() {
         "sebaran-total-kota-placeholder",
         formatter.format(totalKota)
       );
-      updatePlaceholder("sebaran-kota-terbesar-placeholder", kotaTerbesar); // Atur title untuk truncate
-
+      updatePlaceholder("sebaran-kota-terbesar-placeholder", kotaTerbesar);
       kotaTerbesarEl.setAttribute("title", kotaTerbesar);
     } else {
-      // Tidak ada data
       updatePlaceholder("sebaran-total-member-placeholder", "Data kosong");
       updatePlaceholder("sebaran-total-kota-placeholder", "Data kosong");
       updatePlaceholder("sebaran-kota-terbesar-placeholder", "Data kosong");

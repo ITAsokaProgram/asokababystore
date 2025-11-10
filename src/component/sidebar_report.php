@@ -583,6 +583,19 @@
                         </a>
                     </li>
                 </ul>
+                <ul class="py-2">
+                    <li>
+                        <a href="/src/fitur/member/manage" data-menu="member_poin"
+                            class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-teal-100 hover:text-teal-700 transition-all duration-200 group rounded-lg">
+                            <span
+                                class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
+                                <i
+                                    class="fa-solid fa-coins mr-2 text-base text-teal-400 group-hover:text-teal-600 group-hover:scale-110 transition-all duration-200"></i>
+                                Manage
+                            </span>
+                        </a>
+                    </li>
+                </ul>
             </div>
         </div>
 
