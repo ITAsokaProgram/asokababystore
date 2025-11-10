@@ -145,12 +145,10 @@ function renderRows(items) {
 
     const imageCell =
       it.image_url && it.image_url.trim()
-        ? `<a href="#" class="image-link" data-url="${escapeHtml(
+        ? `<a href="#" class="image-link text-blue-500 italic" data-url="${escapeHtml(
             it.image_url
           )}">
-                <img src="${escapeHtml(
-                  thumbnailUrl
-                )}" alt="Image" class="inline-block w-20 h-20 object-cover rounded" loading="lazy" />
+                Gambar
               </a>`
         : `<span class="text-gray-500 text-xs">No image</span>`;
 

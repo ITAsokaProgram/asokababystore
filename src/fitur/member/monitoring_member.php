@@ -320,12 +320,12 @@
 
     <script>
         const evtSource = new EventSource("/src/api/stream/data_visitor.php");
-        const MAX_ACTIVITIES = 10; 
+        const MAX_ACTIVITIES = 10;
 
         function createActivityElement(act) {
             const div = document.createElement('div');
             div.className = 'activity-item page-view';
-            div.dataset.id = `${act.nama}-${act.page}-${act.time}`; 
+            div.dataset.id = `${act.nama}-${act.page}-${act.time}`;
             div.innerHTML = `
                 <div class="activity-icon page-view"><i class="fas fa-eye"></i></div>
                 <div class="activity-details">
@@ -339,7 +339,7 @@
         function createTrafficElement(pageData) {
             const div = document.createElement('div');
             div.className = 'page-item';
-            const totalViews = pageData.reduce((sum, p) => sum + p.views, 1); /
+            const totalViews = pageData.reduce((sum, p) => sum + p.views, 1);
             const width = (pageData[0].views / totalViews) * 100;
 
             div.innerHTML = `
@@ -352,7 +352,7 @@
         }
 
 
-        evtSource.onmessage = function(event) {
+        evtSource.onmessage = function (event) {
             try {
                 const data = JSON.parse(event.data);
 
@@ -361,7 +361,7 @@
                 document.getElementById('avgSession').textContent = `${data.avg ?? 0} users`;
 
                 const trafficContainer = document.getElementById('pageTraffic');
-                trafficContainer.innerHTML = ''; 
+                trafficContainer.innerHTML = '';
                 (data.pages ?? []).forEach((p, index, arr) => {
                     const totalViews = arr.reduce((sum, item) => sum + item.views, 1);
                     const width = (p.views / totalViews) * 100;
@@ -384,7 +384,7 @@
                     const newId = `${act.nama}-${act.page}-${act.time}`;
                     if (!existingIds.has(newId)) {
                         const newElement = createActivityElement(act);
-                        actContainer.prepend(newElement); 
+                        actContainer.prepend(newElement);
                     }
                 });
 
@@ -397,7 +397,7 @@
             }
         };
 
-        evtSource.onerror = function(err) {
+        evtSource.onerror = function (err) {
             console.error("SSE error:", err);
         };
     </script>
