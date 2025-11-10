@@ -93,6 +93,7 @@
                         </div>
                     </div>
                 </a>
+
                 <a href="product_favorite"
                     class="block bg-white p-6 rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl hover:border-blue-300 transition-all duration-300 transform hover:-translate-y-1">
                     <div class="flex items-center space-x-4 mb-4">
@@ -152,7 +153,36 @@
                     </div>
                 </a>
 
+                <a href="poin_member"
+                    class="block bg-white p-6 rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl hover:border-blue-300 transition-all duration-300 transform hover:-translate-y-1">
+                    <div class="flex items-center space-x-4 mb-4">
+                        <div class="p-3 rounded-lg bg-yellow-100 text-yellow-600">
+                            <i class="fas fa-gem"></i>
+                        </div>
+                        <h2 class="text-xl font-bold text-gray-800">Poin Member Tertinggi</h2>
+                    </div>
+                    <div id="poin-tertinggi-placeholder" class="space-y-3 text-sm">
+                        <div class="font-semibold text-gray-700 loading-placeholder">
+                            <i class="fas fa-spinner fa-spin"></i> Loading...
+                        </div>
+                    </div>
+                </a>
+                <a href="management_member"
+                    class="block bg-white p-6 rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl hover:border-blue-300 transition-all duration-300 transform hover:-translate-y-1">
+                    <div class="flex items-center space-x-4 mb-4">
+                        <div class="p-3 rounded-lg bg-teal-100 text-teal-600">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <h2 class="text-xl font-bold text-gray-800">Sebaran Member (Top 10)</h2>
+                    </div>
+                    <div id="sebaran-member-placeholder" class="space-y-3 text-sm">
+                        <div class="font-semibold text-gray-700 loading-placeholder">
+                            <i class="fas fa-spinner fa-spin"></i> Loading...
+                        </div>
+                    </div>
+                </a>
             </div>
+        </div>
         </div>
     </main>
 

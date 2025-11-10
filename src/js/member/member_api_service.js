@@ -2,8 +2,8 @@ import { sendRequestGET } from "../utils/api_helpers.js";
 
 const API_BASE_URL = "/src/api/member/product";
 const API_TRANSACTION_URL = "/src/api/transaction";
-// BARU: Tambahkan base URL untuk endpoint management
 const API_MANAGEMENT_URL = "/src/api/member/management";
+const API_MEMBER_URL = "/src/api/member";
 
 export const getProductFav = (startDate = null, endDate = null) => {
   const params = new URLSearchParams();
@@ -32,7 +32,19 @@ export const getTransactionBranchDetail = (cabang) => {
   return sendRequestGET(url);
 };
 
-// BARU: Tambahkan fungsi untuk mengambil summary member
 export const getMemberSummary = () => {
   return sendRequestGET(`${API_MANAGEMENT_URL}/get_summary.php`);
+};
+
+export const getMemberPoinList = (limit = 5, page = 1) => {
+  const params = new URLSearchParams();
+  params.append("limit", limit);
+  params.append("page", page);
+  return sendRequestGET(
+    `${API_MEMBER_URL}/member_poin_fetch.php?${params.toString()}`
+  );
+};
+
+export const getCityMember = () => {
+  return sendRequestGET(`${API_MANAGEMENT_URL}/get_city_member.php`);
 };
