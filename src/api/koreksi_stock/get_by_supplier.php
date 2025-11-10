@@ -114,13 +114,7 @@ try {
             k.sel_qty AS selqty,
             (k.qty_kor * k.avg_cost) AS t_rp,
             (k.sel_qty * k.avg_cost) AS t_selisih,
-            CASE k.type_kor
-                WHEN 0 THEN 'Manual GS'
-                WHEN 1 THEN 'Manual BS'
-                WHEN 2 THEN 'SO GS'
-                WHEN 3 THEN 'SO BS'
-                ELSE 'Lainnya'
-            END AS ket,
+            keterangan as ket,
             k.kode_supp,
             COALESCE(s.nama_supp, 'SUPPLIER LAIN/NON-AKTIF') AS nama_supp
         FROM
