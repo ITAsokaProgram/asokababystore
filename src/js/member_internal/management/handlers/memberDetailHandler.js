@@ -225,14 +225,56 @@ class MemberDetailHandler {
     };
   }
 
+  async loadMemberDetail(memberId) {
+    const detailPanel = document.getElementById("memberDetailPanel");
+    if (!detailPanel) {
+      console.error("Panel detail tidak ditemukan.");
+      return;
+    }
+
+    try {
+      // 1. Tampilkan loading
+      this.showLoadingState(detailPanel); // 2. Panggil API
+
+      const apiResponse = await api.getMemberDetail(memberId);
+
+      if (apiResponse.success && apiResponse.member) {
+        // 3. Map data
+        const mappedData = this.mapApiResponseToMemberData(apiResponse);
+        this.currentMember = apiResponse.member.kode_member;
+        // 4. Render detail
+        this.renderMemberDetail(detailPanel, mappedData);
+      } else {
+        throw new Error(apiResponse.message || "Data member tidak ditemukan");
+      }
+      this.currentMember = memberId;
+    } catch (apiError) {
+      console.error("Error loading member detail by ID:", apiError);
+      this.showErrorState(detailPanel, `Gagal memuat: ${apiError.message}`);
+    }
+  }
+
   highlightSelectedCard(selectedCard) {
     // Remove highlight from all cards
     document.querySelectorAll(".member-item").forEach((card) => {
-      card.classList.remove("ring-2", "ring-blue-500", "bg-blue-50");
-    });
+      card.classList.remove(
+        "ring-2",
+        "ring-blue-500",
+        "bg-blue-50",
+        "shadow-lg" // Tambahkan shadow-lg jika Anda mau
+      );
+    }); // Add highlight to selected card
 
-    // Add highlight to selected card
-    selectedCard.classList.add("ring-2", "ring-blue-500", "bg-blue-50");
+    // --- MODIFIKASI: Tambahkan pengecekan ---
+    if (selectedCard) {
+      selectedCard.classList.add(
+        "ring-2",
+        "ring-blue-500",
+        "bg-blue-50",
+        "shadow-lg"
+      );
+    }
+    // --- SELESAI MODIFIKASI ---
   }
 
   showLoadingState(detailPanel) {

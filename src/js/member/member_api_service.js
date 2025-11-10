@@ -54,3 +54,10 @@ export const getCityMember = () => {
 export const getTransactionDashboardData = () => {
   return sendRequestGET(`${API_DASHBOARD_URL}/get_data_transaction.php`);
 };
+
+export const getTopMemberBySales = () => {
+  return sendRequestGET(`${API_BASE_URL}/get_top_member.php`);
+};
+export const getCityMemberAll = () => {
+  return sendRequestGET(`${API_MANAGEMENT_URL}/get_city_member_all.php`);
+};

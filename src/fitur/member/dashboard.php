@@ -60,7 +60,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
                 <a href="management_member"
                     class="block bg-white p-6 rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl hover:border-blue-300 transition-all duration-300 transform hover:-translate-y-1">
@@ -133,7 +133,7 @@
                         <div class="p-3 rounded-lg bg-green-100 text-green-600">
                             <i class="fas fa-star"></i>
                         </div>
-                        <h2 class="text-xl font-bold text-gray-800">Top Produk Cabang</h2>
+                        <h2 class="text-xl font-bold text-gray-800">Top Produk Member</h2>
                     </div>
                     <div class="space-y-3 text-sm">
                         <div class="flex justify-between items-center">
@@ -183,7 +183,8 @@
                     </div>
                 </a>
 
-                <div class="block bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                <a class="block bg-white p-6 rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl hover:border-blue-300 transition-all duration-300 transform hover:-translate-y-1"
+                    href="../transaction/detail_transaksi_cabang?cabang=all">
                     <div class="flex items-center space-x-4 mb-4">
                         <div class="p-3 rounded-lg bg-orange-100 text-orange-600">
                             <i class="fas fa-cash-register"></i>
@@ -213,57 +214,67 @@
                             </span>
                         </div>
                     </div>
-                </div>
-
-                <div class="block bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
-                    <div class="flex items-center space-x-4 mb-4">
-                        <div class="p-3 rounded-lg bg-indigo-100 text-indigo-600">
-                            <i class="fas fa-store-alt"></i>
-                        </div>
-                        <h2 class="text-xl font-bold text-gray-800">Performa Cabang</h2>
-                    </div>
-                    <div class="space-y-3 text-sm">
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-500">Tertinggi:</span>
-                            <span id="trans-tertinggi-placeholder"
-                                class="font-semibold text-gray-700 loading-placeholder">
-                                <i class="fas fa-spinner fa-spin"></i> Loading...
-                            </span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-500">Terendah:</span>
-                            <span id="trans-terendah-placeholder"
-                                class="font-semibold text-gray-700 loading-placeholder">
-                                <i class="fas fa-spinner fa-spin"></i> Loading...
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="block bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                </a>
+                <a href="../member/top_sales"
+                    class="block bg-white p-6 rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl hover:border-blue-300 transition-all duration-300 transform hover:-translate-y-1">
                     <div class="flex items-center space-x-4 mb-4">
                         <div class="p-3 rounded-lg bg-red-100 text-red-600">
                             <i class="fas fa-trophy"></i>
                         </div>
-                        <h2 class="text-xl font-bold text-gray-800">Top Sales</h2>
+                        <h2 class="text-xl font-bold text-gray-800">Top Member (Sales)</h2>
+                    </div>
+                    <div id="top-member-sales-placeholder" class="space-y-3 text-sm">
+                        <div class="font-semibold text-gray-700 loading-placeholder">
+                            <i class="fas fa-spinner fa-spin"></i> Loading...
+                        </div>
+                    </div>
+                </a>
+                <a href="../transaction/transaksi_cabang"
+                    class="block bg-white p-6 rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl hover:border-blue-300 transition-all duration-300 transform hover:-translate-y-1">
+                    <div class="flex items-center space-x-4 mb-4">
+                        <div class="p-3 rounded-lg bg-indigo-100 text-indigo-600">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <h2 class="text-xl font-bold text-gray-800">Top Member (Cabang)</h2>
+                    </div>
+                    <div id="top-member-cabang-placeholder" class="space-y-3 text-sm">
+                        <div class="font-semibold text-gray-700 loading-placeholder">
+                            <i class="fas fa-spinner fa-spin"></i> Loading...
+                        </div>
+                    </div>
+                </a>
+                <a href="sebaran_member"
+                    class="block bg-white p-6 rounded-2xl shadow-lg border border-gray-100 hover:shadow-xl hover:border-blue-300 transition-all duration-300 transform hover:-translate-y-1">
+                    <div class="flex items-center space-x-4 mb-4">
+                        <div class="p-3 rounded-lg bg-cyan-100 text-cyan-600">
+                            <i class="fas fa-globe-asia"></i>
+                        </div>
+                        <h2 class="text-xl font-bold text-gray-800">Sebaran (3 Bulan)</h2>
                     </div>
                     <div class="space-y-3 text-sm">
                         <div class="flex justify-between items-center">
-                            <span class="text-gray-500">Top Produk:</span>
-                            <span id="top-produk-placeholder"
-                                class="font-semibold text-gray-700 truncate loading-placeholder" title="Loading...">
+                            <span class="text-gray-500">Total Member:</span>
+                            <span id="sebaran-total-member-placeholder"
+                                class="font-semibold text-gray-700 loading-placeholder">
                                 <i class="fas fa-spinner fa-spin"></i> Loading...
                             </span>
                         </div>
                         <div class="flex justify-between items-center">
-                            <span class="text-gray-500">Top Member:</span>
-                            <span id="top-member-placeholder"
+                            <span class="text-gray-500">Total Kota:</span>
+                            <span id="sebaran-total-kota-placeholder"
+                                class="font-semibold text-gray-700 loading-placeholder">
+                                <i class="fas fa-spinner fa-spin"></i> Loading...
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-500">Kota Terbesar:</span>
+                            <span id="sebaran-kota-terbesar-placeholder"
                                 class="font-semibold text-gray-700 truncate loading-placeholder" title="Loading...">
                                 <i class="fas fa-spinner fa-spin"></i> Loading...
                             </span>
                         </div>
                     </div>
-                </div>
+                </a>
 
             </div>
         </div>
