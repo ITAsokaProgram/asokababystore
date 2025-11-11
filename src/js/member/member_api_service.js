@@ -150,3 +150,19 @@ export const getTopMemberProductPairs = (filter, status, limit = 10) => {
   const url = `${API_MANAGEMENT_URL}/get_top_member_product_pairs.php?${params.toString()}`;
   return sendRequestGET(url);
 };
+
+export const getTopProductsByCustomer = (
+  filter,
+  kdCust,
+  page = 1,
+  limit = 10
+) => {
+  const params = new URLSearchParams();
+  params.append("filter", filter);
+  params.append("kd_cust", kdCust);
+  params.append("page", page);
+  params.append("limit", limit);
+
+  const url = `${API_MANAGEMENT_URL}/get_top_products_by_customer.php?${params.toString()}`;
+  return sendRequestGET(url);
+};

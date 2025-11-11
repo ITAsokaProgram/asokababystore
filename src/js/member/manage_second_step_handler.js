@@ -274,13 +274,29 @@ function renderTopMemberChart(data) {
           },
         },
       },
+      onClick: (e, elements) => {
+        if (elements.length === 0) return;
+        const clickedElementIndex = elements[0].index;
+        const customerData = data[clickedElementIndex]; // Ambil data customer dari array 'data'
+        if (customerData) {
+          const targetUrl = `customer.php?filter=${encodeURIComponent(
+            currentFilter
+          )}&status=${encodeURIComponent(
+            currentStatus
+          )}&kd_cust=${encodeURIComponent(
+            customerData.kd_cust
+          )}&nama_cust=${encodeURIComponent(customerData.nama_cust)}`;
+          window.location.href = targetUrl;
+        }
+      },
       onHover: (event, chartElement) => {
         const canvas = event.native.target;
-        canvas.style.cursor = chartElement.length > 0 ? "default" : "default";
+        canvas.style.cursor = chartElement.length > 0 ? "pointer" : "default";
       },
     },
   });
 }
+
 function renderTopProductChart(data) {
   const ctx = document.getElementById("topMemberProductChart").getContext("2d");
   if (topMemberProductChartInstance) {
@@ -323,9 +339,24 @@ function renderTopProductChart(data) {
           },
         },
       },
+      onClick: (e, elements) => {
+        if (elements.length === 0) return;
+        const clickedElementIndex = elements[0].index;
+        const customerData = data[clickedElementIndex]; // Ambil data customer dari array 'data'
+        if (customerData) {
+          const targetUrl = `customer.php?filter=${encodeURIComponent(
+            currentFilter
+          )}&status=${encodeURIComponent(
+            currentStatus
+          )}&kd_cust=${encodeURIComponent(
+            customerData.kd_cust
+          )}&nama_cust=${encodeURIComponent(customerData.nama_cust)}`;
+          window.location.href = targetUrl;
+        }
+      },
       onHover: (event, chartElement) => {
         const canvas = event.native.target;
-        canvas.style.cursor = chartElement.length > 0 ? "default" : "default";
+        canvas.style.cursor = chartElement.length > 0 ? "pointer" : "default";
       },
     },
   });
