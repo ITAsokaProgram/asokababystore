@@ -32,14 +32,11 @@ $token = $menuHandler->getToken();
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Beranda</title>
 
-  <!-- font awesome cdn link  -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
 
-  <!-- Penjelasan: Link ke CSS eksternal dengan cache busting query string -->
   <link rel="stylesheet" href="css/header.css">
   <link rel="stylesheet" href="css/sidebar.css">
   <link rel="stylesheet" href="css/animation-fade-in.css">
-  <!-- Setting logo pada tab di website Anda / Favicon -->
   <link rel="icon" type="image/png" href="images/logo1.png">
   <link
     href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
@@ -49,7 +46,6 @@ $token = $menuHandler->getToken();
   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 
   <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-  <!-- <link rel="stylesheet" href="src/style/output.css"> -->
   <style>
     /* --- Enhanced Card & Glass Styles --- */
     .glass-container {
@@ -101,9 +97,7 @@ $token = $menuHandler->getToken();
 
   <main id="main-content" class="flex-1 p-8 transition-all duration-300 ml-64 mt-16 bg-gray-100">
 
-    <!-- Shortcut Menu -->
     <section class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-3 gap-4 mb-8">
-      <!-- Member Card Enhanced - Modified -->
       <div
         class="dashboard-card bg-gradient-to-br from-blue-50 via-white to-indigo-100 rounded-2xl p-2 shadow border border-blue-200/70 backdrop-blur-sm animate-fade-in-up">
         <div class="flex items-center justify-between mb-3">
@@ -117,7 +111,6 @@ $token = $menuHandler->getToken();
         </div>
 
         <div class="space-y-4">
-          <!-- Top Sales -->
           <div
             class="cursor-pointer bg-gradient-to-br from-white/90 to-blue-50/80 rounded-xl p-1.5 shadow border border-blue-100/60 hover:scale-105 hover:shadow-md transition-all duration-300 flex flex-col animate-fade-in-up"
             onclick="window.location.href='/src/fitur/member/top_sales'">
@@ -135,7 +128,6 @@ $token = $menuHandler->getToken();
             </div>
           </div>
 
-          <!-- Produk Favorit -->
           <div
             class="cursor-pointer bg-gradient-to-br from-white/90 to-amber-50/80 rounded-xl p-1.5 shadow border border-amber-100/60 hover:scale-105 hover:shadow-md transition-all duration-300 flex flex-col animate-fade-in-up"
             onclick="window.location.href='/src/fitur/member/product_favorite'">
@@ -177,7 +169,6 @@ $token = $menuHandler->getToken();
         </div>
       </div>
 
-      <!-- Transaksi Card -->
       <div
         class="dashboard-card bg-gradient-to-br from-emerald-50 to-teal-100 rounded-xl p-3 shadow-lg border border-emerald-200/50 backdrop-blur-sm">
         <div class="flex items-center justify-between mb-2">
@@ -215,9 +206,7 @@ $token = $menuHandler->getToken();
           </div>
         </div>
 
-        <!-- Stats -->
         <div class="space-y-1.5 mb-2 text-xs">
-          <!-- Tertinggi -->
           <div
             class="bg-gradient-to-br from-emerald-50 via-white to-emerald-100 rounded-xl p-1.5 shadow border border-emerald-200/80 transition-all duration-200 hover:shadow-lg hover:scale-[1.01] cursor-pointer backdrop-blur-sm animate-fade-in-up"
             onclick="window.location.href='/src/fitur/transaction/transaksi_cabang'">
@@ -236,7 +225,6 @@ $token = $menuHandler->getToken();
             </div>
           </div>
 
-          <!-- Terendah -->
           <div
             class="bg-gradient-to-br from-teal-50 via-white to-teal-100 rounded-xl p-1.5 shadow border border-teal-200/80 transition-all duration-200 hover:shadow-lg hover:scale-[1.01] cursor-pointer backdrop-blur-sm animate-fade-in-up"
             onclick="window.location.href='/src/fitur/transaction/transaksi_cabang'">
@@ -256,7 +244,6 @@ $token = $menuHandler->getToken();
         </div>
       </div>
 
-      <!-- Invalid Transaksi -->
       <div
         class="dashboard-card bg-gradient-to-br from-red-50 to-rose-100 rounded-xl p-3 shadow-lg border border-red-200/50 backdrop-blur-sm">
         <div class="flex items-center justify-between mb-2">
@@ -272,16 +259,13 @@ $token = $menuHandler->getToken();
           </div>
         </div>
 
-        <!-- Top Invalid Transaksi -->
         <div class="grid grid-cols-1 gap-2 mb-2 text-xs" id="invalid-transaksi-container">
-          <!-- Data akan diisi oleh JavaScript -->
           <div class="flex items-center justify-center text-gray-500 bg-white/60 rounded-xl p-2">
             <i class="fa-solid fa-spinner fa-spin mr-1"></i> Loading...
           </div>
         </div>
       </div>
 
-      <!-- Transaksi Margin Minus -->
       <div
         class="dashboard-card bg-gradient-to-br from-orange-50 to-amber-100 rounded-xl p-4 shadow-lg border border-orange-200/50 backdrop-blur-sm">
         <div class="flex items-center justify-between mb-2">
@@ -297,14 +281,12 @@ $token = $menuHandler->getToken();
           </div>
         </div>
         <div id="top-margin-minus-container" class="grid grid-cols-1 gap-2 text-xs">
-          <!-- Data akan diisi oleh JavaScript -->
           <div class="flex items-center justify-center text-gray-500 bg-white/60 rounded-xl p-2">
             <i class="fa-solid fa-spinner fa-spin mr-1"></i> Loading...
           </div>
         </div>
       </div>
 
-      <!-- Retur Barang -->
       <div
         class="dashboard-card bg-gradient-to-br from-purple-50 to-violet-100 rounded-xl p-4 shadow-lg border border-purple-200/50 backdrop-blur-sm">
         <div class="flex items-center justify-between mb-3">
@@ -320,16 +302,13 @@ $token = $menuHandler->getToken();
           </div>
         </div>
 
-        <!-- Top Retur Barang -->
         <div class="grid grid-cols-1 gap-2 mb-3 text-xs" id="top-retur-container">
-          <!-- Data akan diisi oleh JavaScript -->
           <div class="flex items-center justify-center text-gray-500 bg-white/60 rounded-xl p-2">
             <i class="fa-solid fa-spinner fa-spin mr-1"></i> Loading...
           </div>
         </div>
       </div>
 
-      <!-- Aktifitas Transaksi -->
       <div
         class="dashboard-card bg-gradient-to-br from-indigo-50 to-blue-100 rounded-xl p-4 shadow-lg border border-indigo-200/50 backdrop-blur-sm">
         <div class="flex items-center justify-between mb-3">
@@ -345,9 +324,7 @@ $token = $menuHandler->getToken();
           </div>
         </div>
 
-        <!-- Top Aktifitas Transaksi -->
         <div class="grid grid-cols-1 gap-2 mb-3 text-xs" id="top-activity-container">
-          <!-- Data akan diisi oleh JavaScript -->
           <div class="flex items-center justify-center text-gray-500 bg-white/60 rounded-xl p-2">
             <i class="fa-solid fa-spinner fa-spin mr-1"></i> Loading...
           </div>
@@ -372,7 +349,6 @@ $token = $menuHandler->getToken();
           <div id="featured-review-container">
           </div>
 
-          <!-- Rating & Total Reviews Combined -->
           <div
             class="cursor-pointer bg-gradient-to-br from-white/90 to-yellow-50/80 rounded-xl p-1.5 shadow border border-yellow-100/60 hover:scale-105 hover:shadow-md transition-all duration-300 flex flex-col animate-fade-in-up"
             onclick="window.location.href='/src/fitur/laporan/in_review_cust'">
@@ -391,7 +367,6 @@ $token = $menuHandler->getToken();
               <span id="total-reviews" class="whitespace-nowrap font-bold text-amber-700">-</span>
             </div>
           </div>
-          <!-- Pending Reviews -->
           <div
             class="cursor-pointer bg-gradient-to-br from-white/90 to-orange-50/80 rounded-xl p-1.5 shadow border border-orange-100/60 hover:scale-105 hover:shadow-md transition-all duration-300 flex flex-col animate-fade-in-up"
             onclick="window.location.href='/src/fitur/laporan/in_review_cust'">
@@ -414,24 +389,9 @@ $token = $menuHandler->getToken();
     </section>
 
 
-    <!-- <section class="animate-fade-in-up "> -->
-    <!-- WRAPPER yang selalu center -->
-    <!-- <div class="flex items-center justify-center"> -->
-    <!-- CONTAINER yang lebarnya fleksibel -->
-    <!-- <div class="flex items-center gap-3 px-4 py-3 -->
-    <!-- backdrop-blur-sm bg-white/90 rounded-xl shadow-xl -->
-    <!-- w-auto max-w-[90vw]"> -->
-    <!-- <span -->
-    <!-- class="text-2xl text-yellow-400 transition-all duration-200 hover:text-yellow-300 hover:opacity-80 cursor-pointer" -->
-    <!-- onclick="window.location.href='/src/fitur/laporan/in_review_cust'" title="Review"> -->
-    <!-- <i class="fa fa-star"></i> -->
-    <!-- </span>
-        </div>
-      </div>
-    </section> -->
 
-    <!-- Grafik Penjualan -->
-    <section
+
+    <!-- <section
       class="glass-container animate-fade-in-up mt-8 backdrop-blur-sm bg-white/90 rounded-2xl shadow-xl border border-white/20 p-8">
       <div
         class="flex flex-col lg:flex-row items-center justify-between mb-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200/50">
@@ -453,7 +413,6 @@ $token = $menuHandler->getToken();
         </div>
       </div>
 
-      <!-- Controls Section -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div class="bg-white/80 rounded-xl p-4 border border-blue-100/50 shadow-sm">
           <label for="period1" class="block text-blue-700 font-semibold mb-2 flex items-center gap-2">
@@ -483,9 +442,7 @@ $token = $menuHandler->getToken();
         </div>
       </div>
 
-      <!-- Charts Grid -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <!-- Chart 1 -->
         <div
           class="bg-gradient-to-br from-white/95 to-blue-50/50 rounded-2xl shadow-lg p-6 h-[420px] relative border border-blue-200/50 hover:shadow-xl transition-all duration-300">
           <div class="flex items-center justify-between mb-4">
@@ -504,7 +461,6 @@ $token = $menuHandler->getToken();
           <div id="chart1" class="w-full h-[350px]"></div>
         </div>
 
-        <!-- Chart 2 -->
         <div
           class="bg-gradient-to-br from-white/95 to-indigo-50/50 rounded-2xl shadow-lg p-6 h-[420px] relative border border-indigo-200/50 hover:shadow-xl transition-all duration-300">
           <div class="flex items-center justify-between mb-4">
@@ -523,10 +479,9 @@ $token = $menuHandler->getToken();
           <div id="chart2" class="w-full h-[350px]"></div>
         </div>
       </div>
-    </section>
+    </section> -->
   </main>
 
-  <!-- custom js file link -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.3.0/dist/echarts.min.js"></script>
