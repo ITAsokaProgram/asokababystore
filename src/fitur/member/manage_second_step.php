@@ -4,6 +4,10 @@ $filter = htmlspecialchars($_GET['filter'] ?? '3bulan');
 $status = htmlspecialchars($_GET['status'] ?? 'unknown');
 
 $status_display = ($status === 'active') ? 'Aktif' : (($status === 'inactive') ? 'Inaktif' : 'Tidak Diketahui');
+$filterDisplay = ($filter === '3bulan') ? '3 Bulan Terakhir' :
+    (($filter === '6bulan') ? '6 Bulan Terakhir' :
+        (($filter === '9bulan') ? '9 Bulan Terakhir' :
+            (($filter === '12bulan') ? '1 Tahun Terakhir' : 'Semua Waktu')));
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -32,6 +36,7 @@ $status_display = ($status === 'active') ? 'Aktif' : (($status === 'inactive') ?
     <?php include '../../component/sidebar_report.php'; ?>
     <main id="main-content" class="flex-1 p-2 lg:p-4 transition-all duration-300 ml-64">
         <div class="max-w-7xl mx-auto space-y-6">
+
             <div class="member-card fade-in p-4">
                 <div class="page-header">
                     <h1 class="page-title">
@@ -39,8 +44,8 @@ $status_display = ($status === 'active') ? 'Aktif' : (($status === 'inactive') ?
                         Data Member
                     </h1>
                     <p class="page-subtitle">
-                        Menampilkan produk terlaris berdasarkan Filter Waktu: <strong><?php echo $filter; ?></strong>
-                        dan Status Member: <strong><?php echo $status; ?></strong>
+                        Berdasarkan Filter Waktu: <strong><?php echo $filterDisplay; ?></strong>
+                        dan Status Member: <strong><?php echo $status_display; ?></strong>
                         .
 
                     </p>
@@ -50,57 +55,108 @@ $status_display = ($status === 'active') ? 'Aktif' : (($status === 'inactive') ?
                     Kembali
                 </a>
             </div>
-            <div class="member-card slide-up p-4">
-                <div class="page-header mb-6">
-                    <h2 class="text-2xl font-semibold gradient-text">
-                        <i class="fa-solid fa-chart-pie mr-2"></i>
-                        Distribusi Umur Member (
-                        <?php echo $status_display; ?>)
-                    </h2>
-                </div>
-
-                <div id="loading-spinner" class="loading-spinner">
-                    <i class="fa-solid fa-spinner fa-spin"></i>
-                    <p class="loading-text">Memuat data chart umur...</p>
-                </div>
-
-                <div id="age-chart-container" class="chart-wrapper hidden">
-                    <div class="chart-container"> <canvas id="memberAgeChart"></canvas>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="member-card slide-up p-4">
+                    <div class="page-header mb-6">
+                        <h2 class="text-2xl font-semibold gradient-text">
+                            <i class="fa-solid fa-chart-pie mr-2"></i>
+                            Distribusi Umur Member (
+                            <?php echo $status_display; ?>)
+                        </h2>
                     </div>
-                </div>
 
-                <p id="age-chart-error" class="error-message hidden"></p>
+                    <div id="loading-spinner" class="loading-spinner">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        <p class="loading-text">Memuat data chart umur...</p>
+                    </div>
+
+                    <div id="age-chart-container" class="chart-wrapper hidden">
+                        <div class="chart-container"> <canvas id="memberAgeChart"></canvas>
+                        </div>
+                    </div>
+
+                    <p id="age-chart-error" class="error-message hidden"></p>
+                </div>
+                <div class="member-card slide-up p-4">
+                    <div class="page-header mb-6">
+                        <h2 class="text-2xl font-semibold gradient-text">
+                            <i class="fa-solid fa-map-location-dot mr-2"></i>
+                            Distribusi Lokasi Member (
+                            <?php echo $status_display; ?>)
+                        </h2>
+                    </div>
+
+                    <div id="location-chart-header" class="mb-4 hidden">
+                        <button id="location-back-btn" class="btn-back-chart">
+                            <i class="fa-solid fa-arrow-left mr-2"></i>
+                            Kembali
+                        </button>
+                        <span id="location-breadcrumb" class="text-lg font-medium ml-4"></span>
+                    </div>
+
+                    <div id="location-loading-spinner" class="loading-spinner">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        <p class="loading-text">Memuat data chart lokasi...</p>
+                    </div>
+
+                    <div id="location-chart-container" class="chart-wrapper hidden">
+                        <div class="chart-container">
+                            <canvas id="memberLocationChart"></canvas>
+                        </div>
+                    </div>
+
+                    <p id="location-chart-error" class="error-message hidden"></p>
+                </div>
             </div>
 
-            <div class="member-card slide-up p-4">
-                <div class="page-header mb-6">
-                    <h2 class="text-2xl font-semibold gradient-text">
-                        <i class="fa-solid fa-map-location-dot mr-2"></i>
-                        Distribusi Lokasi Member (
-                        <?php echo $status_display; ?>)
-                    </h2>
-                </div>
 
-                <div id="location-chart-header" class="mb-4 hidden">
-                    <button id="location-back-btn" class="btn-back-chart">
-                        <i class="fa-solid fa-arrow-left mr-2"></i>
-                        Kembali
-                    </button>
-                    <span id="location-breadcrumb" class="text-lg font-medium ml-4"></span>
-                </div>
 
-                <div id="location-loading-spinner" class="loading-spinner">
-                    <i class="fa-solid fa-spinner fa-spin"></i>
-                    <p class="loading-text">Memuat data chart lokasi...</p>
-                </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-                <div id="location-chart-container" class="chart-wrapper hidden">
-                    <div class="chart-container">
-                        <canvas id="memberLocationChart"></canvas>
+                <div class="member-card slide-up p-4">
+                    <div class="page-header mb-6">
+                        <h2 class="text-2xl font-semibold gradient-text">
+                            <i class="fa-solid fa-star mr-2"></i>
+                            Top 10 Member (Total Belanja)
+                        </h2>
+
                     </div>
-                </div>
 
-                <p id="location-chart-error" class="error-message hidden"></p>
+                    <div id="top-member-chart-loading-spinner" class="loading-spinner">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        <p class="loading-text">Memuat data top member...</p>
+                    </div>
+
+                    <div id="top-member-chart-container" class="chart-wrapper hidden">
+                        <div class="chart-container">
+                            <canvas id="topMemberChart"></canvas>
+                        </div>
+                    </div>
+
+                    <p id="top-member-chart-error" class="error-message hidden"></p>
+                </div>
+                <div class="member-card slide-up p-4">
+                    <div class="page-header mb-6">
+                        <h2 class="text-2xl font-semibold gradient-text">
+                            <i class="fa-solid fa-basket-shopping mr-2"></i>
+                            Top 10 Pembelian Produk
+                        </h2>
+
+                    </div>
+
+                    <div id="top-product-chart-loading-spinner" class="loading-spinner">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        <p class="loading-text">Memuat data produk terlaris...</p>
+                    </div>
+
+                    <div id="top-product-chart-container" class="chart-wrapper hidden">
+                        <div class="chart-container">
+                            <canvas id="topMemberProductChart"></canvas>
+                        </div>
+                    </div>
+
+                    <p id="top-product-chart-error" class="error-message hidden"></p>
+                </div>
             </div>
         </div>
     </main>

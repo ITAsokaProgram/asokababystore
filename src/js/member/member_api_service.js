@@ -130,3 +130,23 @@ export const getTopProductsByLocation = (
   const url = `${API_MANAGEMENT_URL}/get_top_products_by_location.php?${params.toString()}`;
   return sendRequestGET(url);
 };
+
+export const getTopMembersByFilter = (filter, status, limit = 10) => {
+  const params = new URLSearchParams();
+  params.append("filter", filter);
+  params.append("status", status);
+  params.append("limit", limit);
+
+  const url = `${API_MANAGEMENT_URL}/get_top_members_by_filter.php?${params.toString()}`;
+  return sendRequestGET(url);
+};
+
+export const getTopMemberProductPairs = (filter, status, limit = 10) => {
+  const params = new URLSearchParams();
+  params.append("filter", filter);
+  params.append("status", status);
+  params.append("limit", limit);
+
+  const url = `${API_MANAGEMENT_URL}/get_top_member_product_pairs.php?${params.toString()}`;
+  return sendRequestGET(url);
+};
