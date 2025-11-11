@@ -1,0 +1,594 @@
+/* ========================================
+   MEMBER MANAGEMENT - MODERN STYLING
+   (Adjusted for smaller padding/margins)
+   ======================================== */
+
+:root {
+  --primary-color: #ec4899;
+  --primary-dark: #db2777;
+  --primary-light: #f472b6;
+  --secondary-color: #f43f5e;
+  --accent-color: #fb7185;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --danger-color: #ef4444;
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+
+  --gradient-primary: linear-gradient(90deg, #ec4899 0%, #f43f5e 100%);
+  --gradient-secondary: linear-gradient(135deg, #ec4899, #f43f5e);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* ========================================
+   GLOBAL OVERRIDES
+   ======================================== */
+
+body {
+  background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 50%, #fff1f2 100%);
+  min-height: 100vh;
+}
+
+/* ========================================
+   CARD STYLING - Modern Glass Effect
+   ======================================== */
+
+.member-card {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border-radius: 1rem; /* Reduced */
+  border: 1px solid rgba(236, 72, 153, 0.1);
+  box-shadow: 0 8px 32px rgba(236, 72, 153, 0.12);
+  transition: all 0.3s ease;
+}
+
+.member-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(236, 72, 153, 0.18);
+  border-color: rgba(236, 72, 153, 0.2);
+}
+
+/* ========================================
+   STAT CARDS - Dashboard Statistics
+   ======================================== */
+
+.stat-card {
+  position: relative;
+  padding: 1rem; /* Reduced from 1.5rem */
+  border-radius: 1rem; /* Reduced */
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.stat-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--gradient-primary);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.stat-card:hover::before {
+  transform: scaleX(1);
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+}
+
+.stat-card-total {
+  background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%);
+  border: 1px solid #f9a8d4;
+}
+
+.stat-card-active {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  border: 1px solid #6ee7b7;
+}
+
+.stat-card-inactive {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  border: 1px solid #fca5a5;
+}
+
+.stat-icon {
+  width: 40px; /* Reduced */
+  height: 40px; /* Reduced */
+  border-radius: 0.75rem; /* Reduced */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px; /* Reduced */
+  margin-bottom: 0.5rem; /* Reduced */
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover .stat-icon {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.stat-icon-total {
+  background: var(--gradient-primary);
+  color: white;
+}
+
+.stat-icon-active {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+
+.stat-icon-inactive {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+}
+
+/* ========================================
+   FORM CONTROLS - Modern Input Styling
+   ======================================== */
+
+.member-select {
+  appearance: none;
+  background-color: white;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%23ec4899' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding: 0.5rem 2.5rem 0.5rem 0.75rem; /* Reduced */
+  border: 2px solid var(--gray-200);
+  border-radius: 0.75rem; /* Reduced */
+  font-size: 0.8125rem; /* Reduced */
+  font-weight: 500;
+  color: var(--gray-800);
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.member-select:hover {
+  border-color: var(--primary-light);
+  background-color: var(--gray-50);
+}
+
+.member-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1);
+  background-color: white;
+}
+
+.member-label {
+  display: block;
+  font-size: 0.8125rem; /* Reduced */
+  font-weight: 600;
+  color: var(--gray-700);
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.01em;
+}
+
+/* ========================================
+   BUTTONS - Modern Button Styling
+   ======================================== */
+
+.btn-primary {
+  background: var(--gradient-primary);
+  color: white;
+  padding: 0.5rem 1rem; /* Reduced */
+  border-radius: 0.75rem; /* Reduced */
+  font-weight: 600;
+  font-size: 0.8125rem; /* Reduced */
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-back {
+  color: var(--primary-color);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.btn-back:hover {
+  background-color: rgba(236, 72, 153, 0.05);
+  transform: translateX(-4px);
+}
+
+/* ========================================
+   CHART CONTAINER - Modern Chart Styling
+   ======================================== */
+
+.chart-wrapper {
+  position: relative;
+  padding: 1rem; /* Reduced from 2rem */
+  background: white;
+  border-radius: 1rem; /* Reduced */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--gray-100);
+}
+
+.chart-container {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 0.5rem; /* Reduced */
+}
+
+/* ========================================
+   TABLE STYLING - Modern Data Table
+   ======================================== */
+
+.member-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  border-radius: 0.75rem; /* Reduced */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.member-table thead {
+  background: var(--gradient-primary);
+}
+
+.member-table thead th {
+  padding: 0.5rem 0.75rem; /* Reduced */
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: white;
+}
+
+.member-table tbody tr {
+  background: white;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.member-table tbody tr:hover {
+  background: linear-gradient(
+    90deg,
+    rgba(236, 72, 153, 0.03) 0%,
+    rgba(244, 63, 94, 0.03) 100%
+  );
+  transform: scale(1); /* Removed hover scale */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.member-table tbody td {
+  padding: 0.5rem 0.75rem; /* Reduced */
+  font-size: 0.8125rem; /* Reduced */
+  color: var(--gray-700);
+}
+
+.member-table tbody td:first-child {
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.member-table tbody td:last-child {
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+/* ========================================
+   PAGINATION - Modern Pagination Style
+   ======================================== */
+
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem; /* Reduced */
+  padding: 0.75rem; /* Reduced */
+  background: var(--gray-50);
+  border-radius: 0.75rem; /* Reduced */
+}
+
+.pagination-info {
+  font-size: 0.8125rem; /* Reduced */
+  color: var(--gray-600);
+  font-weight: 500;
+}
+
+.pagination-buttons {
+  display: flex;
+  gap: 0.25rem; /* Reduced */
+  align-items: center;
+}
+
+.pagination-btn {
+  min-width: 32px; /* Reduced */
+  height: 32px; /* Reduced */
+  padding: 0 0.5rem; /* Reduced */
+  border-radius: 0.5rem; /* Reduced */
+  font-size: 0.8125rem; /* Reduced */
+  font-weight: 600;
+  border: 1px solid var(--gray-200);
+  background: white;
+  color: var(--gray-700);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  background: rgba(236, 72, 153, 0.05);
+  transform: translateY(-1px);
+}
+
+.pagination-btn.active {
+  background: var(--gradient-primary);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 2px 8px rgba(236, 72, 153, 0.3);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: var(--gray-100);
+}
+
+.pagination-ellipsis {
+  padding: 0 0.5rem;
+  color: var(--gray-400);
+  font-weight: 500;
+}
+
+/* ========================================
+   LOADING & ERROR STATES
+   ======================================== */
+
+.loading-spinner {
+  text-align: center;
+  padding: 2rem 1rem; /* Reduced */
+}
+
+.loading-spinner i {
+  font-size: 2.5rem; /* Reduced */
+  color: var(--primary-color);
+  animation: spin 1s linear infinite;
+}
+
+.loading-text {
+  margin-top: 0.75rem; /* Reduced */
+  color: var(--gray-600);
+  font-weight: 500;
+  font-size: 0.8125rem; /* Reduced */
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error-message {
+  text-align: center;
+  padding: 1rem; /* Reduced */
+  color: var(--danger-color);
+  font-weight: 500;
+  background: rgba(239, 68, 68, 0.05);
+  border-radius: 0.75rem; /* Reduced */
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* ========================================
+   PAGE HEADER
+   ======================================== */
+
+.page-header {
+  margin-bottom: 1rem; /* Reduced */
+}
+
+.page-title {
+  font-size: 1.75rem; /* Reduced */
+  font-weight: 700;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.25rem; /* Reduced */
+}
+
+.page-subtitle {
+  color: var(--gray-600);
+  font-size: 0.9rem; /* Reduced */
+  line-height: 1.6;
+}
+
+.page-subtitle strong {
+  color: var(--primary-color);
+  font-weight: 700;
+}
+
+/* ========================================
+   FILTER FORM - Enhanced Form Layout
+   ======================================== */
+
+.filter-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem; /* Reduced */
+  align-items: flex-end;
+}
+
+.filter-group {
+  flex: 1;
+  min-width: 200px;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+@media (max-width: 768px) {
+  .member-card {
+    border-radius: 1rem; /* Reduced */
+    padding: 0.75rem !important; /* Reduced */
+  }
+
+  .stat-card {
+    padding: 0.75rem; /* Reduced */
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+  }
+
+  .filter-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-group {
+    width: 100%;
+  }
+
+  .member-table thead th,
+  .member-table tbody td {
+    padding: 0.5rem; /* Reduced */
+    font-size: 0.75rem; /* Reduced */
+  }
+
+  .pagination-container {
+    flex-direction: column;
+    gap: 0.75rem; /* Reduced */
+  }
+
+  .chart-wrapper {
+    padding: 0.75rem; /* Reduced */
+  }
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+
+.gradient-text {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem; /* Reduced */
+  border-radius: 9999px;
+  font-size: 0.7rem; /* Reduced */
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-primary {
+  background: rgba(236, 72, 153, 0.1);
+  color: var(--primary-dark);
+}
+
+.badge-success {
+  background: rgba(16, 185, 129, 0.1);
+  color: #047857;
+}
+
+.badge-danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: #b91c1c;
+}
+
+/* ========================================
+   ANIMATION HELPERS
+   ======================================== */
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-up {
+  animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========================================
+   SCROLLBAR STYLING
+   ======================================== */
+
+.member-table-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.member-table-container::-webkit-scrollbar-track {
+  background: var(--gray-100);
+  border-radius: 4px;
+}
+
+.member-table-container::-webkit-scrollbar-thumb {
+  background: var(--gradient-primary);
+  border-radius: 4px;
+}
+
+.member-table-container::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-dark);
+}

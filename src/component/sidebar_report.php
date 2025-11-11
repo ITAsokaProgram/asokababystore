@@ -543,7 +543,7 @@
             <div x-show="open" @click.away="open = false"
                 class="mt-3 ml-4 bg-gradient-to-br from-white to-teal-50 rounded-xl shadow-xl border border-teal-200 z-10 backdrop-blur-sm"
                 style="display: none;">
-                <ul class="py-2">
+                <!-- <ul class="py-2">
                     <li>
                         <a href="/src/fitur/member/dashboard" data-menu="member_poin"
                             class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-teal-100 hover:text-teal-700 transition-all duration-200 group rounded-lg">
@@ -555,7 +555,7 @@
                             </span>
                         </a>
                     </li>
-                </ul>
+                </ul> -->
                 <ul class="py-2">
                     <li>
                         <a href="/src/fitur/member/poin_member" data-menu="member_poin"
@@ -583,7 +583,7 @@
                         </a>
                     </li>
                 </ul>
-                <ul class="py-2">
+                <!-- <ul class="py-2">
                     <li>
                         <a href="/src/fitur/member/manage" data-menu="member_poin"
                             class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-teal-100 hover:text-teal-700 transition-all duration-200 group rounded-lg">
@@ -595,7 +595,7 @@
                             </span>
                         </a>
                     </li>
-                </ul>
+                </ul> -->
             </div>
         </div>
 

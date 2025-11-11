@@ -217,35 +217,35 @@
 
         // Sample data
         const sampleData = [{
-                kota: "Jakarta",
-                total: 1250,
-                persen: 35.2
-            },
-            {
-                kota: "Surabaya",
-                total: 890,
-                persen: 25.1
-            },
-            {
-                kota: "Bandung",
-                total: 675,
-                persen: 19.0
-            },
-            {
-                kota: "Medan",
-                total: 420,
-                persen: 11.8
-            },
-            {
-                kota: "Makassar",
-                total: 215,
-                persen: 6.1
-            },
-            {
-                kota: "Yogyakarta",
-                total: 98,
-                persen: 2.8
-            }
+            kota: "Jakarta",
+            total: 1250,
+            persen: 35.2
+        },
+        {
+            kota: "Surabaya",
+            total: 890,
+            persen: 25.1
+        },
+        {
+            kota: "Bandung",
+            total: 675,
+            persen: 19.0
+        },
+        {
+            kota: "Medan",
+            total: 420,
+            persen: 11.8
+        },
+        {
+            kota: "Makassar",
+            total: 215,
+            persen: 6.1
+        },
+        {
+            kota: "Yogyakarta",
+            total: 98,
+            persen: 2.8
+        }
         ];
 
         // Warna chart
@@ -369,7 +369,7 @@
                         },
                         tooltip: {
                             callbacks: {
-                                label: function(context) {
+                                label: function (context) {
                                     const item = topData[context.dataIndex];
                                     return `${context.label}: ${context.parsed.toLocaleString()} member (${item.persen}%)`;
                                 }

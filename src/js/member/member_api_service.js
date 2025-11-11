@@ -60,3 +60,31 @@ export const getTopMemberBySales = () => {
 export const getCityMemberAll = () => {
   return sendRequestGET(`${API_MANAGEMENT_URL}/get_city_member_all.php`);
 };
+
+export const getMemberActivity = (filter) => {
+  const params = new URLSearchParams();
+  params.append("filter", filter);
+
+  const url = `${API_MANAGEMENT_URL}/get_member_activity.php?${params.toString()}`;
+  return sendRequestGET(url);
+};
+
+export const getMemberByAge = (filter, status) => {
+  const params = new URLSearchParams();
+  params.append("filter", filter);
+  params.append("status", status);
+
+  const url = `${API_MANAGEMENT_URL}/get_member_by_age.php?${params.toString()}`;
+  return sendRequestGET(url);
+};
+
+export const getTopProductsByAge = (filter, ageGroup, page = 1, limit = 10) => {
+  const params = new URLSearchParams();
+  params.append("filter", filter);
+  params.append("age_group", ageGroup);
+  params.append("page", page);
+  params.append("limit", limit);
+
+  const url = `${API_MANAGEMENT_URL}/get_top_products_by_age.php?${params.toString()}`;
+  return sendRequestGET(url);
+};
