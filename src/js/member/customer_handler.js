@@ -36,26 +36,34 @@ function renderProductTable(products) {
   if (!tableBody) return;
   tableBody.innerHTML = "";
   if (products.length === 0) {
-    tableBody.innerHTML = `<tr><td colspan="4" class="px-6 py-4 text-center text-gray-500">Tidak ada data produk terlaris ditemukan untuk kriteria ini.</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">Tidak ada data produk terlaris ditemukan untuk kriteria ini.</td></tr>`;
     return;
   }
   const formatter = new Intl.NumberFormat("id-ID");
   products.forEach((product, index) => {
     const rank = (currentPage - 1) * LIMIT + index + 1;
     const row = `
-      <tr class="hover:bg-gray-50">
-        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${rank}</td>
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${
-          product.plu
-        }</td>
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${
-          product.descp
-        }</td>
-        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-bold">${formatter.format(
-          product.total_qty
-        )}</td>
-      </tr>
-    `;
+            <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${rank}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${
+                  product.plu
+                }</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${
+                  product.descp
+                }</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-bold">${formatter.format(
+                  product.total_qty
+                )}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                    <button 
+                        class="btn-send-voucher bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-xs shadow-sm" 
+                        data-descp="${product.descp}"
+                        title="Kirim pesan voucher untuk produk ini">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
     tableBody.innerHTML += row;
   });
 }
@@ -74,14 +82,14 @@ function renderPagination(pagination) {
   infoEl.innerHTML = `Menampilkan <strong>${startRecord}</strong>-<strong>${endRecord}</strong> dari <strong>${total_records}</strong> produk`;
   let buttonsHTML = "";
   buttonsHTML += `
-    <button 
-      class="pagination-btn ${current_page === 1 ? "" : ""}" 
-      ${current_page === 1 ? "disabled" : ""}
-      data-page="${current_page - 1}"
-    >
-      <i class="fa-solid fa-chevron-left"></i>
-    </button>
-  `;
+        <button 
+            class="pagination-btn ${current_page === 1 ? "" : ""}" 
+            ${current_page === 1 ? "disabled" : ""}
+            data-page="${current_page - 1}"
+        >
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+    `;
   const maxPagesToShow = 5;
   let startPage = Math.max(1, current_page - Math.floor(maxPagesToShow / 2));
   let endPage = Math.min(total_pages, startPage + maxPagesToShow - 1);
@@ -99,13 +107,13 @@ function renderPagination(pagination) {
   }
   for (let i = startPage; i <= endPage; i++) {
     buttonsHTML += `
-      <button 
-        class="pagination-btn ${i === current_page ? "active" : ""}"
-        data-page="${i}"
-      >
-        ${i}
-      </button>
-    `;
+            <button 
+                class="pagination-btn ${i === current_page ? "active" : ""}"
+                data-page="${i}"
+            >
+                ${i}
+            </button>
+        `;
   }
   if (endPage < total_pages) {
     if (endPage < total_pages - 1) {
@@ -114,14 +122,14 @@ function renderPagination(pagination) {
     buttonsHTML += `<button class="pagination-btn" data-page="${total_pages}">${total_pages}</button>`;
   }
   buttonsHTML += `
-    <button 
-      class="pagination-btn" 
-      ${current_page === total_pages ? "disabled" : ""}
-      data-page="${current_page + 1}"
-    >
-      <i class="fa-solid fa-chevron-right"></i>
-    </button>
-  `;
+        <button 
+            class="pagination-btn" 
+            ${current_page === total_pages ? "disabled" : ""}
+            data-page="${current_page + 1}"
+        >
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
+    `;
   buttonsEl.innerHTML = buttonsHTML;
   buttonsEl.querySelectorAll("button").forEach((button) => {
     button.addEventListener("click", () => {
@@ -158,6 +166,73 @@ async function loadTopProducts(filter, kdCust) {
     showLoading(false);
   }
 }
+async function handleSendVoucherClick(e) {
+  const button = e.target.closest(".btn-send-voucher");
+  if (!button) {
+    return;
+  }
+  const productName = button.dataset.descp;
+  const defaultMessage = `Hai! Kami ada voucher diskon spesial untuk produk favorit Anda: ${productName}. \n\Ketik VCR:PROMO10K untuk mengklaim!`;
+  const message = prompt(
+    "Masukkan pesan yang akan dikirim ke customer:",
+    defaultMessage
+  );
+  if (message === null || message.trim() === "") {
+    return;
+  }
+  button.disabled = true;
+  button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+  try {
+    const result = await api.sendProactiveMessage(currentKdCust, message);
+    if (result.success) {
+      Toastify({
+        text: "Pesan voucher berhasil dikirim!",
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        style: { background: "#10b981", color: "#fff" },
+      }).showToast();
+    }
+  } catch (error) {
+    console.error("Gagal mengirim pesan:", error.message);
+  } finally {
+    button.disabled = false;
+    button.innerHTML = '<i class="fa-solid fa-paper-plane"></i>';
+  }
+}
+async function handleSendGeneralMessageClick() {
+  const button = document.getElementById("btn-send-general-wa");
+  if (!button) return;
+  const defaultMessage = `Hai! Kami ada promo spesial untuk Anda. \n\Ketik VCR:PROMO10K untuk mengklaim!`;
+  const message = prompt(
+    "Masukkan pesan yang akan dikirim ke customer:",
+    defaultMessage
+  );
+  if (message === null || message.trim() === "") {
+    return;
+  }
+  const originalHtml = button.innerHTML;
+  button.disabled = true;
+  button.innerHTML =
+    '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Mengirim...';
+  try {
+    const result = await api.sendProactiveMessage(currentKdCust, message);
+    if (result.success) {
+      Toastify({
+        text: "Pesan berhasil dikirim!",
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        style: { background: "#10b981", color: "#fff" },
+      }).showToast();
+    }
+  } catch (error) {
+    console.error("Gagal mengirim pesan general:", error.message);
+  } finally {
+    button.disabled = false;
+    button.innerHTML = originalHtml;
+  }
+}
 document.addEventListener("DOMContentLoaded", () => {
   const params = new URLSearchParams(window.location.search);
   currentFilter = params.get("filter");
@@ -169,5 +244,13 @@ document.addEventListener("DOMContentLoaded", () => {
     console.error("Filter atau Kode Customer tidak ditemukan di URL.");
     showLoading(false);
     showError("Parameter filter atau kode customer tidak valid.");
+  }
+  const tableBody = document.getElementById("product-table-body");
+  if (tableBody) {
+    tableBody.addEventListener("click", handleSendVoucherClick);
+  }
+  const generalSendButton = document.getElementById("btn-send-general-wa");
+  if (generalSendButton) {
+    generalSendButton.addEventListener("click", handleSendGeneralMessageClick);
   }
 });

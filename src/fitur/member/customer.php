@@ -36,6 +36,8 @@ $status_display = ($status === 'active') ? 'Aktif' : (($status === 'inactive') ?
 
     <link rel="stylesheet" href="../../style/default-font.css">
     <link rel="stylesheet" href="../../output2.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 </head>
 
 <body class="bg-gradient-to-br from-slate-50 to-blue-50 text-gray-900">
@@ -64,11 +66,17 @@ $status_display = ($status === 'active') ? 'Aktif' : (($status === 'inactive') ?
             </div>
 
             <div class="member-card slide-up p-4">
-                <div class="page-header mb-6">
+                <div class="page-header mb-6 flex items-center justify-between">
                     <h2 class="text-xl font-semibold gradient-text">
                         <i class="fa-solid fa-ranking-star mr-2"></i>
                         Top Produk Terlaris (Dibeli oleh <?php echo $nama_cust; ?>)
                     </h2>
+                    <button id="btn-send-general-wa"
+                        class="bg-green-500 hover:bg-green-400 text-white px-4 py-2 rounded-lg shadow-md text-sm font-medium flex items-center"
+                        title="Kirim pesan WhatsApp ke <?php echo $nama_cust; ?>">
+                        <i class="fa-brands fa-whatsapp mr-2"></i>
+                        Kirim Pesan
+                    </button>
                 </div>
 
                 <div id="loading-spinner" class="loading-spinner">
@@ -94,6 +102,9 @@ $status_display = ($status === 'active') ? 'Aktif' : (($status === 'inactive') ?
                                 <th>
                                     Total Terjual
                                 </th>
+                                <th>
+                                    Aksi
+                                </th>
                             </tr>
                         </thead>
                         <tbody id="product-table-body"></tbody>
@@ -110,8 +121,10 @@ $status_display = ($status === 'active') ? 'Aktif' : (($status === 'inactive') ?
 
     <script src="../../js/ui/navbar_toogle.js" type="module"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <script src="../../js/member/customer_handler.js" type="module"></script>
 
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../../js/member/customer_handler.js" type="module"></script>
 </body>
 
 </html>

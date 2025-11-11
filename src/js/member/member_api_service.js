@@ -1,10 +1,11 @@
-import { sendRequestGET } from "../utils/api_helpers.js";
+import { sendRequestGET, sendRequestJSON } from "../utils/api_helpers.js";
 
 const API_BASE_URL = "/src/api/member/product";
 const API_TRANSACTION_URL = "/src/api/transaction";
 const API_MANAGEMENT_URL = "/src/api/member/management";
 const API_MEMBER_URL = "/src/api/member";
 const API_DASHBOARD_URL = "/src/api/dashboard";
+const API_WHATSAPP_URL = "/src/api/whatsapp"; // <-- Tambahkan ini
 
 export const getProductFav = (startDate = null, endDate = null) => {
   const params = new URLSearchParams();
@@ -165,4 +166,13 @@ export const getTopProductsByCustomer = (
 
   const url = `${API_MANAGEMENT_URL}/get_top_products_by_customer.php?${params.toString()}`;
   return sendRequestGET(url);
+};
+
+export const sendProactiveMessage = (kd_cust, message) => {
+  const url = `${API_WHATSAPP_URL}/send_proactive_message.php`;
+  const data = {
+    kd_cust: kd_cust,
+    message: message,
+  };
+  return sendRequestJSON(url, data);
 };

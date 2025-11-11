@@ -22,5 +22,13 @@ class VoucherConstants
                 '90010012' => 'Stroller BabyElle',
             ]
         ],
+        'VCR:PROMO10K' => [
+            'nama_promo' => 'Promo Test',
+            'potongan_harga' => 50000,
+            'produk' => [
+                '90010011' => 'Stroller Cocollate',
+                '90010012' => 'Stroller BabyElle',
+            ]
+        ],
     ];
 }
