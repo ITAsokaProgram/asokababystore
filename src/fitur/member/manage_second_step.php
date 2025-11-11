@@ -12,7 +12,7 @@ $status_display = ($status === 'active') ? 'Aktif' : (($status === 'inactive') ?
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Step 2 - Demografi Member</title>
+    <title>Data Member</title>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
     <link rel="stylesheet" href="../../style/header.css">
@@ -30,46 +30,78 @@ $status_display = ($status === 'active') ? 'Aktif' : (($status === 'inactive') ?
 <body class="bg-gradient-to-br from-slate-50 to-blue-50 text-gray-900">
     <?php include '../../component/navigation_report.php'; ?>
     <?php include '../../component/sidebar_report.php'; ?>
-
     <main id="main-content" class="flex-1 p-2 lg:p-4 transition-all duration-300 ml-64">
         <div class="max-w-7xl mx-auto space-y-6">
             <div class="member-card fade-in p-4">
                 <div class="page-header">
-                    <h1 class="page-title">Demografi Member <?php echo $status_display; ?></h1>
+                    <h1 class="page-title">
+                        <i class="fa-solid fa-trophy mr-2"></i>
+                        Data Member
+                    </h1>
                     <p class="page-subtitle">
-                        Menampilkan data demografi untuk member dengan status
-                        <strong><?php echo $status_display; ?></strong>
-                        berdasarkan filter
-                        <strong><?php echo $filter; ?></strong>.
+                        Menampilkan produk terlaris berdasarkan Filter Waktu: <strong><?php echo $filter; ?></strong>
+                        dan Status Member: <strong><?php echo $status; ?></strong>
+                        .
+
                     </p>
                 </div>
-                <a href="manage.php?filter=<?php echo $filter; ?>" class="btn-back">
+                <a href="javascript:history.back()" class="btn-back">
                     <i class="fa-solid fa-arrow-left"></i>
-                    Kembali ke Ringkasan
+                    Kembali
                 </a>
             </div>
             <div class="member-card slide-up p-4">
                 <div class="page-header mb-6">
                     <h2 class="text-2xl font-semibold gradient-text">
                         <i class="fa-solid fa-chart-pie mr-2"></i>
-                        Distribusi Umur Member (<?php echo $status_display; ?>)
+                        Distribusi Umur Member (
+                        <?php echo $status_display; ?>)
                     </h2>
                 </div>
 
                 <div id="loading-spinner" class="loading-spinner">
                     <i class="fa-solid fa-spinner fa-spin"></i>
-                    <p class="loading-text">Memuat data chart...</p>
+                    <p class="loading-text">Memuat data chart umur...</p>
                 </div>
 
                 <div id="age-chart-container" class="chart-wrapper hidden">
-                    <div class="chart-container">
-                        <canvas id="memberAgeChart"></canvas>
+                    <div class="chart-container"> <canvas id="memberAgeChart"></canvas>
                     </div>
                 </div>
 
                 <p id="age-chart-error" class="error-message hidden"></p>
             </div>
 
+            <div class="member-card slide-up p-4">
+                <div class="page-header mb-6">
+                    <h2 class="text-2xl font-semibold gradient-text">
+                        <i class="fa-solid fa-map-location-dot mr-2"></i>
+                        Distribusi Lokasi Member (
+                        <?php echo $status_display; ?>)
+                    </h2>
+                </div>
+
+                <div id="location-chart-header" class="mb-4 hidden">
+                    <button id="location-back-btn" class="btn-back-chart">
+                        <i class="fa-solid fa-arrow-left mr-2"></i>
+                        Kembali
+                    </button>
+                    <span id="location-breadcrumb" class="text-lg font-medium ml-4"></span>
+                </div>
+
+                <div id="location-loading-spinner" class="loading-spinner">
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    <p class="loading-text">Memuat data chart lokasi...</p>
+                </div>
+
+                <div id="location-chart-container" class="chart-wrapper hidden">
+                    <div class="chart-container">
+                        <canvas id="memberLocationChart"></canvas>
+                    </div>
+                </div>
+
+                <p id="location-chart-error" class="error-message hidden"></p>
+            </div>
         </div>
     </main>
 

@@ -88,3 +88,45 @@ export const getTopProductsByAge = (filter, ageGroup, page = 1, limit = 10) => {
   const url = `${API_MANAGEMENT_URL}/get_top_products_by_age.php?${params.toString()}`;
   return sendRequestGET(url);
 };
+
+export const getMemberByLocation = (
+  filter,
+  status,
+  level,
+  city = null,
+  district = null
+) => {
+  const params = new URLSearchParams();
+  params.append("filter", filter);
+  params.append("status", status);
+  params.append("level", level);
+  if (city) {
+    params.append("city", city);
+  }
+  if (district) {
+    params.append("district", district);
+  }
+
+  const url = `${API_MANAGEMENT_URL}/get_member_by_location.php?${params.toString()}`;
+  return sendRequestGET(url);
+};
+
+export const getTopProductsByLocation = (
+  filter,
+  city,
+  district,
+  subdistrict,
+  page = 1,
+  limit = 10
+) => {
+  const params = new URLSearchParams();
+  params.append("filter", filter);
+  params.append("city", city);
+  params.append("district", district);
+  params.append("subdistrict", subdistrict);
+  params.append("page", page);
+  params.append("limit", limit);
+
+  const url = `${API_MANAGEMENT_URL}/get_top_products_by_location.php?${params.toString()}`;
+  return sendRequestGET(url);
+};

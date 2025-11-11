@@ -38,11 +38,11 @@ function renderMemberChart(data, filter) {
       responsive: true,
       plugins: {
         legend: {
-          position: "top",
+          display: false,
         },
         title: {
           display: true,
-          text: "Proporsi Member Active vs. Inactive",
+          text: "Proporsi Member Active vs Inactive",
         },
         tooltip: {
           callbacks: {
