@@ -28,7 +28,7 @@ $filterDisplay = ($filter === '3bulan') ? '3 Bulan Terakhir' :
     <link rel="stylesheet" href="../../style/member/style.css">
 
     <link rel="stylesheet" href="../../output2.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
 </head>
 
 <body class="bg-gradient-to-br from-slate-50 to-blue-50 text-gray-900">
@@ -47,7 +47,6 @@ $filterDisplay = ($filter === '3bulan') ? '3 Bulan Terakhir' :
                         Berdasarkan Filter Waktu: <strong><?php echo $filterDisplay; ?></strong>
                         dan Status Member: <strong><?php echo $status_display; ?></strong>
                         .
-
                     </p>
                 </div>
                 <a href="javascript:history.back()" class="btn-back">
@@ -71,7 +70,8 @@ $filterDisplay = ($filter === '3bulan') ? '3 Bulan Terakhir' :
                     </div>
 
                     <div id="age-chart-container" class="chart-wrapper hidden">
-                        <div class="chart-container"> <canvas id="memberAgeChart"></canvas>
+                        <div class="chart-container">
+                            <div id="memberAgeChart" style="width: 100%; height: 400px;"></div>
                         </div>
                     </div>
 
@@ -101,7 +101,7 @@ $filterDisplay = ($filter === '3bulan') ? '3 Bulan Terakhir' :
 
                     <div id="location-chart-container" class="chart-wrapper hidden">
                         <div class="chart-container">
-                            <canvas id="memberLocationChart"></canvas>
+                            <div id="memberLocationChart" style="width: 100%; height: 400px;"></div>
                         </div>
                     </div>
 
@@ -129,7 +129,7 @@ $filterDisplay = ($filter === '3bulan') ? '3 Bulan Terakhir' :
 
                     <div id="top-member-chart-container" class="chart-wrapper hidden">
                         <div class="chart-container">
-                            <canvas id="topMemberChart"></canvas>
+                            <div id="topMemberChart" style="width: 100%; height: 400px;"></div>
                         </div>
                     </div>
 
@@ -151,7 +151,7 @@ $filterDisplay = ($filter === '3bulan') ? '3 Bulan Terakhir' :
 
                     <div id="top-product-chart-container" class="chart-wrapper hidden">
                         <div class="chart-container">
-                            <canvas id="topMemberProductChart"></canvas>
+                            <div id="topMemberProductChart" style="width: 100%; height: 400px;"></div>
                         </div>
                     </div>
 

@@ -8,23 +8,27 @@ let topMemberProductChartInstance = null;
 let currentLocationLevel = "city";
 let selectedCity = null;
 let selectedDistrict = null;
+
+// Formatters tetap sama
 const currencyFormatter = new Intl.NumberFormat("id-ID", {
   style: "currency",
   currency: "IDR",
   minimumFractionDigits: 0,
 });
 const numberFormatter = new Intl.NumberFormat("id-ID");
+
+// Palet warna untuk ECharts (dari Chart.js sebelumnya)
 const CHART_COLORS = [
-  "rgba(59, 130, 246, 0.8)",
-  "rgba(16, 185, 129, 0.8)",
-  "rgba(234, 179, 8, 0.8)",
-  "rgba(239, 68, 68, 0.8)",
-  "rgba(139, 92, 246, 0.8)",
-  "rgba(249, 115, 22, 0.8)",
-  "rgba(20, 184, 166, 0.8)",
-  "rgba(217, 70, 239, 0.8)",
-  "rgba(107, 114, 128, 0.8)",
-  "rgba(22, 163, 74, 0.8)",
+  "rgba(59, 130, 246, 0.9)",
+  "rgba(16, 185, 129, 0.9)",
+  "rgba(234, 179, 8, 0.9)",
+  "rgba(239, 68, 68, 0.9)",
+  "rgba(139, 92, 246, 0.9)",
+  "rgba(249, 115, 22, 0.9)",
+  "rgba(20, 184, 166, 0.9)",
+  "rgba(217, 70, 239, 0.9)",
+  "rgba(107, 114, 128, 0.9)",
+  "rgba(22, 163, 74, 0.9)",
 ];
 
 const UI_ELEMENTS = {
@@ -49,13 +53,7 @@ const UI_ELEMENTS = {
     errorId: "top-product-chart-error",
   },
 };
-function getBackgroundColors(count) {
-  const colors = [];
-  for (let i = 0; i < count; i++) {
-    colors.push(CHART_COLORS[i % CHART_COLORS.length]);
-  }
-  return colors;
-}
+
 function setChartUIState(
   { loadingId, containerId, errorId },
   state,
@@ -88,279 +86,331 @@ function updateLocationHeader() {
     }
   }
 }
+
+/**
+ * Helper untuk event handler ECharts (Hover)
+ */
+function addChartHoverHandlers(chartInstance, chartElement) {
+  chartInstance.off("mouseover");
+  chartInstance.on("mouseover", (params) => {
+    if (params.componentType === "series") {
+      chartElement.style.cursor = "pointer";
+    }
+  });
+  chartInstance.off("mouseout");
+  chartInstance.on("mouseout", () => {
+    chartElement.style.cursor = "default";
+  });
+  // Tambahkan resize handler
+  window.addEventListener("resize", () => {
+    chartInstance.resize();
+  });
+}
+
 function renderAgeChart(data) {
-  const ctx = document.getElementById("memberAgeChart").getContext("2d");
+  const chartElement = document.getElementById("memberAgeChart");
+  if (!chartElement) return;
   if (ageChartInstance) {
-    ageChartInstance.destroy();
+    ageChartInstance.dispose();
   }
-  const labels = data.map((d) => d.age_group);
-  const counts = data.map((d) => d.count);
-  const backgroundColors = getBackgroundColors(labels.length);
-  ageChartInstance = new Chart(ctx, {
-    type: "pie",
-    data: {
-      labels: labels,
-      datasets: [
-        {
-          label: "Jumlah Member",
-          data: counts,
-          backgroundColor: backgroundColors,
-          borderColor: "#FFFFFF",
-          borderWidth: 2,
-        },
-      ],
+  ageChartInstance = echarts.init(chartElement);
+  const chartData = data.map((d) => ({ value: d.count, name: d.age_group }));
+  const total = data.reduce((acc, curr) => acc + curr.count, 0);
+
+  const option = {
+    animationDuration: 1000,
+    animationEasing: "cubicOut",
+    color: CHART_COLORS,
+
+    tooltip: {
+      trigger: "item",
+      formatter: (params) => {
+        const percentage =
+          total > 0 ? ((params.value / total) * 100).toFixed(1) : 0;
+        return `${params.name}: ${params.value} member (${percentage}%)`;
+      },
     },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: true, position: "top" },
-        title: { display: true, text: "Jumlah Member per Kelompok Umur" },
-        tooltip: {
-          callbacks: {
-            label: function (context) {
-              const label = context.label || "";
-              const value = context.raw;
-              const total = context.chart.getDatasetMeta(0).total;
-              const percentage = ((value / total) * 100).toFixed(1) + "%";
-              return `${label}: ${value} member (${percentage})`;
-            },
+    legend: {
+      show: false,
+      type: "scroll",
+      orient: "vertical",
+      right: 10,
+      top: 20,
+      bottom: 20,
+    },
+    series: [
+      {
+        type: "pie",
+        radius: "50%",
+        data: chartData,
+        label: {
+          formatter: (params) => {
+            const percentage =
+              total > 0 ? ((params.value / total) * 100).toFixed(1) : 0;
+            return `${params.name}\n(${percentage}%)`;
           },
         },
       },
-      onClick: (e, elements) => {
-        if (elements.length === 0) return;
-        const clickedElementIndex = elements[0].index;
-        const ageGroup = labels[clickedElementIndex];
-        if (ageGroup) {
-          const targetUrl = `umur.php?filter=${encodeURIComponent(
-            currentFilter
-          )}&age_group=${encodeURIComponent(ageGroup)}`;
-          window.location.href = targetUrl;
-        }
-      },
-      onHover: (event, chartElement) => {
-        const canvas = event.native.target;
-        canvas.style.cursor = chartElement.length > 0 ? "pointer" : "default";
-      },
-    },
+    ],
+  };
+
+  ageChartInstance.setOption(option);
+
+  // Click Handler
+  ageChartInstance.off("click");
+  ageChartInstance.on("click", (params) => {
+    if (params.componentType !== "series") return;
+    const ageGroup = params.name; // ECharts provides name
+    if (ageGroup) {
+      const targetUrl = `umur.php?filter=${encodeURIComponent(
+        currentFilter
+      )}&age_group=${encodeURIComponent(ageGroup)}`;
+      window.location.href = targetUrl;
+    }
   });
+
+  addChartHoverHandlers(ageChartInstance, chartElement);
 }
+
 function renderLocationChart(data) {
-  const ctx = document.getElementById("memberLocationChart").getContext("2d");
+  const chartElement = document.getElementById("memberLocationChart");
+  if (!chartElement) return;
   if (locationChartInstance) {
-    locationChartInstance.destroy();
+    locationChartInstance.dispose();
   }
+  locationChartInstance = echarts.init(chartElement);
+
   data.sort((a, b) => b.count - a.count);
-  const labels = data.map((d) => d.location_name);
-  const counts = data.map((d) => d.count);
-  const total = counts.reduce((a, b) => a + b, 0);
-  const chartType = "pie";
+  const chartData = data.map((d) => ({
+    value: d.count,
+    name: d.location_name,
+  }));
+  const total = data.reduce((acc, curr) => acc + curr.count, 0);
+
   let chartTitle = "Distribusi Member per ";
   if (currentLocationLevel === "city") chartTitle += "Kota";
   else if (currentLocationLevel === "district") chartTitle += "Kecamatan";
   else chartTitle += "Kelurahan";
-  const backgroundColors = getBackgroundColors(labels.length);
-  locationChartInstance = new Chart(ctx, {
-    type: chartType,
-    data: {
-      labels: labels,
-      datasets: [
-        {
-          label: "Jumlah Member",
-          data: counts,
-          backgroundColor: backgroundColors,
-          borderColor: "#FFFFFF",
-          borderWidth: 2,
-        },
-      ],
+
+  const option = {
+    animationDuration: 1000,
+    animationEasing: "cubicOut",
+    color: CHART_COLORS,
+
+    tooltip: {
+      trigger: "item",
+      formatter: (params) => {
+        const percentage =
+          total > 0 ? ((params.value / total) * 100).toFixed(1) : 0;
+        return `${params.name}: ${params.value} member (${percentage}%)`;
+      },
     },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: {
-          display: true,
-          position: "top",
-          labels: {
-            filter: function (legendItem, chartData) {
-              return legendItem.index < 10;
-            },
-          },
-        },
-        title: { display: true, text: chartTitle },
-        tooltip: {
-          callbacks: {
-            label: function (context) {
-              const label = context.label || "";
-              const value = context.raw;
-              const percentage =
-                total > 0 ? ((value / total) * 100).toFixed(1) + "%" : "0%";
-              return `${label}: ${value} member (${percentage})`;
-            },
+    legend: {
+      show: false,
+      type: "scroll",
+      orient: "vertical",
+      right: 10,
+      top: 20,
+      bottom: 20,
+    },
+    series: [
+      {
+        type: "pie",
+        radius: "50%",
+        data: chartData,
+        label: {
+          formatter: (params) => {
+            const percentage =
+              total > 0 ? ((params.value / total) * 100).toFixed(1) : 0;
+            return `${params.name}\n(${percentage}%)`;
           },
         },
       },
-      onClick: (e, elements) => {
-        if (elements.length === 0) return;
-        const clickedElementIndex = elements[0].index;
-        const clickedLabel = labels[clickedElementIndex];
-        if (currentLocationLevel === "city") {
-          currentLocationLevel = "district";
-          selectedCity = clickedLabel;
-          loadLocationData();
-        } else if (currentLocationLevel === "district") {
-          currentLocationLevel = "subdistrict";
-          selectedDistrict = clickedLabel;
-          loadLocationData();
-        } else if (currentLocationLevel === "subdistrict") {
-          const selectedSubDistrict = clickedLabel;
-          const targetUrl = `lokasi.php?filter=${encodeURIComponent(
-            currentFilter
-          )}&status=${encodeURIComponent(
-            currentStatus
-          )}&city=${encodeURIComponent(
-            selectedCity
-          )}&district=${encodeURIComponent(
-            selectedDistrict
-          )}&subdistrict=${encodeURIComponent(selectedSubDistrict)}`;
-          window.location.href = targetUrl;
-        }
-      },
-      onHover: (event, chartElement) => {
-        const canvas = event.native.target;
-        canvas.style.cursor = chartElement.length > 0 ? "pointer" : "default";
-      },
-    },
+    ],
+  };
+
+  locationChartInstance.setOption(option);
+
+  // Click Handler (Drill-down)
+  locationChartInstance.off("click");
+  locationChartInstance.on("click", (params) => {
+    if (params.componentType !== "series") return;
+    const clickedLabel = params.name;
+    if (currentLocationLevel === "city") {
+      currentLocationLevel = "district";
+      selectedCity = clickedLabel;
+      loadLocationData();
+    } else if (currentLocationLevel === "district") {
+      currentLocationLevel = "subdistrict";
+      selectedDistrict = clickedLabel;
+      loadLocationData();
+    } else if (currentLocationLevel === "subdistrict") {
+      const selectedSubDistrict = clickedLabel;
+      const targetUrl = `lokasi.php?filter=${encodeURIComponent(
+        currentFilter
+      )}&status=${encodeURIComponent(currentStatus)}&city=${encodeURIComponent(
+        selectedCity
+      )}&district=${encodeURIComponent(
+        selectedDistrict
+      )}&subdistrict=${encodeURIComponent(selectedSubDistrict)}`;
+      window.location.href = targetUrl;
+    }
   });
+
+  addChartHoverHandlers(locationChartInstance, chartElement);
 }
+
 function renderTopMemberChart(data) {
-  const ctx = document.getElementById("topMemberChart").getContext("2d");
+  const chartElement = document.getElementById("topMemberChart");
+  if (!chartElement) return;
   if (topMemberChartInstance) {
-    topMemberChartInstance.destroy();
+    topMemberChartInstance.dispose();
   }
-  const labels = data.map((d) => `${d.nama_cust} - (${d.kd_cust})`);
-  const counts = data.map((d) => d.total_spent);
-  const total = counts.reduce((a, b) => a + b, 0);
-  const backgroundColors = getBackgroundColors(labels.length);
-  topMemberChartInstance = new Chart(ctx, {
-    type: "pie",
-    data: {
-      labels: labels,
-      datasets: [
-        {
-          label: "Total Belanja",
-          data: counts,
-          backgroundColor: backgroundColors,
-          borderColor: "#FFFFFF",
-          borderWidth: 2,
-        },
-      ],
+  topMemberChartInstance = echarts.init(chartElement);
+
+  // Simpan data asli di ECharts data object
+  const chartData = data.map((d) => ({
+    value: d.total_spent,
+    name: `${d.nama_cust} - (${d.kd_cust})`,
+    // Simpan data ekstra untuk click handler
+    kd_cust: d.kd_cust,
+    nama_cust: d.nama_cust,
+  }));
+  const total = data.reduce((acc, curr) => acc + curr.total_spent, 0);
+
+  const option = {
+    animationDuration: 1000,
+    animationEasing: "cubicOut",
+    color: CHART_COLORS,
+
+    tooltip: {
+      trigger: "item",
+      formatter: (params) => {
+        const percentage =
+          total > 0 ? ((params.value / total) * 100).toFixed(1) : 0;
+        return `${params.name}: ${currencyFormatter.format(
+          params.value
+        )} (${percentage}%)`;
+      },
     },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false, position: "top" },
-        title: { display: true, text: "Top 10 Member (Total Belanja)" },
-        tooltip: {
-          callbacks: {
-            label: function (context) {
-              const label = context.label || "";
-              const value = context.raw;
-              const percentage =
-                total > 0 ? ((value / total) * 100).toFixed(1) + "%" : "0%";
-              return `${label}: ${currencyFormatter.format(
-                value
-              )} (${percentage})`;
-            },
+    legend: {
+      show: false, // Sesuai config Chart.js sebelumnya
+    },
+    series: [
+      {
+        type: "pie",
+        radius: "50%",
+        data: chartData,
+        label: {
+          formatter: (params) => {
+            const percentage =
+              total > 0 ? ((params.value / total) * 100).toFixed(1) : 0;
+            return `${params.name}\n(${percentage}%)`;
           },
         },
       },
-      onClick: (e, elements) => {
-        if (elements.length === 0) return;
-        const clickedElementIndex = elements[0].index;
-        const customerData = data[clickedElementIndex]; // Ambil data customer dari array 'data'
-        if (customerData) {
-          const targetUrl = `customer.php?filter=${encodeURIComponent(
-            currentFilter
-          )}&status=${encodeURIComponent(
-            currentStatus
-          )}&kd_cust=${encodeURIComponent(
-            customerData.kd_cust
-          )}&nama_cust=${encodeURIComponent(customerData.nama_cust)}`;
-          window.location.href = targetUrl;
-        }
-      },
-      onHover: (event, chartElement) => {
-        const canvas = event.native.target;
-        canvas.style.cursor = chartElement.length > 0 ? "pointer" : "default";
-      },
-    },
+    ],
+  };
+
+  topMemberChartInstance.setOption(option);
+
+  // Click Handler
+  topMemberChartInstance.off("click");
+  topMemberChartInstance.on("click", (params) => {
+    if (params.componentType !== "series") return;
+    const customerData = params.data; // ECharts menyimpan seluruh objek data di sini
+    if (customerData) {
+      const targetUrl = `customer.php?filter=${encodeURIComponent(
+        currentFilter
+      )}&status=${encodeURIComponent(
+        currentStatus
+      )}&kd_cust=${encodeURIComponent(
+        customerData.kd_cust
+      )}&nama_cust=${encodeURIComponent(customerData.nama_cust)}`;
+      window.location.href = targetUrl;
+    }
   });
+
+  addChartHoverHandlers(topMemberChartInstance, chartElement);
 }
 
 function renderTopProductChart(data) {
-  const ctx = document.getElementById("topMemberProductChart").getContext("2d");
+  const chartElement = document.getElementById("topMemberProductChart");
+  if (!chartElement) return;
   if (topMemberProductChartInstance) {
-    topMemberProductChartInstance.destroy();
+    topMemberProductChartInstance.dispose();
   }
-  const labels = data.map((d) => `${d.nama_cust} (${d.kd_cust}) - ${d.descp}`);
-  const counts = data.map((d) => d.total_item_qty);
-  const total = counts.reduce((a, b) => a + b, 0);
-  const backgroundColors = getBackgroundColors(labels.length);
-  topMemberProductChartInstance = new Chart(ctx, {
-    type: "pie",
-    data: {
-      labels: labels,
-      datasets: [
-        {
-          label: "Jumlah Qty",
-          data: counts,
-          backgroundColor: backgroundColors,
-          borderColor: "#FFFFFF",
-          borderWidth: 2,
-        },
-      ],
+  topMemberProductChartInstance = echarts.init(chartElement);
+
+  const chartData = data.map((d) => ({
+    value: d.total_item_qty,
+    name: `${d.nama_cust} (${d.kd_cust}) - ${d.descp}`,
+    // Simpan data ekstra untuk click handler
+    kd_cust: d.kd_cust,
+    nama_cust: d.nama_cust,
+  }));
+  const total = data.reduce((acc, curr) => acc + curr.total_item_qty, 0);
+
+  const option = {
+    animationDuration: 1000,
+    animationEasing: "cubicOut",
+    color: CHART_COLORS,
+
+    tooltip: {
+      trigger: "item",
+      formatter: (params) => {
+        const percentage =
+          total > 0 ? ((params.value / total) * 100).toFixed(1) : 0;
+        return `${params.name}: ${numberFormatter.format(
+          params.value
+        )} qty (${percentage}%)`;
+      },
     },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false, position: "top" },
-        title: { display: true, text: "Top 10 Pembelian Produk (Qty)" },
-        tooltip: {
-          callbacks: {
-            label: function (context) {
-              const label = context.label || "";
-              const value = context.raw;
-              const percentage =
-                total > 0 ? ((value / total) * 100).toFixed(1) + "%" : "0%";
-              return `${label}: ${numberFormatter.format(
-                value
-              )} qty (${percentage})`;
-            },
+    legend: {
+      show: false, // Sesuai config Chart.js sebelumnya
+    },
+    series: [
+      {
+        type: "pie",
+        radius: "50%",
+        data: chartData,
+        label: {
+          formatter: (params) => {
+            const percentage =
+              total > 0 ? ((params.value / total) * 100).toFixed(1) : 0;
+            return `${params.name}\n(${percentage}%)`;
           },
         },
       },
-      onClick: (e, elements) => {
-        if (elements.length === 0) return;
-        const clickedElementIndex = elements[0].index;
-        const customerData = data[clickedElementIndex]; // Ambil data customer dari array 'data'
-        if (customerData) {
-          const targetUrl = `customer.php?filter=${encodeURIComponent(
-            currentFilter
-          )}&status=${encodeURIComponent(
-            currentStatus
-          )}&kd_cust=${encodeURIComponent(
-            customerData.kd_cust
-          )}&nama_cust=${encodeURIComponent(customerData.nama_cust)}`;
-          window.location.href = targetUrl;
-        }
-      },
-      onHover: (event, chartElement) => {
-        const canvas = event.native.target;
-        canvas.style.cursor = chartElement.length > 0 ? "pointer" : "default";
-      },
-    },
+    ],
+  };
+
+  topMemberProductChartInstance.setOption(option);
+
+  // Click Handler
+  topMemberProductChartInstance.off("click");
+  topMemberProductChartInstance.on("click", (params) => {
+    if (params.componentType !== "series") return;
+    const customerData = params.data; // ECharts menyimpan seluruh objek data
+    if (customerData) {
+      const targetUrl = `customer.php?filter=${encodeURIComponent(
+        currentFilter
+      )}&status=${encodeURIComponent(
+        currentStatus
+      )}&kd_cust=${encodeURIComponent(
+        customerData.kd_cust
+      )}&nama_cust=${encodeURIComponent(customerData.nama_cust)}`;
+      window.location.href = targetUrl;
+    }
   });
+
+  addChartHoverHandlers(topMemberProductChartInstance, chartElement);
 }
+
+// =================================================================
+// FUNGSI LOAD DATA (DENGAN PERBAIKAN)
+// =================================================================
+
 async function loadAgeData() {
   setChartUIState(UI_ELEMENTS.age, "loading");
   try {
@@ -368,6 +418,8 @@ async function loadAgeData() {
     if (result.success === true && result.data && result.data.length > 0) {
       renderAgeChart(result.data);
       setChartUIState(UI_ELEMENTS.age, "success");
+      // FIX: Panggil resize SETELAH container terlihat
+      if (ageChartInstance) ageChartInstance.resize();
     } else if (result.success === true && result.data.length === 0) {
       setChartUIState(
         UI_ELEMENTS.age,
@@ -400,6 +452,8 @@ async function loadLocationData() {
     if (result.success === true && result.data && result.data.length > 0) {
       renderLocationChart(result.data);
       setChartUIState(UI_ELEMENTS.location, "success");
+      // FIX: Panggil resize SETELAH container terlihat
+      if (locationChartInstance) locationChartInstance.resize();
     } else if (result.success === true && result.data.length === 0) {
       let levelText = "kota";
       if (currentLocationLevel === "district") levelText = "kecamatan";
@@ -431,6 +485,8 @@ async function loadTopMemberData() {
     if (result.success === true && result.data && result.data.length > 0) {
       renderTopMemberChart(result.data);
       setChartUIState(UI_ELEMENTS.topMember, "success");
+      // FIX: Panggil resize SETELAH container terlihat
+      if (topMemberChartInstance) topMemberChartInstance.resize();
     } else if (result.success === true && result.data.length === 0) {
       setChartUIState(
         UI_ELEMENTS.topMember,
@@ -459,6 +515,8 @@ async function loadTopProductData() {
     if (result.success === true && result.data && result.data.length > 0) {
       renderTopProductChart(result.data);
       setChartUIState(UI_ELEMENTS.topProduct, "success");
+      // FIX: Panggil resize SETELAH container terlihat
+      if (topMemberProductChartInstance) topMemberProductChartInstance.resize();
     } else if (result.success === true && result.data.length === 0) {
       setChartUIState(
         UI_ELEMENTS.topProduct,
@@ -477,6 +535,11 @@ async function loadTopProductData() {
     );
   }
 }
+
+// =================================================================
+// EVENT LISTENER (TIDAK BERUBAH)
+// =================================================================
+
 document.addEventListener("DOMContentLoaded", () => {
   const params = new URLSearchParams(window.location.search);
   currentFilter = params.get("filter");

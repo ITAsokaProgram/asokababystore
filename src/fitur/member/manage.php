@@ -28,7 +28,8 @@ if (!in_array($current_filter, $valid_filters)) {
     <link rel="stylesheet" href="../../style/member/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+
 </head>
 
 <body class="bg-gradient-to-br from-slate-50 to-blue-50 text-gray-900">
@@ -105,7 +106,7 @@ if (!in_array($current_filter, $valid_filters)) {
                 </div>
                 <div class="chart-wrapper">
                     <div class="chart-container">
-                        <canvas id="memberActivityChart"></canvas>
+                        <div id="memberActivityChart" style="width: 100%; height: 450px;"></div>
                     </div>
                 </div>
             </div>
