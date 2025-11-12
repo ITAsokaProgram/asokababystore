@@ -34,6 +34,14 @@ const UI_ELEMENTS = {
   },
 };
 
+// Objek UI baru untuk tabel umur
+const UI_ELEMENTS_AGE_TABLE = {
+  loadingId: "age-table-loading-spinner",
+  containerId: "age-table-container",
+  errorId: "age-table-error",
+  bodyId: "age-table-body",
+};
+
 function setChartUIState(
   { loadingId, containerId, errorId },
   state,
@@ -51,6 +59,63 @@ function setChartUIState(
     }
   }
 }
+
+// Fungsi UI state baru untuk tabel umur
+function setTableUIState(state, message = "") {
+  const loadingEl = document.getElementById(UI_ELEMENTS_AGE_TABLE.loadingId);
+  const containerEl = document.getElementById(
+    UI_ELEMENTS_AGE_TABLE.containerId
+  );
+  const errorEl = document.getElementById(UI_ELEMENTS_AGE_TABLE.errorId);
+
+  if (loadingEl) loadingEl.classList.toggle("hidden", state !== "loading");
+  if (containerEl) containerEl.classList.toggle("hidden", state !== "success");
+  if (errorEl) {
+    errorEl.classList.toggle("hidden", state !== "error" && state !== "empty");
+    if (state === "error" || state === "empty") {
+      errorEl.textContent = message;
+    }
+  }
+}
+
+// Fungsi render baru untuk tabel umur
+function renderAgeTable(data) {
+  const tableBody = document.getElementById(UI_ELEMENTS_AGE_TABLE.bodyId);
+  if (!tableBody) return;
+
+  tableBody.innerHTML = ""; // Clear old data
+  const numberFormatter = new Intl.NumberFormat("id-ID");
+
+  if (!data || data.length === 0) {
+    tableBody.innerHTML = `<tr><td colspan="4" class="text-center p-4 text-gray-500">Tidak ada data.</td></tr>`;
+    return;
+  }
+
+  data.forEach((item) => {
+    // Tampilkan data, ganti null dengan '-'
+    const topProduct = item.top_product_descp || "-";
+    const topQty = item.top_product_qty
+      ? numberFormatter.format(item.top_product_qty)
+      : "-";
+    const count = item.count ? numberFormatter.format(item.count) : "0";
+
+    // === MODIFIKASI DI SINI ===
+    // Menambahkan class 'cursor-pointer' dan 'age-table-row'
+    // Menambahkan 'data-age-group' untuk menyimpan nilai kelompok umur
+    const row = `
+            <tr class="hover:bg-gray-50 cursor-pointer age-table-row" data-age-group="${item.age_group}">
+                <td class="px-4 py-3 text-sm text-gray-700">${item.age_group}</td>
+                <td class="px-4 py-3 text-sm font-medium text-gray-900">${count}</td>
+                <td class="px-4 py-3 text-sm text-gray-700">${topProduct}</td>
+                <td class="px-4 py-3 text-sm font-medium text-gray-900">${topQty}</td>
+            </tr>
+        `;
+    // === AKHIR MODIFIKASI ===
+
+    tableBody.innerHTML += row;
+  });
+}
+
 function updateLocationHeader() {
   const header = document.getElementById("location-chart-header");
   const backBtn = document.getElementById("location-back-btn");
@@ -67,11 +132,16 @@ function updateLocationHeader() {
   }
 }
 
+// Modifikasi loadAgeData untuk mengontrol chart dan tabel
 async function loadAgeData() {
+  // Set state loading untuk chart dan tabel
   setChartUIState(UI_ELEMENTS.age, "loading");
+  setTableUIState("loading");
+
   try {
     const result = await api.getMemberByAge(currentFilter, currentStatus);
     if (result.success === true && result.data && result.data.length > 0) {
+      // 1. Render Chart
       ageChartInstance = charts.renderAgeChart(
         ageChartInstance,
         "memberAgeChart",
@@ -80,22 +150,22 @@ async function loadAgeData() {
       );
       setChartUIState(UI_ELEMENTS.age, "success");
       if (ageChartInstance) ageChartInstance.resize();
+
+      // 2. Render Tabel
+      renderAgeTable(result.data);
+      setTableUIState("success");
     } else if (result.success === true && result.data.length === 0) {
-      setChartUIState(
-        UI_ELEMENTS.age,
-        "empty",
-        "Tidak ada data member (umur) untuk filter ini."
-      );
+      const msg = "Tidak ada data member (umur) untuk filter ini.";
+      setChartUIState(UI_ELEMENTS.age, "empty", msg);
+      setTableUIState("empty", msg);
     } else {
       throw new Error(result.message || "Gagal memuat data umur");
     }
   } catch (error) {
     console.error("Error loading member age data:", error);
-    setChartUIState(
-      UI_ELEMENTS.age,
-      "error",
-      `Gagal memuat chart umur: ${error.message}`
-    );
+    const errorMsg = `Gagal memuat chart umur: ${error.message}`;
+    setChartUIState(UI_ELEMENTS.age, "error", errorMsg);
+    setTableUIState("error", errorMsg);
   }
 }
 
@@ -233,6 +303,33 @@ document.addEventListener("DOMContentLoaded", () => {
   const params = new URLSearchParams(window.location.search);
   currentFilter = params.get("filter");
   currentStatus = params.get("status");
+
+  // === PENAMBAHAN EVENT LISTENER UNTUK TABEL ===
+  const ageTableBody = document.getElementById(UI_ELEMENTS_AGE_TABLE.bodyId);
+  if (ageTableBody) {
+    ageTableBody.addEventListener("click", (event) => {
+      // Cari elemen <tr> terdekat yang memiliki class 'age-table-row'
+      const row = event.target.closest("tr.age-table-row");
+
+      // Pastikan row ditemukan dan filter/status sudah ada
+      if (row && currentFilter && currentStatus) {
+        const ageGroup = row.dataset.ageGroup;
+        if (ageGroup) {
+          // Buat URL redirect
+          const url = `member/umur?age_group=${encodeURIComponent(
+            ageGroup
+          )}&filter=${encodeURIComponent(
+            currentFilter
+          )}&status=${encodeURIComponent(currentStatus)}`;
+
+          // Redirect
+          window.location.href = url;
+        }
+      }
+    });
+  }
+  // === AKHIR PENAMBAHAN ===
+
   if (currentFilter && currentStatus) {
     loadAgeData();
     loadLocationData();
@@ -254,6 +351,7 @@ document.addEventListener("DOMContentLoaded", () => {
     console.error("Filter atau Status tidak ditemukan di URL.");
     const errorMsg = "Parameter filter atau status tidak ditemukan.";
     setChartUIState(UI_ELEMENTS.age, "error", errorMsg);
+    setTableUIState("error", errorMsg); // Tampilkan error di tabel juga
     setChartUIState(UI_ELEMENTS.location, "error", errorMsg);
     setChartUIState(UI_ELEMENTS.topMember, "error", errorMsg);
     setChartUIState(UI_ELEMENTS.topProduct, "error", errorMsg);

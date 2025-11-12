@@ -1,5 +1,6 @@
 <?php
 session_start();
+ob_start();
 ini_set('display_errors', 0);
 require_once __DIR__ . '/../../../utils/Logger.php';
 require_once __DIR__ . '/../../../auth/middleware_login.php';
@@ -23,10 +24,10 @@ try {
         }
     }
     if ($authHeader === null && isset($_SERVER['HTTP_AUTHORIZATION'])) {
-        $authHeader = $_SERVER['HTTP_AUTHORIZATION'];
+        $authHeader = $authHeader = $_SERVER['HTTP_AUTHORIZATION'];
     }
     if ($authHeader === null && isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
-        $authHeader = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+        $authHeader = $authHeader = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
     }
     if ($authHeader === null || !preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
         http_response_code(401);
@@ -67,6 +68,7 @@ try {
     $params = [];
     $types = "";
     $where_clause = "";
+    $cutoff_date = null;
     if ($filter !== 'semua') {
         $months = $valid_filters[$filter] ?? 3;
         $current_date_start_day = date('Y-m-d 00:00:00');
@@ -101,15 +103,73 @@ try {
             ELSE '-'
         END
     ";
+    $date_where_clause = "";
+    $params_for_products = [];
+    $types_for_products = "";
+    if ($filter !== 'semua' && $cutoff_date) {
+        $date_where_clause = " AND t.tgl_trans >= ?";
+        $params_for_products[] = $cutoff_date;
+        $types_for_products .= "s";
+    }
+    $exclude_clause = "
+        AND UPPER(t.descp) NOT LIKE '%KERTAS KADO%'
+        AND UPPER(t.descp) NOT LIKE '%MEMBER BY PHONE%'
+        AND UPPER(t.descp) NOT LIKE '%TAS ASOKA BIRU%'
+    ";
     $sql = "
-        SELECT 
-            $age_case_sql AS age_group,
-            COUNT(*) AS count
-        FROM customers
-        $where_clause
-        GROUP BY age_group
+        SELECT
+            agc.age_group,
+            agc.count,
+            tp.top_product_descp,
+            tp.top_product_qty
+        FROM
+        (
+            SELECT 
+                ($age_case_sql) AS age_group,
+                COUNT(*) AS count
+            FROM customers
+            $where_clause
+            GROUP BY age_group
+        ) AS agc
+        LEFT JOIN
+        (
+            SELECT
+                age_group,
+                descp AS top_product_descp,
+                total_qty AS top_product_qty
+            FROM
+            (
+                SELECT
+                    @rn := IF(@current_group = age_group, @rn + 1, 1) AS rn,
+                    @current_group := age_group AS age_group,
+                    descp,
+                    total_qty
+                FROM
+                (
+                    SELECT
+                        cag.age_group,
+                        t.descp,
+                        SUM(t.qty) AS total_qty
+                    FROM trans_b t
+                    INNER JOIN (
+                        SELECT 
+                            kd_cust,
+                            ($age_case_sql) AS age_group
+                        FROM customers
+                        $where_clause
+                    ) AS cag ON t.kd_cust = cag.kd_cust
+                    CROSS JOIN (SELECT @rn := 0, @current_group := '') AS init_vars
+                    WHERE 1=1 
+                        $date_where_clause
+                        $exclude_clause
+                    GROUP BY cag.age_group, t.descp
+                    ORDER BY cag.age_group, total_qty DESC
+                ) AS ProductSums
+            ) AS RankedProducts
+            WHERE rn = 1
+        ) AS tp ON agc.age_group = tp.age_group
         ORDER BY 
-            CASE age_group
+            CASE agc.age_group
                 WHEN '<= 17' THEN 1
                 WHEN '18-20' THEN 2
                 WHEN '21-25' THEN 3
@@ -124,10 +184,17 @@ try {
     ";
     $stmt = $conn->prepare($sql);
     if ($stmt === false) {
+        $logger->error("Database prepare failed: " . $conn->error, ['sql' => $sql]);
         throw new Exception("Database prepare failed: " . $conn->error);
     }
-    if (!empty($params)) {
-        $stmt->bind_param($types, ...$params);
+    $all_params = array_merge($params, $params, $params_for_products);
+    $all_types = $types . $types . $types_for_products;
+    if (!empty($all_params)) {
+        $bind_params = [$all_types];
+        foreach ($all_params as $key => $value) {
+            $bind_params[] = &$all_params[$key];
+        }
+        call_user_func_array([$stmt, 'bind_param'], $bind_params);
     }
     if (!$stmt->execute()) {
         throw new Exception("Gagal eksekusi query: " . $stmt->error);
@@ -137,16 +204,20 @@ try {
     while ($row = $result->fetch_assoc()) {
         $data[] = [
             'age_group' => $row['age_group'],
-            'count' => (int) $row['count']
+            'count' => (int) $row['count'],
+            'top_product_descp' => $row['top_product_descp'],
+            'top_product_qty' => $row['top_product_qty'] ? (int) $row['top_product_qty'] : null
         ];
     }
     $stmt->close();
     $conn->close();
+    ob_end_clean();
     echo json_encode([
         'success' => true,
         'data' => $data
     ]);
 } catch (Throwable $t) {
+    ob_end_clean();
     $logger->critical("🔥 FATAL ERROR: " . $t->getMessage(), [
         'file' => $t->getFile(),
         'line' => $t->getLine()
