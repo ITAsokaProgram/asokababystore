@@ -1,6 +1,7 @@
 <?php
 session_start();
 ini_set('display_errors', 0);
+ob_start();
 require_once __DIR__ . '/../../../utils/Logger.php';
 require_once __DIR__ . '/../../../auth/middleware_login.php';
 $logger = new AppLogger('member_location_activity.log');
@@ -69,6 +70,7 @@ try {
     $params = [];
     $types = "";
     $where_clause = "";
+    $cutoff_date = null;
     if ($filter !== 'semua') {
         $months = $valid_filters[$filter] ?? 3;
         $current_date_start_day = date('Y-m-d 00:00:00');
@@ -86,6 +88,14 @@ try {
         } else {
             $where_clause = " WHERE Last_Trans IS NULL";
         }
+    }
+    $date_where_clause = "";
+    $params_for_products = [];
+    $types_for_products = "";
+    if ($filter !== 'semua' && $cutoff_date) {
+        $date_where_clause = " AND t.tgl_trans >= ?";
+        $params_for_products[] = $cutoff_date;
+        $types_for_products .= "s";
     }
     $location_field = "";
     $city_field_logic = "IF(Kota IS NULL OR Kota = '', 'Customer belum input', Kota)";
@@ -110,21 +120,78 @@ try {
             $location_field = $city_field_logic;
             break;
     }
+    $exclude_clause = "
+        AND UPPER(t.descp) NOT LIKE '%KERTAS KADO%'
+        AND UPPER(t.descp) NOT LIKE '%MEMBER BY PHONE%'
+        AND UPPER(t.descp) NOT LIKE '%TAS ASOKA BIRU%'
+    ";
     $sql = "
-        SELECT 
-            $location_field AS location_name,
-            COUNT(*) AS count
-        FROM customers
-        $where_clause
-        GROUP BY location_name
-        ORDER BY count DESC
+        SELECT
+            loc.location_name,
+            loc.count,
+            tp.top_product_descp,
+            tp.top_product_qty
+        FROM
+        (
+            SELECT 
+                $location_field AS location_name,
+                COUNT(*) AS count
+            FROM customers
+            $where_clause 
+            GROUP BY location_name
+        ) AS loc
+        LEFT JOIN
+        (
+            SELECT
+                location_name,
+                descp AS top_product_descp,
+                total_qty AS top_product_qty
+            FROM
+            (
+                SELECT
+                    @rn := IF(@current_group = location_name, @rn + 1, 1) AS rn,
+                    @current_group := location_name AS location_name,
+                    descp,
+                    total_qty
+                FROM
+                (
+                    SELECT
+                        cloc.location_name,
+                        t.descp,
+                        SUM(t.qty) AS total_qty
+                    FROM trans_b t
+                    INNER JOIN (
+                        SELECT 
+                            kd_cust,
+                            $location_field AS location_name
+                        FROM customers
+                        $where_clause 
+                    ) AS cloc ON t.kd_cust = cloc.kd_cust
+                    CROSS JOIN (SELECT @rn := 0, @current_group := '') AS init_vars
+                    WHERE 1=1
+                        $date_where_clause 
+                        $exclude_clause
+                    GROUP BY cloc.location_name, t.descp
+                    ORDER BY cloc.location_name, total_qty DESC
+                ) AS ProductSums
+            ) AS RankedProducts
+            WHERE rn = 1
+        ) AS tp ON loc.location_name = tp.location_name
+        ORDER BY loc.count DESC
     ";
     $stmt = $conn->prepare($sql);
     if ($stmt === false) {
+        $logger->error("Database prepare failed: " . $conn->error, ['sql' => $sql]);
         throw new Exception("Database prepare failed: " . $conn->error);
     }
-    if (!empty($params)) {
-        $stmt->bind_param($types, ...$params);
+    $all_params = array_merge($params, $params, $params_for_products);
+    $all_types = $types . $types . $types_for_products;
+    if (!empty($all_params)) {
+        $bind_params = [$all_types];
+        foreach ($all_params as $key => $value) {
+            $bind_params[] = &$all_params[$key];
+        }
+        call_user_func_array([$stmt, 'bind_param'], $bind_params);
     }
     if (!$stmt->execute()) {
         throw new Exception("Gagal eksekusi query: " . $stmt->error);
@@ -134,16 +201,20 @@ try {
     while ($row = $result->fetch_assoc()) {
         $data[] = [
             'location_name' => $row['location_name'],
-            'count' => (int) $row['count']
+            'count' => (int) $row['count'],
+            'top_product_descp' => $row['top_product_descp'],
+            'top_product_qty' => $row['top_product_qty'] ? (int) $row['top_product_qty'] : null
         ];
     }
     $stmt->close();
     $conn->close();
+    ob_end_clean();
     echo json_encode([
         'success' => true,
         'data' => $data
     ]);
 } catch (Throwable $t) {
+    ob_end_clean();
     $logger->critical("🔥 FATAL ERROR: " . $t->getMessage(), [
         'file' => $t->getFile(),
         'line' => $t->getLine()

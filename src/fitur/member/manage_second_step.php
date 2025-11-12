@@ -151,6 +151,40 @@ $filterDisplay = ($filter === '3bulan') ? '3 Bulan Terakhir' :
                 <div class="member-card slide-up p-4">
                     <div class="page-header mb-6">
                         <h2 class="text-2xl font-semibold gradient-text">
+                            <i class="fa-solid fa-table-list mr-2"></i>
+                            Detail Lokasi & Produk Teratas
+                        </h2>
+                    </div>
+
+                    <div id="location-table-loading-spinner" class="loading-spinner">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        <p class="loading-text">Memuat data tabel lokasi...</p>
+                    </div>
+
+                    <div id="location-table-container" class="member-table-container overflow-y-auto hidden"
+                        style="height: 400px;">
+                        <table class="member-table">
+                            <thead>
+                                <tr>
+                                    <th id="location-table-header">Lokasi</th>
+                                    <th>Jml Member</th>
+                                    <th>Produk Teratas</th>
+                                    <th>Qty</th>
+                                </tr>
+                            </thead>
+                            <tbody id="location-table-body">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <p id="location-table-error" class="error-message hidden"></p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="member-card slide-up p-4">
+                    <div class="page-header mb-6">
+                        <h2 class="text-2xl font-semibold gradient-text">
                             <i class="fa-solid fa-star mr-2"></i>
                             Top 10 Member (Total Belanja)
                         </h2>
@@ -170,10 +204,7 @@ $filterDisplay = ($filter === '3bulan') ? '3 Bulan Terakhir' :
 
                     <p id="top-member-chart-error" class="error-message hidden"></p>
                 </div>
-            </div>
 
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="member-card slide-up p-4">
                     <div class="page-header mb-6">
                         <h2 class="text-2xl font-semibold gradient-text">
@@ -197,6 +228,7 @@ $filterDisplay = ($filter === '3bulan') ? '3 Bulan Terakhir' :
                     <p id="top-product-chart-error" class="error-message hidden"></p>
                 </div>
             </div>
+
         </div>
     </main>
 
