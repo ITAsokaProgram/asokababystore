@@ -1,4 +1,6 @@
 import * as api from "./member_api_service.js";
+import { renderMemberChart } from "./member_chart_service.js";
+
 function updatePlaceholder(id, value, isError = false) {
   const el = document.getElementById(id);
   if (el) {
@@ -13,88 +15,7 @@ function updatePlaceholder(id, value, isError = false) {
     }
   }
 }
-function renderMemberChart(data, filter) {
-  const chartElement = document.getElementById("memberActivityChart");
-  if (!chartElement) {
-    console.error("Chart element 'memberActivityChart' not found");
-    return;
-  }
-  const chartInstance = echarts.init(chartElement);
-  const total = data.active + data.inactive;
-  const chartData = [
-    {
-      name: "Active Members",
-      value: data.active,
-      percentage: total > 0 ? ((data.active / total) * 100).toFixed(2) : 0,
-    },
-    {
-      name: "Inactive Members",
-      value: data.inactive,
-      percentage: total > 0 ? ((data.inactive / total) * 100).toFixed(2) : 0,
-    },
-  ];
-  const option = {
-    animationDuration: 1000,
-    animationEasing: "cubicOut",
-    tooltip: {
-      trigger: "item",
-      formatter: (params) => {
-        const percentage = parseFloat(params.data.percentage).toFixed(2);
-        return `${params.data.name}<br/>Jumlah: ${params.value}<br/>Persentase: ${percentage}%`;
-      },
-    },
-    series: [
-      {
-        type: "pie",
-        label: {
-          fontSize: 12,
-          formatter: (params) => {
-            const percentage = parseFloat(params.data.percentage).toFixed(2);
-            return `${params.data.name}\n(${percentage}%)`;
-          },
-        },
-        data: chartData,
-        itemStyle: {
-          color: (params) => {
-            const colors = ["rgba(22, 163, 74, 0.9)", "rgba(220, 38, 38, 0.8)"];
-            return colors[params.dataIndex % colors.length];
-          },
-        },
-      },
-    ],
-  };
-  chartInstance.setOption(option);
-  chartInstance.off("click");
-  chartInstance.on("click", (params) => {
-    if (params.componentType !== "series") return;
-    const clickedElementIndex = params.dataIndex;
-    let status = "";
-    if (clickedElementIndex === 0) {
-      status = "active";
-    } else if (clickedElementIndex === 1) {
-      status = "inactive";
-    }
-    if (status && filter) {
-      const targetUrl = `manage_second_step.php?filter=${encodeURIComponent(
-        filter
-      )}&status=${encodeURIComponent(status)}`;
-      window.location.href = targetUrl;
-    }
-  });
-  chartInstance.off("mouseover");
-  chartInstance.on("mouseover", (params) => {
-    if (params.componentType === "series") {
-      chartElement.style.cursor = "pointer";
-    }
-  });
-  chartInstance.off("mouseout");
-  chartInstance.on("mouseout", () => {
-    chartElement.style.cursor = "default";
-  });
-  window.addEventListener("resize", () => {
-    chartInstance.resize();
-  });
-}
+
 async function loadActivityData() {
   const formatter = new Intl.NumberFormat("id-ID");
   try {
@@ -119,7 +40,7 @@ async function loadActivityData() {
         "inactive-member-placeholder",
         formatter.format(data.inactive)
       );
-      renderMemberChart(data, filter);
+      renderMemberChart("memberActivityChart", data, filter);
     } else {
       throw new Error(result.message || "Gagal memuat data aktivitas");
     }
@@ -139,6 +60,7 @@ async function loadActivityData() {
     }
   }
 }
+
 document.addEventListener("DOMContentLoaded", () => {
   const chartSection = document.getElementById("chart-section");
   if (chartSection) {
