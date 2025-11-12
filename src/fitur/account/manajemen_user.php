@@ -84,18 +84,23 @@ $token = $menuHandler->getToken();
                     <div class="max-w-7xl mx-auto">
                         <!-- Header Section with Glass Effect -->
                         <div>
-                            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-4 sm:p-6 lg:p-8 animate-fade-in-up hover:-translate-y-1 hover:shadow-2xl transition-all duration-300">
+                            <div
+                                class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-4 sm:p-6 lg:p-8 animate-fade-in-up hover:-translate-y-1 hover:shadow-2xl transition-all duration-300">
 
                                 <!-- Header Section -->
                                 <div class="flex items-center space-x-4 mb-6">
                                     <div class="relative flex-shrink-0">
-                                        <div class="w-12 h-12 bg-gradient-to-r from-pink-400 to-rose-400 rounded-xl flex items-center justify-center shadow-lg">
+                                        <div
+                                            class="w-12 h-12 bg-gradient-to-r from-pink-400 to-rose-400 rounded-xl flex items-center justify-center shadow-lg">
                                             <i class="fas fa-users text-white text-xl"></i>
                                         </div>
-                                        <div class="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white animate-pulse"></div>
+                                        <div
+                                            class="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white animate-pulse">
+                                        </div>
                                     </div>
                                     <div class="min-w-0 flex-1">
-                                        <h2 class="text-xl sm:text-2xl font-bold text-gray-800 truncate">Kelola Account Karyawan</h2>
+                                        <h2 class="text-xl sm:text-2xl font-bold text-gray-800 truncate">Kelola Account
+                                            Karyawan</h2>
                                         <p class="text-gray-600 text-sm">Manajemen pengguna dan akses sistem</p>
                                         <div class="flex items-center space-x-2 mt-1">
                                             <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
@@ -106,15 +111,18 @@ $token = $menuHandler->getToken();
 
                                 <!-- Stats Section - Mobile First Approach -->
                                 <div class="grid grid-cols-3 gap-2 sm:gap-4 mb-6">
-                                    <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-2 sm:px-4 py-3 rounded-lg text-center hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
+                                    <div
+                                        class="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-2 sm:px-4 py-3 rounded-lg text-center hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
                                         <div class="text-lg sm:text-xl font-bold" id="totalUsers"></div>
                                         <div class="text-xs opacity-90">Total Users</div>
                                     </div>
-                                    <div class="bg-gradient-to-r from-green-500 to-green-600 text-white px-2 sm:px-4 py-3 rounded-lg text-center hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
+                                    <div
+                                        class="bg-gradient-to-r from-green-500 to-green-600 text-white px-2 sm:px-4 py-3 rounded-lg text-center hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
                                         <div class="text-lg sm:text-xl font-bold" id="activeUsers"></div>
                                         <div class="text-xs opacity-90">Active</div>
                                     </div>
-                                    <div class="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-2 sm:px-4 py-3 rounded-lg text-center hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
+                                    <div
+                                        class="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-2 sm:px-4 py-3 rounded-lg text-center hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
                                         <div class="text-lg sm:text-xl font-bold" id="managers"></div>
                                         <div class="text-xs opacity-90">Managers</div>
                                     </div>
@@ -123,13 +131,17 @@ $token = $menuHandler->getToken();
                                 <!-- Search Section - Responsive -->
                                 <div class="flex flex-col sm:flex-row gap-3">
                                     <div class="relative group flex-1">
-                                        <input type="text" placeholder="Cari berdasarkan nama, ID, atau posisi..." id="searchInput"
+                                        <input type="text" placeholder="Cari berdasarkan nama, ID, atau posisi..."
+                                            id="searchInput"
                                             class="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 text-sm bg-white/90 backdrop-blur-sm shadow-sm transition-all duration-300 group-hover:shadow-md">
-                                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                            <i class="fas fa-search text-gray-400 group-hover:text-pink-500 transition-colors duration-200"></i>
+                                        <div
+                                            class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                            <i
+                                                class="fas fa-search text-gray-400 group-hover:text-pink-500 transition-colors duration-200"></i>
                                         </div>
                                     </div>
-                                    <button class="px-6 py-3 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-xl hover:from-gray-600 hover:to-gray-700 text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 sm:flex-shrink-0">
+                                    <button
+                                        class="px-6 py-3 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-xl hover:from-gray-600 hover:to-gray-700 text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 sm:flex-shrink-0">
                                         <i class="fas fa-undo mr-2"></i>Reset
                                     </button>
                                 </div>
@@ -189,7 +201,8 @@ $token = $menuHandler->getToken();
                                         <i class="fas fa-info-circle text-gray-400"></i>
                                         <p class="text-gray-600 text-sm font-medium" id="viewData"></p>
                                     </div>
-                                    <div class="flex flex-wrap gap-2 justify-center sm:justify-end" id="paginationContainer">
+                                    <div class="flex flex-wrap gap-2 justify-center sm:justify-end"
+                                        id="paginationContainer">
                                         <!-- Pagination buttons will be rendered here -->
                                     </div>
                                 </div>
@@ -312,20 +325,30 @@ $token = $menuHandler->getToken();
                                 <i class="fas fa-chart-line text-blue-500 mr-2"></i>
                                 <p class="font-semibold text-gray-800">📊 Dashboard</p>
                             </div>
-                            <label
-                                class="flex items-center gap-3 p-2 rounded-lg hover:bg-blue-50 transition-colors duration-200">
-                                <input type="checkbox" name="menus[]" value="dashboard"
-                                    class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500" />
-                                <span class="text-sm">Dashboard Overview</span>
-                            </label>
+                            <div class="space-y-2">
+                                <label
+                                    class="flex items-center gap-3 p-2 rounded-lg hover:bg-blue-50 transition-colors duration-200">
+                                    <input type="checkbox" name="menus[]" value="dashboard"
+                                        class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500" />
+                                    <span class="text-sm">Dashboard Overview</span>
+                                </label>
+                                <label
+                                    class="flex items-center gap-3 p-2 rounded-lg hover:bg-blue-50 transition-colors duration-200">
+                                    <input type="checkbox" name="menus[]" value="dashboard_sales_graph"
+                                        class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500" />
+                                    <span class="text-sm">Grafik Penjualan</span>
+                                </label>
+                            </div>
                         </div>
 
-                        <div class="bg-white rounded-xl p-4 shadow-sm border border-orange-100 hover:shadow-md transition-shadow duration-200">
+                        <div
+                            class="bg-white rounded-xl p-4 shadow-sm border border-orange-100 hover:shadow-md transition-shadow duration-200">
                             <div class="flex items-center mb-3">
                                 <i class="fas fa-shopping-bag text-orange-500 mr-2"></i>
                                 <p class="font-semibold text-gray-800">🛍️ Shopee</p>
                             </div>
-                            <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-orange-50 transition-colors duration-200">
+                            <label
+                                class="flex items-center gap-3 p-2 rounded-lg hover:bg-orange-50 transition-colors duration-200">
                                 <input type="checkbox" name="menus[]" value="shopee_dashboard"
                                     class="w-4 h-4 text-orange-600 rounded focus:ring-orange-500" />
                                 <span class="text-sm">Dashboard Shopee</span>
@@ -586,10 +609,12 @@ $token = $menuHandler->getToken();
             </div>
 
             <div class="flex justify-end space-x-2 pt-3">
-                <button id="close-reset" class="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-200 rounded hover:bg-gray-300">
+                <button id="close-reset"
+                    class="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-200 rounded hover:bg-gray-300">
                     Batal
                 </button>
-                <button id="save-password" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700">
+                <button id="save-password"
+                    class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700">
                     Simpan Password
                 </button>
             </div>
@@ -603,18 +628,18 @@ $token = $menuHandler->getToken();
     <script src="../../js/middleware_auth.js"></script>
     <script src="../../js/account/internal/main.js" type="module"></script>
     <script>
-        document.getElementById('toggle-sidebar').addEventListener('click', function() {
+        document.getElementById('toggle-sidebar').addEventListener('click', function () {
             document.getElementById('sidebar').classList.toggle('open');
         });
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             const sidebar = document.getElementById("sidebar");
             const closeBtn = document.getElementById("closeSidebar");
 
-            closeBtn.addEventListener("click", function() {
+            closeBtn.addEventListener("click", function () {
                 sidebar.classList.remove("open"); // Hilangkan class .open agar sidebar tertutup
             });
         });
-        document.getElementById("toggle-hide").addEventListener("click", function() {
+        document.getElementById("toggle-hide").addEventListener("click", function () {
             var sidebarTexts = document.querySelectorAll(".sidebar-text");
             let mainContent = document.getElementById("main-content");
             let sidebar = document.getElementById("sidebar");
@@ -646,17 +671,17 @@ $token = $menuHandler->getToken();
             }
         });
 
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             const profileImg = document.getElementById("profile-img");
             const profileCard = document.getElementById("profile-card");
 
-            profileImg.addEventListener("click", function(event) {
+            profileImg.addEventListener("click", function (event) {
                 event.preventDefault();
                 profileCard.classList.toggle("show");
             });
 
             // Tutup profile-card jika klik di luar
-            document.addEventListener("click", function(event) {
+            document.addEventListener("click", function (event) {
                 if (!profileCard.contains(event.target) && !profileImg.contains(event.target)) {
                     profileCard.classList.remove("show");
                 }

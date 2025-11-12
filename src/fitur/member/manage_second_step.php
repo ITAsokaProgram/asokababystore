@@ -152,10 +152,18 @@ $filterDisplay = ($filter === '3bulan') ? '3 Bulan Terakhir' :
                     <div class="page-header mb-6">
                         <h2 class="text-2xl font-semibold gradient-text">
                             <i class="fa-solid fa-table-list mr-2"></i>
-                            Detail Lokasi & Produk Teratas
+                            Detail Lokasi & Produk Teratas (Top 20)
                         </h2>
                     </div>
 
+                    <div class="mb-4">
+                        <a href="full_location?filter=<?php echo $filter; ?>&status=<?php echo $status; ?>"
+                            id="view-all-locations-btn"
+                            class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 text-sm">
+                            Lihat Semua Lokasi
+                            <i class="fa-solid fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
                     <div id="location-table-loading-spinner" class="loading-spinner">
                         <i class="fa-solid fa-spinner fa-spin"></i>
                         <p class="loading-text">Memuat data tabel lokasi...</p>

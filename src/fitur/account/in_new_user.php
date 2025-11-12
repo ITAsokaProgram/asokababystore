@@ -167,7 +167,19 @@ $token = $menuHandler->getToken();
                         class="scale-110 focus:ring focus:ring-blue-300" /> Dashboard
                     </label>
                   </div>
-                  
+
+                  <div class="bg-white/70 border border-white/40 rounded-xl shadow p-4 mb-2">
+                    <p class="text-lg font-bold text-gray-800 mb-2">Dashboard</p>
+                    <label class="flex items-center gap-2 text-sm">
+                      <input type="checkbox" name="menus[]" value="dashboard"
+                        class="scale-110 focus:ring focus:ring-blue-300" /> Dashboard
+                    </label>
+                    <label class="flex items-center gap-2 text-sm mt-2">
+                      <input type="checkbox" name="menus[]" value="dashboard_sales_graph"
+                        class="scale-110 focus:ring focus:ring-blue-300" /> Grafik Penjualan
+                    </label>
+                  </div>
+
                   <div class="bg-white/70 border border-white/40 rounded-xl shadow p-4 mb-2">
                     <p class="text-lg font-bold text-gray-800 mb-2">Shopee</p>
                     <label class="flex items-center gap-2 text-sm">
@@ -338,7 +350,7 @@ $token = $menuHandler->getToken();
       .catch(err => console.error('Gagal fetch next_kode:', err));
 
     // Show/hide password
-    document.getElementById('togglePassword').addEventListener('click', function() {
+    document.getElementById('togglePassword').addEventListener('click', function () {
       const passInput = document.getElementById('password');
       const icon = this.querySelector('i');
       if (passInput.type === 'password') {
@@ -351,7 +363,7 @@ $token = $menuHandler->getToken();
         icon.classList.add('fa-eye');
       }
     });
-    document.getElementById('toggleConfirmPassword').addEventListener('click', function() {
+    document.getElementById('toggleConfirmPassword').addEventListener('click', function () {
       const passInput = document.getElementById('confirmPassword');
       const icon = this.querySelector('i');
       if (passInput.type === 'password') {
@@ -366,7 +378,7 @@ $token = $menuHandler->getToken();
     });
 
     // Password match error
-    document.getElementById('confirmPassword').addEventListener('input', function() {
+    document.getElementById('confirmPassword').addEventListener('input', function () {
       var pass = document.getElementById('password').value;
       var c_pass = document.getElementById('confirmPassword').value;
       var errorElement = document.getElementById('passwordError');

@@ -66,6 +66,11 @@ try {
     $level = $_GET['level'] ?? 'city';
     $selected_city = $_GET['city'] ?? null;
     $selected_district = $_GET['district'] ?? null;
+    $limit_param = $_GET['limit'] ?? 'default';
+    $limit_clause = "";
+    if ($limit_param === 'default') {
+        $limit_clause = " LIMIT 20 ";
+    }
     $valid_filters = ['3bulan' => 3, '6bulan' => 6, '9bulan' => 9, '12bulan' => 12];
     $params = [];
     $types = "";
@@ -178,6 +183,7 @@ try {
             WHERE rn = 1
         ) AS tp ON loc.location_name = tp.location_name
         ORDER BY loc.count DESC
+        $limit_clause
     ";
     $stmt = $conn->prepare($sql);
     if ($stmt === false) {

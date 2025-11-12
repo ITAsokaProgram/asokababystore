@@ -22,6 +22,8 @@ if (!$menuHandler->initialize()) {
 $user_id = $menuHandler->getUserId();
 $logger = $menuHandler->getLogger();
 $token = $menuHandler->getToken();
+
+$permissionChecker = new PermissionAccess($conn);
 ?>
 
 <!DOCTYPE html>
@@ -387,6 +389,113 @@ $token = $menuHandler->getToken();
         </div>
       </div>
     </section>
+
+    <?php
+    // --- TAMBAHKAN KODE INI ---
+// Cek permission khusus untuk section 'Grafik Penjualan'
+// 'dashboard_sales_graph' adalah menu_code yang kita tambahkan di database
+    $canViewSalesGraph = $permissionChecker->hasPermission($user_id, 'dashboard_sales_graph', 'can_view');
+
+    if ($canViewSalesGraph):
+      // -------------------------
+      ?>
+
+      <section      
+        class="glass-container animate-fade-in-up mt-8 backdrop-blur-sm bg-white/90 rounded-2xl shadow-xl border border-white/20 p-8">
+        <div        
+          class="flex flex-col lg:flex-row items-center justify-between mb-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200/50">
+          <div class="flex items-center gap-3 mb-4 lg:mb-0">
+            <div            
+              class="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+              <i class="fa fa-chart-line text-white text-xl"></i>
+              </div>
+            <div>
+              <h2
+                class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
+                Grafik Penjualan
+                </h2>
+              <p class="text-blue-600 text-sm font-medium">Analisis Performa Penjualan</p>
+              </div>
+            </div>
+          <div class="flex items-center gap-2 text-sm text-blue-600">
+            <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+            <span class="font-medium">Real-time Analytics</span>
+            </div>
+          </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div class="bg-white/80 rounded-xl p-4 border border-blue-100/50 shadow-sm">
+            <label for="period1" class="block text-blue-700 font-semibold mb-2 flex items-center gap-2">
+              <i class="fa-solid fa-calendar-alt text-blue-600"></i>
+              Periode Grafik 1
+              </label>
+            <select id="period1"            
+              class="w-full px-4 py-3 border border-blue-200 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-400 transition-all duration-200 bg-white/90 font-medium text-blue-700">
+              <option value="day">📅 Per Hari</option>
+              <option value="month">📊 Per Bulan</option>
+              <option value="year">📈 Per Tahun</option>
+              </select>
+            </div>
+
+          <div class="bg-white/80 rounded-xl p-4 border border-blue-100/50 shadow-sm">
+            <label for="period2" class="block text-blue-700 font-semibold mb-2 flex items-center gap-2">
+              <i class="fa-solid fa-chart-bar text-blue-600"></i>
+              Periode Grafik 2
+              </label>
+            <select id="period2"            
+              class="w-full px-4 py-3 border border-blue-200 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-400 transition-all duration-200 bg-white/90 font-medium text-blue-700">
+              <option value="per_jam">⏰ Per Jam (Kemarin)</option>
+              <option value="7_hari">📅 7 Hari Terakhir</option>
+              <option value="30_hari">📊 30 Hari Terakhir</option>
+              <option value="12_bulan">📈 1 Tahun Terakhir</option>
+              </select>
+            </div>
+          </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div          
+            class="bg-gradient-to-br from-white/95 to-blue-50/50 rounded-2xl shadow-lg p-6 h-[420px] relative border border-blue-200/50 hover:shadow-xl transition-all duration-300">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold text-blue-800 flex items-center gap-2">
+                <i class="fa-solid fa-chart-line text-blue-600"></i>
+                Tren Penjualan
+                </h3>
+              <div class="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+              </div>
+            <div id="chart1-skeleton"            
+              class="absolute inset-0 flex justify-center items-center skeleton-loader bg-white/80 rounded-xl">
+              <div              
+                class="w-16 h-16 border-4 border-t-transparent border-blue-500 border-solid rounded-full animate-spin shadow-lg">
+                </div>
+              </div>
+            <div id="chart1" class="w-full h-[350px]"></div>
+            </div>
+
+          <div          
+            class="bg-gradient-to-br from-white/95 to-indigo-50/50 rounded-2xl shadow-lg p-6 h-[420px] relative border border-indigo-200/50 hover:shadow-xl transition-all duration-300">
+            <div class="flex items-center justify-between mb-4">
+              _    <h3 class="text-lg font-semibold text-indigo-800 flex items-center gap-2">
+                <i class="fa-solid fa-chart-area text-indigo-600"></i>
+                Tren Omzet
+                </h3>
+              <div class="w-3 h-3 bg-indigo-500 rounded-full animate-pulse"></div>
+              </div>
+            <div id="chart2-skeleton"            
+              class="absolute inset-0 flex justify-center items-center skeleton-loader bg-white/80 rounded-xl">
+              <div            
+                class="w-16 h-16 border-4 border-t-transparent border-indigo-500 border-solid rounded-full animate-spin shadow-lg">
+                </div>
+              </div>
+            <div id="chart2" class="w-full h-[350px]"></div>
+            </div>
+          </div>
+        </section>
+
+      <?php
+      // --- TAMBAHKAN KODE INI ---
+    endif; // Akhir dari cek permission $canViewSalesGraph
+// -------------------------
+    ?>
 
 
 
