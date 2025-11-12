@@ -343,7 +343,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (row && currentFilter && currentStatus) {
         const ageGroup = row.dataset.ageGroup;
         if (ageGroup) {
-          const url = `member/umur?age_group=${encodeURIComponent(
+          const url = `umur?age_group=${encodeURIComponent(
             ageGroup
           )}&filter=${encodeURIComponent(
             currentFilter

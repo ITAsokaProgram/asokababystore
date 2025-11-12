@@ -1,5 +1,5 @@
 import * as api from "./member_api_service.js";
-import { renderMemberChart } from "./member_chart_service.js";
+import { renderMemberChart } from "./member_chart_service.js"; // <-- MASALAH UTAMA DI SINI
 
 function updatePlaceholder(id, value, isError = false) {
   const el = document.getElementById(id);
@@ -52,11 +52,11 @@ async function loadActivityData() {
     const chartElement = document.getElementById("memberActivityChart");
     if (chartElement) {
       chartElement.innerHTML = `
-        <div style="text-align: center; padding-top: 50px; color: red; font-family: Arial, sans-serif;">
-          <strong>Gagal memuat chart.</strong><br>
-          <span>${error.message || "Cek console untuk detail."}</span>
-        </div>
-      `;
+                <div style="text-align: center; padding-top: 50px; color: red; font-family: Arial, sans-serif;">
+                    <strong>Gagal memuat chart.</strong><br>
+                    <span>${error.message || "Cek console untuk detail."}</span>
+                </div>
+            `;
     }
   }
 }
