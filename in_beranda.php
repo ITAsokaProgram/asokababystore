@@ -97,7 +97,7 @@ $token = $menuHandler->getToken();
 
   <main id="main-content" class="flex-1 p-8 transition-all duration-300 ml-64 mt-16 bg-gray-100">
 
-    <section class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-3 gap-4 mb-8">
+    <section class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
       <div
         class="dashboard-card bg-gradient-to-br from-blue-50 via-white to-indigo-100 rounded-2xl p-2 shadow border border-blue-200/70 backdrop-blur-sm animate-fade-in-up">
         <div class="flex items-center justify-between mb-3">
@@ -332,7 +332,7 @@ $token = $menuHandler->getToken();
       </div>
     </section>
 
-    <section class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-3 gap-4 mb-8">
+    <section class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
       <div
         class="dashboard-card bg-gradient-to-br from-yellow-50 via-white to-amber-100 rounded-2xl p-2 shadow border border-yellow-200/70 backdrop-blur-sm animate-fade-in-up">
         <div class="flex items-center justify-between mb-3">
