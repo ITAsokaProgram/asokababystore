@@ -10,15 +10,12 @@ const CHART_COLORS = [
   "rgba(107, 114, 128, 0.9)",
   "rgba(22, 163, 74, 0.9)",
 ];
-
 const currencyFormatter = new Intl.NumberFormat("id-ID", {
   style: "currency",
   currency: "IDR",
   minimumFractionDigits: 0,
 });
-
 const numberFormatter = new Intl.NumberFormat("id-ID");
-
 function addChartHoverHandlers(chartInstance, chartElement) {
   chartInstance.off("mouseover");
   chartInstance.on("mouseover", (params) => {
@@ -34,7 +31,6 @@ function addChartHoverHandlers(chartInstance, chartElement) {
     chartInstance.resize();
   });
 }
-
 export function renderAgeChart(chartInstance, elementId, data, currentFilter) {
   const chartElement = document.getElementById(elementId);
   if (!chartElement) return null;
@@ -42,9 +38,12 @@ export function renderAgeChart(chartInstance, elementId, data, currentFilter) {
     chartInstance.dispose();
   }
   const newChartInstance = echarts.init(chartElement);
-  const chartData = data.map((d) => ({ value: d.count, name: d.age_group }));
-  const total = data.reduce((acc, curr) => acc + curr.count, 0);
-
+  const filteredData = data.filter((d) => d.age_group && d.age_group !== "-");
+  const chartData = filteredData.map((d) => ({
+    value: d.count,
+    name: d.age_group,
+  }));
+  const total = filteredData.reduce((acc, curr) => acc + curr.count, 0);
   const option = {
     animationDuration: 1000,
     animationEasing: "cubicOut",
@@ -80,9 +79,7 @@ export function renderAgeChart(chartInstance, elementId, data, currentFilter) {
       },
     ],
   };
-
   newChartInstance.setOption(option);
-
   newChartInstance.off("click");
   newChartInstance.on("click", (params) => {
     if (params.componentType !== "series") return;
@@ -94,11 +91,9 @@ export function renderAgeChart(chartInstance, elementId, data, currentFilter) {
       window.location.href = targetUrl;
     }
   });
-
   addChartHoverHandlers(newChartInstance, chartElement);
   return newChartInstance;
 }
-
 export function renderLocationChart(
   chartInstance,
   elementId,
@@ -112,14 +107,18 @@ export function renderLocationChart(
     chartInstance.dispose();
   }
   const newChartInstance = echarts.init(chartElement);
-
-  data.sort((a, b) => b.count - a.count);
-  const chartData = data.map((d) => ({
+  const filteredData = data.filter(
+    (d) =>
+      d.location_name &&
+      d.location_name !== "-" &&
+      d.location_name !== "Customer belum input"
+  );
+  filteredData.sort((a, b) => b.count - a.count);
+  const chartData = filteredData.map((d) => ({
     value: d.count,
     name: d.location_name,
   }));
-  const total = data.reduce((acc, curr) => acc + curr.count, 0);
-
+  const total = filteredData.reduce((acc, curr) => acc + curr.count, 0);
   const option = {
     animationDuration: 1000,
     animationEasing: "cubicOut",
@@ -155,9 +154,7 @@ export function renderLocationChart(
       },
     ],
   };
-
   newChartInstance.setOption(option);
-
   newChartInstance.off("click");
   newChartInstance.on("click", (params) => {
     if (params.componentType !== "series") return;
@@ -184,11 +181,9 @@ export function renderLocationChart(
       window.location.href = targetUrl;
     }
   });
-
   addChartHoverHandlers(newChartInstance, chartElement);
   return newChartInstance;
 }
-
 export function renderTopMemberChart(chartInstance, elementId, data, state) {
   const chartElement = document.getElementById(elementId);
   if (!chartElement) return null;
@@ -196,15 +191,16 @@ export function renderTopMemberChart(chartInstance, elementId, data, state) {
     chartInstance.dispose();
   }
   const newChartInstance = echarts.init(chartElement);
-
-  const chartData = data.map((d) => ({
+  const filteredData = data.filter(
+    (d) => d.nama_cust && d.nama_cust.trim().toLowerCase() !== "member dummy"
+  );
+  const chartData = filteredData.map((d) => ({
     value: d.total_spent,
     name: `${d.nama_cust} - (${d.kd_cust})`,
     kd_cust: d.kd_cust,
     nama_cust: d.nama_cust,
   }));
-  const total = data.reduce((acc, curr) => acc + curr.total_spent, 0);
-
+  const total = filteredData.reduce((acc, curr) => acc + curr.total_spent, 0);
   const option = {
     animationDuration: 1000,
     animationEasing: "cubicOut",
@@ -237,9 +233,7 @@ export function renderTopMemberChart(chartInstance, elementId, data, state) {
       },
     ],
   };
-
   newChartInstance.setOption(option);
-
   newChartInstance.off("click");
   newChartInstance.on("click", (params) => {
     if (params.componentType !== "series") return;
@@ -255,11 +249,9 @@ export function renderTopMemberChart(chartInstance, elementId, data, state) {
       window.location.href = targetUrl;
     }
   });
-
   addChartHoverHandlers(newChartInstance, chartElement);
   return newChartInstance;
 }
-
 export function renderTopProductChart(chartInstance, elementId, data, state) {
   const chartElement = document.getElementById(elementId);
   if (!chartElement) return null;
@@ -267,15 +259,19 @@ export function renderTopProductChart(chartInstance, elementId, data, state) {
     chartInstance.dispose();
   }
   const newChartInstance = echarts.init(chartElement);
-
-  const chartData = data.map((d) => ({
+  const filteredData = data.filter(
+    (d) => d.nama_cust && d.nama_cust.trim().toLowerCase() !== "member dummy"
+  );
+  const chartData = filteredData.map((d) => ({
     value: d.total_item_qty,
     name: `${d.nama_cust} (${d.kd_cust}) - ${d.descp}`,
     kd_cust: d.kd_cust,
     nama_cust: d.nama_cust,
   }));
-  const total = data.reduce((acc, curr) => acc + curr.total_item_qty, 0);
-
+  const total = filteredData.reduce(
+    (acc, curr) => acc + curr.total_item_qty,
+    0
+  );
   const option = {
     animationDuration: 1000,
     animationEasing: "cubicOut",
@@ -308,9 +304,7 @@ export function renderTopProductChart(chartInstance, elementId, data, state) {
       },
     ],
   };
-
   newChartInstance.setOption(option);
-
   newChartInstance.off("click");
   newChartInstance.on("click", (params) => {
     if (params.componentType !== "series") return;
@@ -326,11 +320,9 @@ export function renderTopProductChart(chartInstance, elementId, data, state) {
       window.location.href = targetUrl;
     }
   });
-
   addChartHoverHandlers(newChartInstance, chartElement);
   return newChartInstance;
 }
-
 export function renderMemberChart(elementId, data, filter) {
   const chartElement = document.getElementById(elementId);
   if (!chartElement) {
@@ -399,7 +391,6 @@ export function renderMemberChart(elementId, data, filter) {
       window.location.href = targetUrl;
     }
   });
-
   addChartHoverHandlers(chartInstance, chartElement);
   return chartInstance;
 }
