@@ -8,10 +8,10 @@ $redisKey = "top_member_by_sales";
 $cached = $redis->get($redisKey);
 
 
-// Hitung TTL ke jam 08:30 besok pagi (Asia/Jakarta)
 $now = new DateTime('now', new DateTimeZone('Asia/Jakarta'));
 $next830am = new DateTime('tomorrow 08:59', new DateTimeZone('Asia/Jakarta'));
 $ttl = $next830am->getTimestamp() - $now->getTimestamp();
+
 
 $sql = "SELECT 
   t.kd_cust,
@@ -19,6 +19,7 @@ $sql = "SELECT
   c.nama_cust,
   ks.nm_alias AS cabang,
   ks.kd_store AS kd_store,
+  SUM(t.qty) AS total_qty,
   SUM(t.qty * t.harga) AS total_penjualan
 FROM trans_b t
 LEFT JOIN customers c ON t.kd_cust = c.kd_cust
@@ -34,6 +35,7 @@ LIMIT 50";
 $sqlNon = "SELECT 
   t.no_bon AS no_trans,
   ks.nm_alias AS cabang,
+  SUM(t.qty) AS total_qty,
   SUM(t.qty * t.harga) AS total_penjualan
 FROM trans_b t
 LEFT JOIN customers c ON t.kd_cust = c.kd_cust
@@ -82,6 +84,7 @@ if (count($top_member_by_sales) === 0 && count($top_member_by_sales_non) === 0) 
   $conn->close();
   exit;
 }
+
 $response = [
   "success" => true,
   "message" => "Data berhasil diambil",
@@ -89,7 +92,10 @@ $response = [
   "data" => $top_member_by_sales,
   "data_non" => $top_member_by_sales_non
 ];
+
 $redis->setex($redisKey, $ttl, json_encode($response));
 echo date('Y-m-d H:i:s') . " - Redis updated: $redisKey\n";
+
 $stmt->close();
 $stmtNon->close();
+$conn->close();

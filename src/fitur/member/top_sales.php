@@ -179,20 +179,20 @@ $token = $menuHandler->getToken();
                         <h3 class="text-xl font-bold text-yellow-700 flex items-center gap-2">
                             <i class="fas fa-list text-yellow-500"></i> Daftar Top Sales Produk
                             <span class="text-xs text-yellow-400 ml-2" id="info-data">
-                                <i class="fas fa-info-circle text-yellow-400"></i> Data diambil dari kemarin vs lusa
+                                <i class="fas fa-info-circle text-yellow-400"></i> Data kemarin
                             </span>
                         </h3>
                         <div class="flex flex-wrap items-center gap-3">
                             <div class="relative">
-                                <input type="text" id="search-input" placeholder="Cari produk..."
+                                <input type="text" id="search-input" placeholder="Cari customer..."
                                     class="pl-10 pr-4 py-2 border border-yellow-100 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-400 shadow-sm">
                                 <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
                             </div>
                             <select id="sort-select"
                                 class="border border-yellow-100 rounded-xl px-4 py-2 focus:ring-2 focus:ring-yellow-500 focus:border-yellow-400 shadow-sm">
-                                <option value="terjual">Sort by Terjual</option>
-                                <option value="persen">Sort by Persentase</option>
-                                <option value="plu">Sort by PLU</option>
+                                <option value="belanja">Sort by Total Belanja</option>
+                                <option value="qty">Sort by Quantity</option>
+                                <option value="nama">Sort by Nama</option>
                             </select>
                             <button onclick="exportTopSalesData()"
                                 class="bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-500 hover:to-yellow-700 text-white px-4 py-2 rounded-xl font-bold shadow-md transition-all duration-200 flex items-center gap-2">
@@ -206,35 +206,31 @@ $token = $menuHandler->getToken();
                         <thead class="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white">
                             <tr>
                                 <th class="px-6 py-3 text-center text-xs font-bold uppercase tracking-wider">No</th>
-                                <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">PLU</th>
-                                <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Nama Barang
+                                <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Nama</th>
+                                <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Kode Customer
                                 </th>
-                                <th class="px-6 py-3 text-center text-xs font-bold uppercase tracking-wider">Terjual
-                                </th>
-                                <th class="px-6 py-3 text-center text-xs font-bold uppercase tracking-wider">Persen</th>
+                                <th class="px-6 py-3 text-center text-xs font-bold uppercase tracking-wider">Total
+                                    Quantity</th>
+                                <th class="px-6 py-3 text-right text-xs font-bold uppercase tracking-wider">Total
+                                    Belanja</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-yellow-50" id="top-sales-table-body">
-                            <!-- Data will be populated by JavaScript -->
                         </tbody>
                     </table>
                 </div>
-                <!-- Loading State -->
                 <div id="loading-state" class="hidden p-8 text-center glass-container animate-fade-in-up">
                     <div class="inline-flex items-center gap-3">
                         <i class="fas fa-spinner fa-spin text-2xl text-yellow-500"></i>
                         <span class="text-yellow-700 font-bold">Memuat data...</span>
                     </div>
                 </div>
-                <!-- Empty State -->
                 <div id="empty-state" class="hidden p-8 text-center glass-container animate-fade-in-up">
                     <i class="fas fa-trophy text-4xl text-yellow-200 mb-4"></i>
-                    <h3 class="text-lg font-bold text-yellow-700 mb-2">Belum ada data top sales</h3>
-                    <p class="text-yellow-400">Data top sales produk akan muncul di sini</p>
+                    <h3 class="text-lg font-bold text-yellow-700 mb-2">Belum ada data</h3>
+                    <p class="text-yellow-400">Data top sales akan muncul di sini</p>
                 </div>
             </div>
-
-            <!-- Pagination -->
             <div class="mt-4 flex justify-between items-center text-sm">
                 <p class="text-gray-600" id="viewData"></p>
                 <div class="flex flex-wrap gap-1 max-w-full overflow-x-auto" id="paginationContainer">

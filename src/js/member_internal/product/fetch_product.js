@@ -72,13 +72,16 @@ export const fetchProductFav = async () => {
 export const filterProductFav = async (startDate, endDate) => {
   const token = getCookie("admin_token");
   try {
-    const response = await fetch(`/src/api/member/product/get_product_fav?start_date=${startDate}&end_date=${endDate}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json", 
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await fetch(
+      `/src/api/member/product/get_product_fav?start_date=${startDate}&end_date=${endDate}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
     if (response.status === 200) {
       const data = await response.json();
       return data;
@@ -88,7 +91,7 @@ export const filterProductFav = async (startDate, endDate) => {
     return null;
   }
 };
-  
+
 export const fetchTopSales = async () => {
   const token = getCookie("admin_token");
   try {
@@ -108,7 +111,6 @@ export const fetchTopSales = async () => {
     return null;
   }
 };
-
 
 export const fetchTopMember = async () => {
   const token = getCookie("admin_token");
@@ -165,9 +167,15 @@ export const fetchOmzetSummary = async () => {
       return data;
     }
   } catch (error) {
-    console.error("Error fetching omzet summary:", error);  
+    console.error("Error fetching omzet summary:", error);
     return null;
   }
 };
 
-export default { fetchProductFav, fetchTopSales, fetchTopMember, fetchTrendOmzet, fetchOmzetSummary };
+export default {
+  fetchProductFav,
+  fetchTopSales,
+  fetchTopMember,
+  fetchTrendOmzet,
+  fetchOmzetSummary,
+};
