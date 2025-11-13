@@ -23,18 +23,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }).format(num || 0);
   function getUrlParams() {
     const params = new URLSearchParams(window.location.search);
-
     const today = new Date();
     const lastMonth = new Date();
     lastMonth.setMonth(today.getMonth() - 1);
-
     const formatDate = (date) => {
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, "0");
       const day = String(date.getDate()).padStart(2, "0");
       return `${year}-${month}-${day}`;
     };
-
     return {
       tgl_mulai: params.get("tgl_mulai") || formatDate(lastMonth),
       tgl_selesai: params.get("tgl_selesai") || formatDate(today),
@@ -88,7 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   function renderTable(tabel_data, offset) {
     if (!tabel_data || tabel_data.length === 0) {
-      tableBody.innerHTML = `<tr><td colspan="10" class=" p-8 text-gray-500 text-center"><i class="fas fa-inbox fa-lg mb-2"></i><p>Tidak ada data ditemukan.</p></td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="10" class=" p-8 text-gray-500"><i class="fas fa-inbox fa-lg mb-2"></i><p>Tidak ada data ditemukan.</p></td></tr>`;
       return;
     }
     let htmlRows = "";
@@ -97,19 +94,28 @@ document.addEventListener("DOMContentLoaded", () => {
     const buildStoreHeader = (kd, alias) => `
             <tr class="bg-orange-50 border-b border-orange-100">
                 <td colspan="10" class="px-4 py-2 font-bold text-orange-800">
-                     <i class="fas fa-store mr-2"></i>  ${alias}
+                     <i class="fas fa-store mr-2"></i> ${alias}
                 </td>
             </tr>`;
-    const buildFakturHeader = (row) => {
+    const buildFakturHeader = (row, isFullyDisabled) => {
       const fakturGroupId = `group-${row.kd_store}-${row.no_faktur}`;
       const formattedDate = row.tgl_koreksi.split(" ")[0];
+      const disabledAttr = isFullyDisabled ? "disabled" : "";
+      const opacityClass = isFullyDisabled
+        ? "opacity-50 bg-gray-200 cursor-not-allowed"
+        : "bg-gray-100 hover:bg-gray-100";
       return `
-                <tr class="faktur-header hover:bg-gray-100 transition-colors">
-                    <td class=" px-2 py-2 border-r border-gray-200 bg-gray-100">
+                <tr class="faktur-header transition-colors ${opacityClass}">
+                    <td class=" px-2 py-2 border-r border-gray-200">
                         <input type="checkbox" 
                                class="custom-checkbox faktur-checkbox" 
                                data-group="${fakturGroupId}"
-                               title="Pilih seluruh item di faktur ini">
+                               title="${
+                                 isFullyDisabled
+                                   ? "Semua item sudah diproses"
+                                   : "Pilih seluruh item di faktur ini"
+                               }"
+                               ${disabledAttr}>
                     </td>
                     <td colspan="9" class="px-3 py-2 text-gray-700 font-semibold text-sm">
                         <div class="flex items-center gap-4 flex-wrap">
@@ -120,6 +126,11 @@ document.addEventListener("DOMContentLoaded", () => {
                             ${
                               row.kode_supp
                                 ? `<span class="text-gray-500 text-xs"><i class="fas fa-truck mr-1"></i> ${row.kode_supp}</span>`
+                                : ""
+                            }
+                            ${
+                              isFullyDisabled
+                                ? '<span class="text-[10px] bg-gray-200 text-gray-500 px-2 rounded-full font-medium">Selesai</span>'
                                 : ""
                             }
                         </div>
@@ -135,7 +146,15 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       if (row.no_faktur !== current_faktur) {
         current_faktur = row.no_faktur;
-        htmlRows += buildFakturHeader(row);
+        const itemsInThisFaktur = tabel_data.filter(
+          (item) =>
+            item.no_faktur === row.no_faktur && item.kd_store === row.kd_store
+        );
+        const isFakturFullyProcessed = itemsInThisFaktur.every(
+          (item) =>
+            item.izin_koreksi === "Izinkan" || item.izin_koreksi === "SO_Ulang"
+        );
+        htmlRows += buildFakturHeader(row, isFakturFullyProcessed);
       }
       let statusVal = row.izin_koreksi;
       let badgeClass = "bg-gray-100 text-gray-600 border-gray-200";
@@ -187,7 +206,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <td class="truncate max-w-[200px] px-2" title="${
                       row.deskripsi
                     }">${row.deskripsi}</td>
-                    <td class=" font-bold px-2 ${
+                    <td class="text-right font-bold px-2 ${
                       parseFloat(row.sel_qty) < 0
                         ? "text-red-600"
                         : "text-green-600"
@@ -215,8 +234,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.target.classList.contains("faktur-checkbox")) {
       const groupId = e.target.dataset.group;
       const isChecked = e.target.checked;
-      const childCheckboxes = document.querySelectorAll(`.${groupId}`);
-      childCheckboxes.forEach((child) => {
+      const activeChildCheckboxes = document.querySelectorAll(
+        `.${groupId}:not(:disabled)`
+      );
+      activeChildCheckboxes.forEach((child) => {
         child.checked = isChecked;
       });
     }
@@ -226,11 +247,18 @@ document.addEventListener("DOMContentLoaded", () => {
         `.faktur-checkbox[data-group="${parentId}"]`
       );
       if (parentCheckbox) {
-        const allSiblings = document.querySelectorAll(`.${parentId}`);
-        const allChecked = Array.from(allSiblings).every((cb) => cb.checked);
-        parentCheckbox.checked = allChecked;
+        const activeSiblings = document.querySelectorAll(
+          `.${parentId}:not(:disabled)`
+        );
+        if (activeSiblings.length > 0) {
+          const allChecked = Array.from(activeSiblings).every(
+            (cb) => cb.checked
+          );
+          parentCheckbox.checked = allChecked;
+        }
       }
     }
+    updateBulkActionBar();
   });
   async function fetchAllDataForExport() {
     setLoadingState(true, true);
@@ -532,7 +560,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const bulkActionBar = document.getElementById("bulk-action-bar");
   const selectedCountBadge = document.getElementById("selected-count");
   function updateBulkActionBar() {
-    const checkedItems = document.querySelectorAll(".item-checkbox:checked");
+    const checkedItems = document.querySelectorAll(
+      ".item-checkbox:checked:not(:disabled)"
+    );
     const count = checkedItems.length;
     selectedCountBadge.textContent = count;
     if (count > 0) {
@@ -547,7 +577,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const isChecked = e.target.checked;
       const childCheckboxes = document.querySelectorAll(`.${groupId}`);
       childCheckboxes.forEach((child) => {
-        child.checked = isChecked;
+        if (!child.disabled) {
+          child.checked = isChecked;
+        }
       });
     }
     if (e.target.classList.contains("item-checkbox")) {
@@ -557,14 +589,21 @@ document.addEventListener("DOMContentLoaded", () => {
       );
       if (parentCheckbox) {
         const allSiblings = document.querySelectorAll(`.${parentId}`);
-        const allChecked = Array.from(allSiblings).every((cb) => cb.checked);
-        parentCheckbox.checked = allChecked;
+        const enabledSiblings = Array.from(allSiblings).filter(
+          (cb) => !cb.disabled
+        );
+        if (enabledSiblings.length > 0) {
+          const allChecked = enabledSiblings.every((cb) => cb.checked);
+          parentCheckbox.checked = allChecked;
+        }
       }
     }
     updateBulkActionBar();
   });
   window.bulkUpdateStatus = function (status) {
-    const checkedItems = document.querySelectorAll(".item-checkbox:checked");
+    const checkedItems = document.querySelectorAll(
+      ".item-checkbox:checked:not(:disabled)"
+    );
     if (checkedItems.length === 0) return;
     const statusLabel = status === "Izinkan" ? "Diizinkan" : "SO Ulang";
     const color = status === "Izinkan" ? "#16a34a" : "#dc2626";
