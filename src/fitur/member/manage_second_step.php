@@ -287,7 +287,7 @@ $filterDisplay = ($filter === 'kemarin') ? 'Kemarin' :
                         </h2>
                     </div>
                     <div class="mb-4">
-                        <a href="product_favorite" id="view-all-top-member-btn"
+                        <a href="product_favorite?filter=<?= $filter ?>" id="view-all-top-member-btn"
                             class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 text-sm">
                             Lihat Semua Top Pembelian
                             <i class="fa-solid fa-arrow-right ml-2"></i>

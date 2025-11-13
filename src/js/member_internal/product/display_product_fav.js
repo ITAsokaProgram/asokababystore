@@ -10,13 +10,38 @@ let currentDateFilter = {
   startDate: null,
   endDate: null,
 };
-
-// Initialize the application
 const initProductFavoriteDisplay = async () => {
+  // 1. Setup listener dan isi nilai input tanggal (berdasarkan URL jika ada)
   setupEventListeners();
-  await loadData();
-  await loadTrendData();
-  await loadProductPerformance();
+
+  // 2. Cek apakah ada parameter filter di URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const filterParam = urlParams.get("filter");
+
+  if (filterParam) {
+    // Jika ada filter, jalankan filterProductFav menggunakan nilai yang sudah di-set di input
+    const startDateInput = document.getElementById("start-date");
+    const endDateInput = document.getElementById("end-date");
+
+    if (startDateInput && endDateInput) {
+      showLoading();
+      // Gunakan filterProductFav (bukan loadData biasa)
+      const data = await filterProductFav(
+        startDateInput.value,
+        endDateInput.value
+      );
+      handleFilterResponse(data);
+
+      // Load chart & performa juga perlu di-refresh (opsional: bisa dibuat filter juga kalau API support)
+      await loadTrendData();
+      await loadProductPerformance();
+    }
+  } else {
+    // Jika tidak ada filter, jalankan loadData biasa (default behavior)
+    await loadData();
+    await loadTrendData();
+    await loadProductPerformance();
+  }
 };
 
 // Setup event listeners
@@ -41,46 +66,55 @@ const setupEventListeners = () => {
   // Date filter functionality
   setupDateFilterListeners();
 };
-
-// Setup date filter event listeners
 const setupDateFilterListeners = () => {
   const startDateInput = document.getElementById("start-date");
   const endDateInput = document.getElementById("end-date");
   const applyFilterBtn = document.getElementById("apply-date-filter");
   const resetFilterBtn = document.getElementById("reset-date-filter");
   const dateRangeDisplay = document.getElementById("date-range-display");
-  // Check if elements exist
+
   if (!startDateInput || !endDateInput || !applyFilterBtn || !resetFilterBtn) {
-    console.error("Date filter elements not found:", {
-      startDateInput: !!startDateInput,
-      endDateInput: !!endDateInput,
-      applyFilterBtn: !!applyFilterBtn,
-      resetFilterBtn: !!resetFilterBtn,
-    });
     return;
   }
 
-  // Set default date range (3 months ago to today)
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(today.getDate() - 1);
-  startDateInput.value = yesterday.toISOString().split("T")[0];
-  endDateInput.value = today.toISOString().split("T")[0];
+  // --- LOGIKA BARU: Cek URL Parameter ---
+  const urlParams = new URLSearchParams(window.location.search);
+  const filterParam = urlParams.get("filter");
 
-  // Set max date - end date maksimal hari ini, start date bisa pilih semua tanggal
+  const today = new Date();
+  let startDate;
+
+  if (filterParam) {
+    // Jika ada param ?filter=..., hitung tanggal start-nya
+    startDate = calculateStartDateFromFilter(filterParam);
+  } else {
+    // Default logic (kemarin)
+    startDate = new Date(today);
+    startDate.setDate(today.getDate() - 1);
+  }
+
+  // Set nilai input
+  startDateInput.value = startDate.toISOString().split("T")[0];
+  endDateInput.value = today.toISOString().split("T")[0];
   endDateInput.max = today.toISOString().split("T")[0];
 
-  // Apply filter button
-  applyFilterBtn.addEventListener("click", async () => {
-    const startDate = startDateInput.value;
-    const endDate = endDateInput.value;
+  // Update tampilan teks rentang waktu
+  const timeDiff = today.getTime() - startDate.getTime();
+  const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+  if (dateRangeDisplay) {
+    dateRangeDisplay.innerHTML = ` <i class="fas fa-info-circle text-emerald-400 mr-1"></i>(Data ${daysDiff} hari lalu)`;
+  }
 
-    if (!startDate || !endDate) {
+  // --- Event Listeners (Tetap sama seperti sebelumnya) ---
+  applyFilterBtn.addEventListener("click", async () => {
+    const startVal = startDateInput.value;
+    const endVal = endDateInput.value;
+
+    if (!startVal || !endVal) {
       showToast("Pilih tanggal awal dan akhir", "warning");
       return;
     }
-
-    if (new Date(startDate) > new Date(endDate)) {
+    if (new Date(startVal) > new Date(endVal)) {
       showToast(
         "Tanggal awal tidak boleh lebih besar dari tanggal akhir",
         "warning"
@@ -88,89 +122,72 @@ const setupDateFilterListeners = () => {
       return;
     }
 
-    // Check if date range is more than 3 months (perhitungan yang lebih akurat)
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+    // Hitung ulang hari untuk display
+    const s = new Date(startVal);
+    const e = new Date(endVal);
+    const diff = Math.ceil((e - s) / (1000 * 3600 * 24));
 
-    // Hitung selisih dalam milisecond
-    const timeDiff = end.getTime() - start.getTime();
-    const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
-    const monthsDiff = daysDiff / 30.44; // Rata-rata hari dalam sebulan
+    currentDateFilter.startDate = startVal;
+    currentDateFilter.endDate = endVal;
 
-    if (monthsDiff > 3) {
-      showToast("Data maksimal 3 bulan", "warning");
-      return;
-    }
-
-    currentDateFilter.startDate = startDate;
-    currentDateFilter.endDate = endDate;
     showLoading();
-    dateRangeDisplay.innerHTML = ` <i class="fas fa-info-circle text-blue-500 mr-1"></i>(Data ${daysDiff} hari lalu)`;
-    const data = await filterProductFav(startDate, endDate);
-    if (!data) {
-      showToast("Data tidak ditemukan", "error");
-      hideLoading();
-      showEmptyState();
-      return;
-    }
+    dateRangeDisplay.innerHTML = ` <i class="fas fa-info-circle text-emerald-400 mr-1"></i>(Data ${diff} hari)`;
 
-    if (data.status === true) {
-      productData = data.data;
-      filteredData = [...data.data];
-      updateTable();
-      hideLoading();
-    } else {
-      showToast(data.message, "error");
-      hideLoading();
-      showEmptyState();
-    }
+    const data = await filterProductFav(startVal, endVal);
+    handleFilterResponse(data);
   });
 
-  // Reset filter button
   resetFilterBtn.addEventListener("click", async () => {
-    const yesterday = new Date(today);
-    yesterday.setDate(today.getDate() - 1);
-    dateRangeDisplay.innerHTML = ` <i class="fas fa-info-circle text-blue-500 mr-1"></i>(Data 1 hari lalu)`;
-    startDateInput.value = yesterday.toISOString().split("T")[0];
-    endDateInput.value = today.toISOString().split("T")[0];
+    // Reset ke default (kemarin)
+    const d = new Date();
+    const y = new Date(d);
+    y.setDate(d.getDate() - 1);
 
+    dateRangeDisplay.innerHTML = ` <i class="fas fa-info-circle text-emerald-400 mr-1"></i>(Data 1 hari lalu)`;
+    startDateInput.value = y.toISOString().split("T")[0];
+    endDateInput.value = d.toISOString().split("T")[0];
     currentDateFilter.startDate = null;
     currentDateFilter.endDate = null;
 
-    // Here you can add your custom logic for resetting date filter
+    // Hapus query param dari URL agar bersih (opsional)
+    window.history.pushState({}, document.title, window.location.pathname);
+
     showLoading();
     const data = await filterProductFav(
       startDateInput.value,
       endDateInput.value
     );
-    if (!data) {
-      showToast("Data tidak ditemukan", "error");
-      hideLoading();
-      showEmptyState();
-      return;
-    }
-    if (data.status === true) {
-      productData = data.data;
-      filteredData = [...data.data];
-      updateTable();
-      hideLoading();
-    } else {
-      showToast(data.message, "error");
-      hideLoading();
-      showEmptyState();
-    }
+    handleFilterResponse(data);
   });
 
-  // Prevent selecting end date more than today
   endDateInput.addEventListener("change", () => {
     const endDate = new Date(endDateInput.value);
-    const today = new Date();
-
-    if (endDate > today) {
-      endDateInput.value = today.toISOString().split("T")[0];
+    const now = new Date();
+    if (endDate > now) {
+      endDateInput.value = now.toISOString().split("T")[0];
       showToast("Tanggal akhir tidak boleh lebih dari hari ini", "warning");
     }
   });
+};
+
+// Helper untuk handle response (agar tidak duplikasi kode)
+const handleFilterResponse = (data) => {
+  if (!data) {
+    showToast("Data tidak ditemukan", "error");
+    hideLoading();
+    showEmptyState();
+    return;
+  }
+  if (data.status === true) {
+    productData = data.data;
+    filteredData = [...data.data];
+    updateTable();
+    hideLoading();
+  } else {
+    showToast(data.message, "error");
+    hideLoading();
+    showEmptyState();
+  }
 };
 
 // Show toast notification
@@ -662,3 +679,37 @@ document.addEventListener("DOMContentLoaded", () => {
 // Make functions available globally for onclick handlers
 window.exportMemberData = exportMemberData;
 window.exportAllDataToExcel = exportAllDataToExcel;
+
+const calculateStartDateFromFilter = (filter) => {
+  const today = new Date();
+  const startDate = new Date(today);
+
+  switch (filter) {
+    case "kemarin":
+      startDate.setDate(today.getDate() - 1);
+      break;
+    case "1minggu":
+      startDate.setDate(today.getDate() - 7);
+      break;
+    case "1bulan":
+      startDate.setMonth(today.getMonth() - 1);
+      break;
+    case "3bulan":
+      startDate.setMonth(today.getMonth() - 3);
+      break;
+    case "6bulan":
+      startDate.setMonth(today.getMonth() - 6);
+      break;
+    case "9bulan":
+      startDate.setMonth(today.getMonth() - 9);
+      break;
+    case "12bulan":
+      startDate.setFullYear(today.getFullYear() - 1);
+      break;
+    default:
+      // Default ke kemarin jika filter tidak dikenali
+      startDate.setDate(today.getDate() - 1);
+      break;
+  }
+  return startDate;
+};

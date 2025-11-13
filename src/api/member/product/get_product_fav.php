@@ -29,7 +29,7 @@ $sql = "SELECT
  t.plu,
  t.descp AS barang,
  SUM(t.qty) AS total_qty,
- SUM(t.qty * t.hrg_promo) AS total_hrg
+ SUM(t.qty * t.harga) AS total_hrg
 FROM trans_b t
 LEFT JOIN customers c ON t.kd_cust = c.kd_cust
 WHERE 
