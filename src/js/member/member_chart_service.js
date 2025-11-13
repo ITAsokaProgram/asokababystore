@@ -68,6 +68,7 @@ export function renderAgeChart(chartInstance, elementId, data, currentFilter) {
     },
     series: [
       {
+        minAngle: 15,
         type: "pie",
         radius: "50%",
         data: chartData,
@@ -140,6 +141,7 @@ export function renderLocationChart(
     },
     series: [
       {
+        minAngle: 15,
         type: "pie",
         radius: "50%",
         data: chartData,
@@ -219,6 +221,7 @@ export function renderTopMemberChart(chartInstance, elementId, data, state) {
     },
     series: [
       {
+        minAngle: 15,
         type: "pie",
         radius: "50%",
         data: chartData,
@@ -290,6 +293,7 @@ export function renderTopProductChart(chartInstance, elementId, data, state) {
     },
     series: [
       {
+        minAngle: 15,
         type: "pie",
         radius: "50%",
         data: chartData,
@@ -354,6 +358,7 @@ export function renderMemberChart(elementId, data, filter) {
     },
     series: [
       {
+        minAngle: 15,
         type: "pie",
         label: {
           fontSize: 12,
