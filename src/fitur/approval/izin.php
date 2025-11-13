@@ -1,10 +1,9 @@
 <?php
 session_start();
 include '../../../aa_kon_sett.php';
-$tanggal_kemarin = date('Y-m-d', strtotime('-1 day'));
 
-$default_tgl_mulai = $tanggal_kemarin;
-$default_tgl_selesai = $tanggal_kemarin;
+$default_tgl_mulai = date('Y-m-d', strtotime('-1 month'));
+$default_tgl_selesai = date('Y-m-d');
 $default_kd_store = 'all';
 $default_page = 1;
 
@@ -12,11 +11,11 @@ $tgl_mulai = $_GET['tgl_mulai'] ?? $default_tgl_mulai;
 $tgl_selesai = $_GET['tgl_selesai'] ?? $default_tgl_selesai;
 $kd_store = $_GET['kd_store'] ?? $default_kd_store;
 $page = (int) ($_GET['page'] ?? $default_page);
+
 if ($page < 1) {
     $page = 1;
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="id">
 
@@ -38,6 +37,22 @@ if ($page < 1) {
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        /* Custom style untuk checkbox agar terlihat rapi */
+        .custom-checkbox {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: #db2777;
+            /* Pink-600 */
+        }
+
+        .faktur-header {
+            background-color: #f3f4f6;
+            /* Gray-100 */
+            border-bottom: 1px solid #e5e7eb;
+        }
+    </style>
 </head>
 
 <body class="bg-gray-50">
@@ -145,13 +160,16 @@ if ($page < 1) {
                         <table class="table-modern" id="izin-table">
                             <thead>
                                 <tr>
-                                    <th>No Faktur</th>
+                                    <th class="w-10 text-center">
+                                        <i class="fas fa-check-double text-gray-400"></i>
+                                    </th>
                                     <th>Tgl Kor</th>
                                     <th>PLU</th>
                                     <th>Deskripsi</th>
-                                    <th class="text-right">Sel Qty</th>
-                                    <th class="text-center">Supp</th>
-                                    <th class="text-center">Status</th>
+                                    <th class="">Sel Qty</th>
+                                    <th>Supp</th>
+                                    <th>Status</th>
+                                    <th>Status SO</th>
                                     <th class="w-20 text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -159,7 +177,6 @@ if ($page < 1) {
                                 <tr>
                                     <td colspan="9" class="text-center p-8">
                                         <div class="spinner-simple"></div>
-                                        <p class="mt-3 text-gray-500 font-medium">Memuat data...</p>
                                     </td>
                                 </tr>
                             </tbody>
@@ -172,7 +189,24 @@ if ($page < 1) {
                         </div>
                     </div>
                 </div>
-
+                <div id="bulk-action-bar"
+                    class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-white px-6 py-3 rounded-full shadow-2xl border border-gray-200 flex items-center gap-4 z-50 transition-all duration-300 translate-y-24 opacity-0">
+                    <div class="flex items-center gap-2 text-gray-700 border-r border-gray-300 pr-4">
+                        <div class="bg-pink-100 text-pink-600 rounded-full w-6 h-6 flex items-center justify-center font-bold text-xs"
+                            id="selected-count">0</div>
+                        <span class="text-sm font-medium">Item Dipilih</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="bulkUpdateStatus('Izinkan')"
+                            class="bg-green-600 hover:bg-green-700 text-white px-4 py-1.5 rounded-full text-xs font-bold transition-colors shadow-sm flex items-center gap-2">
+                            <i class="fas fa-check"></i> Izinkan
+                        </button>
+                        <button onclick="bulkUpdateStatus('SO_Ulang')"
+                            class="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 rounded-full text-xs font-bold transition-colors shadow-sm flex items-center gap-2">
+                            <i class="fas fa-redo"></i> SO Ulang
+                        </button>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
