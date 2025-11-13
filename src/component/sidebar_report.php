@@ -699,6 +699,39 @@
                     </li>
                 </ul>
             </div>
+            <div x-data="{ open: false }" class="relative">
+                <button @click="open = !open" id="approval"
+                    class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-cyan-100 hover:to-cyan-200 hover:text-cyan-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-cyan-300">
+                    <div class="w-8 flex justify-center">
+                        <i
+                            class="fa-solid fa-clipboard-check text-xl text-cyan-600 group-hover:text-cyan-700 transition-all duration-300 group-hover:scale-125 group-hover:-rotate-12 group-hover:drop-shadow-lg"></i>
+                    </div>
+                    <span
+                        class="sidebar-text ml-3 font-medium transition-all duration-300 group-hover:translate-x-1">Approval</span>
+                    <svg class="ml-auto w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1"
+                        :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+
+                <div x-show="open" @click.away="open = false"
+                    class="mt-3 ml-4 bg-gradient-to-br from-white to-cyan-50 rounded-xl shadow-xl border border-cyan-200 z-10 backdrop-blur-sm"
+                    style="display: none;">
+                    <ul class="py-2 space-y-1">
+                        <li>
+                            <a href="/src/fitur/approval/izin" data-menu="izin"
+                                class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-cyan-100 hover:text-cyan-700 transition-all duration-200 group rounded-lg">
+                                <span
+                                    class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
+                                    <i
+                                        class="fa-solid fa-file-pen mr-2 text-base text-cyan-400 group-hover:text-cyan-600 group-hover:scale-110 transition-all duration-200"></i>
+                                    Izin
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </nav>
 </div>
@@ -785,6 +818,9 @@
             // --- BLOCK WHATSAPP ---
         } else if (currentPath.includes('/src/fitur/whatsapp_cs/dashboard_whatsapp')) {
             document.getElementById('whatsappLink').classList.add('btn', 'active');
+        }
+        else if (currentPath.includes('/src/fitur/approval/izin')) {
+            document.getElementById('approval').classList.add('btn', 'active');
         }
         // Tambahkan kondisi untuk menu lainnya sesuai kebutuhan
     });
