@@ -62,7 +62,7 @@ if ($page < 1) {
                         </div>
                     </div>
 
-                    <div class="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div class="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-3">
                         <div class="summary-card total flex gap-4 items-center">
                             <div class="summary-icon">
                                 <i class="fas fa-box-open fa-lg"></i>
@@ -81,15 +81,7 @@ if ($page < 1) {
                                 <p id="summary-selisih" class="text-2xl font-bold truncate text-gray-900">-</p>
                             </div>
                         </div>
-                        <div class="summary-card flex gap-4 items-center total">
-                            <div class="summary-icon">
-                                <i class="fas fa-money-bill-trend-up fa-lg"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-xs font-semibold text-gray-600 mb-1">Total Nilai (Rp)</h3>
-                                <p id="summary-nilai" class="text-2xl font-bold truncate text-gray-900">-</p>
-                            </div>
-                        </div>
+
                     </div>
                 </div>
 
@@ -153,8 +145,6 @@ if ($page < 1) {
                         <table class="table-modern" id="izin-table">
                             <thead>
                                 <tr>
-                                    <th class="w-20 text-center">Izin</th>
-                                    <th class="w-10 text-center"><i class="fas fa-eye"></i></th>
                                     <th>No Faktur</th>
                                     <th>Tgl Kor</th>
                                     <th>PLU</th>
@@ -162,11 +152,12 @@ if ($page < 1) {
                                     <th class="text-right">Sel Qty</th>
                                     <th class="text-center">Supp</th>
                                     <th class="text-center">Status</th>
+                                    <th class="w-20 text-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="izin-table-body">
                                 <tr>
-                                    <td colspan="12" class="text-center p-8">
+                                    <td colspan="9" class="text-center p-8">
                                         <div class="spinner-simple"></div>
                                         <p class="mt-3 text-gray-500 font-medium">Memuat data...</p>
                                     </td>
