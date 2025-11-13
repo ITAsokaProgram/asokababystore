@@ -43,7 +43,7 @@ try {
         exit;
     }
     $update_sql = "UPDATE koreksi_izin 
-                   SET izin_koreksi = ? 
+                   SET izin_koreksi = ?, sync = 'False'
                    WHERE no_faktur = ? AND plu = ? AND kd_store = ?";
     $stmt_update = $conn->prepare($update_sql);
     $stmt_update->bind_param("ssss", $new_status, $no_faktur, $plu, $kd_store);
