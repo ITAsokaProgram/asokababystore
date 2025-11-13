@@ -60,27 +60,21 @@ try {
     $filter = $_GET['filter'] ?? '3bulan';
     $status = $_GET['status'] ?? 'active';
     $limit = (int) ($_GET['limit'] ?? 10);
-    $valid_filters = ['3bulan' => 3, '6bulan' => 6, '9bulan' => 9, '12bulan' => 12];
+    $filter_map = [
+        'kemarin' => '1 day',
+        '1minggu' => '1 week',
+        '1bulan' => '1 month',
+        '3bulan' => '3 months',
+        '6bulan' => '6 months',
+        '9bulan' => '9 months',
+        '12bulan' => '12 months'
+    ];
     $customer_subquery_sql = "SELECT kd_cust FROM customers";
     $customer_params = [];
     $customer_types = "";
     $customer_where_clause = "";
     if ($filter !== 'semua') {
-        $interval = '3 months';
-        if ($filter === 'kemarin')
-            $interval = '1 day';
-        elseif ($filter === '1minggu')
-            $interval = '1 week';
-        elseif ($filter === '1bulan')
-            $interval = '1 month';
-        elseif ($filter === '3bulan')
-            $interval = '3 months';
-        elseif ($filter === '6bulan')
-            $interval = '6 months';
-        elseif ($filter === '9bulan')
-            $interval = '9 months';
-        elseif ($filter === '12bulan')
-            $interval = '12 months';
+        $interval = $filter_map[$filter] ?? '3 months';
         $cutoff_date = date('Y-m-d 00:00:00', strtotime("-$interval"));
         if ($status === 'active') {
             $customer_where_clause = " WHERE Last_Trans >= ?";
@@ -119,6 +113,8 @@ try {
             customers c ON t.kd_cust = c.kd_cust
         WHERE
             1=1 $trans_date_where_clause
+            AND t.kd_cust IS NOT NULL
+            AND t.kd_cust NOT IN ('', '898989', '#898989', '#999999999')
         GROUP BY
             c.nama_cust, t.kd_cust
         ORDER BY

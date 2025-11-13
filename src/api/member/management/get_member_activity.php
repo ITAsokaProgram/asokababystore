@@ -62,33 +62,39 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 try {
     $filter = $_GET['filter'] ?? '3bulan';
-    $valid_filters = ['3bulan' => 3, '6bulan' => 6, '9bulan' => 9, '12bulan' => 12];
+    $valid_filters = [
+        'kemarin' => '-1 day',
+        '1minggu' => '-1 week',
+        '1bulan' => '-1 month',
+        '3bulan' => '-3 months',
+        '6bulan' => '-6 months',
+        '9bulan' => '-9 months',
+        '12bulan' => '-12 months'
+    ];
     $sql = "";
     $stmt = null;
     if ($filter === 'semua') {
-        $sql = "SELECT
+        $sql = "SELECT 
                     COUNT(*) AS total_member,
                     COALESCE(SUM(CASE WHEN Last_Trans IS NOT NULL THEN 1 ELSE 0 END), 0) AS active_member,
                     COALESCE(SUM(CASE WHEN Last_Trans IS NULL THEN 1 ELSE 0 END), 0) AS inactive_member
-                FROM customers
-                ";
+                FROM customers";
         $stmt = $conn->prepare($sql);
         if ($stmt === false) {
             throw new Exception("Database prepare failed (semua): " . $conn->error);
         }
     } else {
-        $months = $valid_filters[$filter] ?? 3;
+        $time_modifier = $valid_filters[$filter] ?? '-3 months';
         $current_date_start_day = date('Y-m-d 00:00:00');
-        $cutoff_date = date('Y-m-d H:i:s', strtotime("-$months months", strtotime($current_date_start_day)));
-        $sql = "SELECT
+        $cutoff_date = date('Y-m-d H:i:s', strtotime($time_modifier, strtotime($current_date_start_day)));
+        $sql = "SELECT 
                     COUNT(*) AS total_member,
                     COALESCE(SUM(CASE WHEN Last_Trans >= ? THEN 1 ELSE 0 END), 0) AS active_member,
                     COALESCE(SUM(CASE WHEN Last_Trans < ? OR Last_Trans IS NULL THEN 1 ELSE 0 END), 0) AS inactive_member
-                FROM customers
-                ";
+                FROM customers";
         $stmt = $conn->prepare($sql);
         if ($stmt === false) {
-            throw new Exception("Database prepare failed (bulan): " . $conn->error);
+            throw new Exception("Database prepare failed (filtered): " . $conn->error);
         }
         $stmt->bind_param("ss", $cutoff_date, $cutoff_date);
     }

@@ -75,27 +75,20 @@ try {
     $params_data = [$city, $district, $subdistrict];
     $types_data = "sss";
     $date_where_clause = "";
-    $valid_filters = ['3bulan' => 3, '6bulan' => 6, '9bulan' => 9, '12bulan' => 12];
+    $filter_map = [
+        'kemarin' => '1 day',
+        '1minggu' => '1 week',
+        '1bulan' => '1 month',
+        '3bulan' => '3 months',
+        '6bulan' => '6 months',
+        '9bulan' => '9 months',
+        '12bulan' => '12 months'
+    ];
+
     if ($filter !== 'semua') {
-        $interval = '3 months';
-
-        if ($filter === 'kemarin') {
-            $interval = '1 day';
-        } elseif ($filter === '1minggu') {
-            $interval = '1 week';
-        } elseif ($filter === '1bulan') {
-            $interval = '1 month';
-        } elseif ($filter === '3bulan') {
-            $interval = '3 months';
-        } elseif ($filter === '6bulan') {
-            $interval = '6 months';
-        } elseif ($filter === '9bulan') {
-            $interval = '9 months';
-        } elseif ($filter === '12bulan') {
-            $interval = '12 months';
-        }
-
+        $interval = $filter_map[$filter] ?? '3 months';
         $cutoff_date = date('Y-m-d 00:00:00', strtotime("-$interval"));
+
         $date_where_clause = " AND t.tgl_trans >= ? ";
         $params_count[] = $cutoff_date;
         $types_count .= "s";

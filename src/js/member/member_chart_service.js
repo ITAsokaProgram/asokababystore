@@ -38,7 +38,9 @@ export function renderAgeChart(chartInstance, elementId, data, currentFilter) {
     chartInstance.dispose();
   }
   const newChartInstance = echarts.init(chartElement);
-  const filteredData = data.filter((d) => d.age_group && d.age_group !== "-");
+
+  const filteredData = data;
+
   const chartData = filteredData.map((d) => ({
     value: d.count,
     name: d.age_group,
@@ -107,12 +109,9 @@ export function renderLocationChart(
     chartInstance.dispose();
   }
   const newChartInstance = echarts.init(chartElement);
-  const filteredData = data.filter(
-    (d) =>
-      d.location_name &&
-      d.location_name !== "-" &&
-      d.location_name !== "Customer belum input"
-  );
+
+  const filteredData = data;
+
   filteredData.sort((a, b) => b.count - a.count);
   const chartData = filteredData.map((d) => ({
     value: d.count,
@@ -191,9 +190,9 @@ export function renderTopMemberChart(chartInstance, elementId, data, state) {
     chartInstance.dispose();
   }
   const newChartInstance = echarts.init(chartElement);
-  const filteredData = data.filter(
-    (d) => d.nama_cust && d.nama_cust.trim().toLowerCase() !== "member dummy"
-  );
+
+  const filteredData = data;
+
   const chartData = filteredData.map((d) => ({
     value: d.total_spent,
     name: `${d.nama_cust} - (${d.kd_cust})`,
@@ -259,9 +258,9 @@ export function renderTopProductChart(chartInstance, elementId, data, state) {
     chartInstance.dispose();
   }
   const newChartInstance = echarts.init(chartElement);
-  const filteredData = data.filter(
-    (d) => d.nama_cust && d.nama_cust.trim().toLowerCase() !== "member dummy"
-  );
+
+  const filteredData = data;
+
   const chartData = filteredData.map((d) => ({
     value: d.total_item_qty,
     name: `${d.nama_cust} (${d.kd_cust}) - ${d.descp}`,
