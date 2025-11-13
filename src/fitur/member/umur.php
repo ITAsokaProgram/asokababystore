@@ -2,12 +2,13 @@
 $filter = $_GET['filter'] ?? 'semua';
 $age_group = $_GET['age_group'] ?? 'Tidak diketahui';
 
-$filter_display = 'Semua Waktu';
-if ($filter === '6bulan') {
-    $filter_display = '6 Bulan Terakhir';
-} elseif ($filter === '3bulan') {
-    $filter_display = '3 Bulan Terakhir';
-}
+$filter_display = ($filter === 'kemarin') ? 'Kemarin' :
+    (($filter === '1minggu') ? '1 Minggu Terakhir' :
+        (($filter === '1bulan') ? '1 Bulan Terakhir' :
+            (($filter === '3bulan') ? '3 Bulan Terakhir' :
+                (($filter === '6bulan') ? '6 Bulan Terakhir' :
+                    (($filter === '9bulan') ? '9 Bulan Terakhir' :
+                        (($filter === '12bulan') ? '1 Tahun Terakhir' : 'Semua Waktu'))))));
 
 $age_group_display = "Kelompok Umur: " . htmlspecialchars($age_group);
 ?>
@@ -47,7 +48,7 @@ $age_group_display = "Kelompok Umur: " . htmlspecialchars($age_group);
                     <p class="page-subtitle">
                         Menampilkan produk terlaris berdasarkan
                         Kelompok Umur: <strong><?php echo $age_group; ?></strong> dan
-                        Filter Waktu: <strong><?php echo $filter; ?></strong>.
+                        Filter Waktu: <strong><?php echo $filter_display; ?></strong>.
                     </p>
                 </div>
                 <a href="javascript:history.back()" class="btn-back">

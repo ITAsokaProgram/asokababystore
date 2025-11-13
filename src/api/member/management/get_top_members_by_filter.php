@@ -66,9 +66,22 @@ try {
     $customer_types = "";
     $customer_where_clause = "";
     if ($filter !== 'semua') {
-        $months = $valid_filters[$filter] ?? 3;
-        $current_date_start_day = date('Y-m-d 00:00:00');
-        $cutoff_date = date('Y-m-d H:i:s', strtotime("-$months months", strtotime($current_date_start_day)));
+        $interval = '3 months';
+        if ($filter === 'kemarin')
+            $interval = '1 day';
+        elseif ($filter === '1minggu')
+            $interval = '1 week';
+        elseif ($filter === '1bulan')
+            $interval = '1 month';
+        elseif ($filter === '3bulan')
+            $interval = '3 months';
+        elseif ($filter === '6bulan')
+            $interval = '6 months';
+        elseif ($filter === '9bulan')
+            $interval = '9 months';
+        elseif ($filter === '12bulan')
+            $interval = '12 months';
+        $cutoff_date = date('Y-m-d 00:00:00', strtotime("-$interval"));
         if ($status === 'active') {
             $customer_where_clause = " WHERE Last_Trans >= ?";
         } else {
@@ -87,9 +100,8 @@ try {
     $trans_date_where_clause = "";
     $trans_params = [];
     $trans_types = "";
-    if ($filter !== 'semua' && isset($valid_filters[$filter])) {
-        $months_trans = $valid_filters[$filter];
-        $cutoff_date_trans = date('Y-m-d 00:00:00', strtotime("-$months_trans months"));
+    if ($filter !== 'semua') {
+        $cutoff_date_trans = $cutoff_date;
         $trans_date_where_clause = " AND t.tgl_trans >= ? ";
         $trans_params[] = $cutoff_date_trans;
         $trans_types .= "s";

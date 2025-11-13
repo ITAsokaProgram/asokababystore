@@ -1,7 +1,7 @@
 <?php
 $is_filter_applied = isset($_GET['filter']);
 $current_filter = $_GET['filter'] ?? '3bulan';
-$valid_filters = ['3bulan', '6bulan', '9bulan', '12bulan', 'semua'];
+$valid_filters = ['kemarin', '1minggu', '1bulan', '3bulan', '6bulan', '9bulan', '12bulan', 'semua'];
 if (!in_array($current_filter, $valid_filters)) {
     $current_filter = '3bulan';
 }
@@ -48,6 +48,12 @@ if (!in_array($current_filter, $valid_filters)) {
                             Rentang Waktu Transaksi Terakhir
                         </label>
                         <select id="filter" name="filter" class="member-select w-full">
+                            <option value="kemarin" <?php echo ($current_filter == 'kemarin') ? 'selected' : ''; ?>>
+                                Kemarin</option>
+                            <option value="1minggu" <?php echo ($current_filter == '1minggu') ? 'selected' : ''; ?>>1
+                                Minggu Terakhir</option>
+                            <option value="1bulan" <?php echo ($current_filter == '1bulan') ? 'selected' : ''; ?>>1 Bulan
+                                Terakhir</option>
                             <option value="3bulan" <?php echo ($current_filter == '3bulan') ? 'selected' : ''; ?>>3 Bulan
                                 Terakhir</option>
                             <option value="6bulan" <?php echo ($current_filter == '6bulan') ? 'selected' : ''; ?>>6 Bulan

@@ -3,10 +3,13 @@ $filter = htmlspecialchars($_GET['filter'] ?? '3bulan');
 $status = htmlspecialchars($_GET['status'] ?? 'unknown');
 
 $status_display = ($status === 'active') ? 'Aktif' : (($status === 'inactive') ? 'Inaktif' : 'Tidak Diketahui');
-$filterDisplay = ($filter === '3bulan') ? '3 Bulan Terakhir' :
-    (($filter === '6bulan') ? '6 Bulan Terakhir' :
-        (($filter === '9bulan') ? '9 Bulan Terakhir' :
-            (($filter === '12bulan') ? '1 Tahun Terakhir' : 'Semua Waktu')));
+$filterDisplay = ($filter === 'kemarin') ? 'Kemarin' :
+    (($filter === '1minggu') ? '1 Minggu Terakhir' :
+        (($filter === '1bulan') ? '1 Bulan Terakhir' :
+            (($filter === '3bulan') ? '3 Bulan Terakhir' :
+                (($filter === '6bulan') ? '6 Bulan Terakhir' :
+                    (($filter === '9bulan') ? '9 Bulan Terakhir' :
+                        (($filter === '12bulan') ? '1 Tahun Terakhir' : 'Semua Waktu'))))));
 ?>
 <!DOCTYPE html>
 <html lang="en">

@@ -263,7 +263,10 @@ function renderTopProductTable(data) {
       ? numberFormatter.format(item.total_item_qty)
       : "0";
     const row = `
-        <tr class="hover:bg-gray-50 cursor-pointer top-product-table-row" data-product-name="${item.descp}">
+        <tr class="hover:bg-gray-50 cursor-pointer top-product-table-row" 
+            data-product-name="${item.descp}"
+            data-kd-cust="${item.kd_cust}" 
+            data-nama-cust="${item.nama_cust}">
             <td class="px-4 py-3 text-sm text-gray-700 font-medium">${item.descp}</td>
             <td class="px-4 py-3 text-sm text-gray-500">${item.nama_cust}</td>
             <td class="px-4 py-3 text-sm font-bold text-blue-600">${qty}</td>
@@ -528,9 +531,19 @@ document.addEventListener("DOMContentLoaded", () => {
   if (topProductTableBody) {
     topProductTableBody.addEventListener("click", (event) => {
       const row = event.target.closest("tr.top-product-table-row");
-      if (row) {
-        // Redirect to top_sales as requested
-        window.location.href = "top_sales";
+      if (row && currentFilter && currentStatus) {
+        const kdCust = row.dataset.kdCust;
+        const namaCust = row.dataset.namaCust;
+        if (kdCust) {
+          const targetUrl = `customer.php?filter=${encodeURIComponent(
+            currentFilter
+          )}&status=${encodeURIComponent(
+            currentStatus
+          )}&kd_cust=${encodeURIComponent(
+            kdCust
+          )}&nama_cust=${encodeURIComponent(namaCust)}`;
+          window.location.href = targetUrl;
+        }
       }
     });
   }

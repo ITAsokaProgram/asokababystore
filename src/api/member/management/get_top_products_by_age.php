@@ -75,9 +75,26 @@ try {
     $types_data = "s";
     $date_where_clause = "";
     $valid_filters = ['3bulan' => 3, '6bulan' => 6, '9bulan' => 9, '12bulan' => 12];
-    if ($filter !== 'semua' && isset($valid_filters[$filter])) {
-        $months = $valid_filters[$filter];
-        $cutoff_date = date('Y-m-d 00:00:00', strtotime("-$months months"));
+    if ($filter !== 'semua') {
+        $interval = '3 months';
+
+        if ($filter === 'kemarin') {
+            $interval = '1 day';
+        } elseif ($filter === '1minggu') {
+            $interval = '1 week';
+        } elseif ($filter === '1bulan') {
+            $interval = '1 month';
+        } elseif ($filter === '3bulan') {
+            $interval = '3 months';
+        } elseif ($filter === '6bulan') {
+            $interval = '6 months';
+        } elseif ($filter === '9bulan') {
+            $interval = '9 months';
+        } elseif ($filter === '12bulan') {
+            $interval = '12 months';
+        }
+
+        $cutoff_date = date('Y-m-d 00:00:00', strtotime("-$interval"));
         $date_where_clause = " AND t.tgl_trans >= ? ";
         $params_count[] = $cutoff_date;
         $types_count .= "s";
