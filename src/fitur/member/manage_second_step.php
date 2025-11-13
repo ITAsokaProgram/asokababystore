@@ -1,5 +1,4 @@
 <?php
-// Ambil parameter dari URL untuk digunakan di halaman
 $filter = htmlspecialchars($_GET['filter'] ?? '3bulan');
 $status = htmlspecialchars($_GET['status'] ?? 'unknown');
 
@@ -194,9 +193,8 @@ $filterDisplay = ($filter === '3bulan') ? '3 Bulan Terakhir' :
                     <div class="page-header mb-6">
                         <h2 class="text-2xl font-semibold gradient-text">
                             <i class="fa-solid fa-star mr-2"></i>
-                            Top 10 Member (Total Belanja)
+                            Top 10 Member Chart
                         </h2>
-
                     </div>
 
                     <div id="top-member-chart-loading-spinner" class="loading-spinner">
@@ -216,11 +214,53 @@ $filterDisplay = ($filter === '3bulan') ? '3 Bulan Terakhir' :
                 <div class="member-card slide-up p-4">
                     <div class="page-header mb-6">
                         <h2 class="text-2xl font-semibold gradient-text">
-                            <i class="fa-solid fa-basket-shopping mr-2"></i>
-                            Top 10 Pembelian Produk
+                            <i class="fa-solid fa-list-ol mr-2"></i>
+                            Detail Top 10 Member
                         </h2>
-
                     </div>
+
+                    <div class="mb-4">
+                        <a href="top_sales" id="view-all-top-member-btn"
+                            class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 text-sm">
+                            Lihat Semua Top Member
+                            <i class="fa-solid fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+
+                    <div id="top-member-table-loading-spinner" class="loading-spinner">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        <p class="loading-text">Memuat data tabel top member...</p>
+                    </div>
+
+                    <div id="top-member-table-container" class="member-table-container overflow-y-auto hidden"
+                        style="height: 400px;">
+                        <table class="member-table">
+                            <thead>
+                                <tr>
+                                    <th>Nama Customer</th>
+                                    <th>Kode</th>
+                                    <th>Total Belanja</th>
+                                </tr>
+                            </thead>
+                            <tbody id="top-member-table-body">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <p id="top-member-table-error" class="error-message hidden"></p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="member-card slide-up p-4">
+                    <div class="page-header mb-6">
+                        <h2 class="text-2xl font-semibold gradient-text">
+                            <i class="fa-solid fa-basket-shopping mr-2"></i>
+                            Top 10 Pembelian Produk Chart
+                        </h2>
+                    </div>
+
+
 
                     <div id="top-product-chart-loading-spinner" class="loading-spinner">
                         <i class="fa-solid fa-spinner fa-spin"></i>
@@ -234,6 +274,44 @@ $filterDisplay = ($filter === '3bulan') ? '3 Bulan Terakhir' :
                     </div>
 
                     <p id="top-product-chart-error" class="error-message hidden"></p>
+                </div>
+
+                <div class="member-card slide-up p-4">
+                    <div class="page-header mb-6">
+                        <h2 class="text-2xl font-semibold gradient-text">
+                            <i class="fa-solid fa-list-check mr-2"></i>
+                            Detail Top 10 Pembelian
+                        </h2>
+                    </div>
+                    <div class="mb-4">
+                        <a href="top_sales" id="view-all-top-member-btn"
+                            class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 text-sm">
+                            Lihat Semua Top Pembelian
+                            <i class="fa-solid fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+
+                    <div id="top-product-table-loading-spinner" class="loading-spinner">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        <p class="loading-text">Memuat data tabel produk...</p>
+                    </div>
+
+                    <div id="top-product-table-container" class="member-table-container overflow-y-auto hidden"
+                        style="height: 400px;">
+                        <table class="member-table">
+                            <thead>
+                                <tr>
+                                    <th>Produk</th>
+                                    <th>Customer</th>
+                                    <th>Qty</th>
+                                </tr>
+                            </thead>
+                            <tbody id="top-product-table-body">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <p id="top-product-table-error" class="error-message hidden"></p>
                 </div>
             </div>
 

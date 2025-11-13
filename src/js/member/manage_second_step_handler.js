@@ -9,6 +9,7 @@ let topMemberProductChartInstance = null;
 let currentLocationLevel = "city";
 let selectedCity = null;
 let selectedDistrict = null;
+
 const UI_ELEMENTS = {
   age: {
     loadingId: "loading-spinner",
@@ -31,12 +32,14 @@ const UI_ELEMENTS = {
     errorId: "top-product-chart-error",
   },
 };
+
 const UI_ELEMENTS_AGE_TABLE = {
   loadingId: "age-table-loading-spinner",
   containerId: "age-table-container",
   errorId: "age-table-error",
   bodyId: "age-table-body",
 };
+
 const UI_ELEMENTS_LOCATION_TABLE = {
   loadingId: "location-table-loading-spinner",
   containerId: "location-table-container",
@@ -44,6 +47,21 @@ const UI_ELEMENTS_LOCATION_TABLE = {
   bodyId: "location-table-body",
   headerId: "location-table-header",
 };
+
+const UI_ELEMENTS_TOP_MEMBER_TABLE = {
+  loadingId: "top-member-table-loading-spinner",
+  containerId: "top-member-table-container",
+  errorId: "top-member-table-error",
+  bodyId: "top-member-table-body",
+};
+
+const UI_ELEMENTS_TOP_PRODUCT_TABLE = {
+  loadingId: "top-product-table-loading-spinner",
+  containerId: "top-product-table-container",
+  errorId: "top-product-table-error",
+  bodyId: "top-product-table-body",
+};
+
 function setChartUIState(
   { loadingId, containerId, errorId },
   state,
@@ -61,6 +79,7 @@ function setChartUIState(
     }
   }
 }
+
 function setTableUIState(state, message = "") {
   const loadingEl = document.getElementById(UI_ELEMENTS_AGE_TABLE.loadingId);
   const containerEl = document.getElementById(
@@ -76,6 +95,7 @@ function setTableUIState(state, message = "") {
     }
   }
 }
+
 function setLocationTableUIState(state, message = "") {
   const loadingEl = document.getElementById(
     UI_ELEMENTS_LOCATION_TABLE.loadingId
@@ -93,6 +113,22 @@ function setLocationTableUIState(state, message = "") {
     }
   }
 }
+
+function setGeneralTableUIState(uiElements, state, message = "") {
+  const loadingEl = document.getElementById(uiElements.loadingId);
+  const containerEl = document.getElementById(uiElements.containerId);
+  const errorEl = document.getElementById(uiElements.errorId);
+
+  if (loadingEl) loadingEl.classList.toggle("hidden", state !== "loading");
+  if (containerEl) containerEl.classList.toggle("hidden", state !== "success");
+  if (errorEl) {
+    errorEl.classList.toggle("hidden", state !== "error" && state !== "empty");
+    if (state === "error" || state === "empty") {
+      errorEl.textContent = message;
+    }
+  }
+}
+
 function renderAgeTable(data) {
   const tableBody = document.getElementById(UI_ELEMENTS_AGE_TABLE.bodyId);
   if (!tableBody) return;
@@ -119,6 +155,7 @@ function renderAgeTable(data) {
     tableBody.innerHTML += row;
   });
 }
+
 function renderLocationTable(data) {
   const tableBody = document.getElementById(UI_ELEMENTS_LOCATION_TABLE.bodyId);
   const tableHeader = document.getElementById(
@@ -161,6 +198,81 @@ function renderLocationTable(data) {
     tableBody.innerHTML += row;
   });
 }
+
+function renderTopMemberTable(data) {
+  const tableBody = document.getElementById(
+    UI_ELEMENTS_TOP_MEMBER_TABLE.bodyId
+  );
+  if (!tableBody) return;
+  tableBody.innerHTML = "";
+  const currencyFormatter = new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+  });
+
+  if (!data || data.length === 0) {
+    tableBody.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-gray-500">Tidak ada data.</td></tr>`;
+    return;
+  }
+
+  data.forEach((item) => {
+    if (
+      !item.nama_cust ||
+      item.nama_cust.trim().toLowerCase() === "member dummy"
+    )
+      return;
+
+    const totalSpent = item.total_spent
+      ? currencyFormatter.format(item.total_spent)
+      : "Rp 0";
+    const row = `
+        <tr class="hover:bg-gray-50 cursor-pointer top-member-table-row" 
+            data-kd-cust="${item.kd_cust}" 
+            data-nama-cust="${item.nama_cust}">
+            <td class="px-4 py-3 text-sm text-gray-700 font-medium">${item.nama_cust}</td>
+            <td class="px-4 py-3 text-sm text-gray-500">${item.kd_cust}</td>
+            <td class="px-4 py-3 text-sm font-bold text-green-600">${totalSpent}</td>
+        </tr>
+    `;
+    tableBody.innerHTML += row;
+  });
+}
+
+function renderTopProductTable(data) {
+  const tableBody = document.getElementById(
+    UI_ELEMENTS_TOP_PRODUCT_TABLE.bodyId
+  );
+  if (!tableBody) return;
+  tableBody.innerHTML = "";
+  const numberFormatter = new Intl.NumberFormat("id-ID");
+
+  if (!data || data.length === 0) {
+    tableBody.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-gray-500">Tidak ada data.</td></tr>`;
+    return;
+  }
+
+  data.forEach((item) => {
+    if (
+      !item.nama_cust ||
+      item.nama_cust.trim().toLowerCase() === "member dummy"
+    )
+      return;
+
+    const qty = item.total_item_qty
+      ? numberFormatter.format(item.total_item_qty)
+      : "0";
+    const row = `
+        <tr class="hover:bg-gray-50 cursor-pointer top-product-table-row" data-product-name="${item.descp}">
+            <td class="px-4 py-3 text-sm text-gray-700 font-medium">${item.descp}</td>
+            <td class="px-4 py-3 text-sm text-gray-500">${item.nama_cust}</td>
+            <td class="px-4 py-3 text-sm font-bold text-blue-600">${qty}</td>
+        </tr>
+    `;
+    tableBody.innerHTML += row;
+  });
+}
+
 function updateLocationHeader() {
   const header = document.getElementById("location-chart-header");
   const backBtn = document.getElementById("location-back-btn");
@@ -176,6 +288,7 @@ function updateLocationHeader() {
     }
   }
 }
+
 async function loadAgeData() {
   setChartUIState(UI_ELEMENTS.age, "loading");
   setTableUIState("loading");
@@ -206,6 +319,7 @@ async function loadAgeData() {
     setTableUIState("error", errorMsg);
   }
 }
+
 async function loadLocationData() {
   setChartUIState(UI_ELEMENTS.location, "loading");
   setLocationTableUIState("loading");
@@ -262,8 +376,10 @@ async function loadLocationData() {
     setLocationTableUIState("error", errorMsg);
   }
 }
+
 async function loadTopMemberData() {
   setChartUIState(UI_ELEMENTS.topMember, "loading");
+  setGeneralTableUIState(UI_ELEMENTS_TOP_MEMBER_TABLE, "loading");
   try {
     const result = await api.getTopMembersByFilter(
       currentFilter,
@@ -278,27 +394,30 @@ async function loadTopMemberData() {
         state
       );
       setChartUIState(UI_ELEMENTS.topMember, "success");
+
+      // Render Table
+      renderTopMemberTable(result.data);
+      setGeneralTableUIState(UI_ELEMENTS_TOP_MEMBER_TABLE, "success");
+
       if (topMemberChartInstance) topMemberChartInstance.resize();
     } else if (result.success === true && result.data.length === 0) {
-      setChartUIState(
-        UI_ELEMENTS.topMember,
-        "empty",
-        "Tidak ada data top member untuk filter ini."
-      );
+      const msg = "Tidak ada data top member untuk filter ini.";
+      setChartUIState(UI_ELEMENTS.topMember, "empty", msg);
+      setGeneralTableUIState(UI_ELEMENTS_TOP_MEMBER_TABLE, "empty", msg);
     } else {
       throw new Error(result.message || "Gagal memuat data top member");
     }
   } catch (error) {
     console.error("Error loading top member data:", error);
-    setChartUIState(
-      UI_ELEMENTS.topMember,
-      "error",
-      `Gagal memuat data: ${error.message}`
-    );
+    const msg = `Gagal memuat data: ${error.message}`;
+    setChartUIState(UI_ELEMENTS.topMember, "error", msg);
+    setGeneralTableUIState(UI_ELEMENTS_TOP_MEMBER_TABLE, "error", msg);
   }
 }
+
 async function loadTopProductData() {
   setChartUIState(UI_ELEMENTS.topProduct, "loading");
+  setGeneralTableUIState(UI_ELEMENTS_TOP_PRODUCT_TABLE, "loading");
   try {
     const result = await api.getTopMemberProductPairs(
       currentFilter,
@@ -313,25 +432,27 @@ async function loadTopProductData() {
         state
       );
       setChartUIState(UI_ELEMENTS.topProduct, "success");
+
+      // Render Table
+      renderTopProductTable(result.data);
+      setGeneralTableUIState(UI_ELEMENTS_TOP_PRODUCT_TABLE, "success");
+
       if (topMemberProductChartInstance) topMemberProductChartInstance.resize();
     } else if (result.success === true && result.data.length === 0) {
-      setChartUIState(
-        UI_ELEMENTS.topProduct,
-        "empty",
-        "Tidak ada data pembelian produk untuk filter ini."
-      );
+      const msg = "Tidak ada data pembelian produk untuk filter ini.";
+      setChartUIState(UI_ELEMENTS.topProduct, "empty", msg);
+      setGeneralTableUIState(UI_ELEMENTS_TOP_PRODUCT_TABLE, "empty", msg);
     } else {
       throw new Error(result.message || "Gagal memuat data produk");
     }
   } catch (error) {
     console.error("Error loading top product data:", error);
-    setChartUIState(
-      UI_ELEMENTS.topProduct,
-      "error",
-      `Gagal memuat data: ${error.message}`
-    );
+    const msg = `Gagal memuat data: ${error.message}`;
+    setChartUIState(UI_ELEMENTS.topProduct, "error", msg);
+    setGeneralTableUIState(UI_ELEMENTS_TOP_PRODUCT_TABLE, "error", msg);
   }
 }
+
 document.addEventListener("DOMContentLoaded", () => {
   const params = new URLSearchParams(window.location.search);
   currentFilter = params.get("filter");
@@ -375,6 +496,45 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
+
+  // Event Listener for Top Member Table
+  const topMemberTableBody = document.getElementById(
+    UI_ELEMENTS_TOP_MEMBER_TABLE.bodyId
+  );
+  if (topMemberTableBody) {
+    topMemberTableBody.addEventListener("click", (event) => {
+      const row = event.target.closest("tr.top-member-table-row");
+      if (row && currentFilter && currentStatus) {
+        const kdCust = row.dataset.kdCust;
+        const namaCust = row.dataset.namaCust;
+        if (kdCust) {
+          const targetUrl = `customer.php?filter=${encodeURIComponent(
+            currentFilter
+          )}&status=${encodeURIComponent(
+            currentStatus
+          )}&kd_cust=${encodeURIComponent(
+            kdCust
+          )}&nama_cust=${encodeURIComponent(namaCust)}`;
+          window.location.href = targetUrl;
+        }
+      }
+    });
+  }
+
+  // Event Listener for Top Product Table
+  const topProductTableBody = document.getElementById(
+    UI_ELEMENTS_TOP_PRODUCT_TABLE.bodyId
+  );
+  if (topProductTableBody) {
+    topProductTableBody.addEventListener("click", (event) => {
+      const row = event.target.closest("tr.top-product-table-row");
+      if (row) {
+        // Redirect to top_sales as requested
+        window.location.href = "top_sales";
+      }
+    });
+  }
+
   if (currentFilter && currentStatus) {
     loadAgeData();
     loadLocationData();
