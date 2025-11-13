@@ -3,7 +3,6 @@ import {
   showLoading,
   hideLoading,
   showEmptyState,
-  updateLastUpdate,
   showToast,
 } from "./ui_helpers.js";
 import {
@@ -27,20 +26,11 @@ import {
   showDetailModalMember,
 } from "./detail_transaction.js";
 import { fetchTransaction } from "./fetch_transaction.js";
-
 const initTopSalesDisplay = async () => {
   setupEventListeners();
   await loadData();
 };
-
 const setupEventListeners = () => {
-  const refreshBtn = document.getElementById("refresh-btn");
-  if (refreshBtn) {
-    refreshBtn.addEventListener("click", async () => {
-      await loadData();
-      showToast("Data berhasil diperbarui", "success");
-    });
-  }
   const searchInput = document.getElementById("search-input");
   if (searchInput) {
     searchInput.addEventListener("input", (e) => {
@@ -55,8 +45,6 @@ const setupEventListeners = () => {
       updatePagination(renderTableData);
     });
   }
-
-  // Event Listener untuk klik detail tetap sama (dicopy dari kode lama)
   document.addEventListener("click", async (e) => {
     const memberEl = e.target.closest("[data-member]");
     if (memberEl) {
@@ -113,9 +101,7 @@ const setupEventListeners = () => {
     }
   });
 };
-
 const infoData = (excludedProducts) => {
-  // Fungsi infoData tetap sama seperti sebelumnya
   const infoData = document.getElementById("info-data");
   if (infoData) {
     let dropdown = document.createElement("div");
@@ -166,13 +152,10 @@ const infoData = (excludedProducts) => {
     });
   }
 };
-
 const loadData = async () => {
   showLoading();
   try {
-    // Kita fetch top member, karena tabel akan menggunakan data ini
     const topMemberResponse = await fetchTopMember();
-
     if (
       !topMemberResponse ||
       !topMemberResponse.success ||
@@ -182,23 +165,16 @@ const loadData = async () => {
       showToast(topMemberResponse?.message || "Gagal mengambil data", "error");
       return;
     }
-
-    // Gunakan data member untuk tabel utama
     initializeData(topMemberResponse.data);
     updatePagination(renderTableData);
-
     const excludeProduct = [
       { nama: "Kertas Kado" },
       { nama: "Tas Asoka" },
       { nama: "ASKP" },
     ];
     infoData(excludeProduct);
-
-    // Update chart charts (tetap menggunakan data yang sama)
     updateTopMembersPerformance(topMemberResponse.data);
     updateTopNonMembersPerformance(topMemberResponse.data_non);
-
-    updateLastUpdate();
     hideLoading();
   } catch (error) {
     console.error("Error loading data:", error);
@@ -206,7 +182,6 @@ const loadData = async () => {
     showToast("Terjadi kesalahan saat memuat data", "error");
   }
 };
-
 const exportTopSalesData = () => {
   try {
     const csvContent = exportToCSV(filterData(""));
@@ -228,19 +203,15 @@ const exportTopSalesData = () => {
     showToast("Gagal mengexport data", "error");
   }
 };
-
 const handlePaginationClick = (page) => {
   setCurrentPage(page);
   updatePagination(renderTableData);
 };
-
 document.addEventListener("DOMContentLoaded", () => {
   initTopSalesDisplay();
 });
-
 window.addEventListener("beforeunload", () => {
   destroyAllCharts();
 });
-
 window.exportTopSalesData = exportTopSalesData;
 window.handlePaginationClick = handlePaginationClick;

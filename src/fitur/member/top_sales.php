@@ -20,14 +20,11 @@ $token = $menuHandler->getToken();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Top Sales by Member - Asoka Baby Store</title>
 
-    <!-- font awesome cdn link  -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
 
-    <!-- Penjelasan: Link ke CSS eksternal dengan cache busting query string -->
     <link rel="stylesheet" href="/css/header.css">
     <link rel="stylesheet" href="/css/sidebar.css">
     <link rel="stylesheet" href="/css/animation-fade-in.css">
-    <!-- Setting logo pada tab di website Anda / Favicon -->
     <link rel="icon" type="image/png" href="/images/logo1.png">
     <link
         href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
@@ -124,7 +121,6 @@ $token = $menuHandler->getToken();
     <main id="main-content" class="flex-1 p-8 transition-all duration-300 ml-64 mt-16 bg-gray-100">
         <div class="glass-container animate-fade-in-up">
 
-            <!-- Header Section -->
             <div class="mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
                 <div>
                     <h1 class="text-3xl font-bold text-yellow-700 flex items-center gap-3">
@@ -132,32 +128,17 @@ $token = $menuHandler->getToken();
                     </h1>
                     <p class="text-gray-600 mt-2">Analisis performa penjualan terbaik berdasarkan member</p>
                 </div>
-                <div class="flex items-center gap-3">
-                    <button id="refresh-btn"
-                        class="bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-500 hover:to-yellow-700 text-white px-6 py-3 rounded-xl font-bold shadow-md transition-all duration-200 flex items-center gap-2">
-                        <i class="fas fa-sync-alt"></i> Refresh Data
-                    </button>
-                    <div class="text-right">
-                        <p class="text-sm text-gray-500">Update Terakhir</p>
-                        <p class="font-semibold text-yellow-700" id="last-update">-</p>
-                    </div>
-                </div>
             </div>
 
-            <!-- Summary Cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8" id="card-summary">
-                <!-- Isi Di Js -->
             </div>
 
-            <!-- Chart Section -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                <!-- Top 5 Members Performance -->
                 <div class="card-glass p-6">
                     <h3 class="text-xl font-bold text-yellow-700 flex items-center gap-2 mb-6">
                         <i class="fas fa-medal text-yellow-500"></i> Top 50 Member
                     </h3>
                     <div class="space-y-4 overflow-x-hidden" id="top-members-performance">
-                        <!-- Data will be populated by JavaScript -->
                     </div>
                 </div>
                 <div class="card-glass p-6">
@@ -167,12 +148,10 @@ $token = $menuHandler->getToken();
                         </h3>
                     </div>
                     <div class="space-y-4 overflow-x-hidden" id="top-non-member-performance">
-                        <!-- Data will be populated by JavaScript -->
                     </div>
                 </div>
             </div>
 
-            <!-- Top Sales Members Table -->
             <div class="card-glass overflow-hidden">
                 <div class="px-8 py-6 border-b border-yellow-100">
                     <div class="flex flex-col md:flex-row items-center justify-between gap-4">
@@ -238,12 +217,10 @@ $token = $menuHandler->getToken();
             </div>
     </main>
 
-    <!-- Enhanced Modal -->
     <div id="detail-modal"
         class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden animate-fade-in">
         <div
             class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl mx-4 overflow-hidden animate-slide-up max-h-[90vh]">
-            <!-- Header -->
             <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 relative">
                 <button id="close-modal"
                     class="absolute top-4 right-4 text-white hover:text-gray-300 text-3xl font-bold transition-colors duration-200 transform hover:scale-110">
@@ -263,12 +240,10 @@ $token = $menuHandler->getToken();
                 </div>
             </div>
 
-            <!-- Content -->
             <div class="p-6 max-h-96 overflow-y-auto">
                 <div id="modal-content" class="space-y-4"></div>
             </div>
 
-            <!-- Footer -->
             <div class="bg-gray-50 px-6 py-4 border-t">
                 <div class="flex justify-between items-center">
                     <div id="modal-timestamp" class="text-sm text-gray-500"></div>
@@ -276,14 +251,12 @@ $token = $menuHandler->getToken();
             </div>
         </div>
     </div>
-    <!-- custom js file link -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
-    <!-- Custom Scripts -->
     <script type="module" src="/src/js/member_internal/product/display_top_sales.js"></script>
 
     <script>
@@ -350,7 +323,6 @@ $token = $menuHandler->getToken();
                 }
             });
         });
-
     </script>
 
 </body>
