@@ -38,9 +38,7 @@ export function renderAgeChart(chartInstance, elementId, data, currentFilter) {
     chartInstance.dispose();
   }
   const newChartInstance = echarts.init(chartElement);
-
   const filteredData = data;
-
   const chartData = filteredData.map((d) => ({
     value: d.count,
     name: d.age_group,
@@ -110,9 +108,7 @@ export function renderLocationChart(
     chartInstance.dispose();
   }
   const newChartInstance = echarts.init(chartElement);
-
   const filteredData = data;
-
   filteredData.sort((a, b) => b.count - a.count);
   const chartData = filteredData.map((d) => ({
     value: d.count,
@@ -192,9 +188,7 @@ export function renderTopMemberChart(chartInstance, elementId, data, state) {
     chartInstance.dispose();
   }
   const newChartInstance = echarts.init(chartElement);
-
   const filteredData = data;
-
   const chartData = filteredData.map((d) => ({
     value: d.total_spent,
     name: `${d.nama_cust} - (${d.kd_cust})`,
@@ -261,9 +255,7 @@ export function renderTopProductChart(chartInstance, elementId, data, state) {
     chartInstance.dispose();
   }
   const newChartInstance = echarts.init(chartElement);
-
   const filteredData = data;
-
   const chartData = filteredData.map((d) => ({
     value: d.total_item_qty,
     name: `${d.nama_cust} (${d.kd_cust}) - ${d.descp}`,
@@ -360,8 +352,9 @@ export function renderMemberChart(elementId, data, filter) {
       {
         minAngle: 15,
         type: "pie",
+        radius: "85%",
         label: {
-          fontSize: 12,
+          fontSize: 16,
           formatter: (params) => {
             const percentage = parseFloat(params.data.percentage).toFixed(2);
             return `${params.data.name}\n(${percentage}%)`;

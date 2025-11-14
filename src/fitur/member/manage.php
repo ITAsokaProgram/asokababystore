@@ -93,7 +93,7 @@ if (!in_array($current_filter, $valid_filters)) {
                         <div class="stat-icon stat-icon-active">
                             <i class="fa-solid fa-user-check"></i>
                         </div>
-                        <h3 class="text-sm font-medium uppercase tracking-wide mb-1" style="color: #065f46;">Active Member
+                        <h3 class="text-lg font-medium uppercase tracking-wide mb-1" style="color: #065f46;">Active Member
                         </h3>
                         <p id="active-member-placeholder" class="text-3xl font-bold" style="color: #047857;">
                             <i class="fa-solid fa-spinner fa-spin"></i>
@@ -103,7 +103,7 @@ if (!in_array($current_filter, $valid_filters)) {
                         <div class="stat-icon stat-icon-inactive">
                             <i class="fa-solid fa-user-xmark"></i>
                         </div>
-                        <h3 class="text-sm font-medium uppercase tracking-wide mb-1" style="color: #991b1b;">Inactive Member
+                        <h3 class="text-lg font-medium uppercase tracking-wide mb-1" style="color: #991b1b;">Inactive Member
                         </h3>
                         <p id="inactive-member-placeholder" class="text-3xl font-bold" style="color: #b91c1c;">
                             <i class="fa-solid fa-spinner fa-spin"></i>
@@ -112,7 +112,7 @@ if (!in_array($current_filter, $valid_filters)) {
                 </div>
                 <div class="chart-wrapper">
                     <div class="chart-container">
-                        <div id="memberActivityChart" style="width: 100%; height: 450px;"></div>
+                        <div id="memberActivityChart" style="width: 100%; height: 600px;"></div>
                     </div>
                 </div>
             </div>
