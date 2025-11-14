@@ -157,11 +157,26 @@ $token = $menuHandler->getToken();
                     <div class="flex flex-col md:flex-row items-center justify-between gap-4">
                         <h3 class="text-xl font-bold text-yellow-700 flex items-center gap-2">
                             <i class="fas fa-list text-yellow-500"></i> Daftar Top Sales Produk
-                            <span class="text-xs text-yellow-400 ml-2" id="info-data">
-                                <i class="fas fa-info-circle text-yellow-400"></i> Data kemarin
+                            <span class="text-xs text-yellow-600 ml-2" id="date-range-display">
+                                <i class="fas fa-info-circle text-yellow-500"></i> Data kemarin
                             </span>
                         </h3>
                         <div class="flex flex-wrap items-center gap-3">
+                            <div class="flex items-center gap-2">
+                                <input type="date" id="start-date"
+                                    class="border border-yellow-100 rounded-xl px-4 py-2 focus:ring-2 focus:ring-yellow-500 focus:border-yellow-400 shadow-sm text-sm">
+                                <span class="text-gray-500">to</span>
+                                <input type="date" id="end-date"
+                                    class="border border-yellow-100 rounded-xl px-4 py-2 focus:ring-2 focus:ring-yellow-500 focus:border-yellow-400 shadow-sm text-sm">
+                            </div>
+                            <button id="apply-date-filter"
+                                class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-xl font-bold shadow-md transition-all duration-200 flex items-center gap-2 text-sm">
+                                <i class="fas fa-filter"></i> Terapkan
+                            </button>
+                            <button id="reset-date-filter"
+                                class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-xl font-bold shadow-md transition-all duration-200 flex items-center gap-2 text-sm">
+                                <i class="fas fa-undo"></i> Reset
+                            </button>
                             <div class="relative">
                                 <input type="text" id="search-input" placeholder="Cari customer..."
                                     class="pl-10 pr-4 py-2 border border-yellow-100 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-400 shadow-sm">

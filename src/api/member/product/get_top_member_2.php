@@ -41,7 +41,7 @@ ORDER BY total_penjualan DESC
 LIMIT 50";
 $sqlNon = "SELECT 
     t.no_bon AS no_trans,
-    ks.nm_alias AS cabang,
+    ks.nm_alias AS cabang,  
     ks.kd_store AS kd_store,
     SUM(t.qty) AS total_qty,
     SUM(t.qty * t.harga) AS total_penjualan

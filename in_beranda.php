@@ -9,16 +9,12 @@ header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Allow-Headers: Content-Type");
 
 
-// Create menu handler for this specific menu
 $menuHandler = new MenuHandler('dashboard');
 
-// Initialize and check access - this handles all authentication and permission logic
 if (!$menuHandler->initialize()) {
-  // If initialize() returns false, the error page has already been shown and script has exited
   exit();
 }
 
-// If we reach here, user has access to the menu
 $user_id = $menuHandler->getUserId();
 $logger = $menuHandler->getLogger();
 $token = $menuHandler->getToken();
