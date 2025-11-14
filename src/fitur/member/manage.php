@@ -37,7 +37,7 @@ if (!in_array($current_filter, $valid_filters)) {
     <?php include '../../component/sidebar_report.php'; ?>
     <main id="main-content" class="flex-1 p-2 lg:p-4 transition-all duration-300 ml-64">
         <div class="max-w-7xl mx-auto space-y-6">
-            <<div class="member-card fade-in p-4">
+            <div class="member-card fade-in p-4">
                 <div class="page-header">
                     <h2 class="page-title">Aktivitas Member</h2>
                 </div>
@@ -71,52 +71,56 @@ if (!in_array($current_filter, $valid_filters)) {
                         Terapkan Filter
                     </button>
                 </form>
-        </div>
-        <?php if ($is_filter_applied): ?>
-            <div id="chart-section" class="member-card slide-up p-4">
-                <div class="page-header">
-                    <h2 class="page-title">Ringkasan Aktivitas Member</h2>
-                    <p class="page-subtitle">Filter: <strong><?php echo htmlspecialchars($current_filter); ?></strong></p>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                    <div class="stat-card stat-card-total">
-                        <div class="stat-icon stat-icon-total">
-                            <i class="fa-solid fa-users"></i>
-                        </div>
-                        <h3 class="text-sm font-medium uppercase tracking-wide mb-1" style="color: #831843;">Total Member
-                        </h3>
-                        <p id="total-member-placeholder" class="text-3xl font-bold" style="color: #9f1239;">
-                            <i class="fa-solid fa-spinner fa-spin"></i>
-                        </p>
-                    </div>
-                    <div class="stat-card stat-card-active">
-                        <div class="stat-icon stat-icon-active">
-                            <i class="fa-solid fa-user-check"></i>
-                        </div>
-                        <h3 class="text-lg font-medium uppercase tracking-wide mb-1" style="color: #065f46;">Active Member
-                        </h3>
-                        <p id="active-member-placeholder" class="text-3xl font-bold" style="color: #047857;">
-                            <i class="fa-solid fa-spinner fa-spin"></i>
-                        </p>
-                    </div>
-                    <div class="stat-card stat-card-inactive">
-                        <div class="stat-icon stat-icon-inactive">
-                            <i class="fa-solid fa-user-xmark"></i>
-                        </div>
-                        <h3 class="text-lg font-medium uppercase tracking-wide mb-1" style="color: #991b1b;">Inactive Member
-                        </h3>
-                        <p id="inactive-member-placeholder" class="text-3xl font-bold" style="color: #b91c1c;">
-                            <i class="fa-solid fa-spinner fa-spin"></i>
-                        </p>
-                    </div>
-                </div>
-                <div class="chart-wrapper">
-                    <div class="chart-container">
-                        <div id="memberActivityChart" style="width: 100%; height: 600px;"></div>
-                    </div>
-                </div>
             </div>
-        <?php endif; ?>
+            <?php if ($is_filter_applied): ?>
+                <div id="chart-section" class="member-card slide-up p-4">
+                    <div class="page-header">
+                        <h2 class="page-title">Ringkasan Aktivitas Member</h2>
+                        <p class="page-subtitle">Filter: <strong><?php echo htmlspecialchars($current_filter); ?></strong>
+                        </p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                        <div class="stat-card stat-card-total">
+                            <div class="stat-icon stat-icon-total">
+                                <i class="fa-solid fa-users"></i>
+                            </div>
+                            <h3 class="text-sm font-medium uppercase tracking-wide mb-1" style="color: #831843;">Total
+                                Member
+                            </h3>
+                            <p id="total-member-placeholder" class="text-3xl font-bold" style="color: #9f1239;">
+                                <i class="fa-solid fa-spinner fa-spin"></i>
+                            </p>
+                        </div>
+                        <div class="stat-card stat-card-active">
+                            <div class="stat-icon stat-icon-active">
+                                <i class="fa-solid fa-user-check"></i>
+                            </div>
+                            <h3 class="text-lg font-medium uppercase tracking-wide mb-1" style="color: #065f46;">Active
+                                Member
+                            </h3>
+                            <p id="active-member-placeholder" class="text-3xl font-bold" style="color: #047857;">
+                                <i class="fa-solid fa-spinner fa-spin"></i>
+                            </p>
+                        </div>
+                        <div class="stat-card stat-card-inactive">
+                            <div class="stat-icon stat-icon-inactive">
+                                <i class="fa-solid fa-user-xmark"></i>
+                            </div>
+                            <h3 class="text-lg font-medium uppercase tracking-wide mb-1" style="color: #991b1b;">Inactive
+                                Member
+                            </h3>
+                            <p id="inactive-member-placeholder" class="text-3xl font-bold" style="color: #b91c1c;">
+                                <i class="fa-solid fa-spinner fa-spin"></i>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="chart-wrapper">
+                        <div class="chart-container">
+                            <div id="memberActivityChart" style="width: 100%; height: 600px;"></div>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
         </div>
     </main>
     <script src="../../js/ui/navbar_toogle.js" type="module"></script>

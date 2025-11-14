@@ -40,10 +40,10 @@ $filterDisplay = ($filter === 'kemarin') ? 'Kemarin' :
 <body class="bg-gradient-to-br from-slate-50 to-blue-50 text-gray-900">
     <?php include '../../component/navigation_report.php'; ?>
     <?php include '../../component/sidebar_report.php'; ?>
-    <main id="main-content" class="flex-1 p-2 lg:p-4 transition-all duration-300 ml-64">
-        <div class="max-w-7xl mx-auto space-y-6">
+    <main id="main-content" class="flex-1 p-2 lg:p-3 transition-all duration-300 ml-64 mt-4">
+        <div class="max-w-7xl mx-auto space-y-4">
 
-            <div class="member-card fade-in p-4">
+            <div class="member-card fade-in p-3">
                 <div class="page-header">
                     <h1 class="page-title">
                         <i class="fa-solid fa-trophy mr-2"></i>
@@ -61,9 +61,9 @@ $filterDisplay = ($filter === 'kemarin') ? 'Kemarin' :
                 </a>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="member-card slide-up p-4">
-                    <div class="page-header mb-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div class="member-card slide-up p-3">
+                    <div class="page-header mb-4">
                         <h2 class="text-2xl font-semibold gradient-text">
                             <i class="fa-solid fa-chart-pie mr-2"></i>
                             Distribusi Umur Member (
@@ -85,8 +85,8 @@ $filterDisplay = ($filter === 'kemarin') ? 'Kemarin' :
                     <p id="age-chart-error" class="error-message hidden"></p>
                 </div>
 
-                <div class="member-card slide-up p-4">
-                    <div class="page-header mb-6">
+                <div class="member-card slide-up p-3">
+                    <div class="page-header mb-4">
                         <h2 class="text-2xl font-semibold gradient-text">
                             <i class="fa-solid fa-table-list mr-2"></i>
                             Detail Umur & Produk Teratas
@@ -118,9 +118,9 @@ $filterDisplay = ($filter === 'kemarin') ? 'Kemarin' :
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="member-card slide-up p-4">
-                    <div class="page-header mb-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div class="member-card slide-up p-3">
+                    <div class="page-header mb-4">
                         <h2 class="text-2xl font-semibold gradient-text">
                             <i class="fa-solid fa-map-location-dot mr-2"></i>
                             Distribusi Lokasi Member (
@@ -128,7 +128,7 @@ $filterDisplay = ($filter === 'kemarin') ? 'Kemarin' :
                         </h2>
                     </div>
 
-                    <div id="location-chart-header" class="mb-4 hidden">
+                    <div id="location-chart-header" class="mb-3 hidden">
                         <button id="location-back-btn" class="btn-back-chart">
                             <i class="fa-solid fa-arrow-left mr-2"></i>
                             Kembali
@@ -150,15 +150,15 @@ $filterDisplay = ($filter === 'kemarin') ? 'Kemarin' :
                     <p id="location-chart-error" class="error-message hidden"></p>
                 </div>
 
-                <div class="member-card slide-up p-4">
-                    <div class="page-header mb-6">
+                <div class="member-card slide-up p-3">
+                    <div class="page-header mb-4">
                         <h2 class="text-2xl font-semibold gradient-text">
                             <i class="fa-solid fa-table-list mr-2"></i>
                             Detail Lokasi & Produk Teratas (Top 20)
                         </h2>
                     </div>
 
-                    <div class="mb-4">
+                    <div class="mb-3">
                         <a href="full_location?filter=<?php echo $filter; ?>&status=<?php echo $status; ?>"
                             id="view-all-locations-btn"
                             class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 text-sm">
@@ -191,9 +191,9 @@ $filterDisplay = ($filter === 'kemarin') ? 'Kemarin' :
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="member-card slide-up p-4">
-                    <div class="page-header mb-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div class="member-card slide-up p-3">
+                    <div class="page-header mb-4">
                         <h2 class="text-2xl font-semibold gradient-text">
                             <i class="fa-solid fa-star mr-2"></i>
                             Top 10 Member Chart
@@ -214,15 +214,15 @@ $filterDisplay = ($filter === 'kemarin') ? 'Kemarin' :
                     <p id="top-member-chart-error" class="error-message hidden"></p>
                 </div>
 
-                <div class="member-card slide-up p-4">
-                    <div class="page-header mb-6">
+                <div class="member-card slide-up p-3">
+                    <div class="page-header mb-4">
                         <h2 class="text-2xl font-semibold gradient-text">
                             <i class="fa-solid fa-list-ol mr-2"></i>
                             Detail Top 10 Member
                         </h2>
                     </div>
 
-                    <div class="mb-4">
+                    <div class="mb-3">
                         <a href="top_sales?filter=<?= $filter ?>" id="view-all-top-member-btn"
                             class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 text-sm">
                             Lihat Semua Top Member
@@ -254,9 +254,9 @@ $filterDisplay = ($filter === 'kemarin') ? 'Kemarin' :
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="member-card slide-up p-4">
-                    <div class="page-header mb-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div class="member-card slide-up p-3">
+                    <div class="page-header mb-4">
                         <h2 class="text-2xl font-semibold gradient-text">
                             <i class="fa-solid fa-basket-shopping mr-2"></i>
                             Top 10 Pembelian Produk Chart
@@ -279,14 +279,14 @@ $filterDisplay = ($filter === 'kemarin') ? 'Kemarin' :
                     <p id="top-product-chart-error" class="error-message hidden"></p>
                 </div>
 
-                <div class="member-card slide-up p-4">
-                    <div class="page-header mb-6">
+                <div class="member-card slide-up p-3">
+                    <div class="page-header mb-4">
                         <h2 class="text-2xl font-semibold gradient-text">
                             <i class="fa-solid fa-list-check mr-2"></i>
                             Detail Top 10 Pembelian
                         </h2>
                     </div>
-                    <div class="mb-4">
+                    <div class="mb-3">
                         <a href="product_favorite?filter=<?= $filter ?>" id="view-all-top-member-btn"
                             class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 text-sm">
                             Lihat Semua Top Pembelian
