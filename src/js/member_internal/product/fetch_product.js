@@ -117,7 +117,7 @@ export const fetchTopMember = async (startDate, endDate) => {
   }
   try {
     const response = await fetch(
-      `/src/api/member/product/get_top_member_2.php${queryString}`,
+      `/src/api/member/product/get_top_member.php${queryString}`,
       {
         method: "GET",
         headers: {
