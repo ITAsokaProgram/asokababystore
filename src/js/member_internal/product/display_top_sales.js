@@ -4,6 +4,8 @@ import {
   hideLoading,
   showEmptyState,
   showToast,
+  showGlobalLoading,
+  hideGlobalLoading,
 } from "./ui_helpers.js";
 import {
   updateTopMembersPerformance,
@@ -53,54 +55,78 @@ const setupEventListeners = () => {
   document.addEventListener("click", async (e) => {
     const memberEl = e.target.closest("[data-member]");
     if (memberEl) {
-      const member = memberEl.dataset.member;
-      const cabang = memberEl.dataset.cabang;
-      const transactionResponse = await fetchTransaction({
-        member: member,
-        cabang: cabang,
-      });
-      if (
-        transactionResponse &&
-        transactionResponse.detail_transaction &&
-        transactionResponse.detail_transaction.length > 0
-      ) {
-        showDetailModal(transactionResponse.detail_transaction);
-      } else {
-        showDetailModal({});
+      showGlobalLoading();
+      try {
+        const member = memberEl.dataset.member;
+        const cabang = memberEl.dataset.cabang;
+        const transactionResponse = await fetchTransaction({
+          member: member,
+          cabang: cabang,
+        });
+        if (
+          transactionResponse &&
+          transactionResponse.detail_transaction &&
+          transactionResponse.detail_transaction.length > 0
+        ) {
+          showDetailModal(transactionResponse.detail_transaction);
+        } else {
+          showDetailModal({});
+        }
+      } catch (error) {
+        console.error("Error fetching member transaction:", error);
+        showToast("Gagal memuat detail transaksi", "error");
+      } finally {
+        hideGlobalLoading();
       }
       return;
     }
     const nonMemberEl = e.target.closest("[data-non-member]");
     if (nonMemberEl) {
-      const nonMember = nonMemberEl.dataset.nonMember;
-      const transactionResponse = await fetchTransaction({
-        no_trans: nonMember,
-      });
-      if (
-        transactionResponse &&
-        transactionResponse.detail_transaction &&
-        transactionResponse.detail_transaction.length > 0
-      ) {
-        showDetailModal(transactionResponse.detail_transaction);
-      } else {
-        showDetailModal({});
+      showGlobalLoading();
+      try {
+        const nonMember = nonMemberEl.dataset.nonMember;
+        const transactionResponse = await fetchTransaction({
+          no_trans: nonMember,
+        });
+        if (
+          transactionResponse &&
+          transactionResponse.detail_transaction &&
+          transactionResponse.detail_transaction.length > 0
+        ) {
+          showDetailModal(transactionResponse.detail_transaction);
+        } else {
+          showDetailModal({});
+        }
+      } catch (error) {
+        console.error("Error fetching non-member transaction:", error);
+        showToast("Gagal memuat detail transaksi", "error");
+      } finally {
+        hideGlobalLoading();
       }
       return;
     }
     const detailTransactionEl = e.target.closest("[data-detail-transaction]");
     if (detailTransactionEl) {
-      const no_trans = detailTransactionEl.dataset.detailTransaction;
-      const transactionResponse = await fetchTransaction({
-        no_trans: no_trans,
-      });
-      if (
-        transactionResponse &&
-        transactionResponse.detail_transaction &&
-        transactionResponse.detail_transaction.length > 0
-      ) {
-        showDetailModalMember(transactionResponse.detail_transaction);
-      } else {
-        showDetailModalMember({});
+      showGlobalLoading();
+      try {
+        const no_trans = detailTransactionEl.dataset.detailTransaction;
+        const transactionResponse = await fetchTransaction({
+          no_trans: no_trans,
+        });
+        if (
+          transactionResponse &&
+          transactionResponse.detail_transaction &&
+          transactionResponse.detail_transaction.length > 0
+        ) {
+          showDetailModalMember(transactionResponse.detail_transaction);
+        } else {
+          showDetailModalMember({});
+        }
+      } catch (error) {
+        console.error("Error fetching transaction detail:", error);
+        showToast("Gagal memuat detail transaksi", "error");
+      } finally {
+        hideGlobalLoading();
       }
       return;
     }
@@ -212,6 +238,7 @@ const calculateStartDateFromFilter = (filter) => {
 const loadTop50Cards = async (startDate, endDate) => {
   const start = startDate || currentDateFilter.startDate;
   const end = endDate || currentDateFilter.endDate;
+  showGlobalLoading();
   try {
     const topMemberResponse = await fetchTopMember(start, end);
     if (topMemberResponse && topMemberResponse.success) {
@@ -230,10 +257,13 @@ const loadTop50Cards = async (startDate, endDate) => {
   } catch (error) {
     console.error("Error loading top 50 card data:", error);
     showToast("Gagal memuat data kartu Top 50", "error");
+  } finally {
+    hideGlobalLoading();
   }
 };
 const loadTableData = async (page = 1) => {
   showLoading();
+  showGlobalLoading();
   currentPage = page;
   const params = {
     start_date: currentDateFilter.startDate,
@@ -250,6 +280,8 @@ const loadTableData = async (page = 1) => {
     console.error("Error loading table data:", error);
     showEmptyState();
     showToast("Terjadi kesalahan saat memuat data tabel", "error");
+  } finally {
+    hideGlobalLoading();
   }
 };
 const handleTableResponse = (response) => {
@@ -280,7 +312,7 @@ const renderPagination = (pagination) => {
   if (current_page > 1) {
     paginationHTML += `<button onclick="handlePaginationClick(${
       current_page - 1
-    })" class="px-3 py-1 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-700">&laquo; Prev</button>`;
+    })" class="px-2 py-1 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-700">&laquo; Prev</button>`;
   }
   const maxPagesToShow = 5;
   let startPage = Math.max(1, current_page - Math.floor(maxPagesToShow / 2));
@@ -289,28 +321,28 @@ const renderPagination = (pagination) => {
     startPage = Math.max(1, endPage - maxPagesToShow + 1);
   }
   if (startPage > 1) {
-    paginationHTML += `<button onclick="handlePaginationClick(1)" class="px-3 py-1 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-700">1</button>`;
+    paginationHTML += `<button onclick="handlePaginationClick(1)" class="px-2 py-1 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-700">1</button>`;
     if (startPage > 2) {
-      paginationHTML += `<span class="px-3 py-1 text-gray-500">...</span>`;
+      paginationHTML += `<span class="px-2 py-1 text-gray-500">...</span>`;
     }
   }
   for (let i = startPage; i <= endPage; i++) {
     if (i === current_page) {
-      paginationHTML += `<button class="px-3 py-1 rounded-md bg-yellow-500 text-white font-bold">${i}</button>`;
+      paginationHTML += `<button class="px-2 py-1 rounded-md bg-yellow-500 text-white font-bold">${i}</button>`;
     } else {
-      paginationHTML += `<button onclick="handlePaginationClick(${i})" class="px-3 py-1 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-700">${i}</button>`;
+      paginationHTML += `<button onclick="handlePaginationClick(${i})" class="px-2 py-1 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-700">${i}</button>`;
     }
   }
   if (endPage < total_pages) {
     if (endPage < total_pages - 1) {
-      paginationHTML += `<span class="px-3 py-1 text-gray-500">...</span>`;
+      paginationHTML += `<span class="px-2 py-1 text-gray-500">...</span>`;
     }
-    paginationHTML += `<button onclick="handlePaginationClick(${total_pages})" class="px-3 py-1 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-700">${total_pages}</button>`;
+    paginationHTML += `<button onclick="handlePaginationClick(${total_pages})" class="px-2 py-1 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-700">${total_pages}</button>`;
   }
   if (current_page < total_pages) {
     paginationHTML += `<button onclick="handlePaginationClick(${
       current_page + 1
-    })" class="px-3 py-1 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-700">Next &raquo;</button>`;
+    })" class="px-2 py-1 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-700">Next &raquo;</button>`;
   }
   paginationContainer.innerHTML = paginationHTML;
 };
@@ -322,7 +354,7 @@ const infoData = (excludedProducts) => {
       dropdown = document.createElement("div");
       dropdown.id = "exclude-dropdown";
       dropdown.className =
-        "hidden absolute z-50 mt-2 right-0 bg-white border border-yellow-200 rounded-lg shadow-lg w-72 p-4 text-sm";
+        "hidden absolute z-50 mt-2 right-0 bg-white border border-yellow-200 rounded-lg shadow-lg w-72 p-2 text-sm";
       document.body.appendChild(dropdown);
       infoDataEl.style.cursor = "pointer";
       infoDataEl.addEventListener("click", (e) => {
@@ -340,21 +372,21 @@ const infoData = (excludedProducts) => {
       });
     }
     dropdown.innerHTML = `
-      <div class="font-bold text-yellow-700 mb-2 flex items-center gap-2">
-        <i class="fas fa-ban text-yellow-400"></i> Produk yang di-exclude
-      </div>
-      <ul class="max-h-48 overflow-y-auto space-y-1">
-        ${
-          excludedProducts.length === 0
-            ? '<li class="text-gray-400">Tidak ada produk exclude</li>'
-            : excludedProducts
-                .map(
-                  (p) =>
-                    `<li class="flex gap-2 items-center"> <span class="truncate" title="${p.nama}">${p.nama}</span></li>`
-                )
-                .join("")
-        }
-      </ul>`;
+            <div class="font-bold text-yellow-700 mb-1 flex items-center gap-2"> <i class="fas fa-ban text-yellow-400"></i> Produk yang di-exclude
+            </div>
+            <ul class="max-h-48 overflow-y-auto space-y-1">
+                ${
+                  excludedProducts.length === 0
+                    ? '<li class="text-gray-400">Tidak ada produk exclude</li>'
+                    : excludedProducts
+                        .map(
+                          (p) =>
+                            `<li class="flex gap-2 items-center"> <span class="truncate" title="${p.nama}">${p.nama}</span></li>`
+                        )
+                        .join("")
+                }
+            </ul>`;
+
     function toggleDropdown() {
       if (dropdown.classList.contains("hidden")) {
         const rect = infoDataEl.getBoundingClientRect();

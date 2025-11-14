@@ -12,6 +12,12 @@ const showEmptyState = () => {
   document.getElementById("empty-state").classList.remove("hidden");
   document.getElementById("top-sales-table-body").innerHTML = "";
 };
+const showGlobalLoading = () => {
+  document.getElementById("global-loader").classList.remove("hidden");
+};
+const hideGlobalLoading = () => {
+  document.getElementById("global-loader").classList.add("hidden");
+};
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -62,6 +68,8 @@ export {
   showLoading,
   hideLoading,
   showEmptyState,
+  showGlobalLoading,
+  hideGlobalLoading,
   formatCurrency,
   formatNumber,
   formatPercentage,
