@@ -193,7 +193,7 @@ $token = $menuHandler->getToken();
 
             <div class="card-glass overflow-hidden">
                 <div class="px-4 py-3 border-b border-yellow-100">
-                    <div class="flex flex-col md:flex-row items-center justify-between gap-2">
+                    <div class="flex flex-col md:flex-row items-center justify-between gap-2 flex-wrap">
                         <h3 class="text-xl font-bold text-yellow-700 flex items-center gap-2">
                             <i class="fas fa-list text-yellow-500"></i> Daftar Top Sales Produk
                             <span class="text-xs text-yellow-600 ml-2" id="date-range-display">
@@ -219,7 +219,6 @@ $token = $menuHandler->getToken();
                             <div class="relative">
                                 <input type="text" id="search-input" placeholder="Cari customer..."
                                     class="pl-8 pr-3 py-1 border border-yellow-100 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-400 shadow-sm">
-                                <i class="fas fa-search absolute left-2 top-2 text-gray-400"></i>
                             </div>
                             <select id="sort-select"
                                 class="border border-yellow-100 rounded-xl px-3 py-1 focus:ring-2 focus:ring-yellow-500 focus:border-yellow-400 shadow-sm">
