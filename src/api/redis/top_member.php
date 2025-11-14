@@ -98,4 +98,3 @@ echo date('Y-m-d H:i:s') . " - Redis updated: $redisKey\n";
 
 $stmt->close();
 $stmtNon->close();
-$conn->close();
