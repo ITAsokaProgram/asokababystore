@@ -1,6 +1,5 @@
 import { fetchProductFav, filterProductFav } from "./fetch_product.js";
 import { paginationCard } from "../../transaction_branch/table.js";
-// Global variables
 let productData = [];
 let filteredData = [];
 let charts = {};
@@ -11,59 +10,36 @@ let currentDateFilter = {
   endDate: null,
 };
 const initProductFavoriteDisplay = async () => {
-  // 1. Setup listener dan isi nilai input tanggal (berdasarkan URL jika ada)
   setupEventListeners();
-
-  // 2. Cek apakah ada parameter filter di URL
   const urlParams = new URLSearchParams(window.location.search);
   const filterParam = urlParams.get("filter");
-
   if (filterParam) {
-    // Jika ada filter, jalankan filterProductFav menggunakan nilai yang sudah di-set di input
     const startDateInput = document.getElementById("start-date");
     const endDateInput = document.getElementById("end-date");
-
     if (startDateInput && endDateInput) {
       showLoading();
-      // Gunakan filterProductFav (bukan loadData biasa)
       const data = await filterProductFav(
         startDateInput.value,
         endDateInput.value
       );
       handleFilterResponse(data);
-
-      // Load chart & performa juga perlu di-refresh (opsional: bisa dibuat filter juga kalau API support)
       await loadTrendData();
       await loadProductPerformance();
     }
   } else {
-    // Jika tidak ada filter, jalankan loadData biasa (default behavior)
     await loadData();
-    await loadTrendData();
-    await loadProductPerformance();
   }
 };
-
-// Setup event listeners
 const setupEventListeners = () => {
-  // Refresh button
   document.getElementById("refresh-btn").addEventListener("click", () => {
     loadData();
-    loadTrendData();
-    loadProductPerformance();
   });
-
-  // Search functionality
   document.getElementById("search-input").addEventListener("input", (e) => {
     filterData(e.target.value);
   });
-
-  // Sort functionality
   document.getElementById("sort-select").addEventListener("change", (e) => {
     sortData(e.target.value);
   });
-
-  // Date filter functionality
   setupDateFilterListeners();
 };
 const setupDateFilterListeners = () => {
@@ -72,44 +48,30 @@ const setupDateFilterListeners = () => {
   const applyFilterBtn = document.getElementById("apply-date-filter");
   const resetFilterBtn = document.getElementById("reset-date-filter");
   const dateRangeDisplay = document.getElementById("date-range-display");
-
   if (!startDateInput || !endDateInput || !applyFilterBtn || !resetFilterBtn) {
     return;
   }
-
-  // --- LOGIKA BARU: Cek URL Parameter ---
   const urlParams = new URLSearchParams(window.location.search);
   const filterParam = urlParams.get("filter");
-
   const today = new Date();
   let startDate;
-
   if (filterParam) {
-    // Jika ada param ?filter=..., hitung tanggal start-nya
     startDate = calculateStartDateFromFilter(filterParam);
   } else {
-    // Default logic (kemarin)
     startDate = new Date(today);
     startDate.setDate(today.getDate() - 1);
   }
-
-  // Set nilai input
   startDateInput.value = startDate.toISOString().split("T")[0];
   endDateInput.value = today.toISOString().split("T")[0];
   endDateInput.max = today.toISOString().split("T")[0];
-
-  // Update tampilan teks rentang waktu
   const timeDiff = today.getTime() - startDate.getTime();
   const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
   if (dateRangeDisplay) {
     dateRangeDisplay.innerHTML = ` <i class="fas fa-info-circle text-emerald-400 mr-1"></i>(Data ${daysDiff} hari lalu)`;
   }
-
-  // --- Event Listeners (Tetap sama seperti sebelumnya) ---
   applyFilterBtn.addEventListener("click", async () => {
     const startVal = startDateInput.value;
     const endVal = endDateInput.value;
-
     if (!startVal || !endVal) {
       showToast("Pilih tanggal awal dan akhir", "warning");
       return;
@@ -121,37 +83,26 @@ const setupDateFilterListeners = () => {
       );
       return;
     }
-
-    // Hitung ulang hari untuk display
     const s = new Date(startVal);
     const e = new Date(endVal);
     const diff = Math.ceil((e - s) / (1000 * 3600 * 24));
-
     currentDateFilter.startDate = startVal;
     currentDateFilter.endDate = endVal;
-
     showLoading();
     dateRangeDisplay.innerHTML = ` <i class="fas fa-info-circle text-emerald-400 mr-1"></i>(Data ${diff} hari)`;
-
     const data = await filterProductFav(startVal, endVal);
     handleFilterResponse(data);
   });
-
   resetFilterBtn.addEventListener("click", async () => {
-    // Reset ke default (kemarin)
     const d = new Date();
     const y = new Date(d);
     y.setDate(d.getDate() - 1);
-
     dateRangeDisplay.innerHTML = ` <i class="fas fa-info-circle text-emerald-400 mr-1"></i>(Data 1 hari lalu)`;
     startDateInput.value = y.toISOString().split("T")[0];
     endDateInput.value = d.toISOString().split("T")[0];
     currentDateFilter.startDate = null;
     currentDateFilter.endDate = null;
-
-    // Hapus query param dari URL agar bersih (opsional)
     window.history.pushState({}, document.title, window.location.pathname);
-
     showLoading();
     const data = await filterProductFav(
       startDateInput.value,
@@ -159,7 +110,6 @@ const setupDateFilterListeners = () => {
     );
     handleFilterResponse(data);
   });
-
   endDateInput.addEventListener("change", () => {
     const endDate = new Date(endDateInput.value);
     const now = new Date();
@@ -169,8 +119,6 @@ const setupDateFilterListeners = () => {
     }
   });
 };
-
-// Helper untuk handle response (agar tidak duplikasi kode)
 const handleFilterResponse = (data) => {
   if (!data) {
     showToast("Data tidak ditemukan", "error");
@@ -189,12 +137,9 @@ const handleFilterResponse = (data) => {
     showEmptyState();
   }
 };
-
-// Show toast notification
 const showToast = (message, type = "info") => {
   const background =
     type === "error" ? "#f87171" : type === "warning" ? "#fbbf24" : "#34d399";
-
   Toastify({
     text: message,
     duration: 3000,
@@ -206,15 +151,10 @@ const showToast = (message, type = "info") => {
     },
   }).showToast();
 };
-
-// Load data from API
 const loadData = async () => {
   showLoading();
-
   try {
     const response = await fetchProductFav();
-
-    // Check if response has the correct structure
     if (
       response &&
       response.status === true &&
@@ -225,26 +165,25 @@ const loadData = async () => {
       productData = response.data;
       filteredData = [...response.data];
       updateTable();
-      updateCharts();
-      loadProductPerformance();
+      await updateCharts();
+      await loadProductPerformance();
       updateLastUpdate();
       hideLoading();
     } else {
+      await updateCharts();
+      await loadProductPerformance();
       showEmptyState();
     }
   } catch (error) {
     showEmptyState();
   }
 };
-
-// Load trend data from API
 const loadTrendData = async () => {
   try {
     const response = await fetch(
       `/src/api/member/product/get_trend_pembelian.php`
     );
     const data = await response.json();
-
     if (data.success && data.data && Array.isArray(data.data)) {
       updateMonthlyTrendChart(data.data);
     }
@@ -252,15 +191,12 @@ const loadTrendData = async () => {
     console.error("Error loading trend data:", error);
   }
 };
-
-// Load product performance data from API
 const loadProductPerformance = async () => {
   try {
     const response = await fetch(
       "/src/api/member/product/get_product_performa.php"
     );
     const data = await response.json();
-
     if (data.success && data.data && Array.isArray(data.data)) {
       updateProductPerformance(data.data);
     }
@@ -268,28 +204,20 @@ const loadProductPerformance = async () => {
     console.error("Error loading product performance data:", error);
   }
 };
-
-// Show loading state
 const showLoading = () => {
   document.getElementById("loading-state").classList.remove("hidden");
   document.getElementById("empty-state").classList.add("hidden");
   document.getElementById("member-table-body").innerHTML = "";
 };
-
-// Hide loading state
 const hideLoading = () => {
   document.getElementById("loading-state").classList.add("hidden");
   document.getElementById("empty-state").classList.add("hidden");
 };
-
-// Show empty state
 const showEmptyState = () => {
   document.getElementById("loading-state").classList.add("hidden");
   document.getElementById("empty-state").classList.remove("hidden");
   document.getElementById("member-table-body").innerHTML = "";
 };
-
-// Filter data based on search term
 const filterData = (searchTerm) => {
   if (!searchTerm.trim()) {
     filteredData = [...productData];
@@ -303,11 +231,9 @@ const filterData = (searchTerm) => {
         (item.kd_cust && item.kd_cust.toLowerCase().includes(term))
     );
   }
-  currentPage = 1; // Reset to first page when filtering
+  currentPage = 1;
   updateTable();
 };
-
-// Sort data
 const sortData = (sortBy) => {
   filteredData.sort((a, b) => {
     switch (sortBy) {
@@ -319,30 +245,24 @@ const sortData = (sortBy) => {
         return 0;
     }
   });
-  currentPage = 1; // Reset to first page when sorting
+  currentPage = 1;
   updateTable();
 };
-
-// Update table with data
 const updateTable = () => {
   const tbody = document.getElementById("member-table-body");
-
   if (filteredData.length === 0) {
     tbody.innerHTML = `
-            <tr>
-                <td colspan="4" class="px-6 py-8 text-center text-gray-500">
-                    <i class="fas fa-search text-2xl mb-2"></i>
-                    <p>Tidak ada data yang ditemukan</p>
-                </td>
-            </tr>
-        `;
-    // Hide pagination when no data
+              <tr>
+                  <td colspan="4" class="px-6 py-8 text-center text-gray-500">
+                      <i class="fas fa-search text-2xl mb-2"></i>
+                      <p>Tidak ada data yang ditemukan</p>
+                  </td>
+              </tr>
+          `;
     document.getElementById("paginationContainer").innerHTML = "";
     document.getElementById("viewData").textContent = "";
     return;
   }
-
-  // Use paginationCard to handle pagination
   paginationCard(
     currentPage,
     itemsPerPage,
@@ -352,11 +272,8 @@ const updateTable = () => {
     "paginationContainer"
   );
 };
-
-// Render table data (callback for paginationCard)
 const renderTableData = (paginatedData, offset) => {
   const tbody = document.getElementById("member-table-body");
-
   tbody.innerHTML = paginatedData
     .map(
       (item) => `
@@ -397,14 +314,9 @@ const renderTableData = (paginatedData, offset) => {
     )
     .join("");
 };
-
-// Update product performance section
 const updateProductPerformance = (performanceData) => {
   const performanceContainer = document.getElementById("product-performance");
-
-  // Take only the first 4 items
   const top4Data = performanceData.slice(0, 6);
-
   performanceContainer.innerHTML = `
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       ${top4Data
@@ -414,18 +326,13 @@ const updateProductPerformance = (performanceData) => {
           const difference = currentQty - previousQty;
           const percentageChange =
             previousQty > 0 ? ((difference / previousQty) * 100).toFixed(1) : 0;
-
-          // Determine if it's an increase or decrease
           const isIncrease = difference > 0;
           const isDecrease = difference < 0;
           const isSame = difference === 0;
-
-          // Set colors and icons based on performance
           let borderColor = "border-gray-400";
           let iconColor = "text-gray-500";
           let icon = "fa-minus";
           let changeText = "Tidak berubah";
-
           if (isIncrease) {
             borderColor = "border-green-500";
             iconColor = "text-green-500";
@@ -437,7 +344,6 @@ const updateProductPerformance = (performanceData) => {
             icon = "fa-arrow-down";
             changeText = `${percentageChange}%`;
           }
-
           return `
               <div class="bg-white rounded-lg border-l-4 ${borderColor} shadow-sm hover:shadow-md transition-shadow duration-200">
                 <div class="p-4">
@@ -474,21 +380,14 @@ const updateProductPerformance = (performanceData) => {
     </div>
   `;
 };
-
-// Update charts
-const updateCharts = () => {
-  loadTrendData();
+const updateCharts = async () => {
+  await loadTrendData();
 };
-
-// Update monthly trend chart
 const updateMonthlyTrendChart = (trendData) => {
   const ctx = document.getElementById("monthlyTrendChart");
-
   if (charts.monthlyTrendChart) {
     charts.monthlyTrendChart.destroy();
   }
-
-  // Convert month numbers to month names
   const monthNames = [
     "Januari",
     "Februari",
@@ -503,12 +402,9 @@ const updateMonthlyTrendChart = (trendData) => {
     "November",
     "Desember",
   ];
-
-  // Sort data by month and create labels and data arrays
   const sortedData = trendData.sort((a, b) => a.bulan - b.bulan);
   const labels = sortedData.map((item) => monthNames[item.bulan - 1]);
   const quantities = sortedData.map((item) => parseInt(item.total_qty));
-
   charts.monthlyTrendChart = new Chart(ctx, {
     type: "line",
     data: {
@@ -554,20 +450,15 @@ const updateMonthlyTrendChart = (trendData) => {
     },
   });
 };
-
-// Update last update timestamp
 const updateLastUpdate = () => {
   const now = new Date();
   document.getElementById("last-update").textContent =
     now.toLocaleString("id-ID");
 };
-
-// Get initials from name
 const getInitials = (name) => {
   if (!name || typeof name !== "string") {
     return "NA";
   }
-
   try {
     return name
       .split(" ")
@@ -579,11 +470,8 @@ const getInitials = (name) => {
     return "NA";
   }
 };
-
-// Export member data to CSV
 const exportMemberData = (kdCust) => {
   const memberData = productData.filter((item) => item.kd_cust === kdCust);
-
   if (memberData.length > 0) {
     const csvContent = convertToCSV(memberData);
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -597,10 +485,7 @@ const exportMemberData = (kdCust) => {
     document.body.removeChild(link);
   }
 };
-
-// Export all data to Excel grouped by kd_cust
 const exportAllDataToExcel = () => {
-  // Group data by kd_cust
   const groupedData = {};
   productData.forEach((item) => {
     if (!groupedData[item.kd_cust]) {
@@ -608,8 +493,6 @@ const exportAllDataToExcel = () => {
     }
     groupedData[item.kd_cust].push(item);
   });
-
-  // Sort each group by total_qty (descending) and then by total_hrg (descending)
   Object.keys(groupedData).forEach((kdCust) => {
     groupedData[kdCust].sort((a, b) => {
       const qtyDiff = parseInt(b.total_qty) - parseInt(a.total_qty);
@@ -617,26 +500,17 @@ const exportAllDataToExcel = () => {
       return b.total_hrg - a.total_hrg;
     });
   });
-
-  // Sort kd_cust groups by total transactions (descending)
   const sortedKdCusts = Object.keys(groupedData).sort((a, b) => {
     return groupedData[b].length - groupedData[a].length;
   });
-
-  // Create Excel content
   let excelContent =
     "Kode Customer,Nama Customer,Barang,PLU,Total Quantity,Total Harga\n";
-
   sortedKdCusts.forEach((kdCust) => {
     const customerData = groupedData[kdCust];
-
-    // Add customer data
     customerData.forEach((item) => {
       excelContent += `"${item.kd_cust}","${item.nama_customer}","${item.barang}","${item.plu}","${item.total_qty}","${item.total_hrg}"\n`;
     });
   });
-
-  // Create and download file
   const blob = new Blob([excelContent], { type: "text/csv;charset=utf-8;" });
   const link = document.createElement("a");
   const url = URL.createObjectURL(blob);
@@ -650,8 +524,6 @@ const exportAllDataToExcel = () => {
   link.click();
   document.body.removeChild(link);
 };
-
-// Convert data to CSV format
 const convertToCSV = (data) => {
   const headers = [
     "kd_cust",
@@ -662,28 +534,20 @@ const convertToCSV = (data) => {
     "total_hrg",
   ];
   const csvRows = [headers.join(",")];
-
   data.forEach((item) => {
     const values = headers.map((header) => `"${item[header]}"`);
     csvRows.push(values.join(","));
   });
-
   return csvRows.join("\n");
 };
-
-// Initialize when DOM is loaded
 document.addEventListener("DOMContentLoaded", () => {
   initProductFavoriteDisplay();
 });
-
-// Make functions available globally for onclick handlers
 window.exportMemberData = exportMemberData;
 window.exportAllDataToExcel = exportAllDataToExcel;
-
 const calculateStartDateFromFilter = (filter) => {
   const today = new Date();
   const startDate = new Date(today);
-
   switch (filter) {
     case "kemarin":
       startDate.setDate(today.getDate() - 1);
@@ -707,7 +571,6 @@ const calculateStartDateFromFilter = (filter) => {
       startDate.setFullYear(today.getFullYear() - 1);
       break;
     default:
-      // Default ke kemarin jika filter tidak dikenali
       startDate.setDate(today.getDate() - 1);
       break;
   }
