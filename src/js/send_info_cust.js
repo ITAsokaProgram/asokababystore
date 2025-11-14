@@ -1,21 +1,29 @@
 function validateNIK() {
-    const kodeNik = document.getElementById("no_nik").value;
-    const nikError = document.getElementById("nik-error");
+  const kodeNik = document.getElementById("no_nik").value;
+  const nikError = document.getElementById("nik-error");
+  const submitButton = document.getElementById("send_data");
 
-    if (!isValidFormatNIK(kodeNik)) {
-        nikError.classList.remove("hidden");
-        document.getElementById("send_data").disabled = true;
-    } else {
-        nikError.classList.add("hidden");
-        document.getElementById("send_data").disabled = false;
-    }
+  // Jika NIK kosong, sembunyikan error dan aktifkan tombol (karena opsional)
+  if (kodeNik === "") {
+    nikError.classList.add("hidden");
+    submitButton.disabled = false;
+    return;
+  }
+
+  // Jika NIK diisi, validasi formatnya
+  if (!isValidFormatNIK(kodeNik)) {
+    nikError.classList.remove("hidden");
+    submitButton.disabled = true; // Nonaktifkan tombol jika format salah
+  } else {
+    nikError.classList.add("hidden");
+    submitButton.disabled = false; // Aktifkan tombol jika format benar
+  }
 }
 
 function isValidFormatNIK(nik) {
-    const nikRegex = /^[1-9][0-9]{15}$/;
-    return nikRegex.test(nik);
+  const nikRegex = /^[1-9][0-9]{15}$/;
+  return nikRegex.test(nik);
 }
-
 
 async function sendCust() {
   const formData = new FormData(document.getElementById("data_cust"));
@@ -43,6 +51,10 @@ async function sendCust() {
     selectKecDom.options[selectKecDom.selectedIndex].textContent;
   const namaKelDom =
     selectKelDom.options[selectKelDom.selectedIndex].textContent;
+
+  // Ambil nilai NIK untuk divalidasi
+  const kodeNik = document.getElementById("no_nik").value;
+
   formData.append("alamat_ktp", alamatKtp);
   formData.append("alamat_domisili", alamatDom);
   formData.set("provinsi", namaProv);
@@ -53,13 +65,17 @@ async function sendCust() {
   formData.set("kota_domisili", namaKotaDom);
   formData.set("kec_domisili", namaKecDom);
   formData.set("kel_domisili", namaKelDom);
-  if (!validateNIK) {
+
+  // Pengecekan NIK sebelum kirim:
+  // Hanya validasi jika diisi (tidak kosong)
+  if (kodeNik !== "" && !isValidFormatNIK(kodeNik)) {
     return Swal.fire({
       title: "NIK Tidak Valid",
-      text: "Pastikan NIK terdiri dari 16 digit angka dan tidak dimulai dengan 0.",
+      text: "Pastikan NIK terdiri dari 16 digit angka dan tidak dimulai dengan 0. Kosongkan jika tidak ingin mengisi.",
       icon: "error",
     });
   }
+
   fetch("/src/api/customer/update_customer.php", {
     method: "POST",
     body: formData,
@@ -92,11 +108,11 @@ async function sendCust() {
 }
 
 document.getElementById("send_data").addEventListener("click", (e) => {
-    e.preventDefault();
-    const form = document.getElementById("data_cust");
-    if (!form.checkValidity()) {
-        form.reportValidity(); // munculin pesan error default browser
-        return; // hentikan kalau tidak valid
-    }
-    sendCust()
-})
+  e.preventDefault();
+  const form = document.getElementById("data_cust");
+  if (!form.checkValidity()) {
+    form.reportValidity(); // munculin pesan error default browser
+    return; // hentikan kalau tidak valid
+  }
+  sendCust();
+});

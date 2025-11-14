@@ -10,9 +10,9 @@ $cookie = $_COOKIE['customer_token'];
 $result = verify_token($cookie);
 
 if (!$result) {
-    http_response_code(401);
-    echo json_encode(['status' => 'error', 'message' => 'Token tidak valid']);
-    exit;
+  http_response_code(401);
+  echo json_encode(['status' => 'error', 'message' => 'Token tidak valid']);
+  exit;
 }
 
 $sqlCheckKode = "SELECT 
@@ -25,7 +25,7 @@ $sqlCheckKode = "SELECT
   c.Kec as kecamatan,
   c.Kel as kelurahan,
   c.juml_anak as anak,
-  c.tgl_lahir as tanggal_lahir,
+  DATE(c.tgl_lahir) as tanggal_lahir,
   c.email as email,
   c.alamat_ds as domisili_alamat,
   c.Prov_ds as domisili_prov,
@@ -50,11 +50,11 @@ $fetch = $stmt->get_result();
 $data = $fetch->fetch_assoc();
 
 if ($data) {
-    http_response_code(200);
-    echo json_encode(['status' => 'success', 'message' => 'Get Profile Success', 'data' => $data]);
+  http_response_code(200);
+  echo json_encode(['status' => 'success', 'message' => 'Get Profile Success', 'data' => $data]);
 } else {
-    http_response_code(400);
-    echo json_encode(['status' => 'error', 'message' => 'Failed Get Profile', 'data' => $data]);
+  http_response_code(400);
+  echo json_encode(['status' => 'error', 'message' => 'Failed Get Profile', 'data' => $data]);
 }
 
 $stmt->close();
