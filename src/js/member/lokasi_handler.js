@@ -1,19 +1,16 @@
 import * as api from "./member_api_service.js";
-
 let currentPage = 1;
 const LIMIT = 10;
 let currentFilter = "";
 let currentCity = "";
 let currentDistrict = "";
 let currentSubDistrict = "";
-
 function showLoading(isLoading) {
   const spinner = document.getElementById("loading-spinner");
   if (spinner) {
     spinner.classList.toggle("hidden", !isLoading);
   }
 }
-
 function showError(message) {
   const errorEl = document.getElementById("error-message");
   if (errorEl) {
@@ -26,7 +23,6 @@ function showError(message) {
     }
   }
 }
-
 function showTable(isShown) {
   const tableContainer = document.getElementById("product-table-container");
   const paginationContainer = document.getElementById("pagination-container");
@@ -37,7 +33,6 @@ function showTable(isShown) {
     paginationContainer.classList.toggle("hidden", !isShown);
   }
 }
-
 function renderProductTable(products) {
   const tableBody = document.getElementById("product-table-body");
   if (!tableBody) return;
@@ -66,7 +61,6 @@ function renderProductTable(products) {
     tableBody.innerHTML += row;
   });
 }
-
 function renderPagination(pagination) {
   const { total_records, current_page, limit, total_pages } = pagination;
   const infoEl = document.getElementById("pagination-info");
@@ -146,7 +140,6 @@ function renderPagination(pagination) {
     });
   });
 }
-
 async function loadTopProducts(filter, city, district, subdistrict) {
   showLoading(true);
   showError("");
@@ -174,15 +167,13 @@ async function loadTopProducts(filter, city, district, subdistrict) {
     showLoading(false);
   }
 }
-
 document.addEventListener("DOMContentLoaded", () => {
   const params = new URLSearchParams(window.location.search);
   currentFilter = params.get("filter");
   currentCity = params.get("city");
   currentDistrict = params.get("district");
   currentSubDistrict = params.get("subdistrict");
-
-  if (currentFilter && currentCity && currentDistrict && currentSubDistrict) {
+  if (currentFilter) {
     currentPage = 1;
     loadTopProducts(
       currentFilter,
@@ -191,8 +182,8 @@ document.addEventListener("DOMContentLoaded", () => {
       currentSubDistrict
     );
   } else {
-    console.error("Parameter lokasi tidak lengkap di URL.");
+    console.error("Parameter filter tidak ditemukan di URL.");
     showLoading(false);
-    showError("Parameter filter atau lokasi tidak valid.");
+    showError("Parameter filter tidak valid.");
   }
 });

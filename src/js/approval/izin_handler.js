@@ -23,13 +23,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }).format(num || 0);
   function getUrlParams() {
     const params = new URLSearchParams(window.location.search);
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
+    const today = new Date();
+    const lastMonth = new Date();
+    lastMonth.setMonth(today.getMonth() - 1);
+    const formatDate = (date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    };
     return {
-      tgl_mulai:
-        params.get("tgl_mulai") || yesterday.toISOString().split("T")[0],
-      tgl_selesai:
-        params.get("tgl_selesai") || yesterday.toISOString().split("T")[0],
+      tgl_mulai: params.get("tgl_mulai") || formatDate(lastMonth),
+      tgl_selesai: params.get("tgl_selesai") || formatDate(today),
       kd_store: params.get("kd_store") || "all",
       page: parseInt(params.get("page") || "1", 10),
     };
@@ -40,6 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return "?" + params.toString();
   }
   async function loadData() {
+    const bulkActionBar = document.getElementById("bulk-action-bar");
     const params = getUrlParams();
     setLoadingState(true, false, params.page > 1);
     const queryString = new URLSearchParams(params).toString();
@@ -74,38 +80,99 @@ document.addEventListener("DOMContentLoaded", () => {
       showTableError(error.message);
     } finally {
       setLoadingState(false);
+      bulkActionBar.classList.add("translate-y-24", "opacity-0");
     }
   }
   function renderTable(tabel_data, offset) {
     if (!tabel_data || tabel_data.length === 0) {
-      tableBody.innerHTML = `<tr><td colspan="9" class="text-center p-8 text-gray-500"><i class="fas fa-inbox fa-lg mb-2"></i><p>Tidak ada data ditemukan.</p></td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="10" class=" p-8 text-gray-500"><i class="fas fa-inbox fa-lg mb-2"></i><p>Tidak ada data ditemukan.</p></td></tr>`;
       return;
     }
     let htmlRows = "";
     let current_store = null;
+    let current_faktur = null;
     const buildStoreHeader = (kd, alias) => `
             <tr class="bg-orange-50 border-b border-orange-100">
-                <td colspan="9" class="px-4 py-2 font-bold text-orange-800">
-                     ${kd} - ${alias}
+                <td colspan="10" class="px-4 py-2 font-bold text-orange-800">
+                     <i class="fas fa-store mr-2"></i> ${alias}
                 </td>
             </tr>`;
+    const buildFakturHeader = (row, isFullyDisabled) => {
+      const fakturGroupId = `group-${row.kd_store}-${row.no_faktur}`;
+      const formattedDate = row.tgl_koreksi.split(" ")[0];
+      const disabledAttr = isFullyDisabled ? "disabled" : "";
+      const opacityClass = isFullyDisabled
+        ? "opacity-50 bg-gray-200 cursor-not-allowed"
+        : "bg-gray-100 hover:bg-gray-100";
+      return `
+                <tr class="faktur-header transition-colors ${opacityClass}">
+                    <td class=" px-2 py-2 border-r border-gray-200">
+                        <input type="checkbox" 
+                               class="custom-checkbox faktur-checkbox" 
+                               data-group="${fakturGroupId}"
+                               title="${
+                                 isFullyDisabled
+                                   ? "Semua item sudah diproses"
+                                   : "Pilih seluruh item di faktur ini"
+                               }"
+                               ${disabledAttr}>
+                    </td>
+                    <td colspan="9" class="px-3 py-2 text-gray-700 font-semibold text-sm">
+                        <div class="flex items-center gap-4 flex-wrap">
+                            <span class="font-mono text-blue-700"><i class="fas fa-file-invoice mr-1"></i> ${
+                              row.no_faktur
+                            }</span>
+                            <span class="text-gray-500 text-xs"><i class="far fa-calendar mr-1"></i> ${formattedDate}</span>
+                            ${
+                              row.kode_supp
+                                ? `<span class="text-gray-500 text-xs"><i class="fas fa-truck mr-1"></i> ${row.kode_supp}</span>`
+                                : ""
+                            }
+                            ${
+                              isFullyDisabled
+                                ? '<span class="text-[10px] bg-gray-200 text-gray-500 px-2 rounded-full font-medium">Selesai</span>'
+                                : ""
+                            }
+                        </div>
+                    </td>
+                </tr>
+            `;
+    };
     tabel_data.forEach((row) => {
       if (row.kd_store !== current_store) {
         current_store = row.kd_store;
         htmlRows += buildStoreHeader(row.kd_store, row.nm_alias);
+        current_faktur = null;
+      }
+      if (row.no_faktur !== current_faktur) {
+        current_faktur = row.no_faktur;
+        const itemsInThisFaktur = tabel_data.filter(
+          (item) =>
+            item.no_faktur === row.no_faktur && item.kd_store === row.kd_store
+        );
+        const isFakturFullyProcessed = itemsInThisFaktur.every(
+          (item) =>
+            item.izin_koreksi === "Izinkan" || item.izin_koreksi === "SO_Ulang"
+        );
+        htmlRows += buildFakturHeader(row, isFakturFullyProcessed);
       }
       let statusVal = row.izin_koreksi;
       let badgeClass = "bg-gray-100 text-gray-600 border-gray-200";
       let statusText = "Belum Diproses";
       let actionButtonHtml = "";
+      let isProcessed = false;
+      let checkboxDisabledAttr = "";
+      let rowOpacity = "";
       if (statusVal === "Izinkan") {
         badgeClass = "bg-green-100 text-green-700 border-green-200";
         statusText = "Diizinkan";
         actionButtonHtml = `<span class="text-gray-300 text-lg font-bold">-</span>`;
+        isProcessed = true;
       } else if (statusVal === "SO_Ulang") {
         badgeClass = "bg-red-100 text-red-700 border-red-200";
         statusText = "SO Ulang";
         actionButtonHtml = `<span class="text-gray-300 text-lg font-bold">-</span>`;
+        isProcessed = true;
       } else {
         actionButtonHtml = `
                     <button onclick="editStatus('${row.no_faktur}', '${
@@ -116,14 +183,26 @@ document.addEventListener("DOMContentLoaded", () => {
                     </button>
                 `;
       }
+      if (isProcessed) {
+        checkboxDisabledAttr = "disabled";
+        rowOpacity = "opacity-60 bg-gray-50";
+      }
+      const fakturGroupId = `group-${row.kd_store}-${row.no_faktur}`;
       htmlRows += `
-                <tr class="hover:bg-gray-50 text-xs border-b border-gray-100 align-middle">
-
-                    <td class="font-mono text-gray-600 px-2">${
-                      row.no_faktur
+                <tr class="hover:bg-gray-50 text-xs border-b border-gray-100 align-middle ${rowOpacity}">
+                    <td class=" px-2 bg-white border-r border-gray-100">
+                        <input type="checkbox" 
+                               class="custom-checkbox item-checkbox ${fakturGroupId}" 
+                               data-parent="${fakturGroupId}"
+                               value="${row.no_faktur}|${row.plu}|${
+        row.kd_store
+      }"
+                               ${checkboxDisabledAttr}>
+                    </td>
+                    <td class="px-2 text-gray-400 text-[10px]">-</td>
+                    <td class="font-mono font-semibold px-2 text-gray-700">${
+                      row.plu
                     }</td>
-                    <td class="px-2">${row.tgl_koreksi.split(" ")[0]}</td>
-                    <td class="font-mono font-semibold px-2">${row.plu}</td>
                     <td class="truncate max-w-[200px] px-2" title="${
                       row.deskripsi
                     }">${row.deskripsi}</td>
@@ -134,13 +213,16 @@ document.addEventListener("DOMContentLoaded", () => {
                     }">
                         ${formatNumber(row.sel_qty)}
                     </td>
-                    <td class="text-center px-2">${row.kode_supp || "-"}</td>
-                    <td class="text-center px-2">
+                    <td class=" px-2 text-gray-400">${row.kode_supp || "-"}</td>
+                    <td class=" px-2">
                         <span class="px-2 py-0.5 rounded border text-[10px] font-medium ${badgeClass}">
                             ${statusText}
                         </span>
                     </td>
-                    <td class="text-center py-2">
+                    <td class=" px-2 font-mono text-gray-600">
+                        ${row.status_k || "-"}
+                    </td>
+                    <td class=" py-2">
                         ${actionButtonHtml}
                     </td>
                 </tr>
@@ -148,6 +230,36 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     tableBody.innerHTML = htmlRows;
   }
+  tableBody.addEventListener("change", (e) => {
+    if (e.target.classList.contains("faktur-checkbox")) {
+      const groupId = e.target.dataset.group;
+      const isChecked = e.target.checked;
+      const activeChildCheckboxes = document.querySelectorAll(
+        `.${groupId}:not(:disabled)`
+      );
+      activeChildCheckboxes.forEach((child) => {
+        child.checked = isChecked;
+      });
+    }
+    if (e.target.classList.contains("item-checkbox")) {
+      const parentId = e.target.dataset.parent;
+      const parentCheckbox = document.querySelector(
+        `.faktur-checkbox[data-group="${parentId}"]`
+      );
+      if (parentCheckbox) {
+        const activeSiblings = document.querySelectorAll(
+          `.${parentId}:not(:disabled)`
+        );
+        if (activeSiblings.length > 0) {
+          const allChecked = Array.from(activeSiblings).every(
+            (cb) => cb.checked
+          );
+          parentCheckbox.checked = allChecked;
+        }
+      }
+    }
+    updateBulkActionBar();
+  });
   async function fetchAllDataForExport() {
     setLoadingState(true, true);
     const params = getUrlParams();
@@ -200,6 +312,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "Selisih",
         "Supp",
         "Status",
+        "Status SO",
       ];
       const dataRows = [];
       let current_store = null;
@@ -208,6 +321,7 @@ document.addEventListener("DOMContentLoaded", () => {
           current_store = row.kd_store;
           dataRows.push([
             `${row.kd_store} - ${row.nm_alias}`,
+            "",
             "",
             "",
             "",
@@ -226,6 +340,7 @@ document.addEventListener("DOMContentLoaded", () => {
           parseFloat(row.sel_qty),
           row.kode_supp,
           statusText,
+          row.status_k || "-",
         ]);
       });
       const ws = XLSX.utils.aoa_to_sheet(title);
@@ -266,6 +381,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "Selisih",
         "Supp",
         "Status",
+        "Sts SO",
       ];
       const rows = [];
       let current_store = null;
@@ -275,7 +391,7 @@ document.addEventListener("DOMContentLoaded", () => {
           rows.push([
             {
               content: `${row.kd_store} - ${row.nm_alias}`,
-              colSpan: 7,
+              colSpan: 8,
               styles: {
                 fillColor: [255, 240, 200],
                 fontStyle: "bold",
@@ -293,6 +409,7 @@ document.addEventListener("DOMContentLoaded", () => {
           formatNumber(row.sel_qty),
           row.kode_supp || "-",
           statusText,
+          row.status_k || "-",
         ]);
       });
       doc.autoTable({
@@ -377,7 +494,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (exportPdfButton)
           exportPdfButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ...`;
       } else if (!isPagination && tableBody) {
-        tableBody.innerHTML = `<tr><td colspan="9" class="text-center p-8"><div class="spinner-simple"></div><p>Memuat data...</p></td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="9" class=" p-8"><div class="spinner-simple"></div><p>Memuat data...</p></td></tr>`;
       }
     } else {
       if (filterSubmitButton) filterSubmitButton.disabled = false;
@@ -388,7 +505,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
   function showTableError(msg) {
-    tableBody.innerHTML = `<tr><td colspan="9" class="text-center text-red-500 p-8">Error: ${msg}</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="9" class=" text-red-500 p-8">Error: ${msg}</td></tr>`;
   }
   function populateStoreFilter(stores, selected) {
     if (filterSelectStore.options.length > 1) return;
@@ -440,5 +557,115 @@ document.addEventListener("DOMContentLoaded", () => {
   if (exportExcelButton)
     exportExcelButton.addEventListener("click", exportToExcel);
   if (exportPdfButton) exportPdfButton.addEventListener("click", exportToPDF);
+  const bulkActionBar = document.getElementById("bulk-action-bar");
+  const selectedCountBadge = document.getElementById("selected-count");
+  function updateBulkActionBar() {
+    const checkedItems = document.querySelectorAll(
+      ".item-checkbox:checked:not(:disabled)"
+    );
+    const count = checkedItems.length;
+    selectedCountBadge.textContent = count;
+    if (count > 0) {
+      bulkActionBar.classList.remove("translate-y-24", "opacity-0");
+    } else {
+      bulkActionBar.classList.add("translate-y-24", "opacity-0");
+    }
+  }
+  tableBody.addEventListener("change", (e) => {
+    if (e.target.classList.contains("faktur-checkbox")) {
+      const groupId = e.target.dataset.group;
+      const isChecked = e.target.checked;
+      const childCheckboxes = document.querySelectorAll(`.${groupId}`);
+      childCheckboxes.forEach((child) => {
+        if (!child.disabled) {
+          child.checked = isChecked;
+        }
+      });
+    }
+    if (e.target.classList.contains("item-checkbox")) {
+      const parentId = e.target.dataset.parent;
+      const parentCheckbox = document.querySelector(
+        `.faktur-checkbox[data-group="${parentId}"]`
+      );
+      if (parentCheckbox) {
+        const allSiblings = document.querySelectorAll(`.${parentId}`);
+        const enabledSiblings = Array.from(allSiblings).filter(
+          (cb) => !cb.disabled
+        );
+        if (enabledSiblings.length > 0) {
+          const allChecked = enabledSiblings.every((cb) => cb.checked);
+          parentCheckbox.checked = allChecked;
+        }
+      }
+    }
+    updateBulkActionBar();
+  });
+  window.bulkUpdateStatus = function (status) {
+    const checkedItems = document.querySelectorAll(
+      ".item-checkbox:checked:not(:disabled)"
+    );
+    if (checkedItems.length === 0) return;
+    const statusLabel = status === "Izinkan" ? "Diizinkan" : "SO Ulang";
+    const color = status === "Izinkan" ? "#16a34a" : "#dc2626";
+    Swal.fire({
+      title: `Proses ${checkedItems.length} Item?`,
+      html: `Anda akan mengubah status menjadi <b>${statusLabel}</b> untuk <b>${checkedItems.length}</b> item terpilih.`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: `Ya, ${statusLabel}`,
+      confirmButtonColor: color,
+      cancelButtonText: "Batal",
+      showLoaderOnConfirm: true,
+      preConfirm: async () => {
+        const itemsToUpdate = [];
+        checkedItems.forEach((cb) => {
+          const parts = cb.value.split("|");
+          itemsToUpdate.push({
+            no_faktur: parts[0],
+            plu: parts[1],
+            kd_store: parts[2],
+          });
+        });
+        try {
+          const response = await fetch(
+            "/src/api/approval/update_status_izin.php",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                mode: "bulk",
+                status: status,
+                items: itemsToUpdate,
+              }),
+            }
+          );
+          if (!response.ok) throw new Error(response.statusText);
+          return await response.json();
+        } catch (error) {
+          Swal.showValidationMessage(`Request failed: ${error}`);
+        }
+      },
+      allowOutsideClick: () => !Swal.isLoading(),
+    }).then((result) => {
+      if (result.isConfirmed && result.value.success) {
+        Swal.fire({
+          title: "Berhasil!",
+          text: `Berhasil memproses ${result.value.affected} item.`,
+          icon: "success",
+          timer: 1500,
+          showConfirmButton: false,
+        }).then(() => {
+          bulkActionBar.classList.add("translate-y-24", "opacity-0");
+          loadData();
+        });
+      } else if (result.isConfirmed && !result.value.success) {
+        Swal.fire(
+          "Gagal",
+          result.value.message || "Terjadi kesalahan",
+          "error"
+        );
+      }
+    });
+  };
   loadData();
 });

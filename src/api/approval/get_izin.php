@@ -24,8 +24,8 @@ $response = [
 ];
 try {
     $tanggal_kemarin = date('Y-m-d', strtotime('-1 day'));
-    $tgl_mulai = $_GET['tgl_mulai'] ?? $tanggal_kemarin;
-    $tgl_selesai = $_GET['tgl_selesai'] ?? $tanggal_kemarin;
+    $tgl_mulai = $_GET['tgl_mulai'] ?? date('Y-m-d', strtotime('-1 month'));
+    $tgl_selesai = $_GET['tgl_selesai'] ?? date('Y-m-d');
     $kd_store = $_GET['kd_store'] ?? 'all';
     $page = 1;
     $limit = 10;
@@ -84,7 +84,8 @@ try {
             a.avg_cost,
             a.Keterangan,
             a.izin_koreksi,
-            a.kode_supp
+            a.kode_supp,
+            a.status_k
         FROM koreksi_izin a
         LEFT JOIN kode_store b ON a.kd_store = b.Kd_Store
         WHERE 

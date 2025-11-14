@@ -1,381 +1,406 @@
-// Main display module for top sales page
-import { fetchTopSales, fetchTopMember } from "./fetch_product.js";
+import { fetchTopMember, fetchPaginatedMembers } from "./fetch_product.js";
 import {
   showLoading,
   hideLoading,
   showEmptyState,
-  updateLastUpdate,
   showToast,
+  showGlobalLoading,
+  hideGlobalLoading,
 } from "./ui_helpers.js";
 import {
   updateTopMembersPerformance,
   updateTopNonMembersPerformance,
   destroyAllCharts,
 } from "./chart_manager.js";
-import {
-  initializeData,
-  filterData,
-  sortData,
-  getPaginatedData,
-  updatePagination,
-  getSummaryStats,
-  exportToCSV,
-  setCurrentPage,
-} from "./data_manager.js";
 import { renderTableData, updateSummaryCards } from "./table_renderer.js";
 import {
   showDetailModal,
   showDetailModalMember,
 } from "./detail_transaction.js";
 import { fetchTransaction } from "./fetch_transaction.js";
-
-// Initialize the application
+let currentDateFilter = {
+  startDate: null,
+  endDate: null,
+};
+let currentPage = 1;
+let itemsPerPage = 10;
+let currentSearch = "";
+let currentSort = "belanja";
+let totalPages = 1;
 const initTopSalesDisplay = async () => {
   setupEventListeners();
-  await loadData();
+  const urlParams = new URLSearchParams(window.location.search);
+  const filterParam = urlParams.get("filter");
+  const startDateInput = document.getElementById("start-date");
+  const endDateInput = document.getElementById("end-date");
+  await loadTop50Cards(startDateInput.value, endDateInput.value);
+  await loadTableData(1);
 };
-
-// Setup event listeners
 const setupEventListeners = () => {
-  // Refresh button
-  const refreshBtn = document.getElementById("refresh-btn");
-  if (refreshBtn) {
-    refreshBtn.addEventListener("click", async () => {
-      await loadData();
-      showToast("Data berhasil diperbarui", "success");
-    });
-  }
-
-  // Search functionality
+  setupDateFilterListeners();
   const searchInput = document.getElementById("search-input");
   if (searchInput) {
-    searchInput.addEventListener("input", (e) => {
-      const filteredData = filterData(e.target.value);
-      updatePagination(renderTableData);
+    searchInput.addEventListener("change", (e) => {
+      currentSearch = e.target.value;
+      loadTableData(1);
     });
   }
-
-  // Sort functionality
   const sortSelect = document.getElementById("sort-select");
   if (sortSelect) {
     sortSelect.addEventListener("change", (e) => {
-      const sortedData = sortData(e.target.value);
-      updatePagination(renderTableData);
+      currentSort = e.target.value;
+      loadTableData(1);
     });
   }
-
   document.addEventListener("click", async (e) => {
-    // Untuk member
     const memberEl = e.target.closest("[data-member]");
     if (memberEl) {
-      const member = memberEl.dataset.member;
-      const cabang = memberEl.dataset.cabang;
-      const transactionResponse = await fetchTransaction({
-        member: member,
-        cabang: cabang,
-      });
-      if (
-        transactionResponse &&
-        transactionResponse.detail_transaction &&
-        transactionResponse.detail_transaction.length > 0
-      ) {
-        showDetailModal(transactionResponse.detail_transaction);
-      } else {
-        showDetailModal({});
+      showGlobalLoading();
+      try {
+        const member = memberEl.dataset.member;
+        const cabang = memberEl.dataset.cabang;
+        const transactionResponse = await fetchTransaction({
+          member: member,
+          cabang: cabang,
+        });
+        if (
+          transactionResponse &&
+          transactionResponse.detail_transaction &&
+          transactionResponse.detail_transaction.length > 0
+        ) {
+          showDetailModal(transactionResponse.detail_transaction);
+        } else {
+          showDetailModal({});
+        }
+      } catch (error) {
+        console.error("Error fetching member transaction:", error);
+        showToast("Gagal memuat detail transaksi", "error");
+      } finally {
+        hideGlobalLoading();
       }
       return;
     }
-    // Untuk non-member
     const nonMemberEl = e.target.closest("[data-non-member]");
     if (nonMemberEl) {
-      const nonMember = nonMemberEl.dataset.nonMember;
-      const transactionResponse = await fetchTransaction({
-        no_trans: nonMember,
-      });
-      if (
-        transactionResponse &&
-        transactionResponse.detail_transaction &&
-        transactionResponse.detail_transaction.length > 0
-      ) {
-        showDetailModal(transactionResponse.detail_transaction);
-      } else {
-        showDetailModal({});
+      showGlobalLoading();
+      try {
+        const nonMember = nonMemberEl.dataset.nonMember;
+        const transactionResponse = await fetchTransaction({
+          no_trans: nonMember,
+        });
+        if (
+          transactionResponse &&
+          transactionResponse.detail_transaction &&
+          transactionResponse.detail_transaction.length > 0
+        ) {
+          showDetailModal(transactionResponse.detail_transaction);
+        } else {
+          showDetailModal({});
+        }
+      } catch (error) {
+        console.error("Error fetching non-member transaction:", error);
+        showToast("Gagal memuat detail transaksi", "error");
+      } finally {
+        hideGlobalLoading();
       }
       return;
     }
-
     const detailTransactionEl = e.target.closest("[data-detail-transaction]");
     if (detailTransactionEl) {
-      const no_trans = detailTransactionEl.dataset.detailTransaction;
-      const transactionResponse = await fetchTransaction({
-        no_trans: no_trans,
-      });
-      if (
-        transactionResponse &&
-        transactionResponse.detail_transaction &&
-        transactionResponse.detail_transaction.length > 0
-      ) {
-        showDetailModalMember(transactionResponse.detail_transaction);
-      } else {
-        showDetailModalMember({});
+      showGlobalLoading();
+      try {
+        const no_trans = detailTransactionEl.dataset.detailTransaction;
+        const transactionResponse = await fetchTransaction({
+          no_trans: no_trans,
+        });
+        if (
+          transactionResponse &&
+          transactionResponse.detail_transaction &&
+          transactionResponse.detail_transaction.length > 0
+        ) {
+          showDetailModalMember(transactionResponse.detail_transaction);
+        } else {
+          showDetailModalMember({});
+        }
+      } catch (error) {
+        console.error("Error fetching transaction detail:", error);
+        showToast("Gagal memuat detail transaksi", "error");
+      } finally {
+        hideGlobalLoading();
       }
       return;
     }
   });
 };
-
-const infoData = (excludedProducts) => {
-  const infoData = document.getElementById("info-data");
-  if (infoData) {
-    // Buat dropdown element
-    let dropdown = document.createElement("div");
-    dropdown.id = "exclude-dropdown";
-    dropdown.className =
-      "hidden absolute z-50 mt-2 right-0 bg-white border border-yellow-200 rounded-lg shadow-lg w-72 p-4 text-sm";
-    dropdown.innerHTML = `
-      <div class="font-bold text-yellow-700 mb-2 flex items-center gap-2">
-        <i class="fas fa-ban text-yellow-400"></i> Produk yang di-exclude
-      </div>
-      <ul class="max-h-48 overflow-y-auto space-y-1">
-        ${
-          excludedProducts.length === 0
-            ? '<li class="text-gray-400">Tidak ada produk exclude</li>'
-            : excludedProducts
-                .map(
-                  (p) =>
-                    `<li class="flex gap-2 items-center"> <span class="truncate" title="${p.nama}">${p.nama}</span></li>`
-                )
-                .join("")
-        }
-      </ul>
-    `;
-    // Tempel ke body, posisinya akan diatur relatif ke infoData
-    document.body.appendChild(dropdown);
-
-    // Fungsi untuk toggle dropdown
-    function toggleDropdown() {
-      if (dropdown.classList.contains("hidden")) {
-        // Hitung posisi infoData
-        const rect = infoData.getBoundingClientRect();
-        dropdown.style.top = `${window.scrollY + rect.bottom + 4}px`;
-        dropdown.style.left = `${window.scrollX + rect.left}px`;
-        dropdown.classList.remove("hidden");
-      } else {
-        dropdown.classList.add("hidden");
-      }
-    }
-
-    infoData.style.cursor = "pointer";
-    infoData.addEventListener("click", (e) => {
-      e.stopPropagation();
-      toggleDropdown();
-    });
-
-    // Klik di luar dropdown akan menutup
-    document.addEventListener("click", (e) => {
-      if (
-        !dropdown.classList.contains("hidden") &&
-        !dropdown.contains(e.target) &&
-        e.target !== infoData
-      ) {
-        dropdown.classList.add("hidden");
-      }
-    });
+const setupDateFilterListeners = () => {
+  const startDateInput = document.getElementById("start-date");
+  const endDateInput = document.getElementById("end-date");
+  const applyFilterBtn = document.getElementById("apply-date-filter");
+  const resetFilterBtn = document.getElementById("reset-date-filter");
+  const dateRangeDisplay = document.getElementById("date-range-display");
+  if (
+    !startDateInput ||
+    !endDateInput ||
+    !applyFilterBtn ||
+    !resetFilterBtn ||
+    !dateRangeDisplay
+  ) {
+    console.warn("Date filter elements not found on top_sales.php");
+    return;
   }
-};
-
-// Load all data
-const loadData = async () => {
-  showLoading();
-
-  try {
-    // Load main top sales data
-    const topSalesResponse = await fetchTopSales();
-    if (!topSalesResponse || !topSalesResponse.success) {
-      showEmptyState();
-      showToast(topSalesResponse?.message || "Gagal mengambil data", "error");
-      return;
+  const urlParams = new URLSearchParams(window.location.search);
+  const filterParam = urlParams.get("filter");
+  const today = new Date();
+  let startDate;
+  if (filterParam) {
+    startDate = calculateStartDateFromFilter(filterParam);
+  } else {
+    startDate = new Date(today);
+    startDate.setDate(today.getDate() - 1);
+  }
+  startDateInput.value = startDate.toISOString().split("T")[0];
+  endDateInput.value = today.toISOString().split("T")[0];
+  endDateInput.max = today.toISOString().split("T")[0];
+  const timeDiff = today.getTime() - startDate.getTime();
+  const daysDiff = Math.max(1, Math.ceil(timeDiff / (1000 * 3600 * 24)));
+  dateRangeDisplay.innerHTML = ` <i class="fas fa-info-circle text-yellow-500 mr-1"></i>(Data ${daysDiff} hari)`;
+  currentDateFilter.startDate = startDateInput.value;
+  currentDateFilter.endDate = endDateInput.value;
+  applyFilterBtn.addEventListener("click", async () => {
+    const startVal = startDateInput.value;
+    const endVal = endDateInput.value;
+    if (!startVal || !endVal) {
+      /* ... (validasi tanggal) ... */ return;
     }
-    // Update summary card for top member
+    if (new Date(startVal) > new Date(endVal)) {
+      /* ... (validasi tanggal) ... */ return;
+    }
+    const s = new Date(startVal);
+    const e = new Date(endVal);
+    const diff = Math.max(1, Math.ceil((e - s) / (1000 * 3600 * 24)) + 1);
+    currentDateFilter.startDate = startVal;
+    currentDateFilter.endDate = endVal;
+    dateRangeDisplay.innerHTML = ` <i class="fas fa-info-circle text-yellow-500 mr-1"></i>(Data ${diff} hari)`;
+    window.history.pushState({}, document.title, window.location.pathname);
+    await loadTop50Cards(startVal, endVal);
+    await loadTableData(1);
+  });
+  resetFilterBtn.addEventListener("click", async () => {
+    const d = new Date();
+    const y = new Date(d);
+    y.setDate(d.getDate() - 1);
+    const startVal = y.toISOString().split("T")[0];
+    const endVal = d.toISOString().split("T")[0];
+    dateRangeDisplay.innerHTML = ` <i class="fas fa-info-circle text-yellow-500 mr-1"></i>(Data 1 hari)`;
+    startDateInput.value = startVal;
+    endDateInput.value = endVal;
+    currentDateFilter.startDate = startVal;
+    currentDateFilter.endDate = endVal;
+    window.history.pushState({}, document.title, window.location.pathname);
+    await loadTop50Cards(startVal, endVal);
+    await loadTableData(1);
+  });
+  endDateInput.addEventListener("change", () => {
+    /* ... (validasi tanggal akhir) ... */
+  });
+};
+const calculateStartDateFromFilter = (filter) => {
+  const today = new Date();
+  const startDate = new Date(today);
+  switch (filter) {
+    case "kemarin":
+      startDate.setDate(today.getDate() - 1);
+      break;
+    case "1minggu":
+      startDate.setDate(today.getDate() - 7);
+      break;
+    case "1bulan":
+      startDate.setMonth(today.getMonth() - 1);
+      break;
+    case "3bulan":
+      startDate.setMonth(today.getMonth() - 3);
+      break;
+    case "6bulan":
+      startDate.setMonth(today.getMonth() - 6);
+      break;
+    case "9bulan":
+      startDate.setMonth(today.getMonth() - 9);
+      break;
+    case "12bulan":
+      startDate.setFullYear(today.getFullYear() - 1);
+      break;
+    default:
+      startDate.setDate(today.getDate() - 1);
+      break;
+  }
+  return startDate;
+};
+const loadTop50Cards = async (startDate, endDate) => {
+  const start = startDate || currentDateFilter.startDate;
+  const end = endDate || currentDateFilter.endDate;
+  showGlobalLoading();
+  try {
+    const topMemberResponse = await fetchTopMember(start, end);
+    if (topMemberResponse && topMemberResponse.success) {
+      updateTopMembersPerformance(topMemberResponse.data);
+      updateTopNonMembersPerformance(topMemberResponse.data_non || []);
+    } else {
+      updateTopMembersPerformance([]);
+      updateTopNonMembersPerformance([]);
+    }
     const excludeProduct = [
       { nama: "Kertas Kado" },
       { nama: "Tas Asoka" },
       { nama: "ASKP" },
     ];
-    const topMember = topSalesResponse.data;
-    // Initialize data
-    initializeData(topSalesResponse.data);
-
-    // Update table
-    updatePagination(renderTableData);
-
-    // Update summary cards
-    const summaryStats = getSummaryStats();
-    updateSummaryCards(summaryStats);
-
-    // Fetch top member data for summary and top 50
-    const topMemberResponse = await fetchTopMember();
-    if (
-      !topMemberResponse ||
-      !topMemberResponse.success ||
-      !Array.isArray(topMemberResponse.data) ||
-      topMemberResponse.data.length === 0
-    ) {
-      showEmptyState();
-      showToast(
-        topMemberResponse?.message || "Gagal mengambil data top member",
-        "error"
-      );
-      return;
-    }
-
-    cardSummary(topMember.slice(0, 4));
     infoData(excludeProduct);
-    // Update Top 5 Member section
-    updateTopMembersPerformance(topMemberResponse.data);
-    updateTopNonMembersPerformance(topMemberResponse.data_non);
-
-    // Update last update timestamp
-    updateLastUpdate();
-
-    hideLoading();
   } catch (error) {
-    console.error("Error loading data:", error);
+    console.error("Error loading top 50 card data:", error);
+    showToast("Gagal memuat data kartu Top 50", "error");
+  } finally {
+    hideGlobalLoading();
+  }
+};
+const loadTableData = async (page = 1) => {
+  showLoading();
+  showGlobalLoading();
+  currentPage = page;
+  const params = {
+    start_date: currentDateFilter.startDate,
+    end_date: currentDateFilter.endDate,
+    page: currentPage,
+    limit: itemsPerPage,
+    search: currentSearch,
+    sort_by: currentSort,
+  };
+  try {
+    const response = await fetchPaginatedMembers(params);
+    handleTableResponse(response);
+  } catch (error) {
+    console.error("Error loading table data:", error);
     showEmptyState();
-    showToast("Terjadi kesalahan saat memuat data", "error");
+    showToast("Terjadi kesalahan saat memuat data tabel", "error");
+  } finally {
+    hideGlobalLoading();
   }
 };
-
-const cardSummary = (topMember) => {
-  // Input validation
-  if (!topMember || !Array.isArray(topMember)) {
-    console.warn("Invalid input: topMember must be an array");
+const handleTableResponse = (response) => {
+  if (!response || response.success === false) {
+    showToast(response?.message || "Data tabel tidak ditemukan", "error");
+    showEmptyState();
+    renderPagination(null);
     return;
   }
-
-  const cardSummary = document.getElementById("card-summary");
-
-  if (!cardSummary) {
-    console.error('Container element with ID "card-summary" not found');
-    return;
-  }
-
-  // Handle empty data
-  if (topMember.length === 0) {
-    cardSummary.innerHTML = `
-      <div class="col-span-full flex flex-col items-center justify-center py-12 text-center">
-        <i class="fas fa-box-open text-4xl text-gray-300 mb-4"></i>
-        <p class="text-gray-500 text-lg">Tidak ada data barang terlaris</p>
-      </div>
-    `;
-    return;
-  }
-
-  // Generate responsive cards with enhanced Tailwind classes
-  let row = "";
-  topMember.forEach((item, index) => {
-    const isPositiveGrowth = item.growth_percent > 0;
-    const growthColorClass = isPositiveGrowth
-      ? "text-green-600"
-      : "text-red-600";
-    const growthBgClass = isPositiveGrowth ? "bg-green-50" : "bg-red-50";
-    const growthIcon = isPositiveGrowth ? "fa-arrow-up" : "fa-arrow-down";
-
-    row += `
-      <!-- Enhanced Responsive Top Barang Terlaris Card -->
-      <div class="group relative bg-white/80 backdrop-blur-sm rounded-xl p-4 sm:p-6 border-l-4 border-yellow-500 shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02]">
-        
-        <!-- Ranking Badge -->
-        <div class="absolute -top-2 -right-2 w-6 h-6 sm:w-8 sm:h-8 bg-yellow-500 rounded-full flex items-center justify-center shadow-lg">
-          <span class="text-white text-xs sm:text-sm font-bold">${
-            index + 1
-          }</span>
-        </div>
-        
-        <!-- Main Content Container -->
-        <div class="flex items-start justify-between gap-3 sm:gap-4">
-          
-          <!-- Left Content Section -->
-          <div class="flex-1 min-w-0 space-y-2 sm:space-y-3">
-            
-            <!-- Header Label -->
-            <div class="flex items-center gap-2 flex-wrap">
-              <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                Top Seller
-              </span>
-              <span class="text-xs text-gray-500 hidden sm:inline">Barang Terlaris</span>
-            </div>
-            
-            <!-- Product Name -->
-            <h3 class="text-sm sm:text-base lg:text-lg font-semibold text-gray-900 leading-tight line-clamp-2" 
-                title="${item.barang || "Unknown Item"}">
-              ${item.barang || "Unknown Item"}
-            </h3>
-            
-            <!-- Growth Indicator -->
-            <div class="flex items-center gap-2 flex-wrap">
-  <div class="flex items-center gap-1 px-2 py-1 rounded-full ${growthBgClass}">
-    <i class="fas ${growthIcon} text-xs ${growthColorClass}"></i>
-    <span class="text-xs sm:text-sm font-medium ${growthColorClass}">
-      ${Math.abs(item.growth_percent || 0).toFixed(1)}%
-    </span>
-  </div>
-  <span class="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">
-    Sebelumnya: <span class="font-semibold">${
-      item.qty_periode_sebelumnya
-    }</span>
-  </span>
-  <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">
-    Sekarang: <span class="font-semibold">${item.qty_periode_sekarang}</span>
-  </span>
-</div>
-            
-          </div>
-          
-          <!-- Right Icon Section -->
-          <div class="flex-shrink-0">
-            <div class="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-yellow-100 via-yellow-200 to-yellow-300 rounded-xl flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow duration-300">
-              <i class="fas fa-crown text-yellow-600 text-lg sm:text-xl lg:text-2xl group-hover:scale-110 transition-transform duration-300"></i>
-            </div>
-          </div>
-          
-        </div>
-        
-        <!-- Bottom Progress Bar (Optional Visual Enhancement) -->
-        <div class="mt-4 pt-3 border-t border-gray-100">
-          <div class="flex items-center justify-between text-xs text-gray-500 mb-1">
-            <span>Performa</span>
-            <span>${Math.abs(item.growth_percent || 0).toFixed(1)}%</span>
-          </div>
-          <div class="w-full bg-gray-200 rounded-full h-1.5">
-            <div class="h-1.5 rounded-full transition-all duration-500 ${
-              isPositiveGrowth ? "bg-green-500" : "bg-red-500"
-            }" 
-                 style="width: ${Math.min(
-                   Math.abs(item.growth_percent || 0),
-                   100
-                 )}%"></div>
-          </div>
-        </div>
-        
-      </div>
-    `;
-  });
-
-  // Insert generated HTML
-  cardSummary.innerHTML = row;
-
-  // Add staggered animation effect
-  requestAnimationFrame(() => {
-    const cards = cardSummary.querySelectorAll(".group");
-    cards.forEach((card, index) => {
-      card.style.animationDelay = `${index * 100}ms`;
-      card.classList.add("animate-fade-in-up");
-    });
-  });
+  renderTableData(response.data, response.pagination.offset);
+  renderPagination(response.pagination);
+  hideLoading();
 };
+const renderPagination = (pagination) => {
+  const paginationContainer = document.getElementById("paginationContainer");
+  const viewData = document.getElementById("viewData");
+  if (!paginationContainer || !viewData || !pagination) {
+    if (paginationContainer) paginationContainer.innerHTML = "";
+    if (viewData) viewData.innerHTML = "";
+    return;
+  }
+  const { current_page, total_pages, total_records } = pagination;
+  totalPages = total_pages;
+  const startRecord = (current_page - 1) * itemsPerPage + 1;
+  const endRecord = Math.min(startRecord + itemsPerPage - 1, total_records);
+  viewData.textContent = `Menampilkan ${startRecord} - ${endRecord} dari ${total_records} data`;
+  let paginationHTML = "";
+  if (current_page > 1) {
+    paginationHTML += `<button onclick="handlePaginationClick(${
+      current_page - 1
+    })" class="px-2 py-1 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-700">&laquo; Prev</button>`;
+  }
+  const maxPagesToShow = 5;
+  let startPage = Math.max(1, current_page - Math.floor(maxPagesToShow / 2));
+  let endPage = Math.min(total_pages, startPage + maxPagesToShow - 1);
+  if (endPage - startPage + 1 < maxPagesToShow) {
+    startPage = Math.max(1, endPage - maxPagesToShow + 1);
+  }
+  if (startPage > 1) {
+    paginationHTML += `<button onclick="handlePaginationClick(1)" class="px-2 py-1 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-700">1</button>`;
+    if (startPage > 2) {
+      paginationHTML += `<span class="px-2 py-1 text-gray-500">...</span>`;
+    }
+  }
+  for (let i = startPage; i <= endPage; i++) {
+    if (i === current_page) {
+      paginationHTML += `<button class="px-2 py-1 rounded-md bg-yellow-500 text-white font-bold">${i}</button>`;
+    } else {
+      paginationHTML += `<button onclick="handlePaginationClick(${i})" class="px-2 py-1 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-700">${i}</button>`;
+    }
+  }
+  if (endPage < total_pages) {
+    if (endPage < total_pages - 1) {
+      paginationHTML += `<span class="px-2 py-1 text-gray-500">...</span>`;
+    }
+    paginationHTML += `<button onclick="handlePaginationClick(${total_pages})" class="px-2 py-1 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-700">${total_pages}</button>`;
+  }
+  if (current_page < total_pages) {
+    paginationHTML += `<button onclick="handlePaginationClick(${
+      current_page + 1
+    })" class="px-2 py-1 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-700">Next &raquo;</button>`;
+  }
+  paginationContainer.innerHTML = paginationHTML;
+};
+const infoData = (excludedProducts) => {
+  const infoDataEl = document.getElementById("date-range-display");
+  if (infoDataEl) {
+    let dropdown = document.getElementById("exclude-dropdown");
+    if (!dropdown) {
+      dropdown = document.createElement("div");
+      dropdown.id = "exclude-dropdown";
+      dropdown.className =
+        "hidden absolute z-50 mt-2 right-0 bg-white border border-yellow-200 rounded-lg shadow-lg w-72 p-2 text-sm";
+      document.body.appendChild(dropdown);
+      infoDataEl.style.cursor = "pointer";
+      infoDataEl.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleDropdown();
+      });
+      document.addEventListener("click", (e) => {
+        if (
+          !dropdown.classList.contains("hidden") &&
+          !dropdown.contains(e.target) &&
+          e.target !== infoDataEl
+        ) {
+          dropdown.classList.add("hidden");
+        }
+      });
+    }
+    dropdown.innerHTML = `
+            <div class="font-bold text-yellow-700 mb-1 flex items-center gap-2"> <i class="fas fa-ban text-yellow-400"></i> Produk yang di-exclude
+            </div>
+            <ul class="max-h-48 overflow-y-auto space-y-1">
+                ${
+                  excludedProducts.length === 0
+                    ? '<li class="text-gray-400">Tidak ada produk exclude</li>'
+                    : excludedProducts
+                        .map(
+                          (p) =>
+                            `<li class="flex gap-2 items-center"> <span class="truncate" title="${p.nama}">${p.nama}</span></li>`
+                        )
+                        .join("")
+                }
+            </ul>`;
 
-// Export top sales data to Excel
+    function toggleDropdown() {
+      if (dropdown.classList.contains("hidden")) {
+        const rect = infoDataEl.getBoundingClientRect();
+        dropdown.style.top = `${window.scrollY + rect.bottom + 4}px`;
+        dropdown.style.left = `${
+          window.scrollX + rect.left - dropdown.offsetWidth / 2 + rect.width / 2
+        }px`;
+        dropdown.classList.remove("hidden");
+      } else {
+        dropdown.classList.add("hidden");
+      }
+    }
+  }
+};
 const exportTopSalesData = () => {
   try {
     const csvContent = exportToCSV(filterData(""));
@@ -385,36 +410,25 @@ const exportTopSalesData = () => {
     link.setAttribute("href", url);
     link.setAttribute(
       "download",
-      `top_sales_products_${new Date().toISOString().split("T")[0]}.csv`
+      `top_sales_member_${new Date().toISOString().split("T")[0]}.csv`
     );
     link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-
     showToast("Data berhasil diexport", "success");
   } catch (error) {
     console.error("Error exporting data:", error);
     showToast("Gagal mengexport data", "error");
   }
 };
-
-// Handle pagination click
-const handlePaginationClick = (page) => {
-  setCurrentPage(page);
-  updatePagination(renderTableData);
-};
-
-// Initialize when DOM is loaded
 document.addEventListener("DOMContentLoaded", () => {
   initTopSalesDisplay();
 });
-
-// Cleanup on page unload
 window.addEventListener("beforeunload", () => {
   destroyAllCharts();
 });
-
-// Make functions available globally for onclick handlers
 window.exportTopSalesData = exportTopSalesData;
-window.handlePaginationClick = handlePaginationClick;
+window.handlePaginationClick = (page) => {
+  loadTableData(page);
+};

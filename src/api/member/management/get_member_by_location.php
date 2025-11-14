@@ -71,22 +71,35 @@ try {
     if ($limit_param === 'default') {
         $limit_clause = " LIMIT 20 ";
     }
-    $valid_filters = ['3bulan' => 3, '6bulan' => 6, '9bulan' => 9, '12bulan' => 12];
+    $filter_map = [
+        'kemarin' => '1 day',
+        '1minggu' => '1 week',
+        '1bulan' => '1 month',
+        '3bulan' => '3 months',
+        '6bulan' => '6 months',
+        '9bulan' => '9 months',
+        '12bulan' => '12 months'
+    ];
+
     $params = [];
     $types = "";
     $where_clause = "";
     $cutoff_date = null;
+
     if ($filter !== 'semua') {
-        $months = $valid_filters[$filter] ?? 3;
-        $current_date_start_day = date('Y-m-d 00:00:00');
-        $cutoff_date = date('Y-m-d H:i:s', strtotime("-$months months", strtotime($current_date_start_day)));
+
+        $interval = $filter_map[$filter] ?? '3 months';
+        $cutoff_date = date('Y-m-d 00:00:00', strtotime("-$interval"));
+
         if ($status === 'active') {
             $where_clause = " WHERE Last_Trans >= ?";
+            $params[] = $cutoff_date;
+            $types .= "s";
         } else {
             $where_clause = " WHERE (Last_Trans < ? OR Last_Trans IS NULL)";
+            $params[] = $cutoff_date;
+            $types .= "s";
         }
-        $params[] = $cutoff_date;
-        $types .= "s";
     } else {
         if ($status === 'active') {
             $where_clause = " WHERE Last_Trans IS NOT NULL";
@@ -144,6 +157,7 @@ try {
             FROM customers
             $where_clause 
             GROUP BY location_name
+            HAVING location_name NOT IN ('-', 'Customer belum input')
         ) AS loc
         LEFT JOIN
         (

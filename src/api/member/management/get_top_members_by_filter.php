@@ -60,40 +60,43 @@ try {
     $filter = $_GET['filter'] ?? '3bulan';
     $status = $_GET['status'] ?? 'active';
     $limit = (int) ($_GET['limit'] ?? 10);
-    $valid_filters = ['3bulan' => 3, '6bulan' => 6, '9bulan' => 9, '12bulan' => 12];
-    $customer_subquery_sql = "SELECT kd_cust FROM customers";
-    $customer_params = [];
-    $customer_types = "";
-    $customer_where_clause = "";
-    if ($filter !== 'semua') {
-        $months = $valid_filters[$filter] ?? 3;
-        $current_date_start_day = date('Y-m-d 00:00:00');
-        $cutoff_date = date('Y-m-d H:i:s', strtotime("-$months months", strtotime($current_date_start_day)));
-        if ($status === 'active') {
-            $customer_where_clause = " WHERE Last_Trans >= ?";
-        } else {
-            $customer_where_clause = " WHERE (Last_Trans < ? OR Last_Trans IS NULL)";
-        }
-        $customer_params[] = $cutoff_date;
-        $customer_types .= "s";
+    $filter_map = [
+        'kemarin' => '1 day',
+        '1minggu' => '1 week',
+        '1bulan' => '1 month',
+        '3bulan' => '3 months',
+        '6bulan' => '6 months',
+        '9bulan' => '9 months',
+        '12bulan' => '12 months'
+    ];
+    $params = [];
+    $types = "";
+    $where_clauses = [];
+    if ($filter === 'kemarin') {
+        $yesterday = date('Y-m-d', strtotime("-1 day"));
+        $where_clauses[] = "DATE(t.tgl_trans) = ?";
+        $params[] = $yesterday;
+        $types .= "s";
+    } elseif ($filter !== 'semua') {
+        $interval_trans = $filter_map[$filter] ?? '3 months';
+        $cutoff_trans = date('Y-m-d 00:00:00', strtotime("-$interval_trans"));
+        $where_clauses[] = "t.tgl_trans >= ?";
+        $params[] = $cutoff_trans;
+        $types .= "s";
+    }
+    $cutoff_active = date('Y-m-d 00:00:00', strtotime("-3 months"));
+    if ($status === 'active') {
+        $where_clauses[] = "(c.Last_Trans >= ?)";
+        $params[] = $cutoff_active;
+        $types .= "s";
     } else {
-        if ($status === 'active') {
-            $customer_where_clause = " WHERE Last_Trans IS NOT NULL";
-        } else {
-            $customer_where_clause = " WHERE Last_Trans IS NULL";
-        }
+        $where_clauses[] = "(c.Last_Trans < ? OR c.Last_Trans IS NULL)";
+        $params[] = $cutoff_active;
+        $types .= "s";
     }
-    $customer_subquery_sql .= $customer_where_clause;
-    $trans_date_where_clause = "";
-    $trans_params = [];
-    $trans_types = "";
-    if ($filter !== 'semua' && isset($valid_filters[$filter])) {
-        $months_trans = $valid_filters[$filter];
-        $cutoff_date_trans = date('Y-m-d 00:00:00', strtotime("-$months_trans months"));
-        $trans_date_where_clause = " AND t.tgl_trans >= ? ";
-        $trans_params[] = $cutoff_date_trans;
-        $trans_types .= "s";
-    }
+    $where_clauses[] = "t.kd_cust IS NOT NULL";
+    $where_clauses[] = "t.kd_cust NOT IN ('', '898989', '#898989', '#999999999')";
+    $sql_where = implode(" AND ", $where_clauses);
     $sql = "
         SELECT
             c.nama_cust,
@@ -102,25 +105,22 @@ try {
         FROM
             trans_b t
         INNER JOIN
-            ($customer_subquery_sql) AS c_filtered ON t.kd_cust = c_filtered.kd_cust
-        INNER JOIN
             customers c ON t.kd_cust = c.kd_cust
         WHERE
-            1=1 $trans_date_where_clause
+            $sql_where
         GROUP BY
             c.nama_cust, t.kd_cust
         ORDER BY
             total_spent DESC
         LIMIT ?
     ";
-    $all_params = array_merge($customer_params, $trans_params);
-    $all_params[] = $limit;
-    $all_types = $customer_types . $trans_types . "i";
+    $params[] = $limit;
+    $types .= "i";
     $stmt = $conn->prepare($sql);
     if ($stmt === false) {
         throw new Exception("Database prepare failed (data): " . $conn->error);
     }
-    $stmt->bind_param($all_types, ...$all_params);
+    $stmt->bind_param($types, ...$params);
     if (!$stmt->execute()) {
         throw new Exception("Gagal eksekusi query (data): " . $stmt->error);
     }
@@ -140,7 +140,7 @@ try {
         'data' => $data
     ]);
 } catch (Throwable $t) {
-    $logger->critical("🔥 FATAL ERROR: " . $t->getMessage(), [
+    $logger->critical("FATAL ERROR: " . $t->getMessage(), [
         'file' => $t->getFile(),
         'line' => $t->getLine(),
         'params' => $_GET

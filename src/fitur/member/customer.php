@@ -4,16 +4,13 @@ $status = htmlspecialchars($_GET['status'] ?? 'unknown');
 $kd_cust = htmlspecialchars($_GET['kd_cust'] ?? 'Tidak diketahui');
 $nama_cust = htmlspecialchars($_GET['nama_cust'] ?? 'Tidak diketahui');
 
-$filter_display = 'Semua Waktu';
-if ($filter === '6bulan') {
-    $filter_display = '6 Bulan Terakhir';
-} elseif ($filter === '3bulan') {
-    $filter_display = '3 Bulan Terakhir';
-} elseif ($filter === '9bulan') {
-    $filter_display = '9 Bulan Terakhir';
-} elseif ($filter === '12bulan') {
-    $filter_display = '1 Tahun Terakhir';
-}
+$filter_display = ($filter === 'kemarin') ? 'Kemarin' :
+    (($filter === '1minggu') ? '1 Minggu Terakhir' :
+        (($filter === '1bulan') ? '1 Bulan Terakhir' :
+            (($filter === '3bulan') ? '3 Bulan Terakhir' :
+                (($filter === '6bulan') ? '6 Bulan Terakhir' :
+                    (($filter === '9bulan') ? '9 Bulan Terakhir' :
+                        (($filter === '12bulan') ? '1 Tahun Terakhir' : 'Semua Waktu'))))));
 
 $status_display = ($status === 'active') ? 'Aktif' : (($status === 'inactive') ? 'Inaktif' : 'Tidak Diketahui');
 ?>

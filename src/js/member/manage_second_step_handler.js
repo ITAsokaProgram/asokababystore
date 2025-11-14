@@ -9,7 +9,6 @@ let topMemberProductChartInstance = null;
 let currentLocationLevel = "city";
 let selectedCity = null;
 let selectedDistrict = null;
-
 const UI_ELEMENTS = {
   age: {
     loadingId: "loading-spinner",
@@ -32,14 +31,12 @@ const UI_ELEMENTS = {
     errorId: "top-product-chart-error",
   },
 };
-
 const UI_ELEMENTS_AGE_TABLE = {
   loadingId: "age-table-loading-spinner",
   containerId: "age-table-container",
   errorId: "age-table-error",
   bodyId: "age-table-body",
 };
-
 const UI_ELEMENTS_LOCATION_TABLE = {
   loadingId: "location-table-loading-spinner",
   containerId: "location-table-container",
@@ -47,21 +44,18 @@ const UI_ELEMENTS_LOCATION_TABLE = {
   bodyId: "location-table-body",
   headerId: "location-table-header",
 };
-
 const UI_ELEMENTS_TOP_MEMBER_TABLE = {
   loadingId: "top-member-table-loading-spinner",
   containerId: "top-member-table-container",
   errorId: "top-member-table-error",
   bodyId: "top-member-table-body",
 };
-
 const UI_ELEMENTS_TOP_PRODUCT_TABLE = {
   loadingId: "top-product-table-loading-spinner",
   containerId: "top-product-table-container",
   errorId: "top-product-table-error",
   bodyId: "top-product-table-body",
 };
-
 function setChartUIState(
   { loadingId, containerId, errorId },
   state,
@@ -79,7 +73,6 @@ function setChartUIState(
     }
   }
 }
-
 function setTableUIState(state, message = "") {
   const loadingEl = document.getElementById(UI_ELEMENTS_AGE_TABLE.loadingId);
   const containerEl = document.getElementById(
@@ -95,7 +88,6 @@ function setTableUIState(state, message = "") {
     }
   }
 }
-
 function setLocationTableUIState(state, message = "") {
   const loadingEl = document.getElementById(
     UI_ELEMENTS_LOCATION_TABLE.loadingId
@@ -113,12 +105,10 @@ function setLocationTableUIState(state, message = "") {
     }
   }
 }
-
 function setGeneralTableUIState(uiElements, state, message = "") {
   const loadingEl = document.getElementById(uiElements.loadingId);
   const containerEl = document.getElementById(uiElements.containerId);
   const errorEl = document.getElementById(uiElements.errorId);
-
   if (loadingEl) loadingEl.classList.toggle("hidden", state !== "loading");
   if (containerEl) containerEl.classList.toggle("hidden", state !== "success");
   if (errorEl) {
@@ -128,7 +118,6 @@ function setGeneralTableUIState(uiElements, state, message = "") {
     }
   }
 }
-
 function renderAgeTable(data) {
   const tableBody = document.getElementById(UI_ELEMENTS_AGE_TABLE.bodyId);
   if (!tableBody) return;
@@ -145,17 +134,16 @@ function renderAgeTable(data) {
       : "-";
     const count = item.count ? numberFormatter.format(item.count) : "0";
     const row = `
-                <tr class="hover:bg-gray-50 cursor-pointer age-table-row" data-age-group="${item.age_group}">
-                    <td class="px-4 py-3 text-sm text-gray-700">${item.age_group}</td>
-                    <td class="px-4 py-3 text-sm font-medium text-gray-900">${count}</td>
-                    <td class="px-4 py-3 text-sm text-gray-700">${topProduct}</td>
-                    <td class="px-4 py-3 text-sm font-medium text-gray-900">${topQty}</td>
-                </tr>
+              <tr class="hover:bg-gray-50 cursor-pointer age-table-row" data-age-group="${item.age_group}">
+                  <td class="px-4 py-3 text-sm text-gray-700">${item.age_group}</td>
+                  <td class="px-4 py-3 text-sm font-medium text-gray-900">${count}</td>
+                  <td class="px-4 py-3 text-sm text-gray-700">${topProduct}</td>
+                  <td class="px-4 py-3 text-sm font-medium text-gray-900">${topQty}</td>
+              </tr>
             `;
     tableBody.innerHTML += row;
   });
 }
-
 function renderLocationTable(data) {
   const tableBody = document.getElementById(UI_ELEMENTS_LOCATION_TABLE.bodyId);
   const tableHeader = document.getElementById(
@@ -173,7 +161,7 @@ function renderLocationTable(data) {
     tableBody.innerHTML = `<tr><td colspan="4" class="text-center p-4 text-gray-500">Tidak ada data.</td></tr>`;
     return;
   }
-  const isClickable = currentLocationLevel !== "subdistrict";
+  const isClickable = true;
   data.forEach((item) => {
     const topProduct = item.top_product_descp || "-";
     const topQty = item.top_product_qty
@@ -188,17 +176,16 @@ function renderLocationTable(data) {
       ? `data-location-name="${locationName}"`
       : "";
     const row = `
-                <tr class="${rowClasses}" ${dataAttribute}>
-                    <td class="px-4 py-3 text-sm text-gray-700">${locationName}</td>
-                    <td class="px-4 py-3 text-sm font-medium text-gray-900">${count}</td>
-                    <td class="px-4 py-3 text-sm text-gray-700">${topProduct}</td>
-                    <td class="px-4 py-3 text-sm font-medium text-gray-900">${topQty}</td>
-                </tr>
-            `;
+            <tr class="${rowClasses}" ${dataAttribute}>
+                <td class="px-4 py-3 text-sm text-gray-700">${locationName}</td>
+                <td class="px-4 py-3 text-sm font-medium text-gray-900">${count}</td>
+                <td class="px-4 py-3 text-sm text-gray-700">${topProduct}</td>
+                <td class="px-4 py-3 text-sm font-medium text-gray-900">${topQty}</td>
+            </tr>
+        `;
     tableBody.innerHTML += row;
   });
 }
-
 function renderTopMemberTable(data) {
   const tableBody = document.getElementById(
     UI_ELEMENTS_TOP_MEMBER_TABLE.bodyId
@@ -210,19 +197,16 @@ function renderTopMemberTable(data) {
     currency: "IDR",
     minimumFractionDigits: 0,
   });
-
   if (!data || data.length === 0) {
     tableBody.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-gray-500">Tidak ada data.</td></tr>`;
     return;
   }
-
   data.forEach((item) => {
     if (
       !item.nama_cust ||
       item.nama_cust.trim().toLowerCase() === "member dummy"
     )
       return;
-
     const totalSpent = item.total_spent
       ? currencyFormatter.format(item.total_spent)
       : "Rp 0";
@@ -238,7 +222,6 @@ function renderTopMemberTable(data) {
     tableBody.innerHTML += row;
   });
 }
-
 function renderTopProductTable(data) {
   const tableBody = document.getElementById(
     UI_ELEMENTS_TOP_PRODUCT_TABLE.bodyId
@@ -246,24 +229,24 @@ function renderTopProductTable(data) {
   if (!tableBody) return;
   tableBody.innerHTML = "";
   const numberFormatter = new Intl.NumberFormat("id-ID");
-
   if (!data || data.length === 0) {
     tableBody.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-gray-500">Tidak ada data.</td></tr>`;
     return;
   }
-
   data.forEach((item) => {
     if (
       !item.nama_cust ||
       item.nama_cust.trim().toLowerCase() === "member dummy"
     )
       return;
-
     const qty = item.total_item_qty
       ? numberFormatter.format(item.total_item_qty)
       : "0";
     const row = `
-        <tr class="hover:bg-gray-50 cursor-pointer top-product-table-row" data-product-name="${item.descp}">
+        <tr class="hover:bg-gray-50 cursor-pointer top-product-table-row" 
+            data-product-name="${item.descp}"
+            data-kd-cust="${item.kd_cust}" 
+            data-nama-cust="${item.nama_cust}">
             <td class="px-4 py-3 text-sm text-gray-700 font-medium">${item.descp}</td>
             <td class="px-4 py-3 text-sm text-gray-500">${item.nama_cust}</td>
             <td class="px-4 py-3 text-sm font-bold text-blue-600">${qty}</td>
@@ -272,7 +255,6 @@ function renderTopProductTable(data) {
     tableBody.innerHTML += row;
   });
 }
-
 function updateLocationHeader() {
   const header = document.getElementById("location-chart-header");
   const backBtn = document.getElementById("location-back-btn");
@@ -288,7 +270,6 @@ function updateLocationHeader() {
     }
   }
 }
-
 async function loadAgeData() {
   setChartUIState(UI_ELEMENTS.age, "loading");
   setTableUIState("loading");
@@ -319,7 +300,6 @@ async function loadAgeData() {
     setTableUIState("error", errorMsg);
   }
 }
-
 async function loadLocationData() {
   setChartUIState(UI_ELEMENTS.location, "loading");
   setLocationTableUIState("loading");
@@ -376,7 +356,6 @@ async function loadLocationData() {
     setLocationTableUIState("error", errorMsg);
   }
 }
-
 async function loadTopMemberData() {
   setChartUIState(UI_ELEMENTS.topMember, "loading");
   setGeneralTableUIState(UI_ELEMENTS_TOP_MEMBER_TABLE, "loading");
@@ -394,11 +373,8 @@ async function loadTopMemberData() {
         state
       );
       setChartUIState(UI_ELEMENTS.topMember, "success");
-
-      // Render Table
       renderTopMemberTable(result.data);
       setGeneralTableUIState(UI_ELEMENTS_TOP_MEMBER_TABLE, "success");
-
       if (topMemberChartInstance) topMemberChartInstance.resize();
     } else if (result.success === true && result.data.length === 0) {
       const msg = "Tidak ada data top member untuk filter ini.";
@@ -414,7 +390,6 @@ async function loadTopMemberData() {
     setGeneralTableUIState(UI_ELEMENTS_TOP_MEMBER_TABLE, "error", msg);
   }
 }
-
 async function loadTopProductData() {
   setChartUIState(UI_ELEMENTS.topProduct, "loading");
   setGeneralTableUIState(UI_ELEMENTS_TOP_PRODUCT_TABLE, "loading");
@@ -432,11 +407,8 @@ async function loadTopProductData() {
         state
       );
       setChartUIState(UI_ELEMENTS.topProduct, "success");
-
-      // Render Table
       renderTopProductTable(result.data);
       setGeneralTableUIState(UI_ELEMENTS_TOP_PRODUCT_TABLE, "success");
-
       if (topMemberProductChartInstance) topMemberProductChartInstance.resize();
     } else if (result.success === true && result.data.length === 0) {
       const msg = "Tidak ada data pembelian produk untuk filter ini.";
@@ -452,7 +424,6 @@ async function loadTopProductData() {
     setGeneralTableUIState(UI_ELEMENTS_TOP_PRODUCT_TABLE, "error", msg);
   }
 }
-
 document.addEventListener("DOMContentLoaded", () => {
   const params = new URLSearchParams(window.location.search);
   currentFilter = params.get("filter");
@@ -478,26 +449,155 @@ document.addEventListener("DOMContentLoaded", () => {
     UI_ELEMENTS_LOCATION_TABLE.bodyId
   );
   if (locationTableBody) {
-    locationTableBody.addEventListener("click", (event) => {
+    locationTableBody.addEventListener("click", async (event) => {
       const row = event.target.closest("tr.location-table-row");
       if (!row) return;
       const locationName = row.dataset.locationName;
-      if (locationName) {
-        if (currentLocationLevel === "city") {
-          currentLocationLevel = "district";
-          selectedCity = locationName;
-          selectedDistrict = null;
-          loadLocationData();
-        } else if (currentLocationLevel === "district") {
-          currentLocationLevel = "subdistrict";
-          selectedDistrict = locationName;
-          loadLocationData();
+      if (!locationName) return;
+      if (currentLocationLevel === "city") {
+        const clickedCity = locationName;
+        Swal.fire({
+          title: "Mengecek data kecamatan...",
+          text: "Mohon tunggu...",
+          icon: "info",
+          showConfirmButton: false,
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          },
+        });
+        const peekResult = await api.getMemberByLocation(
+          currentFilter,
+          currentStatus,
+          "district",
+          clickedCity,
+          null,
+          "default"
+        );
+        const hasNextLevelData =
+          peekResult.success && peekResult.data.length > 0;
+        Swal.close();
+        if (hasNextLevelData) {
+          Swal.fire({
+            title: `Anda memilih: ${clickedCity}`,
+            text: "Apa yang ingin Anda tampilkan selanjutnya?",
+            icon: "question",
+            showConfirmButton: true,
+            confirmButtonText: "Lihat Laporan Produk Teratas",
+            showDenyButton: true,
+            denyButtonText: "Tampilkan Data per Kecamatan",
+            showCancelButton: true,
+            cancelButtonText: "Batal",
+          }).then((result) => {
+            if (result.isConfirmed) {
+              const targetUrl = `lokasi.php?filter=${encodeURIComponent(
+                currentFilter
+              )}&status=${encodeURIComponent(
+                currentStatus
+              )}&city=${encodeURIComponent(clickedCity)}`;
+              window.location.href = targetUrl;
+            } else if (result.isDenied) {
+              currentLocationLevel = "district";
+              selectedCity = clickedCity;
+              selectedDistrict = null;
+              loadLocationData();
+            }
+          });
+        } else {
+          const targetUrl = `lokasi.php?filter=${encodeURIComponent(
+            currentFilter
+          )}&status=${encodeURIComponent(
+            currentStatus
+          )}&city=${encodeURIComponent(clickedCity)}`;
+          window.location.href = targetUrl;
         }
+      } else if (currentLocationLevel === "district") {
+        const clickedDistrict = locationName;
+        Swal.fire({
+          title: "Mengecek data kelurahan...",
+          text: "Mohon tunggu...",
+          icon: "info",
+          showConfirmButton: false,
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          },
+        });
+        const peekResult = await api.getMemberByLocation(
+          currentFilter,
+          currentStatus,
+          "subdistrict",
+          selectedCity,
+          clickedDistrict,
+          "default"
+        );
+        const hasNextLevelData =
+          peekResult.success && peekResult.data.length > 0;
+        Swal.close();
+        if (hasNextLevelData) {
+          Swal.fire({
+            title: `Anda memilih: ${clickedDistrict}`,
+            text: "Apa yang ingin Anda tampilkan selanjutnya?",
+            icon: "question",
+            showConfirmButton: true,
+            confirmButtonText: "Lihat Laporan Produk Teratas",
+            showDenyButton: true,
+            denyButtonText: "Tampilkan Data per Kelurahan",
+            showCancelButton: true,
+            cancelButtonText: "Batal",
+          }).then((result) => {
+            if (result.isConfirmed) {
+              const targetUrl = `lokasi.php?filter=${encodeURIComponent(
+                currentFilter
+              )}&status=${encodeURIComponent(
+                currentStatus
+              )}&city=${encodeURIComponent(
+                selectedCity
+              )}&district=${encodeURIComponent(clickedDistrict)}`;
+              window.location.href = targetUrl;
+            } else if (result.isDenied) {
+              currentLocationLevel = "subdistrict";
+              selectedDistrict = clickedDistrict;
+              loadLocationData();
+            }
+          });
+        } else {
+          const targetUrl = `lokasi.php?filter=${encodeURIComponent(
+            currentFilter
+          )}&status=${encodeURIComponent(
+            currentStatus
+          )}&city=${encodeURIComponent(
+            selectedCity
+          )}&district=${encodeURIComponent(clickedDistrict)}`;
+          window.location.href = targetUrl;
+        }
+      } else if (currentLocationLevel === "subdistrict") {
+        const clickedSubDistrict = locationName;
+        Swal.fire({
+          title: `Anda memilih: ${clickedSubDistrict}`,
+          text: "Ini adalah level terendah. Buka laporan produk teratas untuk lokasi ini?",
+          icon: "question",
+          showConfirmButton: true,
+          confirmButtonText: "Ya, Buka Laporan",
+          showCancelButton: true,
+          cancelButtonText: "Batal",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            const targetUrl = `lokasi.php?filter=${encodeURIComponent(
+              currentFilter
+            )}&status=${encodeURIComponent(
+              currentStatus
+            )}&city=${encodeURIComponent(
+              selectedCity
+            )}&district=${encodeURIComponent(
+              selectedDistrict
+            )}&subdistrict=${encodeURIComponent(clickedSubDistrict)}`;
+            window.location.href = targetUrl;
+          }
+        });
       }
     });
   }
-
-  // Event Listener for Top Member Table
   const topMemberTableBody = document.getElementById(
     UI_ELEMENTS_TOP_MEMBER_TABLE.bodyId
   );
@@ -520,21 +620,28 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
-
-  // Event Listener for Top Product Table
   const topProductTableBody = document.getElementById(
     UI_ELEMENTS_TOP_PRODUCT_TABLE.bodyId
   );
   if (topProductTableBody) {
     topProductTableBody.addEventListener("click", (event) => {
       const row = event.target.closest("tr.top-product-table-row");
-      if (row) {
-        // Redirect to top_sales as requested
-        window.location.href = "top_sales";
+      if (row && currentFilter && currentStatus) {
+        const kdCust = row.dataset.kdCust;
+        const namaCust = row.dataset.namaCust;
+        if (kdCust) {
+          const targetUrl = `customer.php?filter=${encodeURIComponent(
+            currentFilter
+          )}&status=${encodeURIComponent(
+            currentStatus
+          )}&kd_cust=${encodeURIComponent(
+            kdCust
+          )}&nama_cust=${encodeURIComponent(namaCust)}`;
+          window.location.href = targetUrl;
+        }
       }
     });
   }
-
   if (currentFilter && currentStatus) {
     loadAgeData();
     loadLocationData();

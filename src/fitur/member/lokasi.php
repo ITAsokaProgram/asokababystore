@@ -2,8 +2,16 @@
 $filter = $_GET['filter'] ?? 'semua';
 $status = $_GET['status'] ?? 'unknown';
 $city = $_GET['city'] ?? 'Tidak diketahui';
-$district = $_GET['district'] ?? 'Tidak diketahui';
-$subdistrict = $_GET['subdistrict'] ?? 'Tidak diketahui';
+$district = $_GET['district'] ?? '-';
+$subdistrict = $_GET['subdistrict'] ?? '-';
+
+$filterDisplay = ($filter === 'kemarin') ? 'Kemarin' :
+    (($filter === '1minggu') ? '1 Minggu Terakhir' :
+        (($filter === '1bulan') ? '1 Bulan Terakhir' :
+            (($filter === '3bulan') ? '3 Bulan Terakhir' :
+                (($filter === '6bulan') ? '6 Bulan Terakhir' :
+                    (($filter === '9bulan') ? '9 Bulan Terakhir' :
+                        (($filter === '12bulan') ? '1 Tahun Terakhir' : 'Semua Waktu'))))));
 
 $status_display = ($status === 'active') ? 'Aktif' : (($status === 'inactive') ? 'Inaktif' : 'Tidak Diketahui');
 ?>
@@ -26,6 +34,9 @@ $status_display = ($status === 'active') ? 'Aktif' : (($status === 'inactive') ?
 
     <link rel="stylesheet" href="../../style/default-font.css">
     <link rel="stylesheet" href="../../output2.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
 </head>
 
 <body class="bg-gradient-to-br from-slate-50 to-blue-50 text-gray-900">
@@ -48,7 +59,7 @@ $status_display = ($status === 'active') ? 'Aktif' : (($status === 'inactive') ?
                         <li>Kecamatan: <strong><?php echo htmlspecialchars($district); ?></strong></li>
                         <li>Kelurahan: <strong><?php echo htmlspecialchars($subdistrict); ?></strong></li>
                         <li>Status Member: <strong><?php echo htmlspecialchars($status_display); ?></strong></li>
-                        <li>Filter Waktu: <strong><?php echo htmlspecialchars($filter); ?></strong></li>
+                        <li>Filter Waktu: <strong><?php echo htmlspecialchars($filterDisplay); ?></strong></li>
                     </ul>
                 </div>
                 <a href="javascript:history.back()" class="btn-back">
@@ -97,6 +108,9 @@ $status_display = ($status === 'active') ? 'Aktif' : (($status === 'inactive') ?
     <script src="../../js/ui/navbar_toogle.js" type="module"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="../../js/member/lokasi_handler.js" type="module"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 </body>
 
 </html>

@@ -20,14 +20,11 @@ $token = $menuHandler->getToken();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Top Sales by Member - Asoka Baby Store</title>
 
-    <!-- font awesome cdn link  -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
 
-    <!-- Penjelasan: Link ke CSS eksternal dengan cache busting query string -->
     <link rel="stylesheet" href="/css/header.css">
     <link rel="stylesheet" href="/css/sidebar.css">
     <link rel="stylesheet" href="/css/animation-fade-in.css">
-    <!-- Setting logo pada tab di website Anda / Favicon -->
     <link rel="icon" type="image/png" href="/images/logo1.png">
     <link
         href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
@@ -51,7 +48,8 @@ $token = $menuHandler->getToken();
             border-radius: 1.25rem;
             box-shadow: 0 8px 32px 0 rgba(250, 204, 21, 0.18);
             border: 1.5px solid #fde68a;
-            padding: 2rem;
+            padding: 1rem;
+            /* Diubah dari 2rem */
         }
 
         .card-glass {
@@ -108,6 +106,44 @@ $token = $menuHandler->getToken();
             }
         }
 
+        /* CSS UNTUK GLOBAL LOADER BARU */
+        #global-loader {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        #global-loader .spinner {
+            width: 56px;
+            height: 56px;
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #eab308;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        #global-loader.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+
         @media (max-width: 640px) {
             .group {
                 margin-bottom: 1rem;
@@ -121,81 +157,77 @@ $token = $menuHandler->getToken();
     <?php include '../../component/navigation_report.php'; ?>
     <?php include '../../component/sidebar_report.php'; ?>
 
-    <main id="main-content" class="flex-1 p-8 transition-all duration-300 ml-64 mt-16 bg-gray-100">
+    <main id="main-content" class="flex-1 p-4 transition-all duration-300 ml-64 mt-16 bg-gray-100">
         <div class="glass-container animate-fade-in-up">
 
-            <!-- Header Section -->
-            <div class="mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="mb-4 flex flex-col md:flex-row items-center justify-between gap-4">
                 <div>
                     <h1 class="text-3xl font-bold text-yellow-700 flex items-center gap-3">
                         <i class="fas fa-trophy text-yellow-500"></i> Top Sales by Member
                     </h1>
-                    <p class="text-gray-600 mt-2">Analisis performa penjualan terbaik berdasarkan member</p>
-                </div>
-                <div class="flex items-center gap-3">
-                    <button id="refresh-btn"
-                        class="bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-500 hover:to-yellow-700 text-white px-6 py-3 rounded-xl font-bold shadow-md transition-all duration-200 flex items-center gap-2">
-                        <i class="fas fa-sync-alt"></i> Refresh Data
-                    </button>
-                    <div class="text-right">
-                        <p class="text-sm text-gray-500">Update Terakhir</p>
-                        <p class="font-semibold text-yellow-700" id="last-update">-</p>
-                    </div>
+                    <p class="text-gray-600 mt-1">Analisis performa penjualan terbaik berdasarkan member</p>
                 </div>
             </div>
 
-            <!-- Summary Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8" id="card-summary">
-                <!-- Isi Di Js -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4" id="card-summary">
             </div>
 
-            <!-- Chart Section -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                <!-- Top 5 Members Performance -->
-                <div class="card-glass p-6">
-                    <h3 class="text-xl font-bold text-yellow-700 flex items-center gap-2 mb-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+                <div class="card-glass p-3">
+                    <h3 class="text-xl font-bold text-yellow-700 flex items-center gap-2 mb-3">
                         <i class="fas fa-medal text-yellow-500"></i> Top 50 Member
                     </h3>
-                    <div class="space-y-4 overflow-x-hidden" id="top-members-performance">
-                        <!-- Data will be populated by JavaScript -->
+                    <div class="space-y-2 overflow-x-hidden" id="top-members-performance">
                     </div>
                 </div>
-                <div class="card-glass p-6">
-                    <div class="flex items-center justify-between mb-6">
+                <div class="card-glass p-3">
+                    <div class="flex items-center justify-between mb-3">
                         <h3 class="text-xl font-bold text-yellow-700 flex items-center gap-2">
                             <i class="fas fa-chart-bar text-yellow-500"></i> Top 50 Non Member
                         </h3>
                     </div>
-                    <div class="space-y-4 overflow-x-hidden" id="top-non-member-performance">
-                        <!-- Data will be populated by JavaScript -->
+                    <div class="space-y-2 overflow-x-hidden" id="top-non-member-performance">
                     </div>
                 </div>
             </div>
 
-            <!-- Top Sales Members Table -->
             <div class="card-glass overflow-hidden">
-                <div class="px-8 py-6 border-b border-yellow-100">
-                    <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="px-4 py-3 border-b border-yellow-100">
+                    <div class="flex flex-col md:flex-row items-center justify-between gap-2 flex-wrap">
                         <h3 class="text-xl font-bold text-yellow-700 flex items-center gap-2">
                             <i class="fas fa-list text-yellow-500"></i> Daftar Top Sales Produk
-                            <span class="text-xs text-yellow-400 ml-2" id="info-data">
-                                <i class="fas fa-info-circle text-yellow-400"></i> Data diambil dari kemarin vs lusa
+                            <span class="text-xs text-yellow-600 ml-2" id="date-range-display">
+                                <i class="fas fa-info-circle text-yellow-500"></i> Data kemarin
                             </span>
                         </h3>
-                        <div class="flex flex-wrap items-center gap-3">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <div class="flex items-center gap-2">
+                                <input type="date" id="start-date"
+                                    class="border border-yellow-100 rounded-xl px-3 py-1 focus:ring-2 focus:ring-yellow-500 focus:border-yellow-400 shadow-sm text-sm">
+                                <span class="text-gray-500">to</span>
+                                <input type="date" id="end-date"
+                                    class="border border-yellow-100 rounded-xl px-3 py-1 focus:ring-2 focus:ring-yellow-500 focus:border-yellow-400 shadow-sm text-sm">
+                            </div>
+                            <button id="apply-date-filter"
+                                class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-xl font-bold shadow-md transition-all duration-200 flex items-center gap-2 text-sm">
+                                <i class="fas fa-filter"></i> Terapkan
+                            </button>
+                            <button id="reset-date-filter"
+                                class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-xl font-bold shadow-md transition-all duration-200 flex items-center gap-2 text-sm">
+                                <i class="fas fa-undo"></i> Reset
+                            </button>
                             <div class="relative">
-                                <input type="text" id="search-input" placeholder="Cari produk..."
-                                    class="pl-10 pr-4 py-2 border border-yellow-100 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-400 shadow-sm">
-                                <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                                <input type="text" id="search-input" placeholder="Cari customer..."
+                                    class="pl-8 pr-3 py-1 border border-yellow-100 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-400 shadow-sm">
                             </div>
                             <select id="sort-select"
-                                class="border border-yellow-100 rounded-xl px-4 py-2 focus:ring-2 focus:ring-yellow-500 focus:border-yellow-400 shadow-sm">
-                                <option value="terjual">Sort by Terjual</option>
-                                <option value="persen">Sort by Persentase</option>
-                                <option value="plu">Sort by PLU</option>
+                                class="border border-yellow-100 rounded-xl px-3 py-1 focus:ring-2 focus:ring-yellow-500 focus:border-yellow-400 shadow-sm">
+                                <option value="belanja">Sort by Total Belanja</option>
+                                <option value="qty">Sort by Quantity</option>
+                                <option value="nama">Sort by Nama</option>
                             </select>
                             <button onclick="exportTopSalesData()"
-                                class="bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-500 hover:to-yellow-700 text-white px-4 py-2 rounded-xl font-bold shadow-md transition-all duration-200 flex items-center gap-2">
+                                class="bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-500 hover:to-yellow-700 text-white px-3 py-1 rounded-xl font-bold shadow-md transition-all duration-200 flex items-center gap-2">
                                 <i class="fas fa-file-excel"></i> Export Excel
                             </button>
                         </div>
@@ -205,57 +237,51 @@ $token = $menuHandler->getToken();
                     <table class="min-w-full divide-y divide-yellow-100">
                         <thead class="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white">
                             <tr>
-                                <th class="px-6 py-3 text-center text-xs font-bold uppercase tracking-wider">No</th>
-                                <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">PLU</th>
-                                <th class="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Nama Barang
+                                <th class="px-3 py-2 text-center text-xs font-bold uppercase tracking-wider">No</th>
+                                <th class="px-3 py-2 text-left text-xs font-bold uppercase tracking-wider">Nama</th>
+                                <th class="px-3 py-2 text-left text-xs font-bold uppercase tracking-wider">Kode Customer
                                 </th>
-                                <th class="px-6 py-3 text-center text-xs font-bold uppercase tracking-wider">Terjual
-                                </th>
-                                <th class="px-6 py-3 text-center text-xs font-bold uppercase tracking-wider">Persen</th>
+                                <th class="px-3 py-2 text-center text-xs font-bold uppercase tracking-wider">Total
+                                    Quantity</th>
+                                <th class="px-3 py-2 text-right text-xs font-bold uppercase tracking-wider">Total
+                                    Belanja</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-yellow-50" id="top-sales-table-body">
-                            <!-- Data will be populated by JavaScript -->
                         </tbody>
                     </table>
                 </div>
-                <!-- Loading State -->
-                <div id="loading-state" class="hidden p-8 text-center glass-container animate-fade-in-up">
-                    <div class="inline-flex items-center gap-3">
+                <div id="loading-state" class="hidden p-4 text-center glass-container animate-fade-in-up">
+                    <div class="inline-flex items-center gap-2">
                         <i class="fas fa-spinner fa-spin text-2xl text-yellow-500"></i>
                         <span class="text-yellow-700 font-bold">Memuat data...</span>
                     </div>
                 </div>
-                <!-- Empty State -->
-                <div id="empty-state" class="hidden p-8 text-center glass-container animate-fade-in-up">
-                    <i class="fas fa-trophy text-4xl text-yellow-200 mb-4"></i>
-                    <h3 class="text-lg font-bold text-yellow-700 mb-2">Belum ada data top sales</h3>
-                    <p class="text-yellow-400">Data top sales produk akan muncul di sini</p>
+                <div id="empty-state" class="hidden p-4 text-center glass-container animate-fade-in-up">
+                    <i class="fas fa-trophy text-4xl text-yellow-200 mb-2"></i>
+                    <h3 class="text-lg font-bold text-yellow-700 mb-1">Belum ada data</h3>
+                    <p class="text-yellow-400">Data top sales akan muncul di sini</p>
                 </div>
             </div>
-
-            <!-- Pagination -->
-            <div class="mt-4 flex justify-between items-center text-sm">
+            <div class="mt-2 flex justify-between items-center text-sm">
                 <p class="text-gray-600" id="viewData"></p>
                 <div class="flex flex-wrap gap-1 max-w-full overflow-x-auto" id="paginationContainer">
                 </div>
             </div>
     </main>
 
-    <!-- Enhanced Modal -->
     <div id="detail-modal"
         class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden animate-fade-in">
         <div
             class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl mx-4 overflow-hidden animate-slide-up max-h-[90vh]">
-            <!-- Header -->
-            <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 relative">
+            <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 relative">
                 <button id="close-modal"
-                    class="absolute top-4 right-4 text-white hover:text-gray-300 text-3xl font-bold transition-colors duration-200 transform hover:scale-110">
+                    class="absolute top-2 right-2 text-white hover:text-gray-300 text-3xl font-bold transition-colors duration-200 transform hover:scale-110">
                     &times;
                 </button>
-                <div class="flex items-center space-x-3">
+                <div class="flex items-center space-x-2">
                     <div id="modal-icon"
-                        class="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                        class="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
                         <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
@@ -267,27 +293,28 @@ $token = $menuHandler->getToken();
                 </div>
             </div>
 
-            <!-- Content -->
-            <div class="p-6 max-h-96 overflow-y-auto">
-                <div id="modal-content" class="space-y-4"></div>
+            <div class="p-4 max-h-96 overflow-y-auto">
+                <div id="modal-content" class="space-y-2"></div>
             </div>
 
-            <!-- Footer -->
-            <div class="bg-gray-50 px-6 py-4 border-t">
+            <div class="bg-gray-50 px-4 py-2 border-t">
                 <div class="flex justify-between items-center">
                     <div id="modal-timestamp" class="text-sm text-gray-500"></div>
                 </div>
             </div>
         </div>
     </div>
-    <!-- custom js file link -->
+
+    <div id="global-loader" class="hidden">
+        <div class="spinner"></div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
-    <!-- Custom Scripts -->
     <script type="module" src="/src/js/member_internal/product/display_top_sales.js"></script>
 
     <script>
@@ -354,7 +381,6 @@ $token = $menuHandler->getToken();
                 }
             });
         });
-
     </script>
 
 </body>

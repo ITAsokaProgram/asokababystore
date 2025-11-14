@@ -8,10 +8,10 @@ $redisKey = "top_member_by_sales";
 $cached = $redis->get($redisKey);
 
 
-// Hitung TTL ke jam 08:30 besok pagi (Asia/Jakarta)
 $now = new DateTime('now', new DateTimeZone('Asia/Jakarta'));
 $next830am = new DateTime('tomorrow 08:59', new DateTimeZone('Asia/Jakarta'));
 $ttl = $next830am->getTimestamp() - $now->getTimestamp();
+
 
 $sql = "SELECT 
   t.kd_cust,
@@ -19,7 +19,8 @@ $sql = "SELECT
   c.nama_cust,
   ks.nm_alias AS cabang,
   ks.kd_store AS kd_store,
-  SUM(t.qty * t.hrg_promo) AS total_penjualan
+  SUM(t.qty) AS total_qty,
+  SUM(t.qty * t.harga) AS total_penjualan
 FROM trans_b t
 LEFT JOIN customers c ON t.kd_cust = c.kd_cust
 LEFT JOIN kode_store ks ON ks.kd_store = t.kd_store
@@ -34,7 +35,8 @@ LIMIT 50";
 $sqlNon = "SELECT 
   t.no_bon AS no_trans,
   ks.nm_alias AS cabang,
-  SUM(t.qty * t.hrg_promo) AS total_penjualan
+  SUM(t.qty) AS total_qty,
+  SUM(t.qty * t.harga) AS total_penjualan
 FROM trans_b t
 LEFT JOIN customers c ON t.kd_cust = c.kd_cust
 LEFT JOIN kode_store ks ON ks.kd_store = t.kd_store
@@ -47,12 +49,12 @@ LIMIT 50";
 
 $stmt = $conn->prepare($sql);
 if (!$stmt) {
-    http_response_code(500);
-    echo json_encode([
-        "success" => false,
-        "message" => "Statement error: " . $conn->error
-    ]);
-    exit;
+  http_response_code(500);
+  echo json_encode([
+    "success" => false,
+    "message" => "Statement error: " . $conn->error
+  ]);
+  exit;
 }
 $stmt->execute();
 $result = $stmt->get_result();
@@ -60,36 +62,39 @@ $top_member_by_sales = $result->fetch_all(MYSQLI_ASSOC);
 
 $stmtNon = $conn->prepare($sqlNon);
 if (!$stmtNon) {
-    http_response_code(500);
-    echo json_encode([
-        "success" => false,
-        "message" => "Statement error: " . $conn->error
-    ]);
-    exit;
+  http_response_code(500);
+  echo json_encode([
+    "success" => false,
+    "message" => "Statement error: " . $conn->error
+  ]);
+  exit;
 }
 $stmtNon->execute();
 $resultNon = $stmtNon->get_result();
 $top_member_by_sales_non = $resultNon->fetch_all(MYSQLI_ASSOC);
 
 if (count($top_member_by_sales) === 0 && count($top_member_by_sales_non) === 0) {
-    http_response_code(404);
-    echo json_encode([
-        "success" => false,
-        "message" => "Data belum tersedia"
-    ]);
-    $stmt->close();
-    $stmtNon->close();
-    $conn->close();
-    exit;
+  http_response_code(404);
+  echo json_encode([
+    "success" => false,
+    "message" => "Data belum tersedia"
+  ]);
+  $stmt->close();
+  $stmtNon->close();
+  $conn->close();
+  exit;
 }
+
 $response = [
-    "success" => true,
-    "message" => "Data berhasil diambil",
-    "total" => count($top_member_by_sales),
-    "data" => $top_member_by_sales,
-    "data_non" => $top_member_by_sales_non
+  "success" => true,
+  "message" => "Data berhasil diambil",
+  "total" => count($top_member_by_sales),
+  "data" => $top_member_by_sales,
+  "data_non" => $top_member_by_sales_non
 ];
+
 $redis->setex($redisKey, $ttl, json_encode($response));
 echo date('Y-m-d H:i:s') . " - Redis updated: $redisKey\n";
+
 $stmt->close();
 $stmtNon->close();

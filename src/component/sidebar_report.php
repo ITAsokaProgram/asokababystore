@@ -725,7 +725,7 @@
                                     class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
                                     <i
                                         class="fa-solid fa-file-pen mr-2 text-base text-cyan-400 group-hover:text-cyan-600 group-hover:scale-110 transition-all duration-200"></i>
-                                    Izin
+                                    Koreksi
                                 </span>
                             </a>
                         </li>

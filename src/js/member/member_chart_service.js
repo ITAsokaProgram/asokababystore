@@ -38,7 +38,7 @@ export function renderAgeChart(chartInstance, elementId, data, currentFilter) {
     chartInstance.dispose();
   }
   const newChartInstance = echarts.init(chartElement);
-  const filteredData = data.filter((d) => d.age_group && d.age_group !== "-");
+  const filteredData = data;
   const chartData = filteredData.map((d) => ({
     value: d.count,
     name: d.age_group,
@@ -50,6 +50,7 @@ export function renderAgeChart(chartInstance, elementId, data, currentFilter) {
     color: CHART_COLORS,
     tooltip: {
       trigger: "item",
+      appendToBody: true,
       formatter: (params) => {
         const percentage =
           total > 0 ? ((params.value / total) * 100).toFixed(1) : 0;
@@ -66,9 +67,11 @@ export function renderAgeChart(chartInstance, elementId, data, currentFilter) {
     },
     series: [
       {
+        minAngle: 15,
         type: "pie",
         radius: "50%",
         data: chartData,
+        fontSize: 16,
         label: {
           formatter: (params) => {
             const percentage =
@@ -107,12 +110,7 @@ export function renderLocationChart(
     chartInstance.dispose();
   }
   const newChartInstance = echarts.init(chartElement);
-  const filteredData = data.filter(
-    (d) =>
-      d.location_name &&
-      d.location_name !== "-" &&
-      d.location_name !== "Customer belum input"
-  );
+  const filteredData = data;
   filteredData.sort((a, b) => b.count - a.count);
   const chartData = filteredData.map((d) => ({
     value: d.count,
@@ -125,6 +123,7 @@ export function renderLocationChart(
     color: CHART_COLORS,
     tooltip: {
       trigger: "item",
+      appendToBody: true,
       formatter: (params) => {
         const percentage =
           total > 0 ? ((params.value / total) * 100).toFixed(1) : 0;
@@ -141,9 +140,12 @@ export function renderLocationChart(
     },
     series: [
       {
+        minAngle: 15,
         type: "pie",
         radius: "50%",
         data: chartData,
+        fontSize: 16,
+
         label: {
           formatter: (params) => {
             const percentage =
@@ -191,9 +193,7 @@ export function renderTopMemberChart(chartInstance, elementId, data, state) {
     chartInstance.dispose();
   }
   const newChartInstance = echarts.init(chartElement);
-  const filteredData = data.filter(
-    (d) => d.nama_cust && d.nama_cust.trim().toLowerCase() !== "member dummy"
-  );
+  const filteredData = data;
   const chartData = filteredData.map((d) => ({
     value: d.total_spent,
     name: `${d.nama_cust} - (${d.kd_cust})`,
@@ -207,6 +207,7 @@ export function renderTopMemberChart(chartInstance, elementId, data, state) {
     color: CHART_COLORS,
     tooltip: {
       trigger: "item",
+      appendToBody: true,
       formatter: (params) => {
         const percentage =
           total > 0 ? ((params.value / total) * 100).toFixed(1) : 0;
@@ -220,9 +221,12 @@ export function renderTopMemberChart(chartInstance, elementId, data, state) {
     },
     series: [
       {
+        minAngle: 15,
         type: "pie",
         radius: "50%",
         data: chartData,
+        fontSize: 16,
+
         label: {
           formatter: (params) => {
             const percentage =
@@ -259,9 +263,7 @@ export function renderTopProductChart(chartInstance, elementId, data, state) {
     chartInstance.dispose();
   }
   const newChartInstance = echarts.init(chartElement);
-  const filteredData = data.filter(
-    (d) => d.nama_cust && d.nama_cust.trim().toLowerCase() !== "member dummy"
-  );
+  const filteredData = data;
   const chartData = filteredData.map((d) => ({
     value: d.total_item_qty,
     name: `${d.nama_cust} (${d.kd_cust}) - ${d.descp}`,
@@ -278,6 +280,7 @@ export function renderTopProductChart(chartInstance, elementId, data, state) {
     color: CHART_COLORS,
     tooltip: {
       trigger: "item",
+      appendToBody: true,
       formatter: (params) => {
         const percentage =
           total > 0 ? ((params.value / total) * 100).toFixed(1) : 0;
@@ -291,6 +294,7 @@ export function renderTopProductChart(chartInstance, elementId, data, state) {
     },
     series: [
       {
+        minAngle: 15,
         type: "pie",
         radius: "50%",
         data: chartData,
@@ -348,6 +352,7 @@ export function renderMemberChart(elementId, data, filter) {
     animationEasing: "cubicOut",
     tooltip: {
       trigger: "item",
+      appendToBody: true,
       formatter: (params) => {
         const percentage = parseFloat(params.data.percentage).toFixed(2);
         return `${params.data.name}<br/>Jumlah: ${params.value}<br/>Persentase: ${percentage}%`;
@@ -355,9 +360,11 @@ export function renderMemberChart(elementId, data, filter) {
     },
     series: [
       {
+        minAngle: 15,
         type: "pie",
+        radius: "85%",
         label: {
-          fontSize: 12,
+          fontSize: 16,
           formatter: (params) => {
             const percentage = parseFloat(params.data.percentage).toFixed(2);
             return `${params.data.name}\n(${percentage}%)`;

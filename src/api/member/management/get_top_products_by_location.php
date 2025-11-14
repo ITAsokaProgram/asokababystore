@@ -64,21 +64,48 @@ try {
     $page = (int) ($_GET['page'] ?? 1);
     $offset = ($page - 1) * $limit;
     $filter = $_GET['filter'] ?? 'semua';
-    $city = $_GET['city'] ?? '';
-    $district = $_GET['district'] ?? '';
-    $subdistrict = $_GET['subdistrict'] ?? '';
-    if (empty($city) || empty($district) || empty($subdistrict)) {
-        throw new Exception("Parameter 'city', 'district', dan 'subdistrict' tidak boleh kosong.");
+    $city = $_GET['city'] ?? null;
+    $district = $_GET['district'] ?? null;
+    $subdistrict = $_GET['subdistrict'] ?? null;
+    if (empty($city)) {
+        throw new Exception("Parameter 'city' tidak boleh kosong.");
     }
-    $params_count = [$city, $district, $subdistrict];
-    $types_count = "sss";
-    $params_data = [$city, $district, $subdistrict];
-    $types_data = "sss";
+    $params_count = [];
+    $types_count = "";
+    $params_data = [];
+    $types_data = "";
+    $location_where_clause = " WHERE IF(c.Kota IS NULL OR c.Kota = '', 'Customer belum input', c.Kota) = ? ";
+    $params_count[] = $city;
+    $types_count .= "s";
+    $params_data[] = $city;
+    $types_data .= "s";
+    if (!empty($district)) {
+        $location_where_clause .= " AND IF(c.Kec IS NULL OR c.Kec = '', 'Customer belum input', c.Kec) = ? ";
+        $params_count[] = $district;
+        $types_count .= "s";
+        $params_data[] = $district;
+        $types_data .= "s";
+    }
+    if (!empty($subdistrict)) {
+        $location_where_clause .= " AND IF(c.Kel IS NULL OR c.Kel = '', 'Customer belum input', c.Kel) = ? ";
+        $params_count[] = $subdistrict;
+        $types_count .= "s";
+        $params_data[] = $subdistrict;
+        $types_data .= "s";
+    }
     $date_where_clause = "";
-    $valid_filters = ['3bulan' => 3, '6bulan' => 6, '9bulan' => 9, '12bulan' => 12];
-    if ($filter !== 'semua' && isset($valid_filters[$filter])) {
-        $months = $valid_filters[$filter];
-        $cutoff_date = date('Y-m-d 00:00:00', strtotime("-$months months"));
+    $filter_map = [
+        'kemarin' => '1 day',
+        '1minggu' => '1 week',
+        '1bulan' => '1 month',
+        '3bulan' => '3 months',
+        '6bulan' => '6 months',
+        '9bulan' => '9 months',
+        '12bulan' => '12 months'
+    ];
+    if ($filter !== 'semua') {
+        $interval = $filter_map[$filter] ?? '3 months';
+        $cutoff_date = date('Y-m-d 00:00:00', strtotime("-$interval"));
         $date_where_clause = " AND t.tgl_trans >= ? ";
         $params_count[] = $cutoff_date;
         $types_count .= "s";
@@ -88,9 +115,7 @@ try {
     $customer_subquery = "
         SELECT c.kd_cust
         FROM customers c
-        WHERE IF(c.Kota IS NULL OR c.Kota = '', 'Customer belum input', c.Kota) = ? 
-          AND IF(c.Kec IS NULL OR c.Kec = '', 'Customer belum input', c.Kec) = ? 
-          AND IF(c.Kel IS NULL OR c.Kel = '', 'Customer belum input', c.Kel) = ?
+        $location_where_clause
     ";
     $count_sql = "
         SELECT COUNT(DISTINCT t.plu) AS total_records
@@ -105,7 +130,9 @@ try {
     if ($stmt_count === false) {
         throw new Exception("Database prepare failed (count): " . $conn->error);
     }
-    $stmt_count->bind_param($types_count, ...$params_count);
+    if (!empty($params_count)) {
+        $stmt_count->bind_param($types_count, ...$params_count);
+    }
     if (!$stmt_count->execute()) {
         throw new Exception("Gagal eksekusi query (count): " . $stmt_count->error);
     }

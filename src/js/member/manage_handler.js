@@ -1,5 +1,5 @@
 import * as api from "./member_api_service.js";
-import { renderMemberChart } from "./member_chart_service.js"; // <-- MASALAH UTAMA DI SINI
+import { renderMemberChart } from "./member_chart_service.js";
 
 function updatePlaceholder(id, value, isError = false) {
   const el = document.getElementById(id);

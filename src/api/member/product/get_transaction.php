@@ -36,7 +36,7 @@ if ($kd_cust) {
     t.nama_kasir AS kasir,
     ks.Nm_Alias AS cabang,
     (
-      SELECT SUM(qty * hrg_promo) 
+      SELECT SUM(qty * harga) 
       FROM trans_b t2 
       WHERE t2.no_bon = t.no_bon
     ) AS nominal,
@@ -99,9 +99,9 @@ ORDER BY t.tgl_trans DESC";
     t.descp AS nama_item,
     t.qty AS jumlah_item,
     t.harga AS harga_satuan,
-    t.hrg_promo AS harga_promo,
+    t.harga AS harga_promo,
     t.nama_kasir AS kasir,
-    SUM(t.hrg_promo*t.qty) AS nominal,
+    SUM(t.harga*t.qty) AS nominal,
     ks.Nm_Alias AS cabang
 FROM trans_b t 
 LEFT JOIN kode_store ks ON t.kd_store = ks.kd_store
