@@ -104,9 +104,18 @@ export const getTopProductsByLocation = (
 ) => {
   const params = new URLSearchParams();
   params.append("filter", filter);
-  params.append("city", city);
-  params.append("district", district);
-  params.append("subdistrict", subdistrict);
+  // --- PERUBAHAN DISINI ---
+  // Hanya tambahkan parameter jika nilainya ada (tidak null atau undefined)
+  if (city) {
+    params.append("city", city);
+  }
+  if (district) {
+    params.append("district", district);
+  }
+  if (subdistrict) {
+    params.append("subdistrict", subdistrict);
+  }
+  // --- AKHIR PERUBAHAN ---
   params.append("page", page);
   params.append("limit", limit);
   const url = `${API_MANAGEMENT_URL}/get_top_products_by_location.php?${params.toString()}`;

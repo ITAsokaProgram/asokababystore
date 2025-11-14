@@ -24,6 +24,8 @@ const UI_ELEMENTS_LOCATION_TABLE = {
   headerId: "location-table-header",
 };
 
+// --- FUNGSI showTopProductsModal DIHAPUS ---
+
 function setChartUIState(
   { loadingId, containerId, errorId },
   state,
@@ -132,14 +134,13 @@ async function loadLocationData() {
   updateLocationHeader();
 
   try {
-    // --- PERUBAHAN UTAMA: Mengirim 'all' sebagai parameter limit ---
     const result = await api.getMemberByLocation(
       currentFilter,
       currentStatus,
       currentLocationLevel,
       selectedCity,
       selectedDistrict,
-      "all" // Meminta semua data, tanpa LIMIT 20
+      "all" // Meminta semua data
     );
 
     if (result.success === true && result.data && result.data.length > 0) {
@@ -197,28 +198,153 @@ document.addEventListener("DOMContentLoaded", () => {
     UI_ELEMENTS_LOCATION_TABLE.bodyId
   );
   if (locationTableBody) {
-    locationTableBody.addEventListener("click", (event) => {
+    locationTableBody.addEventListener("click", async (event) => {
       const row = event.target.closest("tr.location-table-row");
       if (!row) return;
 
       const locationName = row.dataset.locationName;
-      if (locationName) {
-        if (currentLocationLevel === "city") {
-          currentLocationLevel = "district";
-          selectedCity = locationName;
-          selectedDistrict = null;
-          loadLocationData();
-        } else if (currentLocationLevel === "district") {
-          currentLocationLevel = "subdistrict";
-          selectedDistrict = locationName;
-          loadLocationData();
+      if (!locationName) return;
+
+      if (currentLocationLevel === "city") {
+        const clickedCity = locationName;
+        Swal.fire({
+          title: "Mengecek data kecamatan...",
+          text: "Mohon tunggu...",
+          icon: "info",
+          showConfirmButton: false,
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          },
+        });
+
+        // "Intip" data menggunakan limit "all" agar konsisten
+        const peekResult = await api.getMemberByLocation(
+          currentFilter,
+          currentStatus,
+          "district", // Cek level selanjutnya
+          clickedCity,
+          null,
+          "all" // Konsisten dengan loadLocationData()
+        );
+
+        const hasNextLevelData =
+          peekResult.success && peekResult.data.length > 0;
+        Swal.close();
+
+        // --- PERUBAHAN LOGIKA DI SINI ---
+        if (hasNextLevelData) {
+          Swal.fire({
+            title: `Anda memilih: ${clickedCity}`,
+            text: "Apa yang ingin Anda tampilkan selanjutnya?",
+            icon: "question",
+            showConfirmButton: true,
+            confirmButtonText: "Lihat Laporan Produk Teratas", // Ganti teks
+            showDenyButton: true,
+            denyButtonText: "Tampilkan Data per Kecamatan",
+            showCancelButton: true,
+            cancelButtonText: "Batal",
+          }).then((result) => {
+            if (result.isConfirmed) {
+              // Aksi 1: Redirect ke halaman laporan
+              const targetUrl = `lokasi.php?filter=${encodeURIComponent(
+                currentFilter
+              )}&status=${encodeURIComponent(
+                currentStatus
+              )}&city=${encodeURIComponent(clickedCity)}`;
+              window.location.href = targetUrl;
+            } else if (result.isDenied) {
+              // Aksi 2: Drill down
+              currentLocationLevel = "district";
+              selectedCity = clickedCity;
+              selectedDistrict = null;
+              loadLocationData();
+            }
+          });
+        } else {
+          // Aksi 1: Langsung redirect jika tidak ada data sub-level
+          const targetUrl = `lokasi.php?filter=${encodeURIComponent(
+            currentFilter
+          )}&status=${encodeURIComponent(
+            currentStatus
+          )}&city=${encodeURIComponent(clickedCity)}`;
+          window.location.href = targetUrl;
         }
+        // --- AKHIR PERUBAHAN ---
+      } else if (currentLocationLevel === "district") {
+        const clickedDistrict = locationName;
+        Swal.fire({
+          title: "Mengecek data kelurahan...",
+          text: "Mohon tunggu...",
+          icon: "info",
+          showConfirmButton: false,
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          },
+        });
+
+        // "Intip" data menggunakan limit "all" agar konsisten
+        const peekResult = await api.getMemberByLocation(
+          currentFilter,
+          currentStatus,
+          "subdistrict", // Cek level selanjutnya
+          selectedCity,
+          clickedDistrict,
+          "all" // Konsisten dengan loadLocationData()
+        );
+
+        const hasNextLevelData =
+          peekResult.success && peekResult.data.length > 0;
+        Swal.close();
+
+        // --- PERUBAHAN LOGIKA DI SINI ---
+        if (hasNextLevelData) {
+          Swal.fire({
+            title: `Anda memilih: ${clickedDistrict}`,
+            text: "Apa yang ingin Anda tampilkan selanjutnya?",
+            icon: "question",
+            showConfirmButton: true,
+            confirmButtonText: "Lihat Laporan Produk Teratas", // Ganti teks
+            showDenyButton: true,
+            denyButtonText: "Tampilkan Data per Kelurahan",
+            showCancelButton: true,
+            cancelButtonText: "Batal",
+          }).then((result) => {
+            if (result.isConfirmed) {
+              // Aksi 1: Redirect ke halaman laporan
+              const targetUrl = `lokasi.php?filter=${encodeURIComponent(
+                currentFilter
+              )}&status=${encodeURIComponent(
+                currentStatus
+              )}&city=${encodeURIComponent(
+                selectedCity
+              )}&district=${encodeURIComponent(clickedDistrict)}`;
+              window.location.href = targetUrl;
+            } else if (result.isDenied) {
+              // Aksi 2: Drill down
+              currentLocationLevel = "subdistrict";
+              selectedDistrict = clickedDistrict;
+              loadLocationData();
+            }
+          });
+        } else {
+          // Aksi 1: Langsung redirect jika tidak ada data sub-level
+          const targetUrl = `lokasi.php?filter=${encodeURIComponent(
+            currentFilter
+          )}&status=${encodeURIComponent(
+            currentStatus
+          )}&city=${encodeURIComponent(
+            selectedCity
+          )}&district=${encodeURIComponent(clickedDistrict)}`;
+          window.location.href = targetUrl;
+        }
+        // --- AKHIR PERUBAHAN ---
       }
     });
   }
 
   if (currentFilter && currentStatus) {
-    // Hanya memuat data lokasi
     loadLocationData();
 
     const backBtn = document.getElementById("location-back-btn");

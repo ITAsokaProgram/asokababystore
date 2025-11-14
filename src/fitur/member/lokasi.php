@@ -2,8 +2,8 @@
 $filter = $_GET['filter'] ?? 'semua';
 $status = $_GET['status'] ?? 'unknown';
 $city = $_GET['city'] ?? 'Tidak diketahui';
-$district = $_GET['district'] ?? 'Tidak diketahui';
-$subdistrict = $_GET['subdistrict'] ?? 'Tidak diketahui';
+$district = $_GET['district'] ?? '-';
+$subdistrict = $_GET['subdistrict'] ?? '-';
 
 $filterDisplay = ($filter === 'kemarin') ? 'Kemarin' :
     (($filter === '1minggu') ? '1 Minggu Terakhir' :
@@ -34,6 +34,9 @@ $status_display = ($status === 'active') ? 'Aktif' : (($status === 'inactive') ?
 
     <link rel="stylesheet" href="../../style/default-font.css">
     <link rel="stylesheet" href="../../output2.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
 </head>
 
 <body class="bg-gradient-to-br from-slate-50 to-blue-50 text-gray-900">
@@ -105,6 +108,9 @@ $status_display = ($status === 'active') ? 'Aktif' : (($status === 'inactive') ?
     <script src="../../js/ui/navbar_toogle.js" type="module"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="../../js/member/lokasi_handler.js" type="module"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 </body>
 
 </html>
