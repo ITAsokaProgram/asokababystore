@@ -50,6 +50,7 @@ export function renderAgeChart(chartInstance, elementId, data, currentFilter) {
     color: CHART_COLORS,
     tooltip: {
       trigger: "item",
+      appendToBody: true,
       formatter: (params) => {
         const percentage =
           total > 0 ? ((params.value / total) * 100).toFixed(1) : 0;
@@ -70,6 +71,7 @@ export function renderAgeChart(chartInstance, elementId, data, currentFilter) {
         type: "pie",
         radius: "50%",
         data: chartData,
+        fontSize: 16,
         label: {
           formatter: (params) => {
             const percentage =
@@ -121,6 +123,7 @@ export function renderLocationChart(
     color: CHART_COLORS,
     tooltip: {
       trigger: "item",
+      appendToBody: true,
       formatter: (params) => {
         const percentage =
           total > 0 ? ((params.value / total) * 100).toFixed(1) : 0;
@@ -141,6 +144,8 @@ export function renderLocationChart(
         type: "pie",
         radius: "50%",
         data: chartData,
+        fontSize: 16,
+
         label: {
           formatter: (params) => {
             const percentage =
@@ -202,6 +207,7 @@ export function renderTopMemberChart(chartInstance, elementId, data, state) {
     color: CHART_COLORS,
     tooltip: {
       trigger: "item",
+      appendToBody: true,
       formatter: (params) => {
         const percentage =
           total > 0 ? ((params.value / total) * 100).toFixed(1) : 0;
@@ -219,6 +225,8 @@ export function renderTopMemberChart(chartInstance, elementId, data, state) {
         type: "pie",
         radius: "50%",
         data: chartData,
+        fontSize: 16,
+
         label: {
           formatter: (params) => {
             const percentage =
@@ -272,6 +280,7 @@ export function renderTopProductChart(chartInstance, elementId, data, state) {
     color: CHART_COLORS,
     tooltip: {
       trigger: "item",
+      appendToBody: true,
       formatter: (params) => {
         const percentage =
           total > 0 ? ((params.value / total) * 100).toFixed(1) : 0;
@@ -343,6 +352,7 @@ export function renderMemberChart(elementId, data, filter) {
     animationEasing: "cubicOut",
     tooltip: {
       trigger: "item",
+      appendToBody: true,
       formatter: (params) => {
         const percentage = parseFloat(params.data.percentage).toFixed(2);
         return `${params.data.name}<br/>Jumlah: ${params.value}<br/>Persentase: ${percentage}%`;
