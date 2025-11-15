@@ -66,14 +66,10 @@ try {
     $offset = ($page - 1) * $limit;
     $filter = $_GET['filter'] ?? 'semua';
     $age_group_param = $_GET['age_group'] ?? '';
+    $status = $_GET['status'] ?? null;
     if (empty($age_group_param)) {
         throw new Exception("Parameter 'age_group' tidak boleh kosong.");
     }
-    $params_count = [$age_group_param];
-    $types_count = "s";
-    $params_data = [$age_group_param];
-    $types_data = "s";
-    $date_where_clause = "";
     $filter_map = [
         'kemarin' => '1 day',
         '1minggu' => '1 week',
@@ -83,8 +79,48 @@ try {
         '9bulan' => '9 months',
         '12bulan' => '12 months'
     ];
+    $interval = $filter_map[$filter] ?? '3 months';
+    if ($status === 'inactive') {
+        $cutoff_active_ts = strtotime("-3 months");
+        $cutoff_filter_ts = strtotime("-$interval");
+        if ($filter !== 'semua' && $cutoff_filter_ts >= $cutoff_active_ts) {
+            echo json_encode([
+                'success' => true,
+                'data' => [],
+                'pagination' => [
+                    'total_records' => 0,
+                    'current_page' => $page,
+                    'limit' => $limit,
+                    'total_pages' => 0
+                ]
+            ]);
+            $conn->close();
+            exit();
+        }
+    }
+    $params_count = [$age_group_param];
+    $types_count = "s";
+    $params_data = [$age_group_param];
+    $types_data = "s";
+    $status_where_clause = "";
+    if ($status) {
+        $cutoff_active = date('Y-m-d 00:00:00', strtotime("-3 months"));
+        if ($status === 'active') {
+            $status_where_clause = " AND (c.Last_Trans >= ?)";
+            $params_count[] = $cutoff_active;
+            $types_count .= "s";
+            $params_data[] = $cutoff_active;
+            $types_data .= "s";
+        } elseif ($status === 'inactive') {
+            $status_where_clause = " AND (c.Last_Trans < ? OR c.Last_Trans IS NULL)";
+            $params_count[] = $cutoff_active;
+            $types_count .= "s";
+            $params_data[] = $cutoff_active;
+            $types_data .= "s";
+        }
+    }
+    $date_where_clause = "";
     if ($filter !== 'semua') {
-        $interval = $filter_map[$filter] ?? '3 months';
         $cutoff_date = date('Y-m-d 00:00:00', strtotime("-$interval"));
         $date_where_clause = " AND t.tgl_trans >= ? ";
         $params_count[] = $cutoff_date;
@@ -110,6 +146,7 @@ try {
         SELECT c.kd_cust
         FROM customers c
         WHERE ($age_case_sql) = ?
+        $status_where_clause
     ";
     $count_sql = "
         SELECT COUNT(DISTINCT t.plu) AS total_records
@@ -184,11 +221,7 @@ try {
         ]
     ]);
 } catch (Throwable $t) {
-    $logger->critical("🔥 FATAL ERROR: " . $t->getMessage(), [
-        'file' => $t->getFile(),
-        'line' => $t->getLine(),
-        'params' => $_GET
-    ]);
+    $logger->critical("🔥 FATAL ERROR: " . $t->getMessage());
     if (isset($conn) && $conn instanceof mysqli) {
         $conn->close();
     }

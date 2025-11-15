@@ -114,7 +114,6 @@ try {
 
 
     $exclude_clause = "
-        AND UPPER(t.descp) NOT LIKE '%KERTAS KADO%'
         AND UPPER(t.descp) NOT LIKE '%MEMBER BY PHONE%'
         AND UPPER(t.descp) NOT LIKE '%TAS ASOKA BIRU%'
     ";
@@ -198,11 +197,7 @@ try {
     ]);
 
 } catch (Throwable $t) {
-    $logger->critical("🔥 FATAL ERROR: " . $t->getMessage(), [
-        'file' => $t->getFile(),
-        'line' => $t->getLine(),
-        'params' => $_GET
-    ]);
+    $logger->critical("🔥 FATAL ERROR: " . $t->getMessage());
 
     if (isset($conn) && $conn instanceof mysqli) {
         $conn->close();

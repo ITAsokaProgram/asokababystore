@@ -80,40 +80,39 @@ try {
         '9bulan' => '9 months',
         '12bulan' => '12 months'
     ];
-
     $params = [];
     $types = "";
     $where_clause = "";
-    $cutoff_date = null;
-
-    if ($filter !== 'semua') {
-
-        $interval = $filter_map[$filter] ?? '3 months';
-        $cutoff_date = date('Y-m-d 00:00:00', strtotime("-$interval"));
-
-        if ($status === 'active') {
-            $where_clause = " WHERE Last_Trans >= ?";
-            $params[] = $cutoff_date;
-            $types .= "s";
-        } else {
-            $where_clause = " WHERE (Last_Trans < ? OR Last_Trans IS NULL)";
-            $params[] = $cutoff_date;
-            $types .= "s";
-        }
+    $cutoff_date_status = date('Y-m-d 00:00:00', strtotime("-3 months"));
+    if ($status === 'active') {
+        $where_clause = " WHERE Last_Trans >= ?";
+        $params[] = $cutoff_date_status;
+        $types .= "s";
     } else {
-        if ($status === 'active') {
-            $where_clause = " WHERE Last_Trans IS NOT NULL";
-        } else {
-            $where_clause = " WHERE Last_Trans IS NULL";
-        }
+        $where_clause = " WHERE (Last_Trans < ? OR Last_Trans IS NULL)";
+        $params[] = $cutoff_date_status;
+        $types .= "s";
+    }
+    $cutoff_date_filter = null;
+    if ($filter !== 'semua') {
+        $interval = $filter_map[$filter] ?? '3 months';
+        $cutoff_date_filter = date('Y-m-d 00:00:00', strtotime("-$interval"));
     }
     $date_where_clause = "";
     $params_for_products = [];
     $types_for_products = "";
-    if ($filter !== 'semua' && $cutoff_date) {
+    if ($filter !== 'semua' && $cutoff_date_filter) {
         $date_where_clause = " AND t.tgl_trans >= ?";
-        $params_for_products[] = $cutoff_date;
+        $params_for_products[] = $cutoff_date_filter;
         $types_for_products .= "s";
+    }
+    $force_null_products = false;
+    if ($status === 'inactive' && $filter !== 'semua') {
+        $status_timestamp = strtotime($cutoff_date_status);
+        $filter_timestamp = strtotime($cutoff_date_filter);
+        if ($filter_timestamp > $status_timestamp) {
+            $force_null_products = true;
+        }
     }
     $location_field = "";
     $city_field_logic = "IF(Kota IS NULL OR Kota = '', 'Customer belum input', Kota)";
@@ -139,73 +138,94 @@ try {
             break;
     }
     $exclude_clause = "
-        AND UPPER(t.descp) NOT LIKE '%KERTAS KADO%'
         AND UPPER(t.descp) NOT LIKE '%MEMBER BY PHONE%'
         AND UPPER(t.descp) NOT LIKE '%TAS ASOKA BIRU%'
     ";
-    $sql = "
-        SELECT
-            loc.location_name,
-            loc.count,
-            tp.top_product_descp,
-            tp.top_product_qty
-        FROM
-        (
-            SELECT 
+    $sql = "";
+    $stmt = null;
+    $all_params = [];
+    $all_types = "";
+    if ($force_null_products) {
+        $sql = "
+            SELECT
                 $location_field AS location_name,
-                COUNT(*) AS count
+                COUNT(*) AS count,
+                NULL AS top_product_descp,
+                NULL AS top_product_qty
             FROM customers
             $where_clause 
             GROUP BY location_name
             HAVING location_name NOT IN ('-', 'Customer belum input')
-        ) AS loc
-        LEFT JOIN
-        (
+            ORDER BY count DESC
+            $limit_clause
+        ";
+        $all_params = $params;
+        $all_types = $types;
+    } else {
+        $sql = "
             SELECT
-                location_name,
-                descp AS top_product_descp,
-                total_qty AS top_product_qty
+                loc.location_name,
+                loc.count,
+                tp.top_product_descp,
+                tp.top_product_qty
             FROM
             (
+                SELECT 
+                    $location_field AS location_name,
+                    COUNT(*) AS count
+                FROM customers
+                $where_clause 
+                GROUP BY location_name
+                HAVING location_name NOT IN ('-', 'Customer belum input')
+            ) AS loc
+            LEFT JOIN
+            (
                 SELECT
-                    @rn := IF(@current_group = location_name, @rn + 1, 1) AS rn,
-                    @current_group := location_name AS location_name,
-                    descp,
-                    total_qty
+                    location_name,
+                    descp AS top_product_descp,
+                    total_qty AS top_product_qty
                 FROM
                 (
                     SELECT
-                        cloc.location_name,
-                        t.descp,
-                        SUM(t.qty) AS total_qty
-                    FROM trans_b t
-                    INNER JOIN (
-                        SELECT 
-                            kd_cust,
-                            $location_field AS location_name
-                        FROM customers
-                        $where_clause 
-                    ) AS cloc ON t.kd_cust = cloc.kd_cust
-                    CROSS JOIN (SELECT @rn := 0, @current_group := '') AS init_vars
-                    WHERE 1=1
-                        $date_where_clause 
-                        $exclude_clause
-                    GROUP BY cloc.location_name, t.descp
-                    ORDER BY cloc.location_name, total_qty DESC
-                ) AS ProductSums
-            ) AS RankedProducts
-            WHERE rn = 1
-        ) AS tp ON loc.location_name = tp.location_name
-        ORDER BY loc.count DESC
-        $limit_clause
-    ";
+                        @rn := IF(@current_group = location_name, @rn + 1, 1) AS rn,
+                        @current_group := location_name AS location_name,
+                        descp,
+                        total_qty
+                    FROM
+                    (
+                        SELECT
+                            cloc.location_name,
+                            t.descp,
+                            SUM(t.qty) AS total_qty
+                        FROM trans_b t
+                        INNER JOIN (
+                            SELECT 
+                                kd_cust,
+                                $location_field AS location_name
+                            FROM customers
+                            $where_clause 
+                        ) AS cloc ON t.kd_cust = cloc.kd_cust
+                        CROSS JOIN (SELECT @rn := 0, @current_group := '') AS init_vars
+                        WHERE 1=1
+                            $date_where_clause 
+                            $exclude_clause
+                        GROUP BY cloc.location_name, t.descp
+                        ORDER BY cloc.location_name, total_qty DESC
+                    ) AS ProductSums
+                ) AS RankedProducts
+                WHERE rn = 1
+            ) AS tp ON loc.location_name = tp.location_name
+            ORDER BY loc.count DESC
+            $limit_clause
+        ";
+        $all_params = array_merge($params, $params, $params_for_products);
+        $all_types = $types . $types . $types_for_products;
+    }
     $stmt = $conn->prepare($sql);
     if ($stmt === false) {
-        $logger->error("Database prepare failed: " . $conn->error, ['sql' => $sql]);
+        $logger->error("Database prepare failed: " . $conn->error . " (SQL: $sql)");
         throw new Exception("Database prepare failed: " . $conn->error);
     }
-    $all_params = array_merge($params, $params, $params_for_products);
-    $all_types = $types . $types . $types_for_products;
     if (!empty($all_params)) {
         $bind_params = [$all_types];
         foreach ($all_params as $key => $value) {
@@ -235,10 +255,7 @@ try {
     ]);
 } catch (Throwable $t) {
     ob_end_clean();
-    $logger->critical("🔥 FATAL ERROR: " . $t->getMessage(), [
-        'file' => $t->getFile(),
-        'line' => $t->getLine()
-    ]);
+    $logger->critical("🔥 FATAL ERROR: " . $t->getMessage());
     http_response_code(500);
     echo json_encode([
         'success' => false,

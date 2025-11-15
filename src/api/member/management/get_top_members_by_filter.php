@@ -69,6 +69,16 @@ try {
         '9bulan' => '9 months',
         '12bulan' => '12 months'
     ];
+    $interval_trans = $filter_map[$filter] ?? '3 months';
+    if ($status === 'inactive') {
+        $cutoff_active_ts = strtotime("-3 months");
+        $cutoff_filter_ts = strtotime("-$interval_trans");
+        if ($filter !== 'semua' && $cutoff_filter_ts >= $cutoff_active_ts) {
+            echo json_encode(['success' => true, 'data' => []]);
+            $conn->close();
+            exit();
+        }
+    }
     $params = [];
     $types = "";
     $where_clauses = [];
@@ -78,7 +88,6 @@ try {
         $params[] = $yesterday;
         $types .= "s";
     } elseif ($filter !== 'semua') {
-        $interval_trans = $filter_map[$filter] ?? '3 months';
         $cutoff_trans = date('Y-m-d 00:00:00', strtotime("-$interval_trans"));
         $where_clauses[] = "t.tgl_trans >= ?";
         $params[] = $cutoff_trans;

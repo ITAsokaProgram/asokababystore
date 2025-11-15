@@ -64,7 +64,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 try {
     $filter = $_GET['filter'] ?? '3bulan';
     $status = $_GET['status'] ?? 'active';
-    $valid_filters = ['3bulan' => 3, '6bulan' => 6, '9bulan' => 9, '12bulan' => 12];
     $filter_map = [
         'kemarin' => '1 day',
         '1minggu' => '1 week',
@@ -74,31 +73,30 @@ try {
         '9bulan' => '9 months',
         '12bulan' => '12 months'
     ];
-
     $params = [];
     $types = "";
     $where_clause = "";
-    $cutoff_date = null;
-
-    if ($filter !== 'semua') {
-
-        $interval = $filter_map[$filter] ?? '3 months';
-        $cutoff_date = date('Y-m-d 00:00:00', strtotime("-$interval"));
-
-        if ($status === 'active') {
-            $where_clause = " WHERE Last_Trans >= ?";
-            $params[] = $cutoff_date;
-            $types .= "s";
-        } else {
-            $where_clause = " WHERE (Last_Trans < ? OR Last_Trans IS NULL)";
-            $params[] = $cutoff_date;
-            $types .= "s";
-        }
+    $cutoff_date_status = date('Y-m-d 00:00:00', strtotime("-3 months"));
+    if ($status === 'active') {
+        $where_clause = " WHERE Last_Trans >= ?";
+        $params[] = $cutoff_date_status;
+        $types .= "s";
     } else {
-        if ($status === 'active') {
-            $where_clause = " WHERE Last_Trans IS NOT NULL";
-        } else {
-            $where_clause = " WHERE Last_Trans IS NULL";
+        $where_clause = " WHERE (Last_Trans < ? OR Last_Trans IS NULL)";
+        $params[] = $cutoff_date_status;
+        $types .= "s";
+    }
+    $cutoff_date_filter = null;
+    if ($filter !== 'semua') {
+        $interval = $filter_map[$filter] ?? '3 months';
+        $cutoff_date_filter = date('Y-m-d 00:00:00', strtotime("-$interval"));
+    }
+    $force_null_products = false;
+    if ($status === 'inactive' && $filter !== 'semua') {
+        $status_timestamp = strtotime($cutoff_date_status);
+        $filter_timestamp = strtotime($cutoff_date_filter);
+        if ($filter_timestamp > $status_timestamp) {
+            $force_null_products = true;
         }
     }
     $age_case_sql = "
@@ -115,93 +113,126 @@ try {
             ELSE '-'
         END
     ";
+    $sql = "";
+    $stmt = null;
+    $all_params = [];
+    $all_types = "";
     $date_where_clause = "";
     $params_for_products = [];
     $types_for_products = "";
-    if ($filter !== 'semua' && $cutoff_date) {
-        $date_where_clause = " AND t.tgl_trans >= ?";
-        $params_for_products[] = $cutoff_date;
-        $types_for_products .= "s";
-    }
-    $exclude_clause = "
-        AND UPPER(t.descp) NOT LIKE '%KERTAS KADO%'
-        AND UPPER(t.descp) NOT LIKE '%MEMBER BY PHONE%'
-        AND UPPER(t.descp) NOT LIKE '%TAS ASOKA BIRU%'
-    ";
-    $sql = "
-        SELECT
-            agc.age_group,
-            agc.count,
-            tp.top_product_descp,
-            tp.top_product_qty
-        FROM
-        (
+    $exclude_clause = "";
+    if ($force_null_products) {
+        $sql = "
             SELECT 
                 ($age_case_sql) AS age_group,
-                COUNT(*) AS count
+                COUNT(*) AS count,
+                NULL AS top_product_descp,
+                NULL AS top_product_qty
             FROM customers
             $where_clause
             GROUP BY age_group
             HAVING age_group != '-'
-        ) AS agc
-        LEFT JOIN
-        (
+            ORDER BY 
+                CASE age_group
+                    WHEN '<= 17' THEN 1
+                    WHEN '18-20' THEN 2
+                    WHEN '21-25' THEN 3
+                    WHEN '26-30' THEN 4
+                    WHEN '31-35' THEN 5
+                    WHEN '36-45' THEN 6
+                    WHEN '46-59' THEN 7
+                    WHEN '>= 60' THEN 8
+                    WHEN '-' THEN 9
+                    ELSE 10
+                END
+        ";
+        $all_params = $params;
+        $all_types = $types;
+    } else {
+        if ($filter !== 'semua' && $cutoff_date_filter) {
+            $date_where_clause = " AND t.tgl_trans >= ?";
+            $params_for_products[] = $cutoff_date_filter;
+            $types_for_products .= "s";
+        }
+        $exclude_clause = "
+            AND UPPER(t.descp) NOT LIKE '%MEMBER BY PHONE%'
+            AND UPPER(t.descp) NOT LIKE '%TAS ASOKA BIRU%'
+        ";
+        $sql = "
             SELECT
-                age_group,
-                descp AS top_product_descp,
-                total_qty AS top_product_qty
+                agc.age_group,
+                agc.count,
+                tp.top_product_descp,
+                tp.top_product_qty
             FROM
             (
+                SELECT 
+                    ($age_case_sql) AS age_group,
+                    COUNT(*) AS count
+                FROM customers
+                $where_clause
+                GROUP BY age_group
+                HAVING age_group != '-'
+            ) AS agc
+            LEFT JOIN
+            (
                 SELECT
-                    @rn := IF(@current_group = age_group, @rn + 1, 1) AS rn,
-                    @current_group := age_group AS age_group,
-                    descp,
-                    total_qty
+                    age_group,
+                    descp AS top_product_descp,
+                    total_qty AS top_product_qty
                 FROM
                 (
                     SELECT
-                        cag.age_group,
-                        t.descp,
-                        SUM(t.qty) AS total_qty
-                    FROM trans_b t
-                    INNER JOIN (
-                        SELECT 
-                            kd_cust,
-                            ($age_case_sql) AS age_group
-                        FROM customers
-                        $where_clause
-                    ) AS cag ON t.kd_cust = cag.kd_cust
-                    CROSS JOIN (SELECT @rn := 0, @current_group := '') AS init_vars
-                    WHERE 1=1 
-                        $date_where_clause
-                        $exclude_clause
-                    GROUP BY cag.age_group, t.descp
-                    ORDER BY cag.age_group, total_qty DESC
-                ) AS ProductSums
-            ) AS RankedProducts
-            WHERE rn = 1
-        ) AS tp ON agc.age_group = tp.age_group
-        ORDER BY 
-            CASE agc.age_group
-                WHEN '<= 17' THEN 1
-                WHEN '18-20' THEN 2
-                WHEN '21-25' THEN 3
-                WHEN '26-30' THEN 4
-                WHEN '31-35' THEN 5
-                WHEN '36-45' THEN 6
-                WHEN '46-59' THEN 7
-                WHEN '>= 60' THEN 8
-                WHEN '-' THEN 9
-                ELSE 10
-            END
-    ";
+                        @rn := IF(@current_group = age_group, @rn + 1, 1) AS rn,
+                        @current_group := age_group AS age_group,
+                        descp,
+                        total_qty
+                    FROM
+                    (
+                        SELECT
+                            cag.age_group,
+                            t.descp,
+                            SUM(t.qty) AS total_qty
+                        FROM trans_b t
+                        INNER JOIN (
+                            SELECT 
+                                kd_cust,
+                                ($age_case_sql) AS age_group
+                            FROM customers
+                            $where_clause
+                        ) AS cag ON t.kd_cust = cag.kd_cust
+                        CROSS JOIN (SELECT @rn := 0, @current_group := '') AS init_vars
+                        WHERE 1=1 
+                            $date_where_clause
+                            $exclude_clause
+                        GROUP BY cag.age_group, t.descp
+                        ORDER BY cag.age_group, total_qty DESC
+                    ) AS ProductSums
+                ) AS RankedProducts
+                WHERE rn = 1
+            ) AS tp ON agc.age_group = tp.age_group
+            ORDER BY 
+                CASE agc.age_group
+                    WHEN '<= 17' THEN 1
+                    WHEN '18-20' THEN 2
+                    WHEN '21-25' THEN 3
+                    WHEN '26-30' THEN 4
+                    WHEN '31-35' THEN 5
+                    WHEN '36-45' THEN 6
+                    WHEN '46-59' THEN 7
+                    WHEN '>= 60' THEN 8
+                    WHEN '-' THEN 9
+                    ELSE 10
+                END
+        ";
+        $all_params = array_merge($params, $params, $params_for_products);
+        $all_types = $types . $types . $types_for_products;
+    }
     $stmt = $conn->prepare($sql);
     if ($stmt === false) {
-        $logger->error("Database prepare failed: " . $conn->error, ['sql' => $sql]);
+        $logger->error("Database prepare failed: " . $conn->error . " (SQL: $sql)");
         throw new Exception("Database prepare failed: " . $conn->error);
     }
-    $all_params = array_merge($params, $params, $params_for_products);
-    $all_types = $types . $types . $types_for_products;
     if (!empty($all_params)) {
         $bind_params = [$all_types];
         foreach ($all_params as $key => $value) {
@@ -231,10 +262,7 @@ try {
     ]);
 } catch (Throwable $t) {
     ob_end_clean();
-    $logger->critical("🔥 FATAL ERROR: " . $t->getMessage(), [
-        'file' => $t->getFile(),
-        'line' => $t->getLine()
-    ]);
+    $logger->critical("🔥 FATAL ERROR: " . $t->getMessage());
     http_response_code(500);
     echo json_encode([
         'success' => false,

@@ -3,6 +3,7 @@ let currentPage = 1;
 const LIMIT = 10;
 let currentFilter = "";
 let currentAgeGroup = "";
+let currentStatus = "";
 function showLoading(isLoading) {
   const spinner = document.getElementById("loading-spinner");
   if (spinner) {
@@ -133,7 +134,8 @@ function renderPagination(pagination) {
     });
   });
 }
-async function loadTopProducts(filter, ageGroup) {
+async function loadTopProducts(filter, ageGroup, status) {
+  // <-- TAMBAHKAN status
   showLoading(true);
   showError("");
   showTable(false);
@@ -142,7 +144,8 @@ async function loadTopProducts(filter, ageGroup) {
       filter,
       ageGroup,
       currentPage,
-      LIMIT
+      LIMIT,
+      status // <-- TAMBAHKAN status
     );
     if (result.success === true && result.data) {
       renderProductTable(result.data);
@@ -162,12 +165,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const params = new URLSearchParams(window.location.search);
   currentFilter = params.get("filter");
   currentAgeGroup = params.get("age_group");
-  if (currentFilter && currentAgeGroup) {
+  currentStatus = params.get("status"); // <-- TAMBAHKAN INI
+
+  if (currentFilter && currentAgeGroup && currentStatus) {
+    // <-- TAMBAHKAN currentStatus
     currentPage = 1;
-    loadTopProducts(currentFilter, currentAgeGroup);
+    loadTopProducts(currentFilter, currentAgeGroup, currentStatus); // <-- TAMBAHKAN status
   } else {
-    console.error("Filter atau Age Group tidak ditemukan di URL.");
+    console.error("Filter, Age Group, atau Status tidak ditemukan di URL.");
     showLoading(false);
-    showError("Parameter filter atau kelompok umur tidak valid.");
+    showError("Parameter filter, kelompok umur, atau status tidak valid."); // <-- Edit pesan error
   }
 });

@@ -50,7 +50,7 @@ $countSql = "SELECT COUNT(*) AS total
                      AND t.kd_cust NOT IN ('', '898989', '#898989', '#999999999')
                      AND t.tgl_trans BETWEEN ? AND ?
                      $searchSql
-                 GROUP BY t.kd_cust, c.nama_cust, t.kd_store
+                 GROUP BY t.kd_cust, c.nama_cust /* <--- UBAH BARIS INI */
              ) AS subquery";
 $stmtCount = $conn->prepare($countSql);
 if (!$stmtCount) {
@@ -67,21 +67,20 @@ $total_pages = ceil($total_records / $limit);
 $stmtCount->close();
 $dataSql = "SELECT 
                 t.kd_cust,
-                t.no_bon AS no_trans,
                 c.nama_cust,
-                ks.nm_alias AS cabang,
-                ks.kd_store AS kd_store,
                 SUM(t.qty) AS total_qty,
                 SUM(t.qty * t.harga) AS total_penjualan
             FROM trans_b t
             LEFT JOIN customers c ON t.kd_cust = c.kd_cust
-            LEFT JOIN kode_store ks ON ks.kd_store = t.kd_store
+            /* HAPUS JOIN KE KODE_STORE
+            LEFT JOIN kode_store ks ON ks.kd_store = t.kd_store 
+            */
             WHERE 
                 t.kd_cust IS NOT NULL
                 AND t.kd_cust NOT IN ('', '898989', '#898989', '#999999999')
                 AND t.tgl_trans BETWEEN ? AND ?
                 $searchSql
-            GROUP BY t.kd_cust, c.nama_cust, ks.nm_alias, ks.kd_store
+            GROUP BY t.kd_cust, c.nama_cust /* <--- UBAH BARIS INI */
             $orderBySql
             LIMIT ? OFFSET ?";
 $params[] = $limit;

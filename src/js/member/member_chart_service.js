@@ -31,6 +31,7 @@ function addChartHoverHandlers(chartInstance, chartElement) {
     chartInstance.resize();
   });
 }
+
 export function renderAgeChart(chartInstance, elementId, data, currentFilter) {
   const chartElement = document.getElementById(elementId);
   if (!chartElement) return null;
@@ -90,7 +91,9 @@ export function renderAgeChart(chartInstance, elementId, data, currentFilter) {
     if (ageGroup) {
       const targetUrl = `umur.php?filter=${encodeURIComponent(
         currentFilter
-      )}&age_group=${encodeURIComponent(ageGroup)}`;
+      )}&age_group=${encodeURIComponent(ageGroup)}&status=${encodeURIComponent(
+        currentStatus
+      )}`; // <-- TAMBAHKAN status
       window.location.href = targetUrl;
     }
   });
@@ -145,7 +148,6 @@ export function renderLocationChart(
         radius: "50%",
         data: chartData,
         fontSize: 16,
-
         label: {
           formatter: (params) => {
             const percentage =
@@ -170,17 +172,11 @@ export function renderLocationChart(
         clickedLabel
       );
     } else if (state.currentLocationLevel === "subdistrict") {
-      const selectedSubDistrict = clickedLabel;
-      const targetUrl = `lokasi.php?filter=${encodeURIComponent(
-        state.currentFilter
-      )}&status=${encodeURIComponent(
-        state.currentStatus
-      )}&city=${encodeURIComponent(
-        state.selectedCity
-      )}&district=${encodeURIComponent(
-        state.selectedDistrict
-      )}&subdistrict=${encodeURIComponent(selectedSubDistrict)}`;
-      window.location.href = targetUrl;
+      callbacks.updateLocationState(
+        "subdistrict-final",
+        state.selectedCity,
+        clickedLabel
+      );
     }
   });
   addChartHoverHandlers(newChartInstance, chartElement);
@@ -226,7 +222,6 @@ export function renderTopMemberChart(chartInstance, elementId, data, state) {
         radius: "50%",
         data: chartData,
         fontSize: 16,
-
         label: {
           formatter: (params) => {
             const percentage =
@@ -364,11 +359,17 @@ export function renderMemberChart(elementId, data, filter) {
         type: "pie",
         radius: "85%",
         label: {
-          fontSize: 16,
+          position: "inside",
+          color: "#fff",
+          fontSize: 14,
+          overflow: "breakAll",
           formatter: (params) => {
             const percentage = parseFloat(params.data.percentage).toFixed(2);
             return `${params.data.name}\n(${percentage}%)`;
           },
+          backgroundColor: "rgba(0, 0, 0, 0.5)",
+          padding: [4, 7],
+          borderRadius: 4,
         },
         data: chartData,
         itemStyle: {

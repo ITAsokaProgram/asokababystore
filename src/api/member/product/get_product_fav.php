@@ -36,7 +36,7 @@ WHERE
   t.kd_cust IS NOT NULL
   AND t.kd_cust NOT IN ('', '898989', '#898989', '#999999999')
   AND t.tgl_trans BETWEEN '$start_date' AND '$end_date'
-GROUP BY t.kd_cust, t.plu
+GROUP BY t.kd_cust, t.plu, c.nama_cust, t.descp
 ORDER BY total_qty DESC LIMIT 100";
 
 $stmt = $conn->prepare($sql);
@@ -61,4 +61,3 @@ if ($result->num_rows > 0) {
 }
 $stmt->close();
 $conn->close();
-

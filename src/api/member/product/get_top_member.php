@@ -36,7 +36,7 @@ WHERE
     t.kd_cust IS NOT NULL
     AND t.kd_cust NOT IN ('', '898989', '#898989', '#999999999')
     AND t.tgl_trans BETWEEN ? AND ? 
-GROUP BY t.kd_cust, c.nama_cust, ks.nm_alias, ks.kd_store
+GROUP BY t.kd_cust, c.nama_cust
 ORDER BY total_penjualan DESC
 LIMIT 50";
 $sqlNon = "SELECT 

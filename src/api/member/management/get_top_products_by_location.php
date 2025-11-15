@@ -67,8 +67,37 @@ try {
     $city = $_GET['city'] ?? null;
     $district = $_GET['district'] ?? null;
     $subdistrict = $_GET['subdistrict'] ?? null;
+    $status = $_GET['status'] ?? null;
     if (empty($city)) {
         throw new Exception("Parameter 'city' tidak boleh kosong.");
+    }
+    $filter_map = [
+        'kemarin' => '1 day',
+        '1minggu' => '1 week',
+        '1bulan' => '1 month',
+        '3bulan' => '3 months',
+        '6bulan' => '6 months',
+        '9bulan' => '9 months',
+        '12bulan' => '12 months'
+    ];
+    $interval = $filter_map[$filter] ?? '3 months';
+    if ($status === 'inactive') {
+        $cutoff_active_ts = strtotime("-3 months");
+        $cutoff_filter_ts = strtotime("-$interval");
+        if ($filter !== 'semua' && $cutoff_filter_ts >= $cutoff_active_ts) {
+            echo json_encode([
+                'success' => true,
+                'data' => [],
+                'pagination' => [
+                    'total_records' => 0,
+                    'current_page' => $page,
+                    'limit' => $limit,
+                    'total_pages' => 0
+                ]
+            ]);
+            $conn->close();
+            exit();
+        }
     }
     $params_count = [];
     $types_count = "";
@@ -93,18 +122,24 @@ try {
         $params_data[] = $subdistrict;
         $types_data .= "s";
     }
+    if ($status) {
+        $cutoff_active = date('Y-m-d 00:00:00', strtotime("-3 months"));
+        if ($status === 'active') {
+            $location_where_clause .= " AND (c.Last_Trans >= ?)";
+            $params_count[] = $cutoff_active;
+            $types_count .= "s";
+            $params_data[] = $cutoff_active;
+            $types_data .= "s";
+        } elseif ($status === 'inactive') {
+            $location_where_clause .= " AND (c.Last_Trans < ? OR c.Last_Trans IS NULL)";
+            $params_count[] = $cutoff_active;
+            $types_count .= "s";
+            $params_data[] = $cutoff_active;
+            $types_data .= "s";
+        }
+    }
     $date_where_clause = "";
-    $filter_map = [
-        'kemarin' => '1 day',
-        '1minggu' => '1 week',
-        '1bulan' => '1 month',
-        '3bulan' => '3 months',
-        '6bulan' => '6 months',
-        '9bulan' => '9 months',
-        '12bulan' => '12 months'
-    ];
     if ($filter !== 'semua') {
-        $interval = $filter_map[$filter] ?? '3 months';
         $cutoff_date = date('Y-m-d 00:00:00', strtotime("-$interval"));
         $date_where_clause = " AND t.tgl_trans >= ? ";
         $params_count[] = $cutoff_date;
@@ -190,11 +225,7 @@ try {
         ]
     ]);
 } catch (Throwable $t) {
-    $logger->critical("🔥 FATAL ERROR: " . $t->getMessage(), [
-        'file' => $t->getFile(),
-        'line' => $t->getLine(),
-        'params' => $_GET
-    ]);
+    $logger->critical("🔥 FATAL ERROR: " . $t->getMessage());
     if (isset($conn) && $conn instanceof mysqli) {
         $conn->close();
     }

@@ -69,24 +69,42 @@ try {
         '9bulan' => '9 months',
         '12bulan' => '12 months'
     ];
+    $interval = $filter_map[$filter] ?? '3 months';
+    if ($status === 'inactive') {
+        $cutoff_active_ts = strtotime("-3 months");
+        $cutoff_filter_ts = strtotime("-$interval");
+        if ($filter !== 'semua' && $cutoff_filter_ts >= $cutoff_active_ts) {
+            echo json_encode(['success' => true, 'data' => []]);
+            $conn->close();
+            exit();
+        }
+    }
     $params = [];
     $types = "";
     $where_clauses = [];
-    if ($filter !== 'semua') {
-        $interval_trans = $filter_map[$filter] ?? '3 months';
-        $cutoff_trans = date('Y-m-d 00:00:00', strtotime("-$interval_trans"));
+    $cutoff_date_filter = null;
+    if ($filter === 'kemarin') {
+        $cutoff_date_filter = date('Y-m-d', strtotime("-1 day"));
+    } elseif ($filter !== 'semua') {
+        $cutoff_date_filter = date('Y-m-d 00:00:00', strtotime("-$interval"));
+    }
+    if ($filter === 'kemarin') {
+        $where_clauses[] = "DATE(t.tgl_trans) = ?";
+        $params[] = $cutoff_date_filter;
+        $types .= "s";
+    } elseif ($filter !== 'semua') {
         $where_clauses[] = "t.tgl_trans >= ?";
-        $params[] = $cutoff_trans;
+        $params[] = $cutoff_date_filter;
         $types .= "s";
     }
-    $cutoff_active = date('Y-m-d 00:00:00', strtotime("-3 months"));
+    $cutoff_date_status = date('Y-m-d 00:00:00', strtotime("-3 months"));
     if ($status === 'active') {
         $where_clauses[] = "(c.Last_Trans >= ?)";
-        $params[] = $cutoff_active;
+        $params[] = $cutoff_date_status;
         $types .= "s";
     } else {
         $where_clauses[] = "(c.Last_Trans < ? OR c.Last_Trans IS NULL)";
-        $params[] = $cutoff_active;
+        $params[] = $cutoff_date_status;
         $types .= "s";
     }
     $where_clauses[] = "t.kd_cust IS NOT NULL";
@@ -106,7 +124,7 @@ try {
         WHERE
             $sql_where
         GROUP BY
-            t.kd_cust, t.plu
+            t.kd_cust, t.plu, c.nama_cust, t.descp
         ORDER BY
             total_item_qty DESC
         LIMIT ?
@@ -139,11 +157,7 @@ try {
         'data' => $data
     ]);
 } catch (Throwable $t) {
-    $logger->critical("FATAL ERROR: " . $t->getMessage(), [
-        'file' => $t->getFile(),
-        'line' => $t->getLine(),
-        'params' => $_GET
-    ]);
+    $logger->critical("FATAL ERROR: " . $t->getMessage());
     if (isset($conn) && $conn instanceof mysqli) {
         $conn->close();
     }

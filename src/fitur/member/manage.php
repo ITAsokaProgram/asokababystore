@@ -28,7 +28,7 @@ if (!in_array($current_filter, $valid_filters)) {
     <link rel="stylesheet" href="../../style/member/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
 
 </head>
 
@@ -95,7 +95,7 @@ if (!in_array($current_filter, $valid_filters)) {
                             <div class="stat-icon stat-icon-active">
                                 <i class="fa-solid fa-user-check"></i>
                             </div>
-                            <h3 class="text-lg font-medium uppercase tracking-wide mb-1" style="color: #065f46;">Active
+                            <h3 class="text-lg font-medium tracking-wide mb-1" style="color: #065f46;">Active
                                 Member
                             </h3>
                             <p id="active-member-placeholder" class="text-3xl font-bold" style="color: #047857;">
@@ -106,7 +106,7 @@ if (!in_array($current_filter, $valid_filters)) {
                             <div class="stat-icon stat-icon-inactive">
                                 <i class="fa-solid fa-user-xmark"></i>
                             </div>
-                            <h3 class="text-lg font-medium uppercase tracking-wide mb-1" style="color: #991b1b;">Inactive
+                            <h3 class="text-lg font-medium tracking-wide mb-1" style="color: #991b1b;">Inactive
                                 Member
                             </h3>
                             <p id="inactive-member-placeholder" class="text-3xl font-bold" style="color: #b91c1c;">

@@ -63,12 +63,21 @@ export const getMemberByAge = (filter, status) => {
   const url = `${API_MANAGEMENT_URL}/get_member_by_age.php?${params.toString()}`;
   return sendRequestGET(url);
 };
-export const getTopProductsByAge = (filter, ageGroup, page = 1, limit = 10) => {
+export const getTopProductsByAge = (
+  filter,
+  ageGroup,
+  page = 1,
+  limit = 10,
+  status = null
+) => {
   const params = new URLSearchParams();
   params.append("filter", filter);
   params.append("age_group", ageGroup);
   params.append("page", page);
   params.append("limit", limit);
+  if (status) {
+    params.append("status", status);
+  }
   const url = `${API_MANAGEMENT_URL}/get_top_products_by_age.php?${params.toString()}`;
   return sendRequestGET(url);
 };
@@ -100,12 +109,11 @@ export const getTopProductsByLocation = (
   district,
   subdistrict,
   page = 1,
-  limit = 10
+  limit = 10,
+  status = null
 ) => {
   const params = new URLSearchParams();
   params.append("filter", filter);
-  // --- PERUBAHAN DISINI ---
-  // Hanya tambahkan parameter jika nilainya ada (tidak null atau undefined)
   if (city) {
     params.append("city", city);
   }
@@ -115,7 +123,9 @@ export const getTopProductsByLocation = (
   if (subdistrict) {
     params.append("subdistrict", subdistrict);
   }
-  // --- AKHIR PERUBAHAN ---
+  if (status) {
+    params.append("status", status);
+  }
   params.append("page", page);
   params.append("limit", limit);
   const url = `${API_MANAGEMENT_URL}/get_top_products_by_location.php?${params.toString()}`;

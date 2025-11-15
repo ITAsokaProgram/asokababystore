@@ -223,8 +223,8 @@ $filterDisplay = ($filter === 'kemarin') ? 'Kemarin' :
                     </div>
 
                     <div class="mb-3">
-                        <a href="top_sales?filter=<?= $filter ?>" id="view-all-top-member-btn"
-                            class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 text-sm">
+                        <a href="top_sales?filter=<?= $filter ?>" id="view-all-top-member-btn"                          
+                            class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 text-sm hidden">
                             Lihat Semua Top Member
                             <i class="fa-solid fa-arrow-right ml-2"></i>
                         </a>
@@ -287,8 +287,8 @@ $filterDisplay = ($filter === 'kemarin') ? 'Kemarin' :
                         </h2>
                     </div>
                     <div class="mb-3">
-                        <a href="product_favorite?filter=<?= $filter ?>" id="view-all-top-member-btn"
-                            class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 text-sm">
+                        <a href="product_favorite?filter=<?= $filter ?>" id="view-all-top-product-btn"
+                            class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 text-sm hidden">
                             Lihat Semua Top Pembelian
                             <i class="fa-solid fa-arrow-right ml-2"></i>
                         </a>
