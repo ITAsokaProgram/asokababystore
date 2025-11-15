@@ -87,8 +87,11 @@ try {
         $types .= "s";
     }
     $cutoff_date_filter = null;
-    if ($filter !== 'semua') {
-        $interval = $filter_map[$filter] ?? '3 months';
+    $interval = $filter_map[$filter] ?? '3 months';
+    $isFilter3MonthsOrLess = in_array($filter, ['kemarin', '1minggu', '1bulan', '3bulan']);
+    if ($filter === 'kemarin') {
+        $cutoff_date_filter = date('Y-m-d', strtotime("-1 day"));
+    } elseif ($filter !== 'semua') {
         $cutoff_date_filter = date('Y-m-d 00:00:00', strtotime("-$interval"));
     }
     $age_case_sql = "
@@ -105,135 +108,102 @@ try {
             ELSE '-'
         END
     ";
-    $sql = "";
-    $stmt = null;
-    if ($status === 'inactive') {
-        $sql = "
+    $date_where_clause = "";
+    $params_for_products = [];
+    $types_for_products = "";
+    if ($filter === 'kemarin' && $cutoff_date_filter) {
+        $date_where_clause = " AND DATE(t.tgl_trans) = ?";
+        $params_for_products[] = $cutoff_date_filter;
+        $types_for_products .= "s";
+    } elseif ($filter !== 'semua' && $cutoff_date_filter) {
+        $date_where_clause = " AND t.tgl_trans >= ?";
+        $params_for_products[] = $cutoff_date_filter;
+        $types_for_products .= "s";
+    }
+    $exclude_clause = "
+        AND UPPER(t.descp) NOT LIKE '%MEMBER BY PHONE%'
+        AND UPPER(t.descp) NOT LIKE '%TAS ASOKA BIRU%'
+    ";
+    $sql = "
+        SELECT
+            agc.age_group,
+            agc.count,
+            tp.top_product_descp,
+            tp.top_product_qty
+        FROM
+        (
             SELECT 
                 ($age_case_sql) AS age_group,
-                COUNT(*) AS count,
-                NULL AS top_product_descp,
-                NULL AS top_product_qty
+                COUNT(*) AS count
             FROM customers
             $where_clause
             GROUP BY age_group
             HAVING age_group != '-'
-            ORDER BY 
-                CASE age_group
-                    WHEN '<= 17' THEN 1
-                    WHEN '18-20' THEN 2
-                    WHEN '21-25' THEN 3
-                    WHEN '26-30' THEN 4
-                    WHEN '31-35' THEN 5
-                    WHEN '36-45' THEN 6
-                    WHEN '46-59' THEN 7
-                    WHEN '>= 60' THEN 8
-                    WHEN '-' THEN 9
-                    ELSE 10
-                END
-        ";
-        $stmt = $conn->prepare($sql);
-        if ($stmt === false) {
-            $logger->error("Database prepare failed (inactive): " . $conn->error);
-            throw new Exception("Database prepare failed (inactive): " . $conn->error);
-        }
-        if (!empty($params)) {
-            $stmt->bind_param($types, ...$params);
-        }
-    } else {
-        $date_where_clause = "";
-        $params_for_products = [];
-        $types_for_products = "";
-        if ($filter !== 'semua' && $cutoff_date_filter) {
-            $date_where_clause = " AND t.tgl_trans >= ?";
-            $params_for_products[] = $cutoff_date_filter;
-            $types_for_products .= "s";
-        }
-        $exclude_clause = "
-            AND UPPER(t.descp) NOT LIKE '%MEMBER BY PHONE%'
-            AND UPPER(t.descp) NOT LIKE '%TAS ASOKA BIRU%'
-        ";
-        $sql = "
+        ) AS agc
+        LEFT JOIN
+        (
             SELECT
-                agc.age_group,
-                agc.count,
-                tp.top_product_descp,
-                tp.top_product_qty
+                age_group,
+                descp AS top_product_descp,
+                total_qty AS top_product_qty
             FROM
             (
-                SELECT 
-                    ($age_case_sql) AS age_group,
-                    COUNT(*) AS count
-                FROM customers
-                $where_clause
-                GROUP BY age_group
-                HAVING age_group != '-'
-            ) AS agc
-            LEFT JOIN
-            (
                 SELECT
-                    age_group,
-                    descp AS top_product_descp,
-                    total_qty AS top_product_qty
+                    @rn := IF(@current_group = age_group, @rn + 1, 1) AS rn,
+                    @current_group := age_group AS age_group,
+                    descp,
+                    total_qty
                 FROM
                 (
                     SELECT
-                        @rn := IF(@current_group = age_group, @rn + 1, 1) AS rn,
-                        @current_group := age_group AS age_group,
-                        descp,
-                        total_qty
-                    FROM
-                    (
-                        SELECT
-                            cag.age_group,
-                            t.descp,
-                            SUM(t.qty) AS total_qty
-                        FROM trans_b t
-                        INNER JOIN (
-                            SELECT 
-                                kd_cust,
-                                ($age_case_sql) AS age_group
-                            FROM customers
-                            $where_clause
-                        ) AS cag ON t.kd_cust = cag.kd_cust
-                        CROSS JOIN (SELECT @rn := 0, @current_group := '') AS init_vars
-                        WHERE 1=1 
-                            $date_where_clause
-                            $exclude_clause
-                        GROUP BY cag.age_group, t.descp
-                        ORDER BY cag.age_group, total_qty DESC
-                    ) AS ProductSums
-                ) AS RankedProducts
-                WHERE rn = 1
-            ) AS tp ON agc.age_group = tp.age_group
-            ORDER BY 
-                CASE agc.age_group
-                    WHEN '<= 17' THEN 1
-                    WHEN '18-20' THEN 2
-                    WHEN '21-25' THEN 3
-                    WHEN '26-30' THEN 4
-                    WHEN '31-35' THEN 5
-                    WHEN '36-45' THEN 6
-                    WHEN '46-59' THEN 7
-                    WHEN '>= 60' THEN 8
-                    WHEN '-' THEN 9
-                    ELSE 10
-                END
-        ";
-        $stmt = $conn->prepare($sql);
-        if ($stmt === false) {
-            $logger->error("Database prepare failed (active): " . $conn->error);
-            throw new Exception("Database prepare failed (active): " . $conn->error);
+                        cag.age_group,
+                        t.descp,
+                        SUM(t.qty) AS total_qty
+                    FROM trans_b t
+                    INNER JOIN (
+                        SELECT 
+                            kd_cust,
+                            ($age_case_sql) AS age_group
+                        FROM customers
+                        $where_clause
+                    ) AS cag ON t.kd_cust = cag.kd_cust
+                    CROSS JOIN (SELECT @rn := 0, @current_group := '') AS init_vars
+                    WHERE 1=1 
+                        $date_where_clause
+                        $exclude_clause
+                    GROUP BY cag.age_group, t.descp
+                    ORDER BY cag.age_group, total_qty DESC
+                ) AS ProductSums
+            ) AS RankedProducts
+            WHERE rn = 1
+        ) AS tp ON agc.age_group = tp.age_group
+        ORDER BY 
+            CASE agc.age_group
+                WHEN '<= 17' THEN 1
+                WHEN '18-20' THEN 2
+                WHEN '21-25' THEN 3
+                WHEN '26-30' THEN 4
+                WHEN '31-35' THEN 5
+                WHEN '36-45' THEN 6
+                WHEN '46-59' THEN 7
+                WHEN '>= 60' THEN 8
+                WHEN '-' THEN 9
+                ELSE 10
+            END
+    ";
+    $stmt = $conn->prepare($sql);
+    if ($stmt === false) {
+        $logger->error("Database prepare failed (active): " . $conn->error);
+        throw new Exception("Database prepare failed (active): " . $conn->error);
+    }
+    $all_params = array_merge($params, $params, $params_for_products);
+    $all_types = $types . $types . $types_for_products;
+    if (!empty($all_params)) {
+        $bind_params = [$all_types];
+        foreach ($all_params as $key => $value) {
+            $bind_params[] = &$all_params[$key];
         }
-        $all_params = array_merge($params, $params, $params_for_products);
-        $all_types = $types . $types . $types_for_products;
-        if (!empty($all_params)) {
-            $bind_params = [$all_types];
-            foreach ($all_params as $key => $value) {
-                $bind_params[] = &$all_params[$key];
-            }
-            call_user_func_array([$stmt, 'bind_param'], $bind_params);
-        }
+        call_user_func_array([$stmt, 'bind_param'], $bind_params);
     }
     if (!$stmt->execute()) {
         throw new Exception("Gagal eksekusi query: " . $stmt->error);
@@ -244,8 +214,8 @@ try {
         $data[] = [
             'age_group' => $row['age_group'],
             'count' => (int) $row['count'],
-            'top_product_descp' => $row['top_product_descp'],
-            'top_product_qty' => $row['top_product_qty'] ? (int) $row['top_product_qty'] : null
+            'top_product_descp' => $isFilter3MonthsOrLess ? null : $row['top_product_descp'],
+            'top_product_qty' => $isFilter3MonthsOrLess ? null : ($row['top_product_qty'] ? (int) $row['top_product_qty'] : null)
         ];
     }
     $stmt->close();

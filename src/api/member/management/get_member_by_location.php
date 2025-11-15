@@ -94,14 +94,21 @@ try {
         $types .= "s";
     }
     $cutoff_date_filter = null;
-    if ($filter !== 'semua') {
-        $interval = $filter_map[$filter] ?? '3 months';
+    $interval = $filter_map[$filter] ?? '3 months';
+    $isFilter3MonthsOrLess = in_array($filter, ['kemarin', '1minggu', '1bulan', '3bulan']);
+    if ($filter === 'kemarin') {
+        $cutoff_date_filter = date('Y-m-d', strtotime("-1 day"));
+    } elseif ($filter !== 'semua') {
         $cutoff_date_filter = date('Y-m-d 00:00:00', strtotime("-$interval"));
     }
     $date_where_clause = "";
     $params_for_products = [];
     $types_for_products = "";
-    if ($filter !== 'semua' && $cutoff_date_filter) {
+    if ($filter === 'kemarin' && $cutoff_date_filter) {
+        $date_where_clause = " AND DATE(t.tgl_trans) = ?";
+        $params_for_products[] = $cutoff_date_filter;
+        $types_for_products .= "s";
+    } elseif ($filter !== 'semua' && $cutoff_date_filter) {
         $date_where_clause = " AND t.tgl_trans >= ?";
         $params_for_products[] = $cutoff_date_filter;
         $types_for_products .= "s";
@@ -133,101 +140,75 @@ try {
         AND UPPER(t.descp) NOT LIKE '%MEMBER BY PHONE%'
         AND UPPER(t.descp) NOT LIKE '%TAS ASOKA BIRU%'
     ";
-    $sql = "";
-    $stmt = null;
-    if ($status === 'inactive') {
-        $sql = "
-            SELECT
+    $sql = "
+        SELECT
+            loc.location_name,
+            loc.count,
+            tp.top_product_descp,
+            tp.top_product_qty
+        FROM
+        (
+            SELECT 
                 $location_field AS location_name,
-                COUNT(*) AS count,
-                NULL AS top_product_descp,
-                NULL AS top_product_qty
+                COUNT(*) AS count
             FROM customers
             $where_clause 
             GROUP BY location_name
             HAVING location_name NOT IN ('-', 'Customer belum input')
-            ORDER BY count DESC
-            $limit_clause
-        ";
-        $stmt = $conn->prepare($sql);
-        if ($stmt === false) {
-            $logger->error("Database prepare failed (inactive): " . $conn->error);
-            throw new Exception("Database prepare failed (inactive): " . $conn->error);
-        }
-        if (!empty($params)) {
-            $stmt->bind_param($types, ...$params);
-        }
-    } else {
-        $sql = "
+        ) AS loc
+        LEFT JOIN
+        (
             SELECT
-                loc.location_name,
-                loc.count,
-                tp.top_product_descp,
-                tp.top_product_qty
+                location_name,
+                descp AS top_product_descp,
+                total_qty AS top_product_qty
             FROM
             (
-                SELECT 
-                    $location_field AS location_name,
-                    COUNT(*) AS count
-                FROM customers
-                $where_clause 
-                GROUP BY location_name
-                HAVING location_name NOT IN ('-', 'Customer belum input')
-            ) AS loc
-            LEFT JOIN
-            (
                 SELECT
-                    location_name,
-                    descp AS top_product_descp,
-                    total_qty AS top_product_qty
+                    @rn := IF(@current_group = location_name, @rn + 1, 1) AS rn,
+                    @current_group := location_name AS location_name,
+                    descp,
+                    total_qty
                 FROM
                 (
                     SELECT
-                        @rn := IF(@current_group = location_name, @rn + 1, 1) AS rn,
-                        @current_group := location_name AS location_name,
-                        descp,
-                        total_qty
-                    FROM
-                    (
-                        SELECT
-                            cloc.location_name,
-                            t.descp,
-                            SUM(t.qty) AS total_qty
-                        FROM trans_b t
-                        INNER JOIN (
-                            SELECT 
-                                kd_cust,
-                                $location_field AS location_name
-                            FROM customers
-                            $where_clause 
-                        ) AS cloc ON t.kd_cust = cloc.kd_cust
-                        CROSS JOIN (SELECT @rn := 0, @current_group := '') AS init_vars
-                        WHERE 1=1
-                            $date_where_clause 
-                            $exclude_clause
-                        GROUP BY cloc.location_name, t.descp
-                        ORDER BY cloc.location_name, total_qty DESC
-                    ) AS ProductSums
-                ) AS RankedProducts
-                WHERE rn = 1
-            ) AS tp ON loc.location_name = tp.location_name
-            ORDER BY loc.count DESC
-            $limit_clause
-        ";
-        $stmt = $conn->prepare($sql);
-        if ($stmt === false) {
-            $logger->error("Database prepare failed (active): " . $conn->error);
-            throw new Exception("Database prepare failed (active): " . $conn->error);
+                        cloc.location_name,
+                        t.descp,
+                        SUM(t.qty) AS total_qty
+                    FROM trans_b t
+                    INNER JOIN (
+                        SELECT 
+                            kd_cust,
+                            $location_field AS location_name
+                        FROM customers
+                        $where_clause 
+                    ) AS cloc ON t.kd_cust = cloc.kd_cust
+                    CROSS JOIN (SELECT @rn := 0, @current_group := '') AS init_vars
+                    WHERE 1=1
+                        $date_where_clause 
+                        $exclude_clause
+                    GROUP BY cloc.location_name, t.descp
+                    ORDER BY cloc.location_name, total_qty DESC
+                ) AS ProductSums
+            ) AS RankedProducts
+            WHERE rn = 1
+        ) AS tp ON loc.location_name = tp.location_name
+        ORDER BY loc.count DESC
+        $limit_clause
+    ";
+    $stmt = $conn->prepare($sql);
+    if ($stmt === false) {
+        $logger->error("Database prepare failed (active): " . $conn->error);
+        throw new Exception("Database prepare failed (active): " . $conn->error);
+    }
+    $all_params = array_merge($params, $params, $params_for_products);
+    $all_types = $types . $types . $types_for_products;
+    if (!empty($all_params)) {
+        $bind_params = [$all_types];
+        foreach ($all_params as $key => $value) {
+            $bind_params[] = &$all_params[$key];
         }
-        $all_params = array_merge($params, $params, $params_for_products);
-        $all_types = $types . $types . $types_for_products;
-        if (!empty($all_params)) {
-            $bind_params = [$all_types];
-            foreach ($all_params as $key => $value) {
-                $bind_params[] = &$all_params[$key];
-            }
-            call_user_func_array([$stmt, 'bind_param'], $bind_params);
-        }
+        call_user_func_array([$stmt, 'bind_param'], $bind_params);
     }
     if (!$stmt->execute()) {
         throw new Exception("Gagal eksekusi query: " . $stmt->error);
@@ -238,8 +219,8 @@ try {
         $data[] = [
             'location_name' => $row['location_name'],
             'count' => (int) $row['count'],
-            'top_product_descp' => $row['top_product_descp'],
-            'top_product_qty' => $row['top_product_qty'] ? (int) $row['top_product_qty'] : null
+            'top_product_descp' => $isFilter3MonthsOrLess ? null : $row['top_product_descp'],
+            'top_product_qty' => $isFilter3MonthsOrLess ? null : ($row['top_product_qty'] ? (int) $row['top_product_qty'] : null)
         ];
     }
     $stmt->close();
