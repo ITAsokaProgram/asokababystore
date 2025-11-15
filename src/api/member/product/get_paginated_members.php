@@ -14,25 +14,69 @@ if (!$user) {
     echo json_encode(['success' => false, 'message' => 'Unauthorized']);
     exit;
 }
-$start_date = $_GET['start_date'] ?? date('Y-m-d', strtotime('-1 day'));
-$end_date = $_GET['end_date'] ?? date('Y-m-d', strtotime('-1 day'));
 $search = $_GET['search'] ?? '';
 $sortBy = $_GET['sort_by'] ?? 'belanja';
 $page = (int) ($_GET['page'] ?? 1);
 $limit = (int) ($_GET['limit'] ?? 10);
+$status = $_GET['status'] ?? 'all';
 $offset = ($page - 1) * $limit;
-if (!strtotime($start_date) || !strtotime($end_date)) {
-    http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Tanggal tidak valid']);
-    exit;
-}
-$params = [$start_date, $end_date];
+$params = [];
+$types = "";
+$date_sql = "";
+$status_sql = "";
 $searchSql = "";
+if (isset($_GET['date'])) {
+    if (!strtotime($_GET['date'])) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Format tanggal tidak valid']);
+        exit;
+    }
+    $date_sql = " AND DATE(t.tgl_trans) = ? ";
+    $params[] = $_GET['date'];
+    $types .= "s";
+} elseif (isset($_GET['start_date']) && isset($_GET['end_date'])) {
+    if (!strtotime($_GET['start_date']) || !strtotime($_GET['end_date'])) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Format start_date/end_date tidak valid']);
+        exit;
+    }
+    if ($_GET['start_date'] === $_GET['end_date']) {
+        $date_sql = " AND DATE(t.tgl_trans) = ? ";
+        $params[] = $_GET['start_date'];
+        $types .= "s";
+    } else {
+        $date_sql = " AND t.tgl_trans BETWEEN ? AND ? ";
+        $params[] = $_GET['start_date'];
+        $params[] = $_GET['end_date'];
+        $types .= "ss";
+    }
+} elseif (isset($_GET['filter']) && $_GET['filter'] === 'kemarin') {
+    $yesterday = date('Y-m-d', strtotime('-1 day'));
+    $date_sql = " AND DATE(t.tgl_trans) = ? ";
+    $params[] = $yesterday;
+    $types .= "s";
+} else {
+    $yesterday = date('Y-m-d', strtotime('-1 day'));
+    $date_sql = " AND DATE(t.tgl_trans) = ? ";
+    $params[] = $yesterday;
+    $types .= "s";
+}
+$cutoff_active = date('Y-m-d 00:00:00', strtotime("-3 months"));
+if ($status === 'active') {
+    $status_sql = " AND (c.Last_Trans >= ?) ";
+    $params[] = $cutoff_active;
+    $types .= "s";
+} elseif ($status === 'inactive') {
+    $status_sql = " AND (c.Last_Trans < ? OR c.Last_Trans IS NULL) ";
+    $params[] = $cutoff_active;
+    $types .= "s";
+}
 if (!empty($search)) {
     $searchSql = " AND (c.nama_cust LIKE ? OR t.kd_cust LIKE ?) ";
     $searchValue = "%" . $search . "%";
     $params[] = $searchValue;
     $params[] = $searchValue;
+    $types .= "ss";
 }
 $orderBySql = " ORDER BY total_penjualan DESC ";
 if ($sortBy === 'qty') {
@@ -48,9 +92,10 @@ $countSql = "SELECT COUNT(*) AS total
                  WHERE 
                      t.kd_cust IS NOT NULL
                      AND t.kd_cust NOT IN ('', '898989', '#898989', '#999999999')
-                     AND t.tgl_trans BETWEEN ? AND ?
+                     $date_sql
+                     $status_sql
                      $searchSql
-                 GROUP BY t.kd_cust, c.nama_cust /* <--- UBAH BARIS INI */
+                 GROUP BY t.kd_cust, c.nama_cust
              ) AS subquery";
 $stmtCount = $conn->prepare($countSql);
 if (!$stmtCount) {
@@ -58,8 +103,9 @@ if (!$stmtCount) {
     echo json_encode(["success" => false, "message" => "Statement error (count): " . $conn->error]);
     exit;
 }
-$types = str_repeat('s', count($params));
-$stmtCount->bind_param($types, ...$params);
+$countParams = $params;
+$countTypes = $types;
+$stmtCount->bind_param($countTypes, ...$countParams);
 $stmtCount->execute();
 $resultCount = $stmtCount->get_result();
 $total_records = $resultCount->fetch_assoc()['total'] ?? 0;
@@ -68,24 +114,24 @@ $stmtCount->close();
 $dataSql = "SELECT 
                 t.kd_cust,
                 c.nama_cust,
+                ks.nm_alias AS cabang,
                 SUM(t.qty) AS total_qty,
                 SUM(t.qty * t.harga) AS total_penjualan
             FROM trans_b t
             LEFT JOIN customers c ON t.kd_cust = c.kd_cust
-            /* HAPUS JOIN KE KODE_STORE
-            LEFT JOIN kode_store ks ON ks.kd_store = t.kd_store 
-            */
+            LEFT JOIN kode_store ks ON ks.kd_store = t.kd_store
             WHERE 
                 t.kd_cust IS NOT NULL
                 AND t.kd_cust NOT IN ('', '898989', '#898989', '#999999999')
-                AND t.tgl_trans BETWEEN ? AND ?
+                $date_sql
+                $status_sql
                 $searchSql
-            GROUP BY t.kd_cust, c.nama_cust /* <--- UBAH BARIS INI */
+            GROUP BY t.kd_cust, c.nama_cust
             $orderBySql
             LIMIT ? OFFSET ?";
 $params[] = $limit;
 $params[] = $offset;
-$types = $types . 'ii';
+$types .= 'ii';
 $stmtData = $conn->prepare($dataSql);
 if (!$stmtData) {
     http_response_code(500);

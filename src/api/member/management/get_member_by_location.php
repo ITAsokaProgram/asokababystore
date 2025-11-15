@@ -106,14 +106,6 @@ try {
         $params_for_products[] = $cutoff_date_filter;
         $types_for_products .= "s";
     }
-    $force_null_products = false;
-    if ($status === 'inactive' && $filter !== 'semua') {
-        $status_timestamp = strtotime($cutoff_date_status);
-        $filter_timestamp = strtotime($cutoff_date_filter);
-        if ($filter_timestamp > $status_timestamp) {
-            $force_null_products = true;
-        }
-    }
     $location_field = "";
     $city_field_logic = "IF(Kota IS NULL OR Kota = '', 'Customer belum input', Kota)";
     $district_field_logic = "IF(Kec IS NULL OR Kec = '', 'Customer belum input', Kec)";
@@ -143,9 +135,7 @@ try {
     ";
     $sql = "";
     $stmt = null;
-    $all_params = [];
-    $all_types = "";
-    if ($force_null_products) {
+    if ($status === 'inactive') {
         $sql = "
             SELECT
                 $location_field AS location_name,
@@ -159,8 +149,14 @@ try {
             ORDER BY count DESC
             $limit_clause
         ";
-        $all_params = $params;
-        $all_types = $types;
+        $stmt = $conn->prepare($sql);
+        if ($stmt === false) {
+            $logger->error("Database prepare failed (inactive): " . $conn->error);
+            throw new Exception("Database prepare failed (inactive): " . $conn->error);
+        }
+        if (!empty($params)) {
+            $stmt->bind_param($types, ...$params);
+        }
     } else {
         $sql = "
             SELECT
@@ -218,20 +214,20 @@ try {
             ORDER BY loc.count DESC
             $limit_clause
         ";
+        $stmt = $conn->prepare($sql);
+        if ($stmt === false) {
+            $logger->error("Database prepare failed (active): " . $conn->error);
+            throw new Exception("Database prepare failed (active): " . $conn->error);
+        }
         $all_params = array_merge($params, $params, $params_for_products);
         $all_types = $types . $types . $types_for_products;
-    }
-    $stmt = $conn->prepare($sql);
-    if ($stmt === false) {
-        $logger->error("Database prepare failed: " . $conn->error . " (SQL: $sql)");
-        throw new Exception("Database prepare failed: " . $conn->error);
-    }
-    if (!empty($all_params)) {
-        $bind_params = [$all_types];
-        foreach ($all_params as $key => $value) {
-            $bind_params[] = &$all_params[$key];
+        if (!empty($all_params)) {
+            $bind_params = [$all_types];
+            foreach ($all_params as $key => $value) {
+                $bind_params[] = &$all_params[$key];
+            }
+            call_user_func_array([$stmt, 'bind_param'], $bind_params);
         }
-        call_user_func_array([$stmt, 'bind_param'], $bind_params);
     }
     if (!$stmt->execute()) {
         throw new Exception("Gagal eksekusi query: " . $stmt->error);

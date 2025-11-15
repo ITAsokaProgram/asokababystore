@@ -91,14 +91,6 @@ try {
         $interval = $filter_map[$filter] ?? '3 months';
         $cutoff_date_filter = date('Y-m-d 00:00:00', strtotime("-$interval"));
     }
-    $force_null_products = false;
-    if ($status === 'inactive' && $filter !== 'semua') {
-        $status_timestamp = strtotime($cutoff_date_status);
-        $filter_timestamp = strtotime($cutoff_date_filter);
-        if ($filter_timestamp > $status_timestamp) {
-            $force_null_products = true;
-        }
-    }
     $age_case_sql = "
         CASE
             WHEN tgl_lahir IS NULL OR YEAR(tgl_lahir) > 2020 THEN '-'
@@ -115,13 +107,7 @@ try {
     ";
     $sql = "";
     $stmt = null;
-    $all_params = [];
-    $all_types = "";
-    $date_where_clause = "";
-    $params_for_products = [];
-    $types_for_products = "";
-    $exclude_clause = "";
-    if ($force_null_products) {
+    if ($status === 'inactive') {
         $sql = "
             SELECT 
                 ($age_case_sql) AS age_group,
@@ -146,9 +132,18 @@ try {
                     ELSE 10
                 END
         ";
-        $all_params = $params;
-        $all_types = $types;
+        $stmt = $conn->prepare($sql);
+        if ($stmt === false) {
+            $logger->error("Database prepare failed (inactive): " . $conn->error);
+            throw new Exception("Database prepare failed (inactive): " . $conn->error);
+        }
+        if (!empty($params)) {
+            $stmt->bind_param($types, ...$params);
+        }
     } else {
+        $date_where_clause = "";
+        $params_for_products = [];
+        $types_for_products = "";
         if ($filter !== 'semua' && $cutoff_date_filter) {
             $date_where_clause = " AND t.tgl_trans >= ?";
             $params_for_products[] = $cutoff_date_filter;
@@ -225,20 +220,20 @@ try {
                     ELSE 10
                 END
         ";
+        $stmt = $conn->prepare($sql);
+        if ($stmt === false) {
+            $logger->error("Database prepare failed (active): " . $conn->error);
+            throw new Exception("Database prepare failed (active): " . $conn->error);
+        }
         $all_params = array_merge($params, $params, $params_for_products);
         $all_types = $types . $types . $types_for_products;
-    }
-    $stmt = $conn->prepare($sql);
-    if ($stmt === false) {
-        $logger->error("Database prepare failed: " . $conn->error . " (SQL: $sql)");
-        throw new Exception("Database prepare failed: " . $conn->error);
-    }
-    if (!empty($all_params)) {
-        $bind_params = [$all_types];
-        foreach ($all_params as $key => $value) {
-            $bind_params[] = &$all_params[$key];
+        if (!empty($all_params)) {
+            $bind_params = [$all_types];
+            foreach ($all_params as $key => $value) {
+                $bind_params[] = &$all_params[$key];
+            }
+            call_user_func_array([$stmt, 'bind_param'], $bind_params);
         }
-        call_user_func_array([$stmt, 'bind_param'], $bind_params);
     }
     if (!$stmt->execute()) {
         throw new Exception("Gagal eksekusi query: " . $stmt->error);

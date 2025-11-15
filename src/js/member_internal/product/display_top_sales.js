@@ -152,17 +152,24 @@ const setupDateFilterListeners = () => {
   const filterParam = urlParams.get("filter");
   const today = new Date();
   let startDate;
-  if (filterParam) {
+  let endDate;
+  if (filterParam === "kemarin") {
+    startDate = new Date(today);
+    startDate.setDate(today.getDate() - 1);
+    endDate = new Date(startDate);
+  } else if (filterParam) {
     startDate = calculateStartDateFromFilter(filterParam);
+    endDate = new Date(today);
   } else {
     startDate = new Date(today);
     startDate.setDate(today.getDate() - 1);
+    endDate = new Date(startDate);
   }
   startDateInput.value = startDate.toISOString().split("T")[0];
-  endDateInput.value = today.toISOString().split("T")[0];
+  endDateInput.value = endDate.toISOString().split("T")[0];
   endDateInput.max = today.toISOString().split("T")[0];
-  const timeDiff = today.getTime() - startDate.getTime();
-  const daysDiff = Math.max(1, Math.ceil(timeDiff / (1000 * 3600 * 24)));
+  const timeDiff = endDate.getTime() - startDate.getTime();
+  const daysDiff = Math.max(1, Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1);
   dateRangeDisplay.innerHTML = ` <i class="fas fa-info-circle text-yellow-500 mr-1"></i>(Data ${daysDiff} hari)`;
   currentDateFilter.startDate = startDateInput.value;
   currentDateFilter.endDate = endDateInput.value;
@@ -170,10 +177,15 @@ const setupDateFilterListeners = () => {
     const startVal = startDateInput.value;
     const endVal = endDateInput.value;
     if (!startVal || !endVal) {
-      /* ... (validasi tanggal) ... */ return;
+      showToast("Silakan pilih tanggal mulai dan tanggal akhir", "warning");
+      return;
     }
     if (new Date(startVal) > new Date(endVal)) {
-      /* ... (validasi tanggal) ... */ return;
+      showToast(
+        "Tanggal mulai tidak boleh lebih besar dari tanggal akhir",
+        "warning"
+      );
+      return;
     }
     const s = new Date(startVal);
     const e = new Date(endVal);
@@ -190,7 +202,7 @@ const setupDateFilterListeners = () => {
     const y = new Date(d);
     y.setDate(d.getDate() - 1);
     const startVal = y.toISOString().split("T")[0];
-    const endVal = d.toISOString().split("T")[0];
+    const endVal = startVal;
     dateRangeDisplay.innerHTML = ` <i class="fas fa-info-circle text-yellow-500 mr-1"></i>(Data 1 hari)`;
     startDateInput.value = startVal;
     endDateInput.value = endVal;
@@ -199,9 +211,6 @@ const setupDateFilterListeners = () => {
     window.history.pushState({}, document.title, window.location.pathname);
     await loadTop50Cards(startVal, endVal);
     await loadTableData(1);
-  });
-  endDateInput.addEventListener("change", () => {
-    /* ... (validasi tanggal akhir) ... */
   });
 };
 const calculateStartDateFromFilter = (filter) => {
@@ -386,7 +395,6 @@ const infoData = (excludedProducts) => {
                         .join("")
                 }
             </ul>`;
-
     function toggleDropdown() {
       if (dropdown.classList.contains("hidden")) {
         const rect = infoDataEl.getBoundingClientRect();
