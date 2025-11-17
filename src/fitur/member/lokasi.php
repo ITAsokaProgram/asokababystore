@@ -12,7 +12,7 @@ $subdistrict = htmlspecialchars($_GET['subdistrict'] ?? '-');
 // Tentukan string tampilan untuk filter
 $filterDisplay = '';
 if ($filter_type === 'custom' && $start_date && $end_date) {
-    $filterDisplay = "Kustom: " . htmlspecialchars($start_date) . " s/d " . htmlspecialchars($end_date);
+    $filterDisplay = "" . htmlspecialchars($start_date) . " s/d " . htmlspecialchars($end_date);
 } else {
     $filterDisplaysMap = [
         'kemarin' => 'Kemarin',

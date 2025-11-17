@@ -1,28 +1,62 @@
 <?php
 require_once __DIR__ . "/../../../../config.php";
 require_once __DIR__ . ("./../../../auth/middleware_login.php");
+require_once __DIR__ . "/../../../../redis.php";
 header("Content-Type:application/json");
 ini_set("display_errors", 1);
 ini_set("display_startup_errors", 1);
 error_reporting(E_ALL);
-$headers = getallheaders();
-$token = $headers['Authorization'];
-$token = str_replace('Bearer ', '', $token);
-$user = verify_token($token);
-if (!$user) {
-    http_response_code(401);
-    echo json_encode(['status' => false, 'message' => 'Unauthorized']);
-    exit;
+if (php_sapi_name() === 'cli' && isset($argv[1])) {
+    parse_str($argv[1], $_GET);
+}
+if (php_sapi_name() !== 'cli') {
+    $headers = getallheaders();
+    $token = $headers['Authorization'] ?? null;
+    if (!$token) {
+        http_response_code(401);
+        echo json_encode(['status' => false, 'message' => 'Unauthorized: Token not provided']);
+        exit;
+    }
+    $token = str_replace('Bearer ', '', $token);
+    $user = verify_token($token);
+    if (!$user) {
+        http_response_code(401);
+        echo json_encode(['status' => false, 'message' => 'Unauthorized: Invalid token']);
+        exit;
+    }
 }
 $status = $_GET['status'] ?? 'all';
-$params = [];
-$types = "";
-$date_sql = "";
-$status_sql = "";
 $filter_type = $_GET['filter_type'] ?? null;
 $filter_preset = $_GET['filter'] ?? null;
 $start_date = $_GET['start_date'] ?? null;
 $end_date = $_GET['end_date'] ?? null;
+$cacheKey = "report:top_member_sales:" .
+    "status=$status" .
+    "&type=$filter_type" .
+    "&preset=$filter_preset" .
+    "&start=$start_date" .
+    "&end=$end_date";
+try {
+    $cachedData = $redis->get($cacheKey);
+    if ($cachedData) {
+        http_response_code(200);
+        if (php_sapi_name() !== 'cli') {
+            echo $cachedData;
+        } else {
+            echo "Cache found for $cacheKey. Skipping DB query.\n";
+        }
+        $conn->close();
+        exit;
+    }
+} catch (Exception $e) {
+}
+if (php_sapi_name() === 'cli') {
+    echo "Cache not found for default view. Generating cache...\n";
+}
+$params = [];
+$types = "";
+$date_sql = "";
+$status_sql = "";
 $start_date_non = null;
 $end_date_non = null;
 if ($filter_type === 'custom' && $start_date && $end_date) {
@@ -140,6 +174,7 @@ if ($status === 'active') {
 }
 $sql = "SELECT 
     t.kd_cust,
+    t.kd_store,
     c.nama_cust,
     ks.nm_alias AS cabang,
     SUM(t.qty) AS total_qty,
@@ -152,7 +187,7 @@ WHERE
     AND t.kd_cust NOT IN ('', '898989', '#898989', '#999999999')
     $date_sql 
     $status_sql 
-GROUP BY t.kd_cust, c.nama_cust
+GROUP BY t.kd_cust, t.kd_store, c.nama_cust, ks.nm_alias
 ORDER BY total_penjualan DESC
 LIMIT 50";
 $paramsNon = [];
@@ -214,12 +249,23 @@ $stmtNon->execute();
 $resultNon = $stmtNon->get_result();
 $top_member_by_sales_non = $resultNon->fetch_all(MYSQLI_ASSOC);
 $stmtNon->close();
+$jsonData = "";
 if (count($top_member_by_sales) === 0 && count($top_member_by_sales_non) === 0) {
     http_response_code(200);
-    echo json_encode([
+    $response = [
         "success" => false,
         "message" => "Data tidak ditemukan untuk rentang tanggal ini"
-    ]);
+    ];
+    $jsonData = json_encode($response);
+    try {
+        $redis->setex($cacheKey, 900, $jsonData);
+    } catch (Exception $e) {
+    }
+    if (php_sapi_name() !== 'cli') {
+        echo $jsonData;
+    } else {
+        echo "Cache generated (no data) for $cacheKey.\n";
+    }
     $conn->close();
     exit;
 }
@@ -230,7 +276,27 @@ $response = [
     "data" => $top_member_by_sales,
     "data_non" => $top_member_by_sales_non
 ];
+$jsonData = json_encode($response);
+try {
+    $ttl = 900;
+    if (
+        ($filter_preset === 'kemarin') ||
+        ($filter_type === 'custom' && $end_date && $end_date < date('Y-m-d'))
+    ) {
+        $ttl = 3600;
+    }
+    if (php_sapi_name() === 'cli') {
+        $ttl = 84600;
+        echo "Setting CLI cache TTL to $ttl seconds.\n";
+    }
+    $redis->setex($cacheKey, $ttl, $jsonData);
+} catch (Exception $e) {
+}
 http_response_code(200);
-echo json_encode($response);
+if (php_sapi_name() !== 'cli') {
+    echo $jsonData;
+} else {
+    echo "Cache generated (with data) for $cacheKey. TTL: $ttl seconds.\n";
+}
 $conn->close();
 ?>

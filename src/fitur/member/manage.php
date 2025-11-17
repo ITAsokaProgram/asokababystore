@@ -18,7 +18,7 @@ if ($filter_type == 'preset' && !in_array($current_filter, $valid_filters)) {
 $filter_display = '';
 if ($is_filter_applied) {
     if ($filter_type === 'custom' && $start_date && $end_date) {
-        $filter_display = "Kustom: " . htmlspecialchars($start_date) . " s/d " . htmlspecialchars($end_date);
+        $filter_display = "" . htmlspecialchars($start_date) . " s/d " . htmlspecialchars($end_date);
     } else {
         $filter_displays_map = [
             'kemarin' => 'Kemarin',

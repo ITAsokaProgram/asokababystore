@@ -1,34 +1,72 @@
 <?php
 require_once __DIR__ . "/../../../../config.php";
 require_once __DIR__ . ("./../../../auth/middleware_login.php");
+require_once __DIR__ . "/../../../../redis.php";
 header("Content-Type:application/json");
 ini_set("display_errors", 1);
 ini_set("display_startup_errors", 1);
 error_reporting(E_ALL);
-$headers = getallheaders();
-$token = $headers['Authorization'];
-$token = str_replace('Bearer ', '', $token);
-$user = verify_token($token);
-if (!$user) {
-    http_response_code(401);
-    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
-    exit;
+if (php_sapi_name() === 'cli' && isset($argv[1])) {
+    parse_str($argv[1], $_GET);
+}
+if (php_sapi_name() !== 'cli') {
+    $headers = getallheaders();
+    $token = $headers['Authorization'] ?? null;
+    if (!$token) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'message' => 'Unauthorized: Token not provided']);
+        exit;
+    }
+    $token = str_replace('Bearer ', '', $token);
+    $user = verify_token($token);
+    if (!$user) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'message' => 'Unauthorized: Invalid token']);
+        exit;
+    }
 }
 $search = $_GET['search'] ?? '';
 $sortBy = $_GET['sort_by'] ?? 'belanja';
 $page = (int) ($_GET['page'] ?? 1);
 $limit = (int) ($_GET['limit'] ?? 10);
 $status = $_GET['status'] ?? 'all';
+$filter_type = $_GET['filter_type'] ?? null;
+$filter_preset = $_GET['filter'] ?? null;
+$start_date = $_GET['start_date'] ?? null;
+$end_date = $_GET['end_date'] ?? null;
+$cacheKey = "report:paginated_members:" .
+    "status=$status" .
+    "&search=$search" .
+    "&sort=$sortBy" .
+    "&page=$page" .
+    "&limit=$limit" .
+    "&type=$filter_type" .
+    "&preset=$filter_preset" .
+    "&start=$start_date" .
+    "&end=$end_date";
+try {
+    $cachedData = $redis->get($cacheKey);
+    if ($cachedData) {
+        http_response_code(200);
+        if (php_sapi_name() !== 'cli') {
+            echo $cachedData;
+        } else {
+            echo "Cache found for $cacheKey. Skipping DB query.\n";
+        }
+        $conn->close();
+        exit;
+    }
+} catch (Exception $e) {
+}
+if (php_sapi_name() === 'cli') {
+    echo "Cache not found. Generating cache...\n";
+}
 $offset = ($page - 1) * $limit;
 $params = [];
 $types = "";
 $date_sql = "";
 $status_sql = "";
 $searchSql = "";
-$filter_type = $_GET['filter_type'] ?? null;
-$filter_preset = $_GET['filter'] ?? null;
-$start_date = $_GET['start_date'] ?? null;
-$end_date = $_GET['end_date'] ?? null;
 if ($filter_type === 'custom' && $start_date && $end_date) {
     if ($start_date === $end_date) {
         $date_sql = " AND DATE(t.tgl_trans) = ? ";
@@ -147,18 +185,19 @@ if ($sortBy === 'qty') {
     $orderBySql = " ORDER BY c.nama_cust ASC ";
 }
 $countSql = "SELECT COUNT(*) AS total
-             FROM (
-                 SELECT 1
-                 FROM trans_b t
-                 LEFT JOIN customers c ON t.kd_cust = c.kd_cust
-                 WHERE 
-                     t.kd_cust IS NOT NULL
-                     AND t.kd_cust NOT IN ('', '898989', '#898989', '#999999999')
-                     $date_sql
-                     $status_sql
-                     $searchSql
-                 GROUP BY t.kd_cust, c.nama_cust
-             ) AS subquery";
+                    FROM (
+                        SELECT 1
+                        FROM trans_b t
+                        LEFT JOIN customers c ON t.kd_cust = c.kd_cust
+                        LEFT JOIN kode_store ks ON ks.kd_store = t.kd_store
+                        WHERE 
+                            t.kd_cust IS NOT NULL
+                            AND t.kd_cust NOT IN ('', '898989', '#898989', '#999999999')
+                            $date_sql
+                            $status_sql
+                            $searchSql
+                        GROUP BY t.kd_cust, t.kd_store, c.nama_cust, ks.nm_alias
+                    ) AS subquery";
 $stmtCount = $conn->prepare($countSql);
 if (!$stmtCount) {
     http_response_code(500);
@@ -176,23 +215,24 @@ $total_records = $resultCount->fetch_assoc()['total'] ?? 0;
 $total_pages = ceil($total_records / $limit);
 $stmtCount->close();
 $dataSql = "SELECT 
-                t.kd_cust,
-                c.nama_cust,
-                ks.nm_alias AS cabang,
-                SUM(t.qty) AS total_qty,
-                SUM(t.qty * t.harga) AS total_penjualan
-            FROM trans_b t
-            LEFT JOIN customers c ON t.kd_cust = c.kd_cust
-            LEFT JOIN kode_store ks ON ks.kd_store = t.kd_store
-            WHERE 
-                t.kd_cust IS NOT NULL
-                AND t.kd_cust NOT IN ('', '898989', '#898989', '#999999999')
-                $date_sql
-                $status_sql
-                $searchSql
-            GROUP BY t.kd_cust, c.nama_cust
-            $orderBySql
-            LIMIT ? OFFSET ?";
+                        t.kd_cust,
+                        t.kd_store,
+                        c.nama_cust,
+                        ks.nm_alias AS cabang,
+                        SUM(t.qty) AS total_qty,
+                        SUM(t.qty * t.harga) AS total_penjualan
+                    FROM trans_b t
+                    LEFT JOIN customers c ON t.kd_cust = c.kd_cust
+                    LEFT JOIN kode_store ks ON ks.kd_store = t.kd_store
+                    WHERE 
+                        t.kd_cust IS NOT NULL
+                        AND t.kd_cust NOT IN ('', '898989', '#898989', '#999999999')
+                        $date_sql
+                        $status_sql
+                        $searchSql
+                    GROUP BY t.kd_cust, t.kd_store, c.nama_cust, ks.nm_alias
+                    $orderBySql
+                    LIMIT ? OFFSET ?";
 $params[] = $limit;
 $params[] = $offset;
 $types .= 'ii';
@@ -209,10 +249,20 @@ $data = $resultData->fetch_all(MYSQLI_ASSOC);
 $stmtData->close();
 if (empty($data)) {
     http_response_code(200);
-    echo json_encode([
+    $response = [
         "success" => false,
         "message" => "Data tidak ditemukan"
-    ]);
+    ];
+    $jsonData = json_encode($response);
+    try {
+        $redis->setex($cacheKey, 900, $jsonData);
+    } catch (Exception $e) {
+    }
+    if (php_sapi_name() !== 'cli') {
+        echo $jsonData;
+    } else {
+        echo "Cache generated (no data) for $cacheKey.\n";
+    }
     $conn->close();
     exit;
 }
@@ -227,7 +277,27 @@ $response = [
         "offset" => $offset
     ]
 ];
+$jsonData = json_encode($response);
+try {
+    $ttl = 900;
+    if (
+        ($filter_preset === 'kemarin') ||
+        ($filter_type === 'custom' && $end_date && $end_date < date('Y-m-d'))
+    ) {
+        $ttl = 3600;
+    }
+    if (php_sapi_name() === 'cli') {
+        $ttl = 84600;
+        echo "Setting CLI cache TTL to $ttl seconds.\n";
+    }
+    $redis->setex($cacheKey, $ttl, $jsonData);
+} catch (Exception $e) {
+}
 http_response_code(200);
-echo json_encode($response);
+if (php_sapi_name() !== 'cli') {
+    echo $jsonData;
+} else {
+    echo "Cache generated (with data) for $cacheKey.\n";
+}
 $conn->close();
 ?>
