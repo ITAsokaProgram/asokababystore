@@ -68,11 +68,30 @@ export const fetchProductFav = async () => {
     }).showToast();
   }
 };
-export const filterProductFav = async (startDate, endDate) => {
+export const filterProductFav = async (filterParams, status) => {
   const token = getCookie("admin_token");
+  const params = new URLSearchParams();
+  if (filterParams) {
+    if (filterParams.filter_type) {
+      params.append("filter_type", filterParams.filter_type);
+    }
+    if (filterParams.filter) {
+      params.append("filter", filterParams.filter);
+    }
+    if (filterParams.start_date) {
+      params.append("start_date", filterParams.start_date);
+    }
+    if (filterParams.end_date) {
+      params.append("end_date", filterParams.end_date);
+    }
+  }
+  if (status) {
+    params.append("status", status);
+  }
+  const queryString = params.toString();
   try {
     const response = await fetch(
-      `/src/api/member/product/get_product_fav?start_date=${startDate}&end_date=${endDate}`,
+      `/src/api/member/product/get_product_fav.php?${queryString}`,
       {
         method: "GET",
         headers: {
@@ -109,15 +128,32 @@ export const fetchTopSales = async () => {
     return null;
   }
 };
-export const fetchTopMember = async (startDate, endDate) => {
+export const fetchTopMember = async (filterParams, status) => {
   const token = getCookie("admin_token");
-  let queryString = "";
-  if (startDate && endDate) {
-    queryString = `?start_date=${startDate}&end_date=${endDate}`;
+  const params = new URLSearchParams();
+  if (filterParams) {
+    if (filterParams.filter_type) {
+      params.append("filter_type", filterParams.filter_type);
+    }
+    if (filterParams.filter) {
+      params.append("filter", filterParams.filter);
+    }
+    if (filterParams.start_date) {
+      params.append("start_date", filterParams.start_date);
+    }
+    if (filterParams.end_date) {
+      params.append("end_date", filterParams.end_date);
+    }
   }
+  if (status) {
+    params.append("status", status);
+  }
+  const queryString = params.toString();
   try {
     const response = await fetch(
-      `/src/api/member/product/get_top_member.php${queryString}`,
+      `/src/api/member/product/get_top_member.php${
+        queryString ? `?${queryString}` : ""
+      }`,
       {
         method: "GET",
         headers: {

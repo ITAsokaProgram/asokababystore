@@ -20,12 +20,23 @@ async function loadActivityData() {
   const formatter = new Intl.NumberFormat("id-ID");
   try {
     const params = new URLSearchParams(window.location.search);
-    const filter = params.get("filter");
-    if (!filter) {
-      console.log("Tidak ada filter, chart tidak dimuat.");
+    const filterType = params.get("filter_type");
+
+    if (!filterType) {
+      console.log("Tidak ada filter_type, chart tidak dimuat.");
       return;
     }
-    const result = await api.getMemberActivity(filter);
+
+    // Kumpulkan semua parameter filter
+    const filterParams = {
+      filter_type: filterType,
+      filter: params.get("filter"),
+      start_date: params.get("start_date"),
+      end_date: params.get("end_date"),
+    };
+
+    const result = await api.getMemberActivity(filterParams);
+
     if (result.success === true && result.data) {
       const data = result.data;
       updatePlaceholder(
@@ -40,7 +51,8 @@ async function loadActivityData() {
         "inactive-member-placeholder",
         formatter.format(data.inactive)
       );
-      renderMemberChart("memberActivityChart", data, filter);
+      // Teruskan semua parameter filter ke fungsi chart
+      renderMemberChart("memberActivityChart", data, filterParams);
     } else {
       throw new Error(result.message || "Gagal memuat data aktivitas");
     }

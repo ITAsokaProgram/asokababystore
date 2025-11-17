@@ -56,43 +56,114 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     echo json_encode(['success' => false, 'message' => 'Method Not Allowed']);
     exit();
 }
+
+// --- FUNGSI HELPER ---
+function getDateFilterParams($get_params, $table_alias = 't')
+{
+    $date_where_clause = "";
+    $params = [];
+    $types = "";
+    $filter_display = "";
+
+    $filter_type = $get_params['filter_type'] ?? 'preset';
+
+    if ($filter_type === 'custom' && !empty($get_params['start_date']) && !empty($get_params['end_date'])) {
+        $start_date = $get_params['start_date'];
+        $end_date = $get_params['end_date'];
+        $end_date_with_time = $end_date . ' 23:59:59';
+
+        $date_where_clause = " AND {$table_alias}.tgl_trans BETWEEN ? AND ?";
+        $params[] = $start_date;
+        $params[] = $end_date_with_time;
+        $types = "ss";
+        $filter_display = htmlspecialchars($start_date) . " s/d " . htmlspecialchars($end_date);
+
+    } else {
+        $filter = $get_params['filter'] ?? '3bulan';
+        $filter_map = [
+            'kemarin' => '1 day',
+            '1minggu' => '1 week',
+            '1bulan' => '1 month',
+            '3bulan' => '3 months',
+            '6bulan' => '6 months',
+            '9bulan' => '9 months',
+            '12bulan' => '12 months'
+        ];
+        $display_map = [
+            'kemarin' => 'Kemarin',
+            '1minggu' => '1 Minggu Terakhir',
+            '1bulan' => '1 Bulan Terakhir',
+            '3bulan' => '3 Bulan Terakhir',
+            '6bulan' => '6 Bulan Terakhir',
+            '9bulan' => '9 Bulan Terakhir',
+            '12bulan' => '1 Tahun Terakhir',
+            'semua' => 'Semua Waktu'
+        ];
+        $filter_display = $display_map[$filter] ?? '3 Bulan Terakhir';
+
+        if ($filter === 'semua') {
+            // Tidak ada klausa where tanggal
+        } elseif ($filter === 'kemarin') {
+            $cutoff_date_filter = date('Y-m-d', strtotime("-1 day"));
+            $date_where_clause = " AND DATE({$table_alias}.tgl_trans) = ?";
+            $params[] = $cutoff_date_filter;
+            $types = "s";
+        } else {
+            $interval = $filter_map[$filter] ?? '3 months';
+            $cutoff_date_filter = date('Y-m-d 00:00:00', strtotime("-$interval"));
+            $date_where_clause = " AND {$table_alias}.tgl_trans >= ?";
+            $params[] = $cutoff_date_filter;
+            $types = "s";
+        }
+    }
+
+    return [
+        'sql_clause' => $date_where_clause,
+        'params' => $params,
+        'types' => $types,
+        'display' => $filter_display
+    ];
+}
+// --- AKHIR FUNGSI HELPER ---
+
 try {
-    $filter = $_GET['filter'] ?? '3bulan';
+    // HAPUS $filter = $_GET['filter'] ?? '3bulan';
     $status = $_GET['status'] ?? 'active';
     $limit = (int) ($_GET['limit'] ?? 10);
-    $filter_map = [
-        'kemarin' => '1 day',
-        '1minggu' => '1 week',
-        '1bulan' => '1 month',
-        '3bulan' => '3 months',
-        '6bulan' => '6 months',
-        '9bulan' => '9 months',
-        '12bulan' => '12 months'
-    ];
-    $interval_trans = $filter_map[$filter] ?? '3 months';
-    if ($status === 'inactive') {
-        $cutoff_active_ts = strtotime("-3 months");
-        $cutoff_filter_ts = strtotime("-$interval_trans");
-        if ($filter !== 'semua' && $cutoff_filter_ts >= $cutoff_active_ts) {
+
+    // HAPUS $filter_map
+    // HAPUS $interval_trans
+
+    // Logika exit cepat untuk inactive
+    $filter_type = $_GET['filter_type'] ?? 'preset';
+    $filter = $_GET['filter'] ?? '3bulan';
+    if ($status === 'inactive' && $filter_type === 'preset') {
+        $isFilter3MonthsOrLess = in_array($filter, ['kemarin', '1minggu', '1bulan', '3bulan']);
+        if ($isFilter3MonthsOrLess) {
             echo json_encode(['success' => true, 'data' => []]);
             $conn->close();
             exit();
         }
     }
+    // HAPUS BLOK if ($status === 'inactive') LAMA
+
     $params = [];
     $types = "";
     $where_clauses = [];
-    if ($filter === 'kemarin') {
-        $yesterday = date('Y-m-d', strtotime("-1 day"));
-        $where_clauses[] = "DATE(t.tgl_trans) = ?";
-        $params[] = $yesterday;
-        $types .= "s";
-    } elseif ($filter !== 'semua') {
-        $cutoff_trans = date('Y-m-d 00:00:00', strtotime("-$interval_trans"));
-        $where_clauses[] = "t.tgl_trans >= ?";
-        $params[] = $cutoff_trans;
-        $types .= "s";
+
+    // HAPUS BLOK if ($filter === 'kemarin') ... elseif ($filter !== 'semua')
+
+    // --- GUNAKAN FUNGSI HELPER ---
+    $dateFilter = getDateFilterParams($_GET, 't');
+    if (!empty($dateFilter['sql_clause'])) {
+        // Helper returns ' AND ...', remove leading ' AND '
+        $where_clauses[] = preg_replace('/^\s*AND\s/i', '', $dateFilter['sql_clause']);
     }
+    $params = array_merge($params, $dateFilter['params']);
+    $types .= $dateFilter['types'];
+    // ----------------------------
+
+    // Logika status (tetap sama)
     $cutoff_active = date('Y-m-d 00:00:00', strtotime("-3 months"));
     if ($status === 'active') {
         $where_clauses[] = "(c.Last_Trans >= ?)";
@@ -103,9 +174,12 @@ try {
         $params[] = $cutoff_active;
         $types .= "s";
     }
+
     $where_clauses[] = "t.kd_cust IS NOT NULL";
     $where_clauses[] = "t.kd_cust NOT IN ('', '898989', '#898989', '#999999999')";
+
     $sql_where = implode(" AND ", $where_clauses);
+
     $sql = "
         SELECT
             c.nama_cust,
@@ -123,16 +197,21 @@ try {
             total_spent DESC
         LIMIT ?
     ";
+
     $params[] = $limit;
     $types .= "i";
+
     $stmt = $conn->prepare($sql);
     if ($stmt === false) {
         throw new Exception("Database prepare failed (data): " . $conn->error);
     }
+
     $stmt->bind_param($types, ...$params);
+
     if (!$stmt->execute()) {
         throw new Exception("Gagal eksekusi query (data): " . $stmt->error);
     }
+
     $result = $stmt->get_result();
     $data = [];
     while ($row = $result->fetch_assoc()) {
@@ -144,10 +223,12 @@ try {
     }
     $stmt->close();
     $conn->close();
+
     echo json_encode([
         'success' => true,
         'data' => $data
     ]);
+
 } catch (Throwable $t) {
     $logger->critical("FATAL ERROR: " . $t->getMessage(), [
         'file' => $t->getFile(),

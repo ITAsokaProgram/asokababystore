@@ -1,3 +1,5 @@
+// ... (Bagian atas file tetap sama) ...
+
 const CHART_COLORS = [
   "rgba(59, 130, 246, 0.9)",
   "rgba(16, 185, 129, 0.9)",
@@ -32,7 +34,26 @@ function addChartHoverHandlers(chartInstance, chartElement) {
   });
 }
 
-export function renderAgeChart(chartInstance, elementId, data, currentFilter) {
+/**
+ * Helper untuk membuat query string filter dari objek state.
+ * @param {object} filterParams - Objek berisi { filter_type, filter, start_date, end_date }.
+ * @returns {URLSearchParams}
+ */
+function buildFilterQuery(filterParams) {
+  const params = new URLSearchParams();
+  if (filterParams && filterParams.filter_type) {
+    params.append("filter_type", filterParams.filter_type);
+    if (filterParams.filter_type === "custom") {
+      params.append("start_date", filterParams.start_date);
+      params.append("end_date", filterParams.end_date);
+    } else {
+      params.append("filter", filterParams.filter);
+    }
+  }
+  return params;
+}
+
+export function renderAgeChart(chartInstance, elementId, data, state) {
   const chartElement = document.getElementById(elementId);
   if (!chartElement) return null;
   if (chartInstance) {
@@ -46,6 +67,7 @@ export function renderAgeChart(chartInstance, elementId, data, currentFilter) {
   }));
   const total = filteredData.reduce((acc, curr) => acc + curr.count, 0);
   const option = {
+    // ... (Opsi chart tetap sama) ...
     animationDuration: 1000,
     animationEasing: "cubicOut",
     color: CHART_COLORS,
@@ -89,11 +111,11 @@ export function renderAgeChart(chartInstance, elementId, data, currentFilter) {
     if (params.componentType !== "series") return;
     const ageGroup = params.name;
     if (ageGroup) {
-      const targetUrl = `umur.php?filter=${encodeURIComponent(
-        currentFilter
-      )}&age_group=${encodeURIComponent(ageGroup)}&status=${encodeURIComponent(
-        currentStatus
-      )}`; 
+      // Modifikasi di sini: Gunakan state.filterParams
+      const filterParams = buildFilterQuery(state.filterParams);
+      filterParams.append("age_group", ageGroup);
+      filterParams.append("status", state.currentStatus);
+      const targetUrl = `umur.php?${filterParams.toString()}`;
       window.location.href = targetUrl;
     }
   });
@@ -113,6 +135,7 @@ export function renderLocationChart(
     chartInstance.dispose();
   }
   const newChartInstance = echarts.init(chartElement);
+  // ... (Opsi chart tetap sama) ...
   const filteredData = data;
   filteredData.sort((a, b) => b.count - a.count);
   const chartData = filteredData.map((d) => ({
@@ -161,6 +184,7 @@ export function renderLocationChart(
   newChartInstance.setOption(option);
   newChartInstance.off("click");
   newChartInstance.on("click", (params) => {
+    // ... (Logika klik ini sudah benar karena memanggil callbacks) ...
     if (params.componentType !== "series") return;
     const clickedLabel = params.name;
     if (state.currentLocationLevel === "city") {
@@ -189,6 +213,7 @@ export function renderTopMemberChart(chartInstance, elementId, data, state) {
     chartInstance.dispose();
   }
   const newChartInstance = echarts.init(chartElement);
+  // ... (Opsi chart tetap sama) ...
   const filteredData = data;
   const chartData = filteredData.map((d) => ({
     value: d.total_spent,
@@ -238,13 +263,12 @@ export function renderTopMemberChart(chartInstance, elementId, data, state) {
     if (params.componentType !== "series") return;
     const customerData = params.data;
     if (customerData) {
-      const targetUrl = `customer.php?filter=${encodeURIComponent(
-        state.currentFilter
-      )}&status=${encodeURIComponent(
-        state.currentStatus
-      )}&kd_cust=${encodeURIComponent(
-        customerData.kd_cust
-      )}&nama_cust=${encodeURIComponent(customerData.nama_cust)}`;
+      // Modifikasi di sini: Gunakan state.filterParams
+      const filterParams = buildFilterQuery(state.filterParams);
+      filterParams.append("status", state.currentStatus);
+      filterParams.append("kd_cust", customerData.kd_cust);
+      filterParams.append("nama_cust", customerData.nama_cust);
+      const targetUrl = `customer.php?${filterParams.toString()}`;
       window.location.href = targetUrl;
     }
   });
@@ -258,6 +282,7 @@ export function renderTopProductChart(chartInstance, elementId, data, state) {
     chartInstance.dispose();
   }
   const newChartInstance = echarts.init(chartElement);
+  // ... (Opsi chart tetap sama) ...
   const filteredData = data;
   const chartData = filteredData.map((d) => ({
     value: d.total_item_qty,
@@ -309,26 +334,28 @@ export function renderTopProductChart(chartInstance, elementId, data, state) {
     if (params.componentType !== "series") return;
     const customerData = params.data;
     if (customerData) {
-      const targetUrl = `customer.php?filter=${encodeURIComponent(
-        state.currentFilter
-      )}&status=${encodeURIComponent(
-        state.currentStatus
-      )}&kd_cust=${encodeURIComponent(
-        customerData.kd_cust
-      )}&nama_cust=${encodeURIComponent(customerData.nama_cust)}`;
+      // Modifikasi di sini: Gunakan state.filterParams
+      const filterParams = buildFilterQuery(state.filterParams);
+      filterParams.append("status", state.currentStatus);
+      filterParams.append("kd_cust", customerData.kd_cust);
+      filterParams.append("nama_cust", customerData.nama_cust);
+      const targetUrl = `customer.php?${filterParams.toString()}`;
       window.location.href = targetUrl;
     }
   });
   addChartHoverHandlers(newChartInstance, chartElement);
   return newChartInstance;
 }
-export function renderMemberChart(elementId, data, filter) {
+
+// --- MODIFIKASI FUNGSI INI ---
+export function renderMemberChart(elementId, data, filterParams) {
   const chartElement = document.getElementById(elementId);
   if (!chartElement) {
     console.error(`Chart element '${elementId}' not found`);
     return null;
   }
   const chartInstance = echarts.init(chartElement);
+  // ... (Opsi chart tetap sama) ...
   const total = data.active + data.inactive;
   const chartData = [
     {
@@ -392,10 +419,12 @@ export function renderMemberChart(elementId, data, filter) {
     } else if (clickedElementIndex === 1) {
       status = "inactive";
     }
-    if (status && filter) {
-      const targetUrl = `manage_second_step.php?filter=${encodeURIComponent(
-        filter
-      )}&status=${encodeURIComponent(status)}`;
+
+    if (status && filterParams) {
+      // Modifikasi di sini: Gunakan buildFilterQuery
+      const urlParams = buildFilterQuery(filterParams);
+      urlParams.append("status", status);
+      const targetUrl = `manage_second_step.php?${urlParams.toString()}`;
       window.location.href = targetUrl;
     }
   });
@@ -415,7 +444,7 @@ export function renderTopMemberFrequencyChart(
     chartInstance.dispose();
   }
   const newChartInstance = echarts.init(chartElement);
-
+  // ... (Opsi chart tetap sama) ...
   const filteredData = data;
   const chartData = filteredData.map((d) => ({
     value: d.total_transactions,
@@ -472,13 +501,12 @@ export function renderTopMemberFrequencyChart(
     if (params.componentType !== "series") return;
     const customerData = params.data;
     if (customerData) {
-      const targetUrl = `customer.php?filter=${encodeURIComponent(
-        state.currentFilter
-      )}&status=${encodeURIComponent(
-        state.currentStatus
-      )}&kd_cust=${encodeURIComponent(
-        customerData.kd_cust
-      )}&nama_cust=${encodeURIComponent(customerData.nama_cust)}`;
+      // Modifikasi di sini: Gunakan state.filterParams
+      const filterParams = buildFilterQuery(state.filterParams);
+      filterParams.append("status", state.currentStatus);
+      filterParams.append("kd_cust", customerData.kd_cust);
+      filterParams.append("nama_cust", customerData.nama_cust);
+      const targetUrl = `customer.php?${filterParams.toString()}`;
       window.location.href = targetUrl;
     }
   });

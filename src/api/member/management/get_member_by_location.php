@@ -60,29 +60,96 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     echo json_encode(['success' => false, 'message' => 'Method Not Allowed']);
     exit();
 }
+
+// --- FUNGSI HELPER ---
+function getDateFilterParams($get_params, $table_alias = 't')
+{
+    $date_where_clause = "";
+    $params = [];
+    $types = "";
+    $filter_display = "";
+
+    $filter_type = $get_params['filter_type'] ?? 'preset';
+
+    if ($filter_type === 'custom' && !empty($get_params['start_date']) && !empty($get_params['end_date'])) {
+        $start_date = $get_params['start_date'];
+        $end_date = $get_params['end_date'];
+        $end_date_with_time = $end_date . ' 23:59:59';
+
+        $date_where_clause = " AND {$table_alias}.tgl_trans BETWEEN ? AND ?";
+        $params[] = $start_date;
+        $params[] = $end_date_with_time;
+        $types = "ss";
+        $filter_display = htmlspecialchars($start_date) . " s/d " . htmlspecialchars($end_date);
+
+    } else {
+        $filter = $get_params['filter'] ?? '3bulan';
+        $filter_map = [
+            'kemarin' => '1 day',
+            '1minggu' => '1 week',
+            '1bulan' => '1 month',
+            '3bulan' => '3 months',
+            '6bulan' => '6 months',
+            '9bulan' => '9 months',
+            '12bulan' => '12 months'
+        ];
+        $display_map = [
+            'kemarin' => 'Kemarin',
+            '1minggu' => '1 Minggu Terakhir',
+            '1bulan' => '1 Bulan Terakhir',
+            '3bulan' => '3 Bulan Terakhir',
+            '6bulan' => '6 Bulan Terakhir',
+            '9bulan' => '9 Bulan Terakhir',
+            '12bulan' => '1 Tahun Terakhir',
+            'semua' => 'Semua Waktu'
+        ];
+        $filter_display = $display_map[$filter] ?? '3 Bulan Terakhir';
+
+        if ($filter === 'semua') {
+            // Tidak ada klausa where tanggal
+        } elseif ($filter === 'kemarin') {
+            $cutoff_date_filter = date('Y-m-d', strtotime("-1 day"));
+            $date_where_clause = " AND DATE({$table_alias}.tgl_trans) = ?";
+            $params[] = $cutoff_date_filter;
+            $types = "s";
+        } else {
+            $interval = $filter_map[$filter] ?? '3 months';
+            $cutoff_date_filter = date('Y-m-d 00:00:00', strtotime("-$interval"));
+            $date_where_clause = " AND {$table_alias}.tgl_trans >= ?";
+            $params[] = $cutoff_date_filter;
+            $types = "s";
+        }
+    }
+
+    return [
+        'sql_clause' => $date_where_clause,
+        'params' => $params,
+        'types' => $types,
+        'display' => $filter_display
+    ];
+}
+// --- AKHIR FUNGSI HELPER ---
+
 try {
-    $filter = $_GET['filter'] ?? '3bulan';
+    // HAPUS $filter = $_GET['filter'] ?? '3bulan';
     $status = $_GET['status'] ?? 'active';
     $level = $_GET['level'] ?? 'city';
     $selected_city = $_GET['city'] ?? null;
     $selected_district = $_GET['district'] ?? null;
     $limit_param = $_GET['limit'] ?? 'default';
+
     $limit_clause = "";
     if ($limit_param === 'default') {
         $limit_clause = " LIMIT 20 ";
     }
-    $filter_map = [
-        'kemarin' => '1 day',
-        '1minggu' => '1 week',
-        '1bulan' => '1 month',
-        '3bulan' => '3 months',
-        '6bulan' => '6 months',
-        '9bulan' => '9 months',
-        '12bulan' => '12 months'
-    ];
+
+    // HAPUS $filter_map
+
     $params = [];
     $types = "";
     $where_clause = "";
+
+    // Logika status (tetap sama)
     $cutoff_date_status = date('Y-m-d 00:00:00', strtotime("-3 months"));
     if ($status === 'active') {
         $where_clause = " WHERE Last_Trans >= ?";
@@ -93,30 +160,33 @@ try {
         $params[] = $cutoff_date_status;
         $types .= "s";
     }
-    $cutoff_date_filter = null;
-    $interval = $filter_map[$filter] ?? '3 months';
-    $isFilter3MonthsOrLess = in_array($filter, ['kemarin', '1minggu', '1bulan', '3bulan']);
-    if ($filter === 'kemarin') {
-        $cutoff_date_filter = date('Y-m-d', strtotime("-1 day"));
-    } elseif ($filter !== 'semua') {
-        $cutoff_date_filter = date('Y-m-d 00:00:00', strtotime("-$interval"));
+
+    // HAPUS $cutoff_date_filter = null;
+    // HAPUS $interval = $filter_map[$filter] ?? '3 months';
+
+    // Tambahkan logika $isFilter3MonthsOrLess
+    $filter_type = $_GET['filter_type'] ?? 'preset';
+    $filter = $_GET['filter'] ?? '3bulan';
+    $isFilter3MonthsOrLess = false;
+    if ($filter_type === 'preset') {
+        $isFilter3MonthsOrLess = in_array($filter, ['kemarin', '1minggu', '1bulan', '3bulan']);
     }
-    $date_where_clause = "";
-    $params_for_products = [];
-    $types_for_products = "";
-    if ($filter === 'kemarin' && $cutoff_date_filter) {
-        $date_where_clause = " AND DATE(t.tgl_trans) = ?";
-        $params_for_products[] = $cutoff_date_filter;
-        $types_for_products .= "s";
-    } elseif ($filter !== 'semua' && $cutoff_date_filter) {
-        $date_where_clause = " AND t.tgl_trans >= ?";
-        $params_for_products[] = $cutoff_date_filter;
-        $types_for_products .= "s";
-    }
+
+    // HAPUS $date_where_clause, $params_for_products, $types_for_products
+    // HAPUS BLOK if ($filter === 'kemarin' ...)
+
+    // --- GUNAKAN FUNGSI HELPER ---
+    $dateFilter = getDateFilterParams($_GET, 't');
+    $date_where_clause = $dateFilter['sql_clause'];
+    $params_for_products = $dateFilter['params'];
+    $types_for_products = $dateFilter['types'];
+    // ----------------------------
+
     $location_field = "";
     $city_field_logic = "IF(Kota IS NULL OR Kota = '', 'Customer belum input', Kota)";
     $district_field_logic = "IF(Kec IS NULL OR Kec = '', 'Customer belum input', Kec)";
     $subdistrict_field_logic = "IF(Kel IS NULL OR Kel = '', 'Customer belum input', Kel)";
+
     switch ($level) {
         case 'district':
             $location_field = $district_field_logic;
@@ -136,10 +206,12 @@ try {
             $location_field = $city_field_logic;
             break;
     }
+
     $exclude_clause = "
         AND UPPER(t.descp) NOT LIKE '%MEMBER BY PHONE%'
         AND UPPER(t.descp) NOT LIKE '%TAS ASOKA BIRU%'
     ";
+
     $sql = "
         SELECT
             loc.location_name,
@@ -196,13 +268,16 @@ try {
         ORDER BY loc.count DESC
         $limit_clause
     ";
+
     $stmt = $conn->prepare($sql);
     if ($stmt === false) {
         $logger->error("Database prepare failed (active): " . $conn->error);
         throw new Exception("Database prepare failed (active): " . $conn->error);
     }
+
     $all_params = array_merge($params, $params, $params_for_products);
     $all_types = $types . $types . $types_for_products;
+
     if (!empty($all_params)) {
         $bind_params = [$all_types];
         foreach ($all_params as $key => $value) {
@@ -210,9 +285,11 @@ try {
         }
         call_user_func_array([$stmt, 'bind_param'], $bind_params);
     }
+
     if (!$stmt->execute()) {
         throw new Exception("Gagal eksekusi query: " . $stmt->error);
     }
+
     $result = $stmt->get_result();
     $data = [];
     while ($row = $result->fetch_assoc()) {
@@ -226,10 +303,12 @@ try {
     $stmt->close();
     $conn->close();
     ob_end_clean();
+
     echo json_encode([
         'success' => true,
         'data' => $data
     ]);
+
 } catch (Throwable $t) {
     ob_end_clean();
     $logger->critical("🔥 FATAL ERROR: " . $t->getMessage());

@@ -18,26 +18,29 @@ import {
   showDetailModalMember,
 } from "./detail_transaction.js";
 import { fetchTransaction } from "./fetch_transaction.js";
+
+// Mengganti currentDateFilter menjadi objek yang lebih lengkap
 let currentDateFilter = {
-  startDate: null,
-  endDate: null,
+  filter_type: null,
+  filter: null,
+  start_date: null,
+  end_date: null,
 };
+let currentStatus = null; // <-- Menambahkan status
 let currentPage = 1;
 let itemsPerPage = 10;
 let currentSearch = "";
 let currentSort = "belanja";
 let totalPages = 1;
+
 const initTopSalesDisplay = async () => {
-  setupEventListeners();
-  const urlParams = new URLSearchParams(window.location.search);
-  const filterParam = urlParams.get("filter");
-  const startDateInput = document.getElementById("start-date");
-  const endDateInput = document.getElementById("end-date");
-  await loadTop50Cards(startDateInput.value, endDateInput.value);
-  await loadTableData(1);
+  setupEventListeners(); // <-- Fungsi ini sekarang akan membaca URL & mengatur filter
+  await loadTop50Cards(); // <-- Membaca dari state global
+  await loadTableData(1); // <-- Membaca dari state global
 };
+
 const setupEventListeners = () => {
-  setupDateFilterListeners();
+  setupDateFilterListeners(); // <-- Panggil ini dulu untuk mengisi state filter
   const searchInput = document.getElementById("search-input");
   if (searchInput) {
     searchInput.addEventListener("change", (e) => {
@@ -132,12 +135,60 @@ const setupEventListeners = () => {
     }
   });
 };
+
+const getDatesFromPreset = (filter) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  let startDate = new Date(today);
+  let endDate = new Date(today); // Default end date is today
+
+  switch (filter) {
+    case "kemarin":
+      startDate.setDate(today.getDate() - 1);
+      endDate.setDate(today.getDate() - 1); // Hanya tanggal kemarin
+      break;
+    case "1minggu":
+      startDate.setDate(today.getDate() - 7);
+      // endDate tetap hari ini
+      break;
+    case "1bulan":
+      startDate.setMonth(today.getMonth() - 1);
+      // endDate tetap hari ini
+      break;
+    case "3bulan":
+      startDate.setMonth(today.getMonth() - 3);
+      break;
+    case "6bulan":
+      startDate.setMonth(today.getMonth() - 6);
+      break;
+    case "9bulan":
+      startDate.setMonth(today.getMonth() - 9);
+      break;
+    case "12bulan":
+      startDate.setFullYear(today.getFullYear() - 1);
+      break;
+    default:
+      // Default ke 'kemarin'
+      startDate.setDate(today.getDate() - 1);
+      endDate.setDate(today.getDate() - 1);
+      break;
+  }
+
+  return {
+    start: startDate.toISOString().split("T")[0],
+    end: endDate.toISOString().split("T")[0],
+  };
+};
+
+// --- FUNGSI UTAMA YANG DIMODIFIKASI ---
 const setupDateFilterListeners = () => {
   const startDateInput = document.getElementById("start-date");
   const endDateInput = document.getElementById("end-date");
   const applyFilterBtn = document.getElementById("apply-date-filter");
   const resetFilterBtn = document.getElementById("reset-date-filter");
   const dateRangeDisplay = document.getElementById("date-range-display");
+
   if (
     !startDateInput ||
     !endDateInput ||
@@ -148,34 +199,74 @@ const setupDateFilterListeners = () => {
     console.warn("Date filter elements not found on top_sales.php");
     return;
   }
+
   const urlParams = new URLSearchParams(window.location.search);
-  const filterParam = urlParams.get("filter");
-  const today = new Date();
-  let startDate;
-  let endDate;
-  if (filterParam === "kemarin") {
-    startDate = new Date(today);
-    startDate.setDate(today.getDate() - 1);
-    endDate = new Date(startDate);
-  } else if (filterParam) {
-    startDate = calculateStartDateFromFilter(filterParam);
-    endDate = new Date(today);
+  const today = new Date().toISOString().split("T")[0];
+
+  // Ambil semua parameter filter dari URL
+  const urlFilterType = urlParams.get("filter_type");
+  const urlFilter = urlParams.get("filter");
+  const urlStartDate = urlParams.get("start_date");
+  const urlEndDate = urlParams.get("end_date");
+  currentStatus = urlParams.get("status"); // <-- Set status global
+
+  let displayStartDate, displayEndDate;
+
+  // --- LOGIKA BARU UNTUK MENGISI TANGGAL ---
+  if (urlFilterType === "preset" && urlFilter) {
+    // 1. Jika filter_type=preset, hitung tanggalnya
+    const dates = getDatesFromPreset(urlFilter);
+    displayStartDate = dates.start;
+    displayEndDate = dates.end;
+
+    // Set state global
+    currentDateFilter.filter_type = urlFilterType;
+    currentDateFilter.filter = urlFilter;
+    // Tetapkan start_date & end_date agar panggilan API konsisten
+    currentDateFilter.start_date = displayStartDate;
+    currentDateFilter.end_date = displayEndDate;
+  } else if (urlFilterType === "custom" && urlStartDate) {
+    // 2. Jika filter_type=custom, gunakan tanggal dari URL
+    displayStartDate = urlStartDate;
+    displayEndDate = urlEndDate;
+
+    // Set state global
+    currentDateFilter.filter_type = urlFilterType;
+    currentDateFilter.filter = null;
+    currentDateFilter.start_date = urlStartDate;
+    currentDateFilter.end_date = urlEndDate;
   } else {
-    startDate = new Date(today);
-    startDate.setDate(today.getDate() - 1);
-    endDate = new Date(startDate);
+    // 3. Fallback jika tidak ada filter (default ke kemarin)
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    displayStartDate = yesterday.toISOString().split("T")[0];
+    displayEndDate = displayStartDate;
+
+    // Set state global
+    currentDateFilter.filter_type = "custom"; // Default ke custom
+    currentDateFilter.start_date = displayStartDate;
+    currentDateFilter.end_date = displayEndDate;
   }
-  startDateInput.value = startDate.toISOString().split("T")[0];
-  endDateInput.value = endDate.toISOString().split("T")[0];
-  endDateInput.max = today.toISOString().split("T")[0];
-  const timeDiff = endDate.getTime() - startDate.getTime();
+  // --- AKHIR LOGIKA BARU ---
+
+  // Set nilai awal untuk date picker
+  startDateInput.value = displayStartDate;
+  endDateInput.value = displayEndDate;
+  endDateInput.max = today;
+
+  // Set teks display rentang tanggal
+  // Hati-hati dengan zona waktu, 'new Date()' bisa berbeda
+  const s = new Date(displayStartDate + "T00:00:00");
+  const e = new Date(displayEndDate + "T00:00:00");
+  const timeDiff = e.getTime() - s.getTime();
   const daysDiff = Math.max(1, Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1);
   dateRangeDisplay.innerHTML = ` <i class="fas fa-info-circle text-yellow-500 mr-1"></i>(Data ${daysDiff} hari)`;
-  currentDateFilter.startDate = startDateInput.value;
-  currentDateFilter.endDate = endDateInput.value;
+
+  // --- Event Listener untuk Tombol Filter ---
   applyFilterBtn.addEventListener("click", async () => {
     const startVal = startDateInput.value;
     const endVal = endDateInput.value;
+
     if (!startVal || !endVal) {
       showToast("Silakan pilih tanggal mulai dan tanggal akhir", "warning");
       return;
@@ -187,33 +278,53 @@ const setupDateFilterListeners = () => {
       );
       return;
     }
-    const s = new Date(startVal);
-    const e = new Date(endVal);
+
+    // Saat pengguna memfilter manual, selalu jadi 'custom'
+    currentDateFilter.filter_type = "custom";
+    currentDateFilter.start_date = startVal;
+    currentDateFilter.end_date = endVal;
+    currentDateFilter.filter = null; // Hapus filter preset
+
+    // Update display
+    const s = new Date(startVal + "T00:00:00");
+    const e = new Date(endVal + "T00:00:00");
     const diff = Math.max(1, Math.ceil((e - s) / (1000 * 3600 * 24)) + 1);
-    currentDateFilter.startDate = startVal;
-    currentDateFilter.endDate = endVal;
     dateRangeDisplay.innerHTML = ` <i class="fas fa-info-circle text-yellow-500 mr-1"></i>(Data ${diff} hari)`;
+
+    // Hapus parameter URL lama agar tidak membingungkan
     window.history.pushState({}, document.title, window.location.pathname);
-    await loadTop50Cards(startVal, endVal);
+
+    await loadTop50Cards();
     await loadTableData(1);
   });
+
   resetFilterBtn.addEventListener("click", async () => {
+    // Reset ke "kemarin"
     const d = new Date();
     const y = new Date(d);
     y.setDate(d.getDate() - 1);
     const startVal = y.toISOString().split("T")[0];
     const endVal = startVal;
+
     dateRangeDisplay.innerHTML = ` <i class="fas fa-info-circle text-yellow-500 mr-1"></i>(Data 1 hari)`;
     startDateInput.value = startVal;
     endDateInput.value = endVal;
-    currentDateFilter.startDate = startVal;
-    currentDateFilter.endDate = endVal;
+
+    currentDateFilter.filter_type = "custom";
+    currentDateFilter.start_date = startVal;
+    currentDateFilter.end_date = endVal;
+    currentDateFilter.filter = null;
+
     window.history.pushState({}, document.title, window.location.pathname);
-    await loadTop50Cards(startVal, endVal);
+
+    await loadTop50Cards();
     await loadTableData(1);
   });
 };
+
 const calculateStartDateFromFilter = (filter) => {
+  // Fungsi ini sepertinya tidak terpakai lagi setelah modifikasi,
+  // tapi kita biarkan saja jika ada logika lain yang bergantung.
   const today = new Date();
   const startDate = new Date(today);
   switch (filter) {
@@ -244,12 +355,17 @@ const calculateStartDateFromFilter = (filter) => {
   }
   return startDate;
 };
-const loadTop50Cards = async (startDate, endDate) => {
-  const start = startDate || currentDateFilter.startDate;
-  const end = endDate || currentDateFilter.endDate;
+
+// --- MODIFIKASI PANGGILAN API ---
+const loadTop50Cards = async () => {
+  // Tidak perlu parameter, baca dari state global
   showGlobalLoading();
   try {
-    const topMemberResponse = await fetchTopMember(start, end);
+    // Teruskan state filter dan status
+    const topMemberResponse = await fetchTopMember(
+      currentDateFilter,
+      currentStatus
+    );
     if (topMemberResponse && topMemberResponse.success) {
       updateTopMembersPerformance(topMemberResponse.data);
       updateTopNonMembersPerformance(topMemberResponse.data_non || []);
@@ -270,18 +386,33 @@ const loadTop50Cards = async (startDate, endDate) => {
     hideGlobalLoading();
   }
 };
+
+// --- MODIFIKASI PANGGILAN API ---
 const loadTableData = async (page = 1) => {
   showLoading();
   showGlobalLoading();
   currentPage = page;
+
+  // Bangun objek params dari state global
   const params = {
-    start_date: currentDateFilter.startDate,
-    end_date: currentDateFilter.endDate,
+    filter_type: currentDateFilter.filter_type,
+    filter: currentDateFilter.filter,
+    start_date: currentDateFilter.start_date,
+    end_date: currentDateFilter.end_date,
+    status: currentStatus, // <-- Tambahkan status
     page: currentPage,
     limit: itemsPerPage,
     search: currentSearch,
     sort_by: currentSort,
   };
+
+  // Bersihkan parameter null/undefined
+  Object.keys(params).forEach((key) => {
+    if (params[key] === null || params[key] === undefined) {
+      delete params[key];
+    }
+  });
+
   try {
     const response = await fetchPaginatedMembers(params);
     handleTableResponse(response);
@@ -293,6 +424,7 @@ const loadTableData = async (page = 1) => {
     hideGlobalLoading();
   }
 };
+
 const handleTableResponse = (response) => {
   if (!response || response.success === false) {
     showToast(response?.message || "Data tabel tidak ditemukan", "error");
@@ -304,6 +436,7 @@ const handleTableResponse = (response) => {
   renderPagination(response.pagination);
   hideLoading();
 };
+
 const renderPagination = (pagination) => {
   const paginationContainer = document.getElementById("paginationContainer");
   const viewData = document.getElementById("viewData");
@@ -381,20 +514,20 @@ const infoData = (excludedProducts) => {
       });
     }
     dropdown.innerHTML = `
-            <div class="font-bold text-yellow-700 mb-1 flex items-center gap-2"> <i class="fas fa-ban text-yellow-400"></i> Produk yang di-exclude
-            </div>
-            <ul class="max-h-48 overflow-y-auto space-y-1">
-                ${
-                  excludedProducts.length === 0
-                    ? '<li class="text-gray-400">Tidak ada produk exclude</li>'
-                    : excludedProducts
-                        .map(
-                          (p) =>
-                            `<li class="flex gap-2 items-center"> <span class="truncate" title="${p.nama}">${p.nama}</span></li>`
-                        )
-                        .join("")
-                }
-            </ul>`;
+                <div class="font-bold text-yellow-700 mb-1 flex items-center gap-2"> <i class="fas fa-ban text-yellow-400"></i> Produk yang di-exclude
+                </div>
+                <ul class="max-h-48 overflow-y-auto space-y-1">
+                    ${
+                      excludedProducts.length === 0
+                        ? '<li class="text-gray-400">Tidak ada produk exclude</li>'
+                        : excludedProducts
+                            .map(
+                              (p) =>
+                                `<li class="flex gap-2 items-center"> <span class="truncate" title="${p.nama}">${p.nama}</span></li>`
+                            )
+                            .join("")
+                    }
+                </ul>`;
     function toggleDropdown() {
       if (dropdown.classList.contains("hidden")) {
         const rect = infoDataEl.getBoundingClientRect();

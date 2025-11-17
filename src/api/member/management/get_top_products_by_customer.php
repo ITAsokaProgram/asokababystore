@@ -69,48 +69,102 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     exit();
 }
 
+/**
+ * Helper untuk mendapatkan parameter filter tanggal.
+ */
+function getDateFilterParams($get_params, $table_alias = 't')
+{
+    $date_where_clause = "";
+    $params = [];
+    $types = "";
+    $filter_display = "";
+
+    $filter_type = $get_params['filter_type'] ?? 'preset';
+
+    if ($filter_type === 'custom' && !empty($get_params['start_date']) && !empty($get_params['end_date'])) {
+        $start_date = $get_params['start_date'];
+        $end_date = $get_params['end_date'];
+        // Tambahkan waktu ke end_date untuk mencakup seluruh hari
+        $end_date_with_time = $end_date . ' 23:59:59';
+
+        $date_where_clause = " AND {$table_alias}.tgl_trans BETWEEN ? AND ?";
+        $params[] = $start_date;
+        $params[] = $end_date_with_time;
+        $types = "ss";
+        $filter_display = htmlspecialchars($start_date) . " s/d " . htmlspecialchars($end_date);
+
+    } else {
+        $filter = $get_params['filter'] ?? '3bulan';
+        $filter_map = [
+            'kemarin' => '1 day',
+            '1minggu' => '1 week',
+            '1bulan' => '1 month',
+            '3bulan' => '3 months',
+            '6bulan' => '6 months',
+            '9bulan' => '9 months',
+            '12bulan' => '12 months'
+        ];
+        $display_map = [
+            'kemarin' => 'Kemarin',
+            '1minggu' => '1 Minggu Terakhir',
+            '1bulan' => '1 Bulan Terakhir',
+            '3bulan' => '3 Bulan Terakhir',
+            '6bulan' => '6 Bulan Terakhir',
+            '9bulan' => '9 Bulan Terakhir',
+            '12bulan' => '1 Tahun Terakhir',
+            'semua' => 'Semua Waktu'
+        ];
+        $filter_display = $display_map[$filter] ?? '3 Bulan Terakhir';
+
+        if ($filter === 'semua') {
+            // Tidak ada klausa where tanggal
+        } elseif ($filter === 'kemarin') {
+            $cutoff_date_filter = date('Y-m-d', strtotime("-1 day"));
+            $date_where_clause = " AND DATE({$table_alias}.tgl_trans) = ?";
+            $params[] = $cutoff_date_filter;
+            $types = "s";
+        } else {
+            $interval = $filter_map[$filter] ?? '3 months';
+            $cutoff_date_filter = date('Y-m-d 00:00:00', strtotime("-$interval"));
+            $date_where_clause = " AND {$table_alias}.tgl_trans >= ?";
+            $params[] = $cutoff_date_filter;
+            $types = "s";
+        }
+    }
+
+    return [
+        'sql_clause' => $date_where_clause,
+        'params' => $params,
+        'types' => $types,
+        'display' => $filter_display
+    ];
+}
+
 try {
     $limit = (int) ($_GET['limit'] ?? 10);
     $page = (int) ($_GET['page'] ?? 1);
     $offset = ($page - 1) * $limit;
-    $filter = $_GET['filter'] ?? 'semua';
     $kd_cust_param = $_GET['kd_cust'] ?? '';
 
     if (empty($kd_cust_param)) {
         throw new Exception("Parameter 'kd_cust' tidak boleh kosong.");
     }
 
+    // Gunakan helper filter tanggal (alias tabel 't')
+    $dateFilter = getDateFilterParams($_GET, 't');
+    $date_where_clause = $dateFilter['sql_clause'];
+
+    // Siapkan parameter untuk query COUNT
     $params_count = [$kd_cust_param];
     $types_count = "s";
+    $params_count = array_merge($params_count, $dateFilter['params']);
+    $types_count .= $dateFilter['types'];
+
+    // Siapkan parameter untuk query DATA
     $params_data = [$kd_cust_param];
     $types_data = "s";
-
-    $date_where_clause = "";
-    $valid_filters = ['3bulan' => 3, '6bulan' => 6, '9bulan' => 9, '12bulan' => 12];
-    if ($filter !== 'semua') {
-        $interval = '3 months';
-        if ($filter === 'kemarin')
-            $interval = '1 day';
-        elseif ($filter === '1minggu')
-            $interval = '1 week';
-        elseif ($filter === '1bulan')
-            $interval = '1 month';
-        elseif ($filter === '3bulan')
-            $interval = '3 months';
-        elseif ($filter === '6bulan')
-            $interval = '6 months';
-        elseif ($filter === '9bulan')
-            $interval = '9 months';
-        elseif ($filter === '12bulan')
-            $interval = '12 months';
-
-        $cutoff_date = date('Y-m-d 00:00:00', strtotime("-$interval"));
-        $date_where_clause = " AND t.tgl_trans >= ? ";
-        $params_count[] = $cutoff_date;
-        $types_count .= "s";
-        $params_data[] = $cutoff_date;
-        $types_data .= "s";
-    }
+    $params_data = array_merge($params_data, $dateFilter['params']);
+    $types_data .= $dateFilter['types'];
 
 
     $exclude_clause = "

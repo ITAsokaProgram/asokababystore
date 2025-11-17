@@ -1,15 +1,38 @@
 <?php
+$filter_type = htmlspecialchars($_GET['filter_type'] ?? 'preset');
 $filter = htmlspecialchars($_GET['filter'] ?? '3bulan');
+$start_date = htmlspecialchars($_GET['start_date'] ?? '');
+$end_date = htmlspecialchars($_GET['end_date'] ?? '');
 $status = htmlspecialchars($_GET['status'] ?? 'unknown');
 
 $status_display = ($status === 'active') ? 'Aktif' : (($status === 'inactive') ? 'Inaktif' : 'Tidak Diketahui');
-$filterDisplay = ($filter === 'kemarin') ? 'Kemarin' :
-    (($filter === '1minggu') ? '1 Minggu Terakhir' :
-        (($filter === '1bulan') ? '1 Bulan Terakhir' :
-            (($filter === '3bulan') ? '3 Bulan Terakhir' :
-                (($filter === '6bulan') ? '6 Bulan Terakhir' :
-                    (($filter === '9bulan') ? '9 Bulan Terakhir' :
-                        (($filter === '12bulan') ? '1 Tahun Terakhir' : 'Semua Waktu'))))));
+
+$filterDisplay = '';
+if ($filter_type === 'custom' && $start_date && $end_date) {
+    $filterDisplay = htmlspecialchars($start_date) . " s/d " . htmlspecialchars($end_date);
+} else {
+    $filterDisplay = ($filter === 'kemarin') ? 'Kemarin' :
+        (($filter === '1minggu') ? '1 Minggu Terakhir' :
+            (($filter === '1bulan') ? '1 Bulan Terakhir' :
+                (($filter === '3bulan') ? '3 Bulan Terakhir' :
+                    (($filter === '6bulan') ? '6 Bulan Terakhir' :
+                        (($filter === '9bulan') ? '9 Bulan Terakhir' :
+                            (($filter === '12bulan') ? '1 Tahun Terakhir' : 'Semua Waktu'))))));
+}
+
+$queryParams = [
+    'filter_type' => $filter_type,
+    'status' => $status
+];
+
+if ($filter_type === 'custom') {
+    $queryParams['start_date'] = $start_date;
+    $queryParams['end_date'] = $end_date;
+} else {
+    $queryParams['filter'] = $filter;
+}
+
+$queryString = http_build_query($queryParams);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -159,8 +182,7 @@ $filterDisplay = ($filter === 'kemarin') ? 'Kemarin' :
                     </div>
 
                     <div class="mb-3">
-                        <a href="full_location?filter=<?php echo $filter; ?>&status=<?php echo $status; ?>"
-                            id="view-all-locations-btn"
+                        <a href="full_location.php?<?php echo $queryString; ?>" id="view-all-locations-btn"
                             class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 text-sm">
                             Lihat Semua Lokasi
                             <i class="fa-solid fa-arrow-right ml-2"></i>
@@ -223,7 +245,7 @@ $filterDisplay = ($filter === 'kemarin') ? 'Kemarin' :
                     </div>
 
                     <div class="mb-3">
-                        <a href="top_sales?filter=<?= $filter ?>" id="view-all-top-member-btn"                          
+                        <a href="top_sales.php?<?php echo $queryString; ?>" id="view-all-top-member-btn"
                             class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 text-sm hidden">
                             Lihat Semua Top Member
                             <i class="fa-solid fa-arrow-right ml-2"></i>
@@ -287,7 +309,7 @@ $filterDisplay = ($filter === 'kemarin') ? 'Kemarin' :
                         </h2>
                     </div>
                     <div class="mb-3">
-                        <a href="product_favorite?filter=<?= $filter ?>" id="view-all-top-product-btn"
+                        <a href="product_favorite.php?<?php echo $queryString; ?>" id="view-all-top-product-btn"
                             class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 text-sm hidden">
                             Lihat Semua Top Pembelian
                             <i class="fa-solid fa-arrow-right ml-2"></i>
@@ -349,8 +371,7 @@ $filterDisplay = ($filter === 'kemarin') ? 'Kemarin' :
                     </div>
 
                     <div class="mb-3">
-                        <a href="top_frequency.php?filter=<?= $filter ?>&status=<?= $status ?>"
-                            id="view-all-top-frequency-btn"
+                        <a href="top_frequency.php?<?php echo $queryString; ?>" id="view-all-top-frequency-btn"
                             class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 text-sm hidden">
                             Lihat Semua Top Member (Frekuensi)
                             <i class="fa-solid fa-arrow-right ml-2"></i>

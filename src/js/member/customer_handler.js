@@ -1,15 +1,24 @@
 import * as api from "./member_api_service.js";
+
 let currentPage = 1;
 const LIMIT = 10;
-let currentFilter = "";
+// BUAT OBJEK UNTUK MENYIMPAN SEMUA PARAMETER FILTER
+const filterParams = {
+  filter_type: null,
+  filter: null,
+  start_date: null,
+  end_date: null,
+};
 let currentKdCust = "";
 let modal, modalCloseBtn, modalTitle, modalProductName, modalBody, modalSpinner;
+
 function showLoading(isLoading) {
   const spinner = document.getElementById("loading-spinner");
   if (spinner) {
     spinner.classList.toggle("hidden", !isLoading);
   }
 }
+
 function showError(message) {
   const errorEl = document.getElementById("error-message");
   if (errorEl) {
@@ -22,6 +31,7 @@ function showError(message) {
     }
   }
 }
+
 function showTable(isShown) {
   const tableContainer = document.getElementById("product-table-container");
   const paginationContainer = document.getElementById("pagination-container");
@@ -32,6 +42,7 @@ function showTable(isShown) {
     paginationContainer.classList.toggle("hidden", !isShown);
   }
 }
+
 function renderProductTable(products) {
   const tableBody = document.getElementById("product-table-body");
   if (!tableBody) return;
@@ -70,6 +81,7 @@ function renderProductTable(products) {
     tableBody.innerHTML += row;
   });
 }
+
 function renderPagination(pagination) {
   const { total_records, current_page, limit, total_pages } = pagination;
   const infoEl = document.getElementById("pagination-info");
@@ -83,6 +95,7 @@ function renderPagination(pagination) {
   const startRecord = (current_page - 1) * limit + 1;
   const endRecord = Math.min(current_page * limit, total_records);
   infoEl.innerHTML = `Menampilkan <strong>${startRecord}</strong>-<strong>${endRecord}</strong> dari <strong>${total_records}</strong> produk`;
+
   let buttonsHTML = "";
   buttonsHTML += `
         <button 
@@ -93,6 +106,7 @@ function renderPagination(pagination) {
             <i class="fa-solid fa-chevron-left"></i>
         </button>
     `;
+
   const maxPagesToShow = 5;
   let startPage = Math.max(1, current_page - Math.floor(maxPagesToShow / 2));
   let endPage = Math.min(total_pages, startPage + maxPagesToShow - 1);
@@ -102,12 +116,14 @@ function renderPagination(pagination) {
   ) {
     startPage = Math.max(1, endPage - maxPagesToShow + 1);
   }
+
   if (startPage > 1) {
     buttonsHTML += `<button class="pagination-btn" data-page="1">1</button>`;
     if (startPage > 2) {
       buttonsHTML += `<span class="pagination-ellipsis">...</span>`;
     }
   }
+
   for (let i = startPage; i <= endPage; i++) {
     buttonsHTML += `
             <button 
@@ -118,12 +134,14 @@ function renderPagination(pagination) {
             </button>
         `;
   }
+
   if (endPage < total_pages) {
     if (endPage < total_pages - 1) {
       buttonsHTML += `<span class="pagination-ellipsis">...</span>`;
     }
     buttonsHTML += `<button class="pagination-btn" data-page="${total_pages}">${total_pages}</button>`;
   }
+
   buttonsHTML += `
         <button 
             class="pagination-btn" 
@@ -133,25 +151,29 @@ function renderPagination(pagination) {
             <i class="fa-solid fa-chevron-right"></i>
         </button>
     `;
+
   buttonsEl.innerHTML = buttonsHTML;
   buttonsEl.querySelectorAll("button").forEach((button) => {
     button.addEventListener("click", () => {
       const page = parseInt(button.dataset.page);
       if (page !== currentPage) {
         currentPage = page;
-        loadTopProducts(currentFilter, currentKdCust);
+        loadTopProducts(); // Panggil tanpa parameter
       }
     });
   });
 }
-async function loadTopProducts(filter, kdCust) {
+
+// UBAH FUNGSI INI AGAR MENGGUNAKAN GLOBAL filterParams
+async function loadTopProducts() {
   showLoading(true);
   showError("");
   showTable(false);
   try {
+    // KIRIM OBJEK filterParams, BUKAN STRING filter
     const result = await api.getTopProductsByCustomer(
-      filter,
-      kdCust,
+      filterParams,
+      currentKdCust,
       currentPage,
       LIMIT
     );
@@ -169,6 +191,7 @@ async function loadTopProducts(filter, kdCust) {
     showLoading(false);
   }
 }
+
 async function handleSendVoucherClick(e) {
   const button = e.target.closest(".btn-send-voucher");
   if (!button) {
@@ -204,6 +227,7 @@ async function handleSendVoucherClick(e) {
     button.innerHTML = '<i class="fa-solid fa-paper-plane"></i>';
   }
 }
+
 async function handleSendGeneralMessageClick() {
   const button = document.getElementById("btn-send-general-wa");
   if (!button) return;
@@ -237,18 +261,13 @@ async function handleSendGeneralMessageClick() {
     button.innerHTML = originalHtml;
   }
 }
-/**
- * Menampilkan atau menyembunyikan modal.
- */
+
 function showModal(show = true) {
   if (modal) {
     modal.classList.toggle("hidden", !show);
   }
 }
-/**
- * == FUNGSI INI DIPERBARUI ==
- * Me-render data transaksi ke dalam tabel modal dengan grouping.
- */
+
 function renderModalTable(transactions) {
   modalBody.innerHTML = "";
   if (transactions.length === 0) {
@@ -261,11 +280,13 @@ function renderModalTable(transactions) {
     minimumFractionDigits: 0,
   });
   const numFormatter = new Intl.NumberFormat("id-ID");
+
   let htmlRows = "";
   let current_tanggal = null;
   let current_bon = null;
   let subtotal_bon_qty = 0;
   let subtotal_bon_total = 0;
+
   function buildSubtotalBonRow() {
     if (current_bon === null) return "";
     const row = `
@@ -276,7 +297,8 @@ function renderModalTable(transactions) {
                 <td class="px-4 py-2 text-right font-bold text-sm text-yellow-800">
                     ${numFormatter.format(subtotal_bon_qty)}
                 </td>
-                <td class="px-4 py-2"></td> <td class="px-4 py-2 text-right font-bold text-sm text-yellow-800">
+                <td class="px-4 py-2"></td>
+                <td class="px-4 py-2 text-right font-bold text-sm text-yellow-800">
                     ${formatter.format(subtotal_bon_total)}
                 </td>
             </tr>`;
@@ -284,6 +306,7 @@ function renderModalTable(transactions) {
     subtotal_bon_total = 0;
     return row;
   }
+
   function buildTanggalHeaderRow(tanggal) {
     return `
             <tr class="header-tanggal-row" style="background-color: #EBF8FF;">
@@ -293,6 +316,7 @@ function renderModalTable(transactions) {
                 </td>
             </tr>`;
   }
+
   function buildBonHeaderRow(noBon, jam) {
     return `
             <tr class="header-faktur-row" style="background-color: #F7FAFC;">
@@ -304,23 +328,28 @@ function renderModalTable(transactions) {
                 </td>
             </tr>`;
   }
+
   transactions.forEach((tx) => {
     const qty = tx.qty || 0;
     const harga = tx.harga || 0;
     const total_harga = qty * harga;
+
     if (tx.tgl_trans_date !== current_tanggal) {
       htmlRows += buildSubtotalBonRow();
       current_tanggal = tx.tgl_trans_date;
       current_bon = null;
       htmlRows += buildTanggalHeaderRow(current_tanggal);
     }
+
     if (tx.no_bon !== current_bon) {
       htmlRows += buildSubtotalBonRow();
       current_bon = tx.no_bon;
       htmlRows += buildBonHeaderRow(current_bon, tx.jam_trs);
     }
+
     subtotal_bon_qty += qty;
     subtotal_bon_total += total_harga;
+
     htmlRows += `
             <tr class="item-row hover:bg-gray-50">
                 <td class="px-4 py-2 text-sm text-gray-800 pl-8">
@@ -338,12 +367,12 @@ function renderModalTable(transactions) {
             </tr>
         `;
   });
+
   htmlRows += buildSubtotalBonRow();
   modalBody.innerHTML = htmlRows;
 }
-/**
- * Menangani klik pada baris tabel produk.
- */
+
+// UBAH FUNGSI INI AGAR MENGGUNAKAN GLOBAL filterParams
 async function handleProductRowClick(e) {
   if (e.target.closest(".btn-send-voucher")) {
     return;
@@ -352,15 +381,18 @@ async function handleProductRowClick(e) {
   if (!row) {
     return;
   }
+
   const plu = row.dataset.plu;
   const descp = row.dataset.descp;
   showModal(true);
   modalProductName.textContent = `Produk: ${descp} (${plu})`;
   modalBody.innerHTML = "";
   modalSpinner.classList.remove("hidden");
+
   try {
+    // KIRIM OBJEK filterParams, BUKAN STRING filter
     const result = await api.getTransactionDetails(
-      currentFilter,
+      filterParams,
       currentKdCust,
       plu
     );
@@ -376,9 +408,7 @@ async function handleProductRowClick(e) {
     modalSpinner.classList.add("hidden");
   }
 }
-/**
- * Menginisialisasi variabel elemen modal.
- */
+
 function initModalElements() {
   modal = document.getElementById("transaction-detail-modal");
   modalCloseBtn = document.getElementById("modal-close-btn");
@@ -386,6 +416,7 @@ function initModalElements() {
   modalProductName = document.getElementById("modal-product-name");
   modalBody = document.getElementById("modal-table-body");
   modalSpinner = document.getElementById("modal-loading-spinner");
+
   if (modalCloseBtn) {
     modalCloseBtn.addEventListener("click", () => showModal(false));
   }
@@ -397,24 +428,34 @@ function initModalElements() {
     });
   }
 }
+
 document.addEventListener("DOMContentLoaded", () => {
   initModalElements();
   const params = new URLSearchParams(window.location.search);
-  currentFilter = params.get("filter");
+
+  // ISI OBJEK filterParams
+  filterParams.filter_type = params.get("filter_type");
+  filterParams.filter = params.get("filter");
+  filterParams.start_date = params.get("start_date");
+  filterParams.end_date = params.get("end_date");
   currentKdCust = params.get("kd_cust");
-  if (currentFilter && currentKdCust) {
+
+  // PERIKSA filter_type BUKAN filter
+  if (filterParams.filter_type && currentKdCust) {
     currentPage = 1;
-    loadTopProducts(currentFilter, currentKdCust);
+    loadTopProducts(); // Panggil tanpa parameter
   } else {
     console.error("Filter atau Kode Customer tidak ditemukan di URL.");
     showLoading(false);
     showError("Parameter filter atau kode customer tidak valid.");
   }
+
   const tableBody = document.getElementById("product-table-body");
   if (tableBody) {
     tableBody.addEventListener("click", handleSendVoucherClick);
     tableBody.addEventListener("click", handleProductRowClick);
   }
+
   const generalSendButton = document.getElementById("btn-send-general-wa");
   if (generalSendButton) {
     generalSendButton.addEventListener("click", handleSendGeneralMessageClick);

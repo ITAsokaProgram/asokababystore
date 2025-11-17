@@ -1,8 +1,28 @@
 <?php
-$filter = htmlspecialchars($_GET['filter'] ?? 'semua');
+// AMBIL SEMUA PARAMETER BARU
+$filter_type = htmlspecialchars($_GET['filter_type'] ?? 'preset');
+$filter = htmlspecialchars($_GET['filter'] ?? '3bulan');
+$start_date = htmlspecialchars($_GET['start_date'] ?? '');
+$end_date = htmlspecialchars($_GET['end_date'] ?? '');
 $status = htmlspecialchars($_GET['status'] ?? 'unknown');
 
-$filter_display = ($filter === 'kemarin') ? 'Kemarin' : (($filter === '1minggu') ? '1 Minggu Terakhir' : (($filter === '1bulan') ? '1 Bulan Terakhir' : (($filter === '3bulan') ? '3 Bulan Terakhir' : (($filter === '6bulan') ? '6 Bulan Terakhir' : (($filter === '9bulan') ? '9 Bulan Terakhir' : (($filter === '12bulan') ? '1 Tahun Terakhir' : 'Semua Waktu'))))));
+// LOGIKA TAMPILAN FILTER BARU
+$filter_display = '';
+if ($filter_type === 'custom' && $start_date && $end_date) {
+    $filter_display = htmlspecialchars($start_date) . " s/d " . htmlspecialchars($end_date);
+} else {
+    $filter_map = [
+        'kemarin' => 'Kemarin',
+        '1minggu' => '1 Minggu Terakhir',
+        '1bulan' => '1 Bulan Terakhir',
+        '3bulan' => '3 Bulan Terakhir',
+        '6bulan' => '6 Bulan Terakhir',
+        '9bulan' => '9 Bulan Terakhir',
+        '12bulan' => '1 Tahun Terakhir',
+        'semua' => 'Semua Waktu'
+    ];
+    $filter_display = $filter_map[$filter] ?? 'Semua Waktu';
+}
 
 $status_display = ($status === 'active') ? 'Aktif' : (($status === 'inactive') ? 'Inaktif' : 'Tidak Diketahui');
 ?>

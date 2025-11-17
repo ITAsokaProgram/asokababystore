@@ -61,18 +61,67 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     echo json_encode(['success' => false, 'message' => 'Method Not Allowed']);
     exit();
 }
-try {
-    $filter = $_GET['filter'] ?? '3bulan';
-    $status = $_GET['status'] ?? 'active';
-    $filter_map = [
-        'kemarin' => '1 day',
-        '1minggu' => '1 week',
-        '1bulan' => '1 month',
-        '3bulan' => '3 months',
-        '6bulan' => '6 months',
-        '9bulan' => '9 months',
-        '12bulan' => '12 months'
+function getDateFilterParams($get_params, $table_alias = 't')
+{
+    $date_where_clause = "";
+    $params = [];
+    $types = "";
+    $filter_display = "";
+    $filter_type = $get_params['filter_type'] ?? 'preset';
+    if ($filter_type === 'custom' && !empty($get_params['start_date']) && !empty($get_params['end_date'])) {
+        $start_date = $get_params['start_date'];
+        $end_date = $get_params['end_date'];
+        $end_date_with_time = $end_date . ' 23:59:59';
+        $date_where_clause = " AND {$table_alias}.tgl_trans BETWEEN ? AND ?";
+        $params[] = $start_date;
+        $params[] = $end_date_with_time;
+        $types = "ss";
+        $filter_display = htmlspecialchars($start_date) . " s/d " . htmlspecialchars($end_date);
+    } else {
+        $filter = $get_params['filter'] ?? '3bulan';
+        $filter_map = [
+            'kemarin' => '1 day',
+            '1minggu' => '1 week',
+            '1bulan' => '1 month',
+            '3bulan' => '3 months',
+            '6bulan' => '6 months',
+            '9bulan' => '9 months',
+            '12bulan' => '12 months'
+        ];
+        $display_map = [
+            'kemarin' => 'Kemarin',
+            '1minggu' => '1 Minggu Terakhir',
+            '1bulan' => '1 Bulan Terakhir',
+            '3bulan' => '3 Bulan Terakhir',
+            '6bulan' => '6 Bulan Terakhir',
+            '9bulan' => '9 Bulan Terakhir',
+            '12bulan' => '1 Tahun Terakhir',
+            'semua' => 'Semua Waktu'
+        ];
+        $filter_display = $display_map[$filter] ?? '3 Bulan Terakhir';
+        if ($filter === 'semua') {
+        } elseif ($filter === 'kemarin') {
+            $cutoff_date_filter = date('Y-m-d', strtotime("-1 day"));
+            $date_where_clause = " AND DATE({$table_alias}.tgl_trans) = ?";
+            $params[] = $cutoff_date_filter;
+            $types = "s";
+        } else {
+            $interval = $filter_map[$filter] ?? '3 months';
+            $cutoff_date_filter = date('Y-m-d 00:00:00', strtotime("-$interval"));
+            $date_where_clause = " AND {$table_alias}.tgl_trans >= ?";
+            $params[] = $cutoff_date_filter;
+            $types = "s";
+        }
+    }
+    return [
+        'sql_clause' => $date_where_clause,
+        'params' => $params,
+        'types' => $types,
+        'display' => $filter_display
     ];
+}
+try {
+    $status = $_GET['status'] ?? 'active';
     $params = [];
     $types = "";
     $where_clause = "";
@@ -86,13 +135,15 @@ try {
         $params[] = $cutoff_date_status;
         $types .= "s";
     }
-    $cutoff_date_filter = null;
-    $interval = $filter_map[$filter] ?? '3 months';
-    $isFilter3MonthsOrLess = in_array($filter, ['kemarin', '1minggu', '1bulan', '3bulan']);
-    if ($filter === 'kemarin') {
-        $cutoff_date_filter = date('Y-m-d', strtotime("-1 day"));
-    } elseif ($filter !== 'semua') {
-        $cutoff_date_filter = date('Y-m-d 00:00:00', strtotime("-$interval"));
+    $dateFilter = getDateFilterParams($_GET, 't');
+    $date_where_clause = $dateFilter['sql_clause'];
+    $params_for_products = $dateFilter['params'];
+    $types_for_products = $dateFilter['types'];
+    $filter_type = $_GET['filter_type'] ?? 'preset';
+    $filter = $_GET['filter'] ?? '3bulan';
+    $isFilter3MonthsOrLess = false;
+    if ($filter_type === 'preset') {
+        $isFilter3MonthsOrLess = in_array($filter, ['kemarin', '1minggu', '1bulan', '3bulan']);
     }
     $age_case_sql = "
         CASE
@@ -108,18 +159,6 @@ try {
             ELSE '-'
         END
     ";
-    $date_where_clause = "";
-    $params_for_products = [];
-    $types_for_products = "";
-    if ($filter === 'kemarin' && $cutoff_date_filter) {
-        $date_where_clause = " AND DATE(t.tgl_trans) = ?";
-        $params_for_products[] = $cutoff_date_filter;
-        $types_for_products .= "s";
-    } elseif ($filter !== 'semua' && $cutoff_date_filter) {
-        $date_where_clause = " AND t.tgl_trans >= ?";
-        $params_for_products[] = $cutoff_date_filter;
-        $types_for_products .= "s";
-    }
     $exclude_clause = "
         AND UPPER(t.descp) NOT LIKE '%MEMBER BY PHONE%'
         AND UPPER(t.descp) NOT LIKE '%TAS ASOKA BIRU%'

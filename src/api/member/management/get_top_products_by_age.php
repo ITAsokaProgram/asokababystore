@@ -60,30 +60,97 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     echo json_encode(['success' => false, 'message' => 'Method Not Allowed']);
     exit();
 }
+
+// --- FUNGSI HELPER ---
+function getDateFilterParams($get_params, $table_alias = 't')
+{
+    $date_where_clause = "";
+    $params = [];
+    $types = "";
+    $filter_display = "";
+
+    $filter_type = $get_params['filter_type'] ?? 'preset';
+
+    if ($filter_type === 'custom' && !empty($get_params['start_date']) && !empty($get_params['end_date'])) {
+        $start_date = $get_params['start_date'];
+        $end_date = $get_params['end_date'];
+        $end_date_with_time = $end_date . ' 23:59:59';
+
+        $date_where_clause = " AND {$table_alias}.tgl_trans BETWEEN ? AND ?";
+        $params[] = $start_date;
+        $params[] = $end_date_with_time;
+        $types = "ss";
+        $filter_display = htmlspecialchars($start_date) . " s/d " . htmlspecialchars($end_date);
+
+    } else {
+        $filter = $get_params['filter'] ?? '3bulan';
+        $filter_map = [
+            'kemarin' => '1 day',
+            '1minggu' => '1 week',
+            '1bulan' => '1 month',
+            '3bulan' => '3 months',
+            '6bulan' => '6 months',
+            '9bulan' => '9 months',
+            '12bulan' => '12 months'
+        ];
+        $display_map = [
+            'kemarin' => 'Kemarin',
+            '1minggu' => '1 Minggu Terakhir',
+            '1bulan' => '1 Bulan Terakhir',
+            '3bulan' => '3 Bulan Terakhir',
+            '6bulan' => '6 Bulan Terakhir',
+            '9bulan' => '9 Bulan Terakhir',
+            '12bulan' => '1 Tahun Terakhir',
+            'semua' => 'Semua Waktu'
+        ];
+        $filter_display = $display_map[$filter] ?? '3 Bulan Terakhir';
+
+        if ($filter === 'semua') {
+            // Tidak ada klausa where tanggal
+        } elseif ($filter === 'kemarin') {
+            $cutoff_date_filter = date('Y-m-d', strtotime("-1 day"));
+            $date_where_clause = " AND DATE({$table_alias}.tgl_trans) = ?";
+            $params[] = $cutoff_date_filter;
+            $types = "s";
+        } else {
+            $interval = $filter_map[$filter] ?? '3 months';
+            $cutoff_date_filter = date('Y-m-d 00:00:00', strtotime("-$interval"));
+            $date_where_clause = " AND {$table_alias}.tgl_trans >= ?";
+            $params[] = $cutoff_date_filter;
+            $types = "s";
+        }
+    }
+
+    return [
+        'sql_clause' => $date_where_clause,
+        'params' => $params,
+        'types' => $types,
+        'display' => $filter_display
+    ];
+}
+// --- AKHIR FUNGSI HELPER ---
+
 try {
     $limit = (int) ($_GET['limit'] ?? 10);
     $page = (int) ($_GET['page'] ?? 1);
     $offset = ($page - 1) * $limit;
-    $filter = $_GET['filter'] ?? 'semua';
+    // HAPUS $filter = $_GET['filter'] ?? 'semua';
     $age_group_param = $_GET['age_group'] ?? '';
     $status = $_GET['status'] ?? null;
+
     if (empty($age_group_param)) {
         throw new Exception("Parameter 'age_group' tidak boleh kosong.");
     }
-    $filter_map = [
-        'kemarin' => '1 day',
-        '1minggu' => '1 week',
-        '1bulan' => '1 month',
-        '3bulan' => '3 months',
-        '6bulan' => '6 months',
-        '9bulan' => '9 months',
-        '12bulan' => '12 months'
-    ];
-    $interval = $filter_map[$filter] ?? '3 months';
-    if ($status === 'inactive') {
-        $cutoff_active_ts = strtotime("-3 months");
-        $cutoff_filter_ts = strtotime("-$interval");
-        if ($filter !== 'semua' && $cutoff_filter_ts >= $cutoff_active_ts) {
+
+    // HAPUS $filter_map
+    // HAPUS $interval
+
+    // Logika exit cepat untuk inactive
+    $filter_type = $_GET['filter_type'] ?? 'preset';
+    $filter = $_GET['filter'] ?? '3bulan';
+    if ($status === 'inactive' && $filter_type === 'preset') {
+        $isFilter3MonthsOrLess = in_array($filter, ['kemarin', '1minggu', '1bulan', '3bulan']);
+        if ($isFilter3MonthsOrLess) {
             echo json_encode([
                 'success' => true,
                 'data' => [],
@@ -98,10 +165,13 @@ try {
             exit();
         }
     }
+    // HAPUS BLOK if ($status === 'inactive') LAMA
+
     $params_count = [$age_group_param];
     $types_count = "s";
     $params_data = [$age_group_param];
     $types_data = "s";
+
     $status_where_clause = "";
     if ($status) {
         $cutoff_active = date('Y-m-d 00:00:00', strtotime("-3 months"));
@@ -119,15 +189,20 @@ try {
             $types_data .= "s";
         }
     }
-    $date_where_clause = "";
-    if ($filter !== 'semua') {
-        $cutoff_date = date('Y-m-d 00:00:00', strtotime("-$interval"));
-        $date_where_clause = " AND t.tgl_trans >= ? ";
-        $params_count[] = $cutoff_date;
-        $types_count .= "s";
-        $params_data[] = $cutoff_date;
-        $types_data .= "s";
-    }
+
+    // HAPUS $date_where_clause = "";
+    // HAPUS BLOK if ($filter !== 'semua')
+
+    // --- GUNAKAN FUNGSI HELPER ---
+    $dateFilter = getDateFilterParams($_GET, 't');
+    $date_where_clause = $dateFilter['sql_clause'];
+
+    $params_count = array_merge($params_count, $dateFilter['params']);
+    $types_count .= $dateFilter['types'];
+    $params_data = array_merge($params_data, $dateFilter['params']);
+    $types_data .= $dateFilter['types'];
+    // ----------------------------
+
     $age_case_sql = "
         CASE
             WHEN c.tgl_lahir IS NULL OR YEAR(c.tgl_lahir) > 2020 THEN '-'
@@ -142,12 +217,14 @@ try {
             ELSE '-'
         END
     ";
+
     $customer_subquery = "
         SELECT c.kd_cust
         FROM customers c
         WHERE ($age_case_sql) = ?
         $status_where_clause
     ";
+
     $count_sql = "
         SELECT COUNT(DISTINCT t.plu) AS total_records
         FROM
@@ -157,11 +234,13 @@ try {
         WHERE
             1=1 $date_where_clause
     ";
+
     $count_sql_prepared = str_replace('?', '?', $count_sql);
     $stmt_count = $conn->prepare($count_sql_prepared);
     if ($stmt_count === false) {
         throw new Exception("Database prepare failed (count): " . $conn->error);
     }
+
     $stmt_count->bind_param($types_count, ...$params_count);
     if (!$stmt_count->execute()) {
         throw new Exception("Gagal eksekusi query (count): " . $stmt_count->error);
@@ -170,6 +249,7 @@ try {
     $total_records = (int) $count_result->fetch_assoc()['total_records'];
     $total_pages = $total_records > 0 ? ceil($total_records / $limit) : 0;
     $stmt_count->close();
+
     $sql = "
         SELECT
             t.plu,
@@ -187,18 +267,23 @@ try {
             total_qty DESC
         LIMIT ? OFFSET ?
     ";
+
     $params_data[] = $limit;
     $params_data[] = $offset;
     $types_data .= "ii";
+
     $sql_prepared = str_replace('?', '?', $sql);
     $stmt = $conn->prepare($sql_prepared);
     if ($stmt === false) {
         throw new Exception("Database prepare failed (data): " . $conn->error);
     }
+
     $stmt->bind_param($types_data, ...$params_data);
+
     if (!$stmt->execute()) {
         throw new Exception("Gagal eksekusi query (data): " . $stmt->error);
     }
+
     $result = $stmt->get_result();
     $data = [];
     while ($row = $result->fetch_assoc()) {
@@ -210,6 +295,7 @@ try {
     }
     $stmt->close();
     $conn->close();
+
     echo json_encode([
         'success' => true,
         'data' => $data,
@@ -220,6 +306,7 @@ try {
             'total_pages' => $total_pages
         ]
     ]);
+
 } catch (Throwable $t) {
     $logger->critical("🔥 FATAL ERROR: " . $t->getMessage());
     if (isset($conn) && $conn instanceof mysqli) {

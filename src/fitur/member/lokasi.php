@@ -1,17 +1,31 @@
 <?php
-$filter = $_GET['filter'] ?? 'semua';
-$status = $_GET['status'] ?? 'unknown';
-$city = $_GET['city'] ?? 'Tidak diketahui';
-$district = $_GET['district'] ?? '-';
-$subdistrict = $_GET['subdistrict'] ?? '-';
+// Ambil semua parameter filter
+$filter_type = htmlspecialchars($_GET['filter_type'] ?? 'preset');
+$filter = htmlspecialchars($_GET['filter'] ?? '3bulan');
+$start_date = htmlspecialchars($_GET['start_date'] ?? '');
+$end_date = htmlspecialchars($_GET['end_date'] ?? '');
+$status = htmlspecialchars($_GET['status'] ?? 'unknown');
+$city = htmlspecialchars($_GET['city'] ?? 'Tidak diketahui');
+$district = htmlspecialchars($_GET['district'] ?? '-');
+$subdistrict = htmlspecialchars($_GET['subdistrict'] ?? '-');
 
-$filterDisplay = ($filter === 'kemarin') ? 'Kemarin' :
-    (($filter === '1minggu') ? '1 Minggu Terakhir' :
-        (($filter === '1bulan') ? '1 Bulan Terakhir' :
-            (($filter === '3bulan') ? '3 Bulan Terakhir' :
-                (($filter === '6bulan') ? '6 Bulan Terakhir' :
-                    (($filter === '9bulan') ? '9 Bulan Terakhir' :
-                        (($filter === '12bulan') ? '1 Tahun Terakhir' : 'Semua Waktu'))))));
+// Tentukan string tampilan untuk filter
+$filterDisplay = '';
+if ($filter_type === 'custom' && $start_date && $end_date) {
+    $filterDisplay = "Kustom: " . htmlspecialchars($start_date) . " s/d " . htmlspecialchars($end_date);
+} else {
+    $filterDisplaysMap = [
+        'kemarin' => 'Kemarin',
+        '1minggu' => '1 Minggu Terakhir',
+        '1bulan' => '1 Bulan Terakhir',
+        '3bulan' => '3 Bulan Terakhir',
+        '6bulan' => '6 Bulan Terakhir',
+        '9bulan' => '9 Bulan Terakhir',
+        '12bulan' => '12 Bulan Terakhir',
+        'semua' => 'Semua Waktu'
+    ];
+    $filterDisplay = $filterDisplaysMap[$filter] ?? '3 Bulan Terakhir';
+}
 
 $status_display = ($status === 'active') ? 'Aktif' : (($status === 'inactive') ? 'Inaktif' : 'Tidak Diketahui');
 ?>

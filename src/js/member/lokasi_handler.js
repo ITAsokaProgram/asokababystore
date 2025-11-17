@@ -1,17 +1,29 @@
 import * as api from "./member_api_service.js";
+
 let currentPage = 1;
 const LIMIT = 10;
-let currentFilter = "";
-let currentCity = "";
-let currentDistrict = "";
-let currentSubDistrict = "";
-let currentStatus = "";
+
+// Objek state untuk menyimpan parameter
+const state = {
+  filterParams: {
+    filter_type: null,
+    filter: null,
+    start_date: null,
+    end_date: null,
+  },
+  currentStatus: null,
+  currentCity: null,
+  currentDistrict: null,
+  currentSubDistrict: null,
+};
+
 function showLoading(isLoading) {
   const spinner = document.getElementById("loading-spinner");
   if (spinner) {
     spinner.classList.toggle("hidden", !isLoading);
   }
 }
+
 function showError(message) {
   const errorEl = document.getElementById("error-message");
   if (errorEl) {
@@ -24,6 +36,7 @@ function showError(message) {
     }
   }
 }
+
 function showTable(isShown) {
   const tableContainer = document.getElementById("product-table-container");
   const paginationContainer = document.getElementById("pagination-container");
@@ -34,6 +47,7 @@ function showTable(isShown) {
     paginationContainer.classList.toggle("hidden", !isShown);
   }
 }
+
 function renderProductTable(products) {
   const tableBody = document.getElementById("product-table-body");
   if (!tableBody) return;
@@ -62,6 +76,7 @@ function renderProductTable(products) {
     tableBody.innerHTML += row;
   });
 }
+
 function renderPagination(pagination) {
   const { total_records, current_page, limit, total_pages } = pagination;
   const infoEl = document.getElementById("pagination-info");
@@ -132,29 +147,36 @@ function renderPagination(pagination) {
       if (page !== currentPage) {
         currentPage = page;
         loadTopProducts(
-          currentFilter,
-          currentCity,
-          currentDistrict,
-          currentSubDistrict
+          state.filterParams,
+          state.currentCity,
+          state.currentDistrict,
+          state.currentSubDistrict,
+          state.currentStatus
         );
       }
     });
   });
 }
-async function loadTopProducts(filter, city, district, subdistrict, status) {
-  // <-- TAMBAHKAN status
+
+async function loadTopProducts(
+  filterParams,
+  city,
+  district,
+  subdistrict,
+  status
+) {
   showLoading(true);
   showError("");
   showTable(false);
   try {
     const result = await api.getTopProductsByLocation(
-      filter,
+      filterParams, // Kirim objek filterParams
       city,
       district,
       subdistrict,
       currentPage,
       LIMIT,
-      status // <-- TAMBAHKAN status
+      status
     );
     if (result.success === true && result.data) {
       renderProductTable(result.data);
@@ -170,27 +192,32 @@ async function loadTopProducts(filter, city, district, subdistrict, status) {
     showLoading(false);
   }
 }
+
 document.addEventListener("DOMContentLoaded", () => {
   const params = new URLSearchParams(window.location.search);
-  currentFilter = params.get("filter");
-  currentCity = params.get("city");
-  currentDistrict = params.get("district");
-  currentSubDistrict = params.get("subdistrict");
-  currentStatus = params.get("status"); // <-- TAMBAHKAN INI
 
-  if (currentFilter && currentStatus) {
-    // <-- Pastikan filter dan status ada
+  // Isi objek state
+  state.filterParams.filter_type = params.get("filter_type");
+  state.filterParams.filter = params.get("filter");
+  state.filterParams.start_date = params.get("start_date");
+  state.filterParams.end_date = params.get("end_date");
+  state.currentStatus = params.get("status");
+  state.currentCity = params.get("city");
+  state.currentDistrict = params.get("district");
+  state.currentSubDistrict = params.get("subdistrict");
+
+  if (state.filterParams.filter_type && state.currentStatus) {
     currentPage = 1;
     loadTopProducts(
-      currentFilter,
-      currentCity,
-      currentDistrict,
-      currentSubDistrict,
-      currentStatus // <-- TAMBAHKAN status
+      state.filterParams,
+      state.currentCity,
+      state.currentDistrict,
+      state.currentSubDistrict,
+      state.currentStatus
     );
   } else {
-    console.error("Parameter filter atau status tidak ditemukan di URL."); // <-- Edit pesan error
+    console.error("Parameter filter atau status tidak ditemukan di URL.");
     showLoading(false);
-    showError("Parameter filter atau status tidak valid."); // <-- Edit pesan error
+    showError("Parameter filter atau status tidak valid.");
   }
 });

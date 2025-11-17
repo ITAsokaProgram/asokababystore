@@ -25,41 +25,103 @@ $types = "";
 $date_sql = "";
 $status_sql = "";
 $searchSql = "";
-if (isset($_GET['date'])) {
-    if (!strtotime($_GET['date'])) {
-        http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'Format tanggal tidak valid']);
-        exit;
-    }
-    $date_sql = " AND DATE(t.tgl_trans) = ? ";
-    $params[] = $_GET['date'];
-    $types .= "s";
-} elseif (isset($_GET['start_date']) && isset($_GET['end_date'])) {
-    if (!strtotime($_GET['start_date']) || !strtotime($_GET['end_date'])) {
-        http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'Format start_date/end_date tidak valid']);
-        exit;
-    }
-    if ($_GET['start_date'] === $_GET['end_date']) {
+$filter_type = $_GET['filter_type'] ?? null;
+$filter_preset = $_GET['filter'] ?? null;
+$start_date = $_GET['start_date'] ?? null;
+$end_date = $_GET['end_date'] ?? null;
+if ($filter_type === 'custom' && $start_date && $end_date) {
+    if ($start_date === $end_date) {
         $date_sql = " AND DATE(t.tgl_trans) = ? ";
-        $params[] = $_GET['start_date'];
+        $params[] = $start_date;
         $types .= "s";
     } else {
         $date_sql = " AND t.tgl_trans BETWEEN ? AND ? ";
-        $params[] = $_GET['start_date'];
-        $params[] = $_GET['end_date'];
+        $params[] = $start_date;
+        $params[] = $end_date;
         $types .= "ss";
     }
-} elseif (isset($_GET['filter']) && $_GET['filter'] === 'kemarin') {
-    $yesterday = date('Y-m-d', strtotime('-1 day'));
-    $date_sql = " AND DATE(t.tgl_trans) = ? ";
-    $params[] = $yesterday;
-    $types .= "s";
+} elseif ($filter_type === 'preset' && $filter_preset) {
+    $end = date('Y-m-d');
+    $start = '';
+    switch ($filter_preset) {
+        case 'kemarin':
+            $start = date('Y-m-d', strtotime('-1 day'));
+            $end = $start;
+            $date_sql = " AND DATE(t.tgl_trans) = ? ";
+            $params[] = $start;
+            $types .= "s";
+            break;
+        case '1minggu':
+            $start = date('Y-m-d', strtotime('-7 days'));
+            $date_sql = " AND t.tgl_trans BETWEEN ? AND ? ";
+            $params[] = $start;
+            $params[] = $end;
+            $types .= "ss";
+            break;
+        case '1bulan':
+            $start = date('Y-m-d', strtotime('-1 month'));
+            $date_sql = " AND t.tgl_trans BETWEEN ? AND ? ";
+            $params[] = $start;
+            $params[] = $end;
+            $types .= "ss";
+            break;
+        case '3bulan':
+            $start = date('Y-m-d', strtotime('-3 months'));
+            $date_sql = " AND t.tgl_trans BETWEEN ? AND ? ";
+            $params[] = $start;
+            $params[] = $end;
+            $types .= "ss";
+            break;
+        case '6bulan':
+            $start = date('Y-m-d', strtotime('-6 months'));
+            $date_sql = " AND t.tgl_trans BETWEEN ? AND ? ";
+            $params[] = $start;
+            $params[] = $end;
+            $types .= "ss";
+            break;
+        case '9bulan':
+            $start = date('Y-m-d', strtotime('-9 months'));
+            $date_sql = " AND t.tgl_trans BETWEEN ? AND ? ";
+            $params[] = $start;
+            $params[] = $end;
+            $types .= "ss";
+            break;
+        case '12bulan':
+            $start = date('Y-m-d', strtotime('-12 months'));
+            $date_sql = " AND t.tgl_trans BETWEEN ? AND ? ";
+            $params[] = $start;
+            $params[] = $end;
+            $types .= "ss";
+            break;
+        case 'semua':
+            $date_sql = "";
+            break;
+        default:
+            $start = date('Y-m-d', strtotime('-3 months'));
+            $date_sql = " AND t.tgl_trans BETWEEN ? AND ? ";
+            $params[] = $start;
+            $params[] = $end;
+            $types .= "ss";
+            break;
+    }
 } else {
-    $yesterday = date('Y-m-d', strtotime('-1 day'));
-    $date_sql = " AND DATE(t.tgl_trans) = ? ";
-    $params[] = $yesterday;
-    $types .= "s";
+    if ($start_date && $end_date) {
+        if ($start_date === $end_date) {
+            $date_sql = " AND DATE(t.tgl_trans) = ? ";
+            $params[] = $start_date;
+            $types .= "s";
+        } else {
+            $date_sql = " AND t.tgl_trans BETWEEN ? AND ? ";
+            $params[] = $start_date;
+            $params[] = $end_date;
+            $types .= "ss";
+        }
+    } else {
+        $yesterday = date('Y-m-d', strtotime('-1 day'));
+        $date_sql = " AND DATE(t.tgl_trans) = ? ";
+        $params[] = $yesterday;
+        $types .= "s";
+    }
 }
 $cutoff_active = date('Y-m-d 00:00:00', strtotime("-3 months"));
 if ($status === 'active') {
@@ -105,7 +167,9 @@ if (!$stmtCount) {
 }
 $countParams = $params;
 $countTypes = $types;
-$stmtCount->bind_param($countTypes, ...$countParams);
+if (!empty($countParams)) {
+    $stmtCount->bind_param($countTypes, ...$countParams);
+}
 $stmtCount->execute();
 $resultCount = $stmtCount->get_result();
 $total_records = $resultCount->fetch_assoc()['total'] ?? 0;
@@ -143,7 +207,7 @@ $stmtData->execute();
 $resultData = $stmtData->get_result();
 $data = $resultData->fetch_all(MYSQLI_ASSOC);
 $stmtData->close();
-if ($total_records === 0) {
+if (empty($data)) {
     http_response_code(200);
     echo json_encode([
         "success" => false,
@@ -158,7 +222,7 @@ $response = [
     "pagination" => [
         "current_page" => $page,
         "items_per_page" => $limit,
-        "total_records" => $total_records,
+        "total_records" => (int) $total_records,
         "total_pages" => $total_pages,
         "offset" => $offset
     ]

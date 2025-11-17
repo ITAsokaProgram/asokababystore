@@ -56,43 +56,98 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     echo json_encode(['success' => false, 'message' => 'Method Not Allowed']);
     exit();
 }
+
+/**
+ * Helper untuk mendapatkan parameter filter tanggal.
+ */
+function getDateFilterParams($get_params, $table_alias = 't')
+{
+    $date_where_clause = "";
+    $params = [];
+    $types = "";
+    $filter_display = "";
+
+    $filter_type = $get_params['filter_type'] ?? 'preset';
+
+    if ($filter_type === 'custom' && !empty($get_params['start_date']) && !empty($get_params['end_date'])) {
+        $start_date = $get_params['start_date'];
+        $end_date = $get_params['end_date'];
+        // Tambahkan waktu ke end_date untuk mencakup seluruh hari
+        $end_date_with_time = $end_date . ' 23:59:59';
+
+        $date_where_clause = " AND {$table_alias}.tgl_trans BETWEEN ? AND ?";
+        $params[] = $start_date;
+        $params[] = $end_date_with_time;
+        $types = "ss";
+        $filter_display = htmlspecialchars($start_date) . " s/d " . htmlspecialchars($end_date);
+
+    } else {
+        $filter = $get_params['filter'] ?? '3bulan';
+        $filter_map = [
+            'kemarin' => '1 day',
+            '1minggu' => '1 week',
+            '1bulan' => '1 month',
+            '3bulan' => '3 months',
+            '6bulan' => '6 months',
+            '9bulan' => '9 months',
+            '12bulan' => '12 months'
+        ];
+        $display_map = [
+            'kemarin' => 'Kemarin',
+            '1minggu' => '1 Minggu Terakhir',
+            '1bulan' => '1 Bulan Terakhir',
+            '3bulan' => '3 Bulan Terakhir',
+            '6bulan' => '6 Bulan Terakhir',
+            '9bulan' => '9 Bulan Terakhir',
+            '12bulan' => '1 Tahun Terakhir',
+            'semua' => 'Semua Waktu'
+        ];
+        $filter_display = $display_map[$filter] ?? '3 Bulan Terakhir';
+
+        if ($filter === 'semua') {
+            // Tidak ada klausa where tanggal
+        } elseif ($filter === 'kemarin') {
+            $cutoff_date_filter = date('Y-m-d', strtotime("-1 day"));
+            $date_where_clause = " AND DATE({$table_alias}.tgl_trans) = ?";
+            $params[] = $cutoff_date_filter;
+            $types = "s";
+        } else {
+            $interval = $filter_map[$filter] ?? '3 months';
+            $cutoff_date_filter = date('Y-m-d 00:00:00', strtotime("-$interval"));
+            $date_where_clause = " AND {$table_alias}.tgl_trans >= ?";
+            $params[] = $cutoff_date_filter;
+            $types = "s";
+        }
+    }
+
+    return [
+        'sql_clause' => $date_where_clause,
+        'params' => $params,
+        'types' => $types,
+        'display' => $filter_display
+    ];
+}
+
 try {
-    $filter = $_GET['filter'] ?? 'semua';
     $kd_cust_param = $_GET['kd_cust'] ?? '';
     $plu_param = $_GET['plu'] ?? '';
+
     if (empty($kd_cust_param) || empty($plu_param)) {
         throw new Exception("Parameter 'kd_cust' dan 'plu' tidak boleh kosong.");
     }
-    $params_sub = [$kd_cust_param, $plu_param];
-    $types_sub = "ss";
-    $params_main = [];
-    $types_main = "";
-    $date_where_clause_sub = "";
-    $date_where_clause_main = "";
-    if ($filter !== 'semua') {
-        $interval = '3 months';
-        if ($filter === 'kemarin')
-            $interval = '1 day';
-        elseif ($filter === '1minggu')
-            $interval = '1 week';
-        elseif ($filter === '1bulan')
-            $interval = '1 month';
-        elseif ($filter === '3bulan')
-            $interval = '3 months';
-        elseif ($filter === '6bulan')
-            $interval = '6 months';
-        elseif ($filter === '9bulan')
-            $interval = '9 months';
-        elseif ($filter === '12bulan')
-            $interval = '12 months';
-        $cutoff_date = date('Y-m-d 00:00:00', strtotime("-$interval"));
-        $date_where_clause_sub = " AND t2.tgl_trans >= ? ";
-        $params_sub[] = $cutoff_date;
-        $types_sub .= "s";
-        $date_where_clause_main = " AND t.tgl_trans >= ? ";
-        $params_main[] = $cutoff_date;
-        $types_main .= "s";
-    }
+
+    // Dapatkan filter untuk subquery (alias 't2')
+    $dateFilterSub = getDateFilterParams($_GET, 't2');
+    $date_where_clause_sub = $dateFilterSub['sql_clause'];
+    $params_sub = array_merge([$kd_cust_param, $plu_param], $dateFilterSub['params']);
+    $types_sub = "ss" . $dateFilterSub['types'];
+
+    // Dapatkan filter untuk main query (alias 't')
+    $dateFilterMain = getDateFilterParams($_GET, 't');
+    $date_where_clause_main = $dateFilterMain['sql_clause'];
+    $params_main = $dateFilterMain['params'];
+    $types_main = $dateFilterMain['types'];
+
     $sql = "
         SELECT
             DATE(t.tgl_trans) as tgl_trans_date,
@@ -110,18 +165,25 @@ try {
                 SELECT DISTINCT t2.no_bon
                 FROM trans_b t2
                 WHERE t2.kd_cust = ?
-                  AND t2.plu = ?
-                  $date_where_clause_sub
+                    AND t2.plu = ?
+                    $date_where_clause_sub
             )
             $date_where_clause_main
         ORDER BY
             t.tgl_trans DESC, t.jam_trs DESC, t.no_bon, t.descp
     ";
+
     $stmt = $conn->prepare($sql);
     if ($stmt === false) {
         throw new Exception("Database prepare failed: " . $conn->error);
     }
-    $stmt->bind_param($types_sub . $types_main, ...$params_sub, ...$params_main);
+
+    // Gabungkan parameter dari subquery dan main query
+    $all_params = array_merge($params_sub, $params_main);
+    $all_types = $types_sub . $types_main;
+
+    $stmt->bind_param($all_types, ...$all_params);
+
     if (!$stmt->execute()) {
         throw new Exception("Gagal eksekusi query: " . $stmt->error);
     }
