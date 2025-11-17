@@ -6,6 +6,7 @@ let ageChartInstance = null;
 let locationChartInstance = null;
 let topMemberChartInstance = null;
 let topMemberProductChartInstance = null;
+let topMemberFrequencyChartInstance = null;
 let currentLocationLevel = "city";
 let selectedCity = null;
 let selectedDistrict = null;
@@ -29,6 +30,11 @@ const UI_ELEMENTS = {
     loadingId: "top-product-chart-loading-spinner",
     containerId: "top-product-chart-container",
     errorId: "top-product-chart-error",
+  },
+  topMemberFrequency: {
+    loadingId: "top-member-frequency-chart-loading-spinner",
+    containerId: "top-member-frequency-chart-container",
+    errorId: "top-member-frequency-chart-error",
   },
 };
 const UI_ELEMENTS_AGE_TABLE = {
@@ -55,6 +61,12 @@ const UI_ELEMENTS_TOP_PRODUCT_TABLE = {
   containerId: "top-product-table-container",
   errorId: "top-product-table-error",
   bodyId: "top-product-table-body",
+};
+const UI_ELEMENTS_TOP_MEMBER_FREQUENCY_TABLE = {
+  loadingId: "top-member-frequency-table-loading-spinner",
+  containerId: "top-member-frequency-table-container",
+  errorId: "top-member-frequency-table-error",
+  bodyId: "top-member-frequency-table-body",
 };
 function setChartUIState(
   { loadingId, containerId, errorId },
@@ -269,6 +281,42 @@ function updateLocationHeader() {
       breadcrumb.textContent = `Kota: ${selectedCity} > Kec: ${selectedDistrict}`;
     }
   }
+}
+function renderTopMemberFrequencyTable(data) {
+  const tableBody = document.getElementById(
+    UI_ELEMENTS_TOP_MEMBER_FREQUENCY_TABLE.bodyId
+  );
+  if (!tableBody) return;
+  tableBody.innerHTML = "";
+  const numberFormatter = new Intl.NumberFormat("id-ID");
+
+  if (!data || data.length === 0) {
+    tableBody.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-gray-500">Tidak ada data.</td></tr>`;
+    return;
+  }
+
+  data.forEach((item) => {
+    if (
+      !item.nama_cust ||
+      item.nama_cust.trim().toLowerCase() === "member dummy"
+    )
+      return;
+
+    const totalTransactions = item.total_transactions
+      ? numberFormatter.format(item.total_transactions)
+      : "0";
+
+    const row = `
+            <tr class="hover:bg-gray-50 cursor-pointer top-member-frequency-table-row" 
+                data-kd-cust="${item.kd_cust}" 
+                data-nama-cust="${item.nama_cust}">
+                <td class="px-4 py-3 text-sm text-gray-700 font-medium">${item.nama_cust}</td>
+                <td class="px-4 py-3 text-sm text-gray-500">${item.kd_cust}</td>
+                <td class="px-4 py-3 text-sm font-bold text-blue-600">${totalTransactions}</td>
+            </tr>
+        `;
+    tableBody.innerHTML += row;
+  });
 }
 async function handleLocationClick(locationName) {
   if (!locationName) return;
@@ -584,6 +632,60 @@ async function loadTopProductData() {
     setGeneralTableUIState(UI_ELEMENTS_TOP_PRODUCT_TABLE, "error", msg);
   }
 }
+async function loadTopMemberFrequencyData() {
+  setChartUIState(UI_ELEMENTS.topMemberFrequency, "loading");
+  setGeneralTableUIState(UI_ELEMENTS_TOP_MEMBER_FREQUENCY_TABLE, "loading");
+
+  try {
+    const result = await api.getTopMembersByFrequency(
+      currentFilter,
+      currentStatus
+    );
+
+    if (result.success === true && result.data && result.data.length > 0) {
+      const state = {
+        currentFilter,
+        currentStatus,
+      };
+      topMemberFrequencyChartInstance = charts.renderTopMemberFrequencyChart(
+        topMemberFrequencyChartInstance,
+        "topMemberFrequencyChart",
+        result.data,
+        state
+      );
+      setChartUIState(UI_ELEMENTS.topMemberFrequency, "success");
+      renderTopMemberFrequencyTable(result.data);
+      setGeneralTableUIState(UI_ELEMENTS_TOP_MEMBER_FREQUENCY_TABLE, "success");
+
+      const buttonEl = document.getElementById("view-all-top-frequency-btn");
+      if (buttonEl) buttonEl.classList.remove("hidden");
+
+      if (topMemberFrequencyChartInstance)
+        topMemberFrequencyChartInstance.resize();
+    } else if (result.success === true && result.data.length === 0) {
+      const msg = "Tidak ada data top member (frekuensi) untuk filter ini.";
+      setChartUIState(UI_ELEMENTS.topMemberFrequency, "empty", msg);
+      setGeneralTableUIState(
+        UI_ELEMENTS_TOP_MEMBER_FREQUENCY_TABLE,
+        "empty",
+        msg
+      );
+    } else {
+      throw new Error(
+        result.message || "Gagal memuat data top member (frekuensi)"
+      );
+    }
+  } catch (error) {
+    console.error("Error loading top member frequency data:", error);
+    const msg = `Gagal memuat data: ${error.message}`;
+    setChartUIState(UI_ELEMENTS.topMemberFrequency, "error", msg);
+    setGeneralTableUIState(
+      UI_ELEMENTS_TOP_MEMBER_FREQUENCY_TABLE,
+      "error",
+      msg
+    );
+  }
+}
 document.addEventListener("DOMContentLoaded", () => {
   const params = new URLSearchParams(window.location.search);
   currentFilter = params.get("filter");
@@ -660,11 +762,34 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
+  const topMemberFrequencyTableBody = document.getElementById(
+    UI_ELEMENTS_TOP_MEMBER_FREQUENCY_TABLE.bodyId
+  );
+  if (topMemberFrequencyTableBody) {
+    topMemberFrequencyTableBody.addEventListener("click", (event) => {
+      const row = event.target.closest("tr.top-member-frequency-table-row");
+      if (row && currentFilter && currentStatus) {
+        const kdCust = row.dataset.kdCust;
+        const namaCust = row.dataset.namaCust;
+        if (kdCust) {
+          const targetUrl = `customer.php?filter=${encodeURIComponent(
+            currentFilter
+          )}&status=${encodeURIComponent(
+            currentStatus
+          )}&kd_cust=${encodeURIComponent(
+            kdCust
+          )}&nama_cust=${encodeURIComponent(namaCust)}`;
+          window.location.href = targetUrl;
+        }
+      }
+    });
+  }
   if (currentFilter && currentStatus) {
     loadAgeData();
     loadLocationData();
     loadTopMemberData();
     loadTopProductData();
+    loadTopMemberFrequencyData();
     const backBtn = document.getElementById("location-back-btn");
     backBtn.addEventListener("click", () => {
       if (currentLocationLevel === "district") {
@@ -686,5 +811,6 @@ document.addEventListener("DOMContentLoaded", () => {
     setLocationTableUIState("error", errorMsg);
     setChartUIState(UI_ELEMENTS.topMember, "error", errorMsg);
     setChartUIState(UI_ELEMENTS.topProduct, "error", errorMsg);
+    setChartUIState(UI_ELEMENTS.topMemberFrequency, "error", errorMsg);
   }
 });

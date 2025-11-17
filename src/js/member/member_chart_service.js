@@ -93,7 +93,7 @@ export function renderAgeChart(chartInstance, elementId, data, currentFilter) {
         currentFilter
       )}&age_group=${encodeURIComponent(ageGroup)}&status=${encodeURIComponent(
         currentStatus
-      )}`; // <-- TAMBAHKAN status
+      )}`; 
       window.location.href = targetUrl;
     }
   });
@@ -401,4 +401,88 @@ export function renderMemberChart(elementId, data, filter) {
   });
   addChartHoverHandlers(chartInstance, chartElement);
   return chartInstance;
+}
+
+export function renderTopMemberFrequencyChart(
+  chartInstance,
+  elementId,
+  data,
+  state
+) {
+  const chartElement = document.getElementById(elementId);
+  if (!chartElement) return null;
+  if (chartInstance) {
+    chartInstance.dispose();
+  }
+  const newChartInstance = echarts.init(chartElement);
+
+  const filteredData = data;
+  const chartData = filteredData.map((d) => ({
+    value: d.total_transactions,
+    name: `${d.nama_cust} - (${d.kd_cust})`,
+    kd_cust: d.kd_cust,
+    nama_cust: d.nama_cust,
+  }));
+
+  const total = filteredData.reduce(
+    (acc, curr) => acc + curr.total_transactions,
+    0
+  );
+
+  const option = {
+    animationDuration: 1000,
+    animationEasing: "cubicOut",
+    color: CHART_COLORS,
+    tooltip: {
+      trigger: "item",
+      appendToBody: true,
+      formatter: (params) => {
+        const percentage =
+          total > 0 ? ((params.value / total) * 100).toFixed(1) : 0;
+        return `${params.name}: ${numberFormatter.format(
+          params.value
+        )} transaksi (${percentage}%)`;
+      },
+    },
+    legend: {
+      show: false,
+    },
+    series: [
+      {
+        minAngle: 15,
+        type: "pie",
+        radius: "50%",
+        data: chartData,
+        fontSize: 16,
+        label: {
+          formatter: (params) => {
+            const percentage =
+              total > 0 ? ((params.value / total) * 100).toFixed(1) : 0;
+            return `${params.name}\n(${percentage}%)`;
+          },
+        },
+      },
+    ],
+  };
+
+  newChartInstance.setOption(option);
+
+  newChartInstance.off("click");
+  newChartInstance.on("click", (params) => {
+    if (params.componentType !== "series") return;
+    const customerData = params.data;
+    if (customerData) {
+      const targetUrl = `customer.php?filter=${encodeURIComponent(
+        state.currentFilter
+      )}&status=${encodeURIComponent(
+        state.currentStatus
+      )}&kd_cust=${encodeURIComponent(
+        customerData.kd_cust
+      )}&nama_cust=${encodeURIComponent(customerData.nama_cust)}`;
+      window.location.href = targetUrl;
+    }
+  });
+
+  addChartHoverHandlers(newChartInstance, chartElement);
+  return newChartInstance;
 }

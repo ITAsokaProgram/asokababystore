@@ -317,6 +317,68 @@ $filterDisplay = ($filter === 'kemarin') ? 'Kemarin' :
                     <p id="top-product-table-error" class="error-message hidden"></p>
                 </div>
             </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div class="member-card slide-up p-3">
+                    <div class="page-header mb-4">
+                        <h2 class="text-2xl font-semibold gradient-text">
+                            <i class="fa-solid fa-fire mr-2"></i>
+                            Top 10 Member Chart (Frekuensi)
+                        </h2>
+                    </div>
+
+                    <div id="top-member-frequency-chart-loading-spinner" class="loading-spinner">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        <p class="loading-text">Memuat data top member (frekuensi)...</p>
+                    </div>
+
+                    <div id="top-member-frequency-chart-container" class="chart-wrapper hidden">
+                        <div class="chart-container">
+                            <div id="topMemberFrequencyChart" style="width: 100%; height: 400px;"></div>
+                        </div>
+                    </div>
+
+                    <p id="top-member-frequency-chart-error" class="error-message hidden"></p>
+                </div>
+
+                <div class="member-card slide-up p-3">
+                    <div class="page-header mb-4">
+                        <h2 class="text-2xl font-semibold gradient-text">
+                            <i class="fa-solid fa-list-ol mr-2"></i>
+                            Detail Top 10 Member (Frekuensi)
+                        </h2>
+                    </div>
+
+                    <div class="mb-3">
+                        <a href="" id="view-all-top-frequency-btn"
+                            class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 text-sm hidden">
+                            Lihat Semua Top Member (Frekuensi)
+                            <i class="fa-solid fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+
+                    <div id="top-member-frequency-table-loading-spinner" class="loading-spinner">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        <p class="loading-text">Memuat data tabel top member (frekuensi)...</p>
+                    </div>
+
+                    <div id="top-member-frequency-table-container" class="member-table-container overflow-y-auto hidden"
+                        style="height: 400px;">
+                        <table class="member-table">
+                            <thead>
+                                <tr>
+                                    <th>Nama Customer</th>
+                                    <th>Kode</th>
+                                    <th>Jumlah Transaksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="top-member-frequency-table-body">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <p id="top-member-frequency-table-error" class="error-message hidden"></p>
+                </div>
+            </div>
 
         </div>
     </main>
