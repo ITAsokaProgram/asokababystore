@@ -219,8 +219,8 @@ try {
         $data[] = [
             'location_name' => $row['location_name'],
             'count' => (int) $row['count'],
-            'top_product_descp' => $isFilter3MonthsOrLess ? null : $row['top_product_descp'],
-            'top_product_qty' => $isFilter3MonthsOrLess ? null : ($row['top_product_qty'] ? (int) $row['top_product_qty'] : null)
+            'top_product_descp' => ($status === 'inactive' && $isFilter3MonthsOrLess) ? null : $row['top_product_descp'],
+            'top_product_qty' => ($status === 'inactive' && $isFilter3MonthsOrLess) ? null : ($row['top_product_qty'] ? (int) $row['top_product_qty'] : null)
         ];
     }
     $stmt->close();
