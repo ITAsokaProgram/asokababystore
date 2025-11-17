@@ -60,6 +60,8 @@ try {
     $filter = $_GET['filter'] ?? '3bulan';
     $status = $_GET['status'] ?? 'active';
     $limit = (int) ($_GET['limit'] ?? 10);
+    $page = (int) ($_GET['page'] ?? 1);
+    $offset = ($page - 1) * $limit;
     $filter_map = [
         'kemarin' => '1 day',
         '1minggu' => '1 week',
@@ -74,7 +76,16 @@ try {
         $cutoff_active_ts = strtotime("-3 months");
         $cutoff_filter_ts = strtotime("-$interval_trans");
         if ($filter !== 'semua' && $cutoff_filter_ts >= $cutoff_active_ts) {
-            echo json_encode(['success' => true, 'data' => []]);
+            echo json_encode([
+                'success' => true,
+                'data' => [],
+                'pagination' => [
+                    'total_records' => 0,
+                    'current_page' => 1,
+                    'limit' => $limit,
+                    'total_pages' => 0
+                ]
+            ]);
             $conn->close();
             exit();
         }
@@ -107,25 +118,62 @@ try {
     $where_clauses[] = "t.kd_cust NOT IN ('', '898989', '#898989', '#999999999')";
     $where_clauses[] = "c.nama_cust IS NOT NULL AND c.nama_cust != ''";
     $sql_where = implode(" AND ", $where_clauses);
+    $count_sql = "
+        SELECT COUNT(*) AS total_records
+        FROM (
+            SELECT 1
+            FROM trans_b t
+            INNER JOIN customers c ON t.kd_cust = c.kd_cust
+            WHERE $sql_where
+            GROUP BY c.nama_cust, t.kd_cust
+        ) AS unique_customers
+    ";
+    $stmt_count = $conn->prepare($count_sql);
+    if ($stmt_count === false) {
+        throw new Exception("Database prepare failed (count): " . $conn->error);
+    }
+    $stmt_count->bind_param($types, ...$params);
+    if (!$stmt_count->execute()) {
+        throw new Exception("Gagal eksekusi query (count): " . $stmt_count->error);
+    }
+    $count_result = $stmt_count->get_result();
+    $total_records = (int) $count_result->fetch_assoc()['total_records'];
+    $total_pages = $total_records > 0 ? ceil($total_records / $limit) : 0;
+    $stmt_count->close();
     $sql = "
         SELECT
             c.nama_cust,
             t.kd_cust,
-            COUNT(DISTINCT t.no_bon) AS total_transactions
+            COUNT(DISTINCT t.no_bon) AS total_transactions,
+            COALESCE(points_summary.total_poin_customer, 0) AS total_poin_customer
         FROM
             trans_b t
         INNER JOIN
             customers c ON t.kd_cust = c.kd_cust
+        LEFT JOIN (
+            SELECT
+                kd_cust,
+                SUM(total_point) AS total_poin_customer
+            FROM (
+                SELECT kd_cust, COALESCE(jum_point, 0) AS total_point FROM point_trans WHERE kd_cust IS NOT NULL AND kd_cust != ''
+                UNION ALL
+                SELECT kd_cust, COALESCE(jum_point, 0) AS total_point FROM point_manual WHERE kd_cust IS NOT NULL AND kd_cust != ''
+                UNION ALL
+                SELECT kd_cust, COALESCE(point_1, 0) AS total_point FROM point_kasir WHERE kd_cust IS NOT NULL AND kd_cust != ''
+            ) AS all_points
+            GROUP BY kd_cust
+        ) AS points_summary ON t.kd_cust = points_summary.kd_cust
         WHERE
             $sql_where
         GROUP BY
-            c.nama_cust, t.kd_cust
+            c.nama_cust, t.kd_cust, points_summary.total_poin_customer
         ORDER BY
             total_transactions DESC
-        LIMIT ?
+        LIMIT ? OFFSET ?
     ";
     $params[] = $limit;
-    $types .= "i";
+    $params[] = $offset;
+    $types .= "ii";
     $stmt = $conn->prepare($sql);
     if ($stmt === false) {
         throw new Exception("Database prepare failed (data): " . $conn->error);
@@ -140,14 +188,21 @@ try {
         $data[] = [
             'nama_cust' => $row['nama_cust'],
             'kd_cust' => $row['kd_cust'],
-            'total_transactions' => (int) $row['total_transactions']
+            'total_transactions' => (int) $row['total_transactions'],
+            'total_poin_customer' => (int) $row['total_poin_customer']
         ];
     }
     $stmt->close();
     $conn->close();
     echo json_encode([
         'success' => true,
-        'data' => $data
+        'data' => $data,
+        'pagination' => [
+            'total_records' => $total_records,
+            'current_page' => $page,
+            'limit' => $limit,
+            'total_pages' => $total_pages
+        ]
     ]);
 } catch (Throwable $t) {
     $logger->critical("FATAL ERROR: " . $t->getMessage(), [

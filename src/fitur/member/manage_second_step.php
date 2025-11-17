@@ -349,7 +349,8 @@ $filterDisplay = ($filter === 'kemarin') ? 'Kemarin' :
                     </div>
 
                     <div class="mb-3">
-                        <a href="" id="view-all-top-frequency-btn"
+                        <a href="top_frequency.php?filter=<?= $filter ?>&status=<?= $status ?>"
+                            id="view-all-top-frequency-btn"
                             class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 text-sm hidden">
                             Lihat Semua Top Member (Frekuensi)
                             <i class="fa-solid fa-arrow-right ml-2"></i>

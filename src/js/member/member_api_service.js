@@ -161,12 +161,17 @@ export const getTopProductsByCustomer = (
   const url = `${API_MANAGEMENT_URL}/get_top_products_by_customer.php?${params.toString()}`;
   return sendRequestGET(url);
 };
-
-export const getTopMembersByFrequency = (filter, status, limit = 10) => {
+export const getTopMembersByFrequency = (
+  filter,
+  status,
+  limit = 10,
+  page = 1
+) => {
   const params = new URLSearchParams();
   params.append("filter", filter);
   params.append("status", status);
   params.append("limit", limit);
+  params.append("page", page);
   const url = `${API_MANAGEMENT_URL}/get_top_members_by_frequency.php?${params.toString()}`;
   return sendRequestGET(url);
 };
