@@ -169,3 +169,12 @@ export const sendProactiveMessage = (kd_cust, message) => {
   };
   return sendRequestJSON(url, data);
 };
+
+export const getTransactionDetails = (filter, kdCust, plu) => {
+  const params = new URLSearchParams();
+  params.append("filter", filter);
+  params.append("kd_cust", kdCust);
+  params.append("plu", plu);
+  const url = `${API_MANAGEMENT_URL}/get_transaction_details_by_product.php?${params.toString()}`;
+  return sendRequestGET(url);
+};
