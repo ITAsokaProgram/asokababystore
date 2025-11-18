@@ -3,7 +3,7 @@ require_once __DIR__ . '/../config/JWT/JWT.php';
 require_once __DIR__ . '/../config/JWT/Key.php';
 require_once __DIR__ . '/../config/JWT/config.php';
 require_once __DIR__ . '/../../vendor/autoload.php';
-require_once __DIR__ . '/rate_limiter.php';
+// require_once __DIR__ . '/rate_limiter.php';
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Firebase\JWT\ExpiredException;

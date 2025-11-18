@@ -1,7 +1,6 @@
 import { fetchTopMember } from "../member_internal/product/fetch_product.js";
 import { getCookie } from "/src/js/index/utils/cookies.js";
 import { fetchMargin } from "/src/js/margin/fetch/get_margin.js";
-
 function updateUI(data) {
   if (!data) {
     setText("total_trans", "-");
@@ -38,7 +37,6 @@ function updateUI(data) {
     "trans_tertinggi_total",
     data?.trans_tertinggi?.[0]?.total_transaksi ?? "-"
   );
-
   const transTerendah = data.trans_terendah[0];
   const gabungkanTerendah = data.jumlah_member_per_cabang.find(
     (item) => item.cabang === transTerendah.cabang
@@ -57,56 +55,53 @@ function updateUI(data) {
   );
   setText("trans_terendah_member", data?.trans_terendah?.[0]?.member ?? "-");
   setText("trans_terendah_non", data?.trans_terendah?.[0]?.non_member ?? "-");
-
   setText("top_sales_member", data?.top_sales_by_member?.[0]?.barang ?? "-");
   setText(
     "top_sales_product_member",
     data?.top_sales_by_product?.[0]?.barang ?? "-"
   );
 }
-
 function setText(id, text) {
   const el = document.getElementById(id);
   if (el) el.textContent = text;
 }
-
 async function loadInvalidTransaksi() {
   try {
     const token = getCookie("admin_token");
-    const response = await fetch("/src/api/invalid/view_invalid_top", {
+    const headers = {
+      Authorization: "Bearer " + token,
+      "Content-Type": "application/json",
+    };
+    const invalidPromise = fetch("/src/api/invalid/view_invalid_top", {
       method: "GET",
-      headers: {
-        Authorization: "Bearer " + token,
-        "Content-Type": "application/json",
-      },
+      headers,
     });
-    const margin = await fetch("/src/api/dashboard/top_margin", {
+    const marginPromise = fetch("/src/api/margin/top_margin", {
       method: "GET",
-      headers: {
-        Authorization: "Bearer " + token,
-        "Content-Type": "application/json",
-      },
+      headers,
     });
-    const activity = await fetch("/src/api/customer/get_top_5_activity_cust", {
+    const activityPromise = fetch("/src/api/customer/get_top_5_activity_cust", {
       method: "GET",
-      headers: {
-        Authorization: "Bearer " + token,
-        "Content-Type": "application/json",
-      },
+      headers,
     });
-    const topMember = await fetch("/src/api/member/product/get_top_member", {
+    const topMemberPromise = fetch("/src/api/member/product/get_top_member", {
       method: "GET",
-      headers: {
-        Authorization: "Bearer " + token,
-        "Content-Type": "application/json",
-      },
+      headers,
     });
+    const [response, margin, activity, topMember] = await Promise.all([
+      invalidPromise,
+      marginPromise,
+      activityPromise,
+      topMemberPromise,
+    ]);
     if (response.ok && activity.ok && margin.ok && topMember.ok) {
-      const result = await response.json();
-      const marginData = await margin.json();
-
-      const activityData = await activity.json();
-      const topMemberData = await topMember.json();
+      const [result, marginData, activityData, topMemberData] =
+        await Promise.all([
+          response.json(),
+          margin.json(),
+          activity.json(),
+          topMember.json(),
+        ]);
       if (
         result.status === "success" &&
         result.data &&
@@ -125,21 +120,24 @@ async function loadInvalidTransaksi() {
         displayNoData();
       }
     } else {
-      displayError("Gagal mengambil data");
+      console.error("Salah satu request dashboard gagal:", {
+        response: response.status,
+        margin: margin.status,
+        activity: activity.status,
+        topMember: topMember.status,
+      });
+      displayError("Gagal mengambil sebagian data dashboard");
     }
   } catch (error) {
     console.error("Error:", error);
-    displayError("Terjadi kesalahan");
+    displayError("Terjadi kesalahan jaringan");
   }
 }
-
 function displayInvalidTransaksi(data) {
   const container = document.getElementById("invalid-transaksi-container");
   if (!container) return;
   container.innerHTML = "";
-
   const topData = data.slice(0, 3);
-
   topData.forEach((item, idx) => {
     const bg =
       [
@@ -150,13 +148,11 @@ function displayInvalidTransaksi(data) {
     const border =
       ["border-red-300", "border-orange-300", "border-yellow-300"][idx] ||
       "border-gray-200";
-
     const card = document.createElement("div");
     card.onclick = () => {
       window.location.href = "/src/fitur/transaction/top_invalid";
     };
     card.className = `cursor-pointer bg-gradient-to-br ${bg} rounded-xl p-1.5 shadow border ${border} hover:scale-105 hover:shadow-md transition-all duration-300 flex flex-col animate-fade-in-up mb-1`;
-
     card.innerHTML = `
         <div class="flex items-center justify-between mb-1" >
           <div class="flex items-center gap-2">
@@ -173,11 +169,9 @@ function displayInvalidTransaksi(data) {
           <span class="font-bold text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full shadow">${item.jml_gagal}</span>
         </div>
       `;
-
     container.appendChild(card);
   });
 }
-
 function displayTop5margin(data) {
   const container = document.getElementById("top-margin-minus-container");
   if (!container) return;
@@ -208,7 +202,6 @@ function displayTop5margin(data) {
     container.appendChild(card);
   });
 }
-
 function displayNoData() {
   const container = document.getElementById("invalid-transaksi-container");
   if (container) {
@@ -223,12 +216,10 @@ function displayNoData() {
       `;
   }
 }
-
 function displayTop5Retur(data) {
   const container = document.getElementById("top-retur-container");
   if (!container) return;
   container.innerHTML = "";
-
   data.slice(0, 3).forEach((item, idx) => {
     const bg =
       [
@@ -239,7 +230,6 @@ function displayTop5Retur(data) {
     const border =
       ["border-purple-300", "border-indigo-300", "border-pink-300"][idx] ||
       "border-gray-200";
-
     const card = document.createElement("div");
     card.className = `cursor-pointer bg-gradient-to-br ${bg} rounded-xl p-1.5 shadow border ${border} hover:scale-105 hover:shadow-md transition-all duration-300 flex flex-col animate-fade-in-up mb-1`;
     card.onclick = () => {
@@ -261,16 +251,13 @@ function displayTop5Retur(data) {
           <span class="font-bold text-xs bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full shadow">${item.jml_gagal}</span>
         </div>
       `;
-
     container.appendChild(card);
   });
 }
-
 function displayTop5Activity(data) {
   const container = document.getElementById("top-activity-container");
   if (!container) return;
   container.innerHTML = "";
-
   data.slice(0, 3).forEach((item, idx) => {
     const bg =
       [
@@ -281,7 +268,6 @@ function displayTop5Activity(data) {
     const border =
       ["border-blue-300", "border-cyan-300", "border-teal-300"][idx] ||
       "border-gray-200";
-
     const card = document.createElement("div");
     card.className = `cursor-pointer bg-gradient-to-br ${bg} rounded-xl p-1.5 shadow border ${border} hover:scale-105 hover:shadow-md transition-all duration-300 flex flex-col animate-fade-in-up mb-1`;
     card.onclick = () => {
@@ -303,11 +289,9 @@ function displayTop5Activity(data) {
           <span class="font-bold text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full shadow">${item.T_Trans}</span>
         </div>
       `;
-
     container.appendChild(card);
   });
 }
-
 function displayError(message) {
   const container = document.getElementById("invalid-transaksi-container");
   if (container) {
@@ -332,7 +316,6 @@ async function loadReviewData() {
         "Content-Type": "application/json",
       },
     });
-
     if (response.ok) {
       const result = await response.json();
       if (result.status === "success" && result.data) {
@@ -350,7 +333,6 @@ async function loadReviewData() {
     displayReviewError("Terjadi kesalahan");
   }
 }
-
 function displayReviewStats(data) {
   setText("avg-rating", data.avg_rating || "0.0");
   setText("total-reviews", data.total_reviews || "0");
@@ -360,7 +342,6 @@ function displayPendingReviews(data) {
   const container = document.getElementById("pending-reviews-container");
   if (!container) return;
   container.innerHTML = "";
-
   if (!data || data.length === 0) {
     container.innerHTML = `
       <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-3 text-center border border-green-200">
@@ -373,7 +354,6 @@ function displayPendingReviews(data) {
     return;
   }
 }
-
 function displayReviewError(message) {
   const container = document.getElementById("pending-reviews-container");
   if (container) {
@@ -385,7 +365,6 @@ function displayReviewError(message) {
     `;
   }
 }
-
 function displayNoReviews() {
   const container = document.getElementById("pending-reviews-container");
   if (container) {
@@ -397,11 +376,9 @@ function displayNoReviews() {
     `;
   }
 }
-
 function displayFeaturedReview(review) {
   const container = document.getElementById("featured-review-container");
   if (!container) return;
-
   if (!review) {
     container.innerHTML = `
             <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-3 text-center border border-gray-200">
@@ -410,58 +387,48 @@ function displayFeaturedReview(review) {
             </div>`;
     return;
   }
-
   const statusStyles = {
     pending: {
       bgColor: "from-orange-50 to-red-50",
       borderColor: "border-orange-200",
-      spanClasses: "text-orange-600 bg-orange-100/70", // Style untuk span
+      spanClasses: "text-orange-600 bg-orange-100/70",
     },
     in_progress: {
       bgColor: "from-blue-50 to-cyan-50",
       borderColor: "border-blue-200",
-      spanClasses: "text-blue-600 bg-blue-100/70", // Style untuk span
+      spanClasses: "text-blue-600 bg-blue-100/70",
     },
     resolved: {
       bgColor: "from-green-50 to-emerald-50",
       borderColor: "border-green-200",
-      spanClasses: "text-green-600 bg-green-100/70", // Style untuk span
+      spanClasses: "text-green-600 bg-green-100/70",
     },
-    // Style default jika status tidak dikenali
     default: {
       bgColor: "from-gray-50 to-gray-100",
       borderColor: "border-gray-200",
       spanClasses: "text-gray-600 bg-gray-100/70",
     },
   };
-
   const currentStatus = review.review_status || "default";
   const currentStyles = statusStyles[currentStatus] || statusStyles.default;
-
-  // Mapping untuk teks yang akan ditampilkan
   const statusDisplayText = {
     pending: "Pending",
     in_progress: "In Progress",
     resolved: "Resolved",
   };
-
-  // Teks untuk ditampilkan di span, fallback ke 'Baru' jika tidak ada
   const displayText = statusDisplayText[review.review_status] || "Baru";
-
   let stars = "";
   for (let i = 1; i <= 5; i++) {
     stars += `<i class="fa-solid fa-star ${
       i <= review.rating ? "text-yellow-400" : "text-gray-300"
     }"></i>`;
   }
-
   const customerName = review.nama_customer || "Customer";
   const statusReview = {
     pending: "Pending",
     in_progress: "In Progress",
     resolved: "Resolved",
   };
-
   container.innerHTML = `
         <div class="cursor-pointer bg-gradient-to-br ${currentStyles.bgColor} rounded-xl p-3 shadow-sm border ${currentStyles.borderColor} hover:shadow-lg transition-all duration-300 animate-fade-in-up" onclick="window.location.href='/src/fitur/laporan/in_review_cust'">
             <div class="flex items-start justify-between mb-2">
@@ -476,7 +443,6 @@ function displayFeaturedReview(review) {
         </div>
     `;
 }
-
 export {
   updateUI,
   setText,
