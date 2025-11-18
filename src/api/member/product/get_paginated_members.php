@@ -80,7 +80,6 @@ $status_sql = "";
 $searchSql = "";
 if ($filter_type === 'custom' && $start_date && $end_date) {
     if ($start_date === $end_date) {
-        // OPTIMISASI: Gunakan >= dan < agar sargable (bisa pakai index)
         $date_sql = " AND t.tgl_trans >= ? AND t.tgl_trans < ? ";
         $params[] = $start_date . " 00:00:00";
         $next_day = date('Y-m-d', strtotime($start_date . ' +1 day'));
@@ -99,7 +98,6 @@ if ($filter_type === 'custom' && $start_date && $end_date) {
         case 'kemarin':
             $start = date('Y-m-d', strtotime('-1 day'));
             $end = $start;
-            // OPTIMISASI: Gunakan >= dan <
             $date_sql = " AND t.tgl_trans >= ? AND t.tgl_trans < ? ";
             $params[] = $start . " 00:00:00";
             $next_day = date('Y-m-d', strtotime($start . ' +1 day'));
@@ -160,10 +158,8 @@ if ($filter_type === 'custom' && $start_date && $end_date) {
             break;
     }
 } else {
-    // Default filter (jika tidak ada parameter)
     if ($start_date && $end_date) {
         if ($start_date === $end_date) {
-            // OPTIMISASI: Gunakan >= dan <
             $date_sql = " AND t.tgl_trans >= ? AND t.tgl_trans < ? ";
             $params[] = $start_date . " 00:00:00";
             $next_day = date('Y-m-d', strtotime($start_date . ' +1 day'));
@@ -176,9 +172,7 @@ if ($filter_type === 'custom' && $start_date && $end_date) {
             $types .= "ss";
         }
     } else {
-        // Default ke 'kemarin'
         $yesterday = date('Y-m-d', strtotime('-1 day'));
-        // OPTIMISASI: Gunakan >= dan <
         $date_sql = " AND t.tgl_trans >= ? AND t.tgl_trans < ? ";
         $params[] = $yesterday . " 00:00:00";
         $next_day = date('Y-m-d', strtotime($yesterday . ' +1 day'));
@@ -197,9 +191,8 @@ if ($status === 'active') {
     $types .= "s";
 }
 if (!empty($search)) {
-    // OPTIMISASI: Gunakan Full-Text Search untuk nama, LIKE untuk kode
     $searchSql = " AND (MATCH(c.nama_cust) AGAINST(? IN BOOLEAN MODE) OR t.kd_cust LIKE ?) ";
-    $searchValueFTS = $search . "*"; // Wildcard untuk FTS
+    $searchValueFTS = $search . "*";
     $searchValueLike = "%" . $search . "%";
     $params[] = $searchValueFTS;
     $params[] = $searchValueLike;
@@ -211,10 +204,6 @@ if ($sortBy === 'qty') {
 } elseif ($sortBy === 'nama') {
     $orderBySql = " ORDER BY c.nama_cust ASC ";
 }
-
-// --- OPTIMISASI: HAPUS QUERY COUNT ---
-// Query count yang lama dihapus.
-
 $dataSql = "SELECT 
                 SQL_CALC_FOUND_ROWS -- OPTIMISASI: Tambahkan ini
                 t.kd_cust,
@@ -235,11 +224,9 @@ $dataSql = "SELECT
             GROUP BY t.kd_cust, t.kd_store, c.nama_cust, ks.nm_alias
             $orderBySql
             LIMIT ? OFFSET ?";
-// Tambahkan LIMIT dan OFFSET ke parameter
 $params[] = $limit;
 $params[] = $offset;
 $types .= 'ii';
-
 $stmtData = $conn->prepare($dataSql);
 if (!$stmtData) {
     if ($logger) {
@@ -256,13 +243,9 @@ $stmtData->execute();
 $resultData = $stmtData->get_result();
 $data = $resultData->fetch_all(MYSQLI_ASSOC);
 $stmtData->close();
-
-// --- OPTIMISASI: Ambil total records dari FOUND_ROWS() ---
 $total_records_result = $conn->query("SELECT FOUND_ROWS() AS total");
 $total_records = $total_records_result->fetch_assoc()['total'] ?? 0;
 $total_pages = ceil($total_records / $limit);
-// --- Akhir Optimisasi Pagination ---
-
 if (empty($data)) {
     if (php_sapi_name() !== 'cli') {
         http_response_code(200);
@@ -273,10 +256,10 @@ if (empty($data)) {
     ];
     $jsonData = json_encode($response);
     try {
-        $redis->setex($cacheKey, 900, $jsonData);
+        $redis->set($cacheKey, $jsonData);
     } catch (Exception $e) {
         if ($logger) {
-            $logger->error("Redis cache setex (no data) failed: " . $e->getMessage());
+            $logger->error("Redis cache set (no data) failed: " . $e->getMessage());
         }
     }
     if (php_sapi_name() !== 'cli') {
@@ -293,35 +276,24 @@ $response = [
     "pagination" => [
         "current_page" => $page,
         "items_per_page" => $limit,
-        "total_records" => (int) $total_records, // Gunakan total dari FOUND_ROWS
-        "total_pages" => $total_pages, // Gunakan total dari FOUND_ROWS
+        "total_records" => (int) $total_records,
+        "total_pages" => $total_pages,
         "offset" => $offset
     ]
 ];
 $jsonData = json_encode($response);
 try {
-    $ttl = 3600;
-    if (
-        ($filter_preset === 'kemarin') ||
-        ($filter_type === 'custom' && $end_date && $end_date < date('Y-m-d'))
-    ) {
-        $ttl = 7200;
-    }
-    if (php_sapi_name() === 'cli') {
-        $ttl = 84600;
-        echo "Setting CLI cache TTL to $ttl seconds.\n";
-    }
-    $redis->setex($cacheKey, $ttl, $jsonData);
+    $redis->set($cacheKey, $jsonData);
 } catch (Exception $e) {
     if ($logger) {
-        $logger->error("Redis cache setex (with data) failed: " . $e->getMessage());
+        $logger->error("Redis cache set (with data) failed: " . $e->getMessage());
     }
 }
 if (php_sapi_name() !== 'cli') {
     http_response_code(200);
     echo $jsonData;
 } else {
-    echo "Cache generated (with data) for $cacheKey.\n";
+    echo "Cache generated (with data) for $cacheKey. No TTL set.\n";
 }
 if ($logger) {
     $logger->info("Selesai cron job get_paginated_members.php. Cache generated for $cacheKey.");

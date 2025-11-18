@@ -1,12 +1,10 @@
-import { fetchProductFav, filterProductFav } from "./fetch_product.js";
-import { paginationCard } from "../../transaction_branch/table.js";
-let productData = [];
-let filteredData = [];
+import { filterProductFav } from "./fetch_product.js";
 let charts = {};
 let currentPage = 1;
 let itemsPerPage = 10;
-
-// --- STATE FILTER BARU ---
+let currentSearch = "";
+let currentSort = "qty";
+let totalPages = 1;
 let currentDateFilter = {
   filter_type: null,
   filter: null,
@@ -14,64 +12,41 @@ let currentDateFilter = {
   end_date: null,
 };
 let currentStatus = null;
-// --- AKHIR STATE FILTER BARU ---
-
 const initProductFavoriteDisplay = async () => {
-  setupEventListeners(); // Ini akan membaca URL dan set state
-
-  // Ambil data awal berdasarkan filter dari URL
-  showLoading();
-  const data = await filterProductFav(currentDateFilter, currentStatus);
-  handleFilterResponse(data);
-
-  // Muat chart (sepertinya tidak tergantung filter tanggal)
+  setupEventListeners();
+  await loadTableData(1);
   await loadTrendData();
   await loadProductPerformance();
 };
-
 const setupEventListeners = () => {
   document.getElementById("refresh-btn").addEventListener("click", () => {
-    // Refresh seharusnya memuat ulang data dengan filter saat ini
-    loadDataWithFilters();
+    loadTableData(1);
   });
-  document.getElementById("search-input").addEventListener("input", (e) => {
-    filterData(e.target.value);
+  document.getElementById("search-input").addEventListener("change", (e) => {
+    currentSearch = e.target.value;
+    loadTableData(1);
   });
   document.getElementById("sort-select").addEventListener("change", (e) => {
-    sortData(e.target.value);
+    currentSort = e.target.value;
+    loadTableData(1);
   });
-  setupDateFilterListeners(); // Panggil ini untuk inisialisasi state filter
+  setupDateFilterListeners();
 };
-
-// --- FUNGSI BARU UNTUK REFRESH ---
-const loadDataWithFilters = async () => {
-  showLoading();
-  const data = await filterProductFav(currentDateFilter, currentStatus);
-  handleFilterResponse(data);
-  // Optional: Muat ulang chart jika perlu
-  // await loadTrendData();
-  // await loadProductPerformance();
-};
-
 const getDatesFromPreset = (filter) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-
   let startDate = new Date(today);
-  let endDate = new Date(today); // Default end date is today
-
+  let endDate = new Date(today);
   switch (filter) {
     case "kemarin":
       startDate.setDate(today.getDate() - 1);
-      endDate.setDate(today.getDate() - 1); // Hanya tanggal kemarin
+      endDate.setDate(today.getDate() - 1);
       break;
     case "1minggu":
       startDate.setDate(today.getDate() - 7);
-      // endDate tetap hari ini
       break;
     case "1bulan":
       startDate.setMonth(today.getMonth() - 1);
-      // endDate tetap hari ini
       break;
     case "3bulan":
       startDate.setMonth(today.getMonth() - 3);
@@ -86,86 +61,60 @@ const getDatesFromPreset = (filter) => {
       startDate.setFullYear(today.getFullYear() - 1);
       break;
     default:
-      // Default ke 'kemarin'
       startDate.setDate(today.getDate() - 1);
       endDate.setDate(today.getDate() - 1);
       break;
   }
-
   return {
     start: startDate.toISOString().split("T")[0],
     end: endDate.toISOString().split("T")[0],
   };
 };
-
-// --- FUNGSI YANG DIMODIFIKASI BESAR ---
 const setupDateFilterListeners = () => {
   const startDateInput = document.getElementById("start-date");
   const endDateInput = document.getElementById("end-date");
   const applyFilterBtn = document.getElementById("apply-date-filter");
   const resetFilterBtn = document.getElementById("reset-date-filter");
   const dateRangeDisplay = document.getElementById("date-range-display");
-
   if (!startDateInput || !endDateInput || !applyFilterBtn || !resetFilterBtn) {
     return;
   }
-
   const urlParams = new URLSearchParams(window.location.search);
   const today = new Date();
   const todayISO = today.toISOString().split("T")[0];
-
-  // Ambil semua parameter filter dari URL
   const urlFilterType = urlParams.get("filter_type");
   const urlFilter = urlParams.get("filter");
   const urlStartDate = urlParams.get("start_date");
   const urlEndDate = urlParams.get("end_date");
-  currentStatus = urlParams.get("status"); // Set status global
-
+  currentStatus = urlParams.get("status");
   let displayStartDate, displayEndDate;
-
-  // --- LOGIKA BARU UNTUK MENGISI TANGGAL ---
   if (urlFilterType === "preset" && urlFilter) {
-    // 1. Jika filter_type=preset, hitung tanggalnya
     const dates = getDatesFromPreset(urlFilter);
     displayStartDate = dates.start;
     displayEndDate = dates.end;
-
-    // Set state global
     currentDateFilter.filter_type = urlFilterType;
     currentDateFilter.filter = urlFilter;
-    // Tetapkan start_date & end_date agar panggilan API konsisten
     currentDateFilter.start_date = displayStartDate;
     currentDateFilter.end_date = displayEndDate;
   } else if (urlFilterType === "custom" && urlStartDate) {
-    // 2. Jika filter_type=custom, gunakan tanggal dari URL
     displayStartDate = urlStartDate;
     displayEndDate = urlEndDate;
-
-    // Set state global
     currentDateFilter.filter_type = urlFilterType;
     currentDateFilter.filter = null;
     currentDateFilter.start_date = urlStartDate;
     currentDateFilter.end_date = urlEndDate;
   } else {
-    // 3. Fallback jika tidak ada filter (default ke kemarin)
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     displayStartDate = yesterday.toISOString().split("T")[0];
     displayEndDate = displayStartDate;
-
-    // Set state global
-    currentDateFilter.filter_type = "custom"; // Default ke custom
+    currentDateFilter.filter_type = "custom";
     currentDateFilter.start_date = displayStartDate;
     currentDateFilter.end_date = displayEndDate;
   }
-  // --- AKHIR LOGIKA BARU ---
-
-  // Set nilai awal untuk date picker
   if (displayStartDate) startDateInput.value = displayStartDate;
   if (displayEndDate) endDateInput.value = displayEndDate;
   endDateInput.max = todayISO;
-
-  // Set teks display rentang tanggal
   const s = new Date(displayStartDate + "T00:00:00");
   const e = new Date(displayEndDate + "T00:00:00");
   const timeDiff = e.getTime() - s.getTime();
@@ -173,8 +122,6 @@ const setupDateFilterListeners = () => {
   if (dateRangeDisplay) {
     dateRangeDisplay.innerHTML = ` <i class="fas fa-info-circle text-emerald-400 mr-1"></i>(Data ${daysDiff} hari)`;
   }
-
-  // --- Event Listener Tombol Apply ---
   applyFilterBtn.addEventListener("click", async () => {
     const startVal = startDateInput.value;
     const endVal = endDateInput.value;
@@ -189,84 +136,73 @@ const setupDateFilterListeners = () => {
       );
       return;
     }
-
-    // Update state global
     currentDateFilter.filter_type = "custom";
     currentDateFilter.start_date = startVal;
     currentDateFilter.end_date = endVal;
-    currentDateFilter.filter = null; // Hapus preset
-
+    currentDateFilter.filter = null;
     const s = new Date(startVal + "T00:00:00");
     const e = new Date(endVal + "T00:00:00");
     const diff = Math.max(1, Math.ceil((e - s) / (1000 * 3600 * 24)) + 1);
-
     dateRangeDisplay.innerHTML = ` <i class="fas fa-info-circle text-emerald-400 mr-1"></i>(Data ${diff} hari)`;
-
-    // Hapus parameter URL lama
     window.history.pushState({}, document.title, window.location.pathname);
-
-    showLoading();
-    // Panggil API dengan state yang sudah diupdate
-    const data = await filterProductFav(currentDateFilter, currentStatus);
-    handleFilterResponse(data);
+    loadTableData(1);
   });
-
-  // --- Event Listener Tombol Reset ---
   resetFilterBtn.addEventListener("click", async () => {
     const d = new Date();
     const y = new Date(d);
     y.setDate(d.getDate() - 1);
     const yesterdayISO = y.toISOString().split("T")[0];
-
     dateRangeDisplay.innerHTML = ` <i class="fas fa-info-circle text-emerald-400 mr-1"></i>(Data 1 hari lalu)`;
     startDateInput.value = yesterdayISO;
-    endDateInput.value = yesterdayISO; // Reset ke 'kemarin'
-
-    // Update state global
+    endDateInput.value = yesterdayISO;
     currentDateFilter.filter_type = "custom";
     currentDateFilter.start_date = yesterdayISO;
     currentDateFilter.end_date = yesterdayISO;
     currentDateFilter.filter = null;
-
     window.history.pushState({}, document.title, window.location.pathname);
-
-    showLoading();
-    // Panggil API dengan state reset
-    const data = await filterProductFav(currentDateFilter, currentStatus);
-    handleFilterResponse(data);
+    loadTableData(1);
   });
-
-  endDateInput.addEventListener("change", () => {
-    const endDate = new Date(endDateInput.value);
-    const now = new Date();
-    if (endDate > now) {
-      endDateInput.value = now.toISOString().split("T")[0];
-      showToast("Tanggal akhir tidak boleh lebih dari hari ini", "warning");
+  endDateInput.addEventListener("change", () => {});
+};
+const loadTableData = async (page = 1) => {
+  showLoading();
+  currentPage = page;
+  const params = {
+    filter_type: currentDateFilter.filter_type,
+    filter: currentDateFilter.filter,
+    start_date: currentDateFilter.start_date,
+    end_date: currentDateFilter.end_date,
+    status: currentStatus,
+    page: currentPage,
+    limit: itemsPerPage,
+    search: currentSearch,
+    sort_by: currentSort,
+  };
+  Object.keys(params).forEach((key) => {
+    if (params[key] === null || params[key] === undefined) {
+      delete params[key];
     }
   });
-};
-// --- AKHIR MODIFIKASI ---
-const handleFilterResponse = (data) => {
-  if (!data) {
-    showToast("Gagal memuat data", "error"); // Pesan error umum
-    hideLoading();
+  try {
+    const response = await filterProductFav(params);
+    handleTableResponse(response);
+    updateLastUpdate();
+  } catch (error) {
+    console.error("Error loading table data:", error);
     showEmptyState();
+    showToast("Terjadi kesalahan saat memuat data tabel", "error");
+  }
+};
+const handleTableResponse = (response) => {
+  if (!response || response.success === false) {
+    showToast(response?.message || "Data tabel tidak ditemukan", "error");
+    showEmptyState();
+    renderPagination(null);
     return;
   }
-  if (data.status === true) {
-    productData = data.data;
-    filteredData = [...data.data];
-    updateTable();
-    hideLoading();
-    updateLastUpdate(); // Update waktu
-  } else {
-    showToast(data.message, "error"); // Tampilkan pesan dari API (cth: "Data Kosong")
-    productData = []; // Kosongkan data
-    filteredData = []; // Kosongkan data
-    updateTable(); // Update tabel (akan menampilkan "Tidak ada data")
-    hideLoading();
-    showEmptyState(); // Tampilkan empty state
-  }
+  renderTableData(response.data, response.pagination.offset);
+  renderPagination(response.pagination);
+  hideLoading();
 };
 const showToast = (message, type = "info") => {
   const background =
@@ -282,39 +218,6 @@ const showToast = (message, type = "info") => {
     },
   }).showToast();
 };
-
-// Fungsi ini tidak terpakai lagi setelah init dirubah,
-// Hapus atau komentari fungsi loadData()
-/*
-const loadData = async () => {
-  showLoading();
-  try {
-    const response = await fetchProductFav();
-    if (
-      response &&
-      response.status === true &&
-      response.data &&
-      Array.isArray(response.data) &&
-      response.data.length > 0
-    ) {
-      productData = response.data;
-      filteredData = [...response.data];
-      updateTable();
-      await updateCharts();
-      await loadProductPerformance();
-      updateLastUpdate();
-      hideLoading();
-    } else {
-      await updateCharts();
-      await loadProductPerformance();
-      showEmptyState();
-    }
-  } catch (error) {
-    showEmptyState();
-  }
-};
-*/
-
 const loadTrendData = async () => {
   try {
     const response = await fetch(
@@ -348,73 +251,28 @@ const showLoading = () => {
 };
 const hideLoading = () => {
   document.getElementById("loading-state").classList.add("hidden");
-  // document.getElementById("empty-state").classList.add("hidden"); // Biarkan handleFilterResponse yang atur
 };
 const showEmptyState = () => {
   document.getElementById("loading-state").classList.add("hidden");
   document.getElementById("empty-state").classList.remove("hidden");
-  document.getElementById("member-table-body").innerHTML = ""; // Pastikan tabel kosong
-};
-const filterData = (searchTerm) => {
-  if (!searchTerm.trim()) {
-    filteredData = [...productData];
-  } else {
-    const term = searchTerm.toLowerCase();
-    filteredData = productData.filter(
-      (item) =>
-        (item.nama_customer &&
-          item.nama_customer.toLowerCase().includes(term)) ||
-        (item.barang && item.barang.toLowerCase().includes(term)) ||
-        (item.kd_cust && item.kd_cust.toLowerCase().includes(term))
-    );
-  }
-  currentPage = 1;
-  updateTable();
-};
-const sortData = (sortBy) => {
-  filteredData.sort((a, b) => {
-    switch (sortBy) {
-      case "qty":
-        return parseInt(b.total_qty) - parseInt(a.total_qty);
-      case "harga":
-        return b.total_hrg - a.total_hrg;
-      default:
-        return 0;
-    }
-  });
-  currentPage = 1;
-  updateTable();
-};
-const updateTable = () => {
-  const tbody = document.getElementById("member-table-body");
-  if (filteredData.length === 0) {
-    tbody.innerHTML = `
-                <tr>
-                    <td colspan="4" class="px-6 py-8 text-center text-gray-500">
-                        <i class="fas fa-search text-2xl mb-2"></i>
-                        <p>Tidak ada data yang ditemukan</p>
-                    </td>
-                </tr>
-            `;
-    document.getElementById("paginationContainer").innerHTML = "";
-    document.getElementById("viewData").textContent = "";
-    // Jangan panggil showEmptyState di sini, biarkan handleFilterResponse
-    return;
-  }
-  paginationCard(
-    currentPage,
-    itemsPerPage,
-    filteredData,
-    renderTableData,
-    "viewData",
-    "paginationContainer"
-  );
+  document.getElementById("member-table-body").innerHTML = "";
 };
 const renderTableData = (paginatedData, offset) => {
   const tbody = document.getElementById("member-table-body");
+  if (paginatedData.length === 0) {
+    tbody.innerHTML = `
+            <tr>
+                <td colspan="4" class="px-6 py-8 text-center text-gray-500">
+                    <i class="fas fa-search text-2xl mb-2"></i>
+                    <p>Tidak ada data yang ditemukan</p>
+                </td>
+            </tr>
+        `;
+    return;
+  }
   tbody.innerHTML = paginatedData
     .map(
-      (item) => `
+      (item, index) => `
         <tr class="hover:bg-gray-50 transition-colors duration-200">
             <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center">
@@ -445,12 +303,65 @@ const renderTableData = (paginatedData, offset) => {
                 ).toLocaleString()} pcs</span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                <span class="font-bold">Rp ${item.total_hrg.toLocaleString()}</span>
+                <span class="font-bold">Rp ${parseInt(
+                  item.total_hrg
+                ).toLocaleString()}</span>
             </td>
         </tr>
     `
     )
     .join("");
+};
+const renderPagination = (pagination) => {
+  const paginationContainer = document.getElementById("paginationContainer");
+  const viewData = document.getElementById("viewData");
+  if (!paginationContainer || !viewData || !pagination) {
+    if (paginationContainer) paginationContainer.innerHTML = "";
+    if (viewData) viewData.innerHTML = "";
+    return;
+  }
+  const { current_page, total_pages, total_records } = pagination;
+  totalPages = total_pages;
+  const startRecord = (current_page - 1) * itemsPerPage + 1;
+  const endRecord = Math.min(startRecord + itemsPerPage - 1, total_records);
+  viewData.textContent = `Menampilkan ${startRecord} - ${endRecord} dari ${total_records} data`;
+  let paginationHTML = "";
+  if (current_page > 1) {
+    paginationHTML += `<button onclick="handlePaginationClick(${
+      current_page - 1
+    })" class="px-2 py-1 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-700">&laquo; Prev</button>`;
+  }
+  const maxPagesToShow = 5;
+  let startPage = Math.max(1, current_page - Math.floor(maxPagesToShow / 2));
+  let endPage = Math.min(total_pages, startPage + maxPagesToShow - 1);
+  if (endPage - startPage + 1 < maxPagesToShow) {
+    startPage = Math.max(1, endPage - maxPagesToShow + 1);
+  }
+  if (startPage > 1) {
+    paginationHTML += `<button onclick="handlePaginationClick(1)" class="px-2 py-1 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-700">1</button>`;
+    if (startPage > 2) {
+      paginationHTML += `<span class="px-2 py-1 text-gray-500">...</span>`;
+    }
+  }
+  for (let i = startPage; i <= endPage; i++) {
+    if (i === current_page) {
+      paginationHTML += `<button class="px-2 py-1 rounded-md bg-emerald-500 text-white font-bold">${i}</button>`;
+    } else {
+      paginationHTML += `<button onclick="handlePaginationClick(${i})" class="px-2 py-1 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-700">${i}</button>`;
+    }
+  }
+  if (endPage < total_pages) {
+    if (endPage < total_pages - 1) {
+      paginationHTML += `<span class="px-2 py-1 text-gray-500">...</span>`;
+    }
+    paginationHTML += `<button onclick="handlePaginationClick(${total_pages})" class="px-2 py-1 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-700">${total_pages}</button>`;
+  }
+  if (current_page < total_pages) {
+    paginationHTML += `<button onclick="handlePaginationClick(${
+      current_page + 1
+    })" class="px-2 py-1 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-700">Next &raquo;</button>`;
+  }
+  paginationContainer.innerHTML = paginationHTML;
 };
 const updateProductPerformance = (performanceData) => {
   const performanceContainer = document.getElementById("product-performance");
@@ -483,36 +394,36 @@ const updateProductPerformance = (performanceData) => {
             changeText = `${percentageChange}%`;
           }
           return `
-              <div class="bg-white rounded-lg border-l-4 ${borderColor} shadow-sm hover:shadow-md transition-shadow duration-200">
-                <div class="p-4">
-                  <div class="flex items-center justify-between mb-3">
-                    <div class="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
-                      ${index + 1}
+                <div class="bg-white rounded-lg border-l-4 ${borderColor} shadow-sm hover:shadow-md transition-shadow duration-200">
+                  <div class="p-4">
+                    <div class="flex items-center justify-between mb-3">
+                      <div class="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                        ${index + 1}
+                      </div>
+                      <div class="flex items-center space-x-1">
+                        <i class="fas ${icon} text-xs ${iconColor}"></i>
+                        <span class="text-xs font-medium ${iconColor}">${changeText}</span>
+                      </div>
                     </div>
-                    <div class="flex items-center space-x-1">
-                      <i class="fas ${icon} text-xs ${iconColor}"></i>
-                      <span class="text-xs font-medium ${iconColor}">${changeText}</span>
+                    <div class="mb-3">
+                      <h4 class="font-semibold text-gray-900 text-sm leading-tight mb-1">${
+                        product.barang
+                      }</h4>
+                      <p class="text-xs text-gray-500">PLU: ${product.plu}</p>
                     </div>
-                  </div>
-                  <div class="mb-3">
-                    <h4 class="font-semibold text-gray-900 text-sm leading-tight mb-1">${
-                      product.barang
-                    }</h4>
-                    <p class="text-xs text-gray-500">PLU: ${product.plu}</p>
-                  </div>
-                  <div class="flex items-center justify-between">
-                    <div>
-                      <p class="text-xs text-gray-500">Periode Sekarang</p>
-                      <p class="font-bold text-green-600 text-sm">${currentQty.toLocaleString()} pcs</p>
-                    </div>
-                    <div class="text-right">
-                      <p class="text-xs text-gray-500">Periode Sebelumnya</p>
-                      <p class="font-medium text-gray-700 text-sm">${previousQty.toLocaleString()} pcs</p>
+                    <div class="flex items-center justify-between">
+                      <div>
+                        <p class="text-xs text-gray-500">Periode Sekarang</p>
+                        <p class="font-bold text-green-600 text-sm">${currentQty.toLocaleString()} pcs</p>
+                      </div>
+                      <div class="text-right">
+                        <p class="text-xs text-gray-500">Periode Sebelumnya</p>
+                        <p class="font-medium text-gray-700 text-sm">${previousQty.toLocaleString()} pcs</p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            `;
+              `;
         })
         .join("")}
     </div>
@@ -562,28 +473,18 @@ const updateMonthlyTrendChart = (trendData) => {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          display: false,
-        },
-      },
+      plugins: { legend: { display: false } },
       scales: {
         y: {
           beginAtZero: true,
-          grid: {
-            color: "rgba(0, 0, 0, 0.1)",
-          },
+          grid: { color: "rgba(0, 0, 0, 0.1)" },
           ticks: {
             callback: function (value) {
               return value.toLocaleString() + " pcs";
             },
           },
         },
-        x: {
-          grid: {
-            display: false,
-          },
-        },
+        x: { grid: { display: false } },
       },
     },
   });
@@ -608,22 +509,36 @@ const getInitials = (name) => {
     return "NA";
   }
 };
-const exportMemberData = (kdCust) => {
-  const memberData = productData.filter((item) => item.kd_cust === kdCust);
-  if (memberData.length > 0) {
-    const csvContent = convertToCSV(memberData);
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", `member_${kdCust}_favorites.csv`);
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+const exportMemberData = (kdCust) => {};
+const exportAllDataToExcel = async () => {
+  showToast("Mempersiapkan data export...", "info");
+  const params = {
+    filter_type: currentDateFilter.filter_type,
+    filter: currentDateFilter.filter,
+    start_date: currentDateFilter.start_date,
+    end_date: currentDateFilter.end_date,
+    status: currentStatus,
+    page: 1,
+    limit: 999999,
+    search: currentSearch,
+    sort_by: currentSort,
+  };
+  Object.keys(params).forEach((key) => {
+    if (params[key] === null || params[key] === undefined) {
+      delete params[key];
+    }
+  });
+  const response = await filterProductFav(params);
+  if (
+    !response ||
+    response.success === false ||
+    !response.data ||
+    response.data.length === 0
+  ) {
+    showToast("Tidak ada data untuk diexport", "warning");
+    return;
   }
-};
-const exportAllDataToExcel = () => {
+  const productData = response.data;
   const groupedData = {};
   productData.forEach((item) => {
     if (!groupedData[item.kd_cust]) {
@@ -661,56 +576,15 @@ const exportAllDataToExcel = () => {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+  showToast("Data berhasil diexport", "success");
 };
-const convertToCSV = (data) => {
-  const headers = [
-    "kd_cust",
-    "nama_customer",
-    "barang",
-    "plu",
-    "total_qty",
-    "total_hrg",
-  ];
-  const csvRows = [headers.join(",")];
-  data.forEach((item) => {
-    const values = headers.map((header) => `"${item[header]}"`);
-    csvRows.push(values.join(","));
-  });
-  return csvRows.join("\n");
-};
+const convertToCSV = (data) => {};
+const calculateStartDateFromFilter = (filter) => {};
 document.addEventListener("DOMContentLoaded", () => {
   initProductFavoriteDisplay();
 });
 window.exportMemberData = exportMemberData;
 window.exportAllDataToExcel = exportAllDataToExcel;
-const calculateStartDateFromFilter = (filter) => {
-  const today = new Date();
-  const startDate = new Date(today);
-  switch (filter) {
-    case "kemarin":
-      startDate.setDate(today.getDate() - 1);
-      break;
-    case "1minggu":
-      startDate.setDate(today.getDate() - 7);
-      break;
-    case "1bulan":
-      startDate.setMonth(today.getMonth() - 1);
-      break;
-    case "3bulan":
-      startDate.setMonth(today.getMonth() - 3);
-      break;
-    case "6bulan":
-      startDate.setMonth(today.getMonth() - 6);
-      break;
-    case "9bulan":
-      startDate.setMonth(today.getMonth() - 9);
-      break;
-    case "12bulan":
-      startDate.setFullYear(today.getFullYear() - 1);
-      break;
-    default:
-      startDate.setDate(today.getDate() - 1);
-      break;
-  }
-  return startDate;
+window.handlePaginationClick = (page) => {
+  loadTableData(page);
 };

@@ -72,7 +72,6 @@ $start_date_non = null;
 $end_date_non = null;
 if ($filter_type === 'custom' && $start_date && $end_date) {
     if ($start_date === $end_date) {
-        // OPTIMISASI: Gunakan >= dan < agar sargable (bisa pakai index)
         $date_sql = " AND t.tgl_trans >= ? AND t.tgl_trans < ? ";
         $params[] = $start_date . " 00:00:00";
         $next_day = date('Y-m-d', strtotime($start_date . ' +1 day'));
@@ -93,7 +92,6 @@ if ($filter_type === 'custom' && $start_date && $end_date) {
         case 'kemarin':
             $start = date('Y-m-d', strtotime('-1 day'));
             $end = $start;
-            // OPTIMISASI: Gunakan >= dan <
             $date_sql = " AND t.tgl_trans >= ? AND t.tgl_trans < ? ";
             $params[] = $start . " 00:00:00";
             $next_day = date('Y-m-d', strtotime($start . ' +1 day'));
@@ -145,7 +143,7 @@ if ($filter_type === 'custom' && $start_date && $end_date) {
         case 'semua':
             $date_sql = "";
             $start = '2000-01-01';
-            $end = date('Y-m-d'); // Tetapkan end date untuk query non-member
+            $end = date('Y-m-d');
             break;
         default:
             $start = date('Y-m-d', strtotime('-3 months'));
@@ -158,10 +156,8 @@ if ($filter_type === 'custom' && $start_date && $end_date) {
     $start_date_non = $start;
     $end_date_non = $end;
 } else {
-    // Default filter (jika tidak ada parameter)
     if ($start_date && $end_date) {
         if ($start_date === $end_date) {
-            // OPTIMISASI: Gunakan >= dan <
             $date_sql = " AND t.tgl_trans >= ? AND t.tgl_trans < ? ";
             $params[] = $start_date . " 00:00:00";
             $next_day = date('Y-m-d', strtotime($start_date . ' +1 day'));
@@ -176,15 +172,12 @@ if ($filter_type === 'custom' && $start_date && $end_date) {
         $start_date_non = $start_date;
         $end_date_non = $end_date;
     } else {
-        // Default ke 'kemarin'
         $yesterday = date('Y-m-d', strtotime('-1 day'));
-        // OPTIMISASI: Gunakan >= dan <
         $date_sql = " AND t.tgl_trans >= ? AND t.tgl_trans < ? ";
         $params[] = $yesterday . " 00:00:00";
         $next_day = date('Y-m-d', strtotime($yesterday . ' +1 day'));
         $params[] = $next_day . " 00:00:00";
         $types .= "ss";
-
         $start_date_non = $yesterday;
         $end_date_non = $yesterday;
     }
@@ -199,21 +192,17 @@ if ($status === 'active') {
     $params[] = $cutoff_active;
     $types .= "s";
 }
-// --- OPTIMISASI: Dynamic JOIN ---
-$joinSql = ""; // Default: tidak ada join
+$joinSql = "";
 if ($status === 'active' || $status === 'inactive') {
-    // Hanya JOIN jika kita benar-benar filter berdasarkan status
     $joinSql = " LEFT JOIN customers c ON t.kd_cust = c.kd_cust ";
 }
-// --- Akhir Optimisasi Dynamic JOIN ---
-
 $sql = "SELECT 
     t.plu,
     t.descp,
     SUM(t.qty) AS total_qty,
     SUM(t.qty * t.harga) AS total_penjualan
 FROM trans_b t
-$joinSql -- OPTIMISASI: JOIN Dinamis di sini
+$joinSql 
 WHERE 
     t.kd_cust IS NOT NULL
     AND t.kd_cust NOT IN ('', '898989', '#898989', '#999999999')
@@ -231,7 +220,6 @@ if ($filter_preset === 'semua') {
     $paramsNon[] = $end_date_non . " 23:59:59";
     $typesNon .= "ss";
 } elseif ($start_date_non === $end_date_non) {
-    // OPTIMISASI: Gunakan >= dan <
     $date_sql_non = " AND t.tgl_trans >= ? AND t.tgl_trans < ? ";
     $paramsNon[] = $start_date_non . " 00:00:00";
     $next_day_non = date('Y-m-d', strtotime($start_date_non . ' +1 day'));
@@ -302,10 +290,10 @@ if (count($top_products_by_sales_member) === 0 && count($top_products_by_sales_n
     ];
     $jsonData = json_encode($response);
     try {
-        $redis->setex($cacheKey, 900, $jsonData);
+        $redis->set($cacheKey, $jsonData);
     } catch (Exception $e) {
         if ($logger) {
-            $logger->error("Redis cache setex (no data) failed: " . $e->getMessage());
+            $logger->error("Redis cache set (no data) failed: " . $e->getMessage());
         }
     }
     if (php_sapi_name() !== 'cli') {
@@ -324,28 +312,18 @@ $response = [
 ];
 $jsonData = json_encode($response);
 try {
-    $ttl = 3600;
-    if (
-        ($filter_preset === 'kemarin') ||
-        ($filter_type === 'custom' && $end_date && $end_date < date('Y-m-d'))
-    ) {
-        $ttl = 7200;
-    }
-    if (php_sapi_name() === 'cli') {
-        $ttl = 84600;
-        echo "Setting CLI cache TTL to $ttl seconds.\n";
-    }
-    $redis->setex($cacheKey, $ttl, $jsonData);
+
+    $redis->set($cacheKey, $jsonData);
 } catch (Exception $e) {
     if ($logger) {
-        $logger->error("Redis cache setex (with data) failed: " . $e->getMessage());
+        $logger->error("Redis cache set (with data) failed: " . $e->getMessage());
     }
 }
 if (php_sapi_name() !== 'cli') {
     http_response_code(200);
     echo $jsonData;
 } else {
-    echo "Cache generated (with data) for $cacheKey. TTL: $ttl seconds.\n";
+    echo "Cache generated (with data) for $cacheKey. No TTL set.\n";
 }
 if ($logger) {
     $logger->info("Selesai cron job get_top_products.php. Cache generated for $cacheKey.");

@@ -68,27 +68,10 @@ export const fetchProductFav = async () => {
     }).showToast();
   }
 };
-export const filterProductFav = async (filterParams, status) => {
+export const filterProductFav = async (params = {}) => {
   const token = getCookie("admin_token");
-  const params = new URLSearchParams();
-  if (filterParams) {
-    if (filterParams.filter_type) {
-      params.append("filter_type", filterParams.filter_type);
-    }
-    if (filterParams.filter) {
-      params.append("filter", filterParams.filter);
-    }
-    if (filterParams.start_date) {
-      params.append("start_date", filterParams.start_date);
-    }
-    if (filterParams.end_date) {
-      params.append("end_date", filterParams.end_date);
-    }
-  }
-  if (status) {
-    params.append("status", status);
-  }
-  const queryString = params.toString();
+  const queryParams = new URLSearchParams(params);
+  const queryString = queryParams.toString();
   try {
     const response = await fetch(
       `/src/api/member/product/get_product_fav.php?${queryString}`,
@@ -103,10 +86,21 @@ export const filterProductFav = async (filterParams, status) => {
     if (response.status === 200) {
       const data = await response.json();
       return data;
+    } else if (response.status === 401) {
+      Swal.fire({
+        icon: "error",
+        title: "Sesi Berakhir",
+        text: "Silahkan Login Kembali",
+        confirmButtonText: "Login",
+      }).then(() => {
+        window.location.href = "/in_login";
+      });
+    } else {
+      return await response.json();
     }
   } catch (error) {
     console.error("Error filtering product fav:", error);
-    return null;
+    return { success: false, message: "Error koneksi." };
   }
 };
 export const fetchTopSales = async () => {
@@ -293,7 +287,6 @@ export const fetchTopProducts = async (filterParams, status) => {
     return null;
   }
 };
-
 export const fetchPaginatedProducts = async (params = {}) => {
   const token = getCookie("admin_token");
   const queryParams = new URLSearchParams(params);
@@ -329,6 +322,7 @@ export const fetchPaginatedProducts = async (params = {}) => {
 };
 export default {
   fetchProductFav,
+  filterProductFav,
   fetchTopSales,
   fetchTopMember,
   fetchTrendOmzet,

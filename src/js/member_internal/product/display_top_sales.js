@@ -18,31 +18,26 @@ import {
   showDetailModalMember,
 } from "./detail_transaction.js";
 import { fetchTransaction } from "./fetch_transaction.js";
-// --- TAMBAHAN: Impor fungsi exportToCSV ---
 import { exportToCSV } from "./data_manager.js";
-
-// Mengganti currentDateFilter menjadi objek yang lebih lengkap
 let currentDateFilter = {
   filter_type: null,
   filter: null,
   start_date: null,
   end_date: null,
 };
-let currentStatus = null; // <-- Menambahkan status
+let currentStatus = null; 
 let currentPage = 1;
 let itemsPerPage = 10;
 let currentSearch = "";
 let currentSort = "belanja";
 let totalPages = 1;
-
 const initTopSalesDisplay = async () => {
-  setupEventListeners(); // <-- Fungsi ini sekarang akan membaca URL & mengatur filter
-  await loadTop50Cards(); // <-- Membaca dari state global
-  await loadTableData(1); // <-- Membaca dari state global
+  setupEventListeners(); 
+  await loadTop50Cards(); 
+  await loadTableData(1); 
 };
-
 const setupEventListeners = () => {
-  setupDateFilterListeners(); // <-- Panggil ini dulu untuk mengisi state filter
+  setupDateFilterListeners(); 
   const searchInput = document.getElementById("search-input");
   if (searchInput) {
     searchInput.addEventListener("change", (e) => {
@@ -57,8 +52,6 @@ const setupEventListeners = () => {
       loadTableData(1);
     });
   }
-
-  // --- MODIFIKASI: Event listener klik ---
   document.addEventListener("click", async (e) => {
     const memberEl = e.target.closest("[data-member]");
     if (memberEl) {
@@ -69,7 +62,7 @@ const setupEventListeners = () => {
         const transactionResponse = await fetchTransaction({
           member: member,
           cabang: cabang,
-          ...currentDateFilter, // <-- Kirim filter tanggal
+          ...currentDateFilter, 
         });
         if (
           transactionResponse &&
@@ -78,7 +71,7 @@ const setupEventListeners = () => {
         ) {
           showDetailModal(transactionResponse.detail_transaction);
         } else {
-          showDetailModal([]); // Kirim array kosong
+          showDetailModal([]); 
           showToast("Tidak ada data transaksi ditemukan", "warning");
         }
       } catch (error) {
@@ -96,7 +89,7 @@ const setupEventListeners = () => {
         const nonMember = nonMemberEl.dataset.nonMember;
         const transactionResponse = await fetchTransaction({
           no_trans: nonMember,
-          ...currentDateFilter, // <-- Kirim filter tanggal
+          ...currentDateFilter, 
         });
         if (
           transactionResponse &&
@@ -105,7 +98,7 @@ const setupEventListeners = () => {
         ) {
           showDetailModal(transactionResponse.detail_transaction);
         } else {
-          showDetailModal([]); // Kirim array kosong
+          showDetailModal([]); 
           showToast("Tidak ada data transaksi ditemukan", "warning");
         }
       } catch (error) {
@@ -120,75 +113,30 @@ const setupEventListeners = () => {
     if (detailTransactionEl) {
       showGlobalLoading();
       try {
-        // Asumsi: [data-detail-transaction] adalah untuk tabel utama (member)
-        // Jika ini untuk non-member, gunakan no_trans: detailTransactionEl.dataset.detailTransaction
-        // Berdasarkan bug Anda, ini sepertinya untuk member
         const member = detailTransactionEl.dataset.member;
         const cabang = detailTransactionEl.dataset.cabang;
-
-        // Jika 'tr' Anda tidak memiliki data-member/data-cabang, renderer Anda harus menambahkannya.
-        // Jika 'tr' Anda HANYA memiliki data-detail-transaction (yang berisi no_bon),
-        // maka logika di get_transaction.php akan menjalankannya sebagai NON-MEMBER.
-
-        // Mari kita asumsikan 'tr' memiliki data-member dan data-cabang, sama seperti card.
-        // Jika tidak, Anda harus memodifikasi table_renderer.js.
-
-        // Jika 'tr' Anda diset seperti ini: <tr data-detail-transaction data-member="KODE" data-cabang="KDS">
-        // Kode di bawah ini akan gagal karena [data-detail-transaction] tidak punya data-member
-
-        // --- PERBAIKAN SEMENTARA ---
-        // Kita akan gunakan event handler `[data-member]` saja untuk card DAN table row
-        // Pastikan `table_renderer.js` Anda menambahkan `data-member` dan `data-cabang` ke `<tr>`
-
-        // Hapus handler [data-detail-transaction] karena redundant dan membingungkan
-        // Handler [data-member] di atas akan menangani klik di card DAN di tabel
-
-        // const no_trans = detailTransactionEl.dataset.detailTransaction; // <-- INI MUNGKIN SALAH
-        // const transactionResponse = await fetchTransaction({
-        //     no_trans: no_trans,
-        //     ...currentDateFilter, // <-- Kirim filter tanggal
-        // });
-        // if (
-        //     transactionResponse &&
-        //     transactionResponse.detail_transaction &&
-        //     transactionResponse.detail_transaction.length > 0
-        // ) {
-        //     showDetailModalMember(transactionResponse.detail_transaction);
-        // } else {
-        //     showDetailModalMember([]); // Kirim array kosong
-        //     showToast("Tidak ada data transaksi ditemukan", "warning");
-        // }
       } catch (error) {
-        // console.error("Error fetching transaction detail:", error);
-        // showToast("Gagal memuat detail transaksi", "error");
       } finally {
-        // hideGlobalLoading();
       }
       return;
     }
   });
-  // --- AKHIR MODIFIKASI EVENT LISTENER ---
 };
-
 const getDatesFromPreset = (filter) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-
   let startDate = new Date(today);
-  let endDate = new Date(today); // Default end date is today
-
+  let endDate = new Date(today); 
   switch (filter) {
     case "kemarin":
       startDate.setDate(today.getDate() - 1);
-      endDate.setDate(today.getDate() - 1); // Hanya tanggal kemarin
+      endDate.setDate(today.getDate() - 1); 
       break;
     case "1minggu":
       startDate.setDate(today.getDate() - 7);
-      // endDate tetap hari ini
       break;
     case "1bulan":
       startDate.setMonth(today.getMonth() - 1);
-      // endDate tetap hari ini
       break;
     case "3bulan":
       startDate.setMonth(today.getMonth() - 3);
@@ -203,26 +151,21 @@ const getDatesFromPreset = (filter) => {
       startDate.setFullYear(today.getFullYear() - 1);
       break;
     default:
-      // Default ke 'kemarin'
       startDate.setDate(today.getDate() - 1);
       endDate.setDate(today.getDate() - 1);
       break;
   }
-
   return {
     start: startDate.toISOString().split("T")[0],
     end: endDate.toISOString().split("T")[0],
   };
 };
-
-// --- FUNGSI UTAMA YANG DIMODIFIKASI ---
 const setupDateFilterListeners = () => {
   const startDateInput = document.getElementById("start-date");
   const endDateInput = document.getElementById("end-date");
   const applyFilterBtn = document.getElementById("apply-date-filter");
   const resetFilterBtn = document.getElementById("reset-date-filter");
   const dateRangeDisplay = document.getElementById("date-range-display");
-
   if (
     !startDateInput ||
     !endDateInput ||
@@ -233,74 +176,49 @@ const setupDateFilterListeners = () => {
     console.warn("Date filter elements not found on top_sales.php");
     return;
   }
-
   const urlParams = new URLSearchParams(window.location.search);
   const today = new Date().toISOString().split("T")[0];
-
-  // Ambil semua parameter filter dari URL
   const urlFilterType = urlParams.get("filter_type");
   const urlFilter = urlParams.get("filter");
   const urlStartDate = urlParams.get("start_date");
   const urlEndDate = urlParams.get("end_date");
-  currentStatus = urlParams.get("status"); // <-- Set status global
-
+  currentStatus = urlParams.get("status"); 
   let displayStartDate, displayEndDate;
-
-  // --- LOGIKA BARU UNTUK MENGISI TANGGAL ---
   if (urlFilterType === "preset" && urlFilter) {
-    // 1. Jika filter_type=preset, hitung tanggalnya
     const dates = getDatesFromPreset(urlFilter);
     displayStartDate = dates.start;
     displayEndDate = dates.end;
-
-    // Set state global
     currentDateFilter.filter_type = urlFilterType;
     currentDateFilter.filter = urlFilter;
-    // Tetapkan start_date & end_date agar panggilan API konsisten
     currentDateFilter.start_date = displayStartDate;
     currentDateFilter.end_date = displayEndDate;
   } else if (urlFilterType === "custom" && urlStartDate) {
-    // 2. Jika filter_type=custom, gunakan tanggal dari URL
     displayStartDate = urlStartDate;
     displayEndDate = urlEndDate;
-
-    // Set state global
     currentDateFilter.filter_type = urlFilterType;
     currentDateFilter.filter = null;
     currentDateFilter.start_date = urlStartDate;
     currentDateFilter.end_date = urlEndDate;
   } else {
-    // 3. Fallback jika tidak ada filter (default ke kemarin)
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     displayStartDate = yesterday.toISOString().split("T")[0];
     displayEndDate = displayStartDate;
-
-    // Set state global
-    currentDateFilter.filter_type = "custom"; // Default ke custom
+    currentDateFilter.filter_type = "custom"; 
     currentDateFilter.start_date = displayStartDate;
     currentDateFilter.end_date = displayEndDate;
   }
-  // --- AKHIR LOGIKA BARU ---
-
-  // Set nilai awal untuk date picker
   startDateInput.value = displayStartDate;
   endDateInput.value = displayEndDate;
   endDateInput.max = today;
-
-  // Set teks display rentang tanggal
-  // Hati-hati dengan zona waktu, 'new Date()' bisa berbeda
   const s = new Date(displayStartDate + "T00:00:00");
   const e = new Date(displayEndDate + "T00:00:00");
   const timeDiff = e.getTime() - s.getTime();
   const daysDiff = Math.max(1, Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1);
   dateRangeDisplay.innerHTML = ` <i class="fas fa-info-circle text-yellow-500 mr-1"></i>(Data ${daysDiff} hari)`;
-
-  // --- Event Listener untuk Tombol Filter ---
   applyFilterBtn.addEventListener("click", async () => {
     const startVal = startDateInput.value;
     const endVal = endDateInput.value;
-
     if (!startVal || !endVal) {
       showToast("Silakan pilih tanggal mulai dan tanggal akhir", "warning");
       return;
@@ -312,53 +230,37 @@ const setupDateFilterListeners = () => {
       );
       return;
     }
-
-    // Saat pengguna memfilter manual, selalu jadi 'custom'
     currentDateFilter.filter_type = "custom";
     currentDateFilter.start_date = startVal;
     currentDateFilter.end_date = endVal;
-    currentDateFilter.filter = null; // Hapus filter preset
-
-    // Update display
+    currentDateFilter.filter = null; 
     const s = new Date(startVal + "T00:00:00");
     const e = new Date(endVal + "T00:00:00");
     const diff = Math.max(1, Math.ceil((e - s) / (1000 * 3600 * 24)) + 1);
     dateRangeDisplay.innerHTML = ` <i class="fas fa-info-circle text-yellow-500 mr-1"></i>(Data ${diff} hari)`;
-
-    // Hapus parameter URL lama agar tidak membingungkan
     window.history.pushState({}, document.title, window.location.pathname);
-
     await loadTop50Cards();
     await loadTableData(1);
   });
-
   resetFilterBtn.addEventListener("click", async () => {
-    // Reset ke "kemarin"
     const d = new Date();
     const y = new Date(d);
     y.setDate(d.getDate() - 1);
     const startVal = y.toISOString().split("T")[0];
     const endVal = startVal;
-
     dateRangeDisplay.innerHTML = ` <i class="fas fa-info-circle text-yellow-500 mr-1"></i>(Data 1 hari)`;
     startDateInput.value = startVal;
     endDateInput.value = endVal;
-
     currentDateFilter.filter_type = "custom";
     currentDateFilter.start_date = startVal;
     currentDateFilter.end_date = endVal;
     currentDateFilter.filter = null;
-
     window.history.pushState({}, document.title, window.location.pathname);
-
     await loadTop50Cards();
     await loadTableData(1);
   });
 };
-
 const calculateStartDateFromFilter = (filter) => {
-  // Fungsi ini sepertinya tidak terpakai lagi setelah modifikasi,
-  // tapi kita biarkan saja jika ada logika lain yang bergantung.
   const today = new Date();
   const startDate = new Date(today);
   switch (filter) {
@@ -389,13 +291,9 @@ const calculateStartDateFromFilter = (filter) => {
   }
   return startDate;
 };
-
-// --- MODIFIKASI PANGGILAN API ---
 const loadTop50Cards = async () => {
-  // Tidak perlu parameter, baca dari state global
   showGlobalLoading();
   try {
-    // Teruskan state filter dan status
     const topMemberResponse = await fetchTopMember(
       currentDateFilter,
       currentStatus
@@ -420,33 +318,26 @@ const loadTop50Cards = async () => {
     hideGlobalLoading();
   }
 };
-
-// --- MODIFIKASI PANGGILAN API ---
 const loadTableData = async (page = 1) => {
   showLoading();
   showGlobalLoading();
   currentPage = page;
-
-  // Bangun objek params dari state global
   const params = {
     filter_type: currentDateFilter.filter_type,
     filter: currentDateFilter.filter,
     start_date: currentDateFilter.start_date,
     end_date: currentDateFilter.end_date,
-    status: currentStatus, // <-- Tambahkan status
+    status: currentStatus, 
     page: currentPage,
     limit: itemsPerPage,
     search: currentSearch,
     sort_by: currentSort,
   };
-
-  // Bersihkan parameter null/undefined
   Object.keys(params).forEach((key) => {
     if (params[key] === null || params[key] === undefined) {
       delete params[key];
     }
   });
-
   try {
     const response = await fetchPaginatedMembers(params);
     handleTableResponse(response);
@@ -458,7 +349,6 @@ const loadTableData = async (page = 1) => {
     hideGlobalLoading();
   }
 };
-
 const handleTableResponse = (response) => {
   if (!response || response.success === false) {
     showToast(response?.message || "Data tabel tidak ditemukan", "error");
@@ -470,7 +360,6 @@ const handleTableResponse = (response) => {
   renderPagination(response.pagination);
   hideLoading();
 };
-
 const renderPagination = (pagination) => {
   const paginationContainer = document.getElementById("paginationContainer");
   const viewData = document.getElementById("viewData");
@@ -576,12 +465,9 @@ const infoData = (excludedProducts) => {
     }
   }
 };
-
-// --- MODIFIKASI: Ganti fungsi export ---
 const exportTopSalesData = async () => {
   showGlobalLoading();
   try {
-    // 1. Buat parameter untuk mengambil SEMUA data
     const params = {
       filter_type: currentDateFilter.filter_type,
       filter: currentDateFilter.filter,
@@ -591,19 +477,14 @@ const exportTopSalesData = async () => {
       search: currentSearch,
       sort_by: currentSort,
       page: 1,
-      limit: 999999, // Minta semua data
+      limit: 999999, 
     };
-
-    // 2. Bersihkan parameter null/undefined
     Object.keys(params).forEach((key) => {
       if (params[key] === null || params[key] === undefined) {
         delete params[key];
       }
     });
-
-    // 3. Fetch semua data dari API
     const response = await fetchPaginatedMembers(params);
-
     if (
       !response ||
       response.success === false ||
@@ -613,11 +494,7 @@ const exportTopSalesData = async () => {
       showToast("Tidak ada data untuk diexport", "warning");
       return;
     }
-
-    // 4. Gunakan 'exportToCSV' yang sudah diimpor
     const csvContent = exportToCSV(response.data);
-
-    // 5. Buat blob dan download
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
@@ -638,8 +515,6 @@ const exportTopSalesData = async () => {
     hideGlobalLoading();
   }
 };
-// --- AKHIR MODIFIKASI FUNGSI EXPORT ---
-
 document.addEventListener("DOMContentLoaded", () => {
   initTopSalesDisplay();
 });

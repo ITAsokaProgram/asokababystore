@@ -83,7 +83,6 @@ $searchSql = "";
 $typeSql = "";
 if ($filter_type === 'custom' && $start_date && $end_date) {
     if ($start_date === $end_date) {
-        // OPTIMISASI: Gunakan >= dan < agar sargable (bisa pakai index)
         $date_sql = " AND t.tgl_trans >= ? AND t.tgl_trans < ? ";
         $params[] = $start_date . " 00:00:00";
         $next_day = date('Y-m-d', strtotime($start_date . ' +1 day'));
@@ -102,7 +101,6 @@ if ($filter_type === 'custom' && $start_date && $end_date) {
         case 'kemarin':
             $start = date('Y-m-d', strtotime('-1 day'));
             $end = $start;
-            // OPTIMISASI: Gunakan >= dan <
             $date_sql = " AND t.tgl_trans >= ? AND t.tgl_trans < ? ";
             $params[] = $start . " 00:00:00";
             $next_day = date('Y-m-d', strtotime($start . ' +1 day'));
@@ -163,10 +161,8 @@ if ($filter_type === 'custom' && $start_date && $end_date) {
             break;
     }
 } else {
-    // Default filter (jika tidak ada parameter)
     if ($start_date && $end_date) {
         if ($start_date === $end_date) {
-            // OPTIMISASI: Gunakan >= dan <
             $date_sql = " AND t.tgl_trans >= ? AND t.tgl_trans < ? ";
             $params[] = $start_date . " 00:00:00";
             $next_day = date('Y-m-d', strtotime($start_date . ' +1 day'));
@@ -179,9 +175,7 @@ if ($filter_type === 'custom' && $start_date && $end_date) {
             $types .= "ss";
         }
     } else {
-        // Default ke 'kemarin'
         $yesterday = date('Y-m-d', strtotime('-1 day'));
-        // OPTIMISASI: Gunakan >= dan <
         $date_sql = " AND t.tgl_trans >= ? AND t.tgl_trans < ? ";
         $params[] = $yesterday . " 00:00:00";
         $next_day = date('Y-m-d', strtotime($yesterday . ' +1 day'));
@@ -203,49 +197,39 @@ if ($type === 'member') {
     $typeSql = " AND t.kd_cust IS NOT NULL AND t.kd_cust NOT IN ('', '898989', '#898989', '#999999999') ";
 } elseif ($type === 'non_member') {
     $typeSql = " AND (t.kd_cust IS NULL OR t.kd_cust IN ('', '898989', '#898989', '#999999999')) ";
-    $status_sql = ""; // Non-member tidak punya status
+    $status_sql = "";
 } else {
-    // type 'all'
     $typeSql = "";
-    $status_sql = ""; // Jika type 'all', jangan filter status
+    $status_sql = "";
 }
 if (!empty($search)) {
-    // Index di t.plu dan t.descp akan membantu di sini
     $searchSql = " AND (t.descp LIKE ? OR t.plu LIKE ?) ";
     $searchValue = "%" . $search . "%";
     $params[] = $searchValue;
     $params[] = $searchValue;
     $types .= "ss";
 }
-// --- OPTIMISASI: Dynamic JOIN ---
-$joinSql = ""; // Default: tidak ada join
+$joinSql = "";
 if ($status === 'active' || $status === 'inactive') {
-    // Hanya JOIN jika kita benar-benar filter berdasarkan status
     $joinSql = " LEFT JOIN customers c ON t.kd_cust = c.kd_cust ";
 }
 if ($type === 'non_member') {
-    $joinSql = ""; // Pastikan tidak ada join untuk non-member
+    $joinSql = "";
 }
-// --- Akhir Optimisasi Dynamic JOIN ---
-
 $orderBySql = " ORDER BY total_penjualan DESC ";
 if ($sortBy === 'qty') {
     $orderBySql = " ORDER BY total_qty DESC ";
 } elseif ($sortBy === 'nama') {
     $orderBySql = " ORDER BY t.descp ASC ";
 }
-
-// --- OPTIMISASI: HAPUS QUERY COUNT ---
-// Query count yang lama dihapus.
-
 $dataSql = "SELECT 
-                SQL_CALC_FOUND_ROWS -- OPTIMISASI: Tambahkan ini
+                SQL_CALC_FOUND_ROWS 
                 t.plu,
                 t.descp,
                 SUM(t.qty) AS total_qty,
                 SUM(t.qty * t.harga) AS total_penjualan
             FROM trans_b t
-            $joinSql -- OPTIMISASI: JOIN Dinamis di sini
+            $joinSql 
             WHERE 
                 1=1
                 $date_sql
@@ -255,11 +239,9 @@ $dataSql = "SELECT
             GROUP BY t.plu, t.descp
             $orderBySql
             LIMIT ? OFFSET ?";
-// Tambahkan LIMIT dan OFFSET ke parameter
 $params[] = $limit;
 $params[] = $offset;
 $types .= 'ii';
-
 $stmtData = $conn->prepare($dataSql);
 if (!$stmtData) {
     if ($logger) {
@@ -276,13 +258,9 @@ $stmtData->execute();
 $resultData = $stmtData->get_result();
 $data = $resultData->fetch_all(MYSQLI_ASSOC);
 $stmtData->close();
-
-// --- OPTIMISASI: Ambil total records dari FOUND_ROWS() ---
 $total_records_result = $conn->query("SELECT FOUND_ROWS() AS total");
 $total_records = $total_records_result->fetch_assoc()['total'] ?? 0;
 $total_pages = ceil($total_records / $limit);
-// --- Akhir Optimisasi Pagination ---
-
 if (empty($data)) {
     if (php_sapi_name() !== 'cli') {
         http_response_code(200);
@@ -293,10 +271,10 @@ if (empty($data)) {
     ];
     $jsonData = json_encode($response);
     try {
-        $redis->setex($cacheKey, 900, $jsonData);
+        $redis->set($cacheKey, $jsonData);
     } catch (Exception $e) {
         if ($logger) {
-            $logger->error("Redis cache setex (no data) failed: " . $e->getMessage());
+            $logger->error("Redis cache set (no data) failed: " . $e->getMessage());
         }
     }
     if (php_sapi_name() !== 'cli') {
@@ -313,35 +291,24 @@ $response = [
     "pagination" => [
         "current_page" => $page,
         "items_per_page" => $limit,
-        "total_records" => (int) $total_records, // Gunakan total dari FOUND_ROWS
-        "total_pages" => $total_pages, // Gunakan total dari FOUND_ROWS
+        "total_records" => (int) $total_records,
+        "total_pages" => $total_pages,
         "offset" => $offset
     ]
 ];
 $jsonData = json_encode($response);
 try {
-    $ttl = 3600;
-    if (
-        ($filter_preset === 'kemarin') ||
-        ($filter_type === 'custom' && $end_date && $end_date < date('Y-m-d'))
-    ) {
-        $ttl = 7200;
-    }
-    if (php_sapi_name() === 'cli') {
-        $ttl = 84600;
-        echo "Setting CLI cache TTL to $ttl seconds.\n";
-    }
-    $redis->setex($cacheKey, $ttl, $jsonData);
+    $redis->set($cacheKey, $jsonData);
 } catch (Exception $e) {
     if ($logger) {
-        $logger->error("Redis cache setex (with data) failed: " . $e->getMessage());
+        $logger->error("Redis cache set (with data) failed: " . $e->getMessage());
     }
 }
 if (php_sapi_name() !== 'cli') {
     http_response_code(200);
     echo $jsonData;
 } else {
-    echo "Cache generated (with data) for $cacheKey.\n";
+    echo "Cache generated (with data) for $cacheKey. No TTL set.\n";
 }
 if ($logger) {
     $logger->info("Selesai cron job get_paginated_products.php. Cache generated for $cacheKey.");

@@ -8,21 +8,15 @@ export const paginationCard = (
 ) => {
   const paginationContainer = document.getElementById(container);
   const viewData = document.getElementById(view);
-
   const totalPages = Math.ceil(data.length / limit);
   const offset = (page - 1) * limit;
   const paginated = data.slice(offset, offset + limit);
-
   callbackRender(paginated, offset);
-  // update info halaman
   if (viewData) {
     viewData.textContent = `Menampilkan halaman ${page} dari ${totalPages}`;
   }
-
-  // render pagination
   if (paginationContainer) {
     paginationContainer.innerHTML = "";
-
     const createBtn = (label, targetPage, disabled = false, active = false) => {
       const btn = document.createElement("button");
       btn.textContent = label;
@@ -46,11 +40,7 @@ export const paginationCard = (
       }
       return btn;
     };
-
-    // Prev
     paginationContainer.appendChild(createBtn("‹", page - 1, page === 1));
-
-    // Halaman numerik
     const maxButtons = 5;
     let startPage = Math.max(1, page - Math.floor(maxButtons / 2));
     let endPage = startPage + maxButtons - 1;
@@ -58,16 +48,12 @@ export const paginationCard = (
       endPage = totalPages;
       startPage = Math.max(1, endPage - maxButtons + 1);
     }
-
     for (let i = startPage; i <= endPage; i++) {
       paginationContainer.appendChild(createBtn(i, i, false, i === page));
     }
-
-    // Next
     paginationContainer.appendChild(
       createBtn("›", page + 1, page === totalPages)
     );
   }
 };
-
 export default { paginationCard };
