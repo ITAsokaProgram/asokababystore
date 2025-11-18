@@ -5,7 +5,6 @@ const API_MANAGEMENT_URL = "/src/api/member/management";
 const API_MEMBER_URL = "/src/api/member";
 const API_DASHBOARD_URL = "/src/api/dashboard";
 const API_WHATSAPP_URL = "/src/api/whatsapp";
-
 function appendFilterParams(params, filterParams) {
   if (filterParams && filterParams.filter_type) {
     params.append("filter_type", filterParams.filter_type);
@@ -17,7 +16,6 @@ function appendFilterParams(params, filterParams) {
     }
   }
 }
-
 export const getProductFav = (startDate = null, endDate = null) => {
   const params = new URLSearchParams();
   if (startDate) params.append("start_date", startDate);
@@ -63,16 +61,12 @@ export const getTopMemberBySales = () => {
 export const getCityMemberAll = () => {
   return sendRequestGET(`${API_MANAGEMENT_URL}/get_city_member_all.php`);
 };
-
-// --- MODIFIKASI DIMULAI DARI SINI ---
-
 export const getMemberActivity = (filterParams) => {
   const params = new URLSearchParams();
   appendFilterParams(params, filterParams);
   const url = `${API_MANAGEMENT_URL}/get_member_activity.php?${params.toString()}`;
   return sendRequestGET(url);
 };
-
 export const getMemberByAge = (filterParams, status) => {
   const params = new URLSearchParams();
   appendFilterParams(params, filterParams);
@@ -80,7 +74,6 @@ export const getMemberByAge = (filterParams, status) => {
   const url = `${API_MANAGEMENT_URL}/get_member_by_age.php?${params.toString()}`;
   return sendRequestGET(url);
 };
-
 export const getTopProductsByAge = (
   filterParams,
   ageGroup,
@@ -99,7 +92,6 @@ export const getTopProductsByAge = (
   const url = `${API_MANAGEMENT_URL}/get_top_products_by_age.php?${params.toString()}`;
   return sendRequestGET(url);
 };
-
 export const getMemberByLocation = (
   filterParams,
   status,
@@ -122,7 +114,6 @@ export const getMemberByLocation = (
   const url = `${API_MANAGEMENT_URL}/get_member_by_location.php?${params.toString()}`;
   return sendRequestGET(url);
 };
-
 export const getTopProductsByLocation = (
   filterParams,
   city,
@@ -151,7 +142,6 @@ export const getTopProductsByLocation = (
   const url = `${API_MANAGEMENT_URL}/get_top_products_by_location.php?${params.toString()}`;
   return sendRequestGET(url);
 };
-
 export const getTopMembersByFilter = (filterParams, status, limit = 10) => {
   const params = new URLSearchParams();
   appendFilterParams(params, filterParams);
@@ -160,7 +150,6 @@ export const getTopMembersByFilter = (filterParams, status, limit = 10) => {
   const url = `${API_MANAGEMENT_URL}/get_top_members_by_filter.php?${params.toString()}`;
   return sendRequestGET(url);
 };
-
 export const getTopMemberProductPairs = (filterParams, status, limit = 10) => {
   const params = new URLSearchParams();
   appendFilterParams(params, filterParams);
@@ -169,7 +158,6 @@ export const getTopMemberProductPairs = (filterParams, status, limit = 10) => {
   const url = `${API_MANAGEMENT_URL}/get_top_member_product_pairs.php?${params.toString()}`;
   return sendRequestGET(url);
 };
-
 export const getTopProductsByCustomer = (
   filterParams,
   kdCust,
@@ -184,7 +172,6 @@ export const getTopProductsByCustomer = (
   const url = `${API_MANAGEMENT_URL}/get_top_products_by_customer.php?${params.toString()}`;
   return sendRequestGET(url);
 };
-
 export const getTopMembersByFrequency = (
   filterParams,
   status,
@@ -199,7 +186,6 @@ export const getTopMembersByFrequency = (
   const url = `${API_MANAGEMENT_URL}/get_top_members_by_frequency.php?${params.toString()}`;
   return sendRequestGET(url);
 };
-
 export const sendProactiveMessage = (kd_cust, message) => {
   const url = `${API_WHATSAPP_URL}/send_proactive_message.php`;
   const data = {
@@ -208,7 +194,6 @@ export const sendProactiveMessage = (kd_cust, message) => {
   };
   return sendRequestJSON(url, data);
 };
-
 export const getTransactionDetails = (filterParams, kdCust, plu) => {
   const params = new URLSearchParams();
   appendFilterParams(params, filterParams);

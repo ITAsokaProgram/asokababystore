@@ -131,7 +131,6 @@ function getDateFilterParams($get_params, $table_alias = 't')
 // --- AKHIR FUNGSI HELPER ---
 
 try {
-    // HAPUS $filter = $_GET['filter'] ?? '3bulan';
     $status = $_GET['status'] ?? 'active';
     $level = $_GET['level'] ?? 'city';
     $selected_city = $_GET['city'] ?? null;
@@ -143,37 +142,29 @@ try {
         $limit_clause = " LIMIT 20 ";
     }
 
-    // HAPUS $filter_map
-
     $params = [];
     $types = "";
     $where_clause = "";
 
-    // Logika status (tetap sama)
+    // Logika status
     $cutoff_date_status = date('Y-m-d 00:00:00', strtotime("-3 months"));
     if ($status === 'active') {
-        $where_clause = " WHERE Last_Trans >= ?";
+        $where_clause = " WHERE c.Last_Trans >= ?";
         $params[] = $cutoff_date_status;
         $types .= "s";
     } else {
-        $where_clause = " WHERE (Last_Trans < ? OR Last_Trans IS NULL)";
+        $where_clause = " WHERE (c.Last_Trans < ? OR c.Last_Trans IS NULL)";
         $params[] = $cutoff_date_status;
         $types .= "s";
     }
 
-    // HAPUS $cutoff_date_filter = null;
-    // HAPUS $interval = $filter_map[$filter] ?? '3 months';
-
-    // Tambahkan logika $isFilter3MonthsOrLess
+    // Logika $isFilter3MonthsOrLess
     $filter_type = $_GET['filter_type'] ?? 'preset';
     $filter = $_GET['filter'] ?? '3bulan';
     $isFilter3MonthsOrLess = false;
     if ($filter_type === 'preset') {
         $isFilter3MonthsOrLess = in_array($filter, ['kemarin', '1minggu', '1bulan', '3bulan']);
     }
-
-    // HAPUS $date_where_clause, $params_for_products, $types_for_products
-    // HAPUS BLOK if ($filter === 'kemarin' ...)
 
     // --- GUNAKAN FUNGSI HELPER ---
     $dateFilter = getDateFilterParams($_GET, 't');
@@ -183,9 +174,9 @@ try {
     // ----------------------------
 
     $location_field = "";
-    $city_field_logic = "IF(Kota IS NULL OR Kota = '', 'Customer belum input', Kota)";
-    $district_field_logic = "IF(Kec IS NULL OR Kec = '', 'Customer belum input', Kec)";
-    $subdistrict_field_logic = "IF(Kel IS NULL OR Kel = '', 'Customer belum input', Kel)";
+    $city_field_logic = "IF(c.Kota IS NULL OR c.Kota = '', 'Customer belum input', c.Kota)";
+    $district_field_logic = "IF(c.Kec IS NULL OR c.Kec = '', 'Customer belum input', c.Kec)";
+    $subdistrict_field_logic = "IF(c.Kel IS NULL OR c.Kel = '', 'Customer belum input', c.Kel)";
 
     switch ($level) {
         case 'district':
@@ -222,9 +213,11 @@ try {
         (
             SELECT 
                 $location_field AS location_name,
-                COUNT(*) AS count
-            FROM customers
+                COUNT(DISTINCT c.kd_cust) AS count
+            FROM customers c
+            INNER JOIN trans_b t ON c.kd_cust = t.kd_cust
             $where_clause 
+            $date_where_clause
             GROUP BY location_name
             HAVING location_name NOT IN ('-', 'Customer belum input')
         ) AS loc
@@ -252,7 +245,7 @@ try {
                         SELECT 
                             kd_cust,
                             $location_field AS location_name
-                        FROM customers
+                        FROM customers c
                         $where_clause 
                     ) AS cloc ON t.kd_cust = cloc.kd_cust
                     CROSS JOIN (SELECT @rn := 0, @current_group := '') AS init_vars
@@ -275,8 +268,8 @@ try {
         throw new Exception("Database prepare failed (active): " . $conn->error);
     }
 
-    $all_params = array_merge($params, $params, $params_for_products);
-    $all_types = $types . $types . $types_for_products;
+    $all_params = array_merge($params, $params_for_products, $params, $params_for_products);
+    $all_types = $types . $types_for_products . $types . $types_for_products;
 
     if (!empty($all_params)) {
         $bind_params = [$all_types];

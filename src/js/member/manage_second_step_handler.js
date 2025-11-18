@@ -1,7 +1,5 @@
 import * as api from "./member_api_service.js";
 import * as charts from "./member_chart_service.js";
-
-// Objek state untuk menyimpan semua parameter
 const state = {
   filterParams: {
     filter_type: null,
@@ -14,14 +12,11 @@ const state = {
   selectedCity: null,
   selectedDistrict: null,
 };
-
 let ageChartInstance = null;
 let locationChartInstance = null;
 let topMemberChartInstance = null;
 let topMemberProductChartInstance = null;
 let topMemberFrequencyChartInstance = null;
-
-// ... (Konstanta UI_ELEMENTS tetap sama) ...
 const UI_ELEMENTS = {
   age: {
     loadingId: "loading-spinner",
@@ -49,7 +44,6 @@ const UI_ELEMENTS = {
     errorId: "top-member-frequency-chart-error",
   },
 };
-// ... (Semua konstanta UI_ELEMENTS_..._TABLE tetap sama) ...
 const UI_ELEMENTS_AGE_TABLE = {
   loadingId: "age-table-loading-spinner",
   containerId: "age-table-container",
@@ -81,8 +75,6 @@ const UI_ELEMENTS_TOP_MEMBER_FREQUENCY_TABLE = {
   errorId: "top-member-frequency-table-error",
   bodyId: "top-member-frequency-table-body",
 };
-
-// ... (Fungsi setChartUIState, setTableUIState, setLocationTableUIState, setGeneralTableUIState tetap sama) ...
 function setChartUIState(
   { loadingId, containerId, errorId },
   state,
@@ -145,8 +137,6 @@ function setGeneralTableUIState(uiElements, state, message = "") {
     }
   }
 }
-
-// ... (Fungsi renderAgeTable, renderLocationTable, renderTopMemberTable, renderTopProductTable tetap sama) ...
 function renderAgeTable(data) {
   const tableBody = document.getElementById(UI_ELEMENTS_AGE_TABLE.bodyId);
   if (!tableBody) return;
@@ -284,7 +274,6 @@ function renderTopProductTable(data) {
     tableBody.innerHTML += row;
   });
 }
-
 function updateLocationHeader() {
   const header = document.getElementById("location-chart-header");
   const backBtn = document.getElementById("location-back-btn");
@@ -307,23 +296,19 @@ function renderTopMemberFrequencyTable(data) {
   if (!tableBody) return;
   tableBody.innerHTML = "";
   const numberFormatter = new Intl.NumberFormat("id-ID");
-
   if (!data || data.length === 0) {
     tableBody.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-gray-500">Tidak ada data.</td></tr>`;
     return;
   }
-
   data.forEach((item) => {
     if (
       !item.nama_cust ||
       item.nama_cust.trim().toLowerCase() === "member dummy"
     )
       return;
-
     const totalTransactions = item.total_transactions
       ? numberFormatter.format(item.total_transactions)
       : "0";
-
     const row = `
             <tr class="hover:bg-gray-50 cursor-pointer top-member-frequency-table-row" 
                 data-kd-cust="${item.kd_cust}" 
@@ -336,7 +321,6 @@ function renderTopMemberFrequencyTable(data) {
     tableBody.innerHTML += row;
   });
 }
-
 /**
  * Helper untuk membuat query string filter dari objek state.
  * @returns {URLSearchParams}
@@ -355,10 +339,8 @@ function buildFilterQueryString() {
   }
   return params;
 }
-
 async function handleLocationClick(locationName) {
   if (!locationName) return;
-
   const buildUrl = (params) => {
     const urlParams = buildFilterQueryString();
     urlParams.append("status", state.currentStatus);
@@ -367,7 +349,6 @@ async function handleLocationClick(locationName) {
     }
     return `lokasi.php?${urlParams.toString()}`;
   };
-
   if (state.currentLocationLevel === "city") {
     const clickedCity = locationName;
     Swal.fire({
@@ -486,7 +467,6 @@ async function handleLocationClick(locationName) {
     });
   }
 }
-
 async function loadAgeData() {
   setChartUIState(UI_ELEMENTS.age, "loading");
   setTableUIState("loading");
@@ -500,7 +480,7 @@ async function loadAgeData() {
         ageChartInstance,
         "memberAgeChart",
         result.data,
-        state // Teruskan seluruh objek state
+        state
       );
       setChartUIState(UI_ELEMENTS.age, "success");
       if (ageChartInstance) ageChartInstance.resize();
@@ -559,7 +539,7 @@ async function loadLocationData() {
         locationChartInstance,
         "memberLocationChart",
         result.data,
-        state, // Teruskan seluruh objek state
+        state,
         callbacks
       );
       setChartUIState(UI_ELEMENTS.location, "success");
@@ -596,7 +576,7 @@ async function loadTopMemberData() {
         topMemberChartInstance,
         "topMemberChart",
         result.data,
-        state // Teruskan seluruh objek state
+        state
       );
       setChartUIState(UI_ELEMENTS.topMember, "success");
       renderTopMemberTable(result.data);
@@ -631,7 +611,7 @@ async function loadTopProductData() {
         topMemberProductChartInstance,
         "topMemberProductChart",
         result.data,
-        state // Teruskan seluruh objek state
+        state
       );
       setChartUIState(UI_ELEMENTS.topProduct, "success");
       renderTopProductTable(result.data);
@@ -656,27 +636,23 @@ async function loadTopProductData() {
 async function loadTopMemberFrequencyData() {
   setChartUIState(UI_ELEMENTS.topMemberFrequency, "loading");
   setGeneralTableUIState(UI_ELEMENTS_TOP_MEMBER_FREQUENCY_TABLE, "loading");
-
   try {
     const result = await api.getTopMembersByFrequency(
       state.filterParams,
       state.currentStatus
     );
-
     if (result.success === true && result.data && result.data.length > 0) {
       topMemberFrequencyChartInstance = charts.renderTopMemberFrequencyChart(
         topMemberFrequencyChartInstance,
         "topMemberFrequencyChart",
         result.data,
-        state // Teruskan seluruh objek state
+        state
       );
       setChartUIState(UI_ELEMENTS.topMemberFrequency, "success");
       renderTopMemberFrequencyTable(result.data);
       setGeneralTableUIState(UI_ELEMENTS_TOP_MEMBER_FREQUENCY_TABLE, "success");
-
       const buttonEl = document.getElementById("view-all-top-frequency-btn");
       if (buttonEl) buttonEl.classList.remove("hidden");
-
       if (topMemberFrequencyChartInstance)
         topMemberFrequencyChartInstance.resize();
     } else if (result.success === true && result.data.length === 0) {
@@ -705,13 +681,11 @@ async function loadTopMemberFrequencyData() {
 }
 document.addEventListener("DOMContentLoaded", () => {
   const params = new URLSearchParams(window.location.search);
-  // Isi objek state.filterParams
   state.filterParams.filter_type = params.get("filter_type");
   state.filterParams.filter = params.get("filter");
   state.filterParams.start_date = params.get("start_date");
   state.filterParams.end_date = params.get("end_date");
   state.currentStatus = params.get("status");
-
   const ageTableBody = document.getElementById(UI_ELEMENTS_AGE_TABLE.bodyId);
   if (ageTableBody) {
     ageTableBody.addEventListener("click", (event) => {

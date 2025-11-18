@@ -8,7 +8,7 @@ $logger = new AppLogger('member_age_activity.log');
 try {
     require_once __DIR__ . '/../../../../aa_kon_sett.php';
 } catch (Throwable $t) {
-    $logger->critical("Gagal memuat file koneksi: " . $t->getMessage());
+    $logger->critical("Gagal memuat file koneksi: " + $t->getMessage());
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'Internal Server Error: Gagal memuat file.']);
     exit();
@@ -127,11 +127,11 @@ try {
     $where_clause = "";
     $cutoff_date_status = date('Y-m-d 00:00:00', strtotime("-3 months"));
     if ($status === 'active') {
-        $where_clause = " WHERE Last_Trans >= ?";
+        $where_clause = " WHERE c.Last_Trans >= ?";
         $params[] = $cutoff_date_status;
         $types .= "s";
     } else {
-        $where_clause = " WHERE (Last_Trans < ? OR Last_Trans IS NULL)";
+        $where_clause = " WHERE (c.Last_Trans < ? OR c.Last_Trans IS NULL)";
         $params[] = $cutoff_date_status;
         $types .= "s";
     }
@@ -147,15 +147,15 @@ try {
     }
     $age_case_sql = "
         CASE
-            WHEN tgl_lahir IS NULL OR YEAR(tgl_lahir) > 2020 THEN '-'
-            WHEN TIMESTAMPDIFF(YEAR, tgl_lahir, CURDATE()) <= 17 THEN '<= 17'
-            WHEN TIMESTAMPDIFF(YEAR, tgl_lahir, CURDATE()) BETWEEN 18 AND 20 THEN '18-20'
-            WHEN TIMESTAMPDIFF(YEAR, tgl_lahir, CURDATE()) BETWEEN 21 AND 25 THEN '21-25'
-            WHEN TIMESTAMPDIFF(YEAR, tgl_lahir, CURDATE()) BETWEEN 26 AND 30 THEN '26-30'
-            WHEN TIMESTAMPDIFF(YEAR, tgl_lahir, CURDATE()) BETWEEN 31 AND 35 THEN '31-35'
-            WHEN TIMESTAMPDIFF(YEAR, tgl_lahir, CURDATE()) BETWEEN 36 AND 45 THEN '36-45'
-            WHEN TIMESTAMPDIFF(YEAR, tgl_lahir, CURDATE()) BETWEEN 46 AND 59 THEN '46-59'
-            WHEN TIMESTAMPDIFF(YEAR, tgl_lahir, CURDATE()) >= 60 THEN '>= 60'
+            WHEN c.tgl_lahir IS NULL OR YEAR(c.tgl_lahir) > 2020 THEN '-'
+            WHEN TIMESTAMPDIFF(YEAR, c.tgl_lahir, CURDATE()) <= 17 THEN '<= 17'
+            WHEN TIMESTAMPDIFF(YEAR, c.tgl_lahir, CURDATE()) BETWEEN 18 AND 20 THEN '18-20'
+            WHEN TIMESTAMPDIFF(YEAR, c.tgl_lahir, CURDATE()) BETWEEN 21 AND 25 THEN '21-25'
+            WHEN TIMESTAMPDIFF(YEAR, c.tgl_lahir, CURDATE()) BETWEEN 26 AND 30 THEN '26-30'
+            WHEN TIMESTAMPDIFF(YEAR, c.tgl_lahir, CURDATE()) BETWEEN 31 AND 35 THEN '31-35'
+            WHEN TIMESTAMPDIFF(YEAR, c.tgl_lahir, CURDATE()) BETWEEN 36 AND 45 THEN '36-45'
+            WHEN TIMESTAMPDIFF(YEAR, c.tgl_lahir, CURDATE()) BETWEEN 46 AND 59 THEN '46-59'
+            WHEN TIMESTAMPDIFF(YEAR, c.tgl_lahir, CURDATE()) >= 60 THEN '>= 60'
             ELSE '-'
         END
     ";
@@ -173,9 +173,11 @@ try {
         (
             SELECT 
                 ($age_case_sql) AS age_group,
-                COUNT(*) AS count
-            FROM customers
+                COUNT(DISTINCT c.kd_cust) AS count
+            FROM customers c
+            INNER JOIN trans_b t ON c.kd_cust = t.kd_cust
             $where_clause
+            $date_where_clause
             GROUP BY age_group
             HAVING age_group != '-'
         ) AS agc
@@ -203,7 +205,7 @@ try {
                         SELECT 
                             kd_cust,
                             ($age_case_sql) AS age_group
-                        FROM customers
+                        FROM customers c
                         $where_clause
                     ) AS cag ON t.kd_cust = cag.kd_cust
                     CROSS JOIN (SELECT @rn := 0, @current_group := '') AS init_vars
@@ -235,8 +237,8 @@ try {
         $logger->error("Database prepare failed (active): " . $conn->error);
         throw new Exception("Database prepare failed (active): " . $conn->error);
     }
-    $all_params = array_merge($params, $params, $params_for_products);
-    $all_types = $types . $types . $types_for_products;
+    $all_params = array_merge($params, $params_for_products, $params, $params_for_products);
+    $all_types = $types . $types_for_products . $types . $types_for_products;
     if (!empty($all_params)) {
         $bind_params = [$all_types];
         foreach ($all_params as $key => $value) {
