@@ -1,8 +1,15 @@
 <?php
 require_once __DIR__ . "/../../../../config.php";
-require_once __DIR__ . ("./../../../auth/middleware_login.php");
 require_once __DIR__ . "/../../../../redis.php";
-header("Content-Type:application/json");
+$logger = null;
+if (php_sapi_name() === 'cli') {
+    require_once __DIR__ . "/../../../../src/utils/Logger.php";
+    $logger = new AppLogger('cron_paginated_members.log');
+    $logger->info("Mulai cron job get_paginated_members.php.");
+}
+if (php_sapi_name() !== 'cli') {
+    header("Content-Type:application/json");
+}
 ini_set("display_errors", 1);
 ini_set("display_startup_errors", 1);
 error_reporting(E_ALL);
@@ -10,6 +17,7 @@ if (php_sapi_name() === 'cli' && isset($argv[1])) {
     parse_str($argv[1], $_GET);
 }
 if (php_sapi_name() !== 'cli') {
+    require_once __DIR__ . ("./../../../auth/middleware_login.php");
     $headers = getallheaders();
     $token = $headers['Authorization'] ?? null;
     if (!$token) {
@@ -47,8 +55,8 @@ $cacheKey = "report:paginated_members:" .
 try {
     $cachedData = $redis->get($cacheKey);
     if ($cachedData) {
-        http_response_code(200);
         if (php_sapi_name() !== 'cli') {
+            http_response_code(200);
             echo $cachedData;
         } else {
             echo "Cache found for $cacheKey. Skipping DB query.\n";
@@ -57,6 +65,9 @@ try {
         exit;
     }
 } catch (Exception $e) {
+    if ($logger) {
+        $logger->error("Redis cache get failed: " . $e->getMessage());
+    }
 }
 if (php_sapi_name() === 'cli') {
     echo "Cache not found. Generating cache...\n";
@@ -200,7 +211,12 @@ $countSql = "SELECT COUNT(*) AS total
                     ) AS subquery";
 $stmtCount = $conn->prepare($countSql);
 if (!$stmtCount) {
-    http_response_code(500);
+    if ($logger) {
+        $logger->error("Statement error (count): " . $conn->error);
+    }
+    if (php_sapi_name() !== 'cli') {
+        http_response_code(500);
+    }
     echo json_encode(["success" => false, "message" => "Statement error (count): " . $conn->error]);
     exit;
 }
@@ -238,7 +254,12 @@ $params[] = $offset;
 $types .= 'ii';
 $stmtData = $conn->prepare($dataSql);
 if (!$stmtData) {
-    http_response_code(500);
+    if ($logger) {
+        $logger->error("Statement error (data): " . $conn->error);
+    }
+    if (php_sapi_name() !== 'cli') {
+        http_response_code(500);
+    }
     echo json_encode(["success" => false, "message" => "Statement error (data): " . $conn->error]);
     exit;
 }
@@ -248,7 +269,9 @@ $resultData = $stmtData->get_result();
 $data = $resultData->fetch_all(MYSQLI_ASSOC);
 $stmtData->close();
 if (empty($data)) {
-    http_response_code(200);
+    if (php_sapi_name() !== 'cli') {
+        http_response_code(200);
+    }
     $response = [
         "success" => false,
         "message" => "Data tidak ditemukan"
@@ -257,6 +280,9 @@ if (empty($data)) {
     try {
         $redis->setex($cacheKey, 900, $jsonData);
     } catch (Exception $e) {
+        if ($logger) {
+            $logger->error("Redis cache setex (no data) failed: " . $e->getMessage());
+        }
     }
     if (php_sapi_name() !== 'cli') {
         echo $jsonData;
@@ -292,12 +318,18 @@ try {
     }
     $redis->setex($cacheKey, $ttl, $jsonData);
 } catch (Exception $e) {
+    if ($logger) {
+        $logger->error("Redis cache setex (with data) failed: " . $e->getMessage());
+    }
 }
-http_response_code(200);
 if (php_sapi_name() !== 'cli') {
+    http_response_code(200);
     echo $jsonData;
 } else {
     echo "Cache generated (with data) for $cacheKey.\n";
+}
+if ($logger) {
+    $logger->info("Selesai cron job get_paginated_members.php. Cache generated for $cacheKey.");
 }
 $conn->close();
 ?>
