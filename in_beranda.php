@@ -112,12 +112,13 @@ $permissionChecker = new PermissionAccess($conn);
           <div
             class="cursor-pointer bg-gradient-to-br from-white/90 to-blue-50/80 rounded-xl p-1.5 shadow border border-blue-100/60 hover:scale-105 hover:shadow-md transition-all duration-300 flex flex-col animate-fade-in-up"
             onclick="window.location.href='/src/fitur/member/top_sales'">
-            <div class="flex items-center justify-between mb-1">
+            <div class="flex items-center justify-between mb-0">
               <div class="flex items-center gap-2">
                 <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
                 <span class="font-semibold text-xs text-gray-800 whitespace-nowrap" title="Top Sales">Top Sales</span>
               </div>
             </div>
+            <p class="text-[10px] text-gray-500 italic px-1 mb-1 ml-4">Produk terlaris Member (Kemarin)</p>
             <div class="flex items-center justify-between text-xs text-gray-600">
               <div class="flex items-center gap-1 max-w-[100px]" title="Product Terlaris">
                 <i class="fa-solid fa-trophy text-blue-600 text-xs"></i>
@@ -129,13 +130,14 @@ $permissionChecker = new PermissionAccess($conn);
           <div
             class="cursor-pointer bg-gradient-to-br from-white/90 to-amber-50/80 rounded-xl p-1.5 shadow border border-amber-100/60 hover:scale-105 hover:shadow-md transition-all duration-300 flex flex-col animate-fade-in-up"
             onclick="window.location.href='/src/fitur/member/product_favorite'">
-            <div class="flex items-center justify-between mb-1">
+            <div class="flex items-center justify-between mb-0">
               <div class="flex items-center gap-2">
                 <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
                 <span class="font-semibold text-xs text-gray-800 whitespace-nowrap" title="Produk Favorit">Produk
                   Favorit</span>
               </div>
             </div>
+            <p class="text-[10px] text-gray-500 italic px-1 mb-1 ml-4">Produk favorit by Member (Kemarin)</p>
             <div class="flex items-center justify-between text-xs text-gray-600">
               <div class="flex items-center gap-1 max-w-[100px]" title="Favorit Member">
                 <i class="fa-solid fa-heart text-amber-500 text-xs"></i>
@@ -147,12 +149,13 @@ $permissionChecker = new PermissionAccess($conn);
           <div
             class="cursor-pointer bg-gradient-to-br from-white/90 to-green-50/80 rounded-xl p-1.5 shadow border border-green-100/60 hover:scale-105 hover:shadow-md transition-all duration-300 flex flex-col animate-fade-in-up"
             onclick="window.location.href='/src/fitur/member/top_sales'">
-            <div class="flex items-center justify-between mb-1">
+            <div class="flex items-center justify-between mb-0">
               <div class="flex items-center gap-2">
                 <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                 <span class="font-semibold text-xs text-gray-800 whitespace-nowrap" title="Top Member">Top Member</span>
               </div>
             </div>
+            <p class="text-[10px] text-gray-500 italic px-1 mb-1 ml-4">Penjualan Member tertinggi (Kemarin)</p>
             <div class="flex items-center justify-between text-xs text-gray-600">
               <div class="flex items-center gap-1 max-w-[100px]" title="Top Member">
                 <i class="fa-solid fa-user text-green-500 text-xs"></i>
@@ -166,7 +169,6 @@ $permissionChecker = new PermissionAccess($conn);
           </div>
         </div>
       </div>
-
       <div
         class="dashboard-card bg-gradient-to-br from-emerald-50 to-teal-100 rounded-xl p-3 shadow-lg border border-emerald-200/50 backdrop-blur-sm">
         <div class="flex items-center justify-between mb-2">
@@ -181,6 +183,8 @@ $permissionChecker = new PermissionAccess($conn);
             </button>
           </div>
         </div>
+
+        <p class="text-xs text-gray-600 italic -mt-2 mb-2">Data transaksi (Member & Non-Member) kemarin.</p>
 
         <div
           class="cursor-pointer bg-gradient-to-br from-emerald-50 via-white to-emerald-100 rounded-xl p-1.5 shadow border border-emerald-200/80 text-center hover:shadow-lg hover:scale-[1.01] transition-all duration-200 mb-2 backdrop-blur-sm animate-fade-in-up"
@@ -257,6 +261,8 @@ $permissionChecker = new PermissionAccess($conn);
           </div>
         </div>
 
+        <p class="text-xs text-gray-600 italic -mt-2 mb-2">Top 3 kasir (berdasarkan void) kemarin.</p>
+
         <div class="grid grid-cols-1 gap-2 mb-2 text-xs" id="invalid-transaksi-container">
           <div class="flex items-center justify-center text-gray-500 bg-white/60 rounded-xl p-2">
             <i class="fa-solid fa-spinner fa-spin mr-1"></i> Loading...
@@ -278,6 +284,9 @@ $permissionChecker = new PermissionAccess($conn);
             </button>
           </div>
         </div>
+
+        <p class="text-xs text-gray-600 italic -mt-2 mb-2">Top 3 cabang (margin minus) kemarin.</p>
+
         <div id="top-margin-minus-container" class="grid grid-cols-1 gap-2 text-xs">
           <div class="flex items-center justify-center text-gray-500 bg-white/60 rounded-xl p-2">
             <i class="fa-solid fa-spinner fa-spin mr-1"></i> Loading...
@@ -299,6 +308,8 @@ $permissionChecker = new PermissionAccess($conn);
             </button>
           </div>
         </div>
+
+        <p class="text-xs text-gray-600 italic -mt-2 mb-2">Top 3 kasir (berdasarkan retur) kemarin.</p>
 
         <div class="grid grid-cols-1 gap-2 mb-3 text-xs" id="top-retur-container">
           <div class="flex items-center justify-center text-gray-500 bg-white/60 rounded-xl p-2">
@@ -322,6 +333,8 @@ $permissionChecker = new PermissionAccess($conn);
           </div>
         </div>
 
+        <p class="text-xs text-gray-600 italic -mt-2 mb-2">Top 3 customer (frekuensi terbanyak) kemarin.</p>
+
         <div class="grid grid-cols-1 gap-2 mb-3 text-xs" id="top-activity-container">
           <div class="flex items-center justify-center text-gray-500 bg-white/60 rounded-xl p-2">
             <i class="fa-solid fa-spinner fa-spin mr-1"></i> Loading...
@@ -342,6 +355,8 @@ $permissionChecker = new PermissionAccess($conn);
           </h2>
           <div class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
         </div>
+
+        <p class="text-xs text-gray-600 italic -mt-2 mb-2 px-1">Data review (rating & pending) keseluruhan.</p>
 
         <div class="space-y-4">
           <div id="featured-review-container">
@@ -387,13 +402,9 @@ $permissionChecker = new PermissionAccess($conn);
     </section>
 
     <?php
-    // --- TAMBAHKAN KODE INI ---
-// Cek permission khusus untuk section 'Grafik Penjualan'
-// 'dashboard_sales_graph' adalah menu_code yang kita tambahkan di database
     $canViewSalesGraph = $permissionChecker->hasPermission($user_id, 'dashboard_sales_graph', 'can_view');
 
     if ($canViewSalesGraph):
-      // -------------------------
       ?>
 
       <section      
