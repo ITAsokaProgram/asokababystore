@@ -17,69 +17,91 @@ let locationChartInstance = null;
 let topMemberChartInstance = null;
 let topMemberProductChartInstance = null;
 let topMemberFrequencyChartInstance = null;
-const UI_ELEMENTS = {
+const UI_WIDGETS = {
   age: {
-    loadingId: "loading-spinner",
-    containerId: "age-chart-container",
-    errorId: "age-chart-error",
+    chart: {
+      loadingId: "loading-spinner",
+      containerId: "age-chart-container",
+      errorId: "age-chart-error",
+    },
+    table: {
+      loadingId: "age-table-loading-spinner",
+      containerId: "age-table-container",
+      errorId: "age-table-error",
+      bodyId: "age-table-body",
+    },
+    chartElementId: "memberAgeChart",
+    viewAllBtnId: null,
   },
   location: {
-    loadingId: "location-loading-spinner",
-    containerId: "location-chart-container",
-    errorId: "location-chart-error",
+    chart: {
+      loadingId: "location-loading-spinner",
+      containerId: "location-chart-container",
+      errorId: "location-chart-error",
+    },
+    table: {
+      loadingId: "location-table-loading-spinner",
+      containerId: "location-table-container",
+      errorId: "location-table-error",
+      bodyId: "location-table-body",
+      headerId: "location-table-header",
+    },
+    chartElementId: "memberLocationChart",
+    viewAllBtnId: "view-all-locations-btn",
   },
   topMember: {
-    loadingId: "top-member-chart-loading-spinner",
-    containerId: "top-member-chart-container",
-    errorId: "top-member-chart-error",
+    chart: {
+      loadingId: "top-member-chart-loading-spinner",
+      containerId: "top-member-chart-container",
+      errorId: "top-member-chart-error",
+    },
+    table: {
+      loadingId: "top-member-table-loading-spinner",
+      containerId: "top-member-table-container",
+      errorId: "top-member-table-error",
+      bodyId: "top-member-table-body",
+    },
+    chartElementId: "topMemberChart",
+    viewAllBtnId: "view-all-top-member-btn",
   },
   topProduct: {
-    loadingId: "top-product-chart-loading-spinner",
-    containerId: "top-product-chart-container",
-    errorId: "top-product-chart-error",
+    chart: {
+      loadingId: "top-product-chart-loading-spinner",
+      containerId: "top-product-chart-container",
+      errorId: "top-product-chart-error",
+    },
+    table: {
+      loadingId: "top-product-table-loading-spinner",
+      containerId: "top-product-table-container",
+      errorId: "top-product-table-error",
+      bodyId: "top-product-table-body",
+    },
+    chartElementId: "topMemberProductChart",
+    viewAllBtnId: "view-all-top-product-btn",
   },
   topMemberFrequency: {
-    loadingId: "top-member-frequency-chart-loading-spinner",
-    containerId: "top-member-frequency-chart-container",
-    errorId: "top-member-frequency-chart-error",
+    chart: {
+      loadingId: "top-member-frequency-chart-loading-spinner",
+      containerId: "top-member-frequency-chart-container",
+      errorId: "top-member-frequency-chart-error",
+    },
+    table: {
+      loadingId: "top-member-frequency-table-loading-spinner",
+      containerId: "top-member-frequency-table-container",
+      errorId: "top-member-frequency-table-error",
+      bodyId: "top-member-frequency-table-body",
+    },
+    chartElementId: "topMemberFrequencyChart",
+    viewAllBtnId: "view-all-top-frequency-btn",
   },
 };
-const UI_ELEMENTS_AGE_TABLE = {
-  loadingId: "age-table-loading-spinner",
-  containerId: "age-table-container",
-  errorId: "age-table-error",
-  bodyId: "age-table-body",
-};
-const UI_ELEMENTS_LOCATION_TABLE = {
-  loadingId: "location-table-loading-spinner",
-  containerId: "location-table-container",
-  errorId: "location-table-error",
-  bodyId: "location-table-body",
-  headerId: "location-table-header",
-};
-const UI_ELEMENTS_TOP_MEMBER_TABLE = {
-  loadingId: "top-member-table-loading-spinner",
-  containerId: "top-member-table-container",
-  errorId: "top-member-table-error",
-  bodyId: "top-member-table-body",
-};
-const UI_ELEMENTS_TOP_PRODUCT_TABLE = {
-  loadingId: "top-product-table-loading-spinner",
-  containerId: "top-product-table-container",
-  errorId: "top-product-table-error",
-  bodyId: "top-product-table-body",
-};
-const UI_ELEMENTS_TOP_MEMBER_FREQUENCY_TABLE = {
-  loadingId: "top-member-frequency-table-loading-spinner",
-  containerId: "top-member-frequency-table-container",
-  errorId: "top-member-frequency-table-error",
-  bodyId: "top-member-frequency-table-body",
-};
-function setChartUIState(
-  { loadingId, containerId, errorId },
-  state,
-  message = ""
-) {
+/**
+ * Mengatur status UI (loading, success, error, empty) untuk elemen-elemen
+ * @param {object} uiElements - Objek berisi { loadingId, containerId, errorId }
+ * @param {'loading' | 'success' | 'error' | 'empty'} state - Status yang diinginkan
+ * @param {string} [message=""] - Pesan untuk status error atau empty
+ */
+function setUIState({ loadingId, containerId, errorId }, state, message = "") {
   const loadingEl = document.getElementById(loadingId);
   const containerEl = document.getElementById(containerId);
   const errorEl = document.getElementById(errorId);
@@ -92,53 +114,8 @@ function setChartUIState(
     }
   }
 }
-function setTableUIState(state, message = "") {
-  const loadingEl = document.getElementById(UI_ELEMENTS_AGE_TABLE.loadingId);
-  const containerEl = document.getElementById(
-    UI_ELEMENTS_AGE_TABLE.containerId
-  );
-  const errorEl = document.getElementById(UI_ELEMENTS_AGE_TABLE.errorId);
-  if (loadingEl) loadingEl.classList.toggle("hidden", state !== "loading");
-  if (containerEl) containerEl.classList.toggle("hidden", state !== "success");
-  if (errorEl) {
-    errorEl.classList.toggle("hidden", state !== "error" && state !== "empty");
-    if (state === "error" || state === "empty") {
-      errorEl.textContent = message;
-    }
-  }
-}
-function setLocationTableUIState(state, message = "") {
-  const loadingEl = document.getElementById(
-    UI_ELEMENTS_LOCATION_TABLE.loadingId
-  );
-  const containerEl = document.getElementById(
-    UI_ELEMENTS_LOCATION_TABLE.containerId
-  );
-  const errorEl = document.getElementById(UI_ELEMENTS_LOCATION_TABLE.errorId);
-  if (loadingEl) loadingEl.classList.toggle("hidden", state !== "loading");
-  if (containerEl) containerEl.classList.toggle("hidden", state !== "success");
-  if (errorEl) {
-    errorEl.classList.toggle("hidden", state !== "error" && state !== "empty");
-    if (state === "error" || state === "empty") {
-      errorEl.textContent = message;
-    }
-  }
-}
-function setGeneralTableUIState(uiElements, state, message = "") {
-  const loadingEl = document.getElementById(uiElements.loadingId);
-  const containerEl = document.getElementById(uiElements.containerId);
-  const errorEl = document.getElementById(uiElements.errorId);
-  if (loadingEl) loadingEl.classList.toggle("hidden", state !== "loading");
-  if (containerEl) containerEl.classList.toggle("hidden", state !== "success");
-  if (errorEl) {
-    errorEl.classList.toggle("hidden", state !== "error" && state !== "empty");
-    if (state === "error" || state === "empty") {
-      errorEl.textContent = message;
-    }
-  }
-}
 function renderAgeTable(data) {
-  const tableBody = document.getElementById(UI_ELEMENTS_AGE_TABLE.bodyId);
+  const tableBody = document.getElementById(UI_WIDGETS.age.table.bodyId);
   if (!tableBody) return;
   tableBody.innerHTML = "";
   const numberFormatter = new Intl.NumberFormat("id-ID");
@@ -164,9 +141,9 @@ function renderAgeTable(data) {
   });
 }
 function renderLocationTable(data) {
-  const tableBody = document.getElementById(UI_ELEMENTS_LOCATION_TABLE.bodyId);
+  const tableBody = document.getElementById(UI_WIDGETS.location.table.bodyId);
   const tableHeader = document.getElementById(
-    UI_ELEMENTS_LOCATION_TABLE.headerId
+    UI_WIDGETS.location.table.headerId
   );
   if (!tableBody || !tableHeader) return;
   tableBody.innerHTML = "";
@@ -206,9 +183,7 @@ function renderLocationTable(data) {
   });
 }
 function renderTopMemberTable(data) {
-  const tableBody = document.getElementById(
-    UI_ELEMENTS_TOP_MEMBER_TABLE.bodyId
-  );
+  const tableBody = document.getElementById(UI_WIDGETS.topMember.table.bodyId);
   if (!tableBody) return;
   tableBody.innerHTML = "";
   const currencyFormatter = new Intl.NumberFormat("id-ID", {
@@ -242,9 +217,7 @@ function renderTopMemberTable(data) {
   });
 }
 function renderTopProductTable(data) {
-  const tableBody = document.getElementById(
-    UI_ELEMENTS_TOP_PRODUCT_TABLE.bodyId
-  );
+  const tableBody = document.getElementById(UI_WIDGETS.topProduct.table.bodyId);
   if (!tableBody) return;
   tableBody.innerHTML = "";
   const numberFormatter = new Intl.NumberFormat("id-ID");
@@ -274,24 +247,9 @@ function renderTopProductTable(data) {
     tableBody.innerHTML += row;
   });
 }
-function updateLocationHeader() {
-  const header = document.getElementById("location-chart-header");
-  const backBtn = document.getElementById("location-back-btn");
-  const breadcrumb = document.getElementById("location-breadcrumb");
-  if (state.currentLocationLevel === "city") {
-    header.classList.add("hidden");
-  } else {
-    header.classList.remove("hidden");
-    if (state.currentLocationLevel === "district") {
-      breadcrumb.textContent = `Kota: ${state.selectedCity}`;
-    } else if (state.currentLocationLevel === "subdistrict") {
-      breadcrumb.textContent = `Kota: ${state.selectedCity} > Kec: ${state.selectedDistrict}`;
-    }
-  }
-}
 function renderTopMemberFrequencyTable(data) {
   const tableBody = document.getElementById(
-    UI_ELEMENTS_TOP_MEMBER_FREQUENCY_TABLE.bodyId
+    UI_WIDGETS.topMemberFrequency.table.bodyId
   );
   if (!tableBody) return;
   tableBody.innerHTML = "";
@@ -321,10 +279,21 @@ function renderTopMemberFrequencyTable(data) {
     tableBody.innerHTML += row;
   });
 }
-/**
- * Helper untuk membuat query string filter dari objek state.
- * @returns {URLSearchParams}
- */
+function updateLocationHeader() {
+  const header = document.getElementById("location-chart-header");
+  const backBtn = document.getElementById("location-back-btn");
+  const breadcrumb = document.getElementById("location-breadcrumb");
+  if (state.currentLocationLevel === "city") {
+    header.classList.add("hidden");
+  } else {
+    header.classList.remove("hidden");
+    if (state.currentLocationLevel === "district") {
+      breadcrumb.textContent = `Kota: ${state.selectedCity}`;
+    } else if (state.currentLocationLevel === "subdistrict") {
+      breadcrumb.textContent = `Kota: ${state.selectedCity} > Kec: ${state.selectedDistrict}`;
+    }
+  }
+}
 function buildFilterQueryString() {
   const params = new URLSearchParams();
   const { filterParams } = state;
@@ -467,42 +436,62 @@ async function handleLocationClick(locationName) {
     });
   }
 }
-async function loadAgeData() {
-  setChartUIState(UI_ELEMENTS.age, "loading");
-  setTableUIState("loading");
+
+async function loadWidgetData(
+  widgetConfig,
+  apiFunction,
+  apiArgs,
+  chartRenderFunction,
+  chartInstance,
+  tableRenderFunction,
+  emptyMessage
+) {
+  setUIState(widgetConfig.chart, "loading");
+  setUIState(widgetConfig.table, "loading");
+  if (widgetConfig.viewAllBtnId) {
+    const btn = document.getElementById(widgetConfig.viewAllBtnId);
+    if (btn) btn.classList.add("hidden");
+  }
   try {
-    const result = await api.getMemberByAge(
-      state.filterParams,
-      state.currentStatus
-    );
+    const result = await apiFunction.apply(null, apiArgs);
     if (result.success === true && result.data && result.data.length > 0) {
-      ageChartInstance = charts.renderAgeChart(
-        ageChartInstance,
-        "memberAgeChart",
+      const newChartInstance = chartRenderFunction(
+        chartInstance,
+        widgetConfig.chartElementId,
         result.data,
         state
       );
-      setChartUIState(UI_ELEMENTS.age, "success");
-      if (ageChartInstance) ageChartInstance.resize();
-      renderAgeTable(result.data);
-      setTableUIState("success");
+      setUIState(widgetConfig.chart, "success");
+      if (newChartInstance) newChartInstance.resize();
+      tableRenderFunction(result.data);
+      setUIState(widgetConfig.table, "success");
+      if (widgetConfig.viewAllBtnId) {
+        const btn = document.getElementById(widgetConfig.viewAllBtnId);
+        if (btn && widgetConfig.viewAllBtnId !== "view-all-locations-btn") {
+          btn.classList.remove("hidden");
+        }
+      }
+      return newChartInstance;
     } else if (result.success === true && result.data.length === 0) {
-      const msg = "Tidak ada data member (umur) untuk filter ini.";
-      setChartUIState(UI_ELEMENTS.age, "empty", msg);
-      setTableUIState("empty", msg);
+      setUIState(widgetConfig.chart, "empty", emptyMessage);
+      setUIState(widgetConfig.table, "empty", emptyMessage);
     } else {
-      throw new Error(result.message || "Gagal memuat data umur");
+      throw new Error(result.message || "Gagal memuat data");
     }
   } catch (error) {
-    console.error("Error loading member age data:", error);
-    const errorMsg = `Gagal memuat chart umur: ${error.message}`;
-    setChartUIState(UI_ELEMENTS.age, "error", errorMsg);
-    setTableUIState("error", errorMsg);
+    console.error(
+      `Error loading data for ${widgetConfig.chartElementId}:`,
+      error
+    );
+    const msg = `Gagal memuat data: ${error.message}`;
+    setUIState(widgetConfig.chart, "error", msg);
+    setUIState(widgetConfig.table, "error", msg);
   }
+  return chartInstance;
 }
 async function loadLocationData() {
-  setChartUIState(UI_ELEMENTS.location, "loading");
-  setLocationTableUIState("loading");
+  setUIState(UI_WIDGETS.location.chart, "loading");
+  setUIState(UI_WIDGETS.location.table, "loading");
   updateLocationHeader();
   try {
     const result = await api.getMemberByLocation(
@@ -537,146 +526,30 @@ async function loadLocationData() {
       };
       locationChartInstance = charts.renderLocationChart(
         locationChartInstance,
-        "memberLocationChart",
+        UI_WIDGETS.location.chartElementId,
         result.data,
         state,
         callbacks
       );
-      setChartUIState(UI_ELEMENTS.location, "success");
+      setUIState(UI_WIDGETS.location.chart, "success");
       if (locationChartInstance) locationChartInstance.resize();
       renderLocationTable(result.data);
-      setLocationTableUIState("success");
+      setUIState(UI_WIDGETS.location.table, "success");
     } else if (result.success === true && result.data.length === 0) {
       let levelText = "kota";
       if (state.currentLocationLevel === "district") levelText = "kecamatan";
       if (state.currentLocationLevel === "subdistrict") levelText = "kelurahan";
       const msg = `Tidak ada data member (${levelText}) untuk filter ini.`;
-      setChartUIState(UI_ELEMENTS.location, "empty", msg);
-      setLocationTableUIState("empty", msg);
+      setUIState(UI_WIDGETS.location.chart, "empty", msg);
+      setUIState(UI_WIDGETS.location.table, "empty", msg);
     } else {
       throw new Error(result.message || "Gagal memuat data lokasi");
     }
   } catch (error) {
     console.error("Error loading member location data:", error);
     const errorMsg = `Gagal memuat chart lokasi: ${error.message}`;
-    setChartUIState(UI_ELEMENTS.location, "error", errorMsg);
-    setLocationTableUIState("error", errorMsg);
-  }
-}
-async function loadTopMemberData() {
-  setChartUIState(UI_ELEMENTS.topMember, "loading");
-  setGeneralTableUIState(UI_ELEMENTS_TOP_MEMBER_TABLE, "loading");
-  try {
-    const result = await api.getTopMembersByFilter(
-      state.filterParams,
-      state.currentStatus
-    );
-    if (result.success === true && result.data && result.data.length > 0) {
-      topMemberChartInstance = charts.renderTopMemberChart(
-        topMemberChartInstance,
-        "topMemberChart",
-        result.data,
-        state
-      );
-      setChartUIState(UI_ELEMENTS.topMember, "success");
-      renderTopMemberTable(result.data);
-      setGeneralTableUIState(UI_ELEMENTS_TOP_MEMBER_TABLE, "success");
-      const buttonEl = document.getElementById("view-all-top-member-btn");
-      if (buttonEl) buttonEl.classList.remove("hidden");
-      if (topMemberChartInstance) topMemberChartInstance.resize();
-    } else if (result.success === true && result.data.length === 0) {
-      const msg = "Tidak ada data top member untuk filter ini.";
-      setChartUIState(UI_ELEMENTS.topMember, "empty", msg);
-      setGeneralTableUIState(UI_ELEMENTS_TOP_MEMBER_TABLE, "empty", msg);
-    } else {
-      throw new Error(result.message || "Gagal memuat data top member");
-    }
-  } catch (error) {
-    console.error("Error loading top member data:", error);
-    const msg = `Gagal memuat data: ${error.message}`;
-    setChartUIState(UI_ELEMENTS.topMember, "error", msg);
-    setGeneralTableUIState(UI_ELEMENTS_TOP_MEMBER_TABLE, "error", msg);
-  }
-}
-async function loadTopProductData() {
-  setChartUIState(UI_ELEMENTS.topProduct, "loading");
-  setGeneralTableUIState(UI_ELEMENTS_TOP_PRODUCT_TABLE, "loading");
-  try {
-    const result = await api.getTopMemberProductPairs(
-      state.filterParams,
-      state.currentStatus
-    );
-    if (result.success === true && result.data && result.data.length > 0) {
-      topMemberProductChartInstance = charts.renderTopProductChart(
-        topMemberProductChartInstance,
-        "topMemberProductChart",
-        result.data,
-        state
-      );
-      setChartUIState(UI_ELEMENTS.topProduct, "success");
-      renderTopProductTable(result.data);
-      setGeneralTableUIState(UI_ELEMENTS_TOP_PRODUCT_TABLE, "success");
-      const buttonEl = document.getElementById("view-all-top-product-btn");
-      if (buttonEl) buttonEl.classList.remove("hidden");
-      if (topMemberProductChartInstance) topMemberProductChartInstance.resize();
-    } else if (result.success === true && result.data.length === 0) {
-      const msg = "Tidak ada data pembelian produk untuk filter ini.";
-      setChartUIState(UI_ELEMENTS.topProduct, "empty", msg);
-      setGeneralTableUIState(UI_ELEMENTS_TOP_PRODUCT_TABLE, "empty", msg);
-    } else {
-      throw new Error(result.message || "Gagal memuat data produk");
-    }
-  } catch (error) {
-    console.error("Error loading top product data:", error);
-    const msg = `Gagal memuat data: ${error.message}`;
-    setChartUIState(UI_ELEMENTS.topProduct, "error", msg);
-    setGeneralTableUIState(UI_ELEMENTS_TOP_PRODUCT_TABLE, "error", msg);
-  }
-}
-async function loadTopMemberFrequencyData() {
-  setChartUIState(UI_ELEMENTS.topMemberFrequency, "loading");
-  setGeneralTableUIState(UI_ELEMENTS_TOP_MEMBER_FREQUENCY_TABLE, "loading");
-  try {
-    const result = await api.getTopMembersByFrequency(
-      state.filterParams,
-      state.currentStatus
-    );
-    if (result.success === true && result.data && result.data.length > 0) {
-      topMemberFrequencyChartInstance = charts.renderTopMemberFrequencyChart(
-        topMemberFrequencyChartInstance,
-        "topMemberFrequencyChart",
-        result.data,
-        state
-      );
-      setChartUIState(UI_ELEMENTS.topMemberFrequency, "success");
-      renderTopMemberFrequencyTable(result.data);
-      setGeneralTableUIState(UI_ELEMENTS_TOP_MEMBER_FREQUENCY_TABLE, "success");
-      const buttonEl = document.getElementById("view-all-top-frequency-btn");
-      if (buttonEl) buttonEl.classList.remove("hidden");
-      if (topMemberFrequencyChartInstance)
-        topMemberFrequencyChartInstance.resize();
-    } else if (result.success === true && result.data.length === 0) {
-      const msg = "Tidak ada data top member (frekuensi) untuk filter ini.";
-      setChartUIState(UI_ELEMENTS.topMemberFrequency, "empty", msg);
-      setGeneralTableUIState(
-        UI_ELEMENTS_TOP_MEMBER_FREQUENCY_TABLE,
-        "empty",
-        msg
-      );
-    } else {
-      throw new Error(
-        result.message || "Gagal memuat data top member (frekuensi)"
-      );
-    }
-  } catch (error) {
-    console.error("Error loading top member frequency data:", error);
-    const msg = `Gagal memuat data: ${error.message}`;
-    setChartUIState(UI_ELEMENTS.topMemberFrequency, "error", msg);
-    setGeneralTableUIState(
-      UI_ELEMENTS_TOP_MEMBER_FREQUENCY_TABLE,
-      "error",
-      msg
-    );
+    setUIState(UI_WIDGETS.location.chart, "error", errorMsg);
+    setUIState(UI_WIDGETS.location.table, "error", errorMsg);
   }
 }
 document.addEventListener("DOMContentLoaded", () => {
@@ -686,7 +559,7 @@ document.addEventListener("DOMContentLoaded", () => {
   state.filterParams.start_date = params.get("start_date");
   state.filterParams.end_date = params.get("end_date");
   state.currentStatus = params.get("status");
-  const ageTableBody = document.getElementById(UI_ELEMENTS_AGE_TABLE.bodyId);
+  const ageTableBody = document.getElementById(UI_WIDGETS.age.table.bodyId);
   if (ageTableBody) {
     ageTableBody.addEventListener("click", (event) => {
       const row = event.target.closest("tr.age-table-row");
@@ -703,7 +576,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
   const locationTableBody = document.getElementById(
-    UI_ELEMENTS_LOCATION_TABLE.bodyId
+    UI_WIDGETS.location.table.bodyId
   );
   if (locationTableBody) {
     locationTableBody.addEventListener("click", async (event) => {
@@ -714,7 +587,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
   const topMemberTableBody = document.getElementById(
-    UI_ELEMENTS_TOP_MEMBER_TABLE.bodyId
+    UI_WIDGETS.topMember.table.bodyId
   );
   if (topMemberTableBody) {
     topMemberTableBody.addEventListener("click", (event) => {
@@ -734,7 +607,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
   const topProductTableBody = document.getElementById(
-    UI_ELEMENTS_TOP_PRODUCT_TABLE.bodyId
+    UI_WIDGETS.topProduct.table.bodyId
   );
   if (topProductTableBody) {
     topProductTableBody.addEventListener("click", (event) => {
@@ -754,7 +627,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
   const topMemberFrequencyTableBody = document.getElementById(
-    UI_ELEMENTS_TOP_MEMBER_FREQUENCY_TABLE.bodyId
+    UI_WIDGETS.topMemberFrequency.table.bodyId
   );
   if (topMemberFrequencyTableBody) {
     topMemberFrequencyTableBody.addEventListener("click", (event) => {
@@ -774,11 +647,43 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
   if (state.filterParams.filter_type && state.currentStatus) {
-    loadAgeData();
+    loadWidgetData(
+      UI_WIDGETS.age,
+      api.getMemberByAge,
+      [state.filterParams, state.currentStatus],
+      charts.renderAgeChart,
+      ageChartInstance,
+      renderAgeTable,
+      "Tidak ada data member (umur) untuk filter ini."
+    ).then((instance) => (ageChartInstance = instance));
+    loadWidgetData(
+      UI_WIDGETS.topMember,
+      api.getTopMembersByFilter,
+      [state.filterParams, state.currentStatus],
+      charts.renderTopMemberChart,
+      topMemberChartInstance,
+      renderTopMemberTable,
+      "Tidak ada data top member untuk filter ini."
+    ).then((instance) => (topMemberChartInstance = instance));
+    loadWidgetData(
+      UI_WIDGETS.topProduct,
+      api.getTopMemberProductPairs,
+      [state.filterParams, state.currentStatus],
+      charts.renderTopProductChart,
+      topMemberProductChartInstance,
+      renderTopProductTable,
+      "Tidak ada data pembelian produk untuk filter ini."
+    ).then((instance) => (topMemberProductChartInstance = instance));
+    loadWidgetData(
+      UI_WIDGETS.topMemberFrequency,
+      api.getTopMembersByFrequency,
+      [state.filterParams, state.currentStatus],
+      charts.renderTopMemberFrequencyChart,
+      topMemberFrequencyChartInstance,
+      renderTopMemberFrequencyTable,
+      "Tidak ada data top member (frekuensi) untuk filter ini."
+    ).then((instance) => (topMemberFrequencyChartInstance = instance));
     loadLocationData();
-    loadTopMemberData();
-    loadTopProductData();
-    loadTopMemberFrequencyData();
     const backBtn = document.getElementById("location-back-btn");
     backBtn.addEventListener("click", () => {
       if (state.currentLocationLevel === "district") {
@@ -794,12 +699,15 @@ document.addEventListener("DOMContentLoaded", () => {
   } else {
     console.error("Filter atau Status tidak ditemukan di URL.");
     const errorMsg = "Parameter filter atau status tidak ditemukan.";
-    setChartUIState(UI_ELEMENTS.age, "error", errorMsg);
-    setTableUIState("error", errorMsg);
-    setChartUIState(UI_ELEMENTS.location, "error", errorMsg);
-    setLocationTableUIState("error", errorMsg);
-    setChartUIState(UI_ELEMENTS.topMember, "error", errorMsg);
-    setChartUIState(UI_ELEMENTS.topProduct, "error", errorMsg);
-    setChartUIState(UI_ELEMENTS.topMemberFrequency, "error", errorMsg);
+    setUIState(UI_WIDGETS.age.chart, "error", errorMsg);
+    setUIState(UI_WIDGETS.age.table, "error", errorMsg);
+    setUIState(UI_WIDGETS.location.chart, "error", errorMsg);
+    setUIState(UI_WIDGETS.location.table, "error", errorMsg);
+    setUIState(UI_WIDGETS.topMember.chart, "error", errorMsg);
+    setUIState(UI_WIDGETS.topMember.table, "error", errorMsg);
+    setUIState(UI_WIDGETS.topProduct.chart, "error", errorMsg);
+    setUIState(UI_WIDGETS.topProduct.table, "error", errorMsg);
+    setUIState(UI_WIDGETS.topMemberFrequency.chart, "error", errorMsg);
+    setUIState(UI_WIDGETS.topMemberFrequency.table, "error", errorMsg);
   }
 });

@@ -7,18 +7,27 @@ $status = htmlspecialchars($_GET['status'] ?? 'unknown');
 
 $status_display = ($status === 'active') ? 'Aktif' : (($status === 'inactive') ? 'Inaktif' : 'Tidak Diketahui');
 
+// --- OPTIMASI DI SINI ---
+// Gunakan map untuk filter display agar lebih mudah dibaca dan dikelola
+$filterDisplayMap = [
+    'kemarin' => 'Kemarin',
+    '1minggu' => '1 Minggu Terakhir',
+    '1bulan' => '1 Bulan Terakhir',
+    '3bulan' => '3 Bulan Terakhir',
+    '6bulan' => '6 Bulan Terakhir',
+    '9bulan' => '9 Bulan Terakhir',
+    '12bulan' => '1 Tahun Terakhir',
+    'semua' => 'Semua Waktu'
+];
+
 $filterDisplay = '';
 if ($filter_type === 'custom' && $start_date && $end_date) {
     $filterDisplay = htmlspecialchars($start_date) . " s/d " . htmlspecialchars($end_date);
 } else {
-    $filterDisplay = ($filter === 'kemarin') ? 'Kemarin' :
-        (($filter === '1minggu') ? '1 Minggu Terakhir' :
-            (($filter === '1bulan') ? '1 Bulan Terakhir' :
-                (($filter === '3bulan') ? '3 Bulan Terakhir' :
-                    (($filter === '6bulan') ? '6 Bulan Terakhir' :
-                        (($filter === '9bulan') ? '9 Bulan Terakhir' :
-                            (($filter === '12bulan') ? '1 Tahun Terakhir' : 'Semua Waktu'))))));
+    // Ambil dari map, jika tidak ada, gunakan default 'Semua Waktu' atau '3 Bulan Terakhir'
+    $filterDisplay = $filterDisplayMap[$filter] ?? 'Semua Waktu';
 }
+// --- AKHIR OPTIMASI ---
 
 $queryParams = [
     'filter_type' => $filter_type,

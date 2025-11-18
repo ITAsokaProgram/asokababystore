@@ -1,20 +1,16 @@
 <?php
-// Dapatkan semua parameter filter dari URL
 $filter_type = $_GET['filter_type'] ?? 'preset';
 $current_filter = $_GET['filter'] ?? '3bulan';
 $start_date = $_GET['start_date'] ?? '';
 $end_date = $_GET['end_date'] ?? '';
 
-// Tentukan apakah filter diterapkan berdasarkan tipe
 $is_filter_applied = isset($_GET['filter_type']);
 
-// Validasi filter preset
 $valid_filters = ['kemarin', '1minggu', '1bulan', '3bulan', '6bulan', '9bulan', '12bulan', 'semua'];
 if ($filter_type == 'preset' && !in_array($current_filter, $valid_filters)) {
     $current_filter = '3bulan';
 }
 
-// Tentukan string tampilan untuk filter
 $filter_display = '';
 if ($is_filter_applied) {
     if ($filter_type === 'custom' && $start_date && $end_date) {
