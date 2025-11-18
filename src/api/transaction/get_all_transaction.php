@@ -59,16 +59,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $sqlTrans = "SELECT 
     DATE_FORMAT(tgl_trans, '$periodeFormat') AS periode,
     COUNT(DISTINCT no_bon) AS total_transaksi,
-    COUNT(DISTINCT CASE WHEN kd_cust NOT IN ('', '#898989', '#999999999') AND kd_cust IS NOT NULL 
+    COUNT(DISTINCT CASE WHEN kd_cust NOT IN ('', '89898989', '999999999') AND kd_cust IS NOT NULL 
                    THEN no_bon END) AS transaksi_member,
-    COUNT(DISTINCT CASE WHEN COALESCE(kd_cust, '') IN ('', '#898989', '#999999999') 
+    COUNT(DISTINCT CASE WHEN COALESCE(kd_cust, '') IN ('', '89898989', '999999999') 
                    THEN no_bon END) AS transaksi_non_member,
     SUM(CASE WHEN hrg_promo < harga THEN qty ELSE 0 END) AS total_barang_terjual_promo,
     SUM(CASE WHEN hrg_promo >= harga THEN qty ELSE 0 END) AS total_barang_terjual_non_promo,
-    ROUND(100.0 * COUNT(DISTINCT CASE WHEN kd_cust NOT IN ('', '#898989', '#999999999') AND kd_cust IS NOT NULL 
+    ROUND(100.0 * COUNT(DISTINCT CASE WHEN kd_cust NOT IN ('', '89898989', '999999999') AND kd_cust IS NOT NULL 
                                  THEN no_bon END) / 
           NULLIF(COUNT(DISTINCT no_bon), 0), 2) AS persentase_member,
-    ROUND(100.0 * COUNT(DISTINCT CASE WHEN COALESCE(kd_cust, '') IN ('', '#898989', '#999999999') 
+    ROUND(100.0 * COUNT(DISTINCT CASE WHEN COALESCE(kd_cust, '') IN ('', '89898989', '999999999') 
                                  THEN no_bon END) / 
           NULLIF(COUNT(DISTINCT no_bon), 0), 2) AS persentase_non_member
 FROM trans_b

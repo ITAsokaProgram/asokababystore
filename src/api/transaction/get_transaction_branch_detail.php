@@ -69,11 +69,11 @@ $sqlCabang = "SELECT
   l.total_transaksi,
   COUNT(DISTINCT CASE 
     WHEN t.kd_cust IS NOT NULL 
-      AND t.kd_cust NOT IN ('', '898989', '#898989', '#999999999') 
+      AND t.kd_cust NOT IN ('', '898989', '89898989', '999999999') 
     THEN t.no_bon END) AS member,
   COUNT(DISTINCT CASE 
     WHEN t.kd_cust IS NULL 
-      OR t.kd_cust IN ('', '898989', '#898989', '#999999999') 
+      OR t.kd_cust IN ('', '898989', '89898989', '999999999') 
     THEN t.no_bon END) AS non_member
 FROM (
   SELECT kd_store, COUNT(DISTINCT no_bon) AS total_transaksi
@@ -100,7 +100,7 @@ $sqlTableBelanja = "SELECT
   t.nama_kasir,
   SUM(t.qty * t.hrg_promo) AS total_belanja,
   CASE 
-    WHEN t.kd_cust IS NOT NULL AND t.kd_cust NOT IN ('', '898989', '#898989', '#999999999') THEN 'Member'
+    WHEN t.kd_cust IS NOT NULL AND t.kd_cust NOT IN ('', '898989', '89898989', '999999999') THEN 'Member'
     ELSE 'Non Member'
   END AS status_member
 FROM trans_b t
@@ -118,7 +118,7 @@ $sqlTop10BarangMember = "SELECT
 FROM trans_b
 WHERE 
   kd_cust IS NOT NULL
-  AND kd_cust NOT IN ('', '898989', '#898989', '#999999999')
+  AND kd_cust NOT IN ('', '898989', '89898989', '999999999')
   AND tgl_trans >= CURDATE() - INTERVAL 1 DAY AND kd_store = ? AND LOWER(descp) NOT LIKE '%tas asoka%'
 AND LOWER(descp) NOT LIKE '%kertas kado%'
 GROUP BY descp
@@ -130,7 +130,7 @@ $sqlTop10BarangNonMember = "SELECT
   SUM(qty) AS total_qty
 FROM trans_b
 WHERE 
-  (kd_cust IS NULL OR kd_cust IN ('', '898989', '#898989', '#999999999'))
+  (kd_cust IS NULL OR kd_cust IN ('', '898989', '89898989', '999999999'))
   AND tgl_trans >= CURDATE() - INTERVAL 1 DAY AND kd_store = ? AND LOWER(descp) NOT LIKE '%tas asoka%'
 AND LOWER(descp) NOT LIKE '%kertas kado%'
 GROUP BY descp
@@ -141,11 +141,11 @@ $sqlAllCabang = "SELECT
   COUNT(DISTINCT no_bon) AS total_transaksi,
   COUNT(DISTINCT CASE 
     WHEN kd_cust IS NOT NULL 
-      AND kd_cust NOT IN ('', '898989', '#898989', '#999999999') 
+      AND kd_cust NOT IN ('', '898989', '89898989', '999999999') 
     THEN no_bon END) AS member,
   COUNT(DISTINCT CASE 
     WHEN kd_cust IS NULL 
-      OR kd_cust IN ('', '898989', '#898989', '#999999999') 
+      OR kd_cust IN ('', '898989', '89898989', '999999999') 
     THEN no_bon END) AS non_member
 FROM trans_b WHERE tgl_trans = CURDATE() - INTERVAL 1 DAY";
 
@@ -155,7 +155,7 @@ $sqlTop10MAll = "SELECT
 FROM trans_b
 WHERE 
   kd_cust IS NOT NULL
-  AND kd_cust NOT IN ('', '898989', '#898989', '#999999999')
+  AND kd_cust NOT IN ('', '898989', '89898989', '999999999')
   AND tgl_trans >= CURDATE() - INTERVAL 1 DAY AND LOWER(descp) NOT LIKE '%tas asoka%'
 AND LOWER(descp) NOT LIKE '%kertas kado%'
 GROUP BY descp
@@ -167,7 +167,7 @@ $sqlTop10NAll = "SELECT
   SUM(qty) AS total_qty
 FROM trans_b
 WHERE 
-  (kd_cust IS NULL OR kd_cust IN ('', '898989', '#898989', '#999999999'))
+  (kd_cust IS NULL OR kd_cust IN ('', '898989', '89898989', '999999999'))
   AND tgl_trans >= CURDATE() - INTERVAL 1 DAY AND LOWER(descp) NOT LIKE '%tas asoka%'
 AND LOWER(descp) NOT LIKE '%kertas kado%'
 GROUP BY descp

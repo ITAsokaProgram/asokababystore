@@ -145,7 +145,7 @@ FROM trans_b t
 LEFT JOIN customers c ON t.kd_cust = c.kd_cust
 WHERE 
     t.kd_cust IS NOT NULL
-    AND t.kd_cust NOT IN ('', '898989', '#898989', '#999999999')
+    AND t.kd_cust NOT IN ('', '898989', '89898989', '999999999')
     $date_sql
     $status_sql
 GROUP BY t.kd_cust, t.plu, c.nama_cust, t.descp

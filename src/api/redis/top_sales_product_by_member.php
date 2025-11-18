@@ -33,7 +33,7 @@ $sql = "SELECT
 FROM trans_b t
 WHERE
   t.kd_cust IS NOT NULL
-  AND t.kd_cust NOT IN ('', '898989', '#898989', '#999999999') AND t.descp NOT LIKE '%kertas%' AND t.descp NOT LIKE '%tas%' AND t.descp NOT LIKE '%askp%'
+  AND t.kd_cust NOT IN ('', '898989', '89898989', '999999999') AND t.descp NOT LIKE '%kertas%' AND t.descp NOT LIKE '%tas%' AND t.descp NOT LIKE '%askp%'
 GROUP BY t.plu, t.descp
 HAVING qty_periode_sekarang > 0 OR qty_periode_sebelumnya > 0
 ORDER BY qty_periode_sekarang DESC
@@ -41,22 +41,22 @@ LIMIT 100";
 
 $stmt = $conn->prepare($sql);
 if (!$stmt) {
-    echo date('Y-m-d H:i:s') . " - Statement error: " . "\n";
-    exit;
+  echo date('Y-m-d H:i:s') . " - Statement error: " . "\n";
+  exit;
 }
 $stmt->execute();
 $result = $stmt->get_result();
 $top_sales_product_by_member = $result->fetch_all(MYSQLI_ASSOC);
 
 if (count($top_sales_product_by_member) === 0) {
-    echo date('Y-m-d H:i:s') . " - No Data: Not Found \n";
-    exit;
+  echo date('Y-m-d H:i:s') . " - No Data: Not Found \n";
+  exit;
 }
 $response = [
-    "success" => true,
-    "message" => "Data berhasil diambil",
-    "total" => count($top_sales_product_by_member),
-    "data" => $top_sales_product_by_member
+  "success" => true,
+  "message" => "Data berhasil diambil",
+  "total" => count($top_sales_product_by_member),
+  "data" => $top_sales_product_by_member
 ];
 $redis->setex($redisKey, $ttl, json_encode($response));
 echo date('Y-m-d H:i:s') . " - Redis updated: $redisKey\n";

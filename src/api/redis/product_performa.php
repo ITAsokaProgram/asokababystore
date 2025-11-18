@@ -20,7 +20,7 @@ THEN t.qty ELSE 0 END) AS qty_periode_sebelumnya
 FROM trans_b t
 WHERE
 t.kd_cust IS NOT NULL
-AND t.kd_cust NOT IN ('', '898989', '#898989', '#999999999')
+AND t.kd_cust NOT IN ('', '898989', '89898989', '999999999')
 GROUP BY t.plu, t.descp
 HAVING qty_periode_sekarang > 0 OR qty_periode_sebelumnya > 0
 ORDER BY qty_periode_sekarang DESC

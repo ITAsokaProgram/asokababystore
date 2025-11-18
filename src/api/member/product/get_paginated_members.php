@@ -203,7 +203,7 @@ $countSql = "SELECT COUNT(*) AS total
                         LEFT JOIN kode_store ks ON ks.kd_store = t.kd_store
                         WHERE 
                             t.kd_cust IS NOT NULL
-                            AND t.kd_cust NOT IN ('', '898989', '#898989', '#999999999')
+                            AND t.kd_cust NOT IN ('', '898989', '89898989', '999999999')
                             $date_sql
                             $status_sql
                             $searchSql
@@ -242,7 +242,7 @@ $dataSql = "SELECT
                     LEFT JOIN kode_store ks ON ks.kd_store = t.kd_store
                     WHERE 
                         t.kd_cust IS NOT NULL
-                        AND t.kd_cust NOT IN ('', '898989', '#898989', '#999999999')
+                        AND t.kd_cust NOT IN ('', '898989', '89898989', '999999999')
                         $date_sql
                         $status_sql
                         $searchSql

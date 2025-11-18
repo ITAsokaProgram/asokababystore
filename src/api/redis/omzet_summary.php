@@ -36,12 +36,12 @@ $stmt = $conn->prepare("
 FROM trans_b t
 WHERE
   t.kd_cust IS NOT NULL
-  AND t.kd_cust NOT IN ('', '898989', '#898989', '#999999999')
+  AND t.kd_cust NOT IN ('', '898989', '89898989', '999999999')
 ");
 
 if (!$stmt) {
-    echo date('Y-m-d H:i:s') . " - Statement error: " . "\n";
-    exit;
+  echo date('Y-m-d H:i:s') . " - Statement error: " . "\n";
+  exit;
 }
 
 $stmt->execute();
@@ -49,15 +49,15 @@ $result = $stmt->get_result();
 $omzet_summary = $result->fetch_all(MYSQLI_ASSOC);
 
 if (count($omzet_summary) === 0) {
-    echo date('Y-m-d H:i:s') . " - No Data: Not Found \n";
-    exit;
+  echo date('Y-m-d H:i:s') . " - No Data: Not Found \n";
+  exit;
 }
 
 $response = [
-    "success" => true,
-    "message" => "Data berhasil diambil",
-    "total" => count($omzet_summary),
-    "data" => $omzet_summary
+  "success" => true,
+  "message" => "Data berhasil diambil",
+  "total" => count($omzet_summary),
+  "data" => $omzet_summary
 ];
 
 $redis->setex($redisKey, $ttl, json_encode($response));

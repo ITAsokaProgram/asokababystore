@@ -32,12 +32,12 @@ LEFT JOIN (
   FROM trans_b
   WHERE 
     kd_cust IS NOT NULL 
-    AND kd_cust NOT IN ('', '898989', '#898989', '#999999999')
+    AND kd_cust NOT IN ('', '898989', '89898989', '999999999')
   GROUP BY kd_cust
 ) AS mla ON c.kd_cust = mla.kd_cust
 WHERE 
   c.kd_cust IS NOT NULL 
-  AND c.kd_cust NOT IN ('', '898989', '#898989', '#999999999')
+  AND c.kd_cust NOT IN ('', '898989', '89898989', '999999999')
 ";
 
 $sqlRataNonActive = "SELECT 
@@ -48,12 +48,12 @@ LEFT JOIN (
   FROM trans_b
   WHERE 
     kd_cust IS NOT NULL 
-    AND kd_cust NOT IN ('', '898989', '#898989', '#999999999')
+    AND kd_cust NOT IN ('', '898989', '89898989', '999999999')
   GROUP BY kd_cust
 ) AS mla ON c.kd_cust = mla.kd_cust
 WHERE 
   c.kd_cust IS NOT NULL 
-  AND c.kd_cust NOT IN ('', '898989', '#898989', '#999999999')
+  AND c.kd_cust NOT IN ('', '898989', '89898989', '999999999')
   AND mla.last_trans_date < CURDATE() - INTERVAL 3 MONTH";
 
 $sqlTrend = "SELECT
@@ -64,7 +64,7 @@ FROM (
   FROM trans_b
   WHERE 
     kd_cust IS NOT NULL 
-    AND kd_cust NOT IN ('', '898989', '#898989', '#999999999')
+    AND kd_cust NOT IN ('', '898989', '89898989', '999999999')
   GROUP BY kd_cust
 ) AS mla
 WHERE mla.last_trans_date < CURDATE() - INTERVAL 3 MONTH
@@ -82,13 +82,13 @@ JOIN (
   FROM trans_b
   WHERE 
     kd_cust IS NOT NULL 
-    AND kd_cust NOT IN ('', '898989', '#898989', '#999999999')
+    AND kd_cust NOT IN ('', '898989', '89898989', '999999999')
   GROUP BY kd_cust
 ) t2 ON c.kd_cust = t2.kd_cust
 LEFT JOIN kode_store s ON t2.kd_store = s.Kd_Store  
 WHERE 
   DATE(t2.last_trans) < CURDATE() - INTERVAL 3 MONTH
-  AND c.kd_cust NOT IN ('', '898989', '#898989', '#999999999') ORDER BY t2.last_trans DESC";
+  AND c.kd_cust NOT IN ('', '898989', '89898989', '999999999') ORDER BY t2.last_trans DESC";
 
 $sqlNonActiveTerbanyak = "SELECT 
   c.kd_store,
@@ -99,12 +99,12 @@ LEFT JOIN (
   FROM trans_b
   WHERE 
     kd_cust IS NOT NULL
-    AND kd_cust NOT IN ('', '898989', '#898989', '#999999999')
+    AND kd_cust NOT IN ('', '898989', '89898989', '999999999')
   GROUP BY kd_cust
 ) AS mla ON c.kd_cust = mla.kd_cust
 WHERE 
   c.kd_cust IS NOT NULL
-  AND c.kd_cust NOT IN ('', '898989', '#898989', '#999999999')
+  AND c.kd_cust NOT IN ('', '898989', '89898989', '999999999')
   AND mla.last_trans_date < CURDATE() - INTERVAL 3 MONTH 
 GROUP BY c.kd_store
 ORDER BY jumlah_member_nonaktif DESC

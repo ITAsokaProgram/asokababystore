@@ -33,22 +33,22 @@ LEFT JOIN (
     SELECT kd_cust, MAX(tgl_trans) AS last_trans, kd_store
     FROM (
         SELECT kd_cust, tgl_trans, kd_store FROM trans_b
-        WHERE kd_cust IS NOT NULL AND kd_cust != '' AND kd_cust NOT IN ('898989', '#898989', '#999999999')
+        WHERE kd_cust IS NOT NULL AND kd_cust != '' AND kd_cust NOT IN ('898989', '89898989', '999999999')
 
         UNION ALL
 
         SELECT kd_cust, tanggal, kd_branch FROM point_kasir
-        WHERE kd_cust IS NOT NULL AND kd_cust != '' AND kd_cust NOT IN ('898989', '#898989', '#999999999')
+        WHERE kd_cust IS NOT NULL AND kd_cust != '' AND kd_cust NOT IN ('898989', '89898989', '999999999')
 
         UNION ALL
 
         SELECT kd_cust, tgl_trans, kd_store FROM point_manual
-        WHERE kd_cust IS NOT NULL AND kd_cust != '' AND kd_cust NOT IN ('898989', '#898989', '#999999999')
+        WHERE kd_cust IS NOT NULL AND kd_cust != '' AND kd_cust NOT IN ('898989', '89898989', '999999999')
 
         UNION ALL
 
         SELECT kd_cust, tgl_trans , kd_branch FROM point_trans
-        WHERE kd_cust IS NOT NULL AND kd_cust != '' AND kd_cust NOT IN ('898989', '#898989', '#999999999')
+        WHERE kd_cust IS NOT NULL AND kd_cust != '' AND kd_cust NOT IN ('898989', '89898989', '999999999')
     ) AS all_trans
     GROUP BY kd_cust
 ) t2 ON c.kd_cust = t2.kd_cust
@@ -57,7 +57,7 @@ LEFT JOIN kode_store s ON t2.kd_store = s.Kd_Store
 LEFT JOIN (
     SELECT kd_cust, SUM(point_1) AS total_poin_pk
     FROM point_kasir
-    WHERE kd_cust NOT IN ('898989', '#898989', '#999999999')
+    WHERE kd_cust NOT IN ('898989', '89898989', '999999999')
     GROUP BY kd_cust
 ) AS tp ON c.kd_cust = tp.kd_cust
 
@@ -65,7 +65,7 @@ LEFT JOIN (
 LEFT JOIN (
     SELECT kd_cust, SUM(jum_point) AS total_poin_pm
     FROM point_manual
-    WHERE kd_cust NOT IN ('898989', '#898989', '#999999999')
+    WHERE kd_cust NOT IN ('898989', '89898989', '999999999')
     GROUP BY kd_cust
 ) AS tpm ON c.kd_cust = tpm.kd_cust
 
@@ -73,13 +73,13 @@ LEFT JOIN (
 LEFT JOIN (
     SELECT kd_cust, SUM(jum_point) AS total_poin_pt
     FROM point_trans
-    WHERE kd_cust NOT IN ('898989', '#898989', '#999999999')
+    WHERE kd_cust NOT IN ('898989', '89898989', '999999999')
     GROUP BY kd_cust
 ) AS pt ON c.kd_cust = pt.kd_cust
 
 -- Filter akhir
 WHERE c.kd_cust != ''
-  AND c.kd_cust NOT IN ('898989', '#898989', '#999999999')
+  AND c.kd_cust NOT IN ('898989', '89898989', '999999999')
 
 ORDER BY total_poin_pk_pm DESC;
     ");
@@ -115,6 +115,8 @@ ORDER BY total_poin_pk_pm DESC;
 } catch (Exception $e) {
     echo date('Y-m-d H:i:s') . " - Redis error: " . $e->getMessage() . "\n";
 } finally {
-    if (isset($stmt1)) $stmt1->close();
-    if (isset($conn)) $conn->close();
+    if (isset($stmt1))
+        $stmt1->close();
+    if (isset($conn))
+        $conn->close();
 }

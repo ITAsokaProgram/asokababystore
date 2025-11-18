@@ -64,11 +64,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     SUM(CASE WHEN hrg_promo >= harga THEN qty ELSE 0 END) AS total_barang_terjual_non_promo
 FROM trans_b
 WHERE tgl_trans BETWEEN ? AND ?
-  AND kd_store IN ($placeholders) AND (kd_cust NOT IN ('', '#898989', '#999999999') AND kd_cust IS NOT NULL)
+  AND kd_store IN ($placeholders) AND (kd_cust NOT IN ('', '89898989', '999999999') AND kd_cust IS NOT NULL)
 GROUP BY $groupByClause
 ORDER BY tgl_trans";
 
-        $paramsTrans = array_merge([ $startDate, $endDate], $cabang);
+        $paramsTrans = array_merge([$startDate, $endDate], $cabang);
         $paramTypes = str_repeat('s', count($paramsTrans));
         $stmt1 = $conn->prepare($sqlTrans);
         if (!$stmt1) {
@@ -91,7 +91,7 @@ ORDER BY tgl_trans";
                         MAX(hrg_promo) AS hrg_promo
                     FROM trans_b
                     WHERE tgl_trans BETWEEN ? AND ?
-                      AND kd_store IN ($placeholders)  AND (kd_cust NOT IN ('', '#898989', '#999999999') AND kd_cust IS NOT NULL)
+                      AND kd_store IN ($placeholders)  AND (kd_cust NOT IN ('', '89898989', '999999999') AND kd_cust IS NOT NULL)
                     GROUP BY DATE(tgl_trans), barcode, descp
                     ORDER BY tanggal, total_terjual DESC LIMIT 100";
 

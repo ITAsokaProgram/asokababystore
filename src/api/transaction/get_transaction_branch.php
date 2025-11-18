@@ -25,12 +25,12 @@ $sql = "SELECT
 
   COUNT(DISTINCT CASE 
     WHEN t.kd_cust IS NOT NULL 
-      AND t.kd_cust NOT IN ('', '898989', '#898989', '#999999999') 
+      AND t.kd_cust NOT IN ('', '898989', '89898989', '999999999') 
     THEN t.no_bon END) AS member,
 
   COUNT(DISTINCT CASE 
     WHEN t.kd_cust IS NULL 
-      OR t.kd_cust IN ('', '898989', '#898989', '#999999999') 
+      OR t.kd_cust IN ('', '898989', '89898989', '999999999') 
     THEN t.no_bon END) AS non_member
 
 FROM (
@@ -54,11 +54,11 @@ $sqlAll = "SELECT
   COUNT(DISTINCT no_bon) AS total_transaksi,
   COUNT(DISTINCT CASE 
     WHEN kd_cust IS NOT NULL 
-      AND kd_cust NOT IN ('', '898989', '#898989', '#999999999') 
+      AND kd_cust NOT IN ('', '898989', '89898989', '999999999') 
     THEN no_bon END) AS member,
   COUNT(DISTINCT CASE 
     WHEN kd_cust IS NULL 
-      OR kd_cust IN ('', '898989', '#898989', '#999999999') 
+      OR kd_cust IN ('', '898989', '89898989', '999999999') 
     THEN no_bon END) AS non_member
 FROM trans_b WHERE tgl_trans = CURDATE() - INTERVAL 1 DAY";
 
@@ -74,11 +74,11 @@ $result = $stmt->get_result();
 $stmtAll = $conn->prepare($sqlAll);
 $stmtAll->execute();
 $resultAll = $stmtAll->get_result();
-if ($result->num_rows > 0 ) {
+if ($result->num_rows > 0) {
   http_response_code(200);
   $row = $result->fetch_all(MYSQLI_ASSOC);
   $rowAll = $resultAll->fetch_all(MYSQLI_ASSOC);
-  echo json_encode(['status' => 'success', 'message' => 'Data berhasil dimuat', 'data' => $row, 'data_all'=>$rowAll]);
+  echo json_encode(['status' => 'success', 'message' => 'Data berhasil dimuat', 'data' => $row, 'data_all' => $rowAll]);
 } else {
   http_response_code(200);
   echo json_encode(['status' => 'success', 'message' => 'Data kosong', 'data' => []]);

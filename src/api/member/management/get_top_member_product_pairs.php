@@ -152,7 +152,7 @@ try {
         $types .= "s";
     }
     $where_clauses[] = "t.kd_cust IS NOT NULL";
-    $where_clauses[] = "t.kd_cust NOT IN ('', '898989', '#898989', '#999999999')";
+    $where_clauses[] = "t.kd_cust NOT IN ('', '898989', '89898989', '999999999')";
     $sql_where = implode(" AND ", $where_clauses);
     $sql = "
         SELECT

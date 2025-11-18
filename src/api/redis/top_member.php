@@ -26,7 +26,7 @@ LEFT JOIN customers c ON t.kd_cust = c.kd_cust
 LEFT JOIN kode_store ks ON ks.kd_store = t.kd_store
 WHERE 
   t.kd_cust IS NOT NULL
-  AND t.kd_cust NOT IN ('', '898989', '#898989', '#999999999')
+  AND t.kd_cust NOT IN ('', '898989', '89898989', '999999999')
   AND t.tgl_trans = CURDATE() - INTERVAL 1 DAY
 GROUP BY t.kd_cust
 ORDER BY total_penjualan DESC

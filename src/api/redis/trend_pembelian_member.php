@@ -16,7 +16,7 @@ SUM(qty) AS total_qty
 FROM trans_b
 WHERE
 kd_cust IS NOT NULL
-AND kd_cust NOT IN ('', '898989', '#898989', '#999999999')
+AND kd_cust NOT IN ('', '898989', '89898989', '999999999')
 AND YEAR(tgl_trans) = YEAR(CURDATE())
 GROUP BY MONTH(tgl_trans)
 ORDER BY bulan
