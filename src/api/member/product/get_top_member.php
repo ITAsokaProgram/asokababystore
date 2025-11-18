@@ -72,13 +72,16 @@ $start_date_non = null;
 $end_date_non = null;
 if ($filter_type === 'custom' && $start_date && $end_date) {
     if ($start_date === $end_date) {
-        $date_sql = " AND DATE(t.tgl_trans) = ? ";
-        $params[] = $start_date;
-        $types .= "s";
+        // OPTIMISASI: Gunakan >= dan < agar sargable (bisa pakai index)
+        $date_sql = " AND t.tgl_trans >= ? AND t.tgl_trans < ? ";
+        $params[] = $start_date . " 00:00:00";
+        $next_day = date('Y-m-d', strtotime($start_date . ' +1 day'));
+        $params[] = $next_day . " 00:00:00";
+        $types .= "ss";
     } else {
         $date_sql = " AND t.tgl_trans BETWEEN ? AND ? ";
-        $params[] = $start_date;
-        $params[] = $end_date;
+        $params[] = $start_date . " 00:00:00";
+        $params[] = $end_date . " 23:59:59";
         $types .= "ss";
     }
     $start_date_non = $start_date;
@@ -90,85 +93,98 @@ if ($filter_type === 'custom' && $start_date && $end_date) {
         case 'kemarin':
             $start = date('Y-m-d', strtotime('-1 day'));
             $end = $start;
-            $date_sql = " AND DATE(t.tgl_trans) = ? ";
-            $params[] = $start;
-            $types .= "s";
+            // OPTIMISASI: Gunakan >= dan <
+            $date_sql = " AND t.tgl_trans >= ? AND t.tgl_trans < ? ";
+            $params[] = $start . " 00:00:00";
+            $next_day = date('Y-m-d', strtotime($start . ' +1 day'));
+            $params[] = $next_day . " 00:00:00";
+            $types .= "ss";
             break;
         case '1minggu':
             $start = date('Y-m-d', strtotime('-7 days'));
             $date_sql = " AND t.tgl_trans BETWEEN ? AND ? ";
-            $params[] = $start;
-            $params[] = $end;
+            $params[] = $start . " 00:00:00";
+            $params[] = $end . " 23:59:59";
             $types .= "ss";
             break;
         case '1bulan':
             $start = date('Y-m-d', strtotime('-1 month'));
             $date_sql = " AND t.tgl_trans BETWEEN ? AND ? ";
-            $params[] = $start;
-            $params[] = $end;
+            $params[] = $start . " 00:00:00";
+            $params[] = $end . " 23:59:59";
             $types .= "ss";
             break;
         case '3bulan':
             $start = date('Y-m-d', strtotime('-3 months'));
             $date_sql = " AND t.tgl_trans BETWEEN ? AND ? ";
-            $params[] = $start;
-            $params[] = $end;
+            $params[] = $start . " 00:00:00";
+            $params[] = $end . " 23:59:59";
             $types .= "ss";
             break;
         case '6bulan':
             $start = date('Y-m-d', strtotime('-6 months'));
             $date_sql = " AND t.tgl_trans BETWEEN ? AND ? ";
-            $params[] = $start;
-            $params[] = $end;
+            $params[] = $start . " 00:00:00";
+            $params[] = $end . " 23:59:59";
             $types .= "ss";
             break;
         case '9bulan':
             $start = date('Y-m-d', strtotime('-9 months'));
             $date_sql = " AND t.tgl_trans BETWEEN ? AND ? ";
-            $params[] = $start;
-            $params[] = $end;
+            $params[] = $start . " 00:00:00";
+            $params[] = $end . " 23:59:59";
             $types .= "ss";
             break;
         case '12bulan':
             $start = date('Y-m-d', strtotime('-12 months'));
             $date_sql = " AND t.tgl_trans BETWEEN ? AND ? ";
-            $params[] = $start;
-            $params[] = $end;
+            $params[] = $start . " 00:00:00";
+            $params[] = $end . " 23:59:59";
             $types .= "ss";
             break;
         case 'semua':
             $date_sql = "";
             $start = '2000-01-01';
+            $end = date('Y-m-d'); // Tetapkan end date untuk query non-member
             break;
         default:
             $start = date('Y-m-d', strtotime('-3 months'));
             $date_sql = " AND t.tgl_trans BETWEEN ? AND ? ";
-            $params[] = $start;
-            $params[] = $end;
+            $params[] = $start . " 00:00:00";
+            $params[] = $end . " 23:59:59";
             $types .= "ss";
             break;
     }
     $start_date_non = $start;
     $end_date_non = $end;
 } else {
+    // Default filter (jika tidak ada parameter)
     if ($start_date && $end_date) {
         if ($start_date === $end_date) {
-            $date_sql = " AND DATE(t.tgl_trans) = ? ";
-            $params[] = $start_date;
-            $types .= "s";
+            // OPTIMISASI: Gunakan >= dan <
+            $date_sql = " AND t.tgl_trans >= ? AND t.tgl_trans < ? ";
+            $params[] = $start_date . " 00:00:00";
+            $next_day = date('Y-m-d', strtotime($start_date . ' +1 day'));
+            $params[] = $next_day . " 00:00:00";
+            $types .= "ss";
         } else {
             $date_sql = " AND t.tgl_trans BETWEEN ? AND ? ";
-            $params[] = $start_date;
-            $params[] = $end_date;
+            $params[] = $start_date . " 00:00:00";
+            $params[] = $end_date . " 23:59:59";
             $types .= "ss";
         }
         $start_date_non = $start_date;
         $end_date_non = $end_date;
     } else {
+        // Default ke 'kemarin'
         $yesterday = date('Y-m-d', strtotime('-1 day'));
-        $date_sql = " AND DATE(t.tgl_trans) = ? ";
-        $params[] = $yesterday;
-        $types .= "s";
+        // OPTIMISASI: Gunakan >= dan <
+        $date_sql = " AND t.tgl_trans >= ? AND t.tgl_trans < ? ";
+        $params[] = $yesterday . " 00:00:00";
+        $next_day = date('Y-m-d', strtotime($yesterday . ' +1 day'));
+        $params[] = $next_day . " 00:00:00";
+        $types .= "ss";
+
         $start_date_non = $yesterday;
         $end_date_non = $yesterday;
     }
@@ -206,17 +222,20 @@ $typesNon = "";
 $date_sql_non = "";
 if ($filter_preset === 'semua') {
     $date_sql_non = " AND t.tgl_trans BETWEEN ? AND ? ";
-    $paramsNon[] = $start_date_non;
-    $paramsNon[] = $end_date_non;
+    $paramsNon[] = $start_date_non . " 00:00:00";
+    $paramsNon[] = $end_date_non . " 23:59:59";
     $typesNon .= "ss";
 } elseif ($start_date_non === $end_date_non) {
-    $date_sql_non = " AND DATE(t.tgl_trans) = ? ";
-    $paramsNon[] = $start_date_non;
-    $typesNon .= "s";
+    // OPTIMISASI: Gunakan >= dan <
+    $date_sql_non = " AND t.tgl_trans >= ? AND t.tgl_trans < ? ";
+    $paramsNon[] = $start_date_non . " 00:00:00";
+    $next_day_non = date('Y-m-d', strtotime($start_date_non . ' +1 day'));
+    $paramsNon[] = $next_day_non . " 00:00:00";
+    $typesNon .= "ss";
 } else {
     $date_sql_non = " AND t.tgl_trans BETWEEN ? AND ? ";
-    $paramsNon[] = $start_date_non;
-    $paramsNon[] = $end_date_non;
+    $paramsNon[] = $start_date_non . " 00:00:00";
+    $paramsNon[] = $end_date_non . " 23:59:59";
     $typesNon .= "ss";
 }
 $sqlNon = "SELECT 
@@ -304,12 +323,12 @@ $response = [
 ];
 $jsonData = json_encode($response);
 try {
-    $ttl = 900;
+    $ttl = 3600;
     if (
         ($filter_preset === 'kemarin') ||
         ($filter_type === 'custom' && $end_date && $end_date < date('Y-m-d'))
     ) {
-        $ttl = 3600;
+        $ttl = 7200;
     }
     if (php_sapi_name() === 'cli') {
         $ttl = 84600;

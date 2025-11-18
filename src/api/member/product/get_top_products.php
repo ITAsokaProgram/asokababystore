@@ -4,8 +4,8 @@ require_once __DIR__ . "/../../../../redis.php";
 $logger = null;
 if (php_sapi_name() === 'cli') {
     require_once __DIR__ . "/../../../../src/utils/Logger.php";
-    $logger = new AppLogger('cron_paginated_members.log');
-    $logger->info("Mulai cron job get_paginated_members.php.");
+    $logger = new AppLogger('cron_get_top_products.log');
+    $logger->info("Mulai cron job get_top_products.php.");
 }
 if (php_sapi_name() !== 'cli') {
     header("Content-Type:application/json");
@@ -22,32 +22,24 @@ if (php_sapi_name() !== 'cli') {
     $token = $headers['Authorization'] ?? null;
     if (!$token) {
         http_response_code(401);
-        echo json_encode(['success' => false, 'message' => 'Unauthorized: Token not provided']);
+        echo json_encode(['status' => false, 'message' => 'Unauthorized: Token not provided']);
         exit;
     }
     $token = str_replace('Bearer ', '', $token);
     $user = verify_token($token);
     if (!$user) {
         http_response_code(401);
-        echo json_encode(['success' => false, 'message' => 'Unauthorized: Invalid token']);
+        echo json_encode(['status' => false, 'message' => 'Unauthorized: Invalid token']);
         exit;
     }
 }
-$search = $_GET['search'] ?? '';
-$sortBy = $_GET['sort_by'] ?? 'belanja';
-$page = (int) ($_GET['page'] ?? 1);
-$limit = (int) ($_GET['limit'] ?? 10);
 $status = $_GET['status'] ?? 'all';
 $filter_type = $_GET['filter_type'] ?? null;
 $filter_preset = $_GET['filter'] ?? null;
 $start_date = $_GET['start_date'] ?? null;
 $end_date = $_GET['end_date'] ?? null;
-$cacheKey = "report:paginated_members:" .
+$cacheKey = "report:top_products:" .
     "status=$status" .
-    "&search=$search" .
-    "&sort=$sortBy" .
-    "&page=$page" .
-    "&limit=$limit" .
     "&type=$filter_type" .
     "&preset=$filter_preset" .
     "&start=$start_date" .
@@ -70,14 +62,14 @@ try {
     }
 }
 if (php_sapi_name() === 'cli') {
-    echo "Cache not found. Generating cache...\n";
+    echo "Cache not found for default view. Generating cache...\n";
 }
-$offset = ($page - 1) * $limit;
 $params = [];
 $types = "";
 $date_sql = "";
 $status_sql = "";
-$searchSql = "";
+$start_date_non = null;
+$end_date_non = null;
 if ($filter_type === 'custom' && $start_date && $end_date) {
     if ($start_date === $end_date) {
         // OPTIMISASI: Gunakan >= dan < agar sargable (bisa pakai index)
@@ -92,6 +84,8 @@ if ($filter_type === 'custom' && $start_date && $end_date) {
         $params[] = $end_date . " 23:59:59";
         $types .= "ss";
     }
+    $start_date_non = $start_date;
+    $end_date_non = $end_date;
 } elseif ($filter_type === 'preset' && $filter_preset) {
     $end = date('Y-m-d');
     $start = '';
@@ -150,6 +144,8 @@ if ($filter_type === 'custom' && $start_date && $end_date) {
             break;
         case 'semua':
             $date_sql = "";
+            $start = '2000-01-01';
+            $end = date('Y-m-d'); // Tetapkan end date untuk query non-member
             break;
         default:
             $start = date('Y-m-d', strtotime('-3 months'));
@@ -159,6 +155,8 @@ if ($filter_type === 'custom' && $start_date && $end_date) {
             $types .= "ss";
             break;
     }
+    $start_date_non = $start;
+    $end_date_non = $end;
 } else {
     // Default filter (jika tidak ada parameter)
     if ($start_date && $end_date) {
@@ -175,6 +173,8 @@ if ($filter_type === 'custom' && $start_date && $end_date) {
             $params[] = $end_date . " 23:59:59";
             $types .= "ss";
         }
+        $start_date_non = $start_date;
+        $end_date_non = $end_date;
     } else {
         // Default ke 'kemarin'
         $yesterday = date('Y-m-d', strtotime('-1 day'));
@@ -184,6 +184,9 @@ if ($filter_type === 'custom' && $start_date && $end_date) {
         $next_day = date('Y-m-d', strtotime($yesterday . ' +1 day'));
         $params[] = $next_day . " 00:00:00";
         $types .= "ss";
+
+        $start_date_non = $yesterday;
+        $end_date_non = $yesterday;
     }
 }
 $cutoff_active = date('Y-m-d 00:00:00', strtotime("-3 months"));
@@ -196,80 +199,106 @@ if ($status === 'active') {
     $params[] = $cutoff_active;
     $types .= "s";
 }
-if (!empty($search)) {
-    // OPTIMISASI: Gunakan Full-Text Search untuk nama, LIKE untuk kode
-    $searchSql = " AND (MATCH(c.nama_cust) AGAINST(? IN BOOLEAN MODE) OR t.kd_cust LIKE ?) ";
-    $searchValueFTS = $search . "*"; // Wildcard untuk FTS
-    $searchValueLike = "%" . $search . "%";
-    $params[] = $searchValueFTS;
-    $params[] = $searchValueLike;
-    $types .= "ss";
+// --- OPTIMISASI: Dynamic JOIN ---
+$joinSql = ""; // Default: tidak ada join
+if ($status === 'active' || $status === 'inactive') {
+    // Hanya JOIN jika kita benar-benar filter berdasarkan status
+    $joinSql = " LEFT JOIN customers c ON t.kd_cust = c.kd_cust ";
 }
-$orderBySql = " ORDER BY total_penjualan DESC ";
-if ($sortBy === 'qty') {
-    $orderBySql = " ORDER BY total_qty DESC ";
-} elseif ($sortBy === 'nama') {
-    $orderBySql = " ORDER BY c.nama_cust ASC ";
+// --- Akhir Optimisasi Dynamic JOIN ---
+
+$sql = "SELECT 
+    t.plu,
+    t.descp,
+    SUM(t.qty) AS total_qty,
+    SUM(t.qty * t.harga) AS total_penjualan
+FROM trans_b t
+$joinSql -- OPTIMISASI: JOIN Dinamis di sini
+WHERE 
+    t.kd_cust IS NOT NULL
+    AND t.kd_cust NOT IN ('', '898989', '#898989', '#999999999')
+    $date_sql 
+    $status_sql 
+GROUP BY t.plu, t.descp
+ORDER BY total_penjualan DESC
+LIMIT 50";
+$paramsNon = [];
+$typesNon = "";
+$date_sql_non = "";
+if ($filter_preset === 'semua') {
+    $date_sql_non = " AND t.tgl_trans BETWEEN ? AND ? ";
+    $paramsNon[] = $start_date_non . " 00:00:00";
+    $paramsNon[] = $end_date_non . " 23:59:59";
+    $typesNon .= "ss";
+} elseif ($start_date_non === $end_date_non) {
+    // OPTIMISASI: Gunakan >= dan <
+    $date_sql_non = " AND t.tgl_trans >= ? AND t.tgl_trans < ? ";
+    $paramsNon[] = $start_date_non . " 00:00:00";
+    $next_day_non = date('Y-m-d', strtotime($start_date_non . ' +1 day'));
+    $paramsNon[] = $next_day_non . " 00:00:00";
+    $typesNon .= "ss";
+} else {
+    $date_sql_non = " AND t.tgl_trans BETWEEN ? AND ? ";
+    $paramsNon[] = $start_date_non . " 00:00:00";
+    $paramsNon[] = $end_date_non . " 23:59:59";
+    $typesNon .= "ss";
 }
-
-// --- OPTIMISASI: HAPUS QUERY COUNT ---
-// Query count yang lama dihapus.
-
-$dataSql = "SELECT 
-                SQL_CALC_FOUND_ROWS -- OPTIMISASI: Tambahkan ini
-                t.kd_cust,
-                t.kd_store,
-                c.nama_cust,
-                ks.nm_alias AS cabang,
-                SUM(t.qty) AS total_qty,
-                SUM(t.qty * t.harga) AS total_penjualan
-            FROM trans_b t
-            LEFT JOIN customers c ON t.kd_cust = c.kd_cust
-            LEFT JOIN kode_store ks ON ks.kd_store = t.kd_store
-            WHERE 
-                t.kd_cust IS NOT NULL
-                AND t.kd_cust NOT IN ('', '898989', '89898989', '999999999')
-                $date_sql
-                $status_sql
-                $searchSql
-            GROUP BY t.kd_cust, t.kd_store, c.nama_cust, ks.nm_alias
-            $orderBySql
-            LIMIT ? OFFSET ?";
-// Tambahkan LIMIT dan OFFSET ke parameter
-$params[] = $limit;
-$params[] = $offset;
-$types .= 'ii';
-
-$stmtData = $conn->prepare($dataSql);
-if (!$stmtData) {
+$sqlNon = "SELECT 
+    t.plu,
+    t.descp,
+    SUM(t.qty) AS total_qty,
+    SUM(t.qty * t.harga) AS total_penjualan
+FROM trans_b t
+WHERE 
+    (t.kd_cust IS NULL OR t.kd_cust IN ('', '898989', '999999999'))
+    $date_sql_non 
+GROUP BY t.plu, t.descp
+ORDER BY total_penjualan DESC
+LIMIT 50";
+$stmt = $conn->prepare($sql);
+if (!$stmt) {
     if ($logger) {
-        $logger->error("Statement error (data): " . $conn->error);
+        $logger->error("Statement error (member products): " . $conn->error);
     }
     if (php_sapi_name() !== 'cli') {
         http_response_code(500);
     }
-    echo json_encode(["success" => false, "message" => "Statement error (data): " . $conn->error]);
+    echo json_encode(["success" => false, "message" => "Statement error (member products): " . $conn->error]);
     exit;
 }
-$stmtData->bind_param($types, ...$params);
-$stmtData->execute();
-$resultData = $stmtData->get_result();
-$data = $resultData->fetch_all(MYSQLI_ASSOC);
-$stmtData->close();
-
-// --- OPTIMISASI: Ambil total records dari FOUND_ROWS() ---
-$total_records_result = $conn->query("SELECT FOUND_ROWS() AS total");
-$total_records = $total_records_result->fetch_assoc()['total'] ?? 0;
-$total_pages = ceil($total_records / $limit);
-// --- Akhir Optimisasi Pagination ---
-
-if (empty($data)) {
+if (!empty($params)) {
+    $stmt->bind_param($types, ...$params);
+}
+$stmt->execute();
+$result = $stmt->get_result();
+$top_products_by_sales_member = $result->fetch_all(MYSQLI_ASSOC);
+$stmt->close();
+$stmtNon = $conn->prepare($sqlNon);
+if (!$stmtNon) {
+    if ($logger) {
+        $logger->error("Statement error (non-member products): " . $conn->error);
+    }
+    if (php_sapi_name() !== 'cli') {
+        http_response_code(500);
+    }
+    echo json_encode(["success" => false, "message" => "Statement error (non-member products): " . $conn->error]);
+    exit;
+}
+if (!empty($paramsNon)) {
+    $stmtNon->bind_param($typesNon, ...$paramsNon);
+}
+$stmtNon->execute();
+$resultNon = $stmtNon->get_result();
+$top_products_by_sales_non_member = $resultNon->fetch_all(MYSQLI_ASSOC);
+$stmtNon->close();
+$jsonData = "";
+if (count($top_products_by_sales_member) === 0 && count($top_products_by_sales_non_member) === 0) {
     if (php_sapi_name() !== 'cli') {
         http_response_code(200);
     }
     $response = [
         "success" => false,
-        "message" => "Data tidak ditemukan"
+        "message" => "Data tidak ditemukan untuk rentang tanggal ini"
     ];
     $jsonData = json_encode($response);
     try {
@@ -289,14 +318,9 @@ if (empty($data)) {
 }
 $response = [
     "success" => true,
-    "data" => $data,
-    "pagination" => [
-        "current_page" => $page,
-        "items_per_page" => $limit,
-        "total_records" => (int) $total_records, // Gunakan total dari FOUND_ROWS
-        "total_pages" => $total_pages, // Gunakan total dari FOUND_ROWS
-        "offset" => $offset
-    ]
+    "message" => "Data berhasil diambil",
+    "data" => $top_products_by_sales_member,
+    "data_non" => $top_products_by_sales_non_member
 ];
 $jsonData = json_encode($response);
 try {
@@ -321,10 +345,10 @@ if (php_sapi_name() !== 'cli') {
     http_response_code(200);
     echo $jsonData;
 } else {
-    echo "Cache generated (with data) for $cacheKey.\n";
+    echo "Cache generated (with data) for $cacheKey. TTL: $ttl seconds.\n";
 }
 if ($logger) {
-    $logger->info("Selesai cron job get_paginated_members.php. Cache generated for $cacheKey.");
+    $logger->info("Selesai cron job get_top_products.php. Cache generated for $cacheKey.");
 }
 $conn->close();
 ?>

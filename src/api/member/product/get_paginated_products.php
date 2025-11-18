@@ -4,8 +4,8 @@ require_once __DIR__ . "/../../../../redis.php";
 $logger = null;
 if (php_sapi_name() === 'cli') {
     require_once __DIR__ . "/../../../../src/utils/Logger.php";
-    $logger = new AppLogger('cron_paginated_members.log');
-    $logger->info("Mulai cron job get_paginated_members.php.");
+    $logger = new AppLogger('cron_paginated_products.log');
+    $logger->info("Mulai cron job get_paginated_products.php.");
 }
 if (php_sapi_name() !== 'cli') {
     header("Content-Type:application/json");
@@ -38,17 +38,19 @@ $sortBy = $_GET['sort_by'] ?? 'belanja';
 $page = (int) ($_GET['page'] ?? 1);
 $limit = (int) ($_GET['limit'] ?? 10);
 $status = $_GET['status'] ?? 'all';
+$type = $_GET['type'] ?? 'all';
 $filter_type = $_GET['filter_type'] ?? null;
 $filter_preset = $_GET['filter'] ?? null;
 $start_date = $_GET['start_date'] ?? null;
 $end_date = $_GET['end_date'] ?? null;
-$cacheKey = "report:paginated_members:" .
+$cacheKey = "report:paginated_products:" .
     "status=$status" .
+    "&type=$type" .
     "&search=$search" .
     "&sort=$sortBy" .
     "&page=$page" .
     "&limit=$limit" .
-    "&type=$filter_type" .
+    "&filtertype=$filter_type" .
     "&preset=$filter_preset" .
     "&start=$start_date" .
     "&end=$end_date";
@@ -78,6 +80,7 @@ $types = "";
 $date_sql = "";
 $status_sql = "";
 $searchSql = "";
+$typeSql = "";
 if ($filter_type === 'custom' && $start_date && $end_date) {
     if ($start_date === $end_date) {
         // OPTIMISASI: Gunakan >= dan < agar sargable (bisa pakai index)
@@ -196,20 +199,40 @@ if ($status === 'active') {
     $params[] = $cutoff_active;
     $types .= "s";
 }
+if ($type === 'member') {
+    $typeSql = " AND t.kd_cust IS NOT NULL AND t.kd_cust NOT IN ('', '898989', '#898989', '#999999999') ";
+} elseif ($type === 'non_member') {
+    $typeSql = " AND (t.kd_cust IS NULL OR t.kd_cust IN ('', '898989', '#898989', '#999999999')) ";
+    $status_sql = ""; // Non-member tidak punya status
+} else {
+    // type 'all'
+    $typeSql = "";
+    $status_sql = ""; // Jika type 'all', jangan filter status
+}
 if (!empty($search)) {
-    // OPTIMISASI: Gunakan Full-Text Search untuk nama, LIKE untuk kode
-    $searchSql = " AND (MATCH(c.nama_cust) AGAINST(? IN BOOLEAN MODE) OR t.kd_cust LIKE ?) ";
-    $searchValueFTS = $search . "*"; // Wildcard untuk FTS
-    $searchValueLike = "%" . $search . "%";
-    $params[] = $searchValueFTS;
-    $params[] = $searchValueLike;
+    // Index di t.plu dan t.descp akan membantu di sini
+    $searchSql = " AND (t.descp LIKE ? OR t.plu LIKE ?) ";
+    $searchValue = "%" . $search . "%";
+    $params[] = $searchValue;
+    $params[] = $searchValue;
     $types .= "ss";
 }
+// --- OPTIMISASI: Dynamic JOIN ---
+$joinSql = ""; // Default: tidak ada join
+if ($status === 'active' || $status === 'inactive') {
+    // Hanya JOIN jika kita benar-benar filter berdasarkan status
+    $joinSql = " LEFT JOIN customers c ON t.kd_cust = c.kd_cust ";
+}
+if ($type === 'non_member') {
+    $joinSql = ""; // Pastikan tidak ada join untuk non-member
+}
+// --- Akhir Optimisasi Dynamic JOIN ---
+
 $orderBySql = " ORDER BY total_penjualan DESC ";
 if ($sortBy === 'qty') {
     $orderBySql = " ORDER BY total_qty DESC ";
 } elseif ($sortBy === 'nama') {
-    $orderBySql = " ORDER BY c.nama_cust ASC ";
+    $orderBySql = " ORDER BY t.descp ASC ";
 }
 
 // --- OPTIMISASI: HAPUS QUERY COUNT ---
@@ -217,22 +240,19 @@ if ($sortBy === 'qty') {
 
 $dataSql = "SELECT 
                 SQL_CALC_FOUND_ROWS -- OPTIMISASI: Tambahkan ini
-                t.kd_cust,
-                t.kd_store,
-                c.nama_cust,
-                ks.nm_alias AS cabang,
+                t.plu,
+                t.descp,
                 SUM(t.qty) AS total_qty,
                 SUM(t.qty * t.harga) AS total_penjualan
             FROM trans_b t
-            LEFT JOIN customers c ON t.kd_cust = c.kd_cust
-            LEFT JOIN kode_store ks ON ks.kd_store = t.kd_store
+            $joinSql -- OPTIMISASI: JOIN Dinamis di sini
             WHERE 
-                t.kd_cust IS NOT NULL
-                AND t.kd_cust NOT IN ('', '898989', '89898989', '999999999')
+                1=1
                 $date_sql
+                $typeSql
                 $status_sql
                 $searchSql
-            GROUP BY t.kd_cust, t.kd_store, c.nama_cust, ks.nm_alias
+            GROUP BY t.plu, t.descp
             $orderBySql
             LIMIT ? OFFSET ?";
 // Tambahkan LIMIT dan OFFSET ke parameter
@@ -243,12 +263,12 @@ $types .= 'ii';
 $stmtData = $conn->prepare($dataSql);
 if (!$stmtData) {
     if ($logger) {
-        $logger->error("Statement error (data): " . $conn->error);
+        $logger->error("Statement error (data products): " . $conn->error);
     }
     if (php_sapi_name() !== 'cli') {
         http_response_code(500);
     }
-    echo json_encode(["success" => false, "message" => "Statement error (data): " . $conn->error]);
+    echo json_encode(["success" => false, "message" => "Statement error (data products): " . $conn->error]);
     exit;
 }
 $stmtData->bind_param($types, ...$params);
@@ -324,7 +344,7 @@ if (php_sapi_name() !== 'cli') {
     echo "Cache generated (with data) for $cacheKey.\n";
 }
 if ($logger) {
-    $logger->info("Selesai cron job get_paginated_members.php. Cache generated for $cacheKey.");
+    $logger->info("Selesai cron job get_paginated_products.php. Cache generated for $cacheKey.");
 }
 $conn->close();
 ?>

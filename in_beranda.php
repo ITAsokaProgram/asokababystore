@@ -111,7 +111,7 @@ $permissionChecker = new PermissionAccess($conn);
         <div class="space-y-4">
           <div
             class="cursor-pointer bg-gradient-to-br from-white/90 to-blue-50/80 rounded-xl p-1.5 shadow border border-blue-100/60 hover:scale-105 hover:shadow-md transition-all duration-300 flex flex-col animate-fade-in-up"
-            onclick="window.location.href='/src/fitur/member/top_sales'">
+            onclick="window.location.href='/src/fitur/member/top_products'">
             <div class="flex items-center justify-between mb-0">
               <div class="flex items-center gap-2">
                 <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>

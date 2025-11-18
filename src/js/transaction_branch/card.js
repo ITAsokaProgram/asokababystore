@@ -13,11 +13,19 @@ export const cardContainer = async (data) => {
     card.dataset.store = item.kd_store;
     card.innerHTML = `
       <div class="flex justify-between text-gray-600 mb-1">
-        <span><i class="fa-solid fa-store text-green-600 mr-1"></i>${item.cabang}(${jumlahMember.data.jumlah_member_per_cabang.find((m) => m.cabang === item.cabang)?.jumlah_member ?? 0})</span>
+        <span><i class="fa-solid fa-store text-green-600 mr-1"></i>${
+          item.cabang
+        }(${
+      jumlahMember.data.jumlah_member_per_cabang.find(
+        (m) => m.cabang === item.cabang
+      )?.jumlah_member ?? 0
+    })</span>
         <span class="text-gray-400 text-xs">Kemarin</span>
       </div>
       <div class="flex justify-between font-bold text-sm">
-        <span>Total: <span class="text-green-600">${item.total_transaksi}</span></span>
+        <span>Total: <span class="text-green-600">${
+          item.total_transaksi
+        }</span></span>
         <span>Member: <span class="text-blue-600">${item.member}</span></span>
         <span>Non: <span class="text-red-500">${item.non_member}</span></span>
       </div>
@@ -66,7 +74,6 @@ export const detailCabang = (data) => {
   );
 
   const ringkasanCardHTML = `
-    <!-- Header Section -->
     <div class="mb-8">
       <div class="flex items-center gap-4 mb-6">
         <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
@@ -75,10 +82,10 @@ export const detailCabang = (data) => {
         <div>
           <h2 class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">${ringkasan.cabang}</h2>
           <p class="text-gray-600 text-lg">Ringkasan Transaksi Cabang</p>
+          <p class="text-sm text-gray-500 font-medium mt-1">Data per: Kemarin</p>
         </div>
       </div>
       
-      <!-- Statistics Cards -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 shadow-lg border border-green-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
           <div class="flex items-center justify-between mb-4">
@@ -123,7 +130,6 @@ export const detailCabang = (data) => {
   `;
 
   const topBarangHTML = `
-    <!-- Top Products Section -->
     <div class="space-y-8">
       <div class="text-center mb-8">
         <h3 class="text-2xl font-bold text-gray-800 mb-2">Produk Terlaris</h3>
@@ -131,7 +137,6 @@ export const detailCabang = (data) => {
       </div>
       
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <!-- Top Barang Member -->
         <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl p-8 shadow-xl border border-blue-200">
           <div class="flex items-center gap-3 mb-6">
             <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
@@ -156,10 +161,14 @@ export const detailCabang = (data) => {
                       Member
                     </div>
                   </div>
-                  <div class="font-medium text-gray-800 truncate mb-2 text-sm" title="${b.barang}">${b.barang}</div>
+                  <div class="font-medium text-gray-800 truncate mb-2 text-sm" title="${
+                    b.barang
+                  }">${b.barang}</div>
                   <div class="flex items-center gap-2 text-xs text-gray-600">
                     <i class="fas fa-shopping-bag text-blue-500"></i>
-                    <span>Total dibeli: <span class="font-semibold text-blue-700">${b.total_qty}x</span></span>
+                    <span>Total dibeli: <span class="font-semibold text-blue-700">${
+                      b.total_qty
+                    }x</span></span>
                   </div>
                 </div>
               `
@@ -168,7 +177,6 @@ export const detailCabang = (data) => {
           </div>
         </div>
 
-        <!-- Top Barang Non Member -->
         <div class="bg-gradient-to-br from-red-50 to-pink-50 rounded-3xl p-8 shadow-xl border border-red-200">
           <div class="flex items-center gap-3 mb-6">
             <div class="w-12 h-12 bg-gradient-to-r from-red-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
@@ -193,10 +201,14 @@ export const detailCabang = (data) => {
                       Non Member
                     </div>
                   </div>
-                  <div class="font-medium text-gray-800 truncate mb-2 text-sm" title="${b.barang}">${b.barang}</div>
+                  <div class="font-medium text-gray-800 truncate mb-2 text-sm" title="${
+                    b.barang
+                  }">${b.barang}</div>
                   <div class="flex items-center gap-2 text-xs text-gray-600">
                     <i class="fas fa-shopping-bag text-red-500"></i>
-                    <span>Total dibeli: <span class="font-semibold text-red-700">${b.total_qty}x</span></span>
+                    <span>Total dibeli: <span class="font-semibold text-red-700">${
+                      b.total_qty
+                    }x</span></span>
                   </div>
                 </div>
               `
@@ -213,25 +225,33 @@ export const detailCabang = (data) => {
     const rows = paginatedData
       .map(
         (trx, index) => `
-      <tr class="text-sm text-gray-700 border-b hover:bg-blue-50 transition-colors duration-200">
-        <td class="px-2 py-3 text-center font-medium w-12">${offset + index + 1}</td>
-        <td class="px-2 py-3 w-32">
-          <div class="truncate text-xs" title="${trx.nama_cust ?? "-"}">${trx.nama_cust ?? "-"}</div>
-        </td>
-        <td class="px-2 py-3 w-24">
-          <div class="truncate font-mono text-xs" title="${trx.no_bon}">${trx.no_bon}</div>
-        </td>
-        <td class="px-2 py-3 text-center w-24 text-xs">${new Date(trx.tgl_trans).toLocaleDateString(
-          "Id-ID"
-        )}</td>
-        <td class="px-2 py-3 text-center font-semibold text-xs w-28">Rp ${Number(
-          trx.total_belanja
-        ).toLocaleString()}</td>
-        <td class="px-2 py-3 w-28">
-          <div class="truncate text-xs" title="${trx.nama_kasir}">${trx.nama_kasir}</div>
-        </td>
-      </tr>
-    `
+    <tr class="text-sm text-gray-700 border-b hover:bg-blue-50 transition-colors duration-200">
+      <td class="px-2 py-3 text-center font-medium w-12">${
+        offset + index + 1
+      }</td>
+      <td class="px-2 py-3 w-32">
+        <div class="truncate text-xs" title="${trx.nama_cust ?? "-"}">${
+          trx.nama_cust ?? "-"
+        }</div>
+      </td>
+      <td class="px-2 py-3 w-24">
+        <div class="truncate font-mono text-xs" title="${trx.no_bon}">${
+          trx.no_bon
+        }</div>
+      </td>
+      <td class="px-2 py-3 text-center w-24 text-xs">${new Date(
+        trx.tgl_trans
+      ).toLocaleDateString("Id-ID")}</td>
+      <td class="px-2 py-3 text-center font-semibold text-xs w-28">Rp ${Number(
+        trx.total_belanja
+      ).toLocaleString()}</td>
+      <td class="px-2 py-3 w-28">
+        <div class="truncate text-xs" title="${trx.nama_kasir}">${
+          trx.nama_kasir
+        }</div>
+      </td>
+    </tr>
+  `
       )
       .join("");
 
@@ -258,25 +278,33 @@ export const detailCabang = (data) => {
     const rows = paginatedData
       .map(
         (trx, index) => `
-      <tr class="text-sm text-gray-700 border-b hover:bg-red-50 transition-colors duration-200">
-        <td class="px-2 py-3 text-center font-medium w-12">${offset + index + 1}</td>
-        <td class="px-2 py-3 w-32">
-          <div class="truncate text-xs" title="${trx.nama_cust ?? "-"}">${trx.nama_cust ?? "-"}</div>
-        </td>
-        <td class="px-2 py-3 w-24">
-          <div class="truncate font-mono text-xs" title="${trx.no_bon}">${trx.no_bon}</div>
-        </td>
-        <td class="px-2 py-3 text-center w-24 text-xs">${new Date(trx.tgl_trans).toLocaleDateString(
-          "Id-ID"
-        )}</td>
-        <td class="px-2 py-3 text-center font-semibold text-xs w-28">Rp ${Number(
-          trx.total_belanja
-        ).toLocaleString()}</td>
-        <td class="px-2 py-3 w-28">
-          <div class="truncate text-xs" title="${trx.nama_kasir}">${trx.nama_kasir}</div>
-        </td>
-      </tr>
-    `
+    <tr class="text-sm text-gray-700 border-b hover:bg-red-50 transition-colors duration-200">
+      <td class="px-2 py-3 text-center font-medium w-12">${
+        offset + index + 1
+      }</td>
+      <td class="px-2 py-3 w-32">
+        <div class="truncate text-xs" title="${trx.nama_cust ?? "-"}">${
+          trx.nama_cust ?? "-"
+        }</div>
+      </td>
+      <td class="px-2 py-3 w-24">
+        <div class="truncate font-mono text-xs" title="${trx.no_bon}">${
+          trx.no_bon
+        }</div>
+      </td>
+      <td class="px-2 py-3 text-center w-24 text-xs">${new Date(
+        trx.tgl_trans
+      ).toLocaleDateString("Id-ID")}</td>
+      <td class="px-2 py-3 text-center font-semibold text-xs w-28">Rp ${Number(
+        trx.total_belanja
+      ).toLocaleString()}</td>
+      <td class="px-2 py-3 w-28">
+        <div class="truncate text-xs" title="${trx.nama_kasir}">${
+          trx.nama_kasir
+        }</div>
+      </td>
+    </tr>
+  `
       )
       .join("");
 
@@ -342,7 +370,6 @@ export const detailCabangAll = (data) => {
   const topBarangNon = data.top_10_non;
 
   const ringkasanCardHTML = `
-    <!-- Header Section -->
     <div class="mb-8">
       <div class="flex items-center gap-4 mb-6">
         <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg">
@@ -351,10 +378,10 @@ export const detailCabangAll = (data) => {
         <div>
           <h2 class="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">Semua Cabang</h2>
           <p class="text-gray-600 text-lg">Ringkasan Transaksi Seluruh Cabang</p>
+          <p class="text-sm text-gray-500 font-medium mt-1">Data per: Kemarin</p>
         </div>
       </div>
       
-      <!-- Statistics Cards -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 shadow-lg border border-green-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
           <div class="flex items-center justify-between mb-4">
@@ -399,7 +426,6 @@ export const detailCabangAll = (data) => {
   `;
 
   const topBarangHTML = `
-    <!-- Top Products Section -->
     <div class="space-y-8">
       <div class="text-center mb-8">
         <h3 class="text-xl font-bold text-gray-800 mb-2">Produk Terlaris Nasional</h3>
@@ -407,7 +433,6 @@ export const detailCabangAll = (data) => {
       </div>
       
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <!-- Top Barang Member -->
         <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl p-8 shadow-xl border border-blue-200">
           <div class="flex items-center gap-3 mb-6">
             <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
@@ -432,10 +457,14 @@ export const detailCabangAll = (data) => {
                       Member
                     </div>
                   </div>
-                  <div class="font-medium text-gray-800 truncate mb-2 text-sm" title="${b.barang}">${b.barang}</div>
+                  <div class="font-medium text-gray-800 truncate mb-2 text-sm" title="${
+                    b.barang
+                  }">${b.barang}</div>
                   <div class="flex items-center gap-2 text-xs text-gray-600">
                     <i class="fas fa-shopping-bag text-blue-500"></i>
-                    <span>Total dibeli: <span class="font-semibold text-blue-700">${b.total_qty}x</span></span>
+                    <span>Total dibeli: <span class="font-semibold text-blue-700">${
+                      b.total_qty
+                    }x</span></span>
                   </div>
                 </div>
               `
@@ -444,7 +473,6 @@ export const detailCabangAll = (data) => {
           </div>
         </div>
 
-        <!-- Top Barang Non Member -->
         <div class="bg-gradient-to-br from-red-50 to-pink-50 rounded-3xl p-8 shadow-xl border border-red-200">
           <div class="flex items-center gap-3 mb-6">
             <div class="w-12 h-12 bg-gradient-to-r from-red-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
@@ -469,10 +497,14 @@ export const detailCabangAll = (data) => {
                       Non Member
                     </div>
                   </div>
-                  <div class="font-medium text-gray-800 truncate mb-2 text-sm" title="${b.barang}">${b.barang}</div>
+                  <div class="font-medium text-gray-800 truncate mb-2 text-sm" title="${
+                    b.barang
+                  }">${b.barang}</div>
                   <div class="flex items-center gap-2 text-xs text-gray-600">
                     <i class="fas fa-shopping-bag text-red-500"></i>
-                    <span>Total dibeli: <span class="font-semibold text-red-700">${b.total_qty}x</span></span>
+                    <span>Total dibeli: <span class="font-semibold text-red-700">${
+                      b.total_qty
+                    }x</span></span>
                   </div>
                 </div>
               `
@@ -490,4 +522,9 @@ export const detailCabangAll = (data) => {
     ${topBarangHTML}
   `;
 };
-export default { cardContainer, cardContainerAll, detailCabang , detailCabangAll};
+export default {
+  cardContainer,
+  cardContainerAll,
+  detailCabang,
+  detailCabangAll,
+};
