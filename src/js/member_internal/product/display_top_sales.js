@@ -18,6 +18,8 @@ import {
   showDetailModalMember,
 } from "./detail_transaction.js";
 import { fetchTransaction } from "./fetch_transaction.js";
+// --- TAMBAHAN: Impor fungsi exportToCSV ---
+import { exportToCSV } from "./data_manager.js";
 
 // Mengganti currentDateFilter menjadi objek yang lebih lengkap
 let currentDateFilter = {
@@ -55,6 +57,8 @@ const setupEventListeners = () => {
       loadTableData(1);
     });
   }
+
+  // --- MODIFIKASI: Event listener klik ---
   document.addEventListener("click", async (e) => {
     const memberEl = e.target.closest("[data-member]");
     if (memberEl) {
@@ -65,6 +69,7 @@ const setupEventListeners = () => {
         const transactionResponse = await fetchTransaction({
           member: member,
           cabang: cabang,
+          ...currentDateFilter, // <-- Kirim filter tanggal
         });
         if (
           transactionResponse &&
@@ -73,7 +78,8 @@ const setupEventListeners = () => {
         ) {
           showDetailModal(transactionResponse.detail_transaction);
         } else {
-          showDetailModal({});
+          showDetailModal([]); // Kirim array kosong
+          showToast("Tidak ada data transaksi ditemukan", "warning");
         }
       } catch (error) {
         console.error("Error fetching member transaction:", error);
@@ -90,6 +96,7 @@ const setupEventListeners = () => {
         const nonMember = nonMemberEl.dataset.nonMember;
         const transactionResponse = await fetchTransaction({
           no_trans: nonMember,
+          ...currentDateFilter, // <-- Kirim filter tanggal
         });
         if (
           transactionResponse &&
@@ -98,7 +105,8 @@ const setupEventListeners = () => {
         ) {
           showDetailModal(transactionResponse.detail_transaction);
         } else {
-          showDetailModal({});
+          showDetailModal([]); // Kirim array kosong
+          showToast("Tidak ada data transaksi ditemukan", "warning");
         }
       } catch (error) {
         console.error("Error fetching non-member transaction:", error);
@@ -112,28 +120,54 @@ const setupEventListeners = () => {
     if (detailTransactionEl) {
       showGlobalLoading();
       try {
-        const no_trans = detailTransactionEl.dataset.detailTransaction;
-        const transactionResponse = await fetchTransaction({
-          no_trans: no_trans,
-        });
-        if (
-          transactionResponse &&
-          transactionResponse.detail_transaction &&
-          transactionResponse.detail_transaction.length > 0
-        ) {
-          showDetailModalMember(transactionResponse.detail_transaction);
-        } else {
-          showDetailModalMember({});
-        }
+        // Asumsi: [data-detail-transaction] adalah untuk tabel utama (member)
+        // Jika ini untuk non-member, gunakan no_trans: detailTransactionEl.dataset.detailTransaction
+        // Berdasarkan bug Anda, ini sepertinya untuk member
+        const member = detailTransactionEl.dataset.member;
+        const cabang = detailTransactionEl.dataset.cabang;
+
+        // Jika 'tr' Anda tidak memiliki data-member/data-cabang, renderer Anda harus menambahkannya.
+        // Jika 'tr' Anda HANYA memiliki data-detail-transaction (yang berisi no_bon),
+        // maka logika di get_transaction.php akan menjalankannya sebagai NON-MEMBER.
+
+        // Mari kita asumsikan 'tr' memiliki data-member dan data-cabang, sama seperti card.
+        // Jika tidak, Anda harus memodifikasi table_renderer.js.
+
+        // Jika 'tr' Anda diset seperti ini: <tr data-detail-transaction data-member="KODE" data-cabang="KDS">
+        // Kode di bawah ini akan gagal karena [data-detail-transaction] tidak punya data-member
+
+        // --- PERBAIKAN SEMENTARA ---
+        // Kita akan gunakan event handler `[data-member]` saja untuk card DAN table row
+        // Pastikan `table_renderer.js` Anda menambahkan `data-member` dan `data-cabang` ke `<tr>`
+
+        // Hapus handler [data-detail-transaction] karena redundant dan membingungkan
+        // Handler [data-member] di atas akan menangani klik di card DAN di tabel
+
+        // const no_trans = detailTransactionEl.dataset.detailTransaction; // <-- INI MUNGKIN SALAH
+        // const transactionResponse = await fetchTransaction({
+        //     no_trans: no_trans,
+        //     ...currentDateFilter, // <-- Kirim filter tanggal
+        // });
+        // if (
+        //     transactionResponse &&
+        //     transactionResponse.detail_transaction &&
+        //     transactionResponse.detail_transaction.length > 0
+        // ) {
+        //     showDetailModalMember(transactionResponse.detail_transaction);
+        // } else {
+        //     showDetailModalMember([]); // Kirim array kosong
+        //     showToast("Tidak ada data transaksi ditemukan", "warning");
+        // }
       } catch (error) {
-        console.error("Error fetching transaction detail:", error);
-        showToast("Gagal memuat detail transaksi", "error");
+        // console.error("Error fetching transaction detail:", error);
+        // showToast("Gagal memuat detail transaksi", "error");
       } finally {
-        hideGlobalLoading();
+        // hideGlobalLoading();
       }
       return;
     }
   });
+  // --- AKHIR MODIFIKASI EVENT LISTENER ---
 };
 
 const getDatesFromPreset = (filter) => {
@@ -514,20 +548,20 @@ const infoData = (excludedProducts) => {
       });
     }
     dropdown.innerHTML = `
-                <div class="font-bold text-yellow-700 mb-1 flex items-center gap-2"> <i class="fas fa-ban text-yellow-400"></i> Produk yang di-exclude
-                </div>
-                <ul class="max-h-48 overflow-y-auto space-y-1">
-                    ${
-                      excludedProducts.length === 0
-                        ? '<li class="text-gray-400">Tidak ada produk exclude</li>'
-                        : excludedProducts
-                            .map(
-                              (p) =>
-                                `<li class="flex gap-2 items-center"> <span class="truncate" title="${p.nama}">${p.nama}</span></li>`
-                            )
-                            .join("")
-                    }
-                </ul>`;
+                            <div class="font-bold text-yellow-700 mb-1 flex items-center gap-2"> <i class="fas fa-ban text-yellow-400"></i> Produk yang di-exclude
+                            </div>
+                            <ul class="max-h-48 overflow-y-auto space-y-1">
+                                ${
+                                  excludedProducts.length === 0
+                                    ? '<li class="text-gray-400">Tidak ada produk exclude</li>'
+                                    : excludedProducts
+                                        .map(
+                                          (p) =>
+                                            `<li class="flex gap-2 items-center"> <span class="truncate" title="${p.nama}">${p.nama}</span></li>`
+                                        )
+                                        .join("")
+                                }
+                            </ul>`;
     function toggleDropdown() {
       if (dropdown.classList.contains("hidden")) {
         const rect = infoDataEl.getBoundingClientRect();
@@ -542,9 +576,48 @@ const infoData = (excludedProducts) => {
     }
   }
 };
-const exportTopSalesData = () => {
+
+// --- MODIFIKASI: Ganti fungsi export ---
+const exportTopSalesData = async () => {
+  showGlobalLoading();
   try {
-    const csvContent = exportToCSV(filterData(""));
+    // 1. Buat parameter untuk mengambil SEMUA data
+    const params = {
+      filter_type: currentDateFilter.filter_type,
+      filter: currentDateFilter.filter,
+      start_date: currentDateFilter.start_date,
+      end_date: currentDateFilter.end_date,
+      status: currentStatus,
+      search: currentSearch,
+      sort_by: currentSort,
+      page: 1,
+      limit: 999999, // Minta semua data
+    };
+
+    // 2. Bersihkan parameter null/undefined
+    Object.keys(params).forEach((key) => {
+      if (params[key] === null || params[key] === undefined) {
+        delete params[key];
+      }
+    });
+
+    // 3. Fetch semua data dari API
+    const response = await fetchPaginatedMembers(params);
+
+    if (
+      !response ||
+      response.success === false ||
+      !response.data ||
+      response.data.length === 0
+    ) {
+      showToast("Tidak ada data untuk diexport", "warning");
+      return;
+    }
+
+    // 4. Gunakan 'exportToCSV' yang sudah diimpor
+    const csvContent = exportToCSV(response.data);
+
+    // 5. Buat blob dan download
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
@@ -561,8 +634,12 @@ const exportTopSalesData = () => {
   } catch (error) {
     console.error("Error exporting data:", error);
     showToast("Gagal mengexport data", "error");
+  } finally {
+    hideGlobalLoading();
   }
 };
+// --- AKHIR MODIFIKASI FUNGSI EXPORT ---
+
 document.addEventListener("DOMContentLoaded", () => {
   initTopSalesDisplay();
 });

@@ -1,25 +1,38 @@
 import getCookie from "../../index/utils/cookies.js";
 
-/**
- * Fetch transaction data for member or non-member.
- * @param {Object} params - Parameters object
- * @param {string} [params.member] - Member/customer code (for member)
- * @param {string} [params.cabang] - Store code (for member)
- * @param {string} [params.no_trans] - Transaction code (for non-member)
- * @returns {Promise<Object|null>} - Response JSON or null on error
- */
-export const fetchTransaction = async ({ member = "", cabang = "", no_trans = "" } = {}) => {
+export const fetchTransaction = async ({
+  member = "",
+  cabang = "",
+  no_trans = "",
+  filter_type = null,
+  filter = null,
+  start_date = null,
+  end_date = null,
+} = {}) => {
   const token = getCookie("admin_token");
   try {
-    let url = "";
+    // --- MODIFIKASI: Gunakan URLSearchParams ---
+    const params = new URLSearchParams();
     if (member && cabang) {
-      url = `/src/api/member/product/get_transaction?member=${encodeURIComponent(member)}&cabang=${encodeURIComponent(cabang)}`;
+      params.append("member", member);
+      params.append("cabang", cabang);
     } else if (no_trans) {
-      url = `/src/api/member/product/get_transaction?kode=${encodeURIComponent(no_trans)}`;
+      params.append("kode", no_trans);
     } else {
       // No valid parameter
+      console.error("fetchTransaction: Parameter tidak valid");
       return null;
     }
+
+    // Tambahkan parameter filter tanggal
+    if (filter_type) params.append("filter_type", filter_type);
+    if (filter) params.append("filter", filter);
+    if (start_date) params.append("start_date", start_date);
+    if (end_date) params.append("end_date", end_date);
+
+    let url = `/src/api/member/product/get_transaction?${params.toString()}`;
+    // --- AKHIR MODIFIKASI ---
+
     const response = await fetch(url, {
       method: "GET",
       headers: {
@@ -29,7 +42,11 @@ export const fetchTransaction = async ({ member = "", cabang = "", no_trans = ""
     });
     if (!response.ok) {
       // Optionally, you can throw or return null
-      console.error("fetchTransaction: HTTP error", response.status, response.statusText);
+      console.error(
+        "fetchTransaction: HTTP error",
+        response.status,
+        response.statusText
+      );
       return null;
     }
     return await response.json();
