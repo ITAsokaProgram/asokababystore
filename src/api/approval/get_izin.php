@@ -19,7 +19,7 @@ $response = [
     'summary' => ['total_item' => 0, 'total_selisih' => 0, 'total_nilai' => 0],
     'stores' => [],
     'tabel_data' => [],
-    'pagination' => ['current_page' => 1, 'total_pages' => 1, 'total_rows' => 0, 'offset' => 0, 'limit' => 10],
+    'pagination' => ['current_page' => 1, 'total_pages' => 1, 'total_rows' => 0, 'offset' => 0, 'limit' => 100],
     'error' => null,
 ];
 try {
@@ -28,7 +28,7 @@ try {
     $tgl_selesai = $_GET['tgl_selesai'] ?? date('Y-m-d');
     $kd_store = $_GET['kd_store'] ?? 'all';
     $page = 1;
-    $limit = 10;
+    $limit = 100;
     if (!$is_export) {
         $page = (int) ($_GET['page'] ?? 1);
         if ($page < 1)

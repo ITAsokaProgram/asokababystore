@@ -176,13 +176,20 @@ export const getTopMembersByFrequency = (
   filterParams,
   status,
   limit = 10,
-  page = 1
+  page = 1,
+  isExport = false
 ) => {
   const params = new URLSearchParams();
   appendFilterParams(params, filterParams);
   params.append("status", status);
-  params.append("limit", limit);
-  params.append("page", page);
+
+  if (isExport) {
+    params.append("export", "true");
+  } else {
+    params.append("limit", limit);
+    params.append("page", page);
+  }
+
   const url = `${API_MANAGEMENT_URL}/get_top_members_by_frequency.php?${params.toString()}`;
   return sendRequestGET(url);
 };

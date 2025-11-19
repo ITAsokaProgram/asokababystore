@@ -45,6 +45,10 @@ $status_display = ($status === 'active') ? 'Aktif' : (($status === 'inactive') ?
     <link rel="stylesheet" href="../../output2.css">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
 </head>
 
 <body class="bg-gradient-to-br from-slate-50 to-blue-50 text-gray-900">
@@ -72,11 +76,24 @@ $status_display = ($status === 'active') ? 'Aktif' : (($status === 'inactive') ?
             </div>
 
             <div class="member-card slide-up p-4">
-                <div class="page-header mb-6">
+                <div class="page-header mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
                     <h2 class="text-xl font-semibold gradient-text">
                         <i class="fa-solid fa-ranking-star mr-2"></i>
                         Top Member Berdasarkan Frekuensi
                     </h2>
+
+                    <div class="flex gap-2">
+                        <button id="exportExcelBtn"
+                            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center shadow-sm">
+                            <i class="fa-solid fa-file-excel mr-2"></i>
+                            Export Excel
+                        </button>
+                        <button id="exportPdfBtn"
+                            class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center shadow-sm">
+                            <i class="fa-solid fa-file-pdf mr-2"></i>
+                            Export PDF
+                        </button>
+                    </div>
                 </div>
 
                 <div id="loading-spinner" class="loading-spinner">
