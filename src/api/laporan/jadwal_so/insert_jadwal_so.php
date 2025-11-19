@@ -93,7 +93,7 @@ try {
             $sequence_map[$kd_store]++;
             $seq_padded = str_pad($sequence_map[$kd_store], 3, '0', STR_PAD_LEFT);
             $no_kor_final = $no_kor_prefix . $seq_padded;
-            $stmt = $conn->prepare("INSERT INTO jadwal_so_copy (
+            $stmt = $conn->prepare("INSERT IGNORE INTO jadwal_so_copy (
                 Kd_Store, Nm_Alias, Nm_Store, 
                 kode_supp, nama_supp, 
                 kd_otorisasi, nama_otorisasi, 
@@ -119,16 +119,6 @@ try {
                 $nama_komp,
                 $ip_address
             );
-            if (!$stmt->execute()) {
-                if ($stmt->errno === 1062) {
-                    $stmt->close();
-                    throw new Exception("Gagal: Data Duplikat. Jadwal untuk Cabang " . $store_info['Nm_Store'] . " ($kd_store) dan Supplier $nama_supp ($kode_supp) sudah ada.");
-                } else {
-                    $raw_error = $stmt->error;
-                    $stmt->close();
-                    throw new Exception("Database Error: " . $raw_error);
-                }
-            }
             $total_inserted++;
             $stmt->close();
         }

@@ -51,7 +51,7 @@ try {
             http_response_code(200);
             echo $cachedData;
         } else {
-            echo "Cache found for $cacheKey. Skipping DB query.\n";
+            echo date('Y-m-d H:i:s') . " - Cache found for $cacheKey. Skipping DB query.\n";
         }
         $conn->close();
         exit;
@@ -62,7 +62,7 @@ try {
     }
 }
 if (php_sapi_name() === 'cli') {
-    echo "Cache not found. Generating cache...\n";
+    echo date('Y-m-d H:i:s') . " - Cache not found. Generating cache...\n";
 }
 $params = [];
 $types = "";
@@ -311,7 +311,7 @@ if (php_sapi_name() !== 'cli') {
     http_response_code(200);
     echo $jsonData;
 } else {
-    echo "Cache generated for $cacheKey. No TTL set.\n";
+    echo date('Y-m-d H:i:s') . " - Cache generated for $cacheKey. No TTL set.\n";
 }
 if ($logger) {
     $logger->info("Selesai cron job get_member_by_age.php. Cache generated.");
