@@ -92,7 +92,7 @@
         </div>
 
 
-        <div x-data="{ open: false, nestedOpenPenjualan: false, nestedOpenPelanggan: false , nestedOpenReceipt: false, nestedOpenKoreksi: false, nestedOpenReturn: false, nestedOpenTransaksi: false }"
+        <div x-data="{ open: false, nestedOpenPenjualan: false, nestedOpenPelanggan: false , nestedOpenReceipt: false, nestedOpenKoreksi: false, nestedOpenReturn: false, nestedOpenTransaksi: false, nestedOpenJadwalSO: false }"
             class="relative ">
             <button @click="open = !open" id="laporan"
                 class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-purple-100 hover:to-purple-200 hover:text-purple-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-purple-300">
@@ -510,6 +510,51 @@
                         </div>
                     </li>
                     <li>
+                        <button @click="nestedOpenJadwalSO = !nestedOpenJadwalSO"
+                            class="w-full text-left px-4 py-2.5 text-gray-700 hover:bg-slate-100 hover:text-slate-700 transition-all duration-200 flex items-center group cursor-pointer rounded-lg">
+                            <span
+                                class="transition-all duration-300 group-hover:translate-x-1 font-medium flex items-center">
+                                <i
+                                    class="fa-solid fa-calendar-days mr-2 text-lg text-slate-500 group-hover:text-slate-600 transition-all duration-200 group-hover:scale-110"></i>
+                                Jadwal SO
+                            </span>
+                            <svg class="ml-auto w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1"
+                                :class="{ 'rotate-180': nestedOpenJadwalSO }" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div x-show="nestedOpenJadwalSO" @click.away="nestedOpenJadwalSO = false" class="ml-4 mt-1"
+                            style="display: none;">
+                            <ul
+                                class="bg-gradient-to-br from-slate-50 to-gray-50 rounded-lg p-2 space-y-1 border border-slate-200">
+                                <li>
+                                    <a href="/src/fitur/laporan/jadwal_so/index.php" data-menu="laporan_jadwal_so"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-slate-100 hover:text-slate-600 transition-all duration-200 group rounded-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-list-check mr-2 text-base text-slate-400 group-hover:text-slate-600 group-hover:scale-110 transition-all duration-200"></i>
+                                            Jadwal SO
+                                        </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/src/fitur/laporan/jadwal_so/create_jadwal_so.php" data-menu="laporan_jadwal_so_create"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-slate-100 hover:text-slate-600 transition-all duration-200 group rounded-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-plus mr-2 text-base text-slate-400 group-hover:text-slate-600 group-hover:scale-110 transition-all duration-200"></i>
+                                            Buat / Create
+                                        </span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+                    <li>
                         <a href="/src/fitur/log_backup/index.php" data-menu="laporan_log_backup"
                             class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-blue-100 hover:text-blue-700 transition-all duration-200 group rounded-lg">
                             <span
@@ -821,6 +866,11 @@
         }
         else if (currentPath.includes('/src/fitur/approval/izin')) {
             document.getElementById('approval').classList.add('btn', 'active');
+        }
+        else if (currentPath.includes('/src/fitur/laporan/jadwal_so/index.php')) {
+            document.getElementById('laporan').classList.add('btn', 'active');
+        } else if (currentPath.includes('/src/fitur/laporan/jadwal_so/create_jadwal_so.php')) {
+            document.getElementById('laporan').classList.add('btn', 'active');
         }
         // Tambahkan kondisi untuk menu lainnya sesuai kebutuhan
     });
