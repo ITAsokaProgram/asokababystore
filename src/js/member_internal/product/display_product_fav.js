@@ -22,14 +22,20 @@ const setupEventListeners = () => {
   document.getElementById("refresh-btn").addEventListener("click", () => {
     loadTableData(1);
   });
-  document.getElementById("search-input").addEventListener("change", (e) => {
-    currentSearch = e.target.value;
-    loadTableData(1);
-  });
-  document.getElementById("sort-select").addEventListener("change", (e) => {
-    currentSort = e.target.value;
-    loadTableData(1);
-  });
+  const searchInput = document.getElementById("search-input");
+  if (searchInput) {
+    searchInput.addEventListener("change", (e) => {
+      currentSearch = e.target.value;
+      loadTableData(1);
+    });
+  }
+  const sortSelect = document.getElementById("sort-select");
+  if (sortSelect) {
+    sortSelect.addEventListener("change", (e) => {
+      currentSort = e.target.value;
+      loadTableData(1);
+    });
+  }
   setupDateFilterListeners();
 };
 const getDatesFromPreset = (filter) => {
@@ -80,8 +86,7 @@ const setupDateFilterListeners = () => {
     return;
   }
   const urlParams = new URLSearchParams(window.location.search);
-  const today = new Date();
-  const todayISO = today.toISOString().split("T")[0];
+  const today = new Date().toISOString().split("T")[0];
   const urlFilterType = urlParams.get("filter_type");
   const urlFilter = urlParams.get("filter");
   const urlStartDate = urlParams.get("start_date");
@@ -92,8 +97,8 @@ const setupDateFilterListeners = () => {
     const dates = getDatesFromPreset(urlFilter);
     displayStartDate = dates.start;
     displayEndDate = dates.end;
-    currentDateFilter.filter_type = urlFilterType;
-    currentDateFilter.filter = urlFilter;
+    currentDateFilter.filter_type = "custom";
+    currentDateFilter.filter = null;
     currentDateFilter.start_date = displayStartDate;
     currentDateFilter.end_date = displayEndDate;
   } else if (urlFilterType === "custom" && urlStartDate) {
@@ -112,9 +117,9 @@ const setupDateFilterListeners = () => {
     currentDateFilter.start_date = displayStartDate;
     currentDateFilter.end_date = displayEndDate;
   }
-  if (displayStartDate) startDateInput.value = displayStartDate;
-  if (displayEndDate) endDateInput.value = displayEndDate;
-  endDateInput.max = todayISO;
+  startDateInput.value = displayStartDate;
+  endDateInput.value = displayEndDate;
+  endDateInput.max = today;
   const s = new Date(displayStartDate + "T00:00:00");
   const e = new Date(displayEndDate + "T00:00:00");
   const timeDiff = e.getTime() - s.getTime();
@@ -143,7 +148,9 @@ const setupDateFilterListeners = () => {
     const s = new Date(startVal + "T00:00:00");
     const e = new Date(endVal + "T00:00:00");
     const diff = Math.max(1, Math.ceil((e - s) / (1000 * 3600 * 24)) + 1);
-    dateRangeDisplay.innerHTML = ` <i class="fas fa-info-circle text-emerald-400 mr-1"></i>(Data ${diff} hari)`;
+    if (dateRangeDisplay) {
+      dateRangeDisplay.innerHTML = ` <i class="fas fa-info-circle text-emerald-400 mr-1"></i>(Data ${diff} hari)`;
+    }
     window.history.pushState({}, document.title, window.location.pathname);
     loadTableData(1);
   });
@@ -152,7 +159,9 @@ const setupDateFilterListeners = () => {
     const y = new Date(d);
     y.setDate(d.getDate() - 1);
     const yesterdayISO = y.toISOString().split("T")[0];
-    dateRangeDisplay.innerHTML = ` <i class="fas fa-info-circle text-emerald-400 mr-1"></i>(Data 1 hari lalu)`;
+    if (dateRangeDisplay) {
+      dateRangeDisplay.innerHTML = ` <i class="fas fa-info-circle text-emerald-400 mr-1"></i>(Data 1 hari lalu)`;
+    }
     startDateInput.value = yesterdayISO;
     endDateInput.value = yesterdayISO;
     currentDateFilter.filter_type = "custom";
@@ -162,7 +171,6 @@ const setupDateFilterListeners = () => {
     window.history.pushState({}, document.title, window.location.pathname);
     loadTableData(1);
   });
-  endDateInput.addEventListener("change", () => {});
 };
 const loadTableData = async (page = 1) => {
   showLoading();

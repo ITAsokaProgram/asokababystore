@@ -11,6 +11,26 @@ $user_id = $menuHandler->getUserId();
 $logger = $menuHandler->getLogger();
 $token = $menuHandler->getToken();
 
+// --- LOGIKA FILTER DARI URL ---
+$filter_type = htmlspecialchars($_GET['filter_type'] ?? 'preset');
+$filter = htmlspecialchars($_GET['filter'] ?? '3bulan');
+$start_date = htmlspecialchars($_GET['start_date'] ?? '');
+$end_date = htmlspecialchars($_GET['end_date'] ?? '');
+$status = htmlspecialchars($_GET['status'] ?? 'all'); // Default status 'all' jika tidak ada
+
+// Membangun Query String untuk keperluan link (misal tombol kembali atau refresh)
+$queryParams = [
+    'filter_type' => $filter_type,
+    'status' => $status
+];
+
+if ($filter_type === 'custom') {
+    $queryParams['start_date'] = $start_date;
+    $queryParams['end_date'] = $end_date;
+} else {
+    $queryParams['filter'] = $filter;
+}
+$queryString = http_build_query($queryParams);
 ?>
 
 <!DOCTYPE html>
@@ -21,14 +41,11 @@ $token = $menuHandler->getToken();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Analisis Produk Favorit Member - Asoka Baby Store</title>
 
-    <!-- font awesome cdn link  -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
 
-    <!-- Penjelasan: Link ke CSS eksternal dengan cache busting query string -->
     <link rel="stylesheet" href="/css/header.css">
     <link rel="stylesheet" href="/css/sidebar.css">
     <link rel="stylesheet" href="/css/animation-fade-in.css">
-    <!-- Setting logo pada tab di website Anda / Favicon -->
     <link rel="icon" type="image/png" href="/images/logo1.png">
     <link
         href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
@@ -37,7 +54,6 @@ $token = $menuHandler->getToken();
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 
     <link rel="stylesheet" href="/src/output2.css">
-    <!-- <link rel="stylesheet" href="src/style/output.css"> -->
     <style>
         .btn.active {
             background-color: transparent;
@@ -95,7 +111,6 @@ $token = $menuHandler->getToken();
 
     <main id="main-content" class="flex-1 p-8 transition-all duration-300 ml-64 mt-16 bg-gray-100">
         <div class="glass-container animate-fade-in-up">
-            <!-- Header Section -->
             <div class="mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
                 <h1 class="text-3xl font-bold text-emerald-700 flex items-center gap-3"><i
                         class="fas fa-chart-line text-emerald-500"></i> Produk Favorit Member</h1>
@@ -113,9 +128,7 @@ $token = $menuHandler->getToken();
 
 
 
-            <!-- Chart Section -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                <!-- Monthly Trend Chart -->
                 <div class="card-glass p-6">
                     <div class="flex items-center justify-between mb-6">
                         <h3 class="text-xl font-bold text-emerald-700 flex items-center gap-2">
@@ -126,18 +139,15 @@ $token = $menuHandler->getToken();
                         <canvas id="monthlyTrendChart"></canvas>
                     </div>
                 </div>
-                <!-- Product Performance -->
                 <div class="card-glass p-6">
                     <h3 class="text-xl font-bold text-emerald-700 flex items-center gap-2 mb-6">
                         <i class="fas fa-box text-emerald-500"></i> Produk Terlaris
                     </h3>
                     <div class="space-y-4" id="product-performance">
-                        <!-- Data will be populated by JavaScript -->
                     </div>
                 </div>
             </div>
 
-            <!-- Member Product Favorites Table -->
             <div class="card-glass overflow-hidden">
                 <div class="px-8 py-6 border-b border-emerald-100">
                     <div class="flex flex-col md:flex-row items-center justify-between gap-4">
@@ -148,7 +158,6 @@ $token = $menuHandler->getToken();
                             </span>
                         </h3>
                         <div class="flex flex-wrap items-center gap-3">
-                            <!-- Date Range Filter -->
                             <div class="flex items-center gap-2">
                                 <div class="relative">
                                     <input type="date" id="start-date"
@@ -201,25 +210,21 @@ $token = $menuHandler->getToken();
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-emerald-50" id="member-table-body">
-                            <!-- Data will be populated by JavaScript -->
                         </tbody>
                     </table>
                 </div>
-                <!-- Loading State -->
                 <div id="loading-state" class="hidden p-8 text-center glass-container animate-fade-in-up">
                     <div class="inline-flex items-center gap-3">
                         <i class="fas fa-spinner fa-spin text-2xl text-emerald-500"></i>
                         <span class="text-emerald-700 font-bold">Memuat data...</span>
                     </div>
                 </div>
-                <!-- Empty State -->
                 <div id="empty-state" class="hidden p-8 text-center glass-container animate-fade-in-up">
                     <i class="fas fa-inbox text-4xl text-emerald-200 mb-4"></i>
                     <h3 class="text-lg font-bold text-emerald-700 mb-2">Belum ada data produk favorit</h3>
                     <p class="text-emerald-400">Data produk favorit member akan muncul di sini</p>
                 </div>
             </div>
-            <!-- Pagination -->
             <div class="mt-4 flex justify-between items-center text-sm">
                 <p class="text-gray-600" id="viewData"></p>
                 <div class="flex flex-wrap gap-1 max-w-full overflow-x-auto" id="paginationContainer">
@@ -228,14 +233,12 @@ $token = $menuHandler->getToken();
             </div>
     </main>
 
-    <!-- custom js file link -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
-    <!-- Custom Scripts -->
     <script type="module" src="/src/js/member_internal/product/display_product_fav.js"></script>
 
     <script>

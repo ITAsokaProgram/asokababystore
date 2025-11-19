@@ -1,12 +1,10 @@
 <?php
-// AMBIL SEMUA PARAMETER BARU
 $filter_type = htmlspecialchars($_GET['filter_type'] ?? 'preset');
 $filter = htmlspecialchars($_GET['filter'] ?? '3bulan');
 $start_date = htmlspecialchars($_GET['start_date'] ?? '');
 $end_date = htmlspecialchars($_GET['end_date'] ?? '');
 $status = htmlspecialchars($_GET['status'] ?? 'unknown');
 
-// LOGIKA TAMPILAN FILTER BARU
 $filter_display = '';
 if ($filter_type === 'custom' && $start_date && $end_date) {
     $filter_display = htmlspecialchars($start_date) . " s/d " . htmlspecialchars($end_date);

@@ -104,6 +104,51 @@ if ($filter_type === 'custom' && $start_date && $end_date) {
       $params[] = $next_day . " 00:00:00";
       $types .= "ss";
       break;
+    case '1minggu':
+      $start = date('Y-m-d', strtotime('-7 days'));
+      $date_sql = " AND t.tgl_trans BETWEEN ? AND ? ";
+      $params[] = $start . " 00:00:00";
+      $params[] = $end . " 23:59:59";
+      $types .= "ss";
+      break;
+    case '1bulan':
+      $start = date('Y-m-d', strtotime('-1 month'));
+      $date_sql = " AND t.tgl_trans BETWEEN ? AND ? ";
+      $params[] = $start . " 00:00:00";
+      $params[] = $end . " 23:59:59";
+      $types .= "ss";
+      break;
+    case '3bulan':
+      $start = date('Y-m-d', strtotime('-3 months'));
+      $date_sql = " AND t.tgl_trans BETWEEN ? AND ? ";
+      $params[] = $start . " 00:00:00";
+      $params[] = $end . " 23:59:59";
+      $types .= "ss";
+      break;
+    case '6bulan':
+      $start = date('Y-m-d', strtotime('-6 months'));
+      $date_sql = " AND t.tgl_trans BETWEEN ? AND ? ";
+      $params[] = $start . " 00:00:00";
+      $params[] = $end . " 23:59:59";
+      $types .= "ss";
+      break;
+    case '9bulan':
+      $start = date('Y-m-d', strtotime('-9 months'));
+      $date_sql = " AND t.tgl_trans BETWEEN ? AND ? ";
+      $params[] = $start . " 00:00:00";
+      $params[] = $end . " 23:59:59";
+      $types .= "ss";
+      break;
+    case '12bulan':
+      $start = date('Y-m-d', strtotime('-12 months'));
+      $date_sql = " AND t.tgl_trans BETWEEN ? AND ? ";
+      $params[] = $start . " 00:00:00";
+      $params[] = $end . " 23:59:59";
+      $types .= "ss";
+      break;
+    case 'semua':
+      $date_sql = "";
+      break;
     default:
       $start = date('Y-m-d', strtotime('-3 months'));
       $date_sql = " AND t.tgl_trans BETWEEN ? AND ? ";
@@ -113,12 +158,27 @@ if ($filter_type === 'custom' && $start_date && $end_date) {
       break;
   }
 } else {
-  $yesterday = date('Y-m-d', strtotime('-1 day'));
-  $date_sql = " AND t.tgl_trans >= ? AND t.tgl_trans < ? ";
-  $params[] = $yesterday . " 00:00:00";
-  $next_day = date('Y-m-d', strtotime($yesterday . ' +1 day'));
-  $params[] = $next_day . " 00:00:00";
-  $types .= "ss";
+  if ($start_date && $end_date) {
+    if ($start_date === $end_date) {
+      $date_sql = " AND t.tgl_trans >= ? AND t.tgl_trans < ? ";
+      $params[] = $start_date . " 00:00:00";
+      $next_day = date('Y-m-d', strtotime($start_date . ' +1 day'));
+      $params[] = $next_day . " 00:00:00";
+      $types .= "ss";
+    } else {
+      $date_sql = " AND t.tgl_trans BETWEEN ? AND ? ";
+      $params[] = $start_date . " 00:00:00";
+      $params[] = $end_date . " 23:59:59";
+      $types .= "ss";
+    }
+  } else {
+    $yesterday = date('Y-m-d', strtotime('-1 day'));
+    $date_sql = " AND t.tgl_trans >= ? AND t.tgl_trans < ? ";
+    $params[] = $yesterday . " 00:00:00";
+    $next_day = date('Y-m-d', strtotime($yesterday . ' +1 day'));
+    $params[] = $next_day . " 00:00:00";
+    $types .= "ss";
+  }
 }
 $cutoff_active = date('Y-m-d 00:00:00', strtotime("-3 months"));
 if ($status === 'active') {

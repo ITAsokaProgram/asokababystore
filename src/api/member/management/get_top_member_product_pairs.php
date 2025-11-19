@@ -1,64 +1,72 @@
 <?php
-session_start();
-ini_set('display_errors', 0);
-require_once __DIR__ . '/../../../utils/Logger.php';
-require_once __DIR__ . '/../../../auth/middleware_login.php';
-$logger = new AppLogger('top_member_product.log');
-try {
-    require_once __DIR__ . '/../../../../aa_kon_sett.php';
-} catch (Throwable $t) {
-    $logger->critical("Gagal memuat file koneksi: " . $t->getMessage());
-    http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Internal Server Error: Gagal memuat file.']);
-    exit();
+require_once __DIR__ . "/../../../../config.php";
+require_once __DIR__ . "/../../../../redis.php";
+$logger = null;
+if (php_sapi_name() === 'cli') {
+    require_once __DIR__ . "/../../../../src/utils/Logger.php";
+    $logger = new AppLogger('cron_top_member_product_pairs.log');
+    $logger->info("Mulai cron job get_top_member_product_pairs.php.");
 }
-header('Content-Type: application/json');
-try {
-    $authHeader = null;
-    if (function_exists('getallheaders')) {
-        $headers = getallheaders();
-        if (isset($headers['Authorization'])) {
-            $authHeader = $headers['Authorization'];
-        }
-    }
-    if ($authHeader === null && isset($_SERVER['HTTP_AUTHORIZATION'])) {
-        $authHeader = $_SERVER['HTTP_AUTHORIZATION'];
-    }
-    if ($authHeader === null && isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
-        $authHeader = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
-    }
-    if ($authHeader === null || !preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
+if (php_sapi_name() !== 'cli') {
+    header("Content-Type:application/json");
+}
+ini_set("display_errors", 1);
+ini_set("display_startup_errors", 1);
+error_reporting(E_ALL);
+if (php_sapi_name() === 'cli' && isset($argv[1])) {
+    parse_str($argv[1], $_GET);
+}
+if (php_sapi_name() !== 'cli') {
+    require_once __DIR__ . ("./../../../auth/middleware_login.php");
+    $headers = getallheaders();
+    $token = $headers['Authorization'] ?? null;
+    if (!$token) {
         http_response_code(401);
-        echo json_encode(['success' => false, 'message' => "Token tidak ditemukan atau format salah."]);
+        echo json_encode(['success' => false, 'message' => 'Unauthorized: Token not provided']);
         exit;
     }
-    $token = $matches[1];
-    $decoded = verify_token($token);
-    if (!is_object($decoded) || !isset($decoded->kode)) {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'Token tidak valid.']);
+    $token = str_replace('Bearer ', '', $token);
+    $user = verify_token($token);
+    if (!$user) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'message' => 'Unauthorized: Invalid token']);
+        exit;
+    }
+}
+$status = $_GET['status'] ?? 'active';
+$filter_type = $_GET['filter_type'] ?? 'preset';
+$filter_preset = $_GET['filter'] ?? '3bulan';
+$limit = (int) ($_GET['limit'] ?? 10);
+$start_date = $_GET['start_date'] ?? null;
+$end_date = $_GET['end_date'] ?? null;
+$cacheKey = "report:top_member_pairs:" .
+    "status=$status" .
+    "&type=$filter_type" .
+    "&preset=$filter_preset" .
+    "&start=$start_date" .
+    "&end=$end_date" .
+    "&limit=$limit";
+try {
+    $cachedData = $redis->get($cacheKey);
+    if ($cachedData) {
+        if (php_sapi_name() !== 'cli') {
+            http_response_code(200);
+            echo $cachedData;
+        } else {
+            echo "Cache found for $cacheKey. Skipping DB query.\n";
+        }
+        $conn->close();
         exit;
     }
 } catch (Exception $e) {
-    http_response_code(500);
-    $logger->error("Token validation error: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'Token validation error: ' . $e->getMessage()]);
-    exit;
+    if ($logger) {
+        $logger->error("Redis cache get failed: " . $e->getMessage());
+    }
 }
-if (!isset($conn) || !$conn instanceof mysqli) {
-    $logger->critical("Objek koneksi database (\$conn) tidak ada.");
-    http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Koneksi database tidak terinisialisasi.']);
-    exit();
+if (php_sapi_name() === 'cli') {
+    echo "Cache not found. Generating cache...\n";
 }
-if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-    http_response_code(405);
-    echo json_encode(['success' => false, 'message' => 'Method Not Allowed']);
-    exit();
-}
-/**
- * Helper untuk mendapatkan parameter filter tanggal.
- */
+/** Helper function logic integrated inline or called here */
 function getDateFilterParams($get_params, $table_alias = 't')
 {
     $date_where_clause = "";
@@ -74,7 +82,6 @@ function getDateFilterParams($get_params, $table_alias = 't')
         $params[] = $start_date;
         $params[] = $end_date_with_time;
         $types = "ss";
-        $filter_display = htmlspecialchars($start_date) . " s/d " . htmlspecialchars($end_date);
     } else {
         $filter = $get_params['filter'] ?? '3bulan';
         $filter_map = [
@@ -86,17 +93,6 @@ function getDateFilterParams($get_params, $table_alias = 't')
             '9bulan' => '9 months',
             '12bulan' => '12 months'
         ];
-        $display_map = [
-            'kemarin' => 'Kemarin',
-            '1minggu' => '1 Minggu Terakhir',
-            '1bulan' => '1 Bulan Terakhir',
-            '3bulan' => '3 Bulan Terakhir',
-            '6bulan' => '6 Bulan Terakhir',
-            '9bulan' => '9 Bulan Terakhir',
-            '12bulan' => '1 Tahun Terakhir',
-            'semua' => 'Semua Waktu'
-        ];
-        $filter_display = $display_map[$filter] ?? '3 Bulan Terakhir';
         if ($filter === 'semua') {
         } elseif ($filter === 'kemarin') {
             $cutoff_date_filter = date('Y-m-d', strtotime("-1 day"));
@@ -114,21 +110,27 @@ function getDateFilterParams($get_params, $table_alias = 't')
     return [
         'sql_clause' => $date_where_clause,
         'params' => $params,
-        'types' => $types,
-        'display' => $filter_display
+        'types' => $types
     ];
 }
 try {
-    $filter_type = $_GET['filter_type'] ?? 'preset';
-    $filter = $_GET['filter'] ?? '3bulan';
-    $status = $_GET['status'] ?? 'active';
-    $limit = (int) ($_GET['limit'] ?? 10);
     $isFilter3MonthsOrLess = false;
     if ($filter_type === 'preset') {
-        $isFilter3MonthsOrLess = in_array($filter, ['kemarin', '1minggu', '1bulan', '3bulan']);
+        $isFilter3MonthsOrLess = in_array($filter_preset, ['kemarin', '1minggu', '1bulan', '3bulan']);
     }
     if ($status === 'inactive' && $isFilter3MonthsOrLess) {
-        echo json_encode(['success' => true, 'data' => []]);
+        $responseEmpty = json_encode(['success' => true, 'data' => []]);
+        try {
+            $redis->set($cacheKey, $responseEmpty);
+        } catch (Exception $e) {
+            if ($logger)
+                $logger->error("Redis set empty failed: " . $e->getMessage());
+        }
+        if (php_sapi_name() !== 'cli') {
+            echo $responseEmpty;
+        } else {
+            echo "Condition met (Inactive < 3mo), returning empty.\n";
+        }
         $conn->close();
         exit();
     }
@@ -176,12 +178,12 @@ try {
     $params[] = $limit;
     $types .= "i";
     $stmt = $conn->prepare($sql);
-    if ($stmt === false) {
-        throw new Exception("Database prepare failed (data): " . $conn->error);
+    if (!$stmt) {
+        throw new Exception("Database prepare failed: " . $conn->error);
     }
     $stmt->bind_param($types, ...$params);
     if (!$stmt->execute()) {
-        throw new Exception("Gagal eksekusi query (data): " . $stmt->error);
+        throw new Exception("Query execution failed: " . $stmt->error);
     }
     $result = $stmt->get_result();
     $data = [];
@@ -195,20 +197,39 @@ try {
         ];
     }
     $stmt->close();
-    $conn->close();
-    echo json_encode([
+    $response = [
         'success' => true,
         'data' => $data
-    ]);
-} catch (Throwable $t) {
-    $logger->critical("FATAL ERROR: " . $t->getMessage());
-    if (isset($conn) && $conn instanceof mysqli) {
-        $conn->close();
+    ];
+    $jsonData = json_encode($response);
+    try {
+        $redis->set($cacheKey, $jsonData);
+    } catch (Exception $e) {
+        if ($logger) {
+            $logger->error("Redis cache set failed: " . $e->getMessage());
+        }
     }
-    http_response_code(500);
-    echo json_encode([
-        'success' => false,
-        'message' => "Terjadi kesalahan: " . $t->getMessage()
-    ]);
+    if (php_sapi_name() !== 'cli') {
+        echo $jsonData;
+    } else {
+        echo "Cache generated for $cacheKey. No TTL set.\n";
+    }
+    if ($logger) {
+        $logger->info("Selesai cron job get_top_member_product_pairs.php. Cache generated.");
+    }
+} catch (Throwable $t) {
+    if ($logger) {
+        $logger->critical("FATAL ERROR: " . $t->getMessage());
+    }
+    if (php_sapi_name() !== 'cli') {
+        http_response_code(500);
+        echo json_encode([
+            'success' => false,
+            'message' => "Terjadi kesalahan: " . $t->getMessage()
+        ]);
+    } else {
+        echo "Error: " . $t->getMessage() . "\n";
+    }
 }
+$conn->close();
 ?>

@@ -1,82 +1,111 @@
 <?php
-session_start();
-ini_set('display_errors', 0);
-require_once __DIR__ . '/../../../utils/Logger.php';
-require_once __DIR__ . '/../../../auth/middleware_login.php';
-$logger = new AppLogger('top_members_frequency.log');
-try {
-    require_once __DIR__ . '/../../../../aa_kon_sett.php';
-} catch (Throwable $t) {
-    $logger->critical("Gagal memuat file koneksi: " . $t->getMessage());
-    http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Internal Server Error: Gagal memuat file.']);
-    exit();
+require_once __DIR__ . "/../../../../config.php";
+require_once __DIR__ . "/../../../../redis.php";
+
+// 1. Setup Logger untuk CLI
+$logger = null;
+if (php_sapi_name() === 'cli') {
+    require_once __DIR__ . "/../../../../src/utils/Logger.php";
+    $logger = new AppLogger('cron_top_freq.log');
+    $logger->info("Mulai cron job get_top_members_by_frequency.php.");
 }
-header('Content-Type: application/json');
-try {
-    $authHeader = null;
-    if (function_exists('getallheaders')) {
-        $headers = getallheaders();
-        if (isset($headers['Authorization'])) {
-            $authHeader = $headers['Authorization'];
-        }
-    }
-    if ($authHeader === null && isset($_SERVER['HTTP_AUTHORIZATION'])) {
-        $authHeader = $_SERVER['HTTP_AUTHORIZATION'];
-    }
-    if ($authHeader === null && isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
-        $authHeader = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
-    }
-    if ($authHeader === null || !preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
+
+// 2. Header JSON jika bukan CLI
+if (php_sapi_name() !== 'cli') {
+    header("Content-Type:application/json");
+}
+
+ini_set("display_errors", 1);
+ini_set("display_startup_errors", 1);
+error_reporting(E_ALL);
+
+// 3. Parse Argument jika CLI
+if (php_sapi_name() === 'cli' && isset($argv[1])) {
+    parse_str($argv[1], $_GET);
+}
+
+// 4. Auth Middleware (Hanya jika BUKAN CLI)
+if (php_sapi_name() !== 'cli') {
+    require_once __DIR__ . ("./../../../auth/middleware_login.php");
+    $headers = getallheaders();
+    $token = $headers['Authorization'] ?? null;
+
+    if (!$token) {
         http_response_code(401);
-        echo json_encode(['success' => false, 'message' => "Token tidak ditemukan atau format salah."]);
+        echo json_encode(['success' => false, 'message' => 'Unauthorized: Token not provided']);
         exit;
     }
-    $token = $matches[1];
-    $decoded = verify_token($token);
-    if (!is_object($decoded) || !isset($decoded->kode)) {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'Token tidak valid.']);
+
+    $token = str_replace('Bearer ', '', $token);
+    $user = verify_token($token);
+
+    if (!$user) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'message' => 'Unauthorized: Invalid token']);
+        exit;
+    }
+}
+
+// 5. Parameter
+$filter_type = $_GET['filter_type'] ?? 'preset';
+$filter_preset = $_GET['filter'] ?? '3bulan';
+$status = $_GET['status'] ?? 'active';
+$start_date = $_GET['start_date'] ?? null;
+$end_date = $_GET['end_date'] ?? null;
+$limit = (int) ($_GET['limit'] ?? 10);
+$page = (int) ($_GET['page'] ?? 1);
+$offset = ($page - 1) * $limit;
+
+// 6. Cek Redis Cache
+$cacheKey = "report:top_member_freq:" .
+    "status=$status" .
+    "&type=$filter_type" .
+    "&preset=$filter_preset" .
+    "&start=$start_date" .
+    "&end=$end_date" .
+    "&limit=$limit" .
+    "&page=$page";
+
+try {
+    $cachedData = $redis->get($cacheKey);
+    if ($cachedData) {
+        if (php_sapi_name() !== 'cli') {
+            http_response_code(200);
+            echo $cachedData;
+        } else {
+            echo "Cache found for $cacheKey. Skipping DB query.\n";
+        }
+        $conn->close();
         exit;
     }
 } catch (Exception $e) {
-    http_response_code(500);
-    $logger->error("Token validation error: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'Token validation error: ' . $e->getMessage()]);
-    exit;
+    if ($logger) {
+        $logger->error("Redis cache get failed: " . $e->getMessage());
+    }
 }
-if (!isset($conn) || !$conn instanceof mysqli) {
-    $logger->critical("Objek koneksi database (\$conn) tidak ada.");
-    http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Koneksi database tidak terinisialisasi.']);
-    exit();
+
+if (php_sapi_name() === 'cli') {
+    echo "Cache not found. Generating cache...\n";
 }
-if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-    http_response_code(405);
-    echo json_encode(['success' => false, 'message' => 'Method Not Allowed']);
-    exit();
-}
+
+// --- LOGIKA UTAMA ---
+
 /**
  * Helper untuk mendapatkan parameter filter tanggal.
  */
-function getDateFilterParams($get_params, $table_alias = 't')
+function getDateFilterParams($filter_type, $filter_preset, $start_date, $end_date, $table_alias = 't')
 {
     $date_where_clause = "";
     $params = [];
     $types = "";
-    $filter_display = "";
-    $filter_type = $get_params['filter_type'] ?? 'preset';
-    if ($filter_type === 'custom' && !empty($get_params['start_date']) && !empty($get_params['end_date'])) {
-        $start_date = $get_params['start_date'];
-        $end_date = $get_params['end_date'];
+
+    if ($filter_type === 'custom' && $start_date && $end_date) {
         $end_date_with_time = $end_date . ' 23:59:59';
         $date_where_clause = " AND {$table_alias}.tgl_trans BETWEEN ? AND ?";
         $params[] = $start_date;
         $params[] = $end_date_with_time;
         $types = "ss";
-        $filter_display = htmlspecialchars($start_date) . " s/d " . htmlspecialchars($end_date);
     } else {
-        $filter = $get_params['filter'] ?? '3bulan';
         $filter_map = [
             'kemarin' => '1 day',
             '1minggu' => '1 week',
@@ -86,51 +115,38 @@ function getDateFilterParams($get_params, $table_alias = 't')
             '9bulan' => '9 months',
             '12bulan' => '12 months'
         ];
-        $display_map = [
-            'kemarin' => 'Kemarin',
-            '1minggu' => '1 Minggu Terakhir',
-            '1bulan' => '1 Bulan Terakhir',
-            '3bulan' => '3 Bulan Terakhir',
-            '6bulan' => '6 Bulan Terakhir',
-            '9bulan' => '9 Bulan Terakhir',
-            '12bulan' => '1 Tahun Terakhir',
-            'semua' => 'Semua Waktu'
-        ];
-        $filter_display = $display_map[$filter] ?? '3 Bulan Terakhir';
-        if ($filter === 'semua') {
-        } elseif ($filter === 'kemarin') {
+
+        if ($filter_preset === 'semua') {
+            // Tidak ada klausa where tanggal
+        } elseif ($filter_preset === 'kemarin') {
             $cutoff_date_filter = date('Y-m-d', strtotime("-1 day"));
             $date_where_clause = " AND DATE({$table_alias}.tgl_trans) = ?";
             $params[] = $cutoff_date_filter;
             $types = "s";
         } else {
-            $interval = $filter_map[$filter] ?? '3 months';
+            $interval = $filter_map[$filter_preset] ?? '3 months';
             $cutoff_date_filter = date('Y-m-d 00:00:00', strtotime("-$interval"));
             $date_where_clause = " AND {$table_alias}.tgl_trans >= ?";
             $params[] = $cutoff_date_filter;
             $types = "s";
         }
     }
+
     return [
         'sql_clause' => $date_where_clause,
         'params' => $params,
-        'types' => $types,
-        'display' => $filter_display
+        'types' => $types
     ];
 }
+
 try {
-    $filter_type = $_GET['filter_type'] ?? 'preset';
-    $filter = $_GET['filter'] ?? '3bulan';
-    $status = $_GET['status'] ?? 'active';
-    $limit = (int) ($_GET['limit'] ?? 10);
-    $page = (int) ($_GET['page'] ?? 1);
-    $offset = ($page - 1) * $limit;
     $isFilter3MonthsOrLess = false;
     if ($filter_type === 'preset') {
-        $isFilter3MonthsOrLess = in_array($filter, ['kemarin', '1minggu', '1bulan', '3bulan']);
+        $isFilter3MonthsOrLess = in_array($filter_preset, ['kemarin', '1minggu', '1bulan', '3bulan']);
     }
+
     if ($status === 'inactive' && $isFilter3MonthsOrLess) {
-        echo json_encode([
+        $response = [
             'success' => true,
             'data' => [],
             'pagination' => [
@@ -139,20 +155,37 @@ try {
                 'limit' => $limit,
                 'total_pages' => 0
             ]
-        ]);
+        ];
+        $jsonData = json_encode($response);
+        // Save empty result to redis too
+        try {
+            $redis->set($cacheKey, $jsonData);
+        } catch (Exception $e) {
+        }
+
+        if (php_sapi_name() !== 'cli')
+            echo $jsonData;
+        else
+            echo "Empty inactive data cached.\n";
+
         $conn->close();
         exit();
     }
-    $dateFilter = getDateFilterParams($_GET, 't');
+
+    $dateFilter = getDateFilterParams($filter_type, $filter_preset, $start_date, $end_date, 't');
+
     $params = [];
     $types = "";
     $where_clauses = [];
+
     if (!empty($dateFilter['sql_clause'])) {
         $where_clauses[] = preg_replace('/^\s*AND\s/i', '', $dateFilter['sql_clause']);
     }
     $params = array_merge($params, $dateFilter['params']);
     $types .= $dateFilter['types'];
+
     $cutoff_active = date('Y-m-d 00:00:00', strtotime("-3 months"));
+
     if ($status === 'active') {
         $where_clauses[] = "(c.Last_Trans >= ?)";
         $params[] = $cutoff_active;
@@ -162,10 +195,14 @@ try {
         $params[] = $cutoff_active;
         $types .= "s";
     }
+
     $where_clauses[] = "t.kd_cust IS NOT NULL";
     $where_clauses[] = "t.kd_cust NOT IN ('', '898989', '89898989', '999999999')";
     $where_clauses[] = "c.nama_cust IS NOT NULL AND c.nama_cust != ''";
+
     $sql_where = implode(" AND ", $where_clauses);
+
+    // Count Query
     $count_sql = "
         SELECT COUNT(*) AS total_records
         FROM (
@@ -176,31 +213,38 @@ try {
             GROUP BY c.nama_cust, t.kd_cust
         ) AS unique_customers
     ";
+
     $stmt_count = $conn->prepare($count_sql);
-    if ($stmt_count === false) {
+    if ($stmt_count === false)
         throw new Exception("Database prepare failed (count): " . $conn->error);
+
+    if (!empty($params)) {
+        $stmt_count->bind_param($types, ...$params);
     }
-    $stmt_count->bind_param($types, ...$params);
-    if (!$stmt_count->execute()) {
+
+    if (!$stmt_count->execute())
         throw new Exception("Gagal eksekusi query (count): " . $stmt_count->error);
-    }
+
     $count_result = $stmt_count->get_result();
-    $total_records = (int) $count_result->fetch_assoc()['total_records'];
+    $row_count = $count_result->fetch_assoc();
+    $total_records = $row_count ? (int) $row_count['total_records'] : 0;
     $total_pages = $total_records > 0 ? ceil($total_records / $limit) : 0;
     $stmt_count->close();
+
+    // Main Data Query
     $sql = "
-        SELECT
+        SELECT 
             c.nama_cust,
             t.kd_cust,
             COUNT(DISTINCT t.no_bon) AS total_transactions,
             COALESCE(points_summary.total_poin_customer, 0) AS total_poin_customer
-        FROM
+        FROM 
             trans_b t
-        INNER JOIN
+        INNER JOIN 
             customers c ON t.kd_cust = c.kd_cust
         LEFT JOIN (
-            SELECT
-                kd_cust,
+            SELECT 
+                kd_cust, 
                 SUM(total_point) AS total_poin_customer
             FROM (
                 SELECT kd_cust, COALESCE(jum_point, 0) AS total_point FROM point_trans WHERE kd_cust IS NOT NULL AND kd_cust != ''
@@ -211,25 +255,28 @@ try {
             ) AS all_points
             GROUP BY kd_cust
         ) AS points_summary ON t.kd_cust = points_summary.kd_cust
-        WHERE
+        WHERE 
             $sql_where
-        GROUP BY
+        GROUP BY 
             c.nama_cust, t.kd_cust, points_summary.total_poin_customer
-        ORDER BY
+        ORDER BY 
             total_transactions DESC
         LIMIT ? OFFSET ?
     ";
+
     $params[] = $limit;
     $params[] = $offset;
     $types .= "ii";
+
     $stmt = $conn->prepare($sql);
-    if ($stmt === false) {
+    if ($stmt === false)
         throw new Exception("Database prepare failed (data): " . $conn->error);
-    }
+
     $stmt->bind_param($types, ...$params);
-    if (!$stmt->execute()) {
+
+    if (!$stmt->execute())
         throw new Exception("Gagal eksekusi query (data): " . $stmt->error);
-    }
+
     $result = $stmt->get_result();
     $data = [];
     while ($row = $result->fetch_assoc()) {
@@ -241,8 +288,8 @@ try {
         ];
     }
     $stmt->close();
-    $conn->close();
-    echo json_encode([
+
+    $response = [
         'success' => true,
         'data' => $data,
         'pagination' => [
@@ -251,20 +298,45 @@ try {
             'limit' => $limit,
             'total_pages' => $total_pages
         ]
-    ]);
-} catch (Throwable $t) {
-    $logger->critical("FATAL ERROR: " . $t->getMessage(), [
-        'file' => $t->getFile(),
-        'line' => $t->getLine(),
-        'params' => $_GET
-    ]);
-    if (isset($conn) && $conn instanceof mysqli) {
-        $conn->close();
+    ];
+
+    $jsonData = json_encode($response);
+
+    // 7. Simpan ke Redis
+    try {
+        $redis->set($cacheKey, $jsonData);
+    } catch (Exception $e) {
+        if ($logger) {
+            $logger->error("Redis cache set failed: " . $e->getMessage());
+        }
     }
-    http_response_code(500);
-    echo json_encode([
-        'success' => false,
-        'message' => "Terjadi kesalahan: " . $t->getMessage()
-    ]);
+
+    if (php_sapi_name() !== 'cli') {
+        http_response_code(200);
+        echo $jsonData;
+    } else {
+        echo "Cache generated for $cacheKey. No TTL set.\n";
+    }
+
+    if ($logger) {
+        $logger->info("Selesai cron job get_top_members_by_frequency.php.");
+    }
+
+} catch (Throwable $t) {
+    if ($logger) {
+        $logger->critical("FATAL ERROR: " . $t->getMessage());
+    }
+
+    if (php_sapi_name() !== 'cli') {
+        http_response_code(500);
+        echo json_encode([
+            'success' => false,
+            'message' => "Terjadi kesalahan: " . $t->getMessage()
+        ]);
+    } else {
+        echo "Error: " . $t->getMessage() . "\n";
+    }
 }
+
+$conn->close();
 ?>
