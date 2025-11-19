@@ -5,18 +5,26 @@ require_once __DIR__ . '/../../../../aa_kon_sett.php';
 require_once __DIR__ . '/../../../auth/middleware_login.php';
 require_once __DIR__ . '/../../../utils/Logger.php';
 header('Content-Type: application/json');
+$logger = new AppLogger('debug_jadwal_so.log');
 $user_kode = 'UNKNOWN';
 $user_name = 'System';
 try {
     $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
     if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
         $decoded = verify_token($matches[1]);
+        $logger->info("CHECKING DECODED DATA: " . json_encode($decoded));
         if ($decoded) {
-            $user_kode = $decoded->kode ?? 'UNKNOWN'; 
-            $user_name = $decoded->nama ?? 'System';  
+            if (is_array($decoded)) {
+                $user_kode = $decoded['kode'] ?? 'UNKNOWN';
+                $user_name = $decoded['nama'] ?? 'System';
+            } elseif (is_object($decoded)) {
+                $user_kode = $decoded->kode ?? 'UNKNOWN';
+                $user_name = $decoded->nama ?? 'System';
+            }
         }
     }
 } catch (Exception $e) {
+    $logger->error("Auth Error: " . $e->getMessage());
 }
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -25,8 +33,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 try {
     $input = json_decode(file_get_contents('php://input'), true);
-    $selected_stores = $input['stores'] ?? []; 
-    $selected_suppliers = $input['suppliers'] ?? []; 
+    $logger->info("Incoming Input Data: " . json_encode($input));
+    $selected_stores = $input['stores'] ?? [];
+    $selected_suppliers = $input['suppliers'] ?? [];
     $tgl_schedule = $input['tgl_schedule'] ?? '';
     if (empty($selected_stores) || empty($selected_suppliers) || empty($tgl_schedule)) {
         throw new Exception("Data tidak lengkap (Cabang, Supplier, atau Tanggal kosong).");
@@ -36,8 +45,8 @@ try {
     $tgl_buat = date('Y-m-d H:i:s');
     $jam_buat = date('H:i:s');
     $ip_address = $_SERVER['REMOTE_ADDR'];
-    $nama_komp = gethostbyaddr($_SERVER['REMOTE_ADDR']) ?: 'UNKNOWN-PC';
-    $today_dmY = date('dmy'); 
+    $nama_komp = "Dari Website";
+    $today_dmY = date('dmy');
     $total_inserted = 0;
     $conn->begin_transaction();
     $store_details = [];
@@ -48,7 +57,7 @@ try {
     }
     $supp_ids_str = implode(',', array_map(function($id) use ($conn) { return "'" . $conn->real_escape_string($id) . "'"; }, $selected_suppliers));
     $q_supp = $conn->query("SELECT kd_store, kode_supp, nama_supp FROM supplier WHERE kode_supp IN ($supp_ids_str) AND kd_store IN ($store_ids_str)");
-    $valid_supp_map = []; 
+    $valid_supp_map = [];
     while($r = $q_supp->fetch_assoc()) {
         $valid_supp_map[$r['kd_store'] . '_' . $r['kode_supp']] = $r['nama_supp'];
     }
@@ -111,13 +120,21 @@ try {
                 $ip_address
             );
             if (!$stmt->execute()) {
-                throw new Exception("Execute failed for $no_kor_final: " . $stmt->error);
+                if ($stmt->errno === 1062) {
+                    $stmt->close();
+                    throw new Exception("Gagal: Data Duplikat. Jadwal untuk Cabang " . $store_info['Nm_Store'] . " ($kd_store) dan Supplier $nama_supp ($kode_supp) sudah ada.");
+                } else {
+                    $raw_error = $stmt->error;
+                    $stmt->close();
+                    throw new Exception("Database Error: " . $raw_error);
+                }
             }
             $total_inserted++;
             $stmt->close();
         }
     }
     $conn->commit();
+    $logger->info("Success Insert Jadwal SO. Total: " . $total_inserted . " by " . $user_name);
     echo json_encode([
         'success' => true, 
         'message' => "Berhasil membuat $total_inserted jadwal SO.",
@@ -125,9 +142,15 @@ try {
     ]);
 } catch (Exception $e) {
     $conn->rollback();
-    http_response_code(500);
-    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    $logger->error("Insert Failed: " . $e->getMessage());
+    http_response_code(200); 
+    echo json_encode([
+        'success' => false, 
+        'message' => $e->getMessage()
+    ]);
 } finally {
-    $conn->close();
+    if (isset($conn)) {
+        $conn->close();
+    }
 }
 ?>

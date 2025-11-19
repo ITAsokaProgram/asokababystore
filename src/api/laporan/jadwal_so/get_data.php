@@ -40,7 +40,7 @@ try {
     $status = $_GET['status'] ?? 'all';
     $sync_filter = $_GET['sync'] ?? 'all';
     $page = (int) ($_GET['page'] ?? 1);
-    $limit = 1000;
+    $limit = 100;
     $offset = ($page - 1) * $limit;
     if (!$is_export) {
         if ($page < 1) $page = 1;
