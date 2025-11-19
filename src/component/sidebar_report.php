@@ -1,4 +1,3 @@
-src/component/sidebar_report.php:
 <div id="sidebar"
     class="bg-white text-gray-700 w-64 h-screen flex flex-col p-6 fixed left-0 top-0 transition-all duration-300 shadow-2xl border-r border-blue-200 z-40">
     <button id="closeSidebar"
@@ -93,7 +92,7 @@ src/component/sidebar_report.php:
         </div>
 
 
-        <div x-data="{ open: false, nestedOpenPenjualan: false, nestedOpenPelanggan: false , nestedOpenReceipt: false, nestedOpenKoreksi: false, nestedOpenReturn: false, nestedOpenTransaksi: false }"
+        <div x-data="{ open: false, nestedOpenPenjualan: false, nestedOpenPelanggan: false , nestedOpenReceipt: false, nestedOpenReturn: false, nestedOpenTransaksi: false, nestedOpenKoreksi: false }"
             class="relative ">
             <button @click="open = !open" id="laporan"
                 class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-purple-100 hover:to-purple-200 hover:text-purple-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-purple-300">
@@ -330,51 +329,6 @@ src/component/sidebar_report.php:
                         </div>
                     </li>
                     <li>
-                        <button @click="nestedOpenKoreksi = !nestedOpenKoreksi"
-                            class="w-full text-left px-4 py-2.5 text-gray-700 hover:bg-red-100 hover:text-red-700 transition-all duration-200 flex items-center group cursor-pointer rounded-lg">
-                            <span
-                                class="transition-all duration-300 group-hover:translate-x-1 font-medium flex items-center">
-                                <i
-                                    class="fa-solid fa-edit mr-2 text-lg text-red-500 group-hover:text-red-600 transition-all duration-200 group-hover:scale-110"></i>
-                                Koreksi Stok
-                            </span>
-                            <svg class="ml-auto w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1"
-                                :class="{ 'rotate-180': nestedOpenKoreksi }" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 9l-7 7-7-7"></path>
-                            </svg>
-                        </button>
-                        <div x-show="nestedOpenKoreksi" @click.away="nestedOpenKoreksi = false" class="ml-4 mt-1"
-                            style="display: none;">
-                            <ul
-                                class="bg-gradient-to-br from-red-50 to-pink-50 rounded-lg p-2 space-y-1 border border-red-200">
-                                <li>
-                                    <a href="/src/fitur/koreksi_stok/by_supplier" data-menu="laporan_koreksi_supplier"
-                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-pink-100 hover:text-pink-600 transition-all duration-200 group rounded-md">
-                                        <span
-                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
-                                            <i
-                                                class="fa-solid fa-truck-fast mr-2 text-base text-red-400 group-hover:text-red-600 group-hover:scale-110 transition-all duration-200"></i>
-                                            Koreksi (Supplier)
-                                        </span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="/src/fitur/koreksi_stok/by_plu" data-menu="laporan_koreksi_plu"
-                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-pink-100 hover:text-pink-600 transition-all duration-200 group rounded-md">
-                                        <span
-                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
-                                            <i
-                                                class="fa-solid fa-barcode mr-2 text-base text-red-400 group-hover:text-red-600 group-hover:scale-110 transition-all duration-200"></i>
-                                            Koreksi (PLU)
-                                        </span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </li>
-                    <li>
                         <button @click="nestedOpenReturn = !nestedOpenReturn"
                             class="w-full text-left px-4 py-2.5 text-gray-700 hover:bg-yellow-100 hover:text-yellow-700 transition-all duration-200 flex items-center group cursor-pointer rounded-lg">
                             <span
@@ -510,7 +464,51 @@ src/component/sidebar_report.php:
                             </ul>
                         </div>
                     </li>
-
+                    <li>
+                        <button @click="nestedOpenKoreksi = !nestedOpenKoreksi"
+                            class="w-full text-left px-4 py-2.5 text-gray-700 hover:bg-red-100 hover:text-red-700 transition-all duration-200 flex items-center group cursor-pointer rounded-lg">
+                            <span
+                                class="transition-all duration-300 group-hover:translate-x-1 font-medium flex items-center">
+                                <i
+                                    class="fa-solid fa-edit mr-2 text-lg text-red-500 group-hover:text-red-600 transition-all duration-200 group-hover:scale-110"></i>
+                                Koreksi Stok
+                            </span>
+                            <svg class="ml-auto w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1"
+                                :class="{ 'rotate-180': nestedOpenKoreksi }" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div x-show="nestedOpenKoreksi" @click.away="nestedOpenKoreksi = false" class="ml-4 mt-1"
+                            style="display: none;">
+                            <ul
+                                class="bg-gradient-to-br from-red-50 to-pink-50 rounded-lg p-2 space-y-1 border border-red-200">
+                                <li>
+                                    <a href="/src/fitur/koreksi_stok/by_supplier" data-menu="laporan_koreksi_supplier"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-pink-100 hover:text-pink-600 transition-all duration-200 group rounded-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-truck-fast mr-2 text-base text-red-400 group-hover:text-red-600 group-hover:scale-110 transition-all duration-200"></i>
+                                            Koreksi (Supplier)
+                                        </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/src/fitur/koreksi_stok/by_plu" data-menu="laporan_koreksi_plu"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-pink-100 hover:text-pink-600 transition-all duration-200 group rounded-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-barcode mr-2 text-base text-red-400 group-hover:text-red-600 group-hover:scale-110 transition-all duration-200"></i>
+                                            Koreksi (PLU)
+                                        </span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
                     <li>
                         <a href="/src/fitur/log_backup/index.php" data-menu="laporan_log_backup"
                             class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-blue-100 hover:text-blue-700 transition-all duration-200 group rounded-lg">
@@ -585,7 +583,7 @@ src/component/sidebar_report.php:
                         </a>
                     </li>
                 </ul>
-                </div>
+            </div>
         </div>
 
         <div x-data="{ open: false, nestedOpenAccount: false, nestedOpenAccount: false }" class="relative ">
@@ -657,6 +655,7 @@ src/component/sidebar_report.php:
                     Aset</span>
             </a>
         </div>
+
         <div x-data="{ open: false }" class="relative ">
             <button @click="open = !open" id="upload-menu" data-menu="upload_banner"
                 class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-fuchsia-100 hover:to-fuchsia-200 hover:text-fuchsia-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-fuchsia-300">
@@ -688,84 +687,88 @@ src/component/sidebar_report.php:
                     </li>
                 </ul>
             </div>
-            <div x-data="{ open: false, nestedOpenJadwalSO: false }" class="relative">
-                <button @click="open = !open" id="tools"
-                    class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-cyan-100 hover:to-cyan-200 hover:text-cyan-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-cyan-300">
-                    <div class="w-8 flex justify-center">
-                        <i
-                            class="fa-solid fa-tools text-xl text-cyan-600 group-hover:text-cyan-700 transition-all duration-300 group-hover:scale-125 group-hover:-rotate-12 group-hover:drop-shadow-lg"></i>
-                    </div>
-                    <span
-                        class="sidebar-text ml-3 font-medium transition-all duration-300 group-hover:translate-x-1">Tools</span>
-                    <svg class="ml-auto w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1"
-                        :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                    </svg>
-                </button>
+        </div>
 
-                <div x-show="open" @click.away="open = false"
-                    class="mt-3 ml-4 bg-gradient-to-br from-white to-cyan-50 rounded-xl shadow-xl border border-cyan-200 z-10 backdrop-blur-sm"
-                    style="display: none;">
-                    <ul class="py-2 space-y-1">
-                        <li>
-                            <a href="/src/fitur/approval/izin" data-menu="izin"
-                                class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-cyan-100 hover:text-cyan-700 transition-all duration-200 group rounded-lg">
-                                <span
-                                    class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
-                                    <i
-                                        class="fa-solid fa-file-pen mr-2 text-base text-cyan-400 group-hover:text-cyan-600 group-hover:scale-110 transition-all duration-200"></i>
-                                    Koreksi
-                                </span>
-                            </a>
-                        </li>
-                        <li>
-                            <button @click="nestedOpenJadwalSO = !nestedOpenJadwalSO"
-                                class="w-full text-left px-4 py-2.5 text-gray-700 hover:bg-slate-100 hover:text-slate-700 transition-all duration-200 flex items-center group cursor-pointer rounded-lg">
-                                <span
-                                    class="transition-all duration-300 group-hover:translate-x-1 font-medium flex items-center">
-                                    <i
-                                        class="fa-solid fa-calendar-days mr-2 text-lg text-slate-500 group-hover:text-slate-600 transition-all duration-200 group-hover:scale-110"></i>
-                                    Jadwal SO
-                                </span>
-                                <svg class="ml-auto w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1"
-                                    :class="{ 'rotate-180': nestedOpenJadwalSO }" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 9l-7 7-7-7"></path>
-                                </svg>
-                            </button>
-                            <div x-show="nestedOpenJadwalSO" @click.away="nestedOpenJadwalSO = false" class="ml-4 mt-1"
-                                style="display: none;">
-                                <ul
-                                    class="bg-gradient-to-br from-slate-50 to-gray-50 rounded-lg p-2 space-y-1 border border-slate-200">
-                                    <li>
-                                        <a href="/src/fitur/laporan/jadwal_so/index.php" data-menu="laporan_jadwal_so"
-                                            class="flex items-center px-3 py-2 text-gray-700 hover:bg-slate-100 hover:text-slate-600 transition-all duration-200 group rounded-md">
-                                            <span
-                                                class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
-                                                <i
-                                                    class="fa-solid fa-list-check mr-2 text-base text-slate-400 group-hover:text-slate-600 group-hover:scale-110 transition-all duration-200"></i>
-                                                Jadwal SO
-                                            </span>
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="/src/fitur/laporan/jadwal_so/create_jadwal_so.php"
-                                            data-menu="laporan_jadwal_so_create"
-                                            class="flex items-center px-3 py-2 text-gray-700 hover:bg-slate-100 hover:text-slate-600 transition-all duration-200 group rounded-md">
-                                            <span
-                                                class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
-                                                <i
-                                                    class="fa-solid fa-plus mr-2 text-base text-slate-400 group-hover:text-slate-600 group-hover:scale-110 transition-all duration-200"></i>
-                                                Buat / Create
-                                            </span>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </li>
-                    </ul>
+        <div x-data="{ open: false, nestedOpenKoreksi: false, nestedOpenJadwalSO: false }" class="relative ">
+            <button @click="open = !open" id="tools"
+                class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-cyan-100 hover:to-cyan-200 hover:text-cyan-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-cyan-300">
+                <div class="w-8 flex justify-center">
+                    <i
+                        class="fa-solid fa-toolbox text-xl text-cyan-600 group-hover:text-cyan-700 transition-all duration-300 group-hover:scale-125 group-hover:-rotate-12 group-hover:drop-shadow-lg"></i>
                 </div>
+                <span
+                    class="sidebar-text ml-3 font-medium transition-all duration-300 group-hover:translate-x-1">Tools</span>
+                <svg class="ml-auto w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1"
+                    :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </button>
+
+            <div x-show="open" @click.away="open = false"
+                class="mt-3 ml-4 bg-gradient-to-br from-white to-cyan-50 rounded-xl shadow-xl border border-cyan-200 z-10 backdrop-blur-sm"
+                style="display: none;">
+                <ul class="py-2 space-y-1">
+                    <!-- Approval (sekarang Koreksi) -->
+                    <li>
+                        <a href="/src/fitur/approval/izin" data-menu="izin"
+                            class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-cyan-100 hover:text-cyan-700 transition-all duration-200 group rounded-lg">
+                            <span
+                                class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
+                                <i
+                                    class="fa-solid fa-clipboard-check mr-2 text-base text-cyan-400 group-hover:text-cyan-600 group-hover:scale-110 transition-all duration-200"></i>
+                                Approval Koreksi
+                            </span>
+                        </a>
+                    </li>
+                    <!-- Jadwal SO -->
+                    <li>
+                        <button @click="nestedOpenJadwalSO = !nestedOpenJadwalSO"
+                            class="w-full text-left px-4 py-2.5 text-gray-700 hover:bg-slate-100 hover:text-slate-700 transition-all duration-200 flex items-center group cursor-pointer rounded-lg">
+                            <span
+                                class="transition-all duration-300 group-hover:translate-x-1 font-medium flex items-center">
+                                <i
+                                    class="fa-solid fa-calendar-days mr-2 text-lg text-slate-500 group-hover:text-slate-600 transition-all duration-200 group-hover:scale-110"></i>
+                                Jadwal SO
+                            </span>
+                            <svg class="ml-auto w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1"
+                                :class="{ 'rotate-180': nestedOpenJadwalSO }" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div x-show="nestedOpenJadwalSO" @click.away="nestedOpenJadwalSO = false" class="ml-4 mt-1"
+                            style="display: none;">
+                            <ul
+                                class="bg-gradient-to-br from-slate-50 to-gray-50 rounded-lg p-2 space-y-1 border border-slate-200">
+                                <li>
+                                    <a href="/src/fitur/laporan/jadwal_so/index.php" data-menu="laporan_jadwal_so"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-slate-100 hover:text-slate-600 transition-all duration-200 group rounded-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-list-check mr-2 text-base text-slate-400 group-hover:text-slate-600 group-hover:scale-110 transition-all duration-200"></i>
+                                            Jadwal SO
+                                        </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/src/fitur/laporan/jadwal_so/create_jadwal_so.php" data-menu="laporan_jadwal_so_create"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-slate-100 hover:text-slate-600 transition-all duration-200 group rounded-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-plus mr-2 text-base text-slate-400 group-hover:text-slate-600 group-hover:scale-110 transition-all duration-200"></i>
+                                            Buat / Create
+                                        </span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+                    <!-- Koreksi Stok -->
+                    
+                </ul>
             </div>
         </div>
     </nav>
@@ -773,13 +776,10 @@ src/component/sidebar_report.php:
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        const currentPath = window.location.pathname; // Mengambil URL path saat ini
+        const currentPath = window.location.pathname;
 
-        // Menambahkan kelas "active" pada link yang sesuai
         if (currentPath.includes('/in_beranda')) {
             document.getElementById('berandaLink').classList.add('btn', 'active');
-
-            // --- BLOCK LAPORAN ---
         } else if (currentPath.includes('/src/fitur/laporan/in_laporan_sub_dept')) {
             document.getElementById('laporan').classList.add('btn', 'active');
         } else if (currentPath.includes('/src/fitur/laporan/in_sales_ratio')) {
@@ -790,8 +790,6 @@ src/component/sidebar_report.php:
             document.getElementById('laporan').classList.add('btn', 'active');
         } else if (currentPath.includes('/src/fitur/log_backup/index.php')) {
             document.getElementById('laporan').classList.add('btn', 'active');
-
-            // START PENAMBAHAN SCRIPT ACTIVE BARU
         } else if (currentPath.includes('/src/fitur/top_sales/by_rupiah')) {
             document.getElementById('laporan').classList.add('btn', 'active');
         } else if (currentPath.includes('/src/fitur/top_sales/by_qty')) {
@@ -804,10 +802,6 @@ src/component/sidebar_report.php:
             document.getElementById('laporan').classList.add('btn', 'active');
         } else if (currentPath.includes('/src/fitur/penerimaan_receipt/by_supplier')) {
             document.getElementById('laporan').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/koreksi_stok/by_supplier')) {
-            document.getElementById('laporan').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/koreksi_stok/by_plu')) {
-            document.getElementById('laporan').classList.add('btn', 'active');
         } else if (currentPath.includes('/src/fitur/return_out/all_item')) {
             document.getElementById('laporan').classList.add('btn', 'active');
         } else if (currentPath.includes('/src/fitur/return_out/bad_stock')) {
@@ -816,15 +810,10 @@ src/component/sidebar_report.php:
             document.getElementById('laporan').classList.add('btn', 'active');
         } else if (currentPath.includes('/src/fitur/return_out/hilang_pasangan')) {
             document.getElementById('laporan').classList.add('btn', 'active');
-            // END PENAMBAHAN SCRIPT ACTIVE BARU
-
-            // --- BLOCK ACCOUNT ---
         } else if (currentPath.includes('/src/fitur/account/in_new_user')) {
             document.getElementById('account').classList.add('btn', 'active');
         } else if (currentPath.includes('/src/fitur/account/manajemen_user')) {
             document.getElementById('account').classList.add('btn', 'active');
-
-            // --- BLOCK TRANSAKSI (NOW INSIDE LAPORAN) ---
         } else if (currentPath.includes('/src/fitur/transaction/view_promo')) {
             document.getElementById('laporan').classList.add('btn', 'active');
             document.getElementById('transaction').classList.add('btn', 'active');
@@ -837,33 +826,31 @@ src/component/sidebar_report.php:
         } else if (currentPath.includes('/src/fitur/transaction/reward_give')) {
             document.getElementById('laporan').classList.add('btn', 'active');
             document.getElementById('transaction').classList.add('btn', 'active');
-
-            // --- BLOCK MEMBER ---
         } else if (currentPath.includes('/src/fitur/member/member_poin')) {
             document.getElementById('member').classList.add('btn', 'active');
-
-            // --- BLOCK UPLOAD ---
         } else if (currentPath.includes('/src/fitur/banner/view_banner.php')) {
             document.getElementById('upload-menu').classList.add('btn', 'active');
-
-            // --- BLOCK SHOPEE ---
         } else if (currentPath.includes('/src/fitur/shopee/dashboard_shopee')) {
             document.getElementById('shopeeLink').classList.add('btn', 'active');
-
-            // --- BLOCK WHATSAPP ---
         } else if (currentPath.includes('/src/fitur/whatsapp_cs/dashboard_whatsapp')) {
             document.getElementById('whatsappLink').classList.add('btn', 'active');
         }
-        // --- BLOCK TOOLS (Formerly Approval) ---
+        // MENU TOOLS - Approval Koreksi
         else if (currentPath.includes('/src/fitur/approval/izin')) {
             document.getElementById('tools').classList.add('btn', 'active');
         }
+        // MENU TOOLS - Jadwal SO
         else if (currentPath.includes('/src/fitur/laporan/jadwal_so/index.php')) {
             document.getElementById('tools').classList.add('btn', 'active');
         } else if (currentPath.includes('/src/fitur/laporan/jadwal_so/create_jadwal_so.php')) {
             document.getElementById('tools').classList.add('btn', 'active');
         }
-        // Tambahkan kondisi untuk menu lainnya sesuai kebutuhan
+        // MENU TOOLS - Koreksi Stok
+        else if (currentPath.includes('/src/fitur/koreksi_stok/by_supplier')) {
+            document.getElementById('laporan').classList.add('btn', 'active');
+        } else if (currentPath.includes('/src/fitur/koreksi_stok/by_plu')) {
+            document.getElementById('laporan').classList.add('btn', 'active');
+        }
     });
 </script>
 <style>
