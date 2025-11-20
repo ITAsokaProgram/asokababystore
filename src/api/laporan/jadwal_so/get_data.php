@@ -1,6 +1,6 @@
 <?php
 session_start();
-include '../../../../aa_kon_sett.php'; 
+include '../../../../aa_kon_sett.php';
 register_shutdown_function(function () {
     $error = error_get_last();
     if ($error !== null && in_array($error['type'], [E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR, E_RECOVERABLE_ERROR])) {
@@ -13,7 +13,7 @@ register_shutdown_function(function () {
     }
 });
 header('Content-Type: application/json');
-$table_name = "jadwal_so_copy"; 
+$table_name = "jadwal_so_copy";
 $is_export = filter_var($_GET['export'] ?? false, FILTER_VALIDATE_BOOLEAN);
 $response = [
     'summary' => [
@@ -27,15 +27,8 @@ $response = [
     'error' => null,
 ];
 try {
-    $req_tgl_mulai = $_GET['tgl_mulai'] ?? date('Y-m-d');
-    $hari_ini = date('Y-m-d');
-    if ($req_tgl_mulai === $hari_ini) {
-        $tgl_mulai = '2020-01-01'; 
-        $tgl_selesai = '2030-12-31'; 
-    } else {
-        $tgl_mulai = $req_tgl_mulai;
-        $tgl_selesai = $_GET['tgl_selesai'] ?? date('Y-m-d');
-    }
+    $tgl_mulai = $_GET['tgl_mulai'] ?? date('Y-m-d');
+    $tgl_selesai = $_GET['tgl_selesai'] ?? date('Y-m-d');
     $kd_store = $_GET['kd_store'] ?? 'all';
     $status = $_GET['status'] ?? 'all';
     $sync_filter = $_GET['sync'] ?? 'all';
@@ -43,7 +36,8 @@ try {
     $limit = 100;
     $offset = ($page - 1) * $limit;
     if (!$is_export) {
-        if ($page < 1) $page = 1;
+        if ($page < 1)
+            $page = 1;
         $response['pagination'] = [
             'current_page' => $page,
             'limit' => $limit,
@@ -112,7 +106,7 @@ try {
     if (!$is_export) {
         $res_count = $conn->query("SELECT FOUND_ROWS() as total");
         $total_rows = $res_count->fetch_assoc()['total'];
-        $response['pagination']['total_rows'] = (int)$total_rows;
+        $response['pagination']['total_rows'] = (int) $total_rows;
         $response['pagination']['total_pages'] = ceil($total_rows / $limit);
     }
     $query_summary = "

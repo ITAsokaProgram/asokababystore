@@ -50,20 +50,25 @@ try {
     $total_inserted = 0;
     $conn->begin_transaction();
     $store_details = [];
-    $store_ids_str = implode(',', array_map(function($id) use ($conn) { return "'" . $conn->real_escape_string($id) . "'"; }, $selected_stores));
+    $store_ids_str = implode(',', array_map(function ($id) use ($conn) {
+        return "'" . $conn->real_escape_string($id) . "'";
+    }, $selected_stores));
     $q_store = $conn->query("SELECT Kd_Store, Nm_Store, Nm_Alias FROM kode_store WHERE Kd_Store IN ($store_ids_str)");
-    while($r = $q_store->fetch_assoc()) {
+    while ($r = $q_store->fetch_assoc()) {
         $store_details[$r['Kd_Store']] = $r;
     }
-    $supp_ids_str = implode(',', array_map(function($id) use ($conn) { return "'" . $conn->real_escape_string($id) . "'"; }, $selected_suppliers));
+    $supp_ids_str = implode(',', array_map(function ($id) use ($conn) {
+        return "'" . $conn->real_escape_string($id) . "'";
+    }, $selected_suppliers));
     $q_supp = $conn->query("SELECT kd_store, kode_supp, nama_supp FROM supplier WHERE kode_supp IN ($supp_ids_str) AND kd_store IN ($store_ids_str)");
     $valid_supp_map = [];
-    while($r = $q_supp->fetch_assoc()) {
+    while ($r = $q_supp->fetch_assoc()) {
         $valid_supp_map[$r['kd_store'] . '_' . $r['kode_supp']] = $r['nama_supp'];
     }
-    $sequence_map = []; 
+    $sequence_map = [];
     foreach ($selected_stores as $kd_store) {
-        if (!isset($store_details[$kd_store])) continue;
+        if (!isset($store_details[$kd_store]))
+            continue;
         $store_info = $store_details[$kd_store];
         $no_kor_prefix = $kd_store . $user_kode . $today_dmY;
         if (!isset($sequence_map[$kd_store])) {
@@ -71,7 +76,7 @@ try {
             $res_check = $conn->query($sql_check);
             if ($res_check && $res_check->num_rows > 0) {
                 $last_no = $res_check->fetch_assoc()['no_kor'];
-                $last_seq = (int)substr($last_no, -3);
+                $last_seq = (int) substr($last_no, -3);
                 $sequence_map[$kd_store] = $last_seq;
             } else {
                 $sequence_map[$kd_store] = 0;
@@ -83,12 +88,7 @@ try {
             if (isset($valid_supp_map[$key_check])) {
                 $nama_supp = $valid_supp_map[$key_check];
             } else {
-                $q_fallback = $conn->query("SELECT nama_supp FROM supplier WHERE kode_supp = '$kode_supp' LIMIT 1");
-                if ($q_fallback->num_rows > 0) {
-                    $nama_supp = $q_fallback->fetch_assoc()['nama_supp'];
-                } else {
-                    $nama_supp = 'UNKNOWN';
-                }
+                continue;
             }
             $sequence_map[$kd_store]++;
             $seq_padded = str_pad($sequence_map[$kd_store], 3, '0', STR_PAD_LEFT);
@@ -104,14 +104,15 @@ try {
             if (!$stmt) {
                 throw new Exception("Prepare statement failed: " . $conn->error);
             }
-            $stmt->bind_param("sssssssssssss", 
-                $kd_store, 
-                $store_info['Nm_Alias'], 
+            $stmt->bind_param(
+                "sssssssssssss",
+                $kd_store,
+                $store_info['Nm_Alias'],
                 $store_info['Nm_Store'],
                 $kode_supp,
                 $nama_supp,
-                $user_kode, 
-                $user_name, 
+                $user_kode,
+                $user_name,
                 $formatted_schedule,
                 $no_kor_final,
                 $tgl_buat,
@@ -119,23 +120,26 @@ try {
                 $nama_komp,
                 $ip_address
             );
-            $total_inserted++;
+            $stmt->execute();
+            if ($stmt->affected_rows > 0) {
+                $total_inserted++;
+            }
             $stmt->close();
         }
     }
     $conn->commit();
     $logger->info("Success Insert Jadwal SO. Total: " . $total_inserted . " by " . $user_name);
     echo json_encode([
-        'success' => true, 
+        'success' => true,
         'message' => "Berhasil membuat $total_inserted jadwal SO.",
         'data' => ['total' => $total_inserted]
     ]);
 } catch (Exception $e) {
     $conn->rollback();
     $logger->error("Insert Failed: " . $e->getMessage());
-    http_response_code(200); 
+    http_response_code(200);
     echo json_encode([
-        'success' => false, 
+        'success' => false,
         'message' => $e->getMessage()
     ]);
 } finally {

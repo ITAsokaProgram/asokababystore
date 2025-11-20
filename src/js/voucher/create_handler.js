@@ -6,36 +6,45 @@ const API_URLS = {
 const state = {
   selectedStores: new Set(),
 };
+let allCabangData = []; 
 function renderCabangList(data) {
   const container = document.getElementById("container-cabang");
   container.innerHTML = "";
   if (!data || data.length === 0) {
     container.innerHTML =
-      '<div class="text-gray-500 text-xs p-2 text-center">Tidak ada data cabang.</div>';
+      '<div class="text-gray-500 text-xs p-2 text-center">Tidak ada data cabang yang cocok.</div>';
     return;
   }
   data.forEach((store) => {
     const div = document.createElement("div");
+    const isChecked = state.selectedStores.has(store.Kd_Store);
+    const bgClass = isChecked ? "bg-pink-50 border-pink-200" : "border-transparent hover:border-pink-100";
     div.className =
-      "flex items-center p-2 hover:bg-pink-50 rounded-md transition-colors cursor-pointer border border-transparent hover:border-pink-100";
+      `flex items-center p-2 hover:bg-pink-50 rounded-md transition-colors cursor-pointer border ${bgClass}`;
+    const aliasDisplay = store.Nm_Alias ? `(${store.Nm_Alias})` : '';
     div.innerHTML = `
             <div class="flex items-center h-5">
                 <input type="checkbox" id="store_${store.Kd_Store}" value="${store.Kd_Store}" 
-                    class="w-4 h-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500 checkbox-store cursor-pointer">
+                    class="w-4 h-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500 checkbox-store cursor-pointer"
+                    ${isChecked ? 'checked' : ''}>
             </div>
             <label for="store_${store.Kd_Store}" class="ml-3 text-xs cursor-pointer select-none w-full">
                 <span class="font-bold text-gray-800 block">${store.Kd_Store}</span>
-                <span class="text-gray-500 text-[10px] uppercase tracking-wide">${store.Nm_Store}</span>
+                <span class="text-gray-500 text-[10px] uppercase tracking-wide">
+                    ${store.Nm_Store} <span class="font-bold text-pink-600">${aliasDisplay}</span>
+                </span>
             </label>
         `;
     const checkbox = div.querySelector("input");
     checkbox.addEventListener("change", (e) => {
       if (e.target.checked) {
         state.selectedStores.add(e.target.value);
+        div.classList.remove("border-transparent");
         div.classList.add("bg-pink-50", "border-pink-200");
       } else {
         state.selectedStores.delete(e.target.value);
         div.classList.remove("bg-pink-50", "border-pink-200");
+        div.classList.add("border-transparent");
       }
       updateStoreCounter();
     });
@@ -67,7 +76,8 @@ async function initPage() {
   try {
     const result = await sendRequestGET(API_URLS.getCabang);
     if (result.success) {
-      renderCabangList(result.data);
+      allCabangData = result.data; 
+      renderCabangList(allCabangData);
     } else {
       Swal.fire(
         "Error",
@@ -177,6 +187,16 @@ async function submitVoucher(e) {
 document.addEventListener("DOMContentLoaded", () => {
   console.log("TEST");
   initPage();
+  document.getElementById("search-cabang").addEventListener("input", (e) => {
+    const searchTerm = e.target.value.toLowerCase();
+    const filteredData = allCabangData.filter(store => {
+        const kode = store.Kd_Store ? store.Kd_Store.toLowerCase() : "";
+        const nama = store.Nm_Store ? store.Nm_Store.toLowerCase() : "";
+        const alias = store.Nm_Alias ? store.Nm_Alias.toLowerCase() : "";
+        return kode.includes(searchTerm) || nama.includes(searchTerm) || alias.includes(searchTerm);
+    });
+    renderCabangList(filteredData);
+  });
   document
     .getElementById("btn-select-all-cabang")
     .addEventListener("click", () => {
@@ -184,6 +204,7 @@ document.addEventListener("DOMContentLoaded", () => {
       checkboxes.forEach((cb) => {
         cb.checked = true;
         state.selectedStores.add(cb.value);
+        cb.closest("div.flex").parentElement.classList.remove("border-transparent");
         cb.closest("div.flex").parentElement.classList.add(
           "bg-pink-50",
           "border-pink-200"
@@ -201,6 +222,7 @@ document.addEventListener("DOMContentLoaded", () => {
           "bg-pink-50",
           "border-pink-200"
         );
+        cb.closest("div.flex").parentElement.classList.add("border-transparent");
       });
       state.selectedStores.clear();
       updateStoreCounter();
