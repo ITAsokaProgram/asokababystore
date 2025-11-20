@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
         filterSubmitButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i><span>Memuat...</span>`;
       }
       if (!isPagination && tableBody) {
-        tableBody.innerHTML = `<tr><td colspan="7" class="text-center p-8"><div class="spinner-simple"></div><p class="mt-2 text-gray-500">Memuat data...</p></td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="6" class="text-center p-8"><div class="spinner-simple"></div><p class="mt-2 text-gray-500">Memuat data...</p></td></tr>`;
       }
     } else {
       if (filterSubmitButton) {
@@ -121,17 +121,27 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   function renderTable(data) {
     if (!data || data.length === 0) {
-      tableBody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-gray-500"><i class="fas fa-inbox fa-lg mb-2"></i><p>Tidak ada data ditemukan.</p></td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-gray-500"><i class="fas fa-inbox fa-lg mb-2"></i><p>Tidak ada data ditemukan.</p></td></tr>`;
       return;
     }
     let html = "";
+    let current_tanggal = null;
     data.forEach((row) => {
+      if (row.tgl_koreksi !== current_tanggal) {
+        current_tanggal = row.tgl_koreksi;
+        html += `
+            <tr class="bg-pink-50 border-b border-pink-100">
+                <td colspan="6" class="px-4 py-2 font-bold text-pink-700 text-sm">
+                    <i class="far fa-calendar-alt mr-2"></i> Tanggal Koreksi: ${current_tanggal}
+                </td>
+            </tr>
+        `;
+      }
       const qtyClass =
         row.grp_qty < 0 ? "text-red-600 font-bold" : "text-gray-700";
       html += `
-        <tr class="hover:bg-gray-50 transition-colors duration-150">
-            <td class="">${row.tgl_koreksi}</td>
-            <td class="font-semibold text-gray-800">${row.kode_supp}</td>
+        <tr class="hover:bg-gray-50 transition-colors duration-150 border-b border-gray-100">
+            <td class="font-semibold text-gray-800 pl-8">${row.kode_supp}</td>
             <td class=" ${qtyClass}">${formatNumber(row.grp_qty)}</td>
             <td class="">${formatRupiah(row.grp_netto)}</td>
             <td class="">${formatRupiah(row.grp_ppn)}</td>
@@ -174,7 +184,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
   function showTableError(msg) {
-    tableBody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-red-600"><p>Error: ${msg}</p></td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-red-600"><p>Error: ${msg}</p></td></tr>`;
   }
   function renderPagination(pagination) {
     if (!pagination) return;

@@ -16,7 +16,7 @@ $response = [
         'total_pages' => 1,
         'total_rows' => 0,
         'offset' => 0,
-        'limit' => 10,
+        'limit' => 100,
     ],
     'error' => null,
 ];
@@ -27,7 +27,7 @@ try {
     $tgl_selesai = $_GET['tgl_selesai'] ?? $default_selesai;
     $kd_store = $_GET['kd_store'] ?? 'all';
     $page = (int) ($_GET['page'] ?? 1);
-    $limit = 10;
+    $limit = 100;
     if ($page < 1)
         $page = 1;
     $offset = ($page - 1) * $limit;
@@ -85,7 +85,7 @@ try {
     $stmt_count->close();
     $sql_data = "
         SELECT 
-            tgl_koreksi,
+            DATE(tgl_koreksi) as tgl_koreksi, 
             kode_supp,
             SUM(sel_qty) as grp_qty,
             SUM(avg_cost * sel_qty) as grp_netto, 

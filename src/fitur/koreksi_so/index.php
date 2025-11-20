@@ -140,13 +140,12 @@ $kd_store = $_GET['kd_store'] ?? 'all';
                         <table class="table-modern" id="koreksi-table">
                             <thead>
                                 <tr>
-                                    <th class="text-center">Tanggal Koreksi</th>
                                     <th>Supplier</th>
-                                    <th class="text-center">Total Selisih Qty</th>
-                                    <th class="text-right">Total Avg Cost (Netto)</th>
-                                    <th class="text-right">Total PPN</th>
-                                    <th class="text-right">Total (Grand)</th>
-                                    <th class="text-center">Aksi</th>
+                                    <th>Total Selisih Qty</th>
+                                    <th>Total Avg Cost (Netto)</th>
+                                    <th>Total PPN</th>
+                                    <th>Total (Grand)</th>
+                                    <th>Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="koreksi-table-body">
