@@ -720,6 +720,17 @@
                             </span>
                         </a>
                     </li>
+                    <li>
+                        <a href="/src/fitur/koreksi_so/index.php" data-menu="koreksi_so"
+                            class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-cyan-100 hover:text-cyan-700 transition-all duration-200 group rounded-lg">
+                            <span
+                                class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
+                                <i
+                                    class="fa-solid fa-file-pen mr-2 text-base text-cyan-400 group-hover:text-cyan-600 group-hover:scale-110 transition-all duration-200"></i>
+                                Koreksi SO
+                            </span>
+                        </a>
+                    </li>
                     <!-- Jadwal SO -->
                     <li>
                         <button @click="nestedOpenJadwalSO = !nestedOpenJadwalSO"
@@ -753,7 +764,8 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="/src/fitur/laporan/jadwal_so/create_jadwal_so.php" data-menu="laporan_jadwal_so_create"
+                                    <a href="/src/fitur/laporan/jadwal_so/create_jadwal_so.php"
+                                        data-menu="laporan_jadwal_so_create"
                                         class="flex items-center px-3 py-2 text-gray-700 hover:bg-slate-100 hover:text-slate-600 transition-all duration-200 group rounded-md">
                                         <span
                                             class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
@@ -767,7 +779,7 @@
                         </div>
                     </li>
                     <!-- Koreksi Stok -->
-                    
+
                 </ul>
             </div>
         </div>
@@ -837,6 +849,9 @@
         }
         // MENU TOOLS - Approval Koreksi
         else if (currentPath.includes('/src/fitur/approval/izin')) {
+            document.getElementById('tools').classList.add('btn', 'active');
+        }
+        else if (currentPath.includes('/src/fitur/koreksi_so/index.php')) {
             document.getElementById('tools').classList.add('btn', 'active');
         }
         // MENU TOOLS - Jadwal SO
