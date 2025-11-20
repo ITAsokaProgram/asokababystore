@@ -53,7 +53,7 @@ try {
             http_response_code(200);
             echo $cachedData;
         } else {
-            echo "Cache found for $cacheKey. Skipping DB query.\n";
+            echo date('Y-m-d H:i:s') . " - Cache found for $cacheKey. Skipping DB query.\n";
         }
         $conn->close();
         exit;
@@ -64,7 +64,7 @@ try {
     }
 }
 if (php_sapi_name() === 'cli') {
-    echo "Cache not found. Generating cache...\n";
+    echo date('Y-m-d H:i:s') . " - Cache not found. Generating cache...\n";
 }
 /** Helper function logic integrated inline or called here */
 function getDateFilterParams($get_params, $table_alias = 't')
@@ -129,7 +129,7 @@ try {
         if (php_sapi_name() !== 'cli') {
             echo $responseEmpty;
         } else {
-            echo "Condition met (Inactive < 3mo), returning empty.\n";
+            echo date('Y-m-d H:i:s') . " - Condition met (Inactive < 3mo), returning empty.\n";
         }
         $conn->close();
         exit();
@@ -212,7 +212,7 @@ try {
     if (php_sapi_name() !== 'cli') {
         echo $jsonData;
     } else {
-        echo "Cache generated for $cacheKey. No TTL set.\n";
+        echo date('Y-m-d H:i:s') . " - Cache generated for $cacheKey. No TTL set.\n";
     }
     if ($logger) {
         $logger->info("Selesai cron job get_top_member_product_pairs.php. Cache generated.");
@@ -228,7 +228,7 @@ try {
             'message' => "Terjadi kesalahan: " . $t->getMessage()
         ]);
     } else {
-        echo "Error: " . $t->getMessage() . "\n";
+        echo date('Y-m-d H:i:s') . " - Error: " . $t->getMessage() . "\n";
     }
 }
 $conn->close();
