@@ -84,7 +84,11 @@ async function loadInvalidTransaksi() {
       method: "GET",
       headers,
     });
-    const topMemberPromise = fetch("/src/api/member/product/get_top_member", {
+    const date = new Date();
+    date.setDate(date.getDate() - 1);
+    const yesterday = date.toISOString().split("T")[0];
+    const topMemberUrl = `/src/api/member/product/get_top_member.php?filter_type=custom&start_date=${yesterday}&end_date=${yesterday}`;
+    const topMemberPromise = fetch(topMemberUrl, {
       method: "GET",
       headers,
     });
@@ -111,11 +115,17 @@ async function loadInvalidTransaksi() {
         displayTop5margin(marginData.data);
         displayTop5Retur(result.dataRetur);
         displayTop5Activity(activityData.data);
-        setText("top_member", topMemberData.data[0].nama_cust);
-        setText(
-          "top_member_nominal",
-          "Rp. " + topMemberData.data[0].total_penjualan.toLocaleString("id-ID")
-        );
+        if (topMemberData && topMemberData.data && topMemberData.data[0]) {
+          setText("top_member", topMemberData.data[0].nama_cust);
+          setText(
+            "top_member_nominal",
+            "Rp. " +
+              topMemberData.data[0].total_penjualan.toLocaleString("id-ID")
+          );
+        } else {
+          setText("top_member", "-");
+          setText("top_member_nominal", "-");
+        }
       } else {
         displayNoData();
       }
