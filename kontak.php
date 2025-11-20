@@ -14,7 +14,6 @@ $ua = $_SERVER['HTTP_USER_AGENT'];
 $page = $_SERVER['REQUEST_URI'];
 $pageName = "Lapor Keluhan";
 
-// Cek apakah sudah ada record dalam 5 menit terakhir
 $stmt = $conn->prepare("
     SELECT id FROM visitors
     WHERE COALESCE(user_id, ip) = COALESCE(?, ?)

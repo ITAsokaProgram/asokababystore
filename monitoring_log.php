@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,51 +12,85 @@
         .log-entry {
             transition: all 0.3s ease;
         }
+
         .log-entry:hover {
             transform: translateX(4px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
         }
+
         .scrollbar-thin::-webkit-scrollbar {
             width: 8px;
         }
+
         .scrollbar-thin::-webkit-scrollbar-track {
             background: #f1f5f9;
             border-radius: 4px;
         }
+
         .scrollbar-thin::-webkit-scrollbar-thumb {
             background: #cbd5e1;
             border-radius: 4px;
         }
+
         .scrollbar-thin::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
+
         .fade-in {
             animation: fadeIn 0.5s ease-in;
         }
+
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
+
         .pulse-dot {
             animation: pulse 2s infinite;
         }
+
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
         }
+
         .gradient-bg {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
+
         .new-log {
             animation: slideInRight 0.5s ease-out;
             border-left: 4px solid #10b981 !important;
         }
+
         @keyframes slideInRight {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
     </style>
 </head>
+
 <body class="bg-gray-50 min-h-screen">
     <!-- Header -->
     <header class="gradient-bg text-white shadow-2xl">
@@ -94,8 +129,9 @@
                     </label>
                     <div class="flex space-x-2">
                         <input type="text" id="logFolderPath" placeholder="/path/to/logs" value="./logs"
-                               class="flex-1 px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
-                        <button id="loadFolderBtn" class="px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                            class="flex-1 px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                        <button id="loadFolderBtn"
+                            class="px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
                             <i class="fas fa-folder-open"></i>
                         </button>
                     </div>
@@ -105,15 +141,16 @@
                     <label class="block text-sm font-semibold text-gray-700 mb-2">
                         <i class="fas fa-calendar mr-2 text-green-500"></i>Pilih Tanggal
                     </label>
-                    <input type="date" id="dateFilter" 
-                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all">
+                    <input type="date" id="dateFilter"
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all">
                 </div>
-                
+
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">
                         <i class="fas fa-filter mr-2 text-purple-500"></i>Filter Level
                     </label>
-                    <select id="logLevel" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all">
+                    <select id="logLevel"
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all">
                         <option value="">Semua Level</option>
                         <option value="ERROR">Error</option>
                         <option value="WARN">Warning</option>
@@ -121,35 +158,39 @@
                         <option value="DEBUG">Debug</option>
                     </select>
                 </div>
-                
+
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">
                         <i class="fas fa-search mr-2 text-orange-500"></i>Cari dalam Log
                     </label>
                     <div class="relative">
                         <input type="text" id="searchInput" placeholder="Cari teks..."
-                               class="w-full px-4 py-3 pr-10 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all">
+                            class="w-full px-4 py-3 pr-10 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all">
                         <div class="absolute inset-y-0 right-0 flex items-center pr-3">
                             <i class="fas fa-search text-gray-400"></i>
                         </div>
                     </div>
                 </div>
             </div>
-            
+
             <div class="mt-6 flex flex-wrap gap-3">
-                <button id="toggleAutoRefresh" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-2">
+                <button id="toggleAutoRefresh"
+                    class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-2">
                     <i class="fas fa-play"></i>
                     <span>Auto Refresh: ON</span>
                 </button>
-                <button id="manualRefresh" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center space-x-2">
+                <button id="manualRefresh"
+                    class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center space-x-2">
                     <i class="fas fa-sync-alt"></i>
                     <span>Manual Refresh</span>
                 </button>
-                <button id="clearBtn" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center space-x-2">
+                <button id="clearBtn"
+                    class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center space-x-2">
                     <i class="fas fa-trash"></i>
                     <span>Clear</span>
                 </button>
-                <button id="exportBtn" class="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors flex items-center space-x-2">
+                <button id="exportBtn"
+                    class="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors flex items-center space-x-2">
                     <i class="fas fa-download"></i>
                     <span>Export CSV</span>
                 </button>
@@ -194,7 +235,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="bg-white p-4 rounded-xl shadow-lg border-l-4 border-yellow-500">
                         <div class="flex items-center justify-between">
                             <div>
@@ -206,7 +247,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="bg-white p-4 rounded-xl shadow-lg border-l-4 border-blue-500">
                         <div class="flex items-center justify-between">
                             <div>
@@ -218,7 +259,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="bg-white p-4 rounded-xl shadow-lg border-l-4 border-gray-500">
                         <div class="flex items-center justify-between">
                             <div>
@@ -241,20 +282,23 @@
                     <h3 class="text-lg font-semibold text-gray-800 flex items-center">
                         <i class="fas fa-file-alt mr-3 text-indigo-500"></i>
                         Log Entries
-                        <span id="logCount" class="ml-3 px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm font-medium">0 entries</span>
+                        <span id="logCount"
+                            class="ml-3 px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm font-medium">0
+                            entries</span>
                     </h3>
                     <div class="flex items-center space-x-3">
                         <div id="currentFile" class="text-sm text-gray-600">
                             <i class="fas fa-file mr-1"></i>
                             <span>Tidak ada file aktif</span>
                         </div>
-                        <button id="scrollToBottom" class="px-3 py-1 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300 transition-colors">
+                        <button id="scrollToBottom"
+                            class="px-3 py-1 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300 transition-colors">
                             <i class="fas fa-arrow-down mr-1"></i>Bottom
                         </button>
                     </div>
                 </div>
             </div>
-            
+
             <div id="logContainer" class="max-h-96 overflow-y-auto scrollbar-thin p-4 space-y-2">
                 <div id="emptyState" class="text-center py-12 text-gray-500">
                     <i class="fas fa-folder-open text-6xl mb-4 text-gray-300"></i>
@@ -264,6 +308,7 @@
             </div>
         </div>
     </div>
-        <script src="src/js/monitoring/index.js" type="module"></script>
+    <script src="src/js/monitoring/index.js" type="module"></script>
 </body>
+
 </html>

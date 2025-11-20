@@ -3,13 +3,11 @@ include 'aa_kon_sett.php';
 
 session_start();
 
-// Jika pengguna belum login, alihkan ke in_login.php
 if (!isset($_SESSION['username'])) {
     header("Location: in_login.php");
     exit;
 }
 
-// Mendapatkan data pengguna dari sesi
 $nama = $_SESSION['nama'];
 $hak = $_SESSION['hak'];
 $safe_name = $_SESSION['username'];
@@ -24,13 +22,10 @@ $safe_name = $_SESSION['username'];
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tentang</title>
 
-    <!-- font awesome cdn link  -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
 
-    <!-- Penjelasan: Link ke CSS eksternal dengan cache busting query string -->
     <link rel="stylesheet" href="css/style_in.css?v=<?php echo htmlspecialchars($css_version); ?>">
 
-    <!-- Setting logo pada tab di website Anda / Favicon -->
     <link rel="icon" type="image/png" href="/images/logo1.png">
 
 </head>

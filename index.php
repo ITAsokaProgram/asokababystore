@@ -15,7 +15,6 @@ $page = $_SERVER['REQUEST_URI'];
 $pageName = "Asoka Page";
 
 
-// Cek apakah sudah ada record dalam 5 menit terakhir
 $stmt = $conn->prepare("
     SELECT id FROM visitors
     WHERE COALESCE(user_id, ip) = COALESCE(?, ?)
@@ -224,7 +223,8 @@ if ($stmt->num_rows === 0) {
         <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <a href="/">
-                    <img src="public/images/logo.png" alt="Logo Asoka Baby Store" class="w-25 h-8 hover:scale-105 transition-transform duration-300" />
+                    <img src="public/images/logo.png" alt="Logo Asoka Baby Store"
+                        class="w-25 h-8 hover:scale-105 transition-transform duration-300" />
                 </a>
             </div>
 
@@ -237,44 +237,58 @@ if ($stmt->num_rows === 0) {
                 bg-white/95 backdrop-blur-md md:bg-transparent px-4 md:px-0 py-4 md:py-0 z-50">
                 <a href="#home-section" class="hover:text-pink-500 transition-colors duration-300 relative group">
                     Beranda
-                    <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-500 transition-all duration-300 group-hover:w-full"></span>
+                    <span
+                        class="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-500 transition-all duration-300 group-hover:w-full"></span>
                 </a>
                 <a href="#gallery-section" class="hover:text-pink-500 transition-colors duration-300 relative group">
                     Galeri
-                    <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-500 transition-all duration-300 group-hover:w-full"></span>
+                    <span
+                        class="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-500 transition-all duration-300 group-hover:w-full"></span>
                 </a>
-                <a href="/pesan_sekarang#kontak" class="hover:text-pink-500 transition-colors duration-300 relative group">
+                <a href="/pesan_sekarang#kontak"
+                    class="hover:text-pink-500 transition-colors duration-300 relative group">
                     Kontak
-                    <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-500 transition-all duration-300 group-hover:w-full"></span>
+                    <span
+                        class="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-500 transition-all duration-300 group-hover:w-full"></span>
                 </a>
                 <a href="#lokasi" class="hover:text-pink-500 transition-colors duration-300 relative group">
                     Lokasi
-                    <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-500 transition-all duration-300 group-hover:w-full"></span>
+                    <span
+                        class="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-500 transition-all duration-300 group-hover:w-full"></span>
                 </a>
-                <a href="#member-section" class="hover:text-pink-500 transition-colors duration-300 relative group" id="openModal">
+                <a href="#member-section" class="hover:text-pink-500 transition-colors duration-300 relative group"
+                    id="openModal">
                     Member
-                    <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-500 transition-all duration-300 group-hover:w-full"></span>
+                    <span
+                        class="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-500 transition-all duration-300 group-hover:w-full"></span>
                 </a>
 
                 <a href="/kontak" class="hover:text-pink-500 transition-colors duration-300 relative group">
                     Lapor
-                    <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-500 transition-all duration-300 group-hover:w-full"></span>
+                    <span
+                        class="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-500 transition-all duration-300 group-hover:w-full"></span>
                 </a>
             </nav>
 
             <div class="flex items-center gap-4">
                 <div class="relative" id="userMenu">
 
-                    <span id="userName" class="ml-2 font-medium text-sm user-name cursor-pointer hover:text-pink-500 transition-colors duration-300"></span>
+                    <span id="userName"
+                        class="ml-2 font-medium text-sm user-name cursor-pointer hover:text-pink-500 transition-colors duration-300"></span>
 
                     <div id="profileDropdown"
                         class="absolute right-0 mt-2 w-40 bg-white/95 backdrop-blur-md shadow-lg rounded-xl py-2 hidden z-50 border border-pink-100">
-                        <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-colors duration-300" id="profileBtn">Profile</a>
-                        <a href="#" id="logoutBtn" class="block px-4 py-2 text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-colors duration-300">Logout</a>
+                        <a href="#"
+                            class="block px-4 py-2 text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-colors duration-300"
+                            id="profileBtn">Profile</a>
+                        <a href="#" id="logoutBtn"
+                            class="block px-4 py-2 text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-colors duration-300">Logout</a>
                     </div>
                 </div>
 
-                <a href="/log_in" class=" md:inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-full text-sm font-semibold hover:from-pink-600 hover:to-purple-700 transition-all duration-300 hover:scale-105 shadow-lg" id="btn-klik-login">
+                <a href="/log_in"
+                    class=" md:inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-full text-sm font-semibold hover:from-pink-600 hover:to-purple-700 transition-all duration-300 hover:scale-105 shadow-lg"
+                    id="btn-klik-login">
                     <i class="fas fa-sign-in-alt"></i>
                     Login
                 </a>
@@ -309,17 +323,23 @@ if ($stmt->num_rows === 0) {
             <div class="group">
                 <div class="text-4xl font-bold gradient-text mb-2 count-animation" id="total_pelanggan"></div>
                 <p class="text-sm text-gray-600 font-medium">Total Pelanggan</p>
-                <div class="w-16 h-1 bg-gradient-to-r from-pink-500 to-purple-600 mx-auto mt-3 group-hover:w-20 transition-all duration-300"></div>
+                <div
+                    class="w-16 h-1 bg-gradient-to-r from-pink-500 to-purple-600 mx-auto mt-3 group-hover:w-20 transition-all duration-300">
+                </div>
             </div>
             <div class="group">
                 <div class="text-4xl font-bold gradient-text mb-2 count-animation" id="total_cabang"></div>
                 <p class="text-sm text-gray-600 font-medium">Total Cabang</p>
-                <div class="w-16 h-1 bg-gradient-to-r from-pink-500 to-purple-600 mx-auto mt-3 group-hover:w-20 transition-all duration-300"></div>
+                <div
+                    class="w-16 h-1 bg-gradient-to-r from-pink-500 to-purple-600 mx-auto mt-3 group-hover:w-20 transition-all duration-300">
+                </div>
             </div>
             <div class="group">
                 <div class="text-4xl font-bold gradient-text mb-2 count-animation" id="total_product"></div>
                 <p class="text-sm text-gray-600 font-medium">Total Produk</p>
-                <div class="w-16 h-1 bg-gradient-to-r from-pink-500 to-purple-600 mx-auto mt-3 group-hover:w-20 transition-all duration-300"></div>
+                <div
+                    class="w-16 h-1 bg-gradient-to-r from-pink-500 to-purple-600 mx-auto mt-3 group-hover:w-20 transition-all duration-300">
+                </div>
             </div>
         </div>
 
@@ -328,13 +348,15 @@ if ($stmt->num_rows === 0) {
             <div class="max-w-6xl mx-auto py-10 px-5">
                 <div class="text-center mb-12" data-aos="fade-down" data-aos-duration="800">
                     <h2 class="text-3xl md:text-4xl font-bold mb-4 gradient-text">Keuntungan Member</h2>
-                    <p class="text-lg text-gray-600 max-w-2xl mx-auto">Bergabunglah dengan member kami dan nikmati berbagai keuntungan eksklusif</p>
+                    <p class="text-lg text-gray-600 max-w-2xl mx-auto">Bergabunglah dengan member kami dan nikmati
+                        berbagai keuntungan eksklusif</p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
                     <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-8 border border-pink-100 card-hover-effect transition-all duration-300"
                         data-aos="fade-up" data-aos-duration="600" data-aos-delay="100">
-                        <div class="w-16 h-16 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 float-animation">
+                        <div
+                            class="w-16 h-16 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 float-animation">
                             <i class="fa-solid fa-tags text-white text-2xl"></i>
                         </div>
                         <h3 class="text-xl font-bold text-gray-800 mb-4 text-center">Diskon Khusus Member</h3>
@@ -343,7 +365,8 @@ if ($stmt->num_rows === 0) {
 
                     <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-8 border border-pink-100 card-hover-effect transition-all duration-300"
                         data-aos="fade-up" data-aos-duration="600" data-aos-delay="200">
-                        <div class="w-16 h-16 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 float-animation" style="animation-delay: 0.5s;">
+                        <div class="w-16 h-16 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 float-animation"
+                            style="animation-delay: 0.5s;">
                             <i class="fas fa-star text-white text-2xl"></i>
                         </div>
                         <h3 class="text-xl font-bold text-gray-800 mb-4 text-center">Tukar Poin Member</h3>
@@ -352,7 +375,8 @@ if ($stmt->num_rows === 0) {
 
                     <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-8 border border-pink-100 card-hover-effect transition-all duration-300"
                         data-aos="fade-up" data-aos-duration="600" data-aos-delay="300">
-                        <div class="w-16 h-16 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 float-animation" style="animation-delay: 1s;">
+                        <div class="w-16 h-16 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 float-animation"
+                            style="animation-delay: 1s;">
                             <i class="fas fa-gift text-white text-2xl"></i>
                         </div>
                         <h3 class="text-xl font-bold text-gray-800 mb-4 text-center">Gratis Bungkus Kado</h3>
@@ -375,7 +399,8 @@ if ($stmt->num_rows === 0) {
             <div class="max-w-6xl mx-auto px-4">
                 <div class="text-center mb-12" data-aos="fade-down" data-aos-duration="800">
                     <h2 class="text-3xl md:text-4xl font-bold mb-4 gradient-text">Galeri Produk</h2>
-                    <p class="text-lg text-gray-600 max-w-2xl mx-auto">Lihat koleksi produk terbaik kami untuk si kecil</p>
+                    <p class="text-lg text-gray-600 max-w-2xl mx-auto">Lihat koleksi produk terbaik kami untuk si kecil
+                    </p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 sm:grid-cols-2 gap-8">
@@ -411,10 +436,12 @@ if ($stmt->num_rows === 0) {
 
                 <!-- Location Stats -->
                 <div class="max-w-4xl mx-auto mb-8" data-aos="fade-up" data-aos-duration="600">
-                    <div class="bg-gradient-to-r from-pink-50 to-purple-50 border border-pink-100 shadow-xl rounded-2xl p-6">
+                    <div
+                        class="bg-gradient-to-r from-pink-50 to-purple-50 border border-pink-100 shadow-xl rounded-2xl p-6">
                         <div class="text-center">
                             <h3 class="text-2xl font-bold text-gray-800 mb-2">Temukan Cabang Terdekat</h3>
-                            <p class="text-gray-600">Gunakan peta di bawah untuk menemukan cabang ASOKA Baby Store terdekat dari lokasi Anda</p>
+                            <p class="text-gray-600">Gunakan peta di bawah untuk menemukan cabang ASOKA Baby Store
+                                terdekat dari lokasi Anda</p>
                         </div>
                     </div>
                 </div>
@@ -426,7 +453,8 @@ if ($stmt->num_rows === 0) {
                         data-aos="fade-right" data-aos-duration="600">
                         <div class="flex items-center justify-between mb-6">
                             <h3 class="text-xl font-bold text-gray-800 flex items-center gap-3">
-                                <div class="w-10 h-10 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center">
+                                <div
+                                    class="w-10 h-10 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center">
                                     <i class="fas fa-store text-white text-lg"></i>
                                 </div>
                                 Daftar Cabang
@@ -436,13 +464,15 @@ if ($stmt->num_rows === 0) {
                         <!-- Search and Filter Controls -->
                         <div class="mb-4 space-y-3">
                             <div class="relative">
-                                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                <i
+                                    class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                                 <input type="text" id="search-toko" placeholder="Cari nama toko..."
                                     class="w-full border-2 border-gray-200 rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-300 text-sm">
                             </div>
 
                             <div class="relative">
-                                <i class="fas fa-map-marker-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                <i
+                                    class="fas fa-map-marker-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                                 <select name="city" id="search-city"
                                     class="w-full border-2 border-gray-200 rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-300 text-sm appearance-none bg-white">
                                     <option value="all">Semua Kota</option>
@@ -457,18 +487,21 @@ if ($stmt->num_rows === 0) {
                                     <option value="BANGKA">BANGKA</option>
                                     <option value="JAKARTA UTARA">JAKARTA UTARA</option>
                                 </select>
-                                <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                                <i
+                                    class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
                             </div>
                         </div>
 
                         <!-- Location List Container -->
-                        <div id="location-list" class="space-y-3 overflow-y-auto max-h-[calc(70vh-200px)] pr-2 scrollbar-thin scrollbar-thumb-pink-300 scrollbar-track-gray-100">
+                        <div id="location-list"
+                            class="space-y-3 overflow-y-auto max-h-[calc(70vh-200px)] pr-2 scrollbar-thin scrollbar-thumb-pink-300 scrollbar-track-gray-100">
                             <!-- Location items will be populated here -->
                         </div>
 
                         <!-- No Results Message -->
                         <div id="no-results" class="hidden text-center py-8">
-                            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <div
+                                class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <i class="fas fa-search text-gray-400 text-xl"></i>
                             </div>
                             <p class="text-gray-500 text-sm">Tidak ada cabang yang ditemukan</p>
@@ -482,10 +515,12 @@ if ($stmt->num_rows === 0) {
                             <i class="fas fa-info-circle text-pink-500 mr-2"></i>
                             Gunakan dua jari untuk menggeser peta
                         </div>
-                        <div id="map" class="w-full h-full rounded-2xl shadow-xl min-h-[50vh] border border-blue-100"></div>
+                        <div id="map" class="w-full h-full rounded-2xl shadow-xl min-h-[50vh] border border-blue-100">
+                        </div>
 
                         <!-- Map Controls Info -->
-                        <div class="absolute bottom-4 right-4 bg-white/95 backdrop-blur-md rounded-xl p-3 shadow-lg border border-gray-200 hidden lg:block">
+                        <div
+                            class="absolute bottom-4 right-4 bg-white/95 backdrop-blur-md rounded-xl p-3 shadow-lg border border-gray-200 hidden lg:block">
                             <div class="text-xs text-gray-600 space-y-1">
                                 <div class="flex items-center gap-2">
                                     <i class="fas fa-crosshairs text-pink-500"></i>
@@ -503,10 +538,13 @@ if ($stmt->num_rows === 0) {
         </section>
 
         <!-- Overlay + Modal -->
-        <div id="modalMember" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden">
-            <div id="modalContent" class="bg-white/95 backdrop-blur-lg w-11/12 max-w-md p-8 rounded-2xl shadow-2xl opacity-0 scale-90 border border-pink-100">
+        <div id="modalMember"
+            class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+            <div id="modalContent"
+                class="bg-white/95 backdrop-blur-lg w-11/12 max-w-md p-8 rounded-2xl shadow-2xl opacity-0 scale-90 border border-pink-100">
                 <div class="text-center mb-6">
-                    <div class="w-16 h-16 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <div
+                        class="w-16 h-16 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
                         <i class="fas fa-user-circle text-white text-2xl"></i>
                     </div>
                     <h2 class="text-2xl font-bold text-gray-800 mb-2">Member</h2>
@@ -516,13 +554,16 @@ if ($stmt->num_rows === 0) {
                 <div class="space-y-4">
                     <div class="relative">
                         <i class="fas fa-user absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                        <input type="text" name="kode-member" id="member" inputmode="numeric" pattern="[0-9]" maxlength="13"
-                            placeholder="Kode atau no hp" class="w-full border-2 border-gray-200 rounded-xl pl-10 pr-4 py-3 focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-300" />
+                        <input type="text" name="kode-member" id="member" inputmode="numeric" pattern="[0-9]"
+                            maxlength="13" placeholder="Kode atau no hp"
+                            class="w-full border-2 border-gray-200 rounded-xl pl-10 pr-4 py-3 focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-300" />
                     </div>
 
                     <div class="flex gap-3 pt-4">
-                        <button id="closeModal" class="flex-1 px-4 py-3 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold transition-all duration-300 hover:scale-105">Tutup</button>
-                        <button id="cek-member" class="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold transition-all duration-300 hover:scale-105 shadow-lg">
+                        <button id="closeModal"
+                            class="flex-1 px-4 py-3 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold transition-all duration-300 hover:scale-105">Tutup</button>
+                        <button id="cek-member"
+                            class="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold transition-all duration-300 hover:scale-105 shadow-lg">
                             <i class="fas fa-search mr-2"></i>Cek Member
                         </button>
                     </div>
@@ -531,10 +572,13 @@ if ($stmt->num_rows === 0) {
         </div>
 
         <!-- Overlay + Modal -->
-        <div id="modalMember1" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden">
-            <div id="modalContent1" class="bg-white/95 backdrop-blur-lg w-11/12 max-w-md p-8 rounded-2xl shadow-2xl opacity-0 scale-90 border border-pink-100">
+        <div id="modalMember1"
+            class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+            <div id="modalContent1"
+                class="bg-white/95 backdrop-blur-lg w-11/12 max-w-md p-8 rounded-2xl shadow-2xl opacity-0 scale-90 border border-pink-100">
                 <div class="text-center mb-6">
-                    <div class="w-16 h-16 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <div
+                        class="w-16 h-16 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
                         <i class="fas fa-user-circle text-white text-2xl"></i>
                     </div>
                     <h2 class="text-2xl font-bold text-gray-800 mb-2">Member</h2>
@@ -545,12 +589,15 @@ if ($stmt->num_rows === 0) {
                     <div class="relative">
                         <i class="fas fa-user absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                         <input id="member1" type="text" inputmode="numeric" pattern="[0-9]" maxlength="13"
-                            placeholder="Kode atau no hp" class="w-full border-2 border-gray-200 rounded-xl pl-10 pr-4 py-3 focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-300" />
+                            placeholder="Kode atau no hp"
+                            class="w-full border-2 border-gray-200 rounded-xl pl-10 pr-4 py-3 focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-300" />
                     </div>
 
                     <div class="flex gap-3 pt-4">
-                        <button id="closeModal1" class="flex-1 px-4 py-3 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold transition-all duration-300 hover:scale-105">Tutup</button>
-                        <button id="cek-member1" class="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold transition-all duration-300 hover:scale-105 shadow-lg">
+                        <button id="closeModal1"
+                            class="flex-1 px-4 py-3 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold transition-all duration-300 hover:scale-105">Tutup</button>
+                        <button id="cek-member1"
+                            class="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold transition-all duration-300 hover:scale-105 shadow-lg">
                             <i class="fas fa-search mr-2"></i>Cek Member
                         </button>
                     </div>
@@ -651,7 +698,9 @@ if ($stmt->num_rows === 0) {
 
             <!-- Progress Bar -->
             <div class="w-80 h-3 bg-gray-200 rounded-full overflow-hidden shadow-inner">
-                <div id="progressBar" class="h-full bg-gradient-to-r from-pink-500 to-purple-600 w-0 rounded-full transition-all duration-300 shadow-lg"></div>
+                <div id="progressBar"
+                    class="h-full bg-gradient-to-r from-pink-500 to-purple-600 w-0 rounded-full transition-all duration-300 shadow-lg">
+                </div>
             </div>
 
             <!-- Loading Text -->
@@ -773,7 +822,7 @@ if ($stmt->num_rows === 0) {
         window.addEventListener('load', setActiveBottomNav);
 
         // Handle member modal from bottom nav
-        document.getElementById('openModalBottom').addEventListener('click', function(e) {
+        document.getElementById('openModalBottom').addEventListener('click', function (e) {
             e.preventDefault();
             document.getElementById('openModal').click();
         });

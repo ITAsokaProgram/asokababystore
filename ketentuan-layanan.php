@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,13 +15,15 @@
         }
     </style>
 </head>
+
 <body class="bg-gray-50 min-h-screen">
     <!-- Header -->
     <header class="bg-white shadow-md sticky top-0 z-50 border-b border-gray-200">
         <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <a href="/">
-                    <img src="public/images/logo.png" alt="Logo Asoka Baby Store" class="w-25 h-8 hover:scale-105 transition-transform duration-300">
+                    <img src="public/images/logo.png" alt="Logo Asoka Baby Store"
+                        class="w-25 h-8 hover:scale-105 transition-transform duration-300">
                 </a>
             </div>
             <a href="/" class="text-sm font-semibold text-gray-700 hover:text-pink-500 transition-colors duration-300">
@@ -38,7 +41,8 @@
                     <i class="fas fa-file-contract text-white text-3xl"></i>
                 </div>
                 <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Syarat dan Ketentuan Member Asoka</h1>
-                <p class="text-gray-600 text-lg">Dengan mendaftar sebagai member ASOKA, Anda dianggap telah membaca, memahami, dan menyetujui syarat dan ketentuan berikut:</p>
+                <p class="text-gray-600 text-lg">Dengan mendaftar sebagai member ASOKA, Anda dianggap telah membaca,
+                    memahami, dan menyetujui syarat dan ketentuan berikut:</p>
             </div>
 
             <!-- Section 1: Biaya Pendaftaran -->
@@ -79,7 +83,8 @@
                         </li>
                         <li class="flex items-start">
                             <i class="fas fa-star text-blue-500 mt-1 mr-3 flex-shrink-0"></i>
-                            <span><strong>1 poin</strong> untuk setiap <strong>Rp 100.000,-</strong> (produk tertentu)</span>
+                            <span><strong>1 poin</strong> untuk setiap <strong>Rp 100.000,-</strong> (produk
+                                tertentu)</span>
                         </li>
                         <li class="flex items-start">
                             <i class="fas fa-gifts text-blue-500 mt-1 mr-3 flex-shrink-0"></i>
@@ -142,7 +147,8 @@
                                     <span><strong>Akhir Desember</strong> (Periode 2)</span>
                                 </li>
                             </ul>
-                            <p class="text-gray-700 mt-3"><strong class="text-red-600">⚠️ Poin yang lewat batas hangus</strong></p>
+                            <p class="text-gray-700 mt-3"><strong class="text-red-600">⚠️ Poin yang lewat batas
+                                    hangus</strong></p>
                         </div>
                     </div>
                 </div>
@@ -203,7 +209,8 @@
                 <div class="ml-16 bg-orange-50 rounded-lg p-5 border border-orange-200">
                     <div class="flex items-start">
                         <i class="fas fa-info-circle text-orange-500 text-xl mt-1 mr-3 flex-shrink-0"></i>
-                        <span class="text-gray-700">ASOKA berhak mengubah ketentuan <strong>tanpa pemberitahuan</strong></span>
+                        <span class="text-gray-700">ASOKA berhak mengubah ketentuan <strong>tanpa
+                                pemberitahuan</strong></span>
                     </div>
                 </div>
             </div>
@@ -214,7 +221,9 @@
                     <i class="fas fa-check-circle text-pink-600 text-3xl mt-1 mr-4 flex-shrink-0"></i>
                     <div>
                         <h3 class="font-bold text-gray-800 mb-3 text-lg">Pernyataan Persetujuan</h3>
-                        <p class="text-gray-700 leading-relaxed">Dengan ini, saya bermaksud untuk mendaftarkan diri sebagai member ASOKA dan menyatakan telah membaca serta memahami syarat dan ketentuan yang berlaku.</p>
+                        <p class="text-gray-700 leading-relaxed">Dengan ini, saya bermaksud untuk mendaftarkan diri
+                            sebagai member ASOKA dan menyatakan telah membaca serta memahami syarat dan ketentuan yang
+                            berlaku.</p>
                     </div>
                 </div>
             </div>
@@ -222,11 +231,13 @@
 
         <!-- Quick Links -->
         <div class="mt-8 flex flex-wrap gap-4 justify-center">
-            <a href="/kebijakan-privasi" class="inline-flex items-center gap-2 px-6 py-3 bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 border border-gray-200">
+            <a href="/kebijakan-privasi"
+                class="inline-flex items-center gap-2 px-6 py-3 bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 border border-gray-200">
                 <i class="fas fa-shield-alt text-pink-500"></i>
                 <span class="font-semibold text-gray-700">Kebijakan Privasi</span>
             </a>
-            <a href="/hapus-data" class="inline-flex items-center gap-2 px-6 py-3 bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 border border-gray-200">
+            <a href="/hapus-data"
+                class="inline-flex items-center gap-2 px-6 py-3 bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 border border-gray-200">
                 <i class="fas fa-user-slash text-pink-500"></i>
                 <span class="font-semibold text-gray-700">Hapus Data</span>
             </a>
@@ -240,4 +251,5 @@
         </div>
     </footer>
 </body>
+
 </html>
