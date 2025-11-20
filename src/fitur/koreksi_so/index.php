@@ -35,6 +35,7 @@ $kd_store = $_GET['kd_store'] ?? 'all';
 <body class="bg-gray-50" x-data="{ showDetailModal: false, modalTitle: '', modalItems: [], isLoadingModal: false }"
     @open-modal.window="showDetailModal = true; modalTitle = $event.detail.title; modalItems = []; isLoadingModal = true"
     @update-modal.window="modalItems = $event.detail.items; isLoadingModal = false">
+    <?php include '../../component/navigation_report.php' ?>
 
     <?php include '../../component/sidebar_report.php' ?>
 
@@ -203,7 +204,7 @@ $kd_store = $_GET['kd_store'] ?? 'all';
                             </tr>
                         </thead>
                         <tbody>
-                            <template x-for="item in modalItems" :key="item.no_kor">
+                            <template x-for="(item, index) in modalItems" :key="index">
                                 <tr class="hover:bg-gray-50">
                                     <td x-text="item.no_faktur" class="text-xs"></td>
                                     <td x-text="item.no_kor" class="text-xs"></td>
