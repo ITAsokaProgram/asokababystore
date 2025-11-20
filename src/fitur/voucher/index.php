@@ -109,9 +109,9 @@ if ($page < 1) {
                                     <th>Kode Voucher</th>
                                     <th>Pemilik</th>
                                     <th>Store</th>
-                                    <th>Nilai (Rp)</th>
-                                    <th>Terpakai (Rp)</th>
-                                    <th>Sisa (Rp)</th>
+                                    <th>Nilai</th>
+                                    <th>Terpakai</th>
+                                    <th>Sisa</th>
                                     <th>Tgl Awal</th>
                                     <th>Tgl Akhir</th>
                                     <th>Status</th>

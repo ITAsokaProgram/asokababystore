@@ -22,6 +22,7 @@ function setupDateDefaults() {
   minDate.setDate(today.getDate() + 3);
   const minStr = formatDateInput(minDate);
   dateInput.min = minStr;
+  dateInput.value = minStr;
   if (displaySpan) {
     displaySpan.textContent = minDate.toLocaleDateString("id-ID", {
       weekday: "long",
