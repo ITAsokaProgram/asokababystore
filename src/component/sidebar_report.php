@@ -633,10 +633,10 @@
 
         <div class="relative ">
             <a href="/src/fitur/products/product" id="productLink" data-menu="products"
-                class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-fuchsia-100 hover:to-fuchsia-200 hover:text-fuchsia-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-fuchsia-300">
+                class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-cyan-100 hover:to-cyan-200 hover:text-cyan-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-cyan-300">
                 <div class="w-8 flex justify-center">
                     <i
-                        class="fa-solid fa-box text-xl text-fuchsia-600 group-hover:text-fuchsia-700 transition-all duration-300 group-hover:scale-125 group-hover:-rotate-12 group-hover:drop-shadow-lg"></i>
+                        class="fa-solid fa-box text-xl text-cyan-600 group-hover:text-cyan-700 transition-all duration-300 group-hover:scale-125 group-hover:-rotate-12 group-hover:drop-shadow-lg"></i>
                 </div>
                 <span
                     class="sidebar-text ml-3 font-medium transition-all duration-300 group-hover:translate-x-1">Produk</span>
@@ -645,10 +645,10 @@
 
         <div class="relative ">
             <a href="/src/fitur/aset/history_aset" id="productLink" data-menu="history_aset"
-                class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-fuchsia-100 hover:to-fuchsia-200 hover:text-fuchsia-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-fuchsia-300">
+                class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-cyan-100 hover:to-cyan-200 hover:text-cyan-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-cyan-300">
                 <div class="w-8 flex justify-center">
                     <i
-                        class="fa-solid fa-boxes-packing text-xl text-fuchsia-600 group-hover:text-fuchsia-700 transition-all duration-300 group-hover:scale-125 group-hover:-rotate-12 group-hover:drop-shadow-lg"></i>
+                        class="fa-solid fa-boxes-packing text-xl text-cyan-600 group-hover:text-cyan-700 transition-all duration-300 group-hover:scale-125 group-hover:-rotate-12 group-hover:drop-shadow-lg"></i>
                 </div>
                 <span
                     class="sidebar-text ml-3 font-medium transition-all duration-300 group-hover:translate-x-1">Management
@@ -658,10 +658,10 @@
 
         <div x-data="{ open: false }" class="relative ">
             <button @click="open = !open" id="upload-menu" data-menu="upload_banner"
-                class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-fuchsia-100 hover:to-fuchsia-200 hover:text-fuchsia-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-fuchsia-300">
+                class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-cyan-100 hover:to-cyan-200 hover:text-cyan-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-cyan-300">
                 <div class="w-8 flex justify-center">
                     <i
-                        class="fa-solid fa-upload text-xl text-fuchsia-600 group-hover:text-fuchsia-700 transition-all duration-300 group-hover:scale-125 group-hover:-rotate-12 group-hover:drop-shadow-lg"></i>
+                        class="fa-solid fa-upload text-xl text-cyan-600 group-hover:text-cyan-700 transition-all duration-300 group-hover:scale-125 group-hover:-rotate-12 group-hover:drop-shadow-lg"></i>
                 </div>
                 <span
                     class="sidebar-text ml-3 font-medium transition-all duration-300 group-hover:translate-x-1">Upload</span>
@@ -671,16 +671,16 @@
                 </svg>
             </button>
             <div x-show="open" @click.away="open = false"
-                class="mt-3 ml-4 bg-gradient-to-br from-white to-fuchsia-50 rounded-xl shadow-xl border border-fuchsia-200 z-10 backdrop-blur-sm"
+                class="mt-3 ml-4 bg-gradient-to-br from-white to-cyan-50 rounded-xl shadow-xl border border-cyan-200 z-10 backdrop-blur-sm"
                 style="display: none;">
                 <ul class="py-2">
                     <li>
                         <a href="/src/fitur/banner/view_banner" data-menu="upload_banner"
-                            class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-fuchsia-100 hover:text-fuchsia-700 transition-all duration-200 group rounded-lg">
+                            class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-cyan-100 hover:text-cyan-700 transition-all duration-200 group rounded-lg">
                             <span
                                 class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
                                 <i
-                                    class="fa-regular fa-image mr-2 text-base text-fuchsia-400 group-hover:text-fuchsia-600 group-hover:scale-110 transition-all duration-200"></i>
+                                    class="fa-regular fa-image mr-2 text-base text-cyan-400 group-hover:text-cyan-600 group-hover:scale-110 transition-all duration-200"></i>
                                 Banner
                             </span>
                         </a>
@@ -689,7 +689,8 @@
             </div>
         </div>
 
-        <div x-data="{ open: false, nestedOpenKoreksi: false, nestedOpenJadwalSO: false }" class="relative ">
+        <div x-data="{ open: false, nestedOpenKoreksi: false, nestedOpenJadwalSO: false, nestedOpenVoucher: false }"
+            class="relative ">
             <button @click="open = !open" id="tools"
                 class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-cyan-100 hover:to-cyan-200 hover:text-cyan-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-cyan-300">
                 <div class="w-8 flex justify-center">
@@ -708,7 +709,7 @@
                 class="mt-3 ml-4 bg-gradient-to-br from-white to-cyan-50 rounded-xl shadow-xl border border-cyan-200 z-10 backdrop-blur-sm"
                 style="display: none;">
                 <ul class="py-2 space-y-1">
-                    <!-- Approval (sekarang Koreksi) -->
+
                     <li>
                         <a href="/src/fitur/approval/izin" data-menu="izin"
                             class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-cyan-100 hover:text-cyan-700 transition-all duration-200 group rounded-lg">
@@ -720,6 +721,7 @@
                             </span>
                         </a>
                     </li>
+
                     <li>
                         <a href="/src/fitur/koreksi_so/index.php" data-menu="koreksi_so"
                             class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-cyan-100 hover:text-cyan-700 transition-all duration-200 group rounded-lg">
@@ -731,14 +733,14 @@
                             </span>
                         </a>
                     </li>
-                    <!-- Jadwal SO -->
+
                     <li>
                         <button @click="nestedOpenJadwalSO = !nestedOpenJadwalSO"
-                            class="w-full text-left px-4 py-2.5 text-gray-700 hover:bg-slate-100 hover:text-slate-700 transition-all duration-200 flex items-center group cursor-pointer rounded-lg">
+                            class="w-full text-left px-4 py-2.5 text-gray-700 hover:bg-cyan-100 hover:text-cyan-700 transition-all duration-200 flex items-center group cursor-pointer rounded-lg">
                             <span
                                 class="transition-all duration-300 group-hover:translate-x-1 font-medium flex items-center">
                                 <i
-                                    class="fa-solid fa-calendar-days mr-2 text-lg text-slate-500 group-hover:text-slate-600 transition-all duration-200 group-hover:scale-110"></i>
+                                    class="fa-solid fa-calendar-days mr-2 text-lg text-cyan-500 group-hover:text-cyan-600 transition-all duration-200 group-hover:scale-110"></i>
                                 Jadwal SO
                             </span>
                             <svg class="ml-auto w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1"
@@ -751,14 +753,14 @@
                         <div x-show="nestedOpenJadwalSO" @click.away="nestedOpenJadwalSO = false" class="ml-4 mt-1"
                             style="display: none;">
                             <ul
-                                class="bg-gradient-to-br from-slate-50 to-gray-50 rounded-lg p-2 space-y-1 border border-slate-200">
+                                class="bg-gradient-to-br from-cyan-50 to-gray-50 rounded-lg p-2 space-y-1 border border-cyan-200">
                                 <li>
                                     <a href="/src/fitur/laporan/jadwal_so/index.php" data-menu="laporan_jadwal_so"
-                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-slate-100 hover:text-slate-600 transition-all duration-200 group rounded-md">
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-cyan-100 hover:text-cyan-600 transition-all duration-200 group rounded-md">
                                         <span
                                             class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
                                             <i
-                                                class="fa-solid fa-list-check mr-2 text-base text-slate-400 group-hover:text-slate-600 group-hover:scale-110 transition-all duration-200"></i>
+                                                class="fa-solid fa-list-check mr-2 text-base text-cyan-400 group-hover:text-cyan-600 group-hover:scale-110 transition-all duration-200"></i>
                                             Jadwal SO
                                         </span>
                                     </a>
@@ -766,26 +768,72 @@
                                 <li>
                                     <a href="/src/fitur/laporan/jadwal_so/create_jadwal_so.php"
                                         data-menu="laporan_jadwal_so_create"
-                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-slate-100 hover:text-slate-600 transition-all duration-200 group rounded-md">
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-cyan-100 hover:text-cyan-600 transition-all duration-200 group rounded-md">
                                         <span
                                             class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
                                             <i
-                                                class="fa-solid fa-plus mr-2 text-base text-slate-400 group-hover:text-slate-600 group-hover:scale-110 transition-all duration-200"></i>
-                                            Buat / Create
+                                                class="fa-solid fa-plus mr-2 text-base text-cyan-400 group-hover:text-cyan-600 group-hover:scale-110 transition-all duration-200"></i>
+                                            Buat Jadwal
                                         </span>
                                     </a>
                                 </li>
                             </ul>
                         </div>
                     </li>
-                    <!-- Koreksi Stok -->
+
+                    <li>
+                        <button @click="nestedOpenVoucher = !nestedOpenVoucher"
+                            class="w-full text-left px-4 py-2.5 text-gray-700 hover:bg-cyan-100 hover:text-cyan-700 transition-all duration-200 flex items-center group cursor-pointer rounded-lg">
+                            <span
+                                class="transition-all duration-300 group-hover:translate-x-1 font-medium flex items-center">
+                                <i
+                                    class="fa-solid fa-ticket mr-2 text-lg text-cyan-500 group-hover:text-cyan-600 transition-all duration-200 group-hover:scale-110"></i>
+                                Voucher
+                            </span>
+                            <svg class="ml-auto w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1"
+                                :class="{ 'rotate-180': nestedOpenVoucher }" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div x-show="nestedOpenVoucher" @click.away="nestedOpenVoucher = false" class="ml-4 mt-1"
+                            style="display: none;">
+                            <ul
+                                class="bg-gradient-to-br from-cyan-50 to-pink-50 rounded-lg p-2 space-y-1 border border-cyan-200">
+                                <li>
+                                    <a href="/src/fitur/voucher/index.php" data-menu="voucher_index"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-cyan-100 hover:text-cyan-600 transition-all duration-200 group rounded-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-list mr-2 text-base text-cyan-400 group-hover:text-cyan-600 group-hover:scale-110 transition-all duration-200"></i>
+                                            Data Voucher
+                                        </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/src/fitur/voucher/create_voucher.php" data-menu="voucher_create"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-cyan-100 hover:text-cyan-600 transition-all duration-200 group rounded-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-plus mr-2 text-base text-cyan-400 group-hover:text-cyan-600 group-hover:scale-110 transition-all duration-200"></i>
+                                            Buat Voucher
+                                        </span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
 
                 </ul>
             </div>
         </div>
+
+
     </nav>
 </div>
-
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const currentPath = window.location.pathname;
@@ -847,20 +895,21 @@
         } else if (currentPath.includes('/src/fitur/whatsapp_cs/dashboard_whatsapp')) {
             document.getElementById('whatsappLink').classList.add('btn', 'active');
         }
-        // MENU TOOLS - Approval Koreksi
+
+        // MENU TOOLS LOGIC
         else if (currentPath.includes('/src/fitur/approval/izin')) {
             document.getElementById('tools').classList.add('btn', 'active');
         }
         else if (currentPath.includes('/src/fitur/koreksi_so/index.php')) {
             document.getElementById('tools').classList.add('btn', 'active');
         }
-        // MENU TOOLS - Jadwal SO
-        else if (currentPath.includes('/src/fitur/laporan/jadwal_so/index.php')) {
-            document.getElementById('tools').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/laporan/jadwal_so/create_jadwal_so.php')) {
+        else if (currentPath.includes('/src/fitur/laporan/jadwal_so/')) {
             document.getElementById('tools').classList.add('btn', 'active');
         }
-        // MENU TOOLS - Koreksi Stok
+        // Logic baru untuk Voucher
+        else if (currentPath.includes('/src/fitur/voucher/')) {
+            document.getElementById('tools').classList.add('btn', 'active');
+        }
         else if (currentPath.includes('/src/fitur/koreksi_stok/by_supplier')) {
             document.getElementById('laporan').classList.add('btn', 'active');
         } else if (currentPath.includes('/src/fitur/koreksi_stok/by_plu')) {

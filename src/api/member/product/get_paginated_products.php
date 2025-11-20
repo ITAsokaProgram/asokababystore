@@ -56,13 +56,9 @@ $cacheKey = "report:paginated_products:" .
     "&end=$end_date";
 try {
     $cachedData = $redis->get($cacheKey);
-    if ($cachedData) {
-        if (php_sapi_name() !== 'cli') {
-            http_response_code(200);
-            echo $cachedData;
-        } else {
-            echo "Cache found for $cacheKey. Skipping DB query.\n";
-        }
+    if ($cachedData && php_sapi_name() !== 'cli') {
+        http_response_code(200);
+        echo $cachedData;
         $conn->close();
         exit;
     }
@@ -72,7 +68,7 @@ try {
     }
 }
 if (php_sapi_name() === 'cli') {
-    echo "Cache not found. Generating cache...\n";
+    echo date('Y-m-d H:i:s') . " - CLI Mode: Force Refresh. Mengabaikan cache lama, mengambil data baru dari DB...\n";
 }
 $offset = ($page - 1) * $limit;
 $params = [];
@@ -183,6 +179,15 @@ if ($filter_type === 'custom' && $start_date && $end_date) {
         $types .= "ss";
     }
 }
+if ($type === 'member') {
+    $typeSql = " AND t.kd_cust IS NOT NULL AND t.kd_cust NOT IN ('', '898989', '#898989', '#999999999') ";
+} elseif ($type === 'non_member') {
+    $typeSql = " AND (t.kd_cust IS NULL OR t.kd_cust IN ('', '898989', '#898989', '#999999999')) ";
+    $status = 'all';
+} else {
+    $typeSql = "";
+    $status = 'all';
+}
 $cutoff_active = date('Y-m-d 00:00:00', strtotime("-3 months"));
 if ($status === 'active') {
     $status_sql = " AND (c.Last_Trans >= ?) ";
@@ -192,14 +197,7 @@ if ($status === 'active') {
     $status_sql = " AND (c.Last_Trans < ? OR c.Last_Trans IS NULL) ";
     $params[] = $cutoff_active;
     $types .= "s";
-}
-if ($type === 'member') {
-    $typeSql = " AND t.kd_cust IS NOT NULL AND t.kd_cust NOT IN ('', '898989', '#898989', '#999999999') ";
-} elseif ($type === 'non_member') {
-    $typeSql = " AND (t.kd_cust IS NULL OR t.kd_cust IN ('', '898989', '#898989', '#999999999')) ";
-    $status_sql = "";
 } else {
-    $typeSql = "";
     $status_sql = "";
 }
 if (!empty($search)) {
@@ -212,9 +210,6 @@ if (!empty($search)) {
 $joinSql = "";
 if ($status === 'active' || $status === 'inactive') {
     $joinSql = " LEFT JOIN customers c ON t.kd_cust = c.kd_cust ";
-}
-if ($type === 'non_member') {
-    $joinSql = "";
 }
 $orderBySql = " ORDER BY total_penjualan DESC ";
 if ($sortBy === 'qty') {

@@ -79,13 +79,10 @@ $cacheKey = "report:top_members_filter:" .
     "&limit=$limit";
 try {
     $cachedData = $redis->get($cacheKey);
-    if ($cachedData) {
-        if (php_sapi_name() !== 'cli') {
-            http_response_code(200);
-            echo $cachedData;
-        } else {
-            echo date('Y-m-d H:i:s') . " - Cache found for $cacheKey. Skipping DB query.\n";
-        }
+
+    if ($cachedData && php_sapi_name() !== 'cli') {
+        http_response_code(200);
+        echo $cachedData;
         $conn->close();
         exit;
     }
@@ -94,8 +91,9 @@ try {
         $logger->error("Redis cache get failed: " . $e->getMessage());
     }
 }
+
 if (php_sapi_name() === 'cli') {
-    echo date('Y-m-d H:i:s') . " - Cache not found. Generating cache...\n";
+    echo date('Y-m-d H:i:s') . " - CLI Mode: Force Refresh. Mengabaikan cache lama, mengambil data baru dari DB...\n";
 }
 function getDateFilterParams($get_params, $table_alias = 't')
 {

@@ -46,13 +46,9 @@ $cacheKey = "report:top_member_sales:" .
     "&end=$end_date";
 try {
     $cachedData = $redis->get($cacheKey);
-    if ($cachedData) {
-        if (php_sapi_name() !== 'cli') {
-            http_response_code(200);
-            echo $cachedData;
-        } else {
-            echo "Cache found for $cacheKey. Skipping DB query.\n";
-        }
+    if ($cachedData && php_sapi_name() !== 'cli') {
+        http_response_code(200);
+        echo $cachedData;
         $conn->close();
         exit;
     }
@@ -61,8 +57,9 @@ try {
         $logger->error("Redis cache get failed: " . $e->getMessage());
     }
 }
+
 if (php_sapi_name() === 'cli') {
-    echo "Cache not found for default view. Generating cache...\n";
+    echo date('Y-m-d H:i:s') . " - CLI Mode: Force Refresh. Mengabaikan cache lama, mengambil data baru dari DB...\n";
 }
 $params = [];
 $types = "";

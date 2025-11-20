@@ -58,7 +58,6 @@ $selected_city = $_GET['city'] ?? null;
 $selected_district = $_GET['district'] ?? null;
 $limit_param = $_GET['limit'] ?? 'default';
 
-// 6. Redis Cache Check
 $cacheKey = "report:member_loc:" .
     "status=$status" .
     "&type=$filter_type" .
@@ -69,16 +68,11 @@ $cacheKey = "report:member_loc:" .
     "&city=$selected_city" .
     "&dist=$selected_district" .
     "&limit=$limit_param";
-
 try {
     $cachedData = $redis->get($cacheKey);
-    if ($cachedData) {
-        if (php_sapi_name() !== 'cli') {
-            http_response_code(200);
-            echo $cachedData;
-        } else {
-            echo date('Y-m-d H:i:s') . " - Cache found for $cacheKey. Skipping DB query.\n";
-        }
+    if ($cachedData && php_sapi_name() !== 'cli') {
+        http_response_code(200);
+        echo $cachedData;
         $conn->close();
         exit;
     }
@@ -89,10 +83,9 @@ try {
 }
 
 if (php_sapi_name() === 'cli') {
-    echo date('Y-m-d H:i:s') . " - Cache not found. Generating cache...\n";
+    echo date('Y-m-d H:i:s') . " - CLI Mode: Force Refresh. Mengabaikan cache lama, mengambil data baru dari DB...\n";
 }
 
-// --- LOGIKA UTAMA ---
 
 function getDateFilterParams($filter_type, $filter_preset, $start_date, $end_date, $table_alias = 't')
 {

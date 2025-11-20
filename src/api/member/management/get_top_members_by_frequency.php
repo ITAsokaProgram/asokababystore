@@ -53,13 +53,10 @@ $cacheKey = "report:top_member_freq:" .
     "&export=" . ($is_export ? '1' : '0');
 try {
     $cachedData = $redis->get($cacheKey);
-    if ($cachedData) {
-        if (php_sapi_name() !== 'cli') {
-            http_response_code(200);
-            echo $cachedData;
-        } else {
-            echo date('Y-m-d H:i:s') . " - Cache found for $cacheKey. Skipping DB query.\n";
-        }
+
+    if ($cachedData && php_sapi_name() !== 'cli') {
+        http_response_code(200);
+        echo $cachedData;
         $conn->close();
         exit;
     }
@@ -68,12 +65,11 @@ try {
         $logger->error("Redis cache get failed: " . $e->getMessage());
     }
 }
+
 if (php_sapi_name() === 'cli') {
-    echo date('Y-m-d H:i:s') . " - Cache not found. Generating cache...\n";
+    echo date('Y-m-d H:i:s') . " - CLI Mode: Force Refresh. Mengabaikan cache lama, mengambil data baru dari DB...\n";
 }
-/**
- * Helper untuk mendapatkan parameter filter tanggal.
- */
+
 function getDateFilterParams($filter_type, $filter_preset, $start_date, $end_date, $table_alias = 't')
 {
     $date_where_clause = "";
