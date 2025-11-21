@@ -279,6 +279,7 @@ $token = $menuHandler->getToken();
                                 <option value="Manajer">👨‍💼 Manajer</option>
                                 <option value="IT">💻 IT</option>
                                 <option value="Admin">⚙️ Admin</option>
+                                <option value="Superadmin">⚙️ Superadmin</option>
                             </select>
                         </div>
                         <!-- Posisi -->

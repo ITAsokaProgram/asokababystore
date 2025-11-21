@@ -1,3 +1,22 @@
+<?php
+
+
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
+
+$isSuperAdmin = false;
+
+if (isset($_COOKIE['admin_token'])) {
+    try {
+        $decoded = JWT::decode($_COOKIE['admin_token'], new Key(JWT_SECRET_KEY, 'HS256'));
+        if ($decoded->role === 'Superadmin') {
+            $isSuperAdmin = true;
+        }
+    } catch (Exception $e) {
+        $isSuperAdmin = false;
+    }
+}
+?>
 <div id="sidebar"
     class="bg-white text-gray-700 w-64 h-screen flex flex-col p-6 fixed left-0 top-0 transition-all duration-300 shadow-2xl border-r border-blue-200 z-40">
     <button id="closeSidebar"
@@ -586,50 +605,46 @@
             </div>
         </div>
 
-        <div x-data="{ open: false, nestedOpenAccount: false, nestedOpenAccount: false }" class="relative ">
-            <button @click="open = !open" id="account"
-                class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-indigo-100 hover:to-indigo-200 hover:text-indigo-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-indigo-300">
-                <div class="w-8 flex justify-center">
-                    <i
-                        class="fa-solid fa-user text-xl text-indigo-600 group-hover:text-indigo-700 transition-all duration-300 group-hover:scale-125 group-hover:-rotate-12 group-hover:drop-shadow-lg"></i>
-                </div>
-                <span
-                    class="sidebar-text ml-3 font-medium transition-all duration-300 group-hover:translate-x-1">Account</span>
-                <svg class="ml-auto w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1"
-                    :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                </svg>
-            </button>
-
-            <div x-show="open" @click.away="open = false"
-                class="mt-3 ml-4 bg-gradient-to-br from-white to-indigo-50 rounded-xl shadow-xl border border-indigo-200 z-10 backdrop-blur-sm"
-                style="display: none;">
-                <ul class="py-2 space-y-1">
-                    <li>
-                        <a href="/src/fitur/account/in_new_user" data-menu="insert_new_user"
-                            class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-indigo-100 hover:text-indigo-700 transition-all duration-200 group rounded-lg">
-                            <span
-                                class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
-                                <i
-                                    class="fa-solid fa-user-plus mr-2 text-base text-indigo-400 group-hover:text-indigo-600 group-hover:scale-110 transition-all duration-200"></i>
-                                Tambah Anggota
-                            </span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/src/fitur/account/manajemen_user" data-menu="user_management"
-                            class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-all duration-200 group rounded-lg">
-                            <span
-                                class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
-                                <i
-                                    class="fa-solid fa-users-cog mr-2 text-base text-indigo-400 group-hover:text-indigo-600 group-hover:scale-110 transition-all duration-200"></i>
-                                Kelola Anggota
-                            </span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
+        <?php if ($isSuperAdmin): // HANYA TAMPIL JIKA SUPERADMIN ?>
+<div x-data="{ open: false, nestedOpenAccount: false }" class="relative ">
+    <button @click="open = !open" id="account"
+        class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-indigo-100 hover:to-indigo-200 hover:text-indigo-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-indigo-300">
+        <div class="w-8 flex justify-center">
+            <i class="fa-solid fa-user text-xl text-indigo-600 group-hover:text-indigo-700 transition-all duration-300 group-hover:scale-125 group-hover:-rotate-12 group-hover:drop-shadow-lg"></i>
         </div>
+        <span class="sidebar-text ml-3 font-medium transition-all duration-300 group-hover:translate-x-1">Account</span>
+        <svg class="ml-auto w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1"
+            :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+    </button>
+
+    <div x-show="open" @click.away="open = false"
+        class="mt-3 ml-4 bg-gradient-to-br from-white to-indigo-50 rounded-xl shadow-xl border border-indigo-200 z-10 backdrop-blur-sm"
+        style="display: none;">
+        <ul class="py-2 space-y-1">
+            <li>
+                <a href="/src/fitur/account/in_new_user" data-menu="insert_new_user"
+                    class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-indigo-100 hover:text-indigo-700 transition-all duration-200 group rounded-lg">
+                    <span class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
+                        <i class="fa-solid fa-user-plus mr-2 text-base text-indigo-400 group-hover:text-indigo-600 group-hover:scale-110 transition-all duration-200"></i>
+                        Tambah Anggota
+                    </span>
+                </a>
+            </li>
+            <li>
+                <a href="/src/fitur/account/manajemen_user" data-menu="user_management"
+                    class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-all duration-200 group rounded-lg">
+                    <span class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
+                        <i class="fa-solid fa-users-cog mr-2 text-base text-indigo-400 group-hover:text-indigo-600 group-hover:scale-110 transition-all duration-200"></i>
+                        Kelola Anggota
+                    </span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+<?php endif; ?>
 
         <div class="relative ">
             <a href="/src/fitur/products/product" id="productLink" data-menu="products"
