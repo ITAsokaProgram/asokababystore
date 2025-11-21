@@ -5,11 +5,13 @@ import { getCookie } from "/src/js/index/utils/cookies.js";
 const userObject = [];
 let currentBon = null;
 let currentKasir = null;
+
 export const handleReviewClick = (bon, namaKasir) => {
   currentBon = bon;
   currentKasir = namaKasir;
   openReviewModal(bon, "reviewModal");
 };
+
 // // Checking Direct Link Access
 const token = getCookie("customer_token");
 if (!token) {
@@ -37,7 +39,6 @@ if (!token) {
       if (!response.ok) {
         throw new Error("Sesi tidak valid atau telah kedaluwarsa.");
       }
-
       return response.json();
     })
     .then((data) => {
@@ -123,15 +124,20 @@ for (let i = 1; i <= 5; i++) {
 
 function resetReviewForm(id) {
   const modal = document.getElementById(id);
-  reviewForm.reset();
+  const reviewForm = document.getElementById("reviewForm");
+  if (reviewForm) reviewForm.reset();
+
   currentBon = null;
   currentKasir = null;
   selectedRating = 0;
   selectedFiles = [];
+
   updateStars();
   updatePreview();
-  reviewDetails.classList.add("hidden");
-  photoInput.value = "";
+
+  if (reviewDetails) reviewDetails.classList.add("hidden");
+  if (photoInput) photoInput.value = "";
+
   modal.classList.add("hidden");
 }
 
@@ -149,25 +155,27 @@ const photoInput = document.getElementById("photo");
 const photoPreview = document.getElementById("photoPreview");
 let selectedFiles = [];
 
-photoInput.addEventListener("change", () => {
-  const file = photoInput.files[0];
-  if (!file) return;
+if (photoInput) {
+  photoInput.addEventListener("change", () => {
+    const file = photoInput.files[0];
+    if (!file) return;
 
-  const allowedTypes = ["image/jpeg", "image/png"];
-  if (!allowedTypes.includes(file.type)) {
-    alert("Hanya gambar JPG, PNG, WEBP yang diperbolehkan.");
-    return;
-  }
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      alert("Hanya gambar JPG, PNG, WEBP yang diperbolehkan.");
+      return;
+    }
 
-  if (file.size > 10 * 1024 * 1024) {
-    alert("Ukuran gambar maksimal 10MB.");
-    return;
-  }
+    if (file.size > 10 * 1024 * 1024) {
+      alert("Ukuran gambar maksimal 10MB.");
+      return;
+    }
 
-  selectedFiles = [file];
-  updatePreview();
-  photoInput.value = "";
-});
+    selectedFiles = [file];
+    updatePreview();
+    photoInput.value = ""; // Reset input agar bisa pilih file yang sama jika perlu
+  });
+}
 
 function updatePreview() {
   photoPreview.innerHTML = "";
@@ -198,29 +206,41 @@ function updatePreview() {
 
 export const postFormReview = () => {
   const reviewForm = document.getElementById("reviewForm");
+  if (!reviewForm) return;
+
   reviewForm.addEventListener("submit", function (e) {
     e.preventDefault();
 
     const comment = document.getElementById("comment").value;
-
     const form = e.target;
     const formData = new FormData(form);
+
+    // PENTING: Hapus entry photos[] bawaan dari HTML karena value-nya kosong (akibat reset)
+    formData.delete("photos[]");
 
     const selectedTags = Array.from(
       form.querySelectorAll('input[name="tags[]"]:checked')
     ).map((tag) => tag.value);
+
     formData.append("tags", JSON.stringify(selectedTags));
     formData.append("rating", selectedRating);
     formData.append("comment", comment);
     formData.append("token", token);
-    formData.append("user_id", userObject[0].id);
+
+    if (userObject.length > 0) {
+      formData.append("user_id", userObject[0].id);
+    }
+
     formData.append("bon", currentBon);
     formData.append("nama_kasir", currentKasir);
+
+    // Masukkan file yang benar dari array JS
     selectedFiles.forEach((file) => {
       formData.append("photos[]", file);
     });
+
     showLoading();
-    console.log("SUCCESS");
+
     fetch("/src/api/review/send_review_pubs.php", {
       method: "POST",
       body: formData,
@@ -231,17 +251,17 @@ export const postFormReview = () => {
           const successMessage = result.message;
 
           const waBanner = `
-<div class="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
-    <i class="fab fa-whatsapp text-2xl text-green-500 flex-shrink-0"></i>
-    <div>
-        <p class="text-sm text-gray-700" style="text-align: left;">
-            Jika ingin ditanggapi dengan cepat,
-            <a href="https://wa.me/62817171212" target="_blank" class="font-bold text-green-600 hover:underline">
-                klik disini untuk menghubungi Customer Service kami.
-            </a>
-        </p>
-    </div>
-</div>`;
+                    <div class="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
+                        <i class="fab fa-whatsapp text-2xl text-green-500 flex-shrink-0"></i>
+                        <div>
+                            <p class="text-sm text-gray-700" style="text-align: left;">
+                                Jika ingin ditanggapi dengan cepat,
+                                <a href="https://wa.me/62817171212" target="_blank" class="font-bold text-green-600 hover:underline">
+                                    klik disini untuk menghubungi Customer Service kami.
+                                </a>
+                            </p>
+                        </div>
+                    </div>`;
 
           let modalHtmlContent = `<p class="text-gray-600">${successMessage}</p>`;
 
@@ -276,15 +296,22 @@ export const postFormReview = () => {
       });
   });
 };
+
 function showLoading(message = "Mengirim review...") {
   const overlay = document.getElementById("loadingOverlay");
-  overlay.querySelector("p").textContent = message;
-  overlay.classList.remove("hidden");
+  if (overlay) {
+    overlay.querySelector("p").textContent = message;
+    overlay.classList.remove("hidden");
+  }
 }
 
 function hideLoading() {
-  document.getElementById("loadingOverlay").classList.add("hidden");
+  const overlay = document.getElementById("loadingOverlay");
+  if (overlay) {
+    overlay.classList.add("hidden");
+  }
 }
+
 export default {
   openReviewModal,
   postFormReview,

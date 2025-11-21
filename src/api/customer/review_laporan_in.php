@@ -1,27 +1,20 @@
 <?php
 require_once __DIR__ . ("/../../../aa_kon_sett.php");
 require_once __DIR__ . ("/../../auth/middleware_login.php");
-
 header("Content-Type:application/json");
 header("Access-Control-Allow-Methods: GET");
-
 $headers = getallheaders();
 $authHeader = isset($headers['Authorization']) ? $headers['Authorization'] : '';
 $token = null;
-
 if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
     $token = $matches[1];
 }
-
 if (!$token) {
     http_response_code(401);
     echo json_encode(['status' => "Unauthenticated", 'message' => 'Request ditolak user tidak terdaftar']);
     exit;
 }
-
 $verif = verify_token($token);
-
-
 $statsSql = "SELECT 
                 AVG(rating) as avg_rating, 
                 COUNT(id) as total_reviews, 
@@ -36,8 +29,6 @@ $stats = [
     'pending_issues' => (int)$statsResult['pending_issues']
 ];
 $statsStmt->close();
-
-
 $countsSql = "SELECT rating, COUNT(id) AS count FROM review GROUP BY rating";
 $countsStmt = $conn->prepare($countsSql);
 $countsStmt->execute();
@@ -50,30 +41,21 @@ while ($row = $countsResult->fetch_assoc()) {
     }
 }
 $countsStmt->close();
-
-
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
 $rating = isset($_GET['rating']) ? $_GET['rating'] : 'all';
 $status = isset($_GET['status']) ? $_GET['status'] : 'all'; 
 $offset = ($page - 1) * $limit;
-
-
 $whereConditions = [];
 $params = [];
 $paramTypes = "";
-
-
 if ($rating !== 'all' && is_numeric($rating)) {
     $whereConditions[] = "r.rating = ?";
     $params[] = (int)$rating;
     $paramTypes .= "i";
 }
-
-
 if ($status !== 'all') {
     if ($status === 'pending') {
-        
         $whereConditions[] = "(rd.status = 'pending' OR r.sudah_terpecahkan = 0)";
     } else if (in_array($status, ['in_progress', 'resolved', 'closed'])) {
         $whereConditions[] = "rd.status = ?";
@@ -81,13 +63,10 @@ if ($status !== 'all') {
         $paramTypes .= "s";
     }
 }
-
 $whereClause = "";
 if (!empty($whereConditions)) {
     $whereClause = "WHERE " . implode(" AND ", $whereConditions);
 }
-
-
 $totalSql = "SELECT COUNT(DISTINCT r.id) AS total 
              FROM review r 
              LEFT JOIN review_detail rd ON rd.review_id = r.id 
@@ -100,13 +79,11 @@ $totalStmt->execute();
 $totalResult = $totalStmt->get_result()->fetch_assoc();
 $totalRecords = $totalResult['total'];
 $totalPages = $totalRecords > 0 ? ceil($totalRecords / $limit) : 1;
-
-
 $sql = "SELECT
     r.id, ua.id_user, ua.nama_lengkap AS nama, r.rating, r.komentar, r.kategori,
     r.no_bon AS bon, k.nm_alias AS cabang, r.dibuat_tgl AS tanggal,
     ua.no_hp AS no_hp, r.nama_kasir, 
-    rf.path_file AS enpoint_foto,
+    MAX(rf.path_file) AS enpoint_foto,
     r.sudah_terpecahkan as sudah_terpecahkan, rd.review_id AS detail_review_id,
     rd.status as detail_status,
     (SELECT COUNT(*) 
@@ -121,27 +98,22 @@ LEFT JOIN kode_store k ON k.kd_store = SUBSTRING(r.no_bon, 1, 4)
 LEFT JOIN review_foto rf ON rf.review_id = r.id
 LEFT JOIN review_detail rd ON rd.review_id = r.id
 $whereClause
-GROUP BY r.id -- Grup berdasarkan ID unik dari review untuk menghindari duplikasi
+GROUP BY r.id 
 ORDER BY r.dibuat_tgl DESC
 LIMIT ? OFFSET ?";
-
 $stmt = $conn->prepare($sql);
 if (!$stmt) {
     http_response_code(500);
     echo json_encode(["status" => "error", "message" => "Server Error: " . $conn->error]);
     exit;
 }
-
-
 $mainParams = $params;
 $mainParams[] = $limit;
 $mainParams[] = $offset;
 $mainParamTypes = $paramTypes . "ii";
-
 $stmt->bind_param($mainParamTypes, ...$mainParams);
 $stmt->execute();
 $result = $stmt->get_result();
-
 if ($result->num_rows > 0) {
     http_response_code(200);
     $rows = $result->fetch_all(MYSQLI_ASSOC);
@@ -165,7 +137,6 @@ if ($result->num_rows > 0) {
             'unread_count' => (int)$item['unread_count']
         ];
     }, $rows);
-
     echo json_encode([
         'status' => 'success', 'data' => $data,
         'pagination' => [
@@ -185,6 +156,5 @@ if ($result->num_rows > 0) {
         'stats' => $stats
     ]);
 }
-
 $stmt->close();
 $conn->close();

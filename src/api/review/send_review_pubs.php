@@ -5,23 +5,37 @@ require_once __DIR__ . '/../../auth/middleware_login.php';
 
 // Memuat Cloudinary SDK dan file .env
 use Cloudinary\Cloudinary;
-$env = parse_ini_file(__DIR__ . '/../../../.env');
 
-// Pastikan autoloader composer sudah di-require di file koneksi Anda (aa_kon_sett.php) atau di sini
-// require_once __DIR__ . '/../../../vendor/autoload.php'; 
+// Pastikan path .env benar relatif terhadap file ini
+$env_path = __DIR__ . '/../../../.env';
+if (file_exists($env_path)) {
+    $env = parse_ini_file($env_path);
+} else {
+    // Fallback atau error handling jika .env tidak ketemu
+    http_response_code(500);
+    echo json_encode(['status' => 'error', 'message' => 'Konfigurasi server bermasalah (.env not found)']);
+    exit;
+}
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+// require_once __DIR__ . '/../../../vendor/autoload.php'; // Uncomment jika perlu autoloader manual
+
+ini_set('display_errors', 0); // Matikan display error agar tidak merusak JSON
 error_reporting(E_ALL);
 
 // Konfigurasi Cloudinary
-$cloudinary = new Cloudinary([
-    'cloud' => [
-        'cloud_name' => $env['CLOUDINARY_NAME'],
-        'api_key'    => $env['CLOUDINARY_KEY'],
-        'api_secret' => $env['CLOUDINARY_SECRET'],
-    ],
-]);
+try {
+    $cloudinary = new Cloudinary([
+        'cloud' => [
+            'cloud_name' => $env['CLOUDINARY_NAME'],
+            'api_key'    => $env['CLOUDINARY_KEY'],
+            'api_secret' => $env['CLOUDINARY_SECRET'],
+        ],
+    ]);
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode(['status' => 'error', 'message' => 'Gagal inisialisasi Cloudinary']);
+    exit;
+}
 
 try {
     // Mengambil data dari POST request
@@ -31,8 +45,12 @@ try {
     $token = $_POST['token'] ?? '';
     $id = $_POST['user_id'] ?? 0;
     $tagsJson = $_POST['tags'] ?? '[]';
+    
+    // Decode tags dengan aman
     $tags = json_decode($tagsJson, true);
+    if (!is_array($tags)) $tags = [];
     $tagsStr = implode(',', $tags);
+    
     $bon = $_POST['bon'] ?? null;
     $nama_kasir = $_POST['nama_kasir'] ?? '';
 
@@ -64,33 +82,45 @@ try {
     // 2. Proses unggah foto ke Cloudinary jika ada
     $uploaded_urls = [];
     
-    // KONDISI UTAMA DIPERBAIKI DI SINI
-    if (isset($_FILES['photos'])) {
-        foreach ($_FILES['photos']['tmp_name'] as $i => $tmp_name) {
-            // VALIDASI DIPINDAHKAN KE DALAM LOOP untuk setiap file
-            // Hanya proses file yang punya tmp_name, tidak ada error, dan merupakan file upload yang sah
-            if (!empty($tmp_name) && $_FILES['photos']['error'][$i] === 0 && is_uploaded_file($tmp_name)) {
-                
-                $uploadResult = $cloudinary->uploadApi()->upload($tmp_name, [
-                    'folder' => 'review_photos',
-                    'transformation' => [
-                        ['width' => 1280, 'crop' => 'limit'],
-                        ['quality' => 'auto:good']
-                    ]
-                ]);
-                
-                $secure_url = $uploadResult['secure_url'];
-                $public_id = $uploadResult['public_id'];
+    // Cek apakah ada file yang dikirim
+    if (isset($_FILES['photos']) && is_array($_FILES['photos']['tmp_name'])) {
+        
+        $files = $_FILES['photos'];
+        $count = count($files['tmp_name']);
 
-                $stmtFoto = $conn->prepare("INSERT INTO review_foto (review_id, nama_file, path_file) VALUES (?, ?, ?)");
-                if (!$stmtFoto) {
-                    throw new Exception("Database error (prepare foto): " . $conn->error);
+        for ($i = 0; $i < $count; $i++) {
+            $tmp_name = $files['tmp_name'][$i];
+            $error = $files['error'][$i];
+            $name = $files['name'][$i];
+
+            // Validasi file: tidak kosong, tidak ada error, dan benar file upload
+            if (!empty($tmp_name) && $error === UPLOAD_ERR_OK && is_uploaded_file($tmp_name)) {
+                
+                try {
+                    $uploadResult = $cloudinary->uploadApi()->upload($tmp_name, [
+                        'folder' => 'review_photos',
+                        'transformation' => [
+                            ['width' => 1280, 'crop' => 'limit'],
+                            ['quality' => 'auto:good']
+                        ]
+                    ]);
+                    
+                    $secure_url = $uploadResult['secure_url'];
+                    $public_id = $uploadResult['public_id'];
+
+                    // Insert ke tabel review_foto
+                    $stmtFoto = $conn->prepare("INSERT INTO review_foto (review_id, nama_file, path_file) VALUES (?, ?, ?)");
+                    if ($stmtFoto) {
+                        $stmtFoto->bind_param('iss', $review_id, $public_id, $secure_url);
+                        if ($stmtFoto->execute()) {
+                            $uploaded_urls[] = $secure_url;
+                        }
+                        $stmtFoto->close();
+                    }
+                } catch (Exception $e_img) {
+                    // Log error gambar tapi jangan hentikan proses review utama
+                    error_log("Gagal upload gambar: " . $e_img->getMessage());
                 }
-                $stmtFoto->bind_param('iss', $review_id, $public_id, $secure_url);
-                $stmtFoto->execute();
-                $stmtFoto->close();
-
-                $uploaded_urls[] = $secure_url;
             }
         }
     }

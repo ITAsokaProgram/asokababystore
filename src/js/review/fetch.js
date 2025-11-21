@@ -4,8 +4,7 @@ export const getReviewData = async (page = 1, limit = 10, rating = 'all', status
   try {
     const token = getCookie('admin_token');
     
-    
-    const url = `/src/api/customer/review_laporan_in?page=${page}&limit=${limit}&rating=${rating}&status=${status}`; 
+    const url = `/src/api/customer/review_laporan_in.php?page=${page}&limit=${limit}&rating=${rating}&status=${status}`; 
     
     const response = await fetch(url, {
       method: "GET",
@@ -28,7 +27,6 @@ export const getReviewData = async (page = 1, limit = 10, rating = 'all', status
     throw error;
   }
 }
-
 
 
 export const submitReviewHandling = async (reviewData) => {
