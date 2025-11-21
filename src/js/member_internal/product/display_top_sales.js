@@ -25,19 +25,19 @@ let currentDateFilter = {
   start_date: null,
   end_date: null,
 };
-let currentStatus = null; 
+let currentStatus = null;
 let currentPage = 1;
 let itemsPerPage = 10;
 let currentSearch = "";
 let currentSort = "belanja";
 let totalPages = 1;
 const initTopSalesDisplay = async () => {
-  setupEventListeners(); 
-  await loadTop50Cards(); 
-  await loadTableData(1); 
+  setupEventListeners();
+  await loadTop50Cards();
+  await loadTableData(1);
 };
 const setupEventListeners = () => {
-  setupDateFilterListeners(); 
+  setupDateFilterListeners();
   const searchInput = document.getElementById("search-input");
   if (searchInput) {
     searchInput.addEventListener("change", (e) => {
@@ -62,7 +62,7 @@ const setupEventListeners = () => {
         const transactionResponse = await fetchTransaction({
           member: member,
           cabang: cabang,
-          ...currentDateFilter, 
+          ...currentDateFilter,
         });
         if (
           transactionResponse &&
@@ -71,7 +71,7 @@ const setupEventListeners = () => {
         ) {
           showDetailModal(transactionResponse.detail_transaction);
         } else {
-          showDetailModal([]); 
+          showDetailModal([]);
           showToast("Tidak ada data transaksi ditemukan", "warning");
         }
       } catch (error) {
@@ -89,7 +89,7 @@ const setupEventListeners = () => {
         const nonMember = nonMemberEl.dataset.nonMember;
         const transactionResponse = await fetchTransaction({
           no_trans: nonMember,
-          ...currentDateFilter, 
+          ...currentDateFilter,
         });
         if (
           transactionResponse &&
@@ -98,7 +98,7 @@ const setupEventListeners = () => {
         ) {
           showDetailModal(transactionResponse.detail_transaction);
         } else {
-          showDetailModal([]); 
+          showDetailModal([]);
           showToast("Tidak ada data transaksi ditemukan", "warning");
         }
       } catch (error) {
@@ -113,10 +113,27 @@ const setupEventListeners = () => {
     if (detailTransactionEl) {
       showGlobalLoading();
       try {
-        const member = detailTransactionEl.dataset.member;
-        const cabang = detailTransactionEl.dataset.cabang;
+        const noTrans = detailTransactionEl.dataset.detailTransaction;
+
+        const transactionResponse = await fetchTransaction({
+          no_trans: noTrans,
+          ...currentDateFilter,
+        });
+
+        if (
+          transactionResponse &&
+          transactionResponse.detail_transaction &&
+          transactionResponse.detail_transaction.length > 0
+        ) {
+          showDetailModal(transactionResponse.detail_transaction);
+        } else {
+          showToast("Detail transaksi tidak ditemukan", "warning");
+        }
       } catch (error) {
+        console.error("Error fetching transaction detail:", error);
+        showToast("Gagal memuat detail transaksi", "error");
       } finally {
+        hideGlobalLoading();
       }
       return;
     }
@@ -126,11 +143,11 @@ const getDatesFromPreset = (filter) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   let startDate = new Date(today);
-  let endDate = new Date(today); 
+  let endDate = new Date(today);
   switch (filter) {
     case "kemarin":
       startDate.setDate(today.getDate() - 1);
-      endDate.setDate(today.getDate() - 1); 
+      endDate.setDate(today.getDate() - 1);
       break;
     case "1minggu":
       startDate.setDate(today.getDate() - 7);
@@ -182,7 +199,7 @@ const setupDateFilterListeners = () => {
   const urlFilter = urlParams.get("filter");
   const urlStartDate = urlParams.get("start_date");
   const urlEndDate = urlParams.get("end_date");
-  currentStatus = urlParams.get("status"); 
+  currentStatus = urlParams.get("status");
   let displayStartDate, displayEndDate;
   if (urlFilterType === "preset" && urlFilter) {
     const dates = getDatesFromPreset(urlFilter);
@@ -204,7 +221,7 @@ const setupDateFilterListeners = () => {
     yesterday.setDate(yesterday.getDate() - 1);
     displayStartDate = yesterday.toISOString().split("T")[0];
     displayEndDate = displayStartDate;
-    currentDateFilter.filter_type = "custom"; 
+    currentDateFilter.filter_type = "custom";
     currentDateFilter.start_date = displayStartDate;
     currentDateFilter.end_date = displayEndDate;
   }
@@ -233,7 +250,7 @@ const setupDateFilterListeners = () => {
     currentDateFilter.filter_type = "custom";
     currentDateFilter.start_date = startVal;
     currentDateFilter.end_date = endVal;
-    currentDateFilter.filter = null; 
+    currentDateFilter.filter = null;
     const s = new Date(startVal + "T00:00:00");
     const e = new Date(endVal + "T00:00:00");
     const diff = Math.max(1, Math.ceil((e - s) / (1000 * 3600 * 24)) + 1);
@@ -327,7 +344,7 @@ const loadTableData = async (page = 1) => {
     filter: currentDateFilter.filter,
     start_date: currentDateFilter.start_date,
     end_date: currentDateFilter.end_date,
-    status: currentStatus, 
+    status: currentStatus,
     page: currentPage,
     limit: itemsPerPage,
     search: currentSearch,
@@ -477,7 +494,7 @@ const exportTopSalesData = async () => {
       search: currentSearch,
       sort_by: currentSort,
       page: 1,
-      limit: 999999, 
+      limit: 999999,
     };
     Object.keys(params).forEach((key) => {
       if (params[key] === null || params[key] === undefined) {

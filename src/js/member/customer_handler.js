@@ -352,7 +352,7 @@ function renderModalTable(transactions) {
 
     htmlRows += `
             <tr class="item-row hover:bg-gray-50">
-                <td class="px-4 py-2 text-sm text-gray-800 pl-8">
+                <td class="px-4 py-2 text-sm text-gray-800 text-left">
                     ${tx.descp}
                 </td>
                 <td class="px-4 py-2 text-sm text-right">

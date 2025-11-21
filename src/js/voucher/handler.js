@@ -21,23 +21,19 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   function formatDateTime(dateString) {
     if (!dateString) return "-";
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return dateString;
-    return date.toISOString().slice(0, 19).replace("T", " ");
+    return dateString.substring(0, 19);
   }
   function formatJustDate(dateString) {
     if (!dateString) return "-";
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return dateString;
-    return date.toISOString().split("T")[0];
+    return dateString.substring(0, 10);
   }
   function getUrlParams() {
     const params = new URLSearchParams(window.location.search);
     const today = new Date();
-    const todayString = today.toISOString().split("T")[0];
+    const todayString = today.toLocaleDateString("en-CA");
     const lastMonth = new Date();
     lastMonth.setMonth(lastMonth.getMonth() - 1);
-    const lastMonthString = lastMonth.toISOString().split("T")[0];
+    const lastMonthString = lastMonth.toLocaleDateString("en-CA");
     return {
       tgl_mulai: params.get("tgl_mulai") || lastMonthString,
       tgl_selesai: params.get("tgl_selesai") || todayString,
@@ -269,7 +265,7 @@ document.addEventListener("DOMContentLoaded", () => {
                    class="pagination-link ${
                      page_num === current_page ? "pagination-active" : ""
                    }">
-                   ${page_num}
+                    ${page_num}
                 </a>
             `;
       last_page = page_num;

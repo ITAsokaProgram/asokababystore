@@ -142,17 +142,23 @@ include '../../../aa_kon_sett.php';
                                 </div>
 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                    <div class="col-span-2">
-                                        <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Kode Voucher
-                                            <span class="text-red-500">*</span></label>
-                                        <div class="flex">
+                                    
+                                    <div class="col-span-2 grid grid-cols-3 gap-4">
+                                        <div class="col-span-2">
+                                            <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Manual (Max 8)
+                                                <span class="text-red-500">*</span></label>
                                             <input type="text" name="nama_voucher_manual" id="nama_voucher_manual"
-                                                class="input-modern w-full uppercase rounded-md" placeholder=""
-                                                required>
+                                                class="input-modern w-full uppercase rounded-md" 
+                                                maxlength="8" placeholder="CONTOH" required>
                                         </div>
-
+                                        <div class="col-span-1">
+                                            <label class="block text-xs font-semibold text-gray-700 mb-1">No. Urut (3 Digit)
+                                                <span class="text-red-500">*</span></label>
+                                            <input type="number" name="nomor_urut" id="nomor_urut"
+                                                class="input-modern w-full text-center" 
+                                                max="999" maxlength="3" placeholder="001" required>
+                                        </div>
                                     </div>
-
                                     <div>
                                         <label class="block text-xs font-semibold text-gray-700 mb-1">Jumlah Voucher
                                             (Qty) <span class="text-red-500">*</span></label>
