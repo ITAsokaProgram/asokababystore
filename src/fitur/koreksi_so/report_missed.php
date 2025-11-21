@@ -125,11 +125,6 @@ if ($page < 1) {
                                 <i class="fas fa-file-excel"></i>
                                 <span>Export Excel</span>
                             </button>
-                            <button id="export-pdf-btn" class="btn-secondary-outline px-3 py-1.5 rounded-md flex items-center gap-2"
-                                style="background-color: #FFF0F0; border-color: #D93025; color: #D93025;">
-                                <i class="fas fa-file-pdf"></i>
-                                <span>Export PDF</span>
-                            </button>
                         </div>
                     </div>
                     <div class="table-container overflow-x-auto">

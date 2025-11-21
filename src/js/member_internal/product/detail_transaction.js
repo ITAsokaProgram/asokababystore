@@ -110,7 +110,7 @@ function showDetailModal(data) {
                   </div>
                 `;
   } else if (data[0].kode_transaksi) {
-    title.textContent = "Detail Non-Member";
+    title.textContent = "Detail";
     subtitle.textContent = `ID: ${data[0].kode_transaksi}`;
     icon.innerHTML = `
               <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">

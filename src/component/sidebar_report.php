@@ -706,7 +706,7 @@ if (isset($_COOKIE['admin_token'])) {
             </div>
         </div>
 
-        <div x-data="{ open: false, nestedOpenKoreksi: false, nestedOpenJadwalSO: false, nestedOpenVoucher: false }"
+        <div x-data="{ open: false, nestedOpenKoreksi: false, nestedOpenJadwalSO: false, nestedOpenVoucher: false, nestedOpenKoreksiSO: false }"
             class="relative ">
             <button @click="open = !open" id="tools"
                 class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-cyan-100 hover:to-cyan-200 hover:text-cyan-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-cyan-300">
@@ -740,17 +740,51 @@ if (isset($_COOKIE['admin_token'])) {
                     </li>
 
                     <li>
-                        <a href="/src/fitur/koreksi_so/index.php" data-menu="koreksi_so"
-                            class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-cyan-100 hover:text-cyan-700 transition-all duration-200 group rounded-lg">
+                        <button @click="nestedOpenKoreksiSO = !nestedOpenKoreksiSO"
+                            class="w-full text-left px-4 py-2.5 text-gray-700 hover:bg-cyan-100 hover:text-cyan-700 transition-all duration-200 flex items-center group cursor-pointer rounded-lg">
                             <span
-                                class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
+                                class="transition-all duration-300 group-hover:translate-x-1 font-medium flex items-center">
                                 <i
-                                    class="fa-solid fa-file-pen mr-2 text-base text-cyan-400 group-hover:text-cyan-600 group-hover:scale-110 transition-all duration-200"></i>
+                                    class="fa-solid fa-file-pen mr-2 text-lg text-cyan-500 group-hover:text-cyan-600 transition-all duration-200 group-hover:scale-110"></i>
                                 Koreksi SO
                             </span>
-                        </a>
+                            <svg class="ml-auto w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1"
+                                :class="{ 'rotate-180': nestedOpenKoreksiSO }" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div x-show="nestedOpenKoreksiSO" @click.away="nestedOpenKoreksiSO = false" class="ml-4 mt-1"
+                            style="display: none;">
+                            <ul
+                                class="bg-gradient-to-br from-cyan-50 to-blue-50 rounded-lg p-2 space-y-1 border border-cyan-200">
+                                <li>
+                                    <a href="/src/fitur/koreksi_so/index.php" data-menu="koreksi_so"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-cyan-100 hover:text-cyan-600 transition-all duration-200 group rounded-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-list mr-2 text-base text-cyan-400 group-hover:text-cyan-600 group-hover:scale-110 transition-all duration-200"></i>
+                                            Koreksi SO
+                                        </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/src/fitur/koreksi_so/report_missed.php"
+                                        data-menu="koreksi_so_missed"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-cyan-100 hover:text-cyan-600 transition-all duration-200 group rounded-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-circle-exclamation mr-2 text-base text-cyan-400 group-hover:text-cyan-600 group-hover:scale-110 transition-all duration-200"></i>
+                                            Belum Koreksi
+                                        </span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                     </li>
-
                     <li>
                         <button @click="nestedOpenJadwalSO = !nestedOpenJadwalSO"
                             class="w-full text-left px-4 py-2.5 text-gray-700 hover:bg-cyan-100 hover:text-cyan-700 transition-all duration-200 flex items-center group cursor-pointer rounded-lg">
@@ -848,7 +882,6 @@ if (isset($_COOKIE['admin_token'])) {
             </div>
         </div>
 
-
     </nav>
 </div>
 <script>
@@ -913,17 +946,15 @@ if (isset($_COOKIE['admin_token'])) {
             document.getElementById('whatsappLink').classList.add('btn', 'active');
         }
 
-        // MENU TOOLS LOGIC
         else if (currentPath.includes('/src/fitur/approval/izin')) {
             document.getElementById('tools').classList.add('btn', 'active');
         }
-        else if (currentPath.includes('/src/fitur/koreksi_so/index.php')) {
+        else if (currentPath.includes('/src/fitur/koreksi_so/')) {
             document.getElementById('tools').classList.add('btn', 'active');
         }
         else if (currentPath.includes('/src/fitur/laporan/jadwal_so/')) {
             document.getElementById('tools').classList.add('btn', 'active');
         }
-        // Logic baru untuk Voucher
         else if (currentPath.includes('/src/fitur/voucher/')) {
             document.getElementById('tools').classList.add('btn', 'active');
         }
