@@ -112,8 +112,7 @@ if (isset($_COOKIE['admin_token'])) {
             </div>
         </div>
 
-
-        <div x-data="{ open: false, nestedOpenPenjualan: false, nestedOpenPelanggan: false , nestedOpenReceipt: false, nestedOpenReturn: false, nestedOpenTransaksi: false, nestedOpenKoreksi: false }"
+        <div x-data="{ open: false, nestedOpenPenjualan: false, nestedOpenPelanggan: false , nestedOpenReceipt: false, nestedOpenReturn: false, nestedOpenMutasi: false, nestedOpenTransaksi: false, nestedOpenKoreksi: false }"
             class="relative ">
             <button @click="open = !open" id="laporan"
                 class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-purple-100 hover:to-purple-200 hover:text-purple-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-purple-300">
@@ -418,6 +417,42 @@ if (isset($_COOKIE['admin_token'])) {
                             </ul>
                         </div>
                     </li>
+
+                    <li>
+                        <button @click="nestedOpenMutasi = !nestedOpenMutasi"
+                            class="w-full text-left px-4 py-2.5 text-gray-700 hover:bg-fuchsia-100 hover:text-fuchsia-700 transition-all duration-200 flex items-center group cursor-pointer rounded-lg">
+                            <span
+                                class="transition-all duration-300 group-hover:translate-x-1 font-medium flex items-center">
+                                <i
+                                    class="fa-solid fa-right-left mr-2 text-lg text-fuchsia-500 group-hover:text-fuchsia-600 transition-all duration-200 group-hover:scale-110"></i>
+                                Mutasi
+                            </span>
+                            <svg class="ml-auto w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1"
+                                :class="{ 'rotate-180': nestedOpenMutasi }" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div x-show="nestedOpenMutasi" @click.away="nestedOpenMutasi = false" class="ml-4 mt-1"
+                            style="display: none;">
+                            <ul
+                                class="bg-gradient-to-br from-fuchsia-50 to-pink-50 rounded-lg p-2 space-y-1 border border-fuchsia-200">
+                                <li>
+                                    <a href="/src/fitur/mutasi_in/index.php" data-menu="laporan_mutasi_in"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-pink-100 hover:text-pink-600 transition-all duration-200 group rounded-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-right-to-bracket mr-2 text-base text-fuchsia-400 group-hover:text-fuchsia-600 group-hover:scale-110 transition-all duration-200"></i>
+                                            Mutasi In
+                                        </span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
                     <li>
                         <button @click="nestedOpenTransaksi = !nestedOpenTransaksi" id="transaction"
                             class="w-full text-left px-4 py-2.5 text-gray-700 hover:bg-orange-100 hover:text-orange-700 transition-all duration-200 flex items-center group cursor-pointer rounded-lg">
@@ -545,7 +580,6 @@ if (isset($_COOKIE['admin_token'])) {
             </div>
         </div>
 
-
         <div x-data="{ open: false, nestedOpenMember: false, nestedOpenMember: false }" class="relative ">
             <button @click="open = !open" id="member"
                 class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-teal-100 hover:to-teal-200 hover:text-teal-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-teal-300">
@@ -608,45 +642,51 @@ if (isset($_COOKIE['admin_token'])) {
         </div>
 
         <?php if ($isSuperAdmin): // HANYA TAMPIL JIKA SUPERADMIN ?>
-<div x-data="{ open: false, nestedOpenAccount: false }" class="relative ">
-    <button @click="open = !open" id="account"
-        class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-indigo-100 hover:to-indigo-200 hover:text-indigo-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-indigo-300">
-        <div class="w-8 flex justify-center">
-            <i class="fa-solid fa-user text-xl text-indigo-600 group-hover:text-indigo-700 transition-all duration-300 group-hover:scale-125 group-hover:-rotate-12 group-hover:drop-shadow-lg"></i>
-        </div>
-        <span class="sidebar-text ml-3 font-medium transition-all duration-300 group-hover:translate-x-1">Account</span>
-        <svg class="ml-auto w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1"
-            :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-        </svg>
-    </button>
+            <div x-data="{ open: false, nestedOpenAccount: false }" class="relative ">
+                <button @click="open = !open" id="account"
+                    class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-indigo-100 hover:to-indigo-200 hover:text-indigo-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-indigo-300">
+                    <div class="w-8 flex justify-center">
+                        <i
+                            class="fa-solid fa-user text-xl text-indigo-600 group-hover:text-indigo-700 transition-all duration-300 group-hover:scale-125 group-hover:-rotate-12 group-hover:drop-shadow-lg"></i>
+                    </div>
+                    <span
+                        class="sidebar-text ml-3 font-medium transition-all duration-300 group-hover:translate-x-1">Account</span>
+                    <svg class="ml-auto w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1"
+                        :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
 
-    <div x-show="open" @click.away="open = false"
-        class="mt-3 ml-4 bg-gradient-to-br from-white to-indigo-50 rounded-xl shadow-xl border border-indigo-200 z-10 backdrop-blur-sm"
-        style="display: none;">
-        <ul class="py-2 space-y-1">
-            <li>
-                <a href="/src/fitur/account/in_new_user" data-menu="insert_new_user"
-                    class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-indigo-100 hover:text-indigo-700 transition-all duration-200 group rounded-lg">
-                    <span class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
-                        <i class="fa-solid fa-user-plus mr-2 text-base text-indigo-400 group-hover:text-indigo-600 group-hover:scale-110 transition-all duration-200"></i>
-                        Tambah Anggota
-                    </span>
-                </a>
-            </li>
-            <li>
-                <a href="/src/fitur/account/manajemen_user" data-menu="user_management"
-                    class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-all duration-200 group rounded-lg">
-                    <span class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
-                        <i class="fa-solid fa-users-cog mr-2 text-base text-indigo-400 group-hover:text-indigo-600 group-hover:scale-110 transition-all duration-200"></i>
-                        Kelola Anggota
-                    </span>
-                </a>
-            </li>
-        </ul>
-    </div>
-</div>
-<?php endif; ?>
+                <div x-show="open" @click.away="open = false"
+                    class="mt-3 ml-4 bg-gradient-to-br from-white to-indigo-50 rounded-xl shadow-xl border border-indigo-200 z-10 backdrop-blur-sm"
+                    style="display: none;">
+                    <ul class="py-2 space-y-1">
+                        <li>
+                            <a href="/src/fitur/account/in_new_user" data-menu="insert_new_user"
+                                class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-indigo-100 hover:text-indigo-700 transition-all duration-200 group rounded-lg">
+                                <span
+                                    class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
+                                    <i
+                                        class="fa-solid fa-user-plus mr-2 text-base text-indigo-400 group-hover:text-indigo-600 group-hover:scale-110 transition-all duration-200"></i>
+                                    Tambah Anggota
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/src/fitur/account/manajemen_user" data-menu="user_management"
+                                class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-all duration-200 group rounded-lg">
+                                <span
+                                    class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
+                                    <i
+                                        class="fa-solid fa-users-cog mr-2 text-base text-indigo-400 group-hover:text-indigo-600 group-hover:scale-110 transition-all duration-200"></i>
+                                    Kelola Anggota
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        <?php endif; ?>
 
         <div class="relative ">
             <a href="/src/fitur/products/product" id="productLink" data-menu="products"
@@ -771,8 +811,7 @@ if (isset($_COOKIE['admin_token'])) {
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="/src/fitur/koreksi_so/report_missed.php"
-                                        data-menu="koreksi_so_missed"
+                                    <a href="/src/fitur/koreksi_so/report_missed.php" data-menu="koreksi_so_missed"
                                         class="flex items-center px-3 py-2 text-gray-700 hover:bg-cyan-100 hover:text-cyan-600 transition-all duration-200 group rounded-md">
                                         <span
                                             class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
@@ -920,6 +959,8 @@ if (isset($_COOKIE['admin_token'])) {
             document.getElementById('laporan').classList.add('btn', 'active');
         } else if (currentPath.includes('/src/fitur/return_out/hilang_pasangan')) {
             document.getElementById('laporan').classList.add('btn', 'active');
+        } else if (currentPath.includes('/src/fitur/mutasi_in/index.php')) {
+            document.getElementById('laporan').classList.add('btn', 'active');
         } else if (currentPath.includes('/src/fitur/account/in_new_user')) {
             document.getElementById('account').classList.add('btn', 'active');
         } else if (currentPath.includes('/src/fitur/account/manajemen_user')) {
@@ -944,21 +985,15 @@ if (isset($_COOKIE['admin_token'])) {
             document.getElementById('shopeeLink').classList.add('btn', 'active');
         } else if (currentPath.includes('/src/fitur/whatsapp_cs/dashboard_whatsapp')) {
             document.getElementById('whatsappLink').classList.add('btn', 'active');
-        }
-
-        else if (currentPath.includes('/src/fitur/approval/izin')) {
+        } else if (currentPath.includes('/src/fitur/approval/izin')) {
             document.getElementById('tools').classList.add('btn', 'active');
-        }
-        else if (currentPath.includes('/src/fitur/koreksi_so/')) {
+        } else if (currentPath.includes('/src/fitur/koreksi_so/')) {
             document.getElementById('tools').classList.add('btn', 'active');
-        }
-        else if (currentPath.includes('/src/fitur/laporan/jadwal_so/')) {
+        } else if (currentPath.includes('/src/fitur/laporan/jadwal_so/')) {
             document.getElementById('tools').classList.add('btn', 'active');
-        }
-        else if (currentPath.includes('/src/fitur/voucher/')) {
+        } else if (currentPath.includes('/src/fitur/voucher/')) {
             document.getElementById('tools').classList.add('btn', 'active');
-        }
-        else if (currentPath.includes('/src/fitur/koreksi_stok/by_supplier')) {
+        } else if (currentPath.includes('/src/fitur/koreksi_stok/by_supplier')) {
             document.getElementById('laporan').classList.add('btn', 'active');
         } else if (currentPath.includes('/src/fitur/koreksi_stok/by_plu')) {
             document.getElementById('laporan').classList.add('btn', 'active');
