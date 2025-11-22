@@ -705,7 +705,6 @@ const init = async () => {
   setupRatingCardEvents();
   setupStatusFilterEvent();
   await fetchAndRenderPage(1);
-  console.log("TEST");
   Toastify({
     text: `Berhasil memuat halaman pertama`,
     duration: 2000,

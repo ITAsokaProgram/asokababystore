@@ -25,8 +25,8 @@ try {
     $tgl_selesai = $_GET['tgl_selesai'] ?? $default_tgl_selesai;
     $kd_store = $_GET['kd_store'] ?? 'all';
     $response['params'] = ['tgl_mulai' => $tgl_mulai, 'tgl_selesai' => $tgl_selesai];
-    $page = max(1, (int)($_GET['page'] ?? 1));
-    $limit = 10; 
+    $page = max(1, (int) ($_GET['page'] ?? 1));
+    $limit = 10;
     $offset = ($page - 1) * $limit;
     $sql_stores = "SELECT kd_store, nm_alias FROM kode_store ORDER BY kd_store ASC";
     $res_stores = $conn->query($sql_stores);
@@ -61,7 +61,7 @@ try {
         WHERE 
             1=1 
             $where_store_master
-            AND m.ON_HAND1 <> 0  
+            -- AND m.ON_HAND1 <> 0  
             AND m.plu NOT IN (
                 SELECT plu 
                 FROM koreksi 
@@ -79,19 +79,20 @@ try {
     if (!$is_export) {
         $sql_count = "SELECT COUNT(*) as total $sql_core";
         $stmt_count = $conn->prepare($sql_count);
-        if (!$stmt_count) throw new Exception("Count Query Error: " . $conn->error);
+        if (!$stmt_count)
+            throw new Exception("Count Query Error: " . $conn->error);
         $stmt_count->bind_param($final_bind_types, ...$final_bind_vars);
         $stmt_count->execute();
         $res_count = $stmt_count->get_result()->fetch_assoc();
         $total_rows = $res_count['total'];
         $response['pagination'] = [
             'current_page' => $page,
-            'total_rows' => (int)$total_rows,
+            'total_rows' => (int) $total_rows,
             'total_pages' => ceil($total_rows / $limit),
             'limit' => $limit,
             'offset' => $offset
         ];
-        $response['summary']['total_items'] = (int)$total_rows;
+        $response['summary']['total_items'] = (int) $total_rows;
     }
     $sql_select = "
         SELECT 
@@ -108,18 +109,20 @@ try {
     ";
     if (!$is_export) {
         $sql_select .= " LIMIT ? OFFSET ?";
-        $final_bind_types .= "ii"; 
+        $final_bind_types .= "ii";
         $final_bind_vars[] = $limit;
         $final_bind_vars[] = $offset;
     }
     $stmt = $conn->prepare($sql_select);
-    if (!$stmt) throw new Exception("Select Query Error: " . $conn->error);
+    if (!$stmt)
+        throw new Exception("Select Query Error: " . $conn->error);
     $stmt->bind_param($final_bind_types, ...$final_bind_vars);
     $stmt->execute();
     $result = $stmt->get_result();
     while ($row = $result->fetch_assoc()) {
-        array_walk_recursive($row, function(&$item) {
-            if(is_string($item)) $item = utf8_encode($item);
+        array_walk_recursive($row, function (&$item) {
+            if (is_string($item))
+                $item = utf8_encode($item);
         });
         $response['tabel_data'][] = $row;
     }
