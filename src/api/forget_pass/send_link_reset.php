@@ -1,11 +1,10 @@
-
 <?php
 
 require_once __DIR__ . '/../../../vendor/autoload.php';
-require_once __DIR__ . '/../../../aa_kon_sett.php'; 
+require_once __DIR__ . '/../../../aa_kon_sett.php';
 $env = parse_ini_file(__DIR__ . '/../../../.env');
-require_once __DIR__ . '/../../auth/middleware_login.php'; 
-require_once __DIR__ . '/../../../src/utils/Logger.php'; 
+require_once __DIR__ . '/../../auth/middleware_login.php';
+require_once __DIR__ . '/../../../src/utils/Logger.php';
 
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST");
@@ -26,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $input['email'] ?? null;
 
     if (!$email) {
-        http_response_code(400); 
+        http_response_code(400);
         echo json_encode(['status' => 'error', 'message' => 'Email wajib diisi.']);
         exit;
     }
@@ -36,12 +35,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     try {
         $mail->isSMTP();
-        $mail->Host       = $env['SMTP_HOST'];
-        $mail->SMTPAuth   = true;
-        $mail->Username   = $env['SMTP_USER'];
-        $mail->Password   = $env['SMTP_PASS'];
+        $mail->Host = $env['SMTP_HOST'];
+        $mail->SMTPAuth = true;
+        $mail->Username = $env['SMTP_USER'];
+        $mail->Password = $env['SMTP_PASS'];
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port       = $env['SMTP_PORT'];
+        $mail->Port = $env['SMTP_PORT'];
 
         $mail->CharSet = 'UTF-8';
 
@@ -50,22 +49,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $mail->isHTML(true);
         $mail->Subject = 'Reset Password Akun ASOKA Baby Store';
 
+        $logoPath = __DIR__ . '/../../../public/images/logo.png';
+        $logoCid = 'logo_asoka_id';
+
+        if (file_exists($logoPath)) {
+            $mail->addEmbeddedImage($logoPath, $logoCid, 'logo.png');
+            $logoSrc = 'cid:' . $logoCid;
+        } else {
+            $logoSrc = 'https://asokababystore.com/public/images/logo.png';
+        }
+
         $templatePath = __DIR__ . '/../../../email_template.html';
         if (!is_readable($templatePath)) {
             throw new Exception('File template email tidak ditemukan.');
         }
         $htmlContent = file_get_contents($templatePath);
 
-        $logoUrl = 'https://asokababystore.com/public/images/logo.png';
-        
         $resetLink = "https://asokababystore.com/src/fitur/pubs/user/reset/reset_password.php?token=$token";
-        
+
         $placeholders = [
             '{{reset_link}}' => $resetLink,
-            '{{email}}'      => htmlspecialchars($email),
+            '{{email}}' => htmlspecialchars($email),
             '{{store_name}}' => 'ASOKA Baby Store',
-            '{{store_url}}'  => 'https://asokababystore.com',
-            '{{store_logo}}' => $logoUrl,
+            '{{store_url}}' => 'https://asokababystore.com',
+            '{{store_logo}}' => $logoSrc,
         ];
 
         foreach ($placeholders as $key => $value) {
@@ -76,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $mail->AltBody = "Halo " . $email . ",\n\nUntuk mereset password Anda, silakan kunjungi link berikut: " . $resetLink . "\n\nSalam,\nTim ASOKA Baby Store";
 
-        
+
         $checkEmail = checkEmail($conn, $email);
         if ($checkEmail['status'] !== 'success') {
             http_response_code(404);
@@ -101,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode(['status' => 'success', 'message' => 'Link reset password berhasil dikirim ke email Anda.']);
 
     } catch (Exception $e) {
-        http_response_code(500); 
+        http_response_code(500);
         echo json_encode([
             'status' => 'error',
             'message' => 'Gagal mengirim email. Mailer Error: ' . $mail->ErrorInfo
@@ -109,6 +116,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
 } else {
-    http_response_code(405); 
+    http_response_code(405);
     echo json_encode(['status' => 'error', 'message' => 'Metode HTTP tidak diizinkan.']);
 }
