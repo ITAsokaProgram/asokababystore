@@ -237,12 +237,7 @@ document.addEventListener("DOMContentLoaded", () => {
           i === current_page
             ? "bg-pink-600 text-white border-pink-600"
             : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50";
-        html += `
-                    <button onclick="changePage(${i})" 
-                        class="px-3 py-1 border rounded-md text-sm font-medium transition-colors mx-1 ${activeClass}">
-                        ${i}
-                    </button>
-                `;
+        html += `<button onclick="changePage(${i})" class="px-3 py-1 border rounded-md text-sm font-medium transition-colors mx-1 ${activeClass}">${i}</button>`;
       } else if (
         (i === current_page - max_pages_around - 1 && i > 1) ||
         (i === current_page + max_pages_around + 1 && i < total_pages)
@@ -344,52 +339,47 @@ window.toggleDetail = async function (rowId, noFaktur, kodeDari, tglMutasi) {
       );
       const result = await response.json();
       if (result.data && result.data.length > 0) {
-        let detailHtml = `
-                    <h4 class="text-xs font-bold uppercase text-gray-500 mb-2 tracking-wider">Detail Item: ${noFaktur}</h4>
-                    <table class="w-full text-xs bg-white rounded border border-gray-200 overflow-hidden">
-                        <thead class="bg-gray-100 text-gray-700">
-                            <tr>
-                                <th class="p-2 text-left">No</th>
-                                <th class="p-2 text-left">PLU</th>
-                                <th class="p-2 text-left">Barcode</th>
-                                <th class="p-2 text-left">Nama Barang</th>
-                                <th class="p-2 text-right">Qty</th>
-                                <th class="p-2 text-center">Satuan</th>
-                                <th class="p-2 text-right">Harga Beli</th>
-                                <th class="p-2 text-right">PPN</th>
-                                <th class="p-2 text-right">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                `;
         function fmtRp(n) {
           return new Intl.NumberFormat("id-ID", {
             style: "decimal",
             minimumFractionDigits: 0,
           }).format(n);
         }
+        let detailHtml = `
+                <h4 class="text-xs font-bold uppercase text-gray-500 mb-2 tracking-wider">Detail Item: ${noFaktur}</h4>
+                <table class="w-full text-xs bg-white rounded border border-gray-200 overflow-hidden">
+                    <thead class="bg-gray-100 text-gray-700">
+                        <tr>
+                            <th class="p-2 text-left">No</th>
+                            <th class="p-2 text-left">PLU</th>
+                            <th class="p-2 text-left">Barcode</th>
+                            <th class="p-2 text-left">Nama Barang</th>
+                            <th class="p-2 text-right">Qty</th>
+                            <th class="p-2 text-center">Satuan</th>
+                            <th class="p-2 text-right">Harga Beli</th>
+                            <th class="p-2 text-right">PPN</th>
+                            <th class="p-2 text-right">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                `;
         result.data.forEach((item, idx) => {
           detailHtml += `
-                        <tr class="border-b border-gray-100 hover:bg-gray-50">
-                            <td class="p-2">${idx + 1}</td>
-                            <td class="p-2 font-mono">${item.plu}</td>
-                            <td class="p-2 font-mono">${
-                              item.barcode || "-"
-                            }</td>
-                            <td class="p-2">${item.descp}</td>
-                            <td class="p-2 text-right font-bold">${fmtRp(
-                              item.qty
-                            )}</td>
-                            <td class="p-2 text-center">${item.satuan}</td>
-                            <td class="p-2 text-right">${fmtRp(
-                              item.hrg_beli
-                            )}</td>
-                            <td class="p-2 text-right">${fmtRp(item.ppn)}</td>
-                            <td class="p-2 text-right font-semibold">${fmtRp(
-                              item.total_row
-                            )}</td>
-                        </tr>
-                    `;
+                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                        <td class="p-2">${idx + 1}</td>
+                        <td class="p-2 font-mono">${item.plu}</td>
+                        <td class="p-2 font-mono">${item.barcode || "-"}</td>
+                        <td class="p-2">${item.descp}</td>
+                        <td class="p-2 text-right font-bold">${fmtRp(
+                          item.qty
+                        )}</td>
+                        <td class="p-2 text-center">${item.satuan}</td>
+                        <td class="p-2 text-right">${fmtRp(item.hrg_beli)}</td>
+                        <td class="p-2 text-right">${fmtRp(item.ppn)}</td>
+                        <td class="p-2 text-right font-semibold">${fmtRp(
+                          item.total_row
+                        )}</td>
+                    </tr>`;
         });
         detailHtml += `</tbody></table>`;
         contentDiv.innerHTML = detailHtml;
@@ -403,7 +393,6 @@ window.toggleDetail = async function (rowId, noFaktur, kodeDari, tglMutasi) {
     detailRow.classList.add("hidden");
   }
 };
-
 window.handlePrint = async function (
   noFaktur,
   kodeDari,
@@ -419,20 +408,17 @@ window.handlePrint = async function (
     );
     return;
   }
-
   let titleText = "Konfirmasi Cetak Faktur";
   let bodyText =
     "Status dokumen akan diperbarui menjadi 'Sudah Cetak' dan faktur akan diunduh.";
   let confirmText = "Ya, Cetak & Unduh";
   let iconType = "info";
-
   if (isPrinted === "True") {
     titleText = "Cetak Ulang Faktur?";
     bodyText = "Dokumen ini sudah pernah dicetak sebelumnya. Unduh ulang?";
     confirmText = "Unduh Ulang";
     iconType = "question";
   }
-
   Swal.fire({
     title: titleText,
     text: bodyText,
@@ -445,12 +431,10 @@ window.handlePrint = async function (
   }).then(async (result) => {
     if (result.isConfirmed) {
       try {
-        // 1. Update Status Cetak di Database (jika belum dicetak)
         if (isPrinted !== "True") {
           const formData = new FormData();
           formData.append("no_faktur", noFaktur);
           formData.append("kode_dari", kodeDari);
-
           const updateResp = await fetch(
             "/src/api/mutasi_in/update_cetak.php",
             {
@@ -460,177 +444,111 @@ window.handlePrint = async function (
           );
           const updateRes = await updateResp.json();
           if (!updateRes.success) throw new Error(updateRes.message);
-
-          // Refresh data di tabel utama
           document.dispatchEvent(new Event("forceLoadData"));
         }
-
-        // 2. Loading State
         Swal.fire({
           title: "Menyiapkan Faktur...",
-          text: "Sedang menyusun format Excel...",
+          text: "Sedang menyusun layout Excel...",
           allowOutsideClick: false,
           didOpen: () => {
             Swal.showLoading();
           },
         });
-
-        // 3. Ambil Data Faktur
         const invoiceResp = await fetch(
           `/src/api/mutasi_in/get_invoice_excel.php?no_faktur=${noFaktur}&kode_dari=${kodeDari}&tgl_mutasi=${tglMutasi}`
         );
-
         if (!invoiceResp.ok) throw new Error("Gagal mengambil data faktur");
         const invoiceData = await invoiceResp.json();
         if (invoiceData.error) throw new Error(invoiceData.error);
-
         const h = invoiceData.header;
         const d = invoiceData.details;
-
-        // ==========================================
-        // 4. GENERATE EXCEL DENGAN EXCELJS (STYLING)
-        // ==========================================
         const workbook = new ExcelJS.Workbook();
         const sheet = workbook.addWorksheet("Faktur");
-
-        // -- KONFIGURASI KOLOM (Lebar) --
         sheet.columns = [
-          {
-            width: 5,
-          }, // A: No
-          {
-            width: 15,
-          }, // B: PLU
-          {
-            width: 35,
-          }, // C: Deskripsi (Lebar)
-          {
-            width: 10,
-          }, // D: Qty
-          {
-            width: 10,
-          }, // E: Satuan
-          {
-            width: 15,
-          }, // F: Harga
-          {
-            width: 12,
-          }, // G: PPN
-          {
-            width: 18,
-          }, // H: Total
+          { width: 6 },
+          { width: 16 },
+          { width: 45 },
+          { width: 8 },
+          { width: 8 },
+          { width: 18 },
+          { width: 18 },
+          { width: 20 },
         ];
-
-        // -- STYLE UMUM --
-        const borderStyle = {
-          top: {
-            style: "thin",
-          },
-          left: {
-            style: "thin",
-          },
-          bottom: {
-            style: "thin",
-          },
-          right: {
-            style: "thin",
-          },
+        const borderAll = {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          bottom: { style: "thin" },
+          right: { style: "thin" },
         };
-        const fontBold = {
-          name: "Arial",
-          size: 10,
-          bold: true,
-        };
-        const fontRegular = {
-          name: "Arial",
-          size: 10,
-        };
-        const alignRight = {
-          vertical: "middle",
-          horizontal: "right",
-        };
-        const alignCenter = {
-          vertical: "middle",
-          horizontal: "center",
-        };
-
-        // -- HEADER SURAT JALAN / FAKTUR --
-        // Baris 1: Judul Kolom Pengirim & Penerima
-        sheet.mergeCells("A1:C1");
-        sheet.getCell("A1").value = "PENGIRIM (DARI)";
+        const fontBold = { name: "Arial", size: 10, bold: true };
+        const fontRegular = { name: "Arial", size: 10 };
+        const alignCenter = { vertical: "middle", horizontal: "center" };
+        const alignRight = { vertical: "middle", horizontal: "right" };
+        const alignLeft = { vertical: "middle", horizontal: "left" };
+        sheet.mergeCells("A1:H1");
+        sheet.getCell("A1").value = "FAKTUR MUTASI BARANG";
         sheet.getCell("A1").font = {
+          name: "Arial",
+          size: 16,
           bold: true,
-          size: 11,
+          underline: true,
         };
-
-        sheet.mergeCells("E1:H1");
-        sheet.getCell("E1").value = "PENERIMA (TUJUAN)";
-        sheet.getCell("E1").font = {
-          bold: true,
-          size: 11,
-        };
-
-        // Baris 2: Nama PT/CV
-        sheet.mergeCells("A2:C2");
-        sheet.getCell("A2").value = h.d_cv || "-";
-        sheet.getCell("A2").font = {
-          bold: true,
-          size: 12,
-          color: {
-            argb: "FFDB2777",
-          },
-        }; // Pink Color
-
-        sheet.mergeCells("E2:H2");
-        sheet.getCell("E2").value = h.t_cv || "-";
-        sheet.getCell("E2").font = {
-          bold: true,
-          size: 12,
-        };
-
-        // Baris 3: Alamat
-        sheet.mergeCells("A3:C3");
-        sheet.getCell("A3").value = h.d_alm || "-";
-        sheet.getCell("A3").alignment = {
-          wrapText: true,
-          vertical: "top",
-        };
-
-        sheet.mergeCells("E3:H3");
-        sheet.getCell("E3").value = h.t_alm || "-";
-        sheet.getCell("E3").alignment = {
-          wrapText: true,
-          vertical: "top",
-        };
-
-        // Baris 4: NPWP
-        sheet.mergeCells("A4:C4");
-        sheet.getCell("A4").value = "NPWP: " + (h.d_npwp || "-");
-
-        sheet.mergeCells("E4:H4");
-        sheet.getCell("E4").value = "NPWP: " + (h.t_npwp || "-");
-
-        // Spasi
+        sheet.getCell("A1").alignment = alignCenter;
         sheet.addRow([]);
-
-        // Baris 6: Info Faktur
-        const rowFaktur = sheet.addRow(["No. Faktur :", h.no_faktur]);
-        rowFaktur.getCell(1).font = fontBold;
-        rowFaktur.getCell(2).font = fontBold;
-        rowFaktur.getCell(2).alignment = {
+        sheet.mergeCells("A3:C3");
+        sheet.getCell("A3").value = "DARI (PENGIRIM):";
+        sheet.getCell("A3").font = fontBold;
+        sheet.mergeCells("E3:H3");
+        sheet.getCell("E3").value = "KEPADA (PENERIMA):";
+        sheet.getCell("E3").font = fontBold;
+        sheet.mergeCells("A4:C4");
+        sheet.getCell("A4").value = h.d_cv || "-";
+        sheet.getCell("A4").font = {
+          ...fontBold,
+          size: 11,
+          color: { argb: "FFDB2777" },
+        };
+        sheet.mergeCells("E4:H4");
+        sheet.getCell("E4").value = h.t_cv || "-";
+        sheet.getCell("E4").font = { ...fontBold, size: 11 };
+        sheet.mergeCells("A5:C5");
+        sheet.getCell("A5").value = h.d_alm || "-";
+        sheet.getCell("A5").alignment = {
+          wrapText: true,
+          vertical: "top",
           horizontal: "left",
         };
-
-        const rowTgl = sheet.addRow(["Tanggal :", h.tgl_mutasi]);
-        rowTgl.getCell(1).font = fontBold;
-        rowTgl.getCell(2).alignment = {
+        sheet.mergeCells("E5:H5");
+        sheet.getCell("E5").value = h.t_alm || "-";
+        sheet.getCell("E5").alignment = {
+          wrapText: true,
+          vertical: "top",
           horizontal: "left",
         };
-
-        sheet.addRow([]); // Spasi sebelum tabel
-
-        // -- HEADER TABEL --
-        const headerRow = sheet.addRow([
+        sheet.mergeCells("A6:C6");
+        sheet.getCell("A6").value = "NPWP: " + (h.d_npwp || "-");
+        sheet.getCell("A6").font = { name: "Arial", size: 9 };
+        sheet.mergeCells("E6:H6");
+        sheet.getCell("E6").value = "NPWP: " + (h.t_npwp || "-");
+        sheet.getCell("E6").font = { name: "Arial", size: 9 };
+        sheet.addRow([]);
+        const rowInfoIdx = 8;
+        const rInfo = sheet.getRow(rowInfoIdx);
+        sheet.getCell(`A${rowInfoIdx}`).value = "NO. FAKTUR";
+        sheet.mergeCells(`A${rowInfoIdx}:B${rowInfoIdx}`);
+        sheet.getCell(`A${rowInfoIdx}`).font = fontBold;
+        sheet.getCell(`A${rowInfoIdx}`).alignment = alignLeft;
+        sheet.getCell(`C${rowInfoIdx}`).value = ": " + h.no_faktur;
+        sheet.getCell(`C${rowInfoIdx}`).font = fontBold;
+        sheet.getCell(`F${rowInfoIdx}`).value = "TANGGAL";
+        sheet.mergeCells(`F${rowInfoIdx}:G${rowInfoIdx}`);
+        sheet.getCell(`F${rowInfoIdx}`).font = fontBold;
+        sheet.getCell(`F${rowInfoIdx}`).alignment = alignRight;
+        sheet.getCell(`H${rowInfoIdx}`).value = ": " + h.tgl_mutasi;
+        sheet.getCell(`H${rowInfoIdx}`).font = fontBold;
+        sheet.getCell(`H${rowInfoIdx}`).alignment = alignRight;
+        sheet.addRow([]);
+        const headers = [
           "NO",
           "PLU",
           "DESKRIPSI BARANG",
@@ -639,28 +557,19 @@ window.handlePrint = async function (
           "HARGA",
           "PPN",
           "TOTAL",
-        ]);
-
-        headerRow.height = 25;
-        headerRow.eachCell((cell) => {
+        ];
+        const rowHeader = sheet.addRow(headers);
+        rowHeader.height = 25;
+        rowHeader.eachCell((cell) => {
           cell.fill = {
             type: "pattern",
             pattern: "solid",
-            fgColor: {
-              argb: "FFFFC0CB",
-            }, // Warna Pink Muda
+            fgColor: { argb: "FFEEE0E5" },
           };
-          cell.font = {
-            bold: true,
-            color: {
-              argb: "FF000000",
-            },
-          };
+          cell.font = fontBold;
           cell.alignment = alignCenter;
-          cell.border = borderStyle;
+          cell.border = borderAll;
         });
-
-        // -- ISI TABEL (LOOP DETAILS) --
         d.forEach((row) => {
           const r = sheet.addRow([
             row.No,
@@ -672,29 +581,23 @@ window.handlePrint = async function (
             parseFloat(row.ppn),
             parseFloat(row.total),
           ]);
-
-          // Formatting per cell di row ini
-          r.getCell(1).alignment = alignCenter; // No
-          r.getCell(2).alignment = alignCenter; // PLU
-          r.getCell(4).alignment = alignCenter; // Qty
-          r.getCell(5).alignment = alignCenter; // Satuan
-
-          // Format Currency/Number
-          r.getCell(6).numFmt = "#,##0"; // Harga
-          r.getCell(7).numFmt = "#,##0"; // PPN
-          r.getCell(8).numFmt = "#,##0"; // Total
-
-          // Beri border ke semua cell di row ini
+          r.getCell(1).alignment = alignCenter;
+          r.getCell(2).alignment = alignCenter;
+          r.getCell(3).alignment = {
+            wrapText: true,
+            vertical: "middle",
+            horizontal: "left",
+          };
+          r.getCell(4).alignment = alignCenter;
+          r.getCell(5).alignment = alignCenter;
+          r.getCell(6).numFmt = "#,##0";
+          r.getCell(7).numFmt = "#,##0";
+          r.getCell(8).numFmt = "#,##0";
           r.eachCell((cell) => {
-            cell.border = borderStyle;
+            cell.border = borderAll;
             cell.font = fontRegular;
           });
         });
-
-        // -- FOOTER TOTAL --
-        sheet.addRow([]); // Spasi
-
-        // Sub Total
         const rowSub = sheet.addRow([
           "",
           "",
@@ -707,11 +610,9 @@ window.handlePrint = async function (
         ]);
         rowSub.getCell(7).font = fontBold;
         rowSub.getCell(7).alignment = alignRight;
-        rowSub.getCell(8).numFmt = "#,##0";
         rowSub.getCell(8).font = fontBold;
-        rowSub.getCell(8).border = borderStyle;
-
-        // PPN
+        rowSub.getCell(8).numFmt = "#,##0";
+        rowSub.getCell(8).border = borderAll;
         const rowPpn = sheet.addRow([
           "",
           "",
@@ -724,11 +625,9 @@ window.handlePrint = async function (
         ]);
         rowPpn.getCell(7).font = fontBold;
         rowPpn.getCell(7).alignment = alignRight;
-        rowPpn.getCell(8).numFmt = "#,##0";
         rowPpn.getCell(8).font = fontBold;
-        rowPpn.getCell(8).border = borderStyle;
-
-        // Grand Total
+        rowPpn.getCell(8).numFmt = "#,##0";
+        rowPpn.getCell(8).border = borderAll;
         const rowGrand = sheet.addRow([
           "",
           "",
@@ -739,29 +638,54 @@ window.handlePrint = async function (
           "GRAND TOTAL",
           parseFloat(h.Total),
         ]);
-        rowGrand.getCell(7).font = {
-          bold: true,
-          size: 11,
-        };
+        rowGrand.getCell(7).font = { ...fontBold, size: 11 };
         rowGrand.getCell(7).alignment = alignRight;
-        rowGrand.getCell(8).numFmt = "#,##0";
         rowGrand.getCell(8).font = {
-          bold: true,
+          ...fontBold,
           size: 12,
-          color: {
-            argb: "FFFF0000",
-          },
-        }; // Merah
-        rowGrand.getCell(8).border = borderStyle;
+          color: { argb: "FFFFFFFF" },
+        };
         rowGrand.getCell(8).fill = {
           type: "pattern",
           pattern: "solid",
-          fgColor: {
-            argb: "FFFFFF00",
-          },
-        }; // Highlight Kuning
-
-        // -- DOWNLOAD FILE --
+          fgColor: { argb: "FFDB2777" },
+        };
+        rowGrand.getCell(8).numFmt = "#,##0";
+        rowGrand.getCell(8).border = borderAll;
+        sheet.addRow([]);
+        sheet.addRow([]);
+        const sigRowTitle = sheet.addRow([
+          "Diterima Oleh,",
+          "",
+          "",
+          "",
+          "",
+          "Hormat Kami,",
+          "",
+          "",
+        ]);
+        sheet.mergeCells(`A${sigRowTitle.number}:C${sigRowTitle.number}`);
+        sheet.mergeCells(`F${sigRowTitle.number}:H${sigRowTitle.number}`);
+        sheet.getCell(`A${sigRowTitle.number}`).alignment = alignCenter;
+        sheet.getCell(`F${sigRowTitle.number}`).alignment = alignCenter;
+        sheet.addRow([]);
+        sheet.addRow([]);
+        sheet.addRow([]);
+        sheet.addRow([]);
+        const sigRowName = sheet.addRow([
+          "( ........................ )",
+          "",
+          "",
+          "",
+          "",
+          "( ........................ )",
+          "",
+          "",
+        ]);
+        sheet.mergeCells(`A${sigRowName.number}:C${sigRowName.number}`);
+        sheet.mergeCells(`F${sigRowName.number}:H${sigRowName.number}`);
+        sheet.getCell(`A${sigRowName.number}`).alignment = alignCenter;
+        sheet.getCell(`F${sigRowName.number}`).alignment = alignCenter;
         const buffer = await workbook.xlsx.writeBuffer();
         const blob = new Blob([buffer], {
           type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -772,11 +696,10 @@ window.handlePrint = async function (
         anchor.download = `Faktur_${noFaktur}.xlsx`;
         anchor.click();
         window.URL.revokeObjectURL(url);
-
         Swal.fire({
           icon: "success",
           title: "Berhasil",
-          text: "Faktur berhasil diunduh dengan format baru",
+          text: "Faktur berhasil diunduh.",
           timer: 2000,
           showConfirmButton: false,
         });
