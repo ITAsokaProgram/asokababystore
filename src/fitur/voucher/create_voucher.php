@@ -142,21 +142,23 @@ include '../../../aa_kon_sett.php';
                                 </div>
 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                    
+
                                     <div class="col-span-2 grid grid-cols-3 gap-4">
                                         <div class="col-span-2">
-                                            <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Manual (Max 8)
+                                            <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Manual
+                                                (Max 8)
                                                 <span class="text-red-500">*</span></label>
                                             <input type="text" name="nama_voucher_manual" id="nama_voucher_manual"
-                                                class="input-modern w-full uppercase rounded-md" 
-                                                maxlength="8" placeholder="CONTOH" required>
+                                                class="input-modern w-full uppercase rounded-md" maxlength="8"
+                                                placeholder="CKD20K25" required>
                                         </div>
                                         <div class="col-span-1">
-                                            <label class="block text-xs font-semibold text-gray-700 mb-1">No. Urut (3 Digit)
+                                            <label class="block text-xs font-semibold text-gray-700 mb-1">No. Urut (3
+                                                Digit)
                                                 <span class="text-red-500">*</span></label>
                                             <input type="number" name="nomor_urut" id="nomor_urut"
-                                                class="input-modern w-full text-center" 
-                                                max="999" maxlength="3" placeholder="001" required>
+                                                class="input-modern w-full text-center" max="999" maxlength="3"
+                                                placeholder="001" required>
                                         </div>
                                     </div>
                                     <div>
@@ -171,6 +173,25 @@ include '../../../aa_kon_sett.php';
                                             <span class="text-red-500">*</span></label>
                                         <input type="number" name="nilai_voucher" id="nilai_voucher"
                                             class="input-modern w-full" min="0" placeholder="20000" required>
+                                    </div>
+                                </div>
+                                <div id="preview-container"
+                                    class="hidden mb-4 p-3 bg-gradient-to-r from-pink-50 to-white border border-pink-200 rounded-lg shadow-sm">
+                                    <div class="flex items-start gap-3">
+                                        <div class="mt-1 text-pink-500">
+                                            <i class="fa-solid fa-eye"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs font-bold text-gray-700">Preview Kode Voucher:</p>
+                                            <p class="text-[10px] text-gray-500 mb-1">Contoh hasil berdasarkan Toko &
+                                                Input saat ini:</p>
+                                            <div class="font-mono text-lg font-bold text-pink-600 tracking-wider"
+                                                id="preview-text">
+                                                -
+                                            </div>
+                                            <p id="preview-store-name" class="text-[10px] text-gray-400 italic mt-1">
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
 

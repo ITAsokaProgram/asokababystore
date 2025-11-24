@@ -93,7 +93,7 @@ try {
             $sequence_map[$kd_store]++;
             $seq_padded = str_pad($sequence_map[$kd_store], 3, '0', STR_PAD_LEFT);
             $no_kor_final = $no_kor_prefix . $seq_padded;
-            $stmt = $conn->prepare("INSERT IGNORE INTO jadwal_so_copy (
+            $stmt = $conn->prepare("INSERT IGNORE INTO jadwal_so (
                 Kd_Store, Nm_Alias, Nm_Store, 
                 kode_supp, nama_supp, 
                 kd_otorisasi, nama_otorisasi, 

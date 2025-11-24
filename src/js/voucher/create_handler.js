@@ -7,6 +7,34 @@ const state = {
   selectedStores: new Set(),
 };
 let allCabangData = [];
+function updateLivePreview() {
+  const container = document.getElementById("preview-container");
+  const textEl = document.getElementById("preview-text");
+  const storeNameEl = document.getElementById("preview-store-name");
+  const namaManual = document.getElementById("nama_voucher_manual").value;
+  const nomorUrut = document.getElementById("nomor_urut").value;
+  if (state.selectedStores.size === 0 || !namaManual || !nomorUrut) {
+    container.classList.add("hidden");
+    return;
+  }
+  const firstStoreId = state.selectedStores.values().next().value;
+  const storeData = allCabangData.find((s) => s.Kd_Store === firstStoreId);
+  if (storeData) {
+    const alias = storeData.Nm_Alias || "";
+    const seq = nomorUrut.toString().padStart(3, "0");
+    const previewCode = `${alias}${namaManual}${seq}`;
+    textEl.textContent = previewCode;
+    if (state.selectedStores.size > 1) {
+      storeNameEl.textContent = `(Contoh dari toko: ${
+        storeData.Nm_Store
+      }, dan ${state.selectedStores.size - 1} toko lainnya)`;
+    } else {
+      storeNameEl.textContent = `(Toko: ${storeData.Nm_Store})`;
+    }
+    container.classList.remove("hidden");
+    container.classList.add("block");
+  }
+}
 function renderCabangList(data) {
   const container = document.getElementById("container-cabang");
   container.innerHTML = "";
@@ -56,6 +84,7 @@ function renderCabangList(data) {
         div.classList.add("border-transparent");
       }
       updateStoreCounter();
+      updateLivePreview();
     });
     container.appendChild(div);
   });
@@ -107,12 +136,14 @@ document
   .getElementById("nama_voucher_manual")
   .addEventListener("input", function () {
     this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+    updateLivePreview();
   });
 document.getElementById("nomor_urut").addEventListener("input", function () {
   this.value = this.value.replace(/[^0-9]/g, "");
   if (this.value.length > 3) {
     this.value = this.value.slice(0, 3);
   }
+  updateLivePreview();
 });
 document.getElementById("pemilik").addEventListener("input", function () {
   this.value = this.value.toUpperCase();
@@ -203,9 +234,28 @@ async function submitVoucher(e) {
       };
       const apiRes = await sendRequestJSON(API_URLS.insertVoucher, payload);
       if (apiRes.success) {
+        let vouchersHtml = "";
+        const samples = apiRes.data.samples || [];
+        if (samples.length > 0) {
+          vouchersHtml = `
+            <div class="mt-4 p-3 bg-gray-50 rounded border border-gray-200 text-left">
+                <p class="text-xs font-bold text-gray-600 mb-2">Kode Voucher Dibuat:</p>
+                <ul class="list-disc list-inside text-sm font-mono text-pink-700">
+                    ${samples.map((code) => `<li>${code}</li>`).join("")}
+                </ul>
+                ${
+                  apiRes.data.total > 3
+                    ? `<p class="text-xs text-gray-400 mt-2 italic">... dan ${
+                        apiRes.data.total - 3
+                      } lainnya.</p>`
+                    : ""
+                }
+            </div>
+          `;
+        }
         await Swal.fire({
           title: "Berhasil!",
-          text: apiRes.message,
+          html: `${apiRes.message}${vouchersHtml}`,
           icon: "success",
           confirmButtonColor: "#10b981",
         });
@@ -255,6 +305,7 @@ document.addEventListener("DOMContentLoaded", () => {
         );
       });
       updateStoreCounter();
+      updateLivePreview();
     });
   document
     .getElementById("btn-deselect-all-cabang")
@@ -272,6 +323,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       state.selectedStores.clear();
       updateStoreCounter();
+      updateLivePreview();
     });
   document
     .getElementById("formVoucher")

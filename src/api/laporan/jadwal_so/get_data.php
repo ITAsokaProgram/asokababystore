@@ -13,7 +13,7 @@ register_shutdown_function(function () {
     }
 });
 header('Content-Type: application/json');
-$table_name = "jadwal_so_copy";
+$table_name = "jadwal_so";
 $is_export = filter_var($_GET['export'] ?? false, FILTER_VALIDATE_BOOLEAN);
 $response = [
     'summary' => [

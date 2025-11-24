@@ -660,7 +660,7 @@ window.handlePrint = async function (
           "",
           "",
           "",
-          "Hormat Kami,",
+          "Dibuat Oleh,",
           "",
           "",
         ]);
@@ -673,12 +673,12 @@ window.handlePrint = async function (
         sheet.addRow([]);
         sheet.addRow([]);
         const sigRowName = sheet.addRow([
-          "( ........................ )",
+          "( __________________________ )",
           "",
           "",
           "",
           "",
-          "( ........................ )",
+          "( __________________________ )",
           "",
           "",
         ]);

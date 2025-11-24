@@ -95,7 +95,7 @@ try {
             last_sold,
             pemilik,
             kd_store
-        FROM voucher_copy
+        FROM voucher
         WHERE 
             $where_conditions
         ORDER BY 
@@ -139,7 +139,7 @@ try {
             SUM(pakai) AS total_pakai,
             SUM(sisa) AS total_sisa
         FROM 
-            voucher_copy
+            voucher
         WHERE 
             $where_conditions
         GROUP BY 
