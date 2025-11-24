@@ -12,6 +12,7 @@ $default_page = 1;
 $tgl_mulai = $_GET['tgl_mulai'] ?? $default_tgl_mulai;
 $tgl_selesai = $_GET['tgl_selesai'] ?? $default_tgl_selesai;
 $kd_store = $_GET['kd_store'] ?? $default_kd_store;
+$mode = $_GET['mode'] ?? 'jadwal';
 $page = (int) ($_GET['page'] ?? $default_page);
 
 if ($page < 1) {
@@ -61,14 +62,15 @@ if ($page < 1) {
                                     Laporan Barang Belum Scan
                                 </h1>
                                 <p id="page-subtitle" class="text-xs text-gray-600">
-                                    Item di Master yang belum masuk Koreksi SO (Berdasarkan Jadwal)
+                                    Item di Master yang belum masuk Koreksi SO
                                 </p>
                             </div>
                         </div>
                     </div>
 
                     <div class="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                        <div class="summary-card total flex gap-4 items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                        <div
+                            class="summary-card total flex gap-4 items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100">
                             <div class="summary-icon bg-blue-50 text-blue-600 p-3 rounded-lg">
                                 <i class="fas fa-box-open fa-lg"></i>
                             </div>
@@ -81,31 +83,46 @@ if ($page < 1) {
                 </div>
 
                 <div class="filter-card-simple bg-white p-4 rounded-2xl mb-4 shadow-sm">
-                    <form id="filter-form" class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end" method="GET">
+                    <form id="filter-form" class="grid grid-cols-1 md:grid-cols-5 gap-3 items-end" method="GET">
                         <div>
-                            <label for="tgl_mulai" class="block text-xs font-semibold text-gray-700 mb-2"> 
+                            <label for="tgl_mulai" class="block text-xs font-semibold text-gray-700 mb-2">
                                 <i class="fas fa-calendar-alt text-pink-600 mr-1"></i> Dari Tanggal
                             </label>
-                            <input type="date" name="tgl_mulai" id="tgl_mulai" class="input-modern w-full border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500"
+                            <input type="date" name="tgl_mulai" id="tgl_mulai"
+                                class="input-modern w-full border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500"
                                 value="<?php echo htmlspecialchars($tgl_mulai); ?>">
                         </div>
                         <div>
-                            <label for="tgl_selesai" class="block text-xs font-semibold text-gray-700 mb-2"> 
+                            <label for="tgl_selesai" class="block text-xs font-semibold text-gray-700 mb-2">
                                 <i class="fas fa-calendar-alt text-pink-600 mr-1"></i> Sampai Tanggal
                             </label>
-                            <input type="date" name="tgl_selesai" id="tgl_selesai" class="input-modern w-full border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500"
+                            <input type="date" name="tgl_selesai" id="tgl_selesai"
+                                class="input-modern w-full border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500"
                                 value="<?php echo htmlspecialchars($tgl_selesai); ?>">
                         </div>
                         <div>
-                            <label for="kd_store" class="block text-xs font-semibold text-gray-700 mb-2"> 
+                            <label for="mode" class="block text-xs font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-layer-group text-pink-600 mr-1"></i> Sumber Data
+                            </label>
+                            <select name="mode" id="mode"
+                                class="input-modern w-full border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500">
+                                <option value="jadwal" <?php echo $mode === 'jadwal' ? 'selected' : ''; ?>>Sesuai Jadwal
+                                    SO</option>
+                                <option value="non_jadwal" <?php echo $mode === 'non_jadwal' ? 'selected' : ''; ?>>Semua
+                                    Master (Tanpa Jadwal)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="kd_store" class="block text-xs font-semibold text-gray-700 mb-2">
                                 <i class="fas fa-store text-pink-600 mr-1"></i> Pilih Cabang
                             </label>
-                            <select name="kd_store" id="kd_store" class="input-modern w-full border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500">
+                            <select name="kd_store" id="kd_store"
+                                class="input-modern w-full border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500">
                                 <option value="all">Seluruh Store</option>
                             </select>
                         </div>
                         <button type="submit" id="filter-submit-button"
-                            class="btn-primary inline-flex items-center justify-center gap-2 bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-lg transition-colors">
+                            class="btn-primary inline-flex items-center justify-center gap-2 bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-lg transition-colors h-[42px]">
                             <i class="fas fa-filter"></i>
                             <span>Tampilkan</span>
                         </button>
@@ -120,7 +137,8 @@ if ($page < 1) {
                             Hasil Laporan
                         </h3>
                         <div class="flex items-center gap-2">
-                            <button id="export-excel-btn" class="btn-secondary-outline px-3 py-1.5 rounded-md flex items-center gap-2"
+                            <button id="export-excel-btn"
+                                class="btn-secondary-outline px-3 py-1.5 rounded-md flex items-center gap-2"
                                 style="background-color: #E6F7F0; border-color: #107C41; color: #107C41;">
                                 <i class="fas fa-file-excel"></i>
                                 <span>Export Excel</span>
@@ -142,7 +160,9 @@ if ($page < 1) {
                             <tbody id="missed-item-table-body" class="divide-y divide-gray-200">
                                 <tr>
                                     <td colspan="6" class="text-center p-8">
-                                        <div class="spinner-simple inline-block w-6 h-6 border-2 border-pink-600 border-t-transparent rounded-full animate-spin"></div>
+                                        <div
+                                            class="spinner-simple inline-block w-6 h-6 border-2 border-pink-600 border-t-transparent rounded-full animate-spin">
+                                        </div>
                                         <p class="mt-3 text-gray-500 font-medium">Memuat data...</p>
                                     </td>
                                 </tr>
@@ -168,4 +188,5 @@ if ($page < 1) {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 </body>
+
 </html>

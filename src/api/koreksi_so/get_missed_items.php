@@ -24,7 +24,12 @@ try {
     $tgl_mulai = $_GET['tgl_mulai'] ?? $default_tgl_mulai;
     $tgl_selesai = $_GET['tgl_selesai'] ?? $default_tgl_selesai;
     $kd_store = $_GET['kd_store'] ?? 'all';
-    $response['params'] = ['tgl_mulai' => $tgl_mulai, 'tgl_selesai' => $tgl_selesai];
+    $mode_laporan = $_GET['mode'] ?? 'jadwal';
+    $response['params'] = [
+        'tgl_mulai' => $tgl_mulai,
+        'tgl_selesai' => $tgl_selesai,
+        'mode' => $mode_laporan
+    ];
     $page = max(1, (int) ($_GET['page'] ?? 1));
     $limit = 10;
     $offset = ($page - 1) * $limit;
@@ -35,47 +40,94 @@ try {
             $response['stores'][] = $row;
         }
     }
-    $sql_jadwal_filter = "DATE(Tgl_schedule) BETWEEN ? AND ?";
-    $params_jadwal = [$tgl_mulai, $tgl_selesai];
-    $types_jadwal = "ss";
     $sql_koreksi_filter = "DATE(tgl_koreksi) BETWEEN ? AND ?";
     $params_koreksi = [$tgl_mulai, $tgl_selesai];
     $types_koreksi = "ss";
     $where_store_master = "";
+    $params_store = [];
+    $types_store = "";
     if ($kd_store !== 'all') {
-        $sql_jadwal_filter .= " AND Kd_Store = ?";
-        $params_jadwal[] = $kd_store;
-        $types_jadwal .= "s";
+        $where_store_master = "AND m.KD_STORE = ?";
         $sql_koreksi_filter .= " AND kd_store = ?";
+        $params_store[] = $kd_store;
+        $types_store .= "s";
         $params_koreksi[] = $kd_store;
         $types_koreksi .= "s";
-        $where_store_master = "AND m.KD_STORE = ?";
     }
-    $sql_core = "
-        FROM master m
-        JOIN (
-            SELECT DISTINCT kode_supp, nama_supp, DATE(Tgl_schedule) as tgl_jadwal
-            FROM jadwal_so 
-            WHERE $sql_jadwal_filter
-        ) j ON m.VENDOR = j.kode_supp
-        WHERE 
-            1=1 
-            $where_store_master
-            -- AND m.ON_HAND1 <> 0  
-            AND m.plu NOT IN (
-                SELECT plu 
-                FROM koreksi 
-                WHERE $sql_koreksi_filter
-            )
-    ";
-    $final_bind_types = $types_jadwal;
-    $final_bind_vars = $params_jadwal;
-    if ($kd_store !== 'all') {
-        $final_bind_types .= "s";
-        $final_bind_vars[] = $kd_store;
+    $final_bind_vars = [];
+    $final_bind_types = "";
+    if ($mode_laporan === 'non_jadwal') {
+        $sql_core = "
+            FROM master m
+            WHERE 
+                1=1 
+                $where_store_master
+                -- AND m.ON_HAND1 <> 0  
+                AND m.plu NOT IN (
+                    SELECT plu 
+                    FROM koreksi 
+                    WHERE $sql_koreksi_filter
+                )
+        ";
+        $final_bind_types .= $types_store;
+        $final_bind_vars = array_merge($final_bind_vars, $params_store);
+        $final_bind_types .= $types_koreksi;
+        $final_bind_vars = array_merge($final_bind_vars, $params_koreksi);
+        $cols_select = "
+            '$tgl_selesai' as tgl_jadwal,
+            m.plu, 
+            m.DESCP as deskripsi, 
+            IFNULL(m.SATUAN, 'PCS') as satuan, 
+            m.VENDOR as kode_supp, 
+            m.VENDOR as nama_supp, 
+            m.ON_HAND1 as stock,        
+            m.AVG_COST as avg_cost
+        ";
+        $order_by = "ORDER BY m.VENDOR ASC, m.plu ASC";
+    } else {
+        $sql_jadwal_filter = "DATE(Tgl_schedule) BETWEEN ? AND ?";
+        $params_jadwal = [$tgl_mulai, $tgl_selesai];
+        $types_jadwal = "ss";
+        if ($kd_store !== 'all') {
+            $sql_jadwal_filter .= " AND Kd_Store = ?";
+            $params_jadwal[] = $kd_store;
+            $types_jadwal .= "s";
+        }
+        $sql_core = "
+            FROM master m
+            JOIN (
+                SELECT DISTINCT kode_supp, nama_supp, DATE(Tgl_schedule) as tgl_jadwal
+                FROM jadwal_so 
+                WHERE $sql_jadwal_filter
+            ) j ON m.VENDOR = j.kode_supp
+            WHERE 
+                1=1 
+                $where_store_master
+                -- AND m.ON_HAND1 <> 0  
+                AND m.plu NOT IN (
+                    SELECT plu 
+                    FROM koreksi 
+                    WHERE $sql_koreksi_filter
+                )
+        ";
+        $final_bind_types .= $types_jadwal;
+        $final_bind_vars = array_merge($final_bind_vars, $params_jadwal);
+        $final_bind_types .= $types_store;
+        $final_bind_vars = array_merge($final_bind_vars, $params_store);
+        $final_bind_types .= $types_koreksi;
+        $final_bind_vars = array_merge($final_bind_vars, $params_koreksi);
+        $cols_select = "
+            j.tgl_jadwal,
+            m.plu, 
+            m.DESCP as deskripsi, 
+            IFNULL(m.SATUAN, 'PCS') as satuan, 
+            m.VENDOR as kode_supp, 
+            j.nama_supp,
+            m.ON_HAND1 as stock,        
+            m.AVG_COST as avg_cost
+        ";
+        $order_by = "ORDER BY j.tgl_jadwal ASC, m.VENDOR ASC, m.plu ASC";
     }
-    $final_bind_types .= $types_koreksi;
-    $final_bind_vars = array_merge($final_bind_vars, $params_koreksi);
     if (!$is_export) {
         $sql_count = "SELECT COUNT(*) as total $sql_core";
         $stmt_count = $conn->prepare($sql_count);
@@ -94,19 +146,7 @@ try {
         ];
         $response['summary']['total_items'] = (int) $total_rows;
     }
-    $sql_select = "
-        SELECT 
-            j.tgl_jadwal,
-            m.plu, 
-            m.DESCP as deskripsi, 
-            IFNULL(m.SATUAN, 'PCS') as satuan, 
-            m.VENDOR as kode_supp, 
-            j.nama_supp,
-            m.ON_HAND1 as stock,      
-            m.AVG_COST as avg_cost
-        $sql_core
-        ORDER BY j.tgl_jadwal ASC, m.VENDOR ASC, m.plu ASC
-    ";
+    $sql_select = "SELECT $cols_select $sql_core $order_by";
     if (!$is_export) {
         $sql_select .= " LIMIT ? OFFSET ?";
         $final_bind_types .= "ii";

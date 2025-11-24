@@ -53,8 +53,8 @@ try {
     if (strtotime($tgl_mulai) < strtotime(date('Y-m-d'))) {
         throw new Exception("Tanggal mulai tidak boleh tanggal lampau.");
     }
-    $tgl_awal_sql = date('Y-m-d 00:00:00', strtotime($tgl_mulai));
-    $tgl_akhir_sql = date('Y-m-d 23:59:59', strtotime($tgl_akhir));
+    $tgl_awal_sql = date('Y-m-d', strtotime($tgl_mulai));
+    $tgl_akhir_sql = date('Y-m-d', strtotime($tgl_akhir));
     $kd_cust = '999999999';
     $flag = 'False';
     $pakai = 0;

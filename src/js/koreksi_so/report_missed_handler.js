@@ -35,6 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     const inputMulai = document.getElementById("tgl_mulai");
     const inputSelesai = document.getElementById("tgl_selesai");
+    const inputMode = document.getElementById("mode");
     const defaultStart = inputMulai
       ? inputMulai.value
       : formatDate(lastMonth16);
@@ -45,6 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tgl_mulai: params.get("tgl_mulai") || defaultStart,
       tgl_selesai: params.get("tgl_selesai") || defaultEnd,
       kd_store: params.get("kd_store") || "all",
+      mode: params.get("mode") || (inputMode ? inputMode.value : "jadwal"),
       page: parseInt(params.get("page") || "1", 10),
     };
   }
@@ -61,6 +63,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tgl_mulai: params.tgl_mulai,
       tgl_selesai: params.tgl_selesai,
       kd_store: params.kd_store,
+      mode: params.mode,
       page: params.page,
     }).toString();
     try {
@@ -76,10 +79,14 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         filterSelectStore.value = params.kd_store;
       }
+      const modeEl = document.getElementById("mode");
+      if (modeEl && params.mode) {
+        modeEl.value = params.mode;
+      }
       if (data.summary) {
         summaryQty.textContent = formatNumber(data.summary.total_items);
       }
-      renderTable(data.tabel_data);
+      renderTable(data.tabel_data, params.mode);
       renderPagination(data.pagination);
     } catch (error) {
       console.error("Error loading data:", error);
@@ -129,7 +136,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     filterSelectStore.value = selectedStore;
   }
-  function renderTable(tabel_data) {
+  function renderTable(tabel_data, mode) {
     if (!tabel_data || tabel_data.length === 0) {
       tableBody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-gray-500"><i class="fas fa-check-circle fa-lg mb-2"></i><p>Tidak ada item missed (Semua aman atau Stok 0).</p></td></tr>`;
       return;
@@ -138,13 +145,19 @@ document.addEventListener("DOMContentLoaded", () => {
     let current_supp = null;
     let current_tanggal = null;
     let item_counter = 1;
-    const buildTanggalHeader = (tanggal) => `
+    const buildTanggalHeader = (tanggal) => {
+      let text = `Tanggal Jadwal: ${tanggal}`;
+      if (mode === "non_jadwal") {
+        text = `Cut Off Periode (Mode Tanpa Jadwal): Sampai ${tanggal}`;
+      }
+      return `
         <tr class="bg-gray-100 border-b border-gray-200">
             <td colspan="6" class="px-4 py-2 font-bold text-gray-700">
-                <i class="fas fa-calendar-day text-pink-600 mr-2"></i> Tanggal Jadwal: ${tanggal}
+                <i class="fas fa-calendar-day text-pink-600 mr-2"></i> ${text}
             </td>
         </tr>
     `;
+    };
     const buildSupplierHeader = (code, name) => `
         <tr class="bg-white border-b border-gray-100">
             <td colspan="6" class="px-4 py-2 font-semibold text-blue-800 pl-8 bg-blue-50">
@@ -268,7 +281,9 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
       const rows = [];
-      rows.push(["Laporan Barang Belum Scan (Missed Items)"]);
+      const modeText =
+        data.params.mode === "non_jadwal" ? "(Mode Master Tanpa Jadwal)" : "";
+      rows.push(["Laporan Barang Belum Scan " + modeText]);
       rows.push([
         "Periode",
         `${data.params.tgl_mulai} s/d ${data.params.tgl_selesai}`,

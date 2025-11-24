@@ -10,14 +10,14 @@ function forSelectQuery($queries, $conn)
   foreach ($queries as $queryName => $query) {
     echo "Mencoba menjalankan query: '$queryName'...\n";
 
-    $result = $conn->query($query); 
+    $result = $conn->query($query);
 
     if ($result === false) {
       echo "===================================================\n";
       echo "ERROR: Query '$queryName' GAGAL!\n";
       echo "Pesan Error MySQL: " . $conn->error . "\n";
       echo "===================================================\n";
-      die(); 
+      die();
     }
 
     echo "Query '$queryName' SUKSES.\n";
@@ -104,9 +104,13 @@ WHERE
 GROUP BY t.kd_cust, t.plu
 ORDER BY total_qty DESC limit 1";
 
-$sqlTopSalesByProduct = "SELECT descp AS barang,barcode AS kode_pabrik, plu, SUM(qty) AS total_qty
-FROM trans_b WHERE tgl_trans = CURDATE() - INTERVAL 1 DAY AND kd_cust NOT IN ('', '898989',  '999999999')
-GROUP BY plu ORDER BY total_qty DESC limit 1";
+$sqlTopSalesByProduct = "SELECT descp AS barang, barcode AS kode_pabrik, plu, SUM(qty) AS total_qty
+FROM trans_b 
+WHERE tgl_trans = CURDATE() - INTERVAL 1 DAY 
+AND kd_cust NOT IN ('', '898989', '999999999')
+AND plu != '999900022' 
+GROUP BY plu 
+ORDER BY total_qty DESC limit 1";
 
 $sqlJumlahMemberPerCabang = "SELECT 
   ks.Nm_Alias AS cabang,

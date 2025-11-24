@@ -174,10 +174,10 @@ $token = $menuHandler->getToken();
                       <input type="checkbox" name="menus[]" value="dashboard"
                         class="scale-110 focus:ring focus:ring-blue-300" /> Dashboard
                     </label>
-                    <label class="flex items-center gap-2 text-sm mt-2">
+                    <!-- <label class="flex items-center gap-2 text-sm mt-2">
                       <input type="checkbox" name="menus[]" value="dashboard_sales_graph"
                         class="scale-110 focus:ring focus:ring-blue-300" /> Grafik Penjualan
-                    </label>
+                    </label> -->
                   </div>
 
                   <div class="bg-white/70 border border-white/40 rounded-xl shadow p-4 mb-2">
