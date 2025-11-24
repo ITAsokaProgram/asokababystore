@@ -114,7 +114,7 @@ $queryString = http_build_query($queryParams);
             <div class="mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
                 <h1 class="text-3xl font-bold text-emerald-700 flex items-center gap-3"><i
                         class="fas fa-chart-line text-emerald-500"></i> Produk Favorit Member</h1>
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-3 hidden">
                     <button id="refresh-btn"
                         class="bg-gradient-to-r from-emerald-500 to-emerald-700 hover:from-emerald-600 hover:to-emerald-800 text-white px-6 py-3 rounded-xl font-bold shadow-md transition-all duration-200 flex items-center gap-2">
                         <i class="fas fa-sync-alt"></i> Refresh Data
@@ -189,10 +189,10 @@ $queryString = http_build_query($queryParams);
                                 <option value="qty">Sort by Qty</option>
                                 <option value="harga">Sort by Harga</option>
                             </select>
-                            <button onclick="exportAllDataToExcel()"
+                            <!-- <button onclick="exportAllDataToExcel()"
                                 class="bg-gradient-to-r from-emerald-500 to-emerald-700 hover:from-emerald-600 hover:to-emerald-800 text-white px-4 py-2 rounded-xl font-bold shadow-md transition-all duration-200 flex items-center gap-2">
                                 <i class="fas fa-file-excel"></i> Export Excel
-                            </button>
+                            </button> -->
                         </div>
                     </div>
                 </div>
