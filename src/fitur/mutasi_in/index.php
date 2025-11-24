@@ -161,7 +161,7 @@ $kd_store = $_GET['kd_store'] ?? $default_kd_store;
                                     <th>Tgl Mutasi</th>
                                     <th>No Faktur</th>
                                     <th>Kode Supp</th>
-                                    <th>Dari (Asal)</th>
+                                    <th>Dari</th>
                                     <th>Tujuan</th>
                                     <th class="text-right">Total</th>
                                     <th class="text-right">PPN</th>

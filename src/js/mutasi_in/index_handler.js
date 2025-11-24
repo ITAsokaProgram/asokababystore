@@ -1,4 +1,5 @@
 let currentSelectedRow = null;
+
 document.addEventListener("DOMContentLoaded", () => {
   const tableBody = document.getElementById("mutasi-table-body");
   const filterForm = document.getElementById("filter-form");
@@ -7,16 +8,20 @@ document.addEventListener("DOMContentLoaded", () => {
   const pageSubtitle = document.getElementById("page-subtitle");
   const paginationInfo = document.getElementById("pagination-info");
   const paginationLinks = document.getElementById("pagination-links");
+
+  // Summary Elements
   const summaryQty = document.getElementById("summary-qty");
   const summaryNetto = document.getElementById("summary-netto");
   const summaryPPN = document.getElementById("summary-ppn");
   const summaryTotal = document.getElementById("summary-total");
+
   window.changePage = function (page) {
     const url = new URL(window.location);
     url.searchParams.set("page", page);
     window.history.pushState({}, "", url);
     loadData();
   };
+
   function formatRupiah(number) {
     if (isNaN(number) || number === null) return "0";
     return new Intl.NumberFormat("id-ID", {
@@ -25,6 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
       maximumFractionDigits: 0,
     }).format(number);
   }
+
   function formatNumber(number) {
     if (isNaN(number) || number === null) return "0";
     return new Intl.NumberFormat("id-ID", {
@@ -32,13 +38,16 @@ document.addEventListener("DOMContentLoaded", () => {
       maximumFractionDigits: 0,
     }).format(number);
   }
+
   function getUrlParams() {
     const params = new URLSearchParams(window.location.search);
     const today = new Date();
     const oneMonthAgo = new Date();
     oneMonthAgo.setMonth(today.getMonth() - 1);
+
     const todayString = today.toISOString().split("T")[0];
     const oneMonthAgoString = oneMonthAgo.toISOString().split("T")[0];
+
     return {
       tgl_mulai: params.get("tgl_mulai") || oneMonthAgoString,
       tgl_selesai: params.get("tgl_selesai") || todayString,
@@ -48,9 +57,11 @@ document.addEventListener("DOMContentLoaded", () => {
       page: parseInt(params.get("page") || "1", 10),
     };
   }
+
   async function loadData() {
     const params = getUrlParams();
     setLoadingState(true);
+
     if (document.getElementById("tgl_mulai"))
       document.getElementById("tgl_mulai").value = params.tgl_mulai;
     if (document.getElementById("tgl_selesai"))
@@ -61,14 +72,19 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("status_cetak").value = params.status_cetak;
     if (document.getElementById("status_terima"))
       document.getElementById("status_terima").value = params.status_terima;
+
     const queryString = new URLSearchParams(params).toString();
+
     try {
       const response = await fetch(
         `/src/api/mutasi_in/get_data.php?${queryString}`
       );
       const data = await response.json();
+
       if (data.error) throw new Error(data.error);
+
       if (data.stores) populateStoreFilter(data.stores, params.kd_store);
+
       if (data.summary) {
         if (summaryQty)
           summaryQty.textContent = formatNumber(data.summary.total_qty);
@@ -79,9 +95,11 @@ document.addEventListener("DOMContentLoaded", () => {
         if (summaryTotal)
           summaryTotal.textContent = formatRupiah(data.summary.total_grand);
       }
+
       if (pageSubtitle) {
         pageSubtitle.textContent = `Periode ${params.tgl_mulai} s/d ${params.tgl_selesai}`;
       }
+
       renderTable(data.tabel_data);
       renderPagination(data.pagination);
     } catch (error) {
@@ -91,6 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
       setLoadingState(false);
     }
   }
+
   function setLoadingState(isLoading) {
     if (isLoading) {
       if (filterSubmitButton) {
@@ -111,6 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   }
+
   function populateStoreFilter(stores, selectedStore) {
     if (!filterSelectStore) return;
     if (filterSelectStore.options.length <= 1) {
@@ -123,11 +143,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     filterSelectStore.value = selectedStore;
   }
+
   function renderTable(data) {
     if (!data || data.length === 0) {
       tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-8 text-gray-500">Tidak ada data mutasi ditemukan.</td></tr>`;
       return;
     }
+
     let html = "";
     data.forEach((row, index) => {
       const isReceived = row.receipt === "True";
@@ -137,39 +159,73 @@ document.addEventListener("DOMContentLoaded", () => {
           ? "bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200"
           : "bg-pink-600 text-white hover:bg-pink-700 shadow-sm"
         : "bg-gray-200 text-gray-400 cursor-not-allowed";
+
       const rowId = `row-${index}`;
+
+      // PERUBAHAN UTAMA DISINI
+      // Kolom "Dari" dan "Tujuan" menampilkan:
+      // 1. Kode - Alias (Bold)
+      // 2. Nama NPWP (Normal)
+      // 3. Alamat NPWP (Kecil/Miring)
       html += `
       <tr id="${rowId}" class="hover:bg-pink-50 cursor-pointer transition-colors border-b border-gray-100" 
           onclick="showDetailFaktur('${rowId}', '${row.no_faktur}', '${
         row.kode_dari
       }', '${row.tgl_raw}')">
-          <td class="px-4 py-3 text-sm">${row.tgl_mutasi.split(" ")[0]}</td>
-          <td class="px-4 py-3 text-sm font-medium text-pink-700">${
+          <td class="px-4 py-3 text-sm align-top">${
+            row.tgl_mutasi.split(" ")[0]
+          }</td>
+          <td class="px-4 py-3 text-sm font-medium text-pink-700 align-top">${
             row.no_faktur
           }</td>
-          <td class="px-4 py-3 text-sm">${row.kode_supp}</td>
-          <td class="px-4 py-3 text-sm">
-              <div class="font-semibold">${row.kode_dari}</div>
-              <div class="text-xs text-gray-500">${row.dari_nama || ""}</div>
+          <td class="px-4 py-3 text-sm align-top">${row.kode_supp}</td>
+          
+          <td class="px-4 py-3 text-sm align-top">
+              <div class="flex flex-col gap-0.5">
+                <div class="font-bold text-gray-800">${row.kode_dari} - ${
+        row.dari_nama || ""
+      }</div>
+                <div class="text-xs font-medium text-gray-600">${
+                  row.dari_nama_npwp || "-"
+                }</div>
+                <div class="text-[10px] text-gray-400 italic leading-tight">${
+                  row.dari_alm_npwp || "-"
+                }</div>
+              </div>
           </td>
-          <td class="px-4 py-3 text-sm">
-              <div class="font-semibold">${row.kode_tujuan}</div>
-              <div class="text-xs text-gray-500">${row.tujuan_nama || ""}</div>
+
+          <td class="px-4 py-3 text-sm align-top">
+               <div class="flex flex-col gap-0.5">
+                <div class="font-bold text-gray-800">${row.kode_tujuan} - ${
+        row.tujuan_nama || ""
+      }</div>
+                <div class="text-xs font-medium text-gray-600">${
+                  row.tujuan_nama_npwp || "-"
+                }</div>
+                <div class="text-[10px] text-gray-400 italic leading-tight">${
+                  row.tujuan_alm_npwp || "-"
+                }</div>
+              </div>
           </td>
-          <td class="px-4 py-3 text-sm">${formatRupiah(row.total_netto)}</td>
-          <td class="px-4 py-3 text-sm">${formatRupiah(row.total_ppn)}</td>
-          <td class="px-4 py-3 text-sm font-bold">${formatRupiah(
+
+          <td class="px-4 py-3 text-sm align-top">${formatRupiah(
+            row.total_netto
+          )}</td>
+          <td class="px-4 py-3 text-sm align-top">${formatRupiah(
+            row.total_ppn
+          )}</td>
+          <td class="px-4 py-3 text-sm font-bold align-top">${formatRupiah(
             row.total_grand
           )}</td>
-          <td class="px-4 py-3 text-sm">${row.acc_mutasi || "-"}</td>
-          <td class="px-4 py-3 text-center">
+          <td class="px-4 py-3 text-sm align-top">${row.acc_mutasi || "-"}</td>
+          <td class="px-4 py-3 text-center align-top">
               ${
                 isReceived
                   ? '<span class="px-2 py-1 rounded bg-green-100 text-green-800 text-xs font-bold">Ya</span>'
                   : '<span class="px-2 py-1 rounded bg-red-100 text-red-800 text-xs font-bold">Belum</span>'
               }
           </td>
-          <td class="px-4 py-3 text-center" onclick="event.stopPropagation()">
+          <td class="px-4 py-3 text-center align-top" onclick="event.stopPropagation()">
               <button 
                   onclick="handlePrint('${row.no_faktur}', '${
         row.kode_dari
@@ -186,8 +242,10 @@ document.addEventListener("DOMContentLoaded", () => {
       </tr>
     `;
     });
+
     tableBody.innerHTML = html;
   }
+
   function renderPagination(pagination) {
     if (!paginationInfo || !paginationLinks) return;
     if (!pagination) {
@@ -195,10 +253,13 @@ document.addEventListener("DOMContentLoaded", () => {
       paginationLinks.innerHTML = "";
       return;
     }
+
     const { current_page, total_pages, total_rows } = pagination;
+
     paginationInfo.textContent = `Halaman ${current_page} dari ${total_pages} (Total ${formatNumber(
       total_rows
     )} Data)`;
+
     let html = "";
     const prevDisabled =
       current_page <= 1
@@ -206,7 +267,9 @@ document.addEventListener("DOMContentLoaded", () => {
         : "class='px-3 py-1 bg-white border border-gray-300 rounded-md hover:bg-gray-50 text-gray-700 transition-colors mr-1'";
     const prevClick =
       current_page > 1 ? `onclick="changePage(${current_page - 1})"` : "";
+
     html += `<button ${prevDisabled} ${prevClick}><i class="fas fa-chevron-left"></i></button>`;
+
     const max_pages_around = 2;
     for (let i = 1; i <= total_pages; i++) {
       if (
@@ -227,6 +290,7 @@ document.addEventListener("DOMContentLoaded", () => {
         html += `<span class="px-2 text-gray-400">...</span>`;
       }
     }
+
     const nextDisabled =
       current_page >= total_pages
         ? "disabled class='px-3 py-1 bg-gray-50 border border-gray-200 rounded-md text-gray-300 cursor-not-allowed ml-1'"
@@ -235,9 +299,12 @@ document.addEventListener("DOMContentLoaded", () => {
       current_page < total_pages
         ? `onclick="changePage(${current_page + 1})"`
         : "";
+
     html += `<button ${nextDisabled} ${nextClick}><i class="fas fa-chevron-right"></i></button>`;
+
     paginationLinks.innerHTML = html;
   }
+
   if (filterForm) {
     filterForm.addEventListener("submit", (e) => {
       e.preventDefault();
@@ -246,6 +313,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const kdStore = document.getElementById("kd_store").value;
       const statusCetak = document.getElementById("status_cetak").value;
       const statusTerima = document.getElementById("status_terima").value;
+
       const url = new URL(window.location);
       url.searchParams.set("tgl_mulai", tglMulai);
       url.searchParams.set("tgl_selesai", tglSelesai);
@@ -257,75 +325,126 @@ document.addEventListener("DOMContentLoaded", () => {
       loadData();
     });
   }
+
   document.addEventListener("forceLoadData", () => {
     loadData();
   });
+
   loadData();
 });
-window.toggleDetail = async function (rowId, noFaktur, kodeDari, tglMutasi) {
-  const detailRow = document.getElementById(rowId);
-  const contentDiv = detailRow.querySelector(".detail-content");
-  if (detailRow.classList.contains("hidden")) {
-    detailRow.classList.remove("hidden");
-    try {
-      const response = await fetch(
-        `/src/api/mutasi_in/get_detail.php?no_faktur=${noFaktur}&kode_dari=${kodeDari}&tgl_mutasi=${tglMutasi}`
-      );
-      const result = await response.json();
-      if (result.data && result.data.length > 0) {
-        function fmtRp(n) {
-          return new Intl.NumberFormat("id-ID", {
-            style: "decimal",
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0,
-          }).format(n);
-        }
-        let detailHtml = `
-                <h4 class="text-xs font-bold uppercase text-gray-500 mb-2 tracking-wider">Detail Item: ${noFaktur}</h4>
-                <table class="w-full text-xs bg-white rounded border border-gray-200 overflow-hidden">
-                    <thead class="bg-gray-100 text-gray-700">
-                        <tr>
-                            <th class="p-2 text-left">No</th>
-                            <th class="p-2 text-left">PLU</th>
-                            <th class="p-2 text-left">Barcode</th>
-                            <th class="p-2 text-left">Nama Barang</th>
-                            <th class="p-2">Qty</th>
-                            <th class="p-2">Satuan</th>
-                            <th class="p-2">Harga Beli</th>
-                            <th class="p-2">PPN</th>
-                            <th class="p-2">Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                `;
-        result.data.forEach((item, idx) => {
-          detailHtml += `
-                    <tr class="border-b border-gray-100 hover:bg-gray-50">
-                        <td class="p-2">${idx + 1}</td>
-                        <td class="p-2 font-mono">${item.plu}</td>
-                        <td class="p-2 font-mono">${item.barcode || "-"}</td>
-                        <td class="p-2">${item.descp}</td>
-                        <td class="p-2 font-bold">${fmtRp(item.qty)}</td>
-                        <td class="p-2">${item.satuan}</td>
-                        <td class="p-2">${fmtRp(item.hrg_beli)}</td>
-                        <td class="p-2">${fmtRp(item.ppn)}</td>
-                        <td class="p-2 font-semibold">${fmtRp(
-                          item.total_row
-                        )}</td>
-                    </tr>`;
-        });
-        detailHtml += `</tbody></table>`;
-        contentDiv.innerHTML = detailHtml;
-      } else {
-        contentDiv.innerHTML = `<p class="text-center text-gray-500 italic">Tidak ada detail item.</p>`;
+
+window.showDetailFaktur = async function (
+  rowId,
+  noFaktur,
+  kodeDari,
+  tglMutasi
+) {
+  const detailContent = document.getElementById("detail-faktur-content");
+  const detailSubtitle = document.getElementById("detail-subtitle");
+  const clickedRow = document.getElementById(rowId);
+
+  if (currentSelectedRow) {
+    currentSelectedRow.classList.remove("selected-row");
+  }
+  clickedRow.classList.add("selected-row");
+  currentSelectedRow = clickedRow;
+
+  if (detailSubtitle) {
+    detailSubtitle.textContent = `Faktur: ${noFaktur}`;
+  }
+
+  detailContent.innerHTML = `
+    <div class="detail-loading">
+      <div class="spinner-simple"></div>
+      <p>Memuat detail faktur...</p>
+    </div>
+  `;
+
+  // Scroll otomatis dimatikan sesuai permintaan
+  /*
+  document.getElementById("detail-faktur-section")?.scrollIntoView({
+    behavior: "smooth",
+    block: "nearest",
+  });
+  */
+
+  try {
+    const response = await fetch(
+      `/src/api/mutasi_in/get_detail.php?no_faktur=${noFaktur}&kode_dari=${kodeDari}&tgl_mutasi=${tglMutasi}`
+    );
+    const result = await response.json();
+
+    if (result.data && result.data.length > 0) {
+      function fmtRp(n) {
+        return new Intl.NumberFormat("id-ID", {
+          style: "decimal",
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        }).format(n);
       }
-    } catch (e) {
-      contentDiv.innerHTML = `<p class="text-red-500">Gagal memuat detail: ${e.message}</p>`;
+
+      // Tabel Detail dengan text-right untuk kolom harga
+      let detailHtml = `
+        <div class="detail-table-scroll-container">
+          <table class="w-full text-xs bg-white rounded border border-gray-200 overflow-hidden table-modern">
+            <thead>
+              <tr>
+                <th class="p-2 text-left">No</th>
+                <th class="p-2 text-left">PLU</th>
+                <th class="p-2 text-left">Barcode</th>
+                <th class="p-2 text-left">Nama Barang</th>
+                <th class="p-2">Qty</th>
+                <th class="p-2">Satuan</th>
+                <th class="p-2 text-right">Harga Beli</th>
+                <th class="p-2 text-right">PPN</th>
+                <th class="p-2 text-right">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      result.data.forEach((item, idx) => {
+        detailHtml += `
+          <tr class="border-b border-gray-100 hover:bg-gray-50">
+            <td class="p-2">${idx + 1}</td>
+            <td class="p-2 font-mono">${item.plu}</td>
+            <td class="p-2 font-mono">${item.barcode || "-"}</td>
+            <td class="p-2">${item.descp}</td>
+            <td class="p-2 font-bold">${fmtRp(item.qty)}</td>
+            <td class="p-2">${item.satuan}</td>
+            <td class="p-2 text-right">${fmtRp(item.hrg_beli)}</td>
+            <td class="p-2 text-right">${fmtRp(item.ppn)}</td>
+            <td class="p-2 font-semibold text-right">${fmtRp(
+              item.total_row
+            )}</td>
+          </tr>
+        `;
+      });
+
+      detailHtml += `
+            </tbody>
+          </table>
+        </div>
+      `;
+      detailContent.innerHTML = detailHtml;
+    } else {
+      detailContent.innerHTML = `
+        <div class="detail-faktur-empty">
+          <i class="fas fa-box-open"></i>
+          <p>Tidak ada detail item untuk faktur ini</p>
+        </div>
+      `;
     }
-  } else {
-    detailRow.classList.add("hidden");
+  } catch (e) {
+    detailContent.innerHTML = `
+      <div class="detail-faktur-empty">
+        <i class="fas fa-exclamation-triangle text-red-400"></i>
+        <p class="text-red-600">Gagal memuat detail: ${e.message}</p>
+      </div>
+    `;
   }
 };
+
 window.handlePrint = async function (
   noFaktur,
   kodeDari,
@@ -642,102 +761,4 @@ window.handlePrint = async function (
       }
     }
   });
-};
-
-window.showDetailFaktur = async function (
-  rowId,
-  noFaktur,
-  kodeDari,
-  tglMutasi
-) {
-  const detailContent = document.getElementById("detail-faktur-content");
-  const detailSubtitle = document.getElementById("detail-subtitle");
-  const clickedRow = document.getElementById(rowId);
-  if (currentSelectedRow) {
-    currentSelectedRow.classList.remove("selected-row");
-  }
-  clickedRow.classList.add("selected-row");
-  currentSelectedRow = clickedRow;
-  if (detailSubtitle) {
-    detailSubtitle.textContent = `Faktur: ${noFaktur}`;
-  }
-  detailContent.innerHTML = `
-    <div class="detail-loading">
-      <div class="spinner-simple"></div>
-      <p>Memuat detail faktur...</p>
-    </div>
-  `;
-  document.getElementById("detail-faktur-section")?.scrollIntoView({
-    behavior: "smooth",
-    block: "nearest",
-  });
-  try {
-    const response = await fetch(
-      `/src/api/mutasi_in/get_detail.php?no_faktur=${noFaktur}&kode_dari=${kodeDari}&tgl_mutasi=${tglMutasi}`
-    );
-    const result = await response.json();
-    if (result.data && result.data.length > 0) {
-      function fmtRp(n) {
-        return new Intl.NumberFormat("id-ID", {
-          style: "decimal",
-          minimumFractionDigits: 0,
-          maximumFractionDigits: 0,
-        }).format(n);
-      }
-      // PERUBAHAN DISINI: Menggunakan class 'detail-table-scroll-container'
-      let detailHtml = `
-        <div class="detail-table-scroll-container">
-          <table class="w-full text-xs bg-white rounded border border-gray-200 overflow-hidden table-modern">
-            <thead>
-              <tr>
-                <th class="p-2 text-left">No</th>
-                <th class="p-2 text-left">PLU</th>
-                <th class="p-2 text-left">Barcode</th>
-                <th class="p-2 text-left">Nama Barang</th>
-                <th class="p-2">Qty</th>
-                <th class="p-2">Satuan</th>
-                <th class="p-2">Harga Beli</th>
-                <th class="p-2">PPN</th>
-                <th class="p-2">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-      `;
-      result.data.forEach((item, idx) => {
-        detailHtml += `
-          <tr class="border-b border-gray-100 hover:bg-gray-50">
-            <td class="p-2">${idx + 1}</td>
-            <td class="p-2 font-mono">${item.plu}</td>
-            <td class="p-2 font-mono">${item.barcode || "-"}</td>
-            <td class="p-2">${item.descp}</td>
-            <td class="p-2 font-bold">${fmtRp(item.qty)}</td>
-            <td class="p-2">${item.satuan}</td>
-            <td class="p-2">${fmtRp(item.hrg_beli)}</td>
-            <td class="p-2">${fmtRp(item.ppn)}</td>
-            <td class="p-2 font-semibold">${fmtRp(item.total_row)}</td>
-          </tr>
-        `;
-      });
-      detailHtml += `
-            </tbody>
-          </table>
-        </div>
-      `;
-      detailContent.innerHTML = detailHtml;
-    } else {
-      detailContent.innerHTML = `
-        <div class="detail-faktur-empty">
-          <i class="fas fa-box-open"></i>
-          <p>Tidak ada detail item untuk faktur ini</p>
-        </div>
-      `;
-    }
-  } catch (e) {
-    detailContent.innerHTML = `
-      <div class="detail-faktur-empty">
-        <i class="fas fa-exclamation-triangle text-red-400"></i>
-        <p class="text-red-600">Gagal memuat detail: ${e.message}</p>
-      </div>
-    `;
-  }
 };

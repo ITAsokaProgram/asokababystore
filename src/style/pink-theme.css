@@ -865,14 +865,14 @@ body {
 /* ============================================
     DETAIL FAKTUR TABLE - Separate Section
     ============================================ */
-
 .detail-faktur-section {
   margin-top: 1.5rem;
   background: white;
   border-radius: 1rem;
   padding: 1rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(236, 72, 153, 0.1);
+  /* Ubah border menjadi biru muda */
+  border: 1px solid rgba(59, 130, 246, 0.1);
   position: relative;
   overflow: hidden;
 }
@@ -884,7 +884,8 @@ body {
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, #ec4899 0%, #f43f5e 100%);
+  /* Ubah gradient garis atas menjadi Biru */
+  background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
 }
 
 .detail-faktur-header {
@@ -903,12 +904,13 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  /* Ubah background icon dan warna text menjadi Biru */
   background: linear-gradient(
     135deg,
-    rgba(236, 72, 153, 0.15) 0%,
-    rgba(244, 114, 182, 0.15) 100%
+    rgba(59, 130, 246, 0.15) 0%,
+    rgba(96, 165, 250, 0.15) 100%
   );
-  color: #ec4899;
+  color: #3b82f6;
 }
 
 .detail-faktur-title {
@@ -940,24 +942,39 @@ body {
   font-weight: 500;
 }
 
-/* Detail Faktur Table Styling - Sama dengan Hasil Mutasi (Pink Theme) */
+/* Detail Faktur Table Styling - UBAH KE TEMA BIRU */
 .detail-faktur-section .table-modern thead {
-  background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%);
+  /* Gradient Header Tabel Biru Muda */
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
 }
 
 .detail-faktur-section .table-modern thead th {
-  border-bottom: 2px solid #ec4899;
+  /* Garis bawah header biru */
+  border-bottom: 2px solid #3b82f6;
 }
 
 .detail-faktur-section .table-modern tbody tr:hover {
+  /* Hover effect biru sangat muda */
   background: linear-gradient(
     90deg,
-    rgba(236, 72, 153, 0.04) 0%,
-    rgba(244, 63, 94, 0.04) 100%
+    rgba(59, 130, 246, 0.04) 0%,
+    rgba(37, 99, 235, 0.04) 100%
   );
 }
 
-/* Highlight Selected Row in Main Table */
+/* Scrollbar Styles untuk Detail Table (Biru) */
+.detail-table-scroll-container::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border-radius: 10px;
+}
+
+.detail-table-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+}
+
+/* CATATAN: Bagian 'selected-row' di bawah ini JANGAN diubah warnanya 
+   jika Anda ingin tabel UTAMA (atas) tetap Pink saat diklik. 
+*/
 .table-modern tbody tr.selected-row {
   background: linear-gradient(
     90deg,
@@ -970,7 +987,6 @@ body {
 .table-modern tbody tr.selected-row td:first-child {
   padding-left: calc(0.5rem - 4px);
 }
-
 /* Loading State untuk Detail */
 .detail-loading {
   display: flex;
