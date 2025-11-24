@@ -17,24 +17,35 @@ function updateLivePreview() {
     container.classList.add("hidden");
     return;
   }
-  const firstStoreId = state.selectedStores.values().next().value;
-  const storeData = allCabangData.find((s) => s.Kd_Store === firstStoreId);
-  if (storeData) {
-    const rawAlias = storeData.Nm_Alias || "";
-    const alias = rawAlias.replace(/\s+/g, "");
-    const seq = nomorUrut.toString().padStart(5, "0");
-    const previewCode = `${alias}${namaManual}${seq}`;
-    textEl.textContent = previewCode;
-    if (state.selectedStores.size > 1) {
-      storeNameEl.textContent = `(Contoh dari toko: ${
-        storeData.Nm_Store
-      }, dan ${state.selectedStores.size - 1} toko lainnya)`;
-    } else {
-      storeNameEl.textContent = `(Toko: ${storeData.Nm_Store})`;
+  const isAllSelected =
+    allCabangData.length > 0 &&
+    state.selectedStores.size === allCabangData.length;
+  let alias = "";
+  let storeLabel = "";
+  if (isAllSelected) {
+    alias = "ASOKA-";
+    storeLabel = "(Mode Global: Berlaku untuk Semua Cabang)";
+  } else {
+    const firstStoreId = state.selectedStores.values().next().value;
+    const storeData = allCabangData.find((s) => s.Kd_Store === firstStoreId);
+    if (storeData) {
+      const rawAlias = storeData.Nm_Alias || "";
+      alias = rawAlias.replace(/\s+/g, "");
+      if (state.selectedStores.size > 1) {
+        storeLabel = `(Contoh dari toko: ${storeData.Nm_Store}, dan ${
+          state.selectedStores.size - 1
+        } toko lainnya)`;
+      } else {
+        storeLabel = `(Toko: ${storeData.Nm_Store})`;
+      }
     }
-    container.classList.remove("hidden");
-    container.classList.add("block");
   }
+  const seq = nomorUrut.toString().padStart(5, "0");
+  const previewCode = `${alias}${namaManual}${seq}`;
+  textEl.textContent = previewCode;
+  storeNameEl.textContent = storeLabel;
+  container.classList.remove("hidden");
+  container.classList.add("block");
 }
 function renderCabangList(data) {
   const container = document.getElementById("container-cabang");
@@ -192,14 +203,23 @@ async function submitVoucher(e) {
   const endSeq = startSeq + qty - 1;
   const startDisp = startSeq.toString().padStart(5, "0");
   const endDisp = endSeq.toString().padStart(5, "0");
-  const totalToko = state.selectedStores.size;
+  const isAllSelected =
+    allCabangData.length > 0 &&
+    state.selectedStores.size === allCabangData.length;
+  const storesPayload = isAllSelected
+    ? ["9999"]
+    : Array.from(state.selectedStores);
+  const totalToko = isAllSelected ? 1 : state.selectedStores.size;
   const totalVoucherGenerated = totalToko * qty;
+  const storeDisplayInfo = isAllSelected
+    ? `<span class="font-bold text-pink-600">SEMUA CABANG (GLOBAL/9999)</span>`
+    : `<span class="font-bold text-gray-800">${totalToko}</span>`;
   const result = await Swal.fire({
     title: "Konfirmasi Generate",
     html: `
         <div class="text-left text-sm text-gray-600 bg-gray-50 p-4 rounded-lg border border-gray-200">
-            <div class="flex justify-between mb-1"><span>Toko Terpilih:</span> <span class="font-bold text-gray-800">${totalToko}</span></div>
-            <div class="flex justify-between mb-1"><span>Qty per Toko:</span> <span class="font-bold text-gray-800">${jumlah}</span></div>
+            <div class="flex justify-between mb-1"><span>Target:</span> ${storeDisplayInfo}</div>
+            <div class="flex justify-between mb-1"><span>Qty per Store:</span> <span class="font-bold text-gray-800">${jumlah}</span></div>
             <div class="flex justify-between mb-1"><span>Range No Urut:</span> <span class="font-bold text-blue-600">${startDisp} s/d ${endDisp}</span></div>
             <div class="flex justify-between mb-1"><span>Nilai:</span> <span class="font-bold text-green-600">Rp ${parseInt(
               nilai
@@ -224,7 +244,7 @@ async function submitVoucher(e) {
       '<i class="fas fa-spinner fa-spin"></i> <span>Memproses...</span>';
     try {
       const payload = {
-        stores: Array.from(state.selectedStores),
+        stores: storesPayload,
         nama_manual: namaManual,
         start_sequence: startSeq,
         jumlah: qty,
