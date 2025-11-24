@@ -1,10 +1,13 @@
 <?php
 session_start();
 include '../../../aa_kon_sett.php';
-$tanggal_kemarin = date('Y-m-d', strtotime('-1 day'));
 
-$default_tgl_mulai = $tanggal_kemarin;
-$default_tgl_selesai = $tanggal_kemarin;
+// SETTING DEFAULT TANGGAL (SEBULAN)
+$hari_ini = date('Y-m-d');
+$sebulan_lalu = date('Y-m-d', strtotime('-1 month'));
+
+$default_tgl_mulai = $sebulan_lalu;
+$default_tgl_selesai = $hari_ini;
 $default_kd_store = 'all';
 
 $tgl_mulai = $_GET['tgl_mulai'] ?? $default_tgl_mulai;
@@ -97,33 +100,34 @@ $kd_store = $_GET['kd_store'] ?? $default_kd_store;
                     </div>
                 </div>
 
-                <div class="filter-card-simple mb-4">
-                    <form id="filter-form" class="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-2">Dari Tanggal</label>
-                            <input type="date" name="tgl_mulai" id="tgl_mulai" class="input-modern w-full"
+                <div class="filter-card-simple mb-4 p-4">
+                    <form id="filter-form" class="flex flex-wrap items-end gap-3">
+                        <div class="flex-1 min-w-[140px]">
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Dari Tanggal</label>
+                            <input type="date" name="tgl_mulai" id="tgl_mulai" class="input-modern w-full h-9 text-sm"
                                 value="<?php echo htmlspecialchars($tgl_mulai); ?>">
                         </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-2">Sampai Tanggal</label>
-                            <input type="date" name="tgl_selesai" id="tgl_selesai" class="input-modern w-full"
+                        <div class="flex-1 min-w-[140px]">
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Sampai Tanggal</label>
+                            <input type="date" name="tgl_selesai" id="tgl_selesai"
+                                class="input-modern w-full h-9 text-sm"
                                 value="<?php echo htmlspecialchars($tgl_selesai); ?>">
                         </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-2">Cabang</label>
-                            <select name="kd_store" id="kd_store" class="input-modern w-full">
+                        <div class="flex-1 min-w-[160px]">
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Cabang</label>
+                            <select name="kd_store" id="kd_store" class="input-modern w-full h-9 text-sm">
                                 <option value="all">Seluruh Store</option>
                             </select>
                         </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-2">Status</label>
+                        <div class="flex-1 min-w-[200px]">
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Status</label>
                             <div class="flex gap-2">
-                                <select name="status_cetak" id="status_cetak" class="input-modern w-1/2 text-xs">
+                                <select name="status_cetak" id="status_cetak" class="input-modern w-1/2 h-9 text-xs">
                                     <option value="all">Semua Cetak</option>
                                     <option value="True">Sudah Cetak</option>
                                     <option value="False">Belum Cetak</option>
                                 </select>
-                                <select name="status_terima" id="status_terima" class="input-modern w-1/2 text-xs">
+                                <select name="status_terima" id="status_terima" class="input-modern w-1/2 h-9 text-xs">
                                     <option value="all">Semua Terima</option>
                                     <option value="True">Sudah Terima</option>
                                     <option value="False">Belum Terima</option>
@@ -131,10 +135,12 @@ $kd_store = $_GET['kd_store'] ?? $default_kd_store;
                             </div>
                         </div>
 
-                        <button type="submit" id="filter-submit-button"
-                            class="btn-primary inline-flex items-center justify-center gap-2 h-10">
-                            <i class="fas fa-filter"></i> <span>Tampilkan</span>
-                        </button>
+                        <div class="flex-none">
+                            <button type="submit" id="filter-submit-button"
+                                class="btn-primary inline-flex items-center justify-center gap-2 h-9 px-4 text-sm">
+                                <i class="fas fa-filter"></i> <span>Tampilkan</span>
+                            </button>
+                        </div>
                         <input type="hidden" name="page" value="1">
                     </form>
                 </div>
@@ -145,12 +151,6 @@ $kd_store = $_GET['kd_store'] ?? $default_kd_store;
                             <i class="fas fa-list text-pink-600 mr-2"></i>
                             Hasil Mutasi
                         </h3>
-                        <div class="flex items-center gap-2">
-                            <button id="export-excel-btn" class="btn-secondary-outline px-3 py-1.5 rounded-md"
-                                style="background-color: #E6F7F0; border-color: #107C41; color: #107C41;">
-                                <i class="fas fa-file-excel"></i> <span>Export Excel</span>
-                            </button>
-                        </div>
                     </div>
 
                     <div class="table-container">

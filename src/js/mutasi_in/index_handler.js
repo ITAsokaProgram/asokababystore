@@ -10,7 +10,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const summaryNetto = document.getElementById("summary-netto");
   const summaryPPN = document.getElementById("summary-ppn");
   const summaryTotal = document.getElementById("summary-total");
-  const exportExcelButton = document.getElementById("export-excel-btn");
+
+  // Tombol export dihapus reference nya
+
   window.changePage = function (page) {
     const url = new URL(window.location);
     url.searchParams.set("page", page);
@@ -20,31 +22,47 @@ document.addEventListener("DOMContentLoaded", () => {
       .querySelector(".table-container")
       ?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
+
+  // FORMAT RUPIAH TANPA DESIMAL
   function formatRupiah(number) {
     if (isNaN(number) || number === null) return "0";
     return new Intl.NumberFormat("id-ID", {
       style: "decimal",
       minimumFractionDigits: 0,
+      maximumFractionDigits: 0, // Paksa tanpa desimal
     }).format(number);
   }
+
+  // FORMAT NUMBER TANPA DESIMAL
   function formatNumber(number) {
     if (isNaN(number) || number === null) return "0";
-    return new Intl.NumberFormat("id-ID").format(number);
+    return new Intl.NumberFormat("id-ID", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0, // Paksa tanpa desimal
+    }).format(number);
   }
+
   function getUrlParams() {
     const params = new URLSearchParams(window.location.search);
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayString = yesterday.toISOString().split("T")[0];
+
+    // LOGIC TANGGAL DEFAULT: SEBULAN (1 Bulan yang lalu s/d Hari ini)
+    const today = new Date();
+    const oneMonthAgo = new Date();
+    oneMonthAgo.setMonth(today.getMonth() - 1);
+
+    const todayString = today.toISOString().split("T")[0];
+    const oneMonthAgoString = oneMonthAgo.toISOString().split("T")[0];
+
     return {
-      tgl_mulai: params.get("tgl_mulai") || yesterdayString,
-      tgl_selesai: params.get("tgl_selesai") || yesterdayString,
+      tgl_mulai: params.get("tgl_mulai") || oneMonthAgoString,
+      tgl_selesai: params.get("tgl_selesai") || todayString,
       kd_store: params.get("kd_store") || "all",
       status_cetak: params.get("status_cetak") || "all",
       status_terima: params.get("status_terima") || "all",
       page: parseInt(params.get("page") || "1", 10),
     };
   }
+
   async function loadData() {
     const params = getUrlParams();
     setLoadingState(true);
@@ -256,54 +274,9 @@ document.addEventListener("DOMContentLoaded", () => {
     html += `<button ${nextDisabled} ${nextClick}><i class="fas fa-chevron-right"></i></button>`;
     paginationLinks.innerHTML = html;
   }
-  if (exportExcelButton) {
-    exportExcelButton.addEventListener("click", async () => {
-      const params = getUrlParams();
-      const queryString = new URLSearchParams({
-        ...params,
-        export: "true",
-      }).toString();
-      const originalText = exportExcelButton.innerHTML;
-      exportExcelButton.innerHTML =
-        '<i class="fas fa-spinner fa-spin"></i> Exporting...';
-      exportExcelButton.disabled = true;
-      try {
-        const response = await fetch(
-          `/src/api/mutasi_in/get_data.php?${queryString}`
-        );
-        const result = await response.json();
-        if (result.tabel_data && result.tabel_data.length > 0) {
-          const dataToExport = result.tabel_data.map((row) => ({
-            Tanggal: row.tgl_mutasi,
-            "No Faktur": row.no_faktur,
-            "Kode Supp": row.kode_supp,
-            Dari: `${row.kode_dari} - ${row.dari_nama}`,
-            Tujuan: `${row.kode_tujuan} - ${row.tujuan_nama}`,
-            "Total Netto": row.total_netto,
-            PPN: row.total_ppn,
-            "Grand Total": row.total_grand,
-            "Acc Mutasi": row.acc_mutasi,
-            "Sudah Terima": row.receipt === "True" ? "Ya" : "Tidak",
-            "Sudah Cetak": row.cetak === "True" ? "Ya" : "Tidak",
-          }));
-          const ws = XLSX.utils.json_to_sheet(dataToExport);
-          const wb = XLSX.utils.book_new();
-          XLSX.utils.book_append_sheet(wb, ws, "Mutasi In");
-          XLSX.writeFile(
-            wb,
-            `Mutasi_In_${params.tgl_mulai}_${params.tgl_selesai}.xlsx`
-          );
-        } else {
-          Swal.fire("Info", "Tidak ada data untuk diexport", "info");
-        }
-      } catch (e) {
-        Swal.fire("Error", "Gagal export: " + e.message, "error");
-      } finally {
-        exportExcelButton.innerHTML = originalText;
-        exportExcelButton.disabled = false;
-      }
-    });
-  }
+
+  // LOGIC EXPORT DIHAPUS
+
   if (filterForm) {
     filterForm.addEventListener("submit", (e) => {
       e.preventDefault();
@@ -328,6 +301,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   loadData();
 });
+
+// Logic toggleDetail dan handlePrint tidak berubah drastis,
+// hanya memastikan format angka mengikuti setting global
 window.toggleDetail = async function (rowId, noFaktur, kodeDari, tglMutasi) {
   const detailRow = document.getElementById(rowId);
   const contentDiv = detailRow.querySelector(".detail-content");
@@ -343,6 +319,7 @@ window.toggleDetail = async function (rowId, noFaktur, kodeDari, tglMutasi) {
           return new Intl.NumberFormat("id-ID", {
             style: "decimal",
             minimumFractionDigits: 0,
+            maximumFractionDigits: 0, // Paksa tanpa desimal
           }).format(n);
         }
         let detailHtml = `
@@ -393,6 +370,7 @@ window.toggleDetail = async function (rowId, noFaktur, kodeDari, tglMutasi) {
     detailRow.classList.add("hidden");
   }
 };
+
 window.handlePrint = async function (
   noFaktur,
   kodeDari,
