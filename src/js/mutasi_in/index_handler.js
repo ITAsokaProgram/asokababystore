@@ -11,8 +11,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const summaryPPN = document.getElementById("summary-ppn");
   const summaryTotal = document.getElementById("summary-total");
 
-  // Tombol export dihapus reference nya
-
   window.changePage = function (page) {
     const url = new URL(window.location);
     url.searchParams.set("page", page);
@@ -23,33 +21,28 @@ document.addEventListener("DOMContentLoaded", () => {
       ?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  // FORMAT RUPIAH TANPA DESIMAL
   function formatRupiah(number) {
     if (isNaN(number) || number === null) return "0";
     return new Intl.NumberFormat("id-ID", {
       style: "decimal",
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0, // Paksa tanpa desimal
+      maximumFractionDigits: 0,
     }).format(number);
   }
 
-  // FORMAT NUMBER TANPA DESIMAL
   function formatNumber(number) {
     if (isNaN(number) || number === null) return "0";
     return new Intl.NumberFormat("id-ID", {
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0, // Paksa tanpa desimal
+      maximumFractionDigits: 0,
     }).format(number);
   }
 
   function getUrlParams() {
     const params = new URLSearchParams(window.location.search);
-
-    // LOGIC TANGGAL DEFAULT: SEBULAN (1 Bulan yang lalu s/d Hari ini)
     const today = new Date();
     const oneMonthAgo = new Date();
     oneMonthAgo.setMonth(today.getMonth() - 1);
-
     const todayString = today.toISOString().split("T")[0];
     const oneMonthAgoString = oneMonthAgo.toISOString().split("T")[0];
 
@@ -106,6 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
       setLoadingState(false);
     }
   }
+
   function setLoadingState(isLoading) {
     if (isLoading) {
       if (filterSubmitButton) {
@@ -126,6 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   }
+
   function populateStoreFilter(stores, selectedStore) {
     if (!filterSelectStore) return;
     if (filterSelectStore.options.length <= 1) {
@@ -138,13 +133,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     filterSelectStore.value = selectedStore;
   }
+
   function renderTable(data) {
     if (!data || data.length === 0) {
       tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-8 text-gray-500">Tidak ada data mutasi ditemukan.</td></tr>`;
       return;
     }
     let html = "";
-    data.forEach((row, index) => {
+    data.forEach((row) => {
       const isReceived = row.receipt === "True";
       const isPrinted = row.cetak === "True";
       const printBtnClass = isReceived
@@ -152,10 +148,10 @@ document.addEventListener("DOMContentLoaded", () => {
           ? "bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200"
           : "bg-pink-600 text-white hover:bg-pink-700 shadow-sm"
         : "bg-gray-200 text-gray-400 cursor-not-allowed";
-      const detailRowId = `detail-${index}`;
+
       html += `
             <tr class="hover:bg-pink-50 cursor-pointer transition-colors border-b border-gray-100" 
-                onclick="toggleDetail('${detailRowId}', '${row.no_faktur}', '${
+                onclick="showDetailFaktur('${row.no_faktur}', '${
         row.kode_dari
       }', '${row.tgl_raw}')">
                 <td class="px-4 py-3 text-sm">${
@@ -212,18 +208,11 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                     </button>
                 </td>
-            </tr>
-            <tr id="${detailRowId}" class="hidden bg-gray-50">
-                <td colspan="11" class="p-4 border-b border-gray-200 shadow-inner">
-                    <div class="detail-content">
-                        <div class="flex justify-center"><i class="fas fa-circle-notch fa-spin text-pink-500"></i> Memuat detail...</div>
-                    </div>
-                </td>
-            </tr>
-            `;
+            </tr>`;
     });
     tableBody.innerHTML = html;
   }
+
   function renderPagination(pagination) {
     if (!paginationInfo || !paginationLinks) return;
     if (!pagination) {
@@ -275,8 +264,6 @@ document.addEventListener("DOMContentLoaded", () => {
     paginationLinks.innerHTML = html;
   }
 
-  // LOGIC EXPORT DIHAPUS
-
   if (filterForm) {
     filterForm.addEventListener("submit", (e) => {
       e.preventDefault();
@@ -302,73 +289,87 @@ document.addEventListener("DOMContentLoaded", () => {
   loadData();
 });
 
-// Logic toggleDetail dan handlePrint tidak berubah drastis,
-// hanya memastikan format angka mengikuti setting global
-window.toggleDetail = async function (rowId, noFaktur, kodeDari, tglMutasi) {
-  const detailRow = document.getElementById(rowId);
-  const contentDiv = detailRow.querySelector(".detail-content");
-  if (detailRow.classList.contains("hidden")) {
-    detailRow.classList.remove("hidden");
-    try {
-      const response = await fetch(
-        `/src/api/mutasi_in/get_detail.php?no_faktur=${noFaktur}&kode_dari=${kodeDari}&tgl_mutasi=${tglMutasi}`
-      );
-      const result = await response.json();
-      if (result.data && result.data.length > 0) {
-        function fmtRp(n) {
-          return new Intl.NumberFormat("id-ID", {
-            style: "decimal",
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0, // Paksa tanpa desimal
-          }).format(n);
-        }
-        let detailHtml = `
-                <h4 class="text-xs font-bold uppercase text-gray-500 mb-2 tracking-wider">Detail Item: ${noFaktur}</h4>
-                <table class="w-full text-xs bg-white rounded border border-gray-200 overflow-hidden">
-                    <thead class="bg-gray-100 text-gray-700">
-                        <tr>
-                            <th class="p-2 text-left">No</th>
-                            <th class="p-2 text-left">PLU</th>
-                            <th class="p-2 text-left">Barcode</th>
-                            <th class="p-2 text-left">Nama Barang</th>
-                            <th class="p-2 text-right">Qty</th>
-                            <th class="p-2 text-center">Satuan</th>
-                            <th class="p-2 text-right">Harga Beli</th>
-                            <th class="p-2 text-right">PPN</th>
-                            <th class="p-2 text-right">Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                `;
-        result.data.forEach((item, idx) => {
-          detailHtml += `
-                    <tr class="border-b border-gray-100 hover:bg-gray-50">
-                        <td class="p-2">${idx + 1}</td>
-                        <td class="p-2 font-mono">${item.plu}</td>
-                        <td class="p-2 font-mono">${item.barcode || "-"}</td>
-                        <td class="p-2">${item.descp}</td>
-                        <td class="p-2 text-right font-bold">${fmtRp(
-                          item.qty
-                        )}</td>
-                        <td class="p-2 text-center">${item.satuan}</td>
-                        <td class="p-2 text-right">${fmtRp(item.hrg_beli)}</td>
-                        <td class="p-2 text-right">${fmtRp(item.ppn)}</td>
-                        <td class="p-2 text-right font-semibold">${fmtRp(
-                          item.total_row
-                        )}</td>
-                    </tr>`;
-        });
-        detailHtml += `</tbody></table>`;
-        contentDiv.innerHTML = detailHtml;
-      } else {
-        contentDiv.innerHTML = `<p class="text-center text-gray-500 italic">Tidak ada detail item.</p>`;
+// Fungsi untuk menampilkan detail faktur di tabel terpisah
+window.showDetailFaktur = async function (noFaktur, kodeDari, tglMutasi) {
+  const container = document.getElementById("detail-faktur-container");
+  const title = document.getElementById("detail-faktur-title");
+  const content = document.getElementById("detail-faktur-content");
+
+  container.style.display = "block";
+  title.textContent = noFaktur;
+  content.innerHTML =
+    '<div class="flex justify-center p-8"><i class="fas fa-circle-notch fa-spin text-pink-500 text-2xl"></i></div>';
+
+  // Scroll ke detail faktur
+  setTimeout(() => {
+    container.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 100);
+
+  try {
+    const response = await fetch(
+      `/src/api/mutasi_in/get_detail.php?no_faktur=${noFaktur}&kode_dari=${kodeDari}&tgl_mutasi=${tglMutasi}`
+    );
+    const result = await response.json();
+
+    if (result.data && result.data.length > 0) {
+      function fmtRp(n) {
+        return new Intl.NumberFormat("id-ID", {
+          style: "decimal",
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        }).format(n);
       }
-    } catch (e) {
-      contentDiv.innerHTML = `<p class="text-red-500">Gagal memuat detail: ${e.message}</p>`;
+
+      let detailHtml = `
+        <table class="w-full text-sm bg-white rounded border border-gray-200">
+          <thead class="bg-pink-50 text-gray-700">
+            <tr>
+              <th class="p-3 text-left border-b border-gray-200">No</th>
+              <th class="p-3 text-left border-b border-gray-200">PLU</th>
+              <th class="p-3 text-left border-b border-gray-200">Barcode</th>
+              <th class="p-3 text-left border-b border-gray-200">Nama Barang</th>
+              <th class="p-3 text-right border-b border-gray-200">Qty</th>
+              <th class="p-3 text-center border-b border-gray-200">Satuan</th>
+              <th class="p-3 text-right border-b border-gray-200">Harga Beli</th>
+              <th class="p-3 text-right border-b border-gray-200">PPN</th>
+              <th class="p-3 text-right border-b border-gray-200">Total</th>
+            </tr>
+          </thead>
+          <tbody>`;
+
+      result.data.forEach((item, idx) => {
+        detailHtml += `
+          <tr class="border-b border-gray-100 hover:bg-pink-50">
+            <td class="p-3">${idx + 1}</td>
+            <td class="p-3 font-mono text-pink-700 font-medium">${item.plu}</td>
+            <td class="p-3 font-mono">${item.barcode || "-"}</td>
+            <td class="p-3">${item.descp}</td>
+            <td class="p-3 text-right font-bold text-gray-900">${fmtRp(
+              item.qty
+            )}</td>
+            <td class="p-3 text-center">${item.satuan}</td>
+            <td class="p-3 text-right">${fmtRp(item.hrg_beli)}</td>
+            <td class="p-3 text-right">${fmtRp(item.ppn)}</td>
+            <td class="p-3 text-right font-semibold text-pink-700">${fmtRp(
+              item.total_row
+            )}</td>
+          </tr>`;
+      });
+
+      detailHtml += `</tbody></table>`;
+      content.innerHTML = detailHtml;
+    } else {
+      content.innerHTML = `<p class="text-center text-gray-500 italic p-8">Tidak ada detail item.</p>`;
     }
-  } else {
-    detailRow.classList.add("hidden");
+  } catch (e) {
+    content.innerHTML = `<p class="text-red-500 p-8">Gagal memuat detail: ${e.message}</p>`;
   }
+};
+
+// Fungsi untuk menutup detail faktur
+window.closeDetailFaktur = function () {
+  const container = document.getElementById("detail-faktur-container");
+  container.style.display = "none";
 };
 
 window.handlePrint = async function (
