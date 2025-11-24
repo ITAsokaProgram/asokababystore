@@ -44,10 +44,10 @@ $kd_store = $_GET['kd_store'] ?? $default_kd_store;
     <?php include '../../component/sidebar_report.php' ?>
 
     <main id="main-content" class="flex-1 p-4 ml-64">
-        <section class="min-h-screen">
+        <section class="">
             <div class="max-w-7xl mx-auto">
 
-                <div class="header-card p-4 rounded-2xl mb-4">
+                <div class="header-card p-4 rounded-2xl mb-4 hidden">
                     <div class="flex items-center justify-between flex-wrap gap-3">
                         <div class="flex items-center gap-3">
                             <div class="icon-wrapper">
@@ -184,7 +184,7 @@ $kd_store = $_GET['kd_store'] ?? $default_kd_store;
 
                 <!-- Tabel Detail Faktur (Baru) -->
                 <div class="detail-faktur-section" id="detail-faktur-section">
-                    <div class="detail-faktur-header">
+                    <div class="detail-faktur-header" style="display: none;">
                         <div class="detail-faktur-icon">
                             <i class="fas fa-file-invoice fa-lg"></i>
                         </div>

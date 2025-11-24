@@ -1026,7 +1026,7 @@ body {
 }
 
 .detail-table-scroll-container {
-  max-height: 240px; /* Tinggi lebih besar dari tabel utama (240px vs 500px) */
+  max-height: 220px;
   overflow-y: auto;
   overflow-x: auto;
   border-radius: 0.75rem;
