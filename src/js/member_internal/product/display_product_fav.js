@@ -12,6 +12,12 @@ let currentDateFilter = {
   end_date: null,
 };
 let currentStatus = null;
+const formatDateLocal = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
 const initProductFavoriteDisplay = async () => {
   setupEventListeners();
   await loadTableData(1);
@@ -40,7 +46,6 @@ const setupEventListeners = () => {
 };
 const getDatesFromPreset = (filter) => {
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
   let startDate = new Date(today);
   let endDate = new Date(today);
   switch (filter) {
@@ -72,8 +77,8 @@ const getDatesFromPreset = (filter) => {
       break;
   }
   return {
-    start: startDate.toISOString().split("T")[0],
-    end: endDate.toISOString().split("T")[0],
+    start: formatDateLocal(startDate),
+    end: formatDateLocal(endDate),
   };
 };
 const setupDateFilterListeners = () => {
@@ -86,7 +91,8 @@ const setupDateFilterListeners = () => {
     return;
   }
   const urlParams = new URLSearchParams(window.location.search);
-  const today = new Date().toISOString().split("T")[0];
+  const todayDateObj = new Date();
+  const today = formatDateLocal(todayDateObj);
   const urlFilterType = urlParams.get("filter_type");
   const urlFilter = urlParams.get("filter");
   const urlStartDate = urlParams.get("start_date");
@@ -111,7 +117,7 @@ const setupDateFilterListeners = () => {
   } else {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    displayStartDate = yesterday.toISOString().split("T")[0];
+    displayStartDate = formatDateLocal(yesterday);
     displayEndDate = displayStartDate;
     currentDateFilter.filter_type = "custom";
     currentDateFilter.start_date = displayStartDate;
@@ -156,9 +162,8 @@ const setupDateFilterListeners = () => {
   });
   resetFilterBtn.addEventListener("click", async () => {
     const d = new Date();
-    const y = new Date(d);
-    y.setDate(d.getDate() - 1);
-    const yesterdayISO = y.toISOString().split("T")[0];
+    d.setDate(d.getDate() - 1);
+    const yesterdayISO = formatDateLocal(d);
     if (dateRangeDisplay) {
       dateRangeDisplay.innerHTML = ` <i class="fas fa-info-circle text-emerald-400 mr-1"></i>(Data 1 hari lalu)`;
     }
@@ -385,7 +390,6 @@ const updateProductPerformance = (performanceData) => {
             previousQty > 0 ? ((difference / previousQty) * 100).toFixed(1) : 0;
           const isIncrease = difference > 0;
           const isDecrease = difference < 0;
-          const isSame = difference === 0;
           let borderColor = "border-gray-400";
           let iconColor = "text-gray-500";
           let icon = "fa-minus";
@@ -575,11 +579,9 @@ const exportAllDataToExcel = async () => {
   const blob = new Blob([excelContent], { type: "text/csv;charset=utf-8;" });
   const link = document.createElement("a");
   const url = URL.createObjectURL(blob);
+  const todayStr = formatDateLocal(new Date());
   link.setAttribute("href", url);
-  link.setAttribute(
-    "download",
-    `product_favorites_all_data_${new Date().toISOString().split("T")[0]}.csv`
-  );
+  link.setAttribute("download", `product_favorites_all_data_${todayStr}.csv`);
   link.style.visibility = "hidden";
   document.body.appendChild(link);
   link.click();
