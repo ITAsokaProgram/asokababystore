@@ -333,12 +333,12 @@ $token = $menuHandler->getToken();
                                         class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500" />
                                     <span class="text-sm">Dashboard Overview</span>
                                 </label>
-                                <!-- <label
+                                <label
                                     class="flex items-center gap-3 p-2 rounded-lg hover:bg-blue-50 transition-colors duration-200">
                                     <input type="checkbox" name="menus[]" value="dashboard_sales_graph"
                                         class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500" />
                                     <span class="text-sm">Grafik Penjualan</span>
-                                </label> -->
+                                </label>
                             </div>
                         </div>
 
