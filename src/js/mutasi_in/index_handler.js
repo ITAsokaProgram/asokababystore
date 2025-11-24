@@ -164,7 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
               </div>
           </td>
           <td class="px-4 py-3 text-sm align-top">
-               <div class="flex flex-col gap-0.5">
+                <div class="flex flex-col gap-0.5">
                 <div class="font-bold text-gray-800">${row.kode_tujuan} - ${
         row.tujuan_nama || ""
       }</div>
@@ -309,12 +309,6 @@ window.showDetailFaktur = async function (
       <p>Memuat detail faktur...</p>
     </div>
   `;
-  /*
-  document.getElementById("detail-faktur-section")?.scrollIntoView({
-    behavior: "smooth",
-    block: "nearest",
-  });
-  */
   try {
     const response = await fetch(
       `/src/api/mutasi_in/get_detail.php?no_faktur=${noFaktur}&kode_dari=${kodeDari}&tgl_mutasi=${tglMutasi}`
@@ -329,19 +323,19 @@ window.showDetailFaktur = async function (
         }).format(n);
       }
       let detailHtml = `
-        <div class="detail-table-scroll-container">
-          <table class="w-full text-xs bg-white rounded border border-gray-200 overflow-hidden table-modern">
-            <thead>
+        <div class="detail-table-scroll-container overflow-y-auto max-h-[500px] relative border border-gray-200 rounded">
+          <table class="w-full text-xs bg-white table-modern">
+            <thead class="bg-gray-50">
               <tr>
-                <th class="p-2 text-left">No</th>
-                <th class="p-2 text-left">PLU</th>
-                <th class="p-2 text-left">Barcode</th>
-                <th class="p-2 text-left">Nama Barang</th>
-                <th class="p-2">Qty</th>
-                <th class="p-2">Satuan</th>
-                <th class="p-2 text-right">Harga Beli</th>
-                <th class="p-2 text-right">PPN</th>
-                <th class="p-2 text-right">Total</th>
+                <th class="sticky top-0 z-10 bg-gray-50 p-2 text-left border-b border-gray-200">No</th>
+                <th class="sticky top-0 z-10 bg-gray-50 p-2 text-left border-b border-gray-200">PLU</th>
+                <th class="sticky top-0 z-10 bg-gray-50 p-2 text-left border-b border-gray-200">Barcode</th>
+                <th class="sticky top-0 z-10 bg-gray-50 p-2 text-left border-b border-gray-200">Nama Barang</th>
+                <th class="sticky top-0 z-10 bg-gray-50 p-2 border-b border-gray-200">Qty</th>
+                <th class="sticky top-0 z-10 bg-gray-50 p-2 border-b border-gray-200">Satuan</th>
+                <th class="sticky top-0 z-10 bg-gray-50 p-2 text-right border-b border-gray-200">Harga Beli</th>
+                <th class="sticky top-0 z-10 bg-gray-50 p-2 text-right border-b border-gray-200">PPN</th>
+                <th class="sticky top-0 z-10 bg-gray-50 p-2 text-right border-b border-gray-200">Total</th>
               </tr>
             </thead>
             <tbody>
