@@ -1,5 +1,4 @@
 let currentSelectedRow = null;
-
 document.addEventListener("DOMContentLoaded", () => {
   const tableBody = document.getElementById("mutasi-table-body");
   const filterForm = document.getElementById("filter-form");
@@ -12,49 +11,34 @@ document.addEventListener("DOMContentLoaded", () => {
   const summaryNetto = document.getElementById("summary-netto");
   const summaryPPN = document.getElementById("summary-ppn");
   const summaryTotal = document.getElementById("summary-total");
-
-  // Tombol export dihapus reference nya
-
   window.changePage = function (page) {
     const url = new URL(window.location);
     url.searchParams.set("page", page);
     window.history.pushState({}, "", url);
     loadData();
-    document
-      .querySelector(".table-container")
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
-
-  // FORMAT RUPIAH TANPA DESIMAL
   function formatRupiah(number) {
     if (isNaN(number) || number === null) return "0";
     return new Intl.NumberFormat("id-ID", {
       style: "decimal",
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0, // Paksa tanpa desimal
+      maximumFractionDigits: 0,
     }).format(number);
   }
-
-  // FORMAT NUMBER TANPA DESIMAL
   function formatNumber(number) {
     if (isNaN(number) || number === null) return "0";
     return new Intl.NumberFormat("id-ID", {
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0, // Paksa tanpa desimal
+      maximumFractionDigits: 0,
     }).format(number);
   }
-
   function getUrlParams() {
     const params = new URLSearchParams(window.location.search);
-
-    // LOGIC TANGGAL DEFAULT: SEBULAN (1 Bulan yang lalu s/d Hari ini)
     const today = new Date();
     const oneMonthAgo = new Date();
     oneMonthAgo.setMonth(today.getMonth() - 1);
-
     const todayString = today.toISOString().split("T")[0];
     const oneMonthAgoString = oneMonthAgo.toISOString().split("T")[0];
-
     return {
       tgl_mulai: params.get("tgl_mulai") || oneMonthAgoString,
       tgl_selesai: params.get("tgl_selesai") || todayString,
@@ -64,7 +48,6 @@ document.addEventListener("DOMContentLoaded", () => {
       page: parseInt(params.get("page") || "1", 10),
     };
   }
-
   async function loadData() {
     const params = getUrlParams();
     setLoadingState(true);
@@ -154,9 +137,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ? "bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200"
           : "bg-pink-600 text-white hover:bg-pink-700 shadow-sm"
         : "bg-gray-200 text-gray-400 cursor-not-allowed";
-
       const rowId = `row-${index}`;
-
       html += `
       <tr id="${rowId}" class="hover:bg-pink-50 cursor-pointer transition-colors border-b border-gray-100" 
           onclick="showDetailFaktur('${rowId}', '${row.no_faktur}', '${
@@ -207,7 +188,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     tableBody.innerHTML = html;
   }
-
   function renderPagination(pagination) {
     if (!paginationInfo || !paginationLinks) return;
     if (!pagination) {
@@ -258,9 +238,6 @@ document.addEventListener("DOMContentLoaded", () => {
     html += `<button ${nextDisabled} ${nextClick}><i class="fas fa-chevron-right"></i></button>`;
     paginationLinks.innerHTML = html;
   }
-
-  // LOGIC EXPORT DIHAPUS
-
   if (filterForm) {
     filterForm.addEventListener("submit", (e) => {
       e.preventDefault();
@@ -285,9 +262,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   loadData();
 });
-
-// Logic toggleDetail dan handlePrint tidak berubah drastis,
-// hanya memastikan format angka mengikuti setting global
 window.toggleDetail = async function (rowId, noFaktur, kodeDari, tglMutasi) {
   const detailRow = document.getElementById(rowId);
   const contentDiv = detailRow.querySelector(".detail-content");
@@ -303,7 +277,7 @@ window.toggleDetail = async function (rowId, noFaktur, kodeDari, tglMutasi) {
           return new Intl.NumberFormat("id-ID", {
             style: "decimal",
             minimumFractionDigits: 0,
-            maximumFractionDigits: 0, // Paksa tanpa desimal
+            maximumFractionDigits: 0,
           }).format(n);
         }
         let detailHtml = `
@@ -352,7 +326,6 @@ window.toggleDetail = async function (rowId, noFaktur, kodeDari, tglMutasi) {
     detailRow.classList.add("hidden");
   }
 };
-
 window.handlePrint = async function (
   noFaktur,
   kodeDari,
@@ -680,41 +653,29 @@ window.showDetailFaktur = async function (
   const detailContent = document.getElementById("detail-faktur-content");
   const detailSubtitle = document.getElementById("detail-subtitle");
   const clickedRow = document.getElementById(rowId);
-
-  // Remove previous selection
   if (currentSelectedRow) {
     currentSelectedRow.classList.remove("selected-row");
   }
-
-  // Add selection to clicked row
   clickedRow.classList.add("selected-row");
   currentSelectedRow = clickedRow;
-
-  // Update subtitle
   if (detailSubtitle) {
     detailSubtitle.textContent = `Faktur: ${noFaktur}`;
   }
-
-  // Show loading
   detailContent.innerHTML = `
     <div class="detail-loading">
       <div class="spinner-simple"></div>
       <p>Memuat detail faktur...</p>
     </div>
   `;
-
-  // Scroll ke section detail
   document.getElementById("detail-faktur-section")?.scrollIntoView({
     behavior: "smooth",
     block: "nearest",
   });
-
   try {
     const response = await fetch(
       `/src/api/mutasi_in/get_detail.php?no_faktur=${noFaktur}&kode_dari=${kodeDari}&tgl_mutasi=${tglMutasi}`
     );
     const result = await response.json();
-
     if (result.data && result.data.length > 0) {
       function fmtRp(n) {
         return new Intl.NumberFormat("id-ID", {
@@ -723,9 +684,9 @@ window.showDetailFaktur = async function (
           maximumFractionDigits: 0,
         }).format(n);
       }
-
+      // PERUBAHAN DISINI: Menggunakan class 'detail-table-scroll-container'
       let detailHtml = `
-        <div class="table-container">
+        <div class="detail-table-scroll-container">
           <table class="w-full text-xs bg-white rounded border border-gray-200 overflow-hidden table-modern">
             <thead>
               <tr>
@@ -742,7 +703,6 @@ window.showDetailFaktur = async function (
             </thead>
             <tbody>
       `;
-
       result.data.forEach((item, idx) => {
         detailHtml += `
           <tr class="border-b border-gray-100 hover:bg-gray-50">
@@ -758,13 +718,11 @@ window.showDetailFaktur = async function (
           </tr>
         `;
       });
-
       detailHtml += `
             </tbody>
           </table>
         </div>
       `;
-
       detailContent.innerHTML = detailHtml;
     } else {
       detailContent.innerHTML = `

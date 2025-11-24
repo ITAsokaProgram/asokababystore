@@ -9,8 +9,9 @@ try {
     $status_terima = $_GET['status_terima'] ?? 'all';
     $is_export = isset($_GET['export']) && $_GET['export'] === 'true';
     $page = (int) ($_GET['page'] ?? 1);
-    if ($page < 1) $page = 1;
-    $limit = 10;
+    if ($page < 1)
+        $page = 1;
+    $limit = 100;
     $offset = ($page - 1) * $limit;
     $where = "DATE(mi.tgl_mutasi) BETWEEN ? AND ?";
     $params = [$tgl_mulai, $tgl_selesai];
