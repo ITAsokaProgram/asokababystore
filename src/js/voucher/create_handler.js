@@ -20,8 +20,9 @@ function updateLivePreview() {
   const firstStoreId = state.selectedStores.values().next().value;
   const storeData = allCabangData.find((s) => s.Kd_Store === firstStoreId);
   if (storeData) {
-    const alias = storeData.Nm_Alias || "";
-    const seq = nomorUrut.toString().padStart(3, "0");
+    const rawAlias = storeData.Nm_Alias || "";
+    const alias = rawAlias.replace(/\s+/g, "");
+    const seq = nomorUrut.toString().padStart(5, "0");
     const previewCode = `${alias}${namaManual}${seq}`;
     textEl.textContent = previewCode;
     if (state.selectedStores.size > 1) {
@@ -140,8 +141,8 @@ document
   });
 document.getElementById("nomor_urut").addEventListener("input", function () {
   this.value = this.value.replace(/[^0-9]/g, "");
-  if (this.value.length > 3) {
-    this.value = this.value.slice(0, 3);
+  if (this.value.length > 5) {
+    this.value = this.value.slice(0, 5);
   }
   updateLivePreview();
 });
@@ -189,8 +190,8 @@ async function submitVoucher(e) {
   const startSeq = parseInt(nomorUrut);
   const qty = parseInt(jumlah);
   const endSeq = startSeq + qty - 1;
-  const startDisp = startSeq.toString().padStart(3, "0");
-  const endDisp = endSeq.toString().padStart(3, "0");
+  const startDisp = startSeq.toString().padStart(5, "0");
+  const endDisp = endSeq.toString().padStart(5, "0");
   const totalToko = state.selectedStores.size;
   const totalVoucherGenerated = totalToko * qty;
   const result = await Swal.fire({

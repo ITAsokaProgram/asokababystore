@@ -58,10 +58,12 @@ try {
         throw new Exception("Toko belum dipilih.");
     if (empty($nama_manual))
         throw new Exception("Nama voucher manual kosong.");
-    if (strlen($nama_manual) > 8)
-        throw new Exception("Nama voucher manual maksimal 8 karakter.");
-    if ($start_sequence > 999)
-        throw new Exception("Nomor urut maksimal 999.");
+
+    if (strlen($nama_manual) > 12)
+        throw new Exception("Nama voucher manual maksimal 12 karakter.");
+
+    if ($start_sequence > 99999)
+        throw new Exception("Nomor urut maksimal 99999.");
     if ($jumlah < 1)
         throw new Exception("Jumlah voucher minimal 1.");
     if ($nilai <= 0)
@@ -117,17 +119,20 @@ try {
         if (!isset($store_details[$kd_store]))
             continue;
 
-        $nm_alias = $store_details[$kd_store];
+
+        $nm_alias = str_replace(' ', '', $store_details[$kd_store]);
 
         for ($i = 0; $i < $jumlah; $i++) {
             $current_num = $start_sequence + $i;
-            $sequence_str = str_pad($current_num, 3, '0', STR_PAD_LEFT);
+
+            $sequence_str = str_pad($current_num, 5, '0', STR_PAD_LEFT);
 
 
             $kd_voucher = $nm_alias . $nama_manual . $sequence_str;
 
-            if (strlen($kd_voucher) > 16) {
-                throw new Exception("Panjang Kode Voucher '$kd_voucher' melebihi 16 karakter. Kurangi panjang Nama Manual.");
+
+            if (strlen($kd_voucher) > 30) {
+                throw new Exception("Panjang Kode Voucher '$kd_voucher' terlalu panjang. Kurangi panjang Nama Manual.");
             }
 
 
