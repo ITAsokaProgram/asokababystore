@@ -27,10 +27,8 @@ $token = $menuHandler->getToken();
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Daftar Pengguna Baru</title>
 
-  <!-- font awesome cdn link  -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
 
-  <!-- Penjelasan: Link ke CSS eksternal dengan cache busting query string -->
   <link rel="stylesheet" href="../../style/header.css">
   <link rel="stylesheet" href="../../style/sidebar.css">
   <link rel="stylesheet" href="../../style/animation-fade-in.css">
@@ -38,9 +36,7 @@ $token = $menuHandler->getToken();
     href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="../../style/default-font.css">
-  <!-- <link rel="stylesheet" href="../../style/output.css"> -->
   <link rel="stylesheet" href="../../output2.css">
-  <!-- Setting logo pada tab di website Anda / Favicon -->
   <link rel="icon" type="image/png" href="../../../public/images/logo1.png">
   <style>
     .btn.active {
@@ -66,40 +62,33 @@ $token = $menuHandler->getToken();
         <div
           class="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-white/30 overflow-hidden animate-fade-in-up">
 
-          <!-- Header -->
           <div class="bg-gradient-to-r from-blue-500 to-blue-700 p-5 rounded-t-2xl">
             <h3 class="text-center text-white text-xl font-semibold">Form Pengguna</h3>
           </div>
 
-          <!-- Form Body -->
           <div class="p-6">
             <form id="registrationForm" class="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in-up">
-              <!-- Error Message -->
               <p id="error_message" class="text-red-500 col-span-2 hidden transition-all duration-300">Error message
                 here</p>
 
-              <!-- Kode -->
               <div>
                 <label for="kode" class="block text-sm font-medium text-gray-700 mb-1">Kode</label>
                 <input type="text" id="kode" name="kode"
                   class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition hover:border-blue-400" />
               </div>
 
-              <!-- Nama -->
               <div>
                 <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
                 <input type="text" id="name" name="name" placeholder="Masukkan Nama Anda" required
                   class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition hover:border-blue-400" />
               </div>
 
-              <!-- Username -->
               <div>
                 <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Nama Pengguna</label>
                 <input type="text" id="username" name="username" required
                   class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition hover:border-blue-400" />
               </div>
 
-              <!-- Password -->
               <div>
                 <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Kata Sandi</label>
                 <div class="relative">
@@ -112,7 +101,6 @@ $token = $menuHandler->getToken();
                 </div>
               </div>
 
-              <!-- Konfirmasi Password -->
               <div>
                 <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-1">Konfirmasi Kata
                   Sandi</label>
@@ -127,7 +115,6 @@ $token = $menuHandler->getToken();
                 <p id="passwordError" class="text-red-500 text-sm hidden">Kata sandi tidak cocok.</p>
               </div>
 
-              <!-- Posisi -->
               <div>
                 <label for="position" class="block text-sm font-medium text-gray-700 mb-1">Posisi</label>
                 <select id="position" name="position" required
@@ -146,7 +133,6 @@ $token = $menuHandler->getToken();
                 </select>
               </div>
 
-              <!-- Profil -->
               <div>
                 <label for="profile" class="block text-sm font-medium text-gray-700 mb-1">Pilih Profil</label>
                 <input type="file" id="profile" name="profile" accept="image/*"
@@ -154,161 +140,161 @@ $token = $menuHandler->getToken();
               </div>
 
               <div class="md:col-span-2">
-                <label class="text-sm font-medium text-gray-700 mb-2 block">Akses Menu</label>
+                <div class="flex justify-between items-center mb-2">
+                  <label class="text-sm font-medium text-gray-700">Akses Menu</label>
+                  <label
+                    class="flex items-center gap-2 text-sm font-semibold text-blue-600 cursor-pointer hover:text-blue-800">
+                    <input type="checkbox" id="selectAllMenus" class="scale-110 focus:ring focus:ring-blue-300 rounded">
+                    Select All / Unselect All
+                  </label>
+                </div>
 
-                <!-- Grid Menu Group -->
                 <div class="grid md:grid-cols-2 gap-4">
-
-                  <!-- Group: Dashboard -->
                   <div class="bg-white/70 border border-white/40 rounded-xl shadow p-4 mb-2">
                     <p class="text-lg font-bold text-gray-800 mb-2">Dashboard</p>
                     <label class="flex items-center gap-2 text-sm">
                       <input type="checkbox" name="menus[]" value="dashboard"
-                        class="scale-110 focus:ring focus:ring-blue-300" /> Dashboard
+                        class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Dashboard
                     </label>
-                  </div>
-
-                  <div class="bg-white/70 border border-white/40 rounded-xl shadow p-4 mb-2">
-                    <p class="text-lg font-bold text-gray-800 mb-2">Dashboard</p>
-                    <label class="flex items-center gap-2 text-sm">
-                      <input type="checkbox" name="menus[]" value="dashboard"
-                        class="scale-110 focus:ring focus:ring-blue-300" /> Dashboard
-                    </label>
-                    <!-- <label class="flex items-center gap-2 text-sm mt-2">
-                      <input type="checkbox" name="menus[]" value="dashboard_sales_graph"
-                        class="scale-110 focus:ring focus:ring-blue-300" /> Grafik Penjualan
-                    </label> -->
                   </div>
 
                   <div class="bg-white/70 border border-white/40 rounded-xl shadow p-4 mb-2">
                     <p class="text-lg font-bold text-gray-800 mb-2">Shopee</p>
                     <label class="flex items-center gap-2 text-sm">
                       <input type="checkbox" name="menus[]" value="shopee_dashboard"
-                        class="scale-110 focus:ring focus:ring-orange-300" /> Dashboard Shopee
+                        class="menu-item-checkbox scale-110 focus:ring focus:ring-orange-300" /> Dashboard Shopee
                     </label>
                   </div>
 
-                  <!-- Group: Laporan - Penjualan -->
                   <div class="bg-white/70 border border-white/40 rounded-xl shadow p-4 mb-2">
                     <p class="text-lg font-bold text-gray-800 mb-2">Laporan - Penjualan</p>
                     <div class="ml-4 mt-2 space-y-1">
                       <label class="flex items-center gap-2 text-sm">
                         <input type="checkbox" name="menus[]" value="laporan_penjualan_subdept"
-                          class="scale-110 focus:ring focus:ring-blue-300" /> Subdept
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Subdept
                       </label>
                       <label class="flex items-center gap-2 text-sm">
                         <input type="checkbox" name="menus[]" value="laporan_penjualan_salesratio"
-                          class="scale-110 focus:ring focus:ring-blue-300" /> Sales Ratio
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Sales Ratio
                       </label>
                       <label class="flex items-center gap-2 text-sm">
                         <input type="checkbox" name="menus[]" value="laporan_penjualan_kategori"
-                          class="scale-110 focus:ring focus:ring-blue-300" /> Kategori
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Kategori
                       </label>
                       <label class="flex items-center gap-2 text-sm">
                         <input type="checkbox" name="menus[]" value="laporan_penjualan_mnonm"
-                          class="scale-110 focus:ring focus:ring-blue-300" /> M / Non M
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> M / Non M
                       </label>
                     </div>
                   </div>
 
-                  <!-- Group: Laporan - Pelanggan -->
                   <div class="bg-white/70 border border-white/40 rounded-xl shadow p-4 mb-2">
                     <p class="text-lg font-bold text-gray-800 mb-2">Laporan - Pelanggan</p>
                     <div class="ml-4 mt-2 space-y-1">
                       <label class="flex items-center gap-2 text-sm">
                         <input type="checkbox" name="menus[]" value="laporan_pelanggan_aktifitas"
-                          class="scale-110 focus:ring focus:ring-blue-300" /> Aktivitas Belanja
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Aktivitas Belanja
                       </label>
                       <label class="flex items-center gap-2 text-sm">
                         <input type="checkbox" name="menus[]" value="laporan_pelanggan_layanan"
-                          class="scale-110 focus:ring focus:ring-blue-300" /> Layanan
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Layanan
                       </label>
                       <label class="flex items-center gap-2 text-sm">
                         <input type="checkbox" name="menus[]" value="laporan_pelanggan_review"
-                          class="scale-110 focus:ring focus:ring-blue-300" /> Review
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Review
                       </label>
                     </div>
                   </div>
 
-                  <!-- Group: Transaksi -->
                   <div class="bg-white/70 border border-white/40 rounded-xl shadow p-4 mb-2">
                     <p class="text-lg font-bold text-gray-800 mb-2">Transaksi</p>
                     <div class="ml-4 mt-2 space-y-1">
                       <label class="flex items-center gap-2 text-sm">
                         <input type="checkbox" name="menus[]" value="transaksi_promo"
-                          class="scale-110 focus:ring focus:ring-blue-300" /> Promo
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Promo
                       </label>
                       <label class="flex items-center gap-2 text-sm">
                         <input type="checkbox" name="menus[]" value="reward_give"
-                          class="scale-110 focus:ring focus:ring-blue-300" /> Hadiah
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Hadiah
                       </label>
                       <label class="flex items-center gap-2 text-sm">
                         <input type="checkbox" name="menus[]" value="transaksi_invalid"
-                          class="scale-110 focus:ring focus:ring-blue-300" /> Invalid
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Invalid
                       </label>
                       <label class="flex items-center gap-2 text-sm">
                         <input type="checkbox" name="menus[]" value="top_invalid"
-                          class="scale-110 focus:ring focus:ring-blue-300" /> Top Invalid
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Top Invalid
                       </label>
                       <label class="flex items-center gap-2 text-sm">
                         <input type="checkbox" name="menus[]" value="top_retur"
-                          class="scale-110 focus:ring focus:ring-blue-300" /> Top Retur
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Top Retur
+                      </label>
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="top_margin"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Top Margin
                       </label>
                       <label class="flex items-center gap-2 text-sm">
                         <input type="checkbox" name="menus[]" value="transaksi_margin"
-                          class="scale-110 focus:ring focus:ring-blue-300" /> Margin
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Margin
+                      </label>
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="transaksi_cabang"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Transaksi Cabang
+                      </label>
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="detail_transaksi_cabang"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Detail Transaksi Cabang
                       </label>
                     </div>
                   </div>
 
-                  <!-- Group: Manajemen -->
                   <div class="bg-white/70 border border-white/40 rounded-xl shadow p-4 mb-2">
                     <p class="text-lg font-bold text-gray-800 mb-2">Manajemen</p>
                     <label class="flex items-center gap-2 text-sm ml-4">
                       <input type="checkbox" name="menus[]" value="user_management"
-                        class="scale-110 focus:ring focus:ring-blue-300" /> Manajemen User
+                        class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Manajemen User
                     </label>
                     <label class="flex items-center gap-2 text-sm ml-4">
                       <input type="checkbox" name="menus[]" value="insert_new_user"
-                        class="scale-110 focus:ring focus:ring-blue-300" /> Tambah Anggota
+                        class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Tambah Anggota
                     </label>
                   </div>
 
-                  <!-- Group: Member -->
                   <div class="bg-white/70 border border-white/40 rounded-xl shadow p-4 mb-2">
                     <p class="text-lg font-bold text-gray-800 mb-2">Member</p>
                     <label class="flex items-center gap-2 text-sm ml-4">
                       <input type="checkbox" name="menus[]" value="member_poin"
-                        class="scale-110 focus:ring focus:ring-blue-300" /> Poin
+                        class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Poin
+                    </label>
+                    <label class="flex items-center gap-2 text-sm ml-4">
+                      <input type="checkbox" name="menus[]" value="upload_banner"
+                        class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Banner
                     </label>
                     <label class="flex items-center gap-2 text-sm ml-4">
                       <input type="checkbox" name="menus[]" value="product_favorite"
-                        class="scale-110 focus:ring focus:ring-blue-300" /> Produk Favorit
+                        class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Produk Favorit
                     </label>
                     <label class="flex items-center gap-2 text-sm ml-4">
                       <input type="checkbox" name="menus[]" value="product_member"
-                        class="scale-110 focus:ring focus:ring-blue-300" /> Produk Member
+                        class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Produk Member
                     </label>
                     <label class="flex items-center gap-2 text-sm ml-4">
                       <input type="checkbox" name="menus[]" value="top_sales"
-                        class="scale-110 focus:ring focus:ring-blue-300" /> Top Sales
+                        class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Top Sales
                     </label>
                   </div>
 
-                  <!-- Group: Produk -->
                   <div class="bg-white/70 border border-white/40 rounded-xl shadow p-4 mb-2">
                     <p class="text-lg font-bold text-gray-800 mb-2">Produk</p>
                     <label class="flex items-center gap-2 text-sm ml-4">
                       <input type="checkbox" name="menus[]" value="product"
-                        class="scale-110 focus:ring focus:ring-blue-300" /> Produk Online
+                        class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Produk Online
                     </label>
-
                   </div>
 
                 </div>
               </div>
 
-              <!-- Tombol Simpan -->
               <div class="md:col-span-2">
                 <button type="submit" id="btnSubmit"
                   class="w-full bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-semibold py-3 px-4 rounded-xl shadow-md transition-all duration-200 hover:scale-105 flex items-center justify-center gap-2">
@@ -326,7 +312,6 @@ $token = $menuHandler->getToken();
 
 
 
-  <!-- custom js file link  -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -340,8 +325,9 @@ $token = $menuHandler->getToken();
     import {
       areaCabang
     } from '../../js/kode_cabang/cabang_area.js';
-    // await kodeCabang('cabang');
+
     await areaCabang('cabang');
+
     fetch('../../api/user/get_next_code_user')
       .then(res => res.json())
       .then(data => {
@@ -349,7 +335,6 @@ $token = $menuHandler->getToken();
       })
       .catch(err => console.error('Gagal fetch next_kode:', err));
 
-    // Show/hide password
     document.getElementById('togglePassword').addEventListener('click', function () {
       const passInput = document.getElementById('password');
       const icon = this.querySelector('i');
@@ -363,6 +348,7 @@ $token = $menuHandler->getToken();
         icon.classList.add('fa-eye');
       }
     });
+
     document.getElementById('toggleConfirmPassword').addEventListener('click', function () {
       const passInput = document.getElementById('confirmPassword');
       const icon = this.querySelector('i');
@@ -377,7 +363,6 @@ $token = $menuHandler->getToken();
       }
     });
 
-    // Password match error
     document.getElementById('confirmPassword').addEventListener('input', function () {
       var pass = document.getElementById('password').value;
       var c_pass = document.getElementById('confirmPassword').value;
@@ -390,7 +375,25 @@ $token = $menuHandler->getToken();
         errorElement.classList.remove('animate-fade-in-up');
       }
     });
-    // Toast notification (gunakan SweetAlert2 di insert.js untuk feedback sukses/gagal)
+
+    const selectAllCheckbox = document.getElementById('selectAllMenus');
+    const menuCheckboxes = document.querySelectorAll('input[name="menus[]"]');
+
+    selectAllCheckbox.addEventListener('change', function () {
+      const isChecked = this.checked;
+      menuCheckboxes.forEach(checkbox => {
+        checkbox.checked = isChecked;
+      });
+    });
+
+    menuCheckboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', function () {
+        const allChecked = Array.from(menuCheckboxes).every(cb => cb.checked);
+
+        selectAllCheckbox.checked = allChecked;
+      });
+    });
+
   </script>
 </body>
 
