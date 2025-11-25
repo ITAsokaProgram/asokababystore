@@ -2,7 +2,6 @@
 session_start();
 include '../../../aa_kon_sett.php';
 
-// SETTING DEFAULT TANGGAL (SEBULAN)
 $hari_ini = date('Y-m-d');
 $sebulan_lalu = date('Y-m-d', strtotime('-1 month'));
 

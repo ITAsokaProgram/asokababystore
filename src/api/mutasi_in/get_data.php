@@ -21,10 +21,9 @@ try {
     $types = "ss";
 
     if ($kd_store !== 'all') {
-        $where .= " AND (mi.kode_tujuan = ? OR mi.kode_dari = ?)";
+        $where .= " AND mi.kode_dari = ?";
         $params[] = $kd_store;
-        $params[] = $kd_store;
-        $types .= "ss";
+        $types .= "s";
     }
 
     if ($status_cetak !== 'all') {
