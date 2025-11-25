@@ -109,7 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (tableBody)
         tableBody.innerHTML = `
                     <tr>
-                        <td colspan="10" class="text-center p-8">
+                        <td colspan="11" class="text-center p-8">
                             <div class="spinner-simple"></div>
                             <p class="mt-2 text-gray-500">Memuat data...</p>
                         </td>
@@ -126,7 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function showTableError(message) {
     tableBody.innerHTML = `
             <tr>
-                <td colspan="10" class="text-center p-8 text-red-600">
+                <td colspan="11" class="text-center p-8 text-red-600">
                     <i class="fas fa-exclamation-triangle fa-lg mb-2"></i>
                     <p>Gagal memuat data: ${message}</p>
                 </td>
@@ -152,7 +152,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!tabel_data || tabel_data.length === 0) {
       tableBody.innerHTML = `
                 <tr>
-                    <td colspan="10" class="text-center p-8 text-gray-500">
+                    <td colspan="11" class="text-center p-8 text-gray-500">
                         <i class="fas fa-inbox fa-lg mb-2"></i>
                         <p>Tidak ada voucher ditemukan untuk filter ini.</p>
                     </td>
@@ -169,7 +169,7 @@ document.addEventListener("DOMContentLoaded", () => {
           : "Tanggal Tidak Valid";
       return `
                 <tr class="header-tanggal-row">
-                    <td colspan="10" class="px-4 py-2">
+                    <td colspan="11" class="px-4 py-2">
                         Tgl Awal: <span class="font-bold"> ${displayTanggal} </span>
                     </td>
                 </tr>
@@ -210,6 +210,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     )}</td>
                     <td class="text-sm">${formatDateTime(row.tgl_awal)}</td>
                     <td class="text-sm">${formatDateTime(row.tgl_akhir)}</td>
+                    <td class="text-sm">${formatJustDate(row.tgl_buat)}</td>
                     <td class="text-center">${statusBadge}</td>
                 </tr>
             `;

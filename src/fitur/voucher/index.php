@@ -114,12 +114,13 @@ if ($page < 1) {
                                     <th>Sisa</th>
                                     <th>Tgl Awal</th>
                                     <th>Tgl Akhir</th>
+                                    <th>Tgl Buat</th>
                                     <th>Status</th>
                                 </tr>
                             </thead>
                             <tbody id="voucher-table-body">
                                 <tr>
-                                    <td colspan="10" class="text-center p-8">
+                                    <td colspan="11" class="text-center p-8">
                                         <div class="spinner-simple"></div>
                                         <p class="mt-3 text-gray-500 font-medium">Memuat data...</p>
                                     </td>

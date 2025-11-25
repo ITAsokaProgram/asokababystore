@@ -34,7 +34,7 @@ try {
     $tgl_mulai = $input['tgl_mulai'] ?? '';
     $tgl_akhir = $input['tgl_akhir'] ?? '';
     $pemilik = strtoupper($input['pemilik'] ?? 'SYSTEM');
-    $tgl_beli = date('Y-m-d H:i:s');
+    $tgl_beli = null;
     $tgl_buat = date('Y-m-d H:i:s');
     if (empty($stores))
         throw new Exception("Toko belum dipilih.");
