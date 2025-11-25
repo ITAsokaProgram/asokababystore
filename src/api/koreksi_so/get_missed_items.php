@@ -16,7 +16,8 @@ $response = [
     'summary' => ['total_items' => 0],
     'pagination' => null,
     'error' => null,
-    'params' => []
+    'params' => [],
+    'start_group_index' => 0
 ];
 try {
     $default_tgl_mulai = date('Y-m-16', strtotime('last month'));
@@ -31,7 +32,7 @@ try {
         'mode' => $mode_laporan
     ];
     $page = max(1, (int) ($_GET['page'] ?? 1));
-    $limit = 100;
+    $limit = 1000;
     $offset = ($page - 1) * $limit;
     $sql_stores = "SELECT kd_store, nm_alias FROM kode_store WHERE display = 'on' ORDER BY nm_alias ASC";
     $res_stores = $conn->query($sql_stores);
@@ -74,13 +75,9 @@ try {
         $final_bind_vars = array_merge($final_bind_vars, $params_koreksi);
         $cols_select = "
             '$tgl_selesai' as tgl_jadwal,
-            m.plu, 
-            m.DESCP as deskripsi, 
-            IFNULL(m.SATUAN, 'PCS') as satuan, 
-            m.VENDOR as kode_supp, 
-            m.VENDOR as nama_supp, 
-            m.ON_HAND1 as stock,        
-            m.AVG_COST as avg_cost
+            m.plu, m.DESCP as deskripsi, IFNULL(m.SATUAN, 'PCS') as satuan, 
+            m.VENDOR as kode_supp, m.VENDOR as nama_supp, 
+            m.ON_HAND1 as stock, m.AVG_COST as avg_cost
         ";
         $order_by = "ORDER BY m.VENDOR ASC, m.plu ASC";
     } elseif ($mode_laporan === 'master_exclude_jadwal') {
@@ -97,18 +94,8 @@ try {
             WHERE 
                 1=1 
                 $where_store_master
-                -- belum ada di koreksi
-                AND m.plu NOT IN (
-                    SELECT plu 
-                    FROM koreksi 
-                    WHERE $sql_koreksi_filter
-                )
-                -- vendor nya gaada di jadwal
-                AND m.VENDOR NOT IN (
-                    SELECT kode_supp 
-                    FROM jadwal_so 
-                    WHERE $sql_jadwal_exclude
-                )
+                AND m.plu NOT IN (SELECT plu FROM koreksi WHERE $sql_koreksi_filter)
+                AND m.VENDOR NOT IN (SELECT kode_supp FROM jadwal_so WHERE $sql_jadwal_exclude)
         ";
         $final_bind_types .= $types_store;
         $final_bind_vars = array_merge($final_bind_vars, $params_store);
@@ -118,13 +105,9 @@ try {
         $final_bind_vars = array_merge($final_bind_vars, $params_jadwal_ex);
         $cols_select = "
             '$tgl_selesai' as tgl_jadwal,
-            m.plu, 
-            m.DESCP as deskripsi, 
-            IFNULL(m.SATUAN, 'PCS') as satuan, 
-            m.VENDOR as kode_supp, 
-            m.VENDOR as nama_supp, 
-            m.ON_HAND1 as stock,        
-            m.AVG_COST as avg_cost
+            m.plu, m.DESCP as deskripsi, IFNULL(m.SATUAN, 'PCS') as satuan, 
+            m.VENDOR as kode_supp, m.VENDOR as nama_supp, 
+            m.ON_HAND1 as stock, m.AVG_COST as avg_cost
         ";
         $order_by = "ORDER BY m.VENDOR ASC, m.plu ASC";
     } else {
@@ -160,15 +143,34 @@ try {
         $final_bind_vars = array_merge($final_bind_vars, $params_koreksi);
         $cols_select = "
             j.tgl_jadwal,
-            m.plu, 
-            m.DESCP as deskripsi, 
-            IFNULL(m.SATUAN, 'PCS') as satuan, 
-            m.VENDOR as kode_supp, 
-            j.nama_supp,
-            m.ON_HAND1 as stock,        
-            m.AVG_COST as avg_cost
+            m.plu, m.DESCP as deskripsi, IFNULL(m.SATUAN, 'PCS') as satuan, 
+            m.VENDOR as kode_supp, j.nama_supp,
+            m.ON_HAND1 as stock, m.AVG_COST as avg_cost
         ";
         $order_by = "ORDER BY j.tgl_jadwal ASC, m.VENDOR ASC, m.plu ASC";
+    }
+    if (!$is_export && $offset > 0) {
+        $sql_pre_count = "SELECT $cols_select $sql_core $order_by LIMIT ?";
+        $stmt_pre = $conn->prepare($sql_pre_count);
+        $bind_types_pre = $final_bind_types . "i";
+        $bind_vars_pre = $final_bind_vars;
+        $bind_vars_pre[] = $offset;
+        if ($stmt_pre) {
+            $stmt_pre->bind_param($bind_types_pre, ...$bind_vars_pre);
+            $stmt_pre->execute();
+            $res_pre = $stmt_pre->get_result();
+            $seen_groups = [];
+            $group_count = 0;
+            while ($row = $res_pre->fetch_assoc()) {
+                $key = $row['tgl_jadwal'] . '_' . $row['kode_supp'];
+                if (!isset($seen_groups[$key])) {
+                    $seen_groups[$key] = true;
+                    $group_count++;
+                }
+            }
+            $response['start_group_index'] = $group_count;
+            $stmt_pre->close();
+        }
     }
     if (!$is_export) {
         $sql_count = "SELECT COUNT(*) as total $sql_core";

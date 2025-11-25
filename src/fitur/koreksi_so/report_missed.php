@@ -106,11 +106,13 @@ if ($page < 1) {
                             </label>
                             <select name="mode" id="mode"
                                 class="input-modern w-full border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500">
-                                <option value="jadwal" <?php echo $mode === 'jadwal' ? 'selected' : ''; ?>>Sesuai Jadwal
-                                    SO</option>
+                                <option value="jadwal" <?php echo $mode === 'jadwal' ? 'selected' : ''; ?>>Jadwal SO Belum
+                                    Terkoreksi</option>
                                 <option value="non_jadwal" <?php echo $mode === 'non_jadwal' ? 'selected' : ''; ?>>Semua
-                                    Master (Termasuk Jadwal)</option>
-                                <option value="master_exclude_jadwal" <?php echo $mode === 'master_exclude_jadwal' ? 'selected' : ''; ?>>Master (Yang Tidak Ada di Jadwal)</option>
+                                    Master Belum Terkoreksi</option>
+                                <option value="master_exclude_jadwal" <?php echo $mode === 'master_exclude_jadwal' ? 'selected' : ''; ?>>
+                                    Belom Terjadwal dan Belum Terkoreksi
+                                </option>
                             </select>
                         </div>
                         <div>

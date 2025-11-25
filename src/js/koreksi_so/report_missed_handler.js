@@ -86,7 +86,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (data.summary) {
         summaryQty.textContent = formatNumber(data.summary.total_items);
       }
-      renderTable(data.tabel_data, params.mode);
+      const startIndex = data.start_group_index || 0;
+      renderTable(data.tabel_data, params.mode, startIndex);
       renderPagination(data.pagination);
     } catch (error) {
       console.error("Error loading data:", error);
@@ -136,7 +137,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     filterSelectStore.value = selectedStore;
   }
-  function renderTable(tabel_data, mode) {
+  function renderTable(tabel_data, mode, startIndex = 0) {
     if (!tabel_data || tabel_data.length === 0) {
       tableBody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-gray-500"><i class="fas fa-check-circle fa-lg mb-2"></i><p>Tidak ada item missed (Semua aman atau Stok 0).</p></td></tr>`;
       return;
@@ -159,7 +160,7 @@ document.addEventListener("DOMContentLoaded", () => {
       groupedData[key].total_nilai += val;
     });
     let htmlRows = "";
-    let groupIndex = 1;
+    let groupIndex = startIndex + 1;
     for (const key in groupedData) {
       const group = groupedData[key];
       const rowId = `detail-${group.kode_supp}-${groupIndex}`;
@@ -254,18 +255,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const start_row = offset + 1;
     const end_row = Math.min(offset + limit, total_rows);
-    paginationInfo.textContent = `Menampilkan ${start_row} - ${end_row} dari ${total_rows} data (Item Level)`;
+    paginationInfo.textContent = `Menampilkan ${start_row} - ${end_row} dari ${total_rows} items`;
     let linksHtml = "";
     linksHtml += `
-      <a href="${
-        current_page > 1 ? build_pagination_url(current_page - 1) : "#"
-      }" 
-        class="pagination-link ${
-          current_page === 1 ? "pagination-disabled" : ""
-        }">
-          <i class="fas fa-chevron-left"></i>
-      </a>
-    `;
+            <a href="${
+              current_page > 1 ? build_pagination_url(current_page - 1) : "#"
+            }" 
+               class="pagination-link ${
+                 current_page === 1 ? "pagination-disabled" : ""
+               }">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        `;
     const pages_to_show = [];
     const max_pages_around = 2;
     for (let i = 1; i <= total_pages; i++) {
@@ -284,27 +285,27 @@ document.addEventListener("DOMContentLoaded", () => {
         linksHtml += `<span class="pagination-ellipsis">...</span>`;
       }
       linksHtml += `
-        <a href="${build_pagination_url(page_num)}" 
-           class="pagination-link ${
-             page_num === current_page ? "pagination-active" : ""
-           }">
-            ${page_num}
-        </a>
-      `;
+                <a href="${build_pagination_url(page_num)}" 
+                   class="pagination-link ${
+                     page_num === current_page ? "pagination-active" : ""
+                   }">
+                    ${page_num}
+                </a>
+            `;
       last_page = page_num;
     }
     linksHtml += `
-      <a href="${
-        current_page < total_pages
-          ? build_pagination_url(current_page + 1)
-          : "#"
-      }" 
-        class="pagination-link ${
-          current_page === total_pages ? "pagination-disabled" : ""
-        }">
-          <i class="fas fa-chevron-right"></i>
-      </a>
-    `;
+            <a href="${
+              current_page < total_pages
+                ? build_pagination_url(current_page + 1)
+                : "#"
+            }" 
+               class="pagination-link ${
+                 current_page === total_pages ? "pagination-disabled" : ""
+               }">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        `;
     paginationLinks.innerHTML = linksHtml;
   }
   async function fetchExportData() {
@@ -363,27 +364,13 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       const ws = XLSX.utils.aoa_to_sheet(rows);
       ws["!cols"] = [
-        {
-          wch: 10,
-        },
-        {
-          wch: 20,
-        },
-        {
-          wch: 15,
-        },
-        {
-          wch: 40,
-        },
-        {
-          wch: 8,
-        },
-        {
-          wch: 10,
-        },
-        {
-          wch: 15,
-        },
+        { wch: 10 },
+        { wch: 20 },
+        { wch: 15 },
+        { wch: 40 },
+        { wch: 8 },
+        { wch: 10 },
+        { wch: 15 },
       ];
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Missed Items");
