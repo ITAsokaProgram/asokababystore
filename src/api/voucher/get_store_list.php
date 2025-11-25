@@ -12,10 +12,9 @@ try {
     // Query mengambil data store
     // Pastikan nama kolom sesuai dengan database Anda (Kd_Store, Nm_Store, Nm_Alias)
     // Tambahkan WHERE display = 'on' jika Anda ingin memfilter toko yang aktif saja
-    $sql = "SELECT Kd_Store, Nm_Store, Nm_Alias FROM kode_store ORDER BY Kd_Store ASC";
-    
+    $sql = "SELECT Kd_Store, Nm_Store, Nm_Alias FROM kode_store WHERE display = 'on' ORDER BY Kd_Store ASC";
     $result = $conn->query($sql);
-    
+
     $data = [];
     if ($result) {
         while ($row = $result->fetch_assoc()) {
@@ -36,7 +35,7 @@ try {
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode([
-        'success' => false, 
+        'success' => false,
         'message' => $e->getMessage()
     ]);
 } finally {

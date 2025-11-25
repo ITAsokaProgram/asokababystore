@@ -23,11 +23,11 @@ $stmtUserCabang->execute();
 $resultUserCabang = $stmtUserCabang->get_result();
 if ($resultUserCabang->num_rows > 0) {
     $userCabang = $resultUserCabang->fetch_assoc();
-    if($userCabang['kd_store'] == "Pusat"){
+    if ($userCabang['kd_store'] == "Pusat") {
         $sql = "SELECT Kd_Store as store, Nm_Alias as nama_cabang FROM kode_store";
         $stmt = $conn->prepare($sql);
         $stmt->execute();
-    }else{
+    } else {
         $kdStoreArray = explode(',', $userCabang['kd_store']);
         $kdStoreImplode = "'" . implode("','", $kdStoreArray) . "'";
         $sql = "SELECT Kd_Store as store, Nm_Alias as nama_cabang FROM kode_store WHERE Kd_Store IN ($kdStoreImplode)";
@@ -41,7 +41,7 @@ if ($resultUserCabang->num_rows > 0) {
         echo $data;
     } else {
         http_response_code(204);
-        echo json_encode(["status"=> "true","message"=> "Data kosong"]);
+        echo json_encode(["status" => "true", "message" => "Data kosong"]);
     }
     $stmt->close();
     $conn->close();
@@ -59,7 +59,7 @@ if ($result->num_rows > 0) {
     echo $data;
 } else {
     http_response_code(204);
-    echo json_encode(["status"=> "true","message"=> "Data kosong"]);
+    echo json_encode(["status" => "true", "message" => "Data kosong"]);
 }
 $stmt->close();
 $conn->close();

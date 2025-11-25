@@ -30,12 +30,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 try {
-    $sql = "SELECT Kd_Store, Nm_Alias FROM kode_store ORDER BY Nm_Alias ASC";
+    $sql = "SELECT Kd_Store, Nm_Alias FROM kode_store WHERE display = 'on' ORDER BY Nm_Alias ASC";
     $result = $conn->query($sql);
 
     $stores = [];
     if ($result->num_rows > 0) {
-        while($row = $result->fetch_assoc()) {
+        while ($row = $result->fetch_assoc()) {
             $stores[] = $row;
         }
     }

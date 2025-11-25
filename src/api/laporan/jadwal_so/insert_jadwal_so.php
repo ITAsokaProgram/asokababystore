@@ -72,7 +72,7 @@ try {
         $store_info = $store_details[$kd_store];
         $no_kor_prefix = $kd_store . $user_kode . $today_dmY;
         if (!isset($sequence_map[$kd_store])) {
-            $sql_check = "SELECT no_kor FROM jadwal_so_copy WHERE no_kor LIKE '$no_kor_prefix%' ORDER BY no_kor DESC LIMIT 1";
+            $sql_check = "SELECT no_kor FROM jadwal_so WHERE no_kor LIKE '$no_kor_prefix%' ORDER BY no_kor DESC LIMIT 1";
             $res_check = $conn->query($sql_check);
             if ($res_check && $res_check->num_rows > 0) {
                 $last_no = $res_check->fetch_assoc()['no_kor'];

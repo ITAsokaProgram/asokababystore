@@ -42,7 +42,7 @@ try {
     if (isset($response['pagination'])) {
         $response['pagination']['offset'] = $offset;
     }
-    $sql_stores = "SELECT Kd_Store as kd_store, Nm_Alias as nm_alias FROM kode_store ORDER BY Kd_Store ASC";
+    $sql_stores = "SELECT Kd_Store as kd_store, Nm_Alias as nm_alias FROM kode_store WHERE display = 'on' ORDER BY Kd_Store ASC";
     $result_stores = $conn->query($sql_stores);
     if ($result_stores) {
         while ($row = $result_stores->fetch_assoc()) {

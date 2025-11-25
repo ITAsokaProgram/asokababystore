@@ -33,7 +33,7 @@ try {
     $page = max(1, (int) ($_GET['page'] ?? 1));
     $limit = 10;
     $offset = ($page - 1) * $limit;
-    $sql_stores = "SELECT kd_store, nm_alias FROM kode_store ORDER BY kd_store ASC";
+    $sql_stores = "SELECT kd_store, nm_alias FROM kode_store WHERE display = 'on' ORDER BY kd_store ASC";
     $res_stores = $conn->query($sql_stores);
     if ($res_stores) {
         while ($row = $res_stores->fetch_assoc()) {

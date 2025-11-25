@@ -46,7 +46,7 @@ try {
             SUM(mi.qty * mi.netto) as total_netto,
             SUM(mi.qty * mi.ppn) as total_ppn,
             SUM(mi.qty * (mi.netto + mi.ppn)) as total_grand
-        FROM mutasi_in_copy mi
+        FROM mutasi_in mi
         WHERE $where
     ";
 
@@ -98,7 +98,7 @@ try {
             SUM(mi.qty * mi.netto) as total_netto,
             SUM(mi.qty * mi.ppn) as total_ppn,
             SUM(mi.qty * (mi.netto + mi.ppn)) as total_grand
-        FROM mutasi_in_copy mi
+        FROM mutasi_in mi
         LEFT JOIN kode_store kds ON mi.kode_dari = kds.kd_store
         LEFT JOIN kode_store kdt ON mi.kode_tujuan = kdt.kd_store
         WHERE $where
@@ -120,7 +120,7 @@ try {
 
     $pagination = null;
     if (!$is_export) {
-        $queryCount = "SELECT COUNT(DISTINCT mi.no_faktur) as total FROM mutasi_in_copy mi WHERE $where";
+        $queryCount = "SELECT COUNT(DISTINCT mi.no_faktur) as total FROM mutasi_in mi WHERE $where";
         $stmtCount = $conn->prepare($queryCount);
         $stmtCount->bind_param($types, ...$params);
         $stmtCount->execute();

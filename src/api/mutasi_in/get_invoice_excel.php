@@ -14,7 +14,7 @@ if (empty($no_faktur) || empty($kode_dari)) {
 
 try {
     // 1. QUERY HEADER (Sesuai VB)
-    // Note: Menggunakan mutasi_in_copy sesuai standar sistem Anda saat ini
+    // Note: Menggunakan mutasi_in sesuai standar sistem Anda saat ini
     $sqlHeader = "
         SELECT 
             mi.tgl_mutasi,
@@ -28,7 +28,7 @@ try {
             kd.no_npwp as t_npwp,
             SUM(mi.qty * mi.netto) AS Sub_Total, 
             IFNULL(SUM(mi.qty * mi.ppn), 0) AS Ppn1 
-        FROM mutasi_in_copy mi
+        FROM mutasi_in mi
         LEFT JOIN kode_store kd ON mi.kode_tujuan = kd.kd_store
         LEFT JOIN kode_store kds ON mi.kode_dari = kds.kd_store
         WHERE mi.kode_dari = ? 
@@ -48,7 +48,7 @@ try {
 
     // 2. QUERY DETAIL (Sesuai VB)
     $conn->query("SET @nomor_urut = 0");
-    
+
     $sqlDetail = "
         SELECT 
             @nomor_urut := @nomor_urut + 1 AS 'No',
@@ -59,7 +59,7 @@ try {
             netto,
             ppn,
             (netto + ppn) * qty AS total 
-        FROM mutasi_in_copy 
+        FROM mutasi_in 
         WHERE kode_dari = ? 
           AND DATE(tgl_mutasi) = ? 
           AND no_faktur = ? 

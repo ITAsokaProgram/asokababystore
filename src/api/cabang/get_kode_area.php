@@ -16,8 +16,8 @@ if (!$token) {
 }
 $verif = verify_token($token);
 
-$sql = "SELECT Kd_Store AS store, Nm_Alias AS nama_cabang, kode_area AS group_cabang FROM kode_store ORDER BY kode_Area" ;
-;
+$sql = "SELECT Kd_Store AS store, Nm_Alias AS nama_cabang, kode_area AS group_cabang FROM kode_store WHERE display = 'on' ORDER BY kode_Area";
+
 $stmt = $conn->prepare($sql);
 $stmt->execute();
 if (!$stmt) {
@@ -31,7 +31,7 @@ if ($result->num_rows > 0) {
     echo $data;
 } else {
     http_response_code(204);
-    echo json_encode(["status"=> "true","message"=> "Data kosong"]);
+    echo json_encode(["status" => "true", "message" => "Data kosong"]);
 }
 $stmt->close();
 $conn->close();

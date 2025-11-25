@@ -12,7 +12,7 @@ if (empty($no_faktur)) {
 
 try {
     // Cek Receipt dulu (Server side validation)
-    $checkSql = "SELECT receipt FROM mutasi_in_copy WHERE no_faktur = ? AND kode_dari = ? LIMIT 1";
+    $checkSql = "SELECT receipt FROM mutasi_in WHERE no_faktur = ? AND kode_dari = ? LIMIT 1";
     $stmtCheck = $conn->prepare($checkSql);
     $stmtCheck->bind_param("ss", $no_faktur, $kode_dari);
     $stmtCheck->execute();
@@ -27,7 +27,7 @@ try {
     }
 
     // Update Status Cetak
-    $updateSql = "UPDATE mutasi_in_copy SET cetak = 'True' WHERE no_faktur = ? AND kode_dari = ?";
+    $updateSql = "UPDATE mutasi_in SET cetak = 'True' WHERE no_faktur = ? AND kode_dari = ?";
     $stmtUpd = $conn->prepare($updateSql);
     $stmtUpd->bind_param("ss", $no_faktur, $kode_dari);
 

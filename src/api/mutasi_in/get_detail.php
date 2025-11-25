@@ -28,7 +28,7 @@ try {
             ppn,
             (hrg_beli * qty) as total_netto_row,
             ((hrg_beli + ppn) * qty) as total_row
-        FROM mutasi_in_copy
+        FROM mutasi_in
         WHERE no_faktur = ? 
           AND kode_dari = ?
           AND DATE(tgl_mutasi) = ?

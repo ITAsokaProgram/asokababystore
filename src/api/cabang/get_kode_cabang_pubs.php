@@ -7,14 +7,14 @@ header("Content-Type:application/json");
 header("Access-Control-Allow-Methods: GET");
 header("Access-Control-Allow-Headers: Authorization");
 
-if($_SERVER['REQUEST_METHOD'] != 'GET') {
+if ($_SERVER['REQUEST_METHOD'] != 'GET') {
     http_response_code(405);
     echo json_encode(['status' => false, 'message' => 'Request ditolak method tidak terdaftar']);
     exit;
 }
 $header = getAllHeaders();
 
-if(!isset($header['Authorization']) || $header['Authorization'] == null) {
+if (!isset($header['Authorization']) || $header['Authorization'] == null) {
     http_response_code(401);
     echo json_encode(['status' => false, 'message' => 'Request ditolak user tidak terdaftar']);
     exit;
@@ -31,8 +31,8 @@ if (!$token) {
 }
 $verif = verify_token($token);
 
-$sql = "SELECT Kd_Store AS store, Nm_Store AS nama_cabang FROM kode_store" ;
-;
+$sql = "SELECT Kd_Store AS store, Nm_Store AS nama_cabang FROM kode_store";
+
 $stmt = $conn->prepare($sql);
 $stmt->execute();
 if (!$stmt) {
@@ -42,11 +42,11 @@ if (!$stmt) {
 $result = $stmt->get_result();
 if ($result->num_rows > 0) {
     http_response_code(200);
-    $data = json_encode(["status" => true,"message"=> "Data ditemukan", "data" => $result->fetch_all(MYSQLI_ASSOC)]);
+    $data = json_encode(["status" => true, "message" => "Data ditemukan", "data" => $result->fetch_all(MYSQLI_ASSOC)]);
     echo $data;
 } else {
     http_response_code(200);
-    echo json_encode(["status"=> true,"message"=> "Data kosong", 'data' => []]);
+    echo json_encode(["status" => true, "message" => "Data kosong", 'data' => []]);
 }
 $stmt->close();
 $conn->close();

@@ -39,7 +39,7 @@ try {
     } else {
         throw new Exception("Error preparing statement (log_agg): " . $conn->error);
     }
-    $sql_cabang = "SELECT Nm_Alias FROM kode_store WHERE Nm_Alias IS NOT NULL AND Nm_Alias != '' ORDER BY Nm_Alias ASC";
+    $sql_cabang = "SELECT Nm_Alias FROM kode_store WHERE Nm_Alias IS NOT NULL AND Nm_Alias != '' AND display = 'on' ORDER BY Nm_Alias ASC";
     $result_cabang = $conn->query($sql_cabang);
     if ($result_cabang === false) {
         throw new Exception("Error querying kode_store: " . $conn->error);

@@ -5,7 +5,7 @@ require_once __DIR__ . "./../../../aa_kon_sett.php";
 header("Content-Type:application/json");
 
 
-$sql = "SELECT telp FROM kode_store";
+$sql = "SELECT telp FROM kode_store WHERE display = 'on'";
 $stmt = $conn->prepare($sql);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -15,7 +15,7 @@ if ($result->num_rows > 0) {
     echo $data;
 } else {
     http_response_code(204);
-    echo json_encode(["status"=> "true","message"=> "Data kosong"]);
+    echo json_encode(["status" => "true", "message" => "Data kosong"]);
 }
 $stmt->close();
 $conn->close();
