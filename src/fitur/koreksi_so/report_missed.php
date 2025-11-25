@@ -27,7 +27,7 @@ if ($page < 1) {
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Barang Belum Scan (Koreksi SO)</title>
+    <title>Laporan Barang (Koreksi SO)</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
     <link rel="stylesheet" href="../../style/header.css">
     <link rel="stylesheet" href="../../style/sidebar.css">
@@ -59,7 +59,7 @@ if ($page < 1) {
                             </div>
                             <div>
                                 <h1 id="page-title" class="text-xl font-bold text-gray-800 mb-1">
-                                    Laporan Barang Belum Scan
+                                    Laporan Barang Belum Koreksi
                                 </h1>
                                 <p id="page-subtitle" class="text-xs text-gray-600">
                                     Item di Master yang belum masuk Koreksi SO
@@ -109,7 +109,10 @@ if ($page < 1) {
                                 <option value="jadwal" <?php echo $mode === 'jadwal' ? 'selected' : ''; ?>>Sesuai Jadwal
                                     SO</option>
                                 <option value="non_jadwal" <?php echo $mode === 'non_jadwal' ? 'selected' : ''; ?>>Semua
-                                    Master (Tanpa Jadwal)</option>
+                                    Master (Termasuk Jadwal)</option>
+                                <option value="master_exclude_jadwal" <?php echo $mode === 'master_exclude_jadwal' ? 'selected' : ''; ?>>
+                                    Master (Yang Tidak Ada di Jadwal)
+                                </option>
                             </select>
                         </div>
                         <div>

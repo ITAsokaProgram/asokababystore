@@ -31,7 +31,7 @@ try {
         'mode' => $mode_laporan
     ];
     $page = max(1, (int) ($_GET['page'] ?? 1));
-    $limit = 10;
+    $limit = 100;
     $offset = ($page - 1) * $limit;
     $sql_stores = "SELECT kd_store, nm_alias FROM kode_store WHERE display = 'on' ORDER BY nm_alias ASC";
     $res_stores = $conn->query($sql_stores);
@@ -62,7 +62,6 @@ try {
             WHERE 
                 1=1 
                 $where_store_master
-                -- AND m.ON_HAND1 <> 0  
                 AND m.plu NOT IN (
                     SELECT plu 
                     FROM koreksi 
@@ -73,6 +72,50 @@ try {
         $final_bind_vars = array_merge($final_bind_vars, $params_store);
         $final_bind_types .= $types_koreksi;
         $final_bind_vars = array_merge($final_bind_vars, $params_koreksi);
+        $cols_select = "
+            '$tgl_selesai' as tgl_jadwal,
+            m.plu, 
+            m.DESCP as deskripsi, 
+            IFNULL(m.SATUAN, 'PCS') as satuan, 
+            m.VENDOR as kode_supp, 
+            m.VENDOR as nama_supp, 
+            m.ON_HAND1 as stock,        
+            m.AVG_COST as avg_cost
+        ";
+        $order_by = "ORDER BY m.VENDOR ASC, m.plu ASC";
+    } elseif ($mode_laporan === 'master_exclude_jadwal') {
+        $sql_jadwal_exclude = "DATE(Tgl_schedule) BETWEEN ? AND ?";
+        $params_jadwal_ex = [$tgl_mulai, $tgl_selesai];
+        $types_jadwal_ex = "ss";
+        if ($kd_store !== 'all') {
+            $sql_jadwal_exclude .= " AND Kd_Store = ?";
+            $params_jadwal_ex[] = $kd_store;
+            $types_jadwal_ex .= "s";
+        }
+        $sql_core = "
+            FROM master m
+            WHERE 
+                1=1 
+                $where_store_master
+                -- Syarat 1: Belum ada di koreksi
+                AND m.plu NOT IN (
+                    SELECT plu 
+                    FROM koreksi 
+                    WHERE $sql_koreksi_filter
+                )
+                -- Syarat 2: Vendornya TIDAK ada di jadwal (Gaada di jadwal)
+                AND m.VENDOR NOT IN (
+                    SELECT kode_supp 
+                    FROM jadwal_so 
+                    WHERE $sql_jadwal_exclude
+                )
+        ";
+        $final_bind_types .= $types_store;
+        $final_bind_vars = array_merge($final_bind_vars, $params_store);
+        $final_bind_types .= $types_koreksi;
+        $final_bind_vars = array_merge($final_bind_vars, $params_koreksi);
+        $final_bind_types .= $types_jadwal_ex;
+        $final_bind_vars = array_merge($final_bind_vars, $params_jadwal_ex);
         $cols_select = "
             '$tgl_selesai' as tgl_jadwal,
             m.plu, 
@@ -103,7 +146,6 @@ try {
             WHERE 
                 1=1 
                 $where_store_master
-                -- AND m.ON_HAND1 <> 0  
                 AND m.plu NOT IN (
                     SELECT plu 
                     FROM koreksi 

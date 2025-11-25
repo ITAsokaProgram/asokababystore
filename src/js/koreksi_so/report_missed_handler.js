@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const paginationInfo = document.getElementById("pagination-info");
   const paginationLinks = document.getElementById("pagination-links");
   const exportExcelButton = document.getElementById("export-excel-btn");
+
   function formatRupiah(number) {
     if (isNaN(number) || number === null) return "0";
     return new Intl.NumberFormat("id-ID", {
@@ -15,15 +16,18 @@ document.addEventListener("DOMContentLoaded", () => {
       maximumFractionDigits: 0,
     }).format(number);
   }
+
   function formatNumber(number) {
     if (isNaN(number) || number === null) return "0";
     return new Intl.NumberFormat("id-ID").format(number);
   }
+
   function getUrlParams() {
     const params = new URLSearchParams(window.location.search);
     const now = new Date();
     const thisMonth15 = new Date(now.getFullYear(), now.getMonth(), 15);
     const lastMonth16 = new Date(now.getFullYear(), now.getMonth() - 1, 16);
+
     const formatDate = (date) => {
       const d = new Date(date);
       let month = "" + (d.getMonth() + 1);
@@ -33,15 +37,18 @@ document.addEventListener("DOMContentLoaded", () => {
       if (day.length < 2) day = "0" + day;
       return [year, month, day].join("-");
     };
+
     const inputMulai = document.getElementById("tgl_mulai");
     const inputSelesai = document.getElementById("tgl_selesai");
     const inputMode = document.getElementById("mode");
+
     const defaultStart = inputMulai
       ? inputMulai.value
       : formatDate(lastMonth16);
     const defaultEnd = inputSelesai
       ? inputSelesai.value
       : formatDate(thisMonth15);
+
     return {
       tgl_mulai: params.get("tgl_mulai") || defaultStart,
       tgl_selesai: params.get("tgl_selesai") || defaultEnd,
@@ -50,15 +57,19 @@ document.addEventListener("DOMContentLoaded", () => {
       page: parseInt(params.get("page") || "1", 10),
     };
   }
+
   function build_pagination_url(newPage) {
     const params = new URLSearchParams(window.location.search);
     params.set("page", newPage);
     return "?" + params.toString();
   }
+
   async function loadData() {
     const params = getUrlParams();
     const isPagination = params.page > 1;
+
     setLoadingState(true, false, isPagination);
+
     const queryString = new URLSearchParams({
       tgl_mulai: params.tgl_mulai,
       tgl_selesai: params.tgl_selesai,
@@ -66,26 +77,33 @@ document.addEventListener("DOMContentLoaded", () => {
       mode: params.mode,
       page: params.page,
     }).toString();
+
     try {
       const response = await fetch(
         `/src/api/koreksi_so/get_missed_items.php?${queryString}`
       );
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
+
       const data = await response.json();
+
       if (data.error) throw new Error(data.error);
+
       if (data.stores && filterSelectStore.options.length <= 1) {
         populateStoreFilter(data.stores, params.kd_store);
       } else {
         filterSelectStore.value = params.kd_store;
       }
+
       const modeEl = document.getElementById("mode");
       if (modeEl && params.mode) {
         modeEl.value = params.mode;
       }
+
       if (data.summary) {
         summaryQty.textContent = formatNumber(data.summary.total_items);
       }
+
       renderTable(data.tabel_data, params.mode);
       renderPagination(data.pagination);
     } catch (error) {
@@ -95,6 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
       setLoadingState(false);
     }
   }
+
   function setLoadingState(
     isLoading,
     isExporting = false,
@@ -122,9 +141,11 @@ document.addEventListener("DOMContentLoaded", () => {
           '<i class="fas fa-file-excel"></i> Export Excel';
     }
   }
+
   function showTableError(message) {
     tableBody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-red-600"><i class="fas fa-exclamation-triangle mb-2"></i><p>${message}</p></td></tr>`;
   }
+
   function populateStoreFilter(stores, selectedStore) {
     filterSelectStore.innerHTML = '<option value="all">Seluruh Store</option>';
     stores.forEach((store) => {
@@ -136,18 +157,21 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     filterSelectStore.value = selectedStore;
   }
+
   function renderTable(tabel_data, mode) {
     if (!tabel_data || tabel_data.length === 0) {
       tableBody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-gray-500"><i class="fas fa-check-circle fa-lg mb-2"></i><p>Tidak ada item missed (Semua aman atau Stok 0).</p></td></tr>`;
       return;
     }
+
     let htmlRows = "";
     let current_supp = null;
     let current_tanggal = null;
     let item_counter = 1;
+
     const buildTanggalHeader = (tanggal) => {
       let text = `Tanggal Jadwal: ${tanggal}`;
-      if (mode === "non_jadwal") {
+      if (mode === "non_jadwal" || mode === "master_exclude_jadwal") {
         text = `Cut Off Periode (Mode Tanpa Jadwal): Sampai ${tanggal}`;
       }
       return `
@@ -158,6 +182,7 @@ document.addEventListener("DOMContentLoaded", () => {
         </tr>
     `;
     };
+
     const buildSupplierHeader = (code, name) => `
         <tr class="bg-white border-b border-gray-100">
             <td colspan="6" class="px-4 py-2 font-semibold text-blue-800 pl-8 bg-blue-50">
@@ -167,18 +192,22 @@ document.addEventListener("DOMContentLoaded", () => {
             </td>
         </tr>
     `;
+
     tabel_data.forEach((row) => {
       if (row.tgl_jadwal !== current_tanggal) {
         current_tanggal = row.tgl_jadwal;
         current_supp = null;
         htmlRows += buildTanggalHeader(current_tanggal);
       }
+
       if (row.kode_supp !== current_supp) {
         current_supp = row.kode_supp;
         htmlRows += buildSupplierHeader(row.kode_supp, row.nama_supp);
         item_counter = 1;
       }
+
       const satuanDisplay = row.satuan ? row.satuan : "PCS";
+
       htmlRows += `
                 <tr class="hover:bg-gray-50 transition-colors border-b border-gray-100">
                     <td class="px-4 py-2 text-gray-600 w-12 pl-12  border-r border-gray-50">${item_counter++}</td>
@@ -196,23 +225,30 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tr>
             `;
     });
+
     tableBody.innerHTML = htmlRows;
   }
+
   function renderPagination(pagination) {
     if (!pagination) {
       paginationInfo.textContent = "";
       paginationLinks.innerHTML = "";
       return;
     }
+
     const { current_page, total_pages, total_rows, limit, offset } = pagination;
+
     if (total_rows === 0) {
       paginationInfo.textContent = "Menampilkan 0 dari 0 data";
       paginationLinks.innerHTML = "";
       return;
     }
+
     const start_row = offset + 1;
     const end_row = Math.min(offset + limit, total_rows);
+
     paginationInfo.textContent = `Menampilkan ${start_row} - ${end_row} dari ${total_rows} data`;
+
     let linksHtml = "";
     linksHtml += `
       <a href="${
@@ -224,8 +260,10 @@ document.addEventListener("DOMContentLoaded", () => {
           <i class="fas fa-chevron-left"></i>
       </a>
     `;
+
     const pages_to_show = [];
     const max_pages_around = 2;
+
     for (let i = 1; i <= total_pages; i++) {
       if (
         i === 1 ||
@@ -236,6 +274,7 @@ document.addEventListener("DOMContentLoaded", () => {
         pages_to_show.push(i);
       }
     }
+
     let last_page = 0;
     for (const page_num of pages_to_show) {
       if (last_page !== 0 && page_num > last_page + 1) {
@@ -251,6 +290,7 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
       last_page = page_num;
     }
+
     linksHtml += `
       <a href="${
         current_page < total_pages
@@ -263,8 +303,10 @@ document.addEventListener("DOMContentLoaded", () => {
           <i class="fas fa-chevron-right"></i>
       </a>
     `;
+
     paginationLinks.innerHTML = linksHtml;
   }
+
   async function fetchExportData() {
     const params = getUrlParams();
     const qs = new URLSearchParams({ ...params, export: "true" }).toString();
@@ -272,23 +314,32 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!res.ok) throw new Error("Network response was not ok");
     return await res.json();
   }
+
   async function exportToExcel() {
     try {
       setLoadingState(true, true);
       const data = await fetchExportData();
+
       if (!data.tabel_data || data.tabel_data.length === 0) {
         Swal.fire("Info", "Tidak ada data untuk diexport", "info");
         return;
       }
+
       const rows = [];
-      const modeText =
-        data.params.mode === "non_jadwal" ? "(Mode Master Tanpa Jadwal)" : "";
+      let modeText = "";
+      if (data.params.mode === "non_jadwal") {
+        modeText = "(Mode Semua Master Tanpa Jadwal)";
+      } else if (data.params.mode === "master_exclude_jadwal") {
+        modeText = "(Mode Master YANG TIDAK ADA di Jadwal)";
+      }
+
       rows.push(["Laporan Barang Belum Scan " + modeText]);
       rows.push([
         "Periode",
         `${data.params.tgl_mulai} s/d ${data.params.tgl_selesai}`,
       ]);
       rows.push([]);
+
       const headers = [
         "Kode Supp",
         "Nama Supp",
@@ -298,8 +349,10 @@ document.addEventListener("DOMContentLoaded", () => {
         "Stock Komp",
         "Harga Beli",
       ];
+
       let current_tanggal = null;
       let current_supp = null;
+
       data.tabel_data.forEach((item) => {
         if (item.tgl_jadwal !== current_tanggal) {
           current_tanggal = item.tgl_jadwal;
@@ -307,6 +360,7 @@ document.addEventListener("DOMContentLoaded", () => {
           rows.push([`Tanggal: ${current_tanggal}`]);
           rows.push(headers);
         }
+
         rows.push([
           item.kode_supp,
           item.nama_supp,
@@ -317,6 +371,7 @@ document.addEventListener("DOMContentLoaded", () => {
           parseFloat(item.avg_cost),
         ]);
       });
+
       const ws = XLSX.utils.aoa_to_sheet(rows);
       ws["!cols"] = [
         { wch: 10 },
@@ -337,8 +392,10 @@ document.addEventListener("DOMContentLoaded", () => {
       setLoadingState(false, true);
     }
   }
+
   if (exportExcelButton)
     exportExcelButton.addEventListener("click", exportToExcel);
+
   if (filterForm) {
     filterForm.addEventListener("submit", (e) => {
       e.preventDefault();
@@ -349,5 +406,6 @@ document.addEventListener("DOMContentLoaded", () => {
       loadData();
     });
   }
+
   loadData();
 });
