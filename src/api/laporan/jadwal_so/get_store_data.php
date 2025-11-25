@@ -7,7 +7,7 @@ try {
     if (!isset($conn) || $conn->connect_error) {
         throw new Exception("Koneksi database gagal");
     }
-    $sql = "SELECT Kd_Store, Nm_Store, Nm_Alias FROM kode_store WHERE display = 'on' ORDER BY Kd_Store ASC";
+    $sql = "SELECT Kd_Store, Nm_Store, Nm_Alias FROM kode_store WHERE display = 'on' ORDER BY nm_alias ASC";
     $result = $conn->query($sql);
     if (!$result) {
         throw new Exception("Query Error: " . $conn->error . " (SQL: $sql)");

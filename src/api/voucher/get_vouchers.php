@@ -40,7 +40,7 @@ try {
     $response['pagination']['current_page'] = $page;
     $offset = ($page - 1) * $limit;
     $response['pagination']['offset'] = $offset;
-    $sql_stores = "SELECT kd_store, nm_alias FROM kode_store WHERE display = 'on' ORDER BY kd_store ASC";
+    $sql_stores = "SELECT kd_store, nm_alias FROM kode_store WHERE display = 'on' ORDER BY Nm_Alias ASC";
     $result_stores = $conn->query($sql_stores);
     if ($result_stores) {
         while ($row = $result_stores->fetch_assoc()) {

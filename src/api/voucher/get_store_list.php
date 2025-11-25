@@ -12,7 +12,7 @@ try {
     // Query mengambil data store
     // Pastikan nama kolom sesuai dengan database Anda (Kd_Store, Nm_Store, Nm_Alias)
     // Tambahkan WHERE display = 'on' jika Anda ingin memfilter toko yang aktif saja
-    $sql = "SELECT Kd_Store, Nm_Store, Nm_Alias FROM kode_store WHERE display = 'on' ORDER BY Kd_Store ASC";
+    $sql = "SELECT Kd_Store, Nm_Store, Nm_Alias FROM kode_store WHERE display = 'on' ORDER BY Nm_Alias ASC";
     $result = $conn->query($sql);
 
     $data = [];

@@ -34,7 +34,7 @@ try {
     $response['pagination']['current_page'] = $page;
     $response['pagination']['limit'] = $limit;
     $response['pagination']['offset'] = $offset;
-    $sql_stores = "SELECT kd_store, nm_alias FROM kode_store WHERE display = 'on' ORDER BY kd_store ASC";
+    $sql_stores = "SELECT kd_store, nm_alias FROM kode_store WHERE display = 'on' ORDER BY nm_alias ASC";
     $result_stores = $conn->query($sql_stores);
     if ($result_stores) {
         while ($row = $result_stores->fetch_assoc()) {

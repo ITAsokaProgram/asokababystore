@@ -83,7 +83,7 @@ if ($page < 1) {
                 </div>
 
                 <div class="filter-card-simple bg-white p-4 rounded-2xl mb-4 shadow-sm">
-                    <form id="filter-form" class="grid grid-cols-1 md:grid-cols-5 gap-3 items-end" method="GET">
+                    <form id="filter-form" class="flex justify-around gap-4 flex-wrap" method="GET">
                         <div>
                             <label for="tgl_mulai" class="block text-xs font-semibold text-gray-700 mb-2">
                                 <i class="fas fa-calendar-alt text-pink-600 mr-1"></i> Dari Tanggal
