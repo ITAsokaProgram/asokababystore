@@ -97,13 +97,13 @@ try {
             WHERE 
                 1=1 
                 $where_store_master
-                -- Syarat 1: Belum ada di koreksi
+                -- belum ada di koreksi
                 AND m.plu NOT IN (
                     SELECT plu 
                     FROM koreksi 
                     WHERE $sql_koreksi_filter
                 )
-                -- Syarat 2: Vendornya TIDAK ada di jadwal (Gaada di jadwal)
+                -- vendor nya gaada di jadwal
                 AND m.VENDOR NOT IN (
                     SELECT kode_supp 
                     FROM jadwal_so 

@@ -7,7 +7,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const paginationInfo = document.getElementById("pagination-info");
   const paginationLinks = document.getElementById("pagination-links");
   const exportExcelButton = document.getElementById("export-excel-btn");
-
   function formatRupiah(number) {
     if (isNaN(number) || number === null) return "0";
     return new Intl.NumberFormat("id-ID", {
@@ -16,18 +15,15 @@ document.addEventListener("DOMContentLoaded", () => {
       maximumFractionDigits: 0,
     }).format(number);
   }
-
   function formatNumber(number) {
     if (isNaN(number) || number === null) return "0";
     return new Intl.NumberFormat("id-ID").format(number);
   }
-
   function getUrlParams() {
     const params = new URLSearchParams(window.location.search);
     const now = new Date();
     const thisMonth15 = new Date(now.getFullYear(), now.getMonth(), 15);
     const lastMonth16 = new Date(now.getFullYear(), now.getMonth() - 1, 16);
-
     const formatDate = (date) => {
       const d = new Date(date);
       let month = "" + (d.getMonth() + 1);
@@ -37,18 +33,15 @@ document.addEventListener("DOMContentLoaded", () => {
       if (day.length < 2) day = "0" + day;
       return [year, month, day].join("-");
     };
-
     const inputMulai = document.getElementById("tgl_mulai");
     const inputSelesai = document.getElementById("tgl_selesai");
     const inputMode = document.getElementById("mode");
-
     const defaultStart = inputMulai
       ? inputMulai.value
       : formatDate(lastMonth16);
     const defaultEnd = inputSelesai
       ? inputSelesai.value
       : formatDate(thisMonth15);
-
     return {
       tgl_mulai: params.get("tgl_mulai") || defaultStart,
       tgl_selesai: params.get("tgl_selesai") || defaultEnd,
@@ -57,19 +50,15 @@ document.addEventListener("DOMContentLoaded", () => {
       page: parseInt(params.get("page") || "1", 10),
     };
   }
-
   function build_pagination_url(newPage) {
     const params = new URLSearchParams(window.location.search);
     params.set("page", newPage);
     return "?" + params.toString();
   }
-
   async function loadData() {
     const params = getUrlParams();
     const isPagination = params.page > 1;
-
     setLoadingState(true, false, isPagination);
-
     const queryString = new URLSearchParams({
       tgl_mulai: params.tgl_mulai,
       tgl_selesai: params.tgl_selesai,
@@ -77,33 +66,26 @@ document.addEventListener("DOMContentLoaded", () => {
       mode: params.mode,
       page: params.page,
     }).toString();
-
     try {
       const response = await fetch(
         `/src/api/koreksi_so/get_missed_items.php?${queryString}`
       );
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
-
       const data = await response.json();
-
       if (data.error) throw new Error(data.error);
-
       if (data.stores && filterSelectStore.options.length <= 1) {
         populateStoreFilter(data.stores, params.kd_store);
       } else {
         filterSelectStore.value = params.kd_store;
       }
-
       const modeEl = document.getElementById("mode");
       if (modeEl && params.mode) {
         modeEl.value = params.mode;
       }
-
       if (data.summary) {
         summaryQty.textContent = formatNumber(data.summary.total_items);
       }
-
       renderTable(data.tabel_data, params.mode);
       renderPagination(data.pagination);
     } catch (error) {
@@ -113,7 +95,6 @@ document.addEventListener("DOMContentLoaded", () => {
       setLoadingState(false);
     }
   }
-
   function setLoadingState(
     isLoading,
     isExporting = false,
@@ -141,11 +122,9 @@ document.addEventListener("DOMContentLoaded", () => {
           '<i class="fas fa-file-excel"></i> Export Excel';
     }
   }
-
   function showTableError(message) {
     tableBody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-red-600"><i class="fas fa-exclamation-triangle mb-2"></i><p>${message}</p></td></tr>`;
   }
-
   function populateStoreFilter(stores, selectedStore) {
     filterSelectStore.innerHTML = '<option value="all">Seluruh Store</option>';
     stores.forEach((store) => {
@@ -157,98 +136,125 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     filterSelectStore.value = selectedStore;
   }
-
   function renderTable(tabel_data, mode) {
     if (!tabel_data || tabel_data.length === 0) {
       tableBody.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-gray-500"><i class="fas fa-check-circle fa-lg mb-2"></i><p>Tidak ada item missed (Semua aman atau Stok 0).</p></td></tr>`;
       return;
     }
-
+    const groupedData = {};
+    tabel_data.forEach((item) => {
+      const key = `${item.tgl_jadwal}_${item.kode_supp}`;
+      if (!groupedData[key]) {
+        groupedData[key] = {
+          tgl_jadwal: item.tgl_jadwal,
+          kode_supp: item.kode_supp,
+          nama_supp: item.nama_supp,
+          items: [],
+          total_nilai: 0,
+        };
+      }
+      groupedData[key].items.push(item);
+      const val =
+        (parseFloat(item.stock) || 0) * (parseFloat(item.avg_cost) || 0);
+      groupedData[key].total_nilai += val;
+    });
     let htmlRows = "";
-    let current_supp = null;
-    let current_tanggal = null;
-    let item_counter = 1;
-
-    const buildTanggalHeader = (tanggal) => {
-      let text = `Tanggal Jadwal: ${tanggal}`;
-      if (mode === "non_jadwal" || mode === "master_exclude_jadwal") {
-        text = `Cut Off Periode (Mode Tanpa Jadwal): Sampai ${tanggal}`;
-      }
-      return `
-        <tr class="bg-gray-100 border-b border-gray-200">
-            <td colspan="6" class="px-4 py-2 font-bold text-gray-700">
-                <i class="fas fa-calendar-day text-pink-600 mr-2"></i> ${text}
-            </td>
-        </tr>
-    `;
-    };
-
-    const buildSupplierHeader = (code, name) => `
-        <tr class="bg-white border-b border-gray-100">
-            <td colspan="6" class="px-4 py-2 font-semibold text-blue-800 pl-8 bg-blue-50">
-                <i class="fas fa-truck text-blue-500 mr-2"></i> ${code} - ${
-      name || "Unknown Vendor"
-    }
-            </td>
-        </tr>
-    `;
-
-    tabel_data.forEach((row) => {
-      if (row.tgl_jadwal !== current_tanggal) {
-        current_tanggal = row.tgl_jadwal;
-        current_supp = null;
-        htmlRows += buildTanggalHeader(current_tanggal);
-      }
-
-      if (row.kode_supp !== current_supp) {
-        current_supp = row.kode_supp;
-        htmlRows += buildSupplierHeader(row.kode_supp, row.nama_supp);
-        item_counter = 1;
-      }
-
-      const satuanDisplay = row.satuan ? row.satuan : "PCS";
-
+    let groupIndex = 1;
+    for (const key in groupedData) {
+      const group = groupedData[key];
+      const rowId = `detail-${group.kode_supp}-${groupIndex}`;
+      const totalItems = group.items.length;
       htmlRows += `
-                <tr class="hover:bg-gray-50 transition-colors border-b border-gray-100">
-                    <td class="px-4 py-2 text-gray-600 w-12 pl-12  border-r border-gray-50">${item_counter++}</td>
-                    <td class="px-4 py-2 font-medium text-gray-900">${
-                      row.plu
-                    }</td>
-                    <td class="px-4 py-2 text-gray-700">${row.deskripsi}</td>
-                    <td class="px-4 py-2 text-gray-600 ">${satuanDisplay}</td>
-                    <td class="px-4 py-2  font-mono text-red-600 font-bold">${formatNumber(
-                      row.stock
-                    )}</td>
-                    <td class="px-4 py-2  font-mono text-gray-800">${formatRupiah(
-                      row.avg_cost
-                    )}</td>
+                <tr class="hover:bg-pink-50 transition-colors border-b border-gray-200 cursor-pointer" onclick="document.getElementById('${rowId}').classList.toggle('hidden');">
+                    <td class="px-4 py-3 font-semibold text-gray-600">${groupIndex}</td>
+                    <td class="px-4 py-3">
+                        <div class="flex flex-col">
+                            <span class="font-bold text-gray-800">${
+                              group.nama_supp || "Unknown"
+                            }</span>
+                            <span class="text-xs text-gray-500 font-mono">${
+                              group.kode_supp
+                            }</span>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 text-gray-700">
+                        <i class="fas fa-calendar-day text-pink-600 mr-1"></i> ${
+                          group.tgl_jadwal
+                        }
+                    </td>
+                    <td class="px-4 py-3 font-bold text-blue-600">
+                        ${formatNumber(totalItems)} Items
+                    </td>
+                    <td class="px-4 py-3 font-mono text-gray-700">
+                        Rp ${formatRupiah(group.total_nilai)}
+                    </td>
+                    <td class="px-4 py-3 text-center text-gray-400">
+                        <i class="fas fa-chevron-down"></i>
+                    </td>
                 </tr>
             `;
-    });
-
+      htmlRows += `
+                <tr id="${rowId}" class="hidden bg-gray-50 shadow-inner">
+                    <td colspan="6" class="p-0 border-b border-gray-200">
+                        <div class="p-4 pl-12">
+                            <table class="w-full text-sm text-left border border-gray-200 rounded-lg bg-white overflow-hidden">
+                                <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
+                                    <tr>
+                                        <th class="px-3 py-2">PLU</th>
+                                        <th class="px-3 py-2">Deskripsi</th>
+                                        <th class="px-3 py-2">Satuan</th>
+                                        <th class="px-3 py-2 text-right">Stock</th>
+                                        <th class="px-3 py-2" style="text-align: right;">Harga Beli</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+            `;
+      group.items.forEach((item) => {
+        const satuanDisplay = item.satuan ? item.satuan : "PCS";
+        htmlRows += `
+                    <tr class="hover:bg-yellow-50">
+                        <td class="px-3 py-2 font-mono text-gray-700 font-medium">${
+                          item.plu
+                        }</td>
+                        <td class="px-3 py-2 text-gray-600">${
+                          item.deskripsi
+                        }</td>
+                        <td class="px-3 py-2 text-gray-500 text-xs">${satuanDisplay}</td>
+                        <td class="px-3 py-2 font-bold text-red-600">${formatNumber(
+                          item.stock
+                        )}</td>
+                        <td class="px-3 py-2 text-right font-mono">${formatRupiah(
+                          item.avg_cost
+                        )}</td>
+                    </tr>
+                `;
+      });
+      htmlRows += `
+                                </tbody>
+                            </table>
+                        </div>
+                    </td>
+                </tr>
+            `;
+      groupIndex++;
+    }
     tableBody.innerHTML = htmlRows;
   }
-
   function renderPagination(pagination) {
     if (!pagination) {
       paginationInfo.textContent = "";
       paginationLinks.innerHTML = "";
       return;
     }
-
     const { current_page, total_pages, total_rows, limit, offset } = pagination;
-
     if (total_rows === 0) {
       paginationInfo.textContent = "Menampilkan 0 dari 0 data";
       paginationLinks.innerHTML = "";
       return;
     }
-
     const start_row = offset + 1;
     const end_row = Math.min(offset + limit, total_rows);
-
-    paginationInfo.textContent = `Menampilkan ${start_row} - ${end_row} dari ${total_rows} data`;
-
+    paginationInfo.textContent = `Menampilkan ${start_row} - ${end_row} dari ${total_rows} data (Item Level)`;
     let linksHtml = "";
     linksHtml += `
       <a href="${
@@ -260,10 +266,8 @@ document.addEventListener("DOMContentLoaded", () => {
           <i class="fas fa-chevron-left"></i>
       </a>
     `;
-
     const pages_to_show = [];
     const max_pages_around = 2;
-
     for (let i = 1; i <= total_pages; i++) {
       if (
         i === 1 ||
@@ -274,7 +278,6 @@ document.addEventListener("DOMContentLoaded", () => {
         pages_to_show.push(i);
       }
     }
-
     let last_page = 0;
     for (const page_num of pages_to_show) {
       if (last_page !== 0 && page_num > last_page + 1) {
@@ -290,7 +293,6 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
       last_page = page_num;
     }
-
     linksHtml += `
       <a href="${
         current_page < total_pages
@@ -303,10 +305,8 @@ document.addEventListener("DOMContentLoaded", () => {
           <i class="fas fa-chevron-right"></i>
       </a>
     `;
-
     paginationLinks.innerHTML = linksHtml;
   }
-
   async function fetchExportData() {
     const params = getUrlParams();
     const qs = new URLSearchParams({ ...params, export: "true" }).toString();
@@ -314,17 +314,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!res.ok) throw new Error("Network response was not ok");
     return await res.json();
   }
-
   async function exportToExcel() {
     try {
       setLoadingState(true, true);
       const data = await fetchExportData();
-
       if (!data.tabel_data || data.tabel_data.length === 0) {
         Swal.fire("Info", "Tidak ada data untuk diexport", "info");
         return;
       }
-
       const rows = [];
       let modeText = "";
       if (data.params.mode === "non_jadwal") {
@@ -332,14 +329,12 @@ document.addEventListener("DOMContentLoaded", () => {
       } else if (data.params.mode === "master_exclude_jadwal") {
         modeText = "(Mode Master YANG TIDAK ADA di Jadwal)";
       }
-
       rows.push(["Laporan Barang Belum Scan " + modeText]);
       rows.push([
         "Periode",
         `${data.params.tgl_mulai} s/d ${data.params.tgl_selesai}`,
       ]);
       rows.push([]);
-
       const headers = [
         "Kode Supp",
         "Nama Supp",
@@ -349,18 +344,13 @@ document.addEventListener("DOMContentLoaded", () => {
         "Stock Komp",
         "Harga Beli",
       ];
-
       let current_tanggal = null;
-      let current_supp = null;
-
       data.tabel_data.forEach((item) => {
         if (item.tgl_jadwal !== current_tanggal) {
           current_tanggal = item.tgl_jadwal;
-          current_supp = null;
           rows.push([`Tanggal: ${current_tanggal}`]);
           rows.push(headers);
         }
-
         rows.push([
           item.kode_supp,
           item.nama_supp,
@@ -371,16 +361,29 @@ document.addEventListener("DOMContentLoaded", () => {
           parseFloat(item.avg_cost),
         ]);
       });
-
       const ws = XLSX.utils.aoa_to_sheet(rows);
       ws["!cols"] = [
-        { wch: 10 },
-        { wch: 20 },
-        { wch: 15 },
-        { wch: 40 },
-        { wch: 8 },
-        { wch: 10 },
-        { wch: 15 },
+        {
+          wch: 10,
+        },
+        {
+          wch: 20,
+        },
+        {
+          wch: 15,
+        },
+        {
+          wch: 40,
+        },
+        {
+          wch: 8,
+        },
+        {
+          wch: 10,
+        },
+        {
+          wch: 15,
+        },
       ];
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Missed Items");
@@ -392,10 +395,8 @@ document.addEventListener("DOMContentLoaded", () => {
       setLoadingState(false, true);
     }
   }
-
   if (exportExcelButton)
     exportExcelButton.addEventListener("click", exportToExcel);
-
   if (filterForm) {
     filterForm.addEventListener("submit", (e) => {
       e.preventDefault();
@@ -406,6 +407,5 @@ document.addEventListener("DOMContentLoaded", () => {
       loadData();
     });
   }
-
   loadData();
 });

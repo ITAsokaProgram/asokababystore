@@ -110,9 +110,7 @@ if ($page < 1) {
                                     SO</option>
                                 <option value="non_jadwal" <?php echo $mode === 'non_jadwal' ? 'selected' : ''; ?>>Semua
                                     Master (Termasuk Jadwal)</option>
-                                <option value="master_exclude_jadwal" <?php echo $mode === 'master_exclude_jadwal' ? 'selected' : ''; ?>>
-                                    Master (Yang Tidak Ada di Jadwal)
-                                </option>
+                                <option value="master_exclude_jadwal" <?php echo $mode === 'master_exclude_jadwal' ? 'selected' : ''; ?>>Master (Yang Tidak Ada di Jadwal)</option>
                             </select>
                         </div>
                         <div>
@@ -148,16 +146,17 @@ if ($page < 1) {
                             </button>
                         </div>
                     </div>
+
                     <div class="table-container overflow-x-auto">
                         <table class="table-modern w-full text-sm text-left" id="missed-item-table">
                             <thead class="bg-gray-50 text-gray-700 uppercase">
                                 <tr>
-                                    <th class="px-4 py-3 rounded-tl-lg">No</th>
-                                    <th class="px-4 py-3">PLU</th>
-                                    <th class="px-4 py-3">Deskripsi Item</th>
-                                    <th class="px-4 py-3">Satuan</th>
-                                    <th class="px-4 py-3 text-right">Stock Komp</th>
-                                    <th class="px-4 py-3 text-right rounded-tr-lg">Harga Beli</th>
+                                    <th class="px-4 py-3 rounded-tl-lg w-16">No</th>
+                                    <th class="px-4 py-3">Detail Supplier</th>
+                                    <th class="px-4 py-3">Tanggal Jadwal/Cutoff</th>
+                                    <th class="px-4 py-3 text-right">Total Item</th>
+                                    <th class="px-4 py-3 text-right">Total Nilai (Est)</th>
+                                    <th class="px-4 py-3 rounded-tr-lg text-center w-16">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="missed-item-table-body" class="divide-y divide-gray-200">
@@ -175,8 +174,7 @@ if ($page < 1) {
 
                     <div id="pagination-container" class="flex justify-between items-center mt-4">
                         <span id="pagination-info" class="text-sm text-gray-600"></span>
-                        <div id="pagination-links" class="flex items-center gap-2">
-                        </div>
+                        <div id="pagination-links" class="flex items-center gap-2"></div>
                     </div>
                 </div>
 
