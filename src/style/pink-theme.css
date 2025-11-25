@@ -131,7 +131,7 @@ body {
 .icon-wrapper {
   width: 48px;
   height: 48px;
-  border-radius: 0.75rem; /* Adjusted radius */
+  border-radius: 0.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -972,22 +972,18 @@ body {
   background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
 }
 
-/* CATATAN: Bagian 'selected-row' di bawah ini JANGAN diubah warnanya 
-   jika Anda ingin tabel UTAMA (atas) tetap Pink saat diklik. 
-*/
 .table-modern tbody tr.selected-row {
   background: linear-gradient(
     90deg,
-    rgba(236, 72, 153, 0.08) 0%,
-    rgba(244, 63, 94, 0.08) 100%
+    rgba(219, 39, 119, 0.25) 0%,
+    rgba(225, 29, 72, 0.25) 100%
   );
-  border-left: 4px solid #ec4899;
+  border-left: 4px solid #db2777;
 }
 
 .table-modern tbody tr.selected-row td:first-child {
   padding-left: calc(0.5rem - 4px);
 }
-/* Loading State untuk Detail */
 .detail-loading {
   display: flex;
   flex-direction: column;
@@ -1009,7 +1005,6 @@ body {
   font-weight: 500;
 }
 
-/* Responsive Adjustments */
 @media (max-width: 768px) {
   .table-scroll-container {
     max-height: 200px;
@@ -1053,7 +1048,6 @@ body {
   background: linear-gradient(135deg, #db2777 0%, #e11d48 100%);
 }
 
-/* Sticky Header untuk Detail Table */
 .detail-table-scroll-container .table-modern thead {
   position: sticky;
   top: 0;

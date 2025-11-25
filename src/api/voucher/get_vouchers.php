@@ -22,7 +22,7 @@ $response = [
         'total_pages' => 1,
         'total_rows' => 0,
         'offset' => 0,
-        'limit' => 10,
+        'limit' => 100,
     ],
     'error' => null,
 ];
@@ -35,7 +35,7 @@ try {
     $page = (int) ($_GET['page'] ?? 1);
     if ($page < 1)
         $page = 1;
-    $limit = 10;
+    $limit = 100;
     $response['pagination']['limit'] = $limit;
     $response['pagination']['current_page'] = $page;
     $offset = ($page - 1) * $limit;
