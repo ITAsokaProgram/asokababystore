@@ -124,12 +124,11 @@ if ($page < 1) {
                                     <th>Cabang</th>
                                     <th class="text-right">Harga Jual (DPP)</th>
                                     <th class="text-right">PPN</th>
-                                    <th class="text-center">Status</th>
                                 </tr>
                             </thead>
                             <tbody id="coretax-table-body">
                                 <tr>
-                                    <td colspan="10" class="text-center p-8">
+                                    <td colspan="9" class="text-center p-8">
                                         <div class="spinner-simple"></div>
                                         <p class="mt-3 text-gray-500 font-medium">Memuat data...</p>
                                     </td>

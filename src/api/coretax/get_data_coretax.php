@@ -85,7 +85,6 @@ try {
             fc.tgl_faktur_pajak,
             fc.masa_pajak,
             fc.tahun,
-            fc.status_faktur,
             fc.harga_jual,
             fc.ppn,
             fc.kode_store,

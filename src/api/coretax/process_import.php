@@ -74,9 +74,9 @@ try {
     $sql = "INSERT INTO ff_coretax (
         kode_store, npwp_penjual, nama_penjual, nomor_faktur_pajak, tgl_faktur_pajak, 
         masa_pajak, tahun, masa_pajak_pengkreditkan, tahun_pajak_pengkreditan, 
-        status_faktur, harga_jual, dpp_nilai_lain, ppn, ppnbm, 
+        harga_jual, dpp_nilai_lain, ppn, ppnbm, 
         perekam, nomor_sp2d, valid, dilaporkan, dilaporkan_oleh_penjual
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
     if (!$stmt)
         throw new Exception("DB Error: " . $conn->error);
@@ -86,7 +86,7 @@ try {
         $raw_npwp = preg_replace('/[^0-9]/', '', $row['A']);
         $npwp = formatNPWP($raw_npwp);
         $nama_penjual = $row['B'];
-        $no_faktur = trim($row['C']);
+        $no_faktur = formatFakturPajak(trim($row['C']));
         if (empty($no_faktur))
             continue;
         $tgl_faktur = NULL;
@@ -102,7 +102,6 @@ try {
         $tahun = (int) $row['F'];
         $masa_kredit = $row['G'];
         $tahun_kredit = (int) $row['H'];
-        $status = $row['I'];
         $harga_jual = (double) $row['J'];
         $dpp_lain = (double) $row['K'];
         $ppn = (double) $row['L'];
@@ -113,7 +112,7 @@ try {
         $dilaporkan = is_truthy($row['Q']);
         $dilapor_oleh = is_truthy($row['R']);
         $stmt->bind_param(
-            "ssssssisisddddssiii",
+            "ssssssisiddddssiii",
             $kode_store_input,
             $npwp,
             $nama_penjual,
@@ -123,7 +122,6 @@ try {
             $tahun,
             $masa_kredit,
             $tahun_kredit,
-            $status,
             $harga_jual,
             $dpp_lain,
             $ppn,
@@ -186,5 +184,23 @@ function formatNPWP($digits)
         return substr($digits, 0, 2) . '.' . substr($digits, 2, 3) . '.' . substr($digits, 5, 3) . '.' . substr($digits, 8, 1) . '-' . substr($digits, 9, 3) . '.' . substr($digits, 12, 4);
     }
     return $digits;
+}
+function formatFakturPajak($str)
+{
+    $nums = preg_replace('/[^0-9]/', '', $str);
+    if (strlen($nums) == 17) {
+        return substr($nums, 0, 3) . '.' .
+            substr($nums, 3, 1) . '-' .
+            substr($nums, 4, 2) . '.' .
+            substr($nums, 6, 3) . '.' .
+            substr($nums, 9);
+    }
+    if (strlen($nums) == 16) {
+        return substr($nums, 0, 3) . '.' .
+            substr($nums, 3, 1) . '-' .
+            substr($nums, 4, 2) . '.' .
+            substr($nums, 6);
+    }
+    return $str;
 }
 ?>
