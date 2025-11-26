@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("formImport");
   const resultContainer = document.getElementById("result-container");
   const resultContent = document.getElementById("result-content");
+  const storeSelect = document.getElementById("kode_store");
   ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
     dropZone.addEventListener(eventName, preventDefaults, false);
   });
@@ -44,12 +45,17 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+    if (!storeSelect.value) {
+      Swal.fire("Perhatian", "Pilih Cabang/Store terlebih dahulu", "warning");
+      return;
+    }
     if (!fileInput.files.length) {
       Swal.fire("Perhatian", "Pilih file Excel terlebih dahulu", "warning");
       return;
     }
     const formData = new FormData();
     formData.append("file_excel", fileInput.files[0]);
+    formData.append("kode_store", storeSelect.value);
     const btn = document.getElementById("btn-submit");
     const originalHtml = btn.innerHTML;
     btn.disabled = true;

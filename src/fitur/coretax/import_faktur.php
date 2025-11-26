@@ -1,6 +1,9 @@
 <?php
 session_start();
 include '../../../aa_kon_sett.php';
+
+$query_store = "SELECT Kd_Store, Nm_Alias, Nm_NPWP FROM kode_store WHERE display = 'on' ORDER BY nm_alias ASC";
+$result_store = $conn->query($query_store);
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -57,6 +60,24 @@ include '../../../aa_kon_sett.php';
                 <div class="bg-white rounded-2xl shadow-lg border border-pink-100 overflow-hidden">
                     <div class="p-6">
                         <form id="formImport" enctype="multipart/form-data">
+
+                            <div class="mb-6">
+                                <label for="kode_store" class="block text-sm font-semibold text-gray-700 mb-2">Pilih
+                                    Cabang / Store</label>
+                                <select name="kode_store" id="kode_store" required
+                                    class="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 outline-none transition-all text-sm bg-gray-50">
+                                    <option value="" disabled selected>-- Pilih Cabang --</option>
+                                    <?php if ($result_store && $result_store->num_rows > 0): ?>
+                                        <?php while ($row = $result_store->fetch_assoc()): ?>
+                                            <option value="<?= htmlspecialchars($row['Kd_Store']) ?>">
+                                                <?= htmlspecialchars($row['Kd_Store']) ?> -
+                                                <?= htmlspecialchars($row['Nm_Alias']) ?>
+                                                (<?= htmlspecialchars($row['Nm_NPWP']) ?>)
+                                            </option>
+                                        <?php endwhile; ?>
+                                    <?php endif; ?>
+                                </select>
+                            </div>
 
                             <div class="mb-6">
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">Upload File Excel (.xlsx /
