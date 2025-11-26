@@ -63,7 +63,7 @@ $result_store = $conn->query($query_store);
 
                             <div class="mb-6">
                                 <label for="kode_store" class="block text-sm font-semibold text-gray-700 mb-2">Pilih
-                                    Cabang / Store</label>
+                                    Cabang</label>
                                 <select name="kode_store" id="kode_store" required
                                     class="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 outline-none transition-all text-sm bg-gray-50">
                                     <option value="" disabled selected>-- Pilih Cabang --</option>
