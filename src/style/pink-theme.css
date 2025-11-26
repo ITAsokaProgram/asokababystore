@@ -1054,3 +1054,33 @@ body {
   z-index: 10;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
+
+.btn-warning {
+  background: linear-gradient(
+    135deg,
+    #d97706 0%,
+    #b45309 100%
+  ); /* Amber-600 to Amber-700 */
+  color: white !important; /* Paksa teks putih */
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(217, 119, 6, 0.3);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-warning:hover {
+  background: linear-gradient(135deg, #b45309 0%, #92400e 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(217, 119, 6, 0.4);
+}
+
+.btn-warning:active {
+  transform: translateY(0);
+}
