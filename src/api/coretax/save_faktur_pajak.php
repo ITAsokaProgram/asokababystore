@@ -26,7 +26,9 @@ try {
     }
     $id = isset($input['id']) ? (int) $input['id'] : null;
     $nsfp = $input['nsfp'] ?? '';
+    $no_invoice = $input['no_invoice'] ?? '';
     $nama_supplier = $input['nama_supplier'] ?? '';
+    $kode_store = $input['kode_store'] ?? NULL;
     $tgl_faktur = !empty($input['tgl_faktur']) ? $input['tgl_faktur'] : NULL;
     $dpp = (float) ($input['dpp'] ?? 0);
     $dpp_nilai_lain = (float) ($input['dpp_nilai_lain'] ?? 0);
@@ -36,10 +38,10 @@ try {
         throw new Exception("No Seri Faktur wajib diisi.");
     }
     if ($id) {
-        $stmt = $conn->prepare("UPDATE ff_faktur_pajak SET nsfp=?, tgl_faktur=?, nama_supplier=?, dpp=?, dpp_nilai_lain=?, ppn=?, total=?, kd_user=?, edit_pada=NOW() WHERE id=?");
+        $stmt = $conn->prepare("UPDATE ff_faktur_pajak SET nsfp=?, no_faktur=?, tgl_faktur=?, nama_supplier=?, dpp=?, dpp_nilai_lain=?, ppn=?, total=?, kd_user=?, kode_store=?, edit_pada=NOW() WHERE id=?");
         if (!$stmt)
             throw new Exception("Prepare Update Error: " . $conn->error);
-        $stmt->bind_param("sssddddii", $nsfp, $tgl_faktur, $nama_supplier, $dpp, $dpp_nilai_lain, $ppn, $total, $kd_user, $id);
+        $stmt->bind_param("ssssddddisi", $nsfp, $no_invoice, $tgl_faktur, $nama_supplier, $dpp, $dpp_nilai_lain, $ppn, $total, $kd_user, $kode_store, $id);
         if (!$stmt->execute()) {
             throw new Exception("Gagal mengupdate data: " . $stmt->error);
         }
@@ -53,10 +55,10 @@ try {
             throw new Exception("No Seri Faktur '$nsfp' sudah ada di database.");
         }
         $check->close();
-        $stmt = $conn->prepare("INSERT INTO ff_faktur_pajak (nsfp, tgl_faktur, nama_supplier, dpp, dpp_nilai_lain, ppn, total, kd_user) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt = $conn->prepare("INSERT INTO ff_faktur_pajak (nsfp, no_faktur, tgl_faktur, nama_supplier, dpp, dpp_nilai_lain, ppn, total, kd_user, kode_store) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         if (!$stmt)
             throw new Exception("Prepare Insert Error: " . $conn->error);
-        $stmt->bind_param("sssddddi", $nsfp, $tgl_faktur, $nama_supplier, $dpp, $dpp_nilai_lain, $ppn, $total, $kd_user);
+        $stmt->bind_param("ssssddddis", $nsfp, $no_invoice, $tgl_faktur, $nama_supplier, $dpp, $dpp_nilai_lain, $ppn, $total, $kd_user, $kode_store);
         if (!$stmt->execute()) {
             throw new Exception("Gagal menyimpan data: " . $stmt->error);
         }

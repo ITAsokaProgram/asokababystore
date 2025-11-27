@@ -9,7 +9,7 @@ include '../../../aa_kon_sett.php';
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Input Faktur Pajak</title>
+    <title>Input Faktur Pajak Fisik</title>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
     <link rel="stylesheet" href="../../style/header.css">
@@ -35,9 +35,27 @@ include '../../../aa_kon_sett.php';
 
         .form-grid {
             display: grid;
-            grid-template-columns: 1.5fr 2fr 1fr 1fr 1fr 1fr 1fr auto;
-            gap: 10px;
+            gap: 15px;
             align-items: end;
+            grid-template-columns: 1fr;
+        }
+
+        @media (min-width: 640px) {
+            .form-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .form-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+
+        @media (min-width: 1536px) {
+            .form-grid {
+                grid-template-columns: 1.2fr 1.2fr 1.5fr 1.5fr 0.8fr 1fr 1fr 1fr 1.2fr auto;
+            }
         }
 
         .form-label {
@@ -102,7 +120,7 @@ include '../../../aa_kon_sett.php';
                             <i class="fa-solid fa-file-invoice-dollar fa-lg"></i>
                         </div>
                         <div>
-                            <h1 class="text-xl font-bold text-gray-800">Kelola Faktur Pajak</h1>
+                            <h1 class="text-xl font-bold text-gray-800">Kelola Faktur Pajak Fisik</h1>
                         </div>
                     </div>
                     <button type="button" id="btn-save"
@@ -126,10 +144,26 @@ include '../../../aa_kon_sett.php';
                                 <input type="text" id="inp_no_seri" name="nsfp" class="input-compact" autofocus>
                                 <p id="err_no_seri" class="text-xs text-red-500 mt-1 hidden font-semibold"></p>
                             </div>
+                            <div>
+                                <label class="form-label">No. Invoice</label>
+                                <input type="text" id="inp_no_invoice" name="no_invoice" class="input-compact"
+                                    placeholder="Cari Invoice...">
+                            </div>
+                            <div>
+                                <label class="form-label">Toko / Cabang</label>
+                                <select id="inp_kode_store" name="kode_store"
+                                    class="input-compact bg-white cursor-pointer">
+                                    <option value="">Pilih Toko...</option>
+                                </select>
+                            </div>
+
+
 
                             <div>
                                 <label class="form-label">Nama Supplier</label>
-                                <input type="text" id="inp_nama_supplier" name="nama_supplier" class="input-compact">
+                                <input type="text" id="inp_nama_supplier" name="nama_supplier" class="input-compact"
+                                    list="supplier_list">
+                                <datalist id="supplier_list"></datalist>
                             </div>
 
                             <div>
@@ -177,7 +211,7 @@ include '../../../aa_kon_sett.php';
                     <div class="p-4 border-b border-gray-100 flex justify-between items-center">
                         <h3 class="font-bold text-gray-700"><i class="fas fa-list mr-2 text-pink-500"></i>Data Faktur
                             Pajak
-                            Terbaru</h3>
+                            Hari Ini</h3>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse table-compact">
@@ -185,6 +219,7 @@ include '../../../aa_kon_sett.php';
                                 <tr>
                                     <th class="w-10 text-center">No</th>
                                     <th>Tgl Faktur</th>
+                                    <th>No Invoice</th>
                                     <th>NSFP</th>
                                     <th>Supplier</th>
                                     <th class="text-right">DPP</th>

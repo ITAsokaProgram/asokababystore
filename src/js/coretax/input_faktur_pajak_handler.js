@@ -3,12 +3,19 @@ const API_URLS = {
   saveData: "/src/api/coretax/save_faktur_pajak.php",
   getData: "/src/api/coretax/get_latest_faktur_pajak.php",
   checkDuplicate: "/src/api/coretax/check_duplicate_fp.php",
+  getCoretax: "/src/api/coretax/get_coretax_detail.php",
+  searchSupplier: "/src/api/coretax/get_supplier_search.php",
+  getStores: "/src/api/shared/get_all_store.php",
+  getReceipt: "/src/api/coretax/get_receipt_detail.php",
 };
 const form = document.getElementById("fp-form");
 const inpId = document.getElementById("inp_id");
+const inpKodeStore = document.getElementById("inp_kode_store");
+const inpNoInvoice = document.getElementById("inp_no_invoice");
 const inpNoSeri = document.getElementById("inp_no_seri");
 const errNoSeri = document.getElementById("err_no_seri");
 const inpNamaSupp = document.getElementById("inp_nama_supplier");
+const listSupplier = document.getElementById("supplier_list");
 const inpTgl = document.getElementById("inp_tgl_faktur");
 const inpDpp = document.getElementById("inp_dpp");
 const inpDppLain = document.getElementById("inp_dpp_lain");
@@ -19,6 +26,7 @@ const btnCancelEdit = document.getElementById("btn-cancel-edit");
 const editIndicator = document.getElementById("edit-mode-indicator");
 const tableBody = document.getElementById("table-body");
 let isSubmitting = false;
+let debounceTimer;
 function formatNumber(num) {
   if (isNaN(num) || num === null) return "0";
   return new Intl.NumberFormat("id-ID", {
@@ -35,8 +43,51 @@ function calculateTotal() {
   const dpp = parseNumber(inpDpp.value);
   const dppLain = parseNumber(inpDppLain.value);
   const ppn = parseNumber(inpPpn.value);
-  const total = dpp + dppLain + ppn;
-  inpTotal.value = formatNumber(total);
+  inpTotal.value = formatNumber(dpp + dppLain + ppn);
+}
+function resetErrorState() {
+  inpNoSeri.classList.remove("border-red-500", "bg-red-50", "text-red-700");
+  inpNoSeri.classList.add("border-gray-300");
+  errNoSeri.classList.add("hidden");
+  errNoSeri.textContent = "";
+}
+async function loadStoreOptions() {
+  try {
+    const result = await sendRequestGET(API_URLS.getStores);
+    if (result.success && Array.isArray(result.data)) {
+      let html = '<option value="">Pilih Toko...</option>';
+      result.data.forEach((store) => {
+        const displayName = store.Nm_Alias
+          ? `${store.Nm_Alias} (${store.Kd_Store})`
+          : store.Nm_Store;
+        html += `<option value="${store.Kd_Store}">${displayName}</option>`;
+      });
+      inpKodeStore.innerHTML = html;
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
+async function handleSupplierSearch(e) {
+  const term = e.target.value;
+  if (term.length < 2) return;
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(async () => {
+    try {
+      const result = await sendRequestGET(
+        `${API_URLS.searchSupplier}?term=${encodeURIComponent(term)}`
+      );
+      if (result.success && Array.isArray(result.data)) {
+        let options = "";
+        result.data.forEach((name) => {
+          options += `<option value="${name}">`;
+        });
+        listSupplier.innerHTML = options;
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }, 300);
 }
 async function checkDuplicateFP(noSeri) {
   if (!noSeri) return false;
@@ -54,16 +105,7 @@ async function checkDuplicateFP(noSeri) {
       errNoSeri.classList.remove("hidden");
       Toastify({
         text: `⚠️ ${result.message}`,
-        duration: 3000,
-        gravity: "top",
-        position: "center",
-        style: {
-          background: "#ef4444",
-          color: "#fff",
-          boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)",
-          borderRadius: "8px",
-          fontWeight: "bold",
-        },
+        style: { background: "#ef4444" },
       }).showToast();
       return true;
     } else {
@@ -71,68 +113,145 @@ async function checkDuplicateFP(noSeri) {
       return false;
     }
   } catch (error) {
-    console.error("Check Duplicate Error:", error);
     return false;
   }
 }
-function resetErrorState() {
-  inpNoSeri.classList.remove("border-red-500", "bg-red-50", "text-red-700");
-  inpNoSeri.classList.add("border-gray-300");
-  errNoSeri.classList.add("hidden");
-  errNoSeri.textContent = "";
+async function fetchCoretaxData(nsfp) {
+  if (!nsfp) return;
+  if (await checkDuplicateFP(nsfp)) return;
+  inpNoSeri.classList.add("bg-yellow-50", "text-yellow-700");
+  const originalPlaceholder = inpNoSeri.placeholder;
+  inpNoSeri.placeholder = "Mencari di Coretax...";
+  try {
+    const result = await sendRequestGET(
+      `${API_URLS.getCoretax}?nsfp=${encodeURIComponent(nsfp)}`
+    );
+    if (result.success && result.found) {
+      const d = result.data;
+      inpNamaSupp.value = d.nama_supplier || "";
+      if (d.kode_store) inpKodeStore.value = d.kode_store;
+      inpDpp.value = formatNumber(d.dpp);
+      inpDppLain.value = formatNumber(d.dpp_nilai_lain);
+      inpPpn.value = formatNumber(d.ppn);
+      calculateTotal();
+      inpNoSeri.classList.remove("bg-yellow-50", "text-yellow-700");
+      inpNoSeri.classList.add("bg-green-50", "text-green-700");
+      Toastify({
+        text: "✅ Data ditemukan di Coretax",
+        duration: 2000,
+        style: { background: "#10b981" },
+      }).showToast();
+      setTimeout(
+        () => inpNoSeri.classList.remove("bg-green-50", "text-green-700"),
+        1000
+      );
+      inpNamaSupp.focus();
+    }
+  } catch (error) {
+    console.error(error);
+  } finally {
+    inpNoSeri.classList.remove("bg-yellow-50", "text-yellow-700");
+    inpNoSeri.placeholder = originalPlaceholder;
+  }
+}
+async function fetchReceiptData(noInvoice) {
+  if (!noInvoice) return;
+
+  inpNoInvoice.classList.add("bg-yellow-50", "text-yellow-700");
+  const originalPlaceholder = inpNoInvoice.placeholder;
+  inpNoInvoice.placeholder = "Mencari...";
+
+  try {
+    const result = await sendRequestGET(
+      `${API_URLS.getReceipt}?no_lpb=${encodeURIComponent(noInvoice)}`
+    );
+
+    if (result.success && result.data) {
+      const d = result.data;
+
+      inpNamaSupp.value = d.nama_supplier || "";
+
+      if (d.kode_store) {
+        inpKodeStore.value = d.kode_store;
+      }
+
+      inpDpp.value = formatNumber(d.dpp);
+      inpPpn.value = formatNumber(d.ppn);
+
+      calculateTotal();
+      inpNoInvoice.classList.remove("bg-yellow-50", "text-yellow-700");
+      inpNoInvoice.classList.add("bg-green-50", "text-green-700");
+      Toastify({
+        text: "✅ Data Invoice ditemukan",
+        duration: 2000,
+        style: { background: "#10b981" },
+      }).showToast();
+      setTimeout(
+        () => inpNoInvoice.classList.remove("bg-green-50", "text-green-700"),
+        1000
+      );
+      if (!inpNoSeri.value) inpNoSeri.focus();
+    } else {
+      Toastify({
+        text: "ℹ️ Data Invoice tidak ditemukan",
+        duration: 2000,
+        style: { background: "#3b82f6" },
+      }).showToast();
+    }
+  } catch (error) {
+    console.error("Fetch Receipt Error:", error);
+  } finally {
+    inpNoInvoice.classList.remove("bg-yellow-50", "text-yellow-700");
+    inpNoInvoice.placeholder = originalPlaceholder;
+  }
 }
 async function loadTableData() {
-  tableBody.innerHTML = `<tr><td colspan="9" class="text-center p-4"><i class="fas fa-spinner fa-spin text-pink-500"></i> Memuat data...</td></tr>`;
+  tableBody.innerHTML = `<tr><td colspan="10" class="text-center p-4"><i class="fas fa-spinner fa-spin text-pink-500"></i> Memuat data...</td></tr>`;
   try {
     const result = await sendRequestGET(API_URLS.getData);
     if (result.success && Array.isArray(result.data)) {
       renderTable(result.data);
     } else {
-      tableBody.innerHTML = `<tr><td colspan="9" class="text-center p-4 text-red-500">Gagal memuat data</td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="10" class="text-center p-4 text-red-500">Gagal memuat data</td></tr>`;
     }
   } catch (error) {
-    console.error("Load Table Error:", error);
-    tableBody.innerHTML = `<tr><td colspan="9" class="text-center p-4 text-red-500">Terjadi kesalahan koneksi</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="10" class="text-center p-4 text-red-500">Koneksi Error</td></tr>`;
   }
 }
 function renderTable(data) {
   if (data.length === 0) {
-    tableBody.innerHTML = `<tr><td colspan="9" class="text-center p-6 text-gray-500">Belum ada data</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="10" class="text-center p-6 text-gray-500">Belum ada data</td></tr>`;
     return;
   }
   let html = "";
   data.forEach((row, index) => {
-    const dpp = parseFloat(row.dpp);
-    const dppLain = parseFloat(row.dpp_nilai_lain);
-    const ppn = parseFloat(row.ppn);
-    const total = parseFloat(row.total);
     const safeJson = JSON.stringify(row).replace(/"/g, "&quot;");
     html += `
             <tr class="hover:bg-pink-50 transition-colors">
                 <td class="text-center text-gray-500">${index + 1}</td>
                 <td>${row.tgl_faktur || "-"}</td>
-                <td class="font-medium text-gray-800">${row.nsfp}</td>
+                <td class="font-bold text-gray-700">${
+                  row.no_faktur || "-"
+                }</td> <td class="font-medium text-gray-800">${row.nsfp}</td>
                 <td class="text-sm">${row.nama_supplier || "-"}</td>
-                <td class="text-right font-mono">${formatNumber(dpp)}</td>
-                <td class="text-right font-mono">${formatNumber(dppLain)}</td>
-                <td class="text-right font-mono">${formatNumber(ppn)}</td>
+                <td class="text-right font-mono">${formatNumber(row.dpp)}</td>
+                <td class="text-right font-mono">${formatNumber(
+                  row.dpp_nilai_lain
+                )}</td>
+                <td class="text-right font-mono">${formatNumber(row.ppn)}</td>
                 <td class="text-right font-bold font-mono text-gray-800">${formatNumber(
-                  total
+                  row.total
                 )}</td>
                 <td class="text-center">
-                    <button class="btn-edit-row text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 p-2 rounded transition-all" 
-                            data-row="${safeJson}" title="Edit Data">
-                        <i class="fas fa-pencil-alt"></i>
-                    </button>
+                    <button class="btn-edit-row text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 p-2 rounded" 
+                            data-row="${safeJson}"><i class="fas fa-pencil-alt"></i></button>
                 </td>
-            </tr>
-        `;
+            </tr>`;
   });
   tableBody.innerHTML = html;
   document.querySelectorAll(".btn-edit-row").forEach((btn) => {
     btn.addEventListener("click", function () {
-      const data = JSON.parse(this.getAttribute("data-row"));
-      startEditMode(data);
+      startEditMode(JSON.parse(this.getAttribute("data-row")));
     });
   });
 }
@@ -140,17 +259,16 @@ function startEditMode(data) {
   resetErrorState();
   inpId.value = data.id;
   inpNoSeri.value = data.nsfp;
+  inpNoInvoice.value = data.no_invoice || "";
   inpNamaSupp.value = data.nama_supplier;
+  inpKodeStore.value = data.kode_store || "";
   inpTgl.value = data.tgl_faktur;
   inpDpp.value = formatNumber(data.dpp);
   inpDppLain.value = formatNumber(data.dpp_nilai_lain);
   inpPpn.value = formatNumber(data.ppn);
   calculateTotal();
-  inpNoSeri.focus();
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth",
-  });
+  inpNoInvoice.focus();
+  window.scrollTo({ top: 0, behavior: "smooth" });
   document
     .querySelector(".input-row-container")
     .classList.add("border-amber-300", "bg-amber-50");
@@ -163,6 +281,7 @@ function cancelEditMode() {
   form.reset();
   resetErrorState();
   inpId.value = "";
+  inpKodeStore.value = "";
   inpTotal.value = "0";
   document
     .querySelector(".input-row-container")
@@ -174,18 +293,16 @@ function cancelEditMode() {
     "btn-primary shadow-lg shadow-pink-500/30 flex items-center gap-2 px-6 py-2";
 }
 async function handleSave() {
+  if (inpKodeStore.value === "") {
+    Swal.fire("Gagal", "Pilih Toko/Cabang", "warning");
+    return;
+  }
   const noSeri = inpNoSeri.value.trim();
-  const namaSupp = inpNamaSupp.value.trim();
   if (!noSeri) {
-    Swal.fire("Gagal", "No Seri Faktur Pajak harus diisi", "warning");
+    Swal.fire("Gagal", "NSFP wajib diisi", "warning");
     return;
   }
   if (inpNoSeri.classList.contains("border-red-500")) {
-    Toastify({
-      text: "⚠️ Mohon perbaiki data duplikat sebelum menyimpan.",
-      style: { background: "#ef4444" },
-      duration: 3000,
-    }).showToast();
     inpNoSeri.focus();
     return;
   }
@@ -193,22 +310,21 @@ async function handleSave() {
   const payload = {
     id: inpId.value || null,
     nsfp: noSeri,
-    nama_supplier: namaSupp,
+    no_invoice: inpNoInvoice.value.trim(),
+    nama_supplier: inpNamaSupp.value.trim(),
+    kode_store: inpKodeStore.value,
     tgl_faktur: inpTgl.value,
     dpp: parseNumber(inpDpp.value),
     dpp_nilai_lain: parseNumber(inpDppLain.value),
     ppn: parseNumber(inpPpn.value),
     total: parseNumber(inpTotal.value),
   };
-  const originalBtnContent = btnSave.innerHTML;
-  const originalBtnClass = btnSave.className;
-  btnSave.disabled = true;
+  const originalBtn = btnSave.innerHTML;
   btnSave.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Proses...`;
-  let isSuccess = false;
+  btnSave.disabled = true;
   try {
     const result = await sendRequestJSON(API_URLS.saveData, payload);
     if (result.success) {
-      isSuccess = true;
       Swal.fire({
         icon: "success",
         title: "Berhasil",
@@ -218,44 +334,44 @@ async function handleSave() {
       });
       cancelEditMode();
       loadTableData();
-      inpNoSeri.focus();
+      inpNoInvoice.focus();
     } else {
-      throw new Error(result.message || "Gagal menyimpan data");
+      throw new Error(result.message);
     }
   } catch (error) {
-    console.error("Save Error:", error);
-    let errorMessage = error.message || "Terjadi kesalahan sistem";
-    if (errorMessage.includes("Duplicate entry")) {
-      errorMessage = "Data Duplikat: No Seri Faktur tersebut sudah ada.";
-    }
-    Swal.fire("Gagal Simpan", errorMessage, "error");
+    let msg = error.message;
+    if (msg.includes("Duplicate entry"))
+      msg = "Data Duplikat (NSFP sudah ada).";
+    Swal.fire("Gagal", msg, "error");
   } finally {
     btnSave.disabled = false;
+    btnSave.innerHTML = originalBtn;
     isSubmitting = false;
-    if (!isSuccess) {
-      btnSave.innerHTML = originalBtnContent;
-      btnSave.className = originalBtnClass;
-    }
   }
 }
 document.addEventListener("DOMContentLoaded", () => {
+  loadStoreOptions();
   loadTableData();
   [inpDpp, inpDppLain, inpPpn].forEach((input) => {
     input.addEventListener("input", calculateTotal);
     input.addEventListener("blur", (e) => {
-      const val = parseNumber(e.target.value);
-      e.target.value = formatNumber(val);
+      e.target.value = formatNumber(parseNumber(e.target.value));
       calculateTotal();
     });
     input.addEventListener("focus", (e) => e.target.select());
   });
-  inpNoSeri.addEventListener("change", (e) => {
-    checkDuplicateFP(e.target.value.trim());
+  inpNamaSupp.addEventListener("input", handleSupplierSearch);
+  inpNoInvoice.addEventListener("change", (e) => {
+    const val = e.target.value.trim();
+    if (val) fetchReceiptData(val);
+  });
+  inpNoSeri.addEventListener("change", async (e) => {
+    const val = e.target.value.trim();
+    if (val) await fetchCoretaxData(val);
+    else resetErrorState();
   });
   inpNoSeri.addEventListener("input", () => {
-    if (inpNoSeri.classList.contains("border-red-500")) {
-      resetErrorState();
-    }
+    if (inpNoSeri.classList.contains("border-red-500")) resetErrorState();
   });
   const formInputs = Array.from(
     form.querySelectorAll("input:not([type='hidden'])")
@@ -264,23 +380,24 @@ document.addEventListener("DOMContentLoaded", () => {
     input.addEventListener("keydown", async (e) => {
       if (e.key === "Enter") {
         e.preventDefault();
+        if (input === inpNoInvoice) {
+          const val = input.value.trim();
+          if (val) await fetchReceiptData(val);
+          inpNoSeri.focus();
+          return;
+        }
         if (input === inpNoSeri) {
           const val = input.value.trim();
-          if (val) await checkDuplicateFP(val);
+          if (val) await fetchCoretaxData(val);
           if (inpNamaSupp) inpNamaSupp.focus();
           return;
         }
-        const isReadyToSave = inpNoSeri.value;
-        const isLastInput = input.id === "inp_ppn";
-        if (isReadyToSave && (isLastInput || e.ctrlKey)) {
-          handleSave();
-        } else {
-          const nextInput = formInputs[index + 1];
-          if (nextInput && !nextInput.readOnly) {
-            nextInput.focus();
-          } else if (isReadyToSave) {
-            handleSave();
-          }
+        const isReady = inpNoSeri.value && inpNamaSupp.value;
+        const isLast = input.id === "inp_ppn";
+        if (isReady && (isLast || e.ctrlKey)) handleSave();
+        else {
+          const next = formInputs[index + 1];
+          if (next && !next.readOnly) next.focus();
         }
       }
     });

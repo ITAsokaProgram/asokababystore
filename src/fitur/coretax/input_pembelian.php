@@ -178,7 +178,7 @@ include '../../../aa_kon_sett.php';
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="p-4 border-b border-gray-100 flex justify-between items-center">
                         <h3 class="font-bold text-gray-700"><i class="fas fa-list mr-2 text-pink-500"></i>Data Pembelian
-                            Terbaru</h3>
+                            Hari Ini</h3>
 
                     </div>
                     <div class="overflow-x-auto">
@@ -187,7 +187,7 @@ include '../../../aa_kon_sett.php';
                                 <tr>
                                     <th class="w-10 text-center">No</th>
                                     <th>Tgl Nota</th>
-                                    <th>No Faktur</th>
+                                    <th>No Invoice</th>
                                     <th>Supplier</th>
                                     <th class="text-right">DPP</th>
                                     <th class="text-right">PPN</th>

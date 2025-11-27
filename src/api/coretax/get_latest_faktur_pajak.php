@@ -12,12 +12,14 @@ try {
     $query = "SELECT 
                 id, 
                 nsfp, 
+                no_faktur,  
                 tgl_faktur, 
                 nama_supplier, 
                 dpp, 
                 dpp_nilai_lain, 
                 ppn, 
                 total,
+                kode_store,
                 edit_pada 
               FROM ff_faktur_pajak 
               ORDER BY COALESCE(edit_pada, dibuat_pada) DESC, id DESC 

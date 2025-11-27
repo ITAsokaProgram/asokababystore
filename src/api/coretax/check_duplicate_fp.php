@@ -23,7 +23,7 @@ try {
         $tgl = date('d-m-Y', strtotime($data['tgl_faktur']));
         echo json_encode([
             'exists' => true,
-            'message' => "No Seri Faktur ini sudah ada (Supplier: {$data['nama_supplier']}, Tgl: $tgl)",
+            'message' => "No Seri Faktur ini sudah ada",
             'data' => $data
         ]);
     } else {

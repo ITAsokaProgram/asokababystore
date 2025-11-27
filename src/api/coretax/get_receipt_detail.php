@@ -14,6 +14,7 @@ try {
             rh.no_faktur,
             rh.tgl_pesan as tgl_nota,
             rh.kode_supp,
+            rh.kd_store,  
             s.nama_supp,
             rh.gtot as dpp, 
             rh.gppn as ppn
@@ -41,6 +42,7 @@ try {
                 'tgl_nota' => $data['tgl_nota'],
                 'kode_supplier' => $data['kode_supp'],
                 'nama_supplier' => $data['nama_supp'],
+                'kode_store' => $data['kd_store'],
                 'dpp' => (float) $data['dpp'],
                 'ppn' => (float) $data['ppn']
             ]
