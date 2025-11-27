@@ -22,7 +22,7 @@ if ($page < 1) {
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Faktur Pajak</title>
+    <title>Laporan Faktur Pajak Fisik</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
     <link rel="stylesheet" href="../../style/header.css">
     <link rel="stylesheet" href="../../style/sidebar.css">
@@ -50,7 +50,7 @@ if ($page < 1) {
                             </div>
                             <div>
                                 <h1 id="page-title" class="text-xl font-bold text-gray-800 mb-1">Laporan Faktur Pajak
-                                </h1>
+                                    Fisik</h1>
                                 <p id="page-subtitle" class="text-xs text-gray-600">Memuat data faktur pajak...</p>
                             </div>
                         </div>
@@ -76,10 +76,10 @@ if ($page < 1) {
 
                         <div class="flex-1 min-w-[200px]">
                             <label for="search_supplier" class="block text-xs font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-truck text-pink-600 mr-1"></i> Supplier / No Seri
+                                <i class="fas fa-search text-pink-600 mr-1"></i> Cari Supplier / No Seri
                             </label>
                             <input type="text" name="search_supplier" id="search_supplier" class="input-modern w-full"
-                                placeholder="Cari Nama Supplier atau No Seri">
+                                placeholder="Ketik Nama Supplier atau No Seri...">
                         </div>
 
                         <div class="flex-1 min-w-[150px]">
