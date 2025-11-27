@@ -72,7 +72,7 @@ try {
     $response['pagination']['total_rows'] = (int) $total_rows;
     $response['pagination']['total_pages'] = ceil($total_rows / $limit);
 
-    // 2. Ambil Data dengan LEFT JOIN ke Core Tax
+    // 2. Ambil Data dengan LEFT JOIN ke Coretax
     // Logika: Mencocokkan DPP (pembelian) dengan harga_jual (coretax) DAN PPN
     // Menggunakan GROUP BY p.id agar baris pembelian tidak duplikat jika ada multiple match di coretax
     $sql_data = "
@@ -87,8 +87,8 @@ try {
             p.total_terima_fp,
             p.ada_di_coretax,
             p.nsfp,
-            -- Ambil satu kandidat NSFP dari coretax jika cocok
-            MAX(c.nomor_faktur_pajak) as candidate_nsfp,
+            -- Ambil SEMUA kandidat NSFP dipisah koma (misal: '010.xxx,010.yyy')
+            GROUP_CONCAT(c.nomor_faktur_pajak SEPARATOR ',') as candidate_nsfps,
             COUNT(c.nomor_faktur_pajak) as match_count
         FROM ff_pembelian p
         LEFT JOIN ff_coretax c ON p.dpp = c.harga_jual AND p.ppn = c.ppn

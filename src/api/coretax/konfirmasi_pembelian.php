@@ -31,7 +31,7 @@ try {
     $stmt->bind_param("si", $nsfp, $id);
 
     if ($stmt->execute()) {
-        echo json_encode(['success' => true, 'message' => 'Data berhasil dikonfirmasi ke Core Tax']);
+        echo json_encode(['success' => true, 'message' => 'Data berhasil dikonfirmasi ke Coretax']);
     } else {
         throw new Exception("Gagal mengupdate data: " . $stmt->error);
     }
