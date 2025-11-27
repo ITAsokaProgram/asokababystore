@@ -21,7 +21,7 @@ $response = [
         'total_pages' => 1,
         'total_rows' => 0,
         'offset' => 0,
-        'limit' => 10,
+        'limit' => 100,
     ],
     'error' => null,
 ];
@@ -34,7 +34,7 @@ try {
     $page = (int) ($_GET['page'] ?? 1);
     if ($page < 1)
         $page = 1;
-    $limit = 10;
+    $limit = 100;
     $response['pagination']['limit'] = $limit;
     $response['pagination']['current_page'] = $page;
     $offset = ($page - 1) * $limit;
@@ -54,13 +54,17 @@ try {
         $bind_types .= 's';
         $bind_params[] = $kd_store;
     }
+
+    // UPDATE: Logika pencarian ditambah ke nomor faktur
     if (!empty($search_supplier)) {
-        $where_conditions .= " AND (fc.nama_penjual LIKE ? OR fc.npwp_penjual LIKE ?)";
-        $bind_types .= 'ss';
+        $where_conditions .= " AND (fc.nama_penjual LIKE ? OR fc.npwp_penjual LIKE ? OR fc.nomor_faktur_pajak LIKE ?)";
+        $bind_types .= 'sss'; // Tambah satu 's' lagi
         $searchTerm = '%' . $search_supplier . '%';
         $bind_params[] = $searchTerm;
         $bind_params[] = $searchTerm;
+        $bind_params[] = $searchTerm; // Tambah parameter binding
     }
+
     $sql_count = "
         SELECT COUNT(*) as total
         FROM ff_coretax fc
@@ -77,6 +81,7 @@ try {
     $stmt_count->close();
     $response['pagination']['total_rows'] = (int) $total_rows;
     $response['pagination']['total_pages'] = ceil($total_rows / $limit);
+
     $sql_data = "
         SELECT 
             fc.npwp_penjual,
@@ -86,13 +91,14 @@ try {
             fc.masa_pajak,
             fc.tahun,
             fc.harga_jual,
+            fc.dpp_nilai_lain,
             fc.ppn,
             fc.kode_store,
             ks.Nm_Alias
         FROM ff_coretax fc
         LEFT JOIN kode_store ks ON fc.kode_store = ks.Kd_Store
         WHERE $where_conditions
-        ORDER BY fc.tgl_faktur_pajak DESC, fc.nomor_faktur_pajak ASC
+        ORDER BY RIGHT(fc.nomor_faktur_pajak, 8) DESC, fc.nomor_faktur_pajak ASC
         LIMIT ? OFFSET ?
     ";
     $bind_types .= 'ii';

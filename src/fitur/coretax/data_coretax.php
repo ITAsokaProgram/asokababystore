@@ -87,10 +87,10 @@ if ($page < 1) {
 
                         <div class="md:col-span-1">
                             <label for="search_supplier" class="block text-xs font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-search text-pink-600 mr-1"></i> Cari Penjual
+                                <i class="fas fa-search text-pink-600 mr-1"></i> Cari Data
                             </label>
                             <input type="text" name="search_supplier" id="search_supplier" class="input-modern w-full"
-                                placeholder="NPWP / Nama Penjual">
+                                placeholder="No Faktur / NPWP / Nama">
                         </div>
 
                         <div class="md:col-span-1">
@@ -116,19 +116,20 @@ if ($page < 1) {
                             <thead>
                                 <tr>
                                     <th>No</th>
-                                    <th>Tgl Faktur</th>
-                                    <th>Nomor Faktur</th>
                                     <th>NPWP Penjual</th>
                                     <th>Nama Penjual</th>
-                                    <th>Masa / Thn</th>
-                                    <th>Cabang</th>
-                                    <th class="text-right">Harga Jual (DPP)</th>
+                                    <th>NSFP</th>
+                                    <th>Tgl Faktur Pajak</th>
+                                    <th>Masa Pajak</th>
+                                    <th>Tahun</th>
+                                    <th class="text-right">Harga Jual</th>
+                                    <th class="text-right">DPP Nilai Lain</th>
                                     <th class="text-right">PPN</th>
                                 </tr>
                             </thead>
                             <tbody id="coretax-table-body">
                                 <tr>
-                                    <td colspan="9" class="text-center p-8">
+                                    <td colspan="10" class="text-center p-8">
                                         <div class="spinner-simple"></div>
                                         <p class="mt-3 text-gray-500 font-medium">Memuat data...</p>
                                     </td>

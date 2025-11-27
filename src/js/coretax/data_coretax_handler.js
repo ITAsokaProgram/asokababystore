@@ -100,7 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (tableBody)
         tableBody.innerHTML = `
               <tr>
-                  <td colspan="9" class="text-center p-8">
+                  <td colspan="10" class="text-center p-8">
                       <div class="spinner-simple"></div>
                       <p class="mt-2 text-gray-500">Memuat data...</p>
                   </td>
@@ -117,7 +117,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function showTableError(message) {
     tableBody.innerHTML = `
         <tr>
-            <td colspan="9" class="text-center p-8 text-red-600">
+            <td colspan="10" class="text-center p-8 text-red-600">
                 <i class="fas fa-exclamation-triangle fa-lg mb-2"></i>
                 <p>Gagal memuat data: ${message}</p>
             </td>
@@ -143,7 +143,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!tabel_data || tabel_data.length === 0) {
       tableBody.innerHTML = `
             <tr>
-                <td colspan="9" class="text-center p-8 text-gray-500">
+                <td colspan="10" class="text-center p-8 text-gray-500">
                     <i class="fas fa-inbox fa-lg mb-2"></i>
                     <p>Tidak ada data ditemukan untuk filter ini.</p>
                 </td>
@@ -152,8 +152,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     let htmlRows = "";
     let item_counter = offset + 1;
-    tabel_data.forEach((row) => {
+    tabel_data.forEach((row, index) => {
       const harga_jual = parseFloat(row.harga_jual) || 0;
+      const dpp_nilai_lain = parseFloat(row.dpp_nilai_lain) || 0;
       const ppn = parseFloat(row.ppn) || 0;
       const dateObj = new Date(row.tgl_faktur_pajak);
       const dateFormatted = dateObj.toLocaleDateString("id-ID", {
@@ -161,30 +162,55 @@ document.addEventListener("DOMContentLoaded", () => {
         month: "2-digit",
         year: "numeric",
       });
-      const namaAlias = row.Nm_Alias ? row.Nm_Alias : "";
-      const displayCabang = row.kode_store
-        ? `${row.kode_store} - ${namaAlias}`
-        : "-";
-
+      const currentNsfp = row.nomor_faktur_pajak || "";
+      const currentSuffix =
+        currentNsfp.length >= 8 ? currentNsfp.slice(-8) : currentNsfp;
+      const prevRow = index > 0 ? tabel_data[index - 1] : null;
+      const prevNsfp = prevRow ? prevRow.nomor_faktur_pajak || "" : "";
+      const prevSuffix = prevNsfp.length >= 8 ? prevNsfp.slice(-8) : "";
+      const nextRow =
+        index < tabel_data.length - 1 ? tabel_data[index + 1] : null;
+      const nextNsfp = nextRow ? nextRow.nomor_faktur_pajak || "" : "";
+      const nextSuffix = nextNsfp.length >= 8 ? nextNsfp.slice(-8) : "";
+      const isDuplicate =
+        currentSuffix === prevSuffix || currentSuffix === nextSuffix;
+      let rowClass = "border-b transition-colors ";
+      let badgeHtml = "";
+      if (isDuplicate) {
+        rowClass += "bg-yellow-50 hover:bg-yellow-100"; 
+        if (currentNsfp.length > 3 && currentNsfp[2] === "1") {
+          badgeHtml = `<span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">Pengganti</span>`;
+        } else if (
+          currentNsfp.length > 3 &&
+          currentNsfp[2] === "0" &&
+          (nextNsfp[2] === "1" || prevNsfp[2] === "1")
+        ) {
+          badgeHtml = `<span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Diganti</span>`;
+        }
+      } else {
+        rowClass += "hover:bg-gray-50";
+      }
       htmlRows += `
-            <tr class="hover:bg-gray-50">
+            <tr class="${rowClass}">
                 <td class="text-center font-medium text-gray-500">${item_counter}</td>
-                <td>${dateFormatted}</td>
-                <td class="font-semibold text-gray-700">${
-                  row.nomor_faktur_pajak
-                }</td>
                 <td class="text-sm text-gray-600 font-mono">${
                   row.npwp_penjual || "-"
                 }</td>
                 <td class="text-sm font-medium text-gray-800 truncate max-w-xs" title="${
                   row.nama_penjual
                 }">${row.nama_penjual || "-"}</td>
-                <td class="text-center text-sm">${row.masa_pajak} / ${
-        row.tahun
-      }</td>
-                <td><span class="badge-store">${displayCabang}</span></td>
+                <td class="font-semibold text-gray-700">
+                    ${row.nomor_faktur_pajak}
+                    ${badgeHtml} 
+                </td>
+                <td>${dateFormatted}</td>
+                <td class="text-center text-sm">${row.masa_pajak || "-"}</td>
+                <td class="text-center text-sm">${row.tahun || "-"}</td>
                 <td class="text-right font-mono text-gray-700">${formatRupiah(
                   harga_jual
+                )}</td>
+                <td class="text-right font-mono text-gray-700">${formatRupiah(
+                  dpp_nilai_lain
                 )}</td>
                 <td class="text-right font-mono text-red-600">${formatRupiah(
                   ppn
