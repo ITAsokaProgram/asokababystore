@@ -8,6 +8,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const paginationContainer = document.getElementById("pagination-container");
   const paginationInfo = document.getElementById("pagination-info");
   const paginationLinks = document.getElementById("pagination-links");
+  function getCookie(name) {
+    const value = document.cookie.match(
+      "(^|;)\\s*" + name + "\\s*=\\s*([^;]+)"
+    );
+    if (value) return value[2];
+    return null;
+  }
+  function getToken() {
+    return getCookie("admin_token");
+  }
   function formatRupiah(number) {
     if (isNaN(number) || number === null) return "0";
     return new Intl.NumberFormat("id-ID", {
@@ -81,6 +91,10 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!result.isConfirmed) return;
     }
     try {
+      const token = getToken();
+      if (!token) {
+        throw new Error("Sesi habis. Silakan login kembali.");
+      }
       Swal.fire({
         title: "Menyimpan...",
         allowOutsideClick: false,
@@ -90,11 +104,19 @@ document.addEventListener("DOMContentLoaded", () => {
         "/src/api/coretax/konfirmasi_pembelian.php",
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify({ id: id, nsfp: selectedNsfp }),
         }
       );
       const resData = await response.json();
+      if (response.status === 401) {
+        throw new Error(
+          "Sesi tidak valid atau kadaluarsa. Silakan login ulang."
+        );
+      }
       if (!response.ok) throw new Error(resData.error || "Gagal konfirmasi");
       await Swal.fire("Berhasil!", "Data telah terkonfirmasi.", "success");
       loadData();
