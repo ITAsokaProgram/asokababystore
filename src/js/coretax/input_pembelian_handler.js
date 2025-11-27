@@ -3,10 +3,12 @@ const API_URLS = {
   getReceipt: "/src/api/coretax/get_receipt_detail.php",
   saveData: "/src/api/coretax/save_pembelian_single.php",
   getData: "/src/api/coretax/get_latest_pembelian.php",
+  checkDuplicate: "/src/api/coretax/check_duplicate_invoice.php",
 };
 const form = document.getElementById("single-form");
 const inpId = document.getElementById("inp_id");
 const inpNoLpb = document.getElementById("inp_no_lpb");
+const errNoLpb = document.getElementById("err_no_lpb");
 const inpKodeSupp = document.getElementById("inp_kode_supplier");
 const inpNamaSupp = document.getElementById("inp_nama_supplier");
 const inpTgl = document.getElementById("inp_tgl_nota");
@@ -36,8 +38,52 @@ function calculateTotal() {
   const total = dpp + ppn;
   inpTotal.value = formatNumber(total);
 }
+async function checkDuplicateInvoice(noLpb) {
+  if (!noLpb) return false;
+  const currentId = inpId.value || 0;
+  try {
+    const result = await sendRequestGET(
+      `${API_URLS.checkDuplicate}?no_faktur=${encodeURIComponent(
+        noLpb
+      )}&exclude_id=${currentId}`
+    );
+    if (result.exists) {
+      inpNoLpb.classList.add("border-red-500", "bg-red-50", "text-red-700");
+      inpNoLpb.classList.remove("border-gray-300");
+      errNoLpb.textContent = result.message;
+      errNoLpb.classList.remove("hidden");
+      Toastify({
+        text: `⚠️ ${result.message}`,
+        duration: 3000,
+        gravity: "top",
+        position: "center",
+        style: {
+          background: "#ef4444",
+          color: "#fff",
+          boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)",
+          borderRadius: "8px",
+          fontWeight: "bold",
+        },
+      }).showToast();
+      return true;
+    } else {
+      resetErrorState();
+      return false;
+    }
+  } catch (error) {
+    console.error("Check Duplicate Error:", error);
+    return false;
+  }
+}
+function resetErrorState() {
+  inpNoLpb.classList.remove("border-red-500", "bg-red-50", "text-red-700");
+  inpNoLpb.classList.add("border-gray-300");
+  errNoLpb.classList.add("hidden");
+  errNoLpb.textContent = "";
+}
 async function fetchReceiptData(noLpb) {
   if (!noLpb) return;
+  const isDuplicate = await checkDuplicateInvoice(noLpb);
   inpNoLpb.classList.add("bg-yellow-50", "text-yellow-700");
   const originalPlaceholder = inpNoLpb.placeholder;
   inpNoLpb.placeholder = "Mencari...";
@@ -51,31 +97,38 @@ async function fetchReceiptData(noLpb) {
       inpDpp.value = formatNumber(parseFloat(d.dpp) || 0);
       inpPpn.value = formatNumber(parseFloat(d.ppn) || 0);
       calculateTotal();
-      inpNoLpb.classList.remove("bg-yellow-50", "text-yellow-700");
-      inpNoLpb.classList.add("bg-green-50", "text-green-700");
-      setTimeout(
-        () => inpNoLpb.classList.remove("bg-green-50", "text-green-700"),
-        1000
-      );
+      if (!isDuplicate) {
+        inpNoLpb.classList.remove("bg-yellow-50", "text-yellow-700");
+        inpNoLpb.classList.add("bg-green-50", "text-green-700");
+        setTimeout(
+          () => inpNoLpb.classList.remove("bg-green-50", "text-green-700"),
+          1000
+        );
+      }
       inpNamaSupp.focus();
     } else {
-      inpNoLpb.classList.remove("bg-yellow-50", "text-yellow-700");
-      const Toast = Swal.mixin({
-        toast: true,
-        position: "top-end",
-        showConfirmButton: false,
-        timer: 2000,
-        timerProgressBar: true,
-      });
-      Toast.fire({
-        icon: "info",
-        title: "Data tidak ditemukan, silakan input manual",
-      });
+      if (!isDuplicate) {
+        inpNoLpb.classList.remove("bg-yellow-50", "text-yellow-700");
+        const Toast = Swal.mixin({
+          toast: true,
+          position: "top-end",
+          showConfirmButton: false,
+          timer: 2000,
+          timerProgressBar: true,
+        });
+        Toast.fire({
+          icon: "info",
+          title: "Data tidak ditemukan, silakan input manual",
+        });
+      }
     }
   } catch (error) {
     console.error("Fetch Receipt Error:", error);
   } finally {
     inpNoLpb.classList.remove("bg-yellow-50", "text-yellow-700");
+    if (isDuplicate) {
+      inpNoLpb.classList.add("border-red-500", "bg-red-50", "text-red-700");
+    }
     inpNoLpb.placeholder = originalPlaceholder;
   }
 }
@@ -133,6 +186,7 @@ function renderTable(data) {
   });
 }
 function startEditMode(data) {
+  resetErrorState();
   inpId.value = data.id;
   inpNoLpb.value = data.no_faktur;
   inpKodeSupp.value = data.kode_supplier;
@@ -151,11 +205,12 @@ function startEditMode(data) {
     .classList.add("border-amber-300", "bg-amber-50");
   editIndicator.classList.remove("hidden");
   btnCancelEdit.classList.remove("hidden");
-  btnSave.innerHTML = `<i class="fas fa-sync-alt"></i> <span>Update Data</span>`;
+  btnSave.innerHTML = `<i class="fas fa-sync-alt"></i> <span>Update</span>`;
   btnSave.className = "btn-warning";
 }
 function cancelEditMode() {
   form.reset();
+  resetErrorState();
   inpId.value = "";
   inpTotal.value = "0";
   document
@@ -172,6 +227,15 @@ async function handleSave() {
   const namaSupp = inpNamaSupp.value.trim();
   if (!noLpb || !namaSupp) {
     Swal.fire("Gagal", "No Invoice dan Nama Supplier harus diisi", "warning");
+    return;
+  }
+  if (inpNoLpb.classList.contains("border-red-500")) {
+    Toastify({
+      text: "⚠️ Mohon perbaiki data duplikat sebelum menyimpan.",
+      style: { background: "#ef4444" },
+      duration: 3000,
+    }).showToast();
+    inpNoLpb.focus();
     return;
   }
   isSubmitting = true;
@@ -236,8 +300,16 @@ document.addEventListener("DOMContentLoaded", () => {
     input.addEventListener("focus", (e) => e.target.select());
   });
   inpNoLpb.addEventListener("change", (e) => {
-    if (e.target.value.trim() !== "") {
-      fetchReceiptData(e.target.value);
+    const val = e.target.value.trim();
+    if (val !== "") {
+      fetchReceiptData(val);
+    } else {
+      resetErrorState();
+    }
+  });
+  inpNoLpb.addEventListener("input", () => {
+    if (inpNoLpb.classList.contains("border-red-500")) {
+      resetErrorState();
     }
   });
   const formInputs = Array.from(

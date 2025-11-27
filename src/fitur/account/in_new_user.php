@@ -41,9 +41,7 @@ $token = $menuHandler->getToken();
   <style>
     .btn.active {
       background-color: transparent;
-      /* background tidak diisi */
       color: #ec4899;
-      /* warna teks bisa disesuaikan */
       outline: 2px solid #ec4899;
       outline-offset: 1px;
     }
@@ -53,8 +51,6 @@ $token = $menuHandler->getToken();
 <body class="bg-gray-50 overflow-auto">
   <?php include '../../component/navigation_report.php' ?>;
   <?php include '../../component/sidebar_report.php' ?>;
-
-
 
   <main id="main-content" class="flex-1 p-6 ml-64">
     <section class="min-h-[85vh] flex items-center justify-center px-2 md:px-6">
@@ -129,7 +125,6 @@ $token = $menuHandler->getToken();
                 <label for="area" class="block text-sm font-medium text-gray-700 mb-1">Cabang</label>
                 <select id="cabang" name="cabang" required
                   class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition hover:border-blue-400">
-
                 </select>
               </div>
 
@@ -156,14 +151,36 @@ $token = $menuHandler->getToken();
                       <input type="checkbox" name="menus[]" value="dashboard"
                         class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Dashboard
                     </label>
+                    <label class="flex items-center gap-2 text-sm mt-1">
+                      <input type="checkbox" name="menus[]" value="dashboard_sales_graph"
+                        class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Dashboard Graph
+                    </label>
                   </div>
 
                   <div class="bg-white/70 border border-white/40 rounded-xl shadow p-4 mb-2">
-                    <p class="text-lg font-bold text-gray-800 mb-2">Shopee</p>
-                    <label class="flex items-center gap-2 text-sm">
-                      <input type="checkbox" name="menus[]" value="shopee_dashboard"
-                        class="menu-item-checkbox scale-110 focus:ring focus:ring-orange-300" /> Dashboard Shopee
-                    </label>
+                    <p class="text-lg font-bold text-gray-800 mb-2">Integrasi (Shopee/WA)</p>
+                    <div class="ml-4 mt-2 space-y-1">
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="shopee_dashboard"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-orange-300" /> Dashboard Shopee
+                      </label>
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="shopee_produk"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-orange-300" /> Produk Shopee
+                      </label>
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="shopee_order"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-orange-300" /> Order Shopee
+                      </label>
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="shopee_terima_barang"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-orange-300" /> Terima Barang Shopee
+                      </label>
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="whatsapp_dashboard"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-green-300" /> Dashboard WhatsApp
+                      </label>
+                    </div>
                   </div>
 
                   <div class="bg-white/70 border border-white/40 rounded-xl shadow p-4 mb-2">
@@ -202,6 +219,122 @@ $token = $menuHandler->getToken();
                       <label class="flex items-center gap-2 text-sm">
                         <input type="checkbox" name="menus[]" value="laporan_pelanggan_review"
                           class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Review
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="bg-white/70 border border-white/40 rounded-xl shadow p-4 mb-2">
+                    <p class="text-lg font-bold text-gray-800 mb-2">Laporan - Top Sales</p>
+                    <div class="ml-4 mt-2 space-y-1">
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="laporan_topsales_rupiah"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Top Sales (Rp)
+                      </label>
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="laporan_topsales_qty"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Top Sales (Qty)
+                      </label>
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="laporan_topsales_supplier"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Top Sales (Supplier)
+                      </label>
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="laporan_topsales_kasir"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Sales per Kasir
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="bg-white/70 border border-white/40 rounded-xl shadow p-4 mb-2">
+                    <p class="text-lg font-bold text-gray-800 mb-2">Laporan - Penerimaan</p>
+                    <div class="ml-4 mt-2 space-y-1">
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="laporan_receipt_detail"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Detail Receipt
+                      </label>
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="laporan_receipt_supplier"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Receipt by Supplier
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="bg-white/70 border border-white/40 rounded-xl shadow p-4 mb-2">
+                    <p class="text-lg font-bold text-gray-800 mb-2">Laporan - Retur Keluar</p>
+                    <div class="ml-4 mt-2 space-y-1">
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="laporan_return_all"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Return All Item
+                      </label>
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="laporan_return_badstock"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Return Bad Stock
+                      </label>
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="laporan_return_exp"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Return Expired
+                      </label>
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="laporan_return_hilang"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Return Hilang Pasangan
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="bg-white/70 border border-white/40 rounded-xl shadow p-4 mb-2">
+                    <p class="text-lg font-bold text-gray-800 mb-2">Mutasi & Koreksi Stok</p>
+                    <div class="ml-4 mt-2 space-y-1">
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="laporan_mutasi_in"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Mutasi Invoice
+                      </label>
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="laporan_koreksi_supplier"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Koreksi (Supplier)
+                      </label>
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="laporan_koreksi_plu"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Koreksi (PLU)
+                      </label>
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="koreksi_so"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Koreksi SO
+                      </label>
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="koreksi_so_missed"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Belum Koreksi SO
+                      </label>
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="izin"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Approval Koreksi
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="bg-white/70 border border-white/40 rounded-xl shadow p-4 mb-2">
+                    <p class="text-lg font-bold text-gray-800 mb-2">Jadwal SO</p>
+                    <div class="ml-4 mt-2 space-y-1">
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="laporan_jadwal_so"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Jadwal SO
+                      </label>
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="laporan_jadwal_so_create"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Buat Jadwal SO
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="bg-white/70 border border-white/40 rounded-xl shadow p-4 mb-2">
+                    <p class="text-lg font-bold text-gray-800 mb-2">Voucher</p>
+                    <div class="ml-4 mt-2 space-y-1">
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="voucher_index"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Data Voucher
+                      </label>
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="voucher_create"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Buat Voucher
                       </label>
                     </div>
                   </div>
@@ -249,7 +382,7 @@ $token = $menuHandler->getToken();
                   </div>
 
                   <div class="bg-white/70 border border-white/40 rounded-xl shadow p-4 mb-2">
-                    <p class="text-lg font-bold text-gray-800 mb-2">Manajemen</p>
+                    <p class="text-lg font-bold text-gray-800 mb-2">Manajemen User</p>
                     <label class="flex items-center gap-2 text-sm ml-4">
                       <input type="checkbox" name="menus[]" value="user_management"
                         class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Manajemen User
@@ -262,33 +395,43 @@ $token = $menuHandler->getToken();
 
                   <div class="bg-white/70 border border-white/40 rounded-xl shadow p-4 mb-2">
                     <p class="text-lg font-bold text-gray-800 mb-2">Member</p>
-                    <label class="flex items-center gap-2 text-sm ml-4">
-                      <input type="checkbox" name="menus[]" value="member_poin"
-                        class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Poin
-                    </label>
-                    <label class="flex items-center gap-2 text-sm ml-4">
-                      <input type="checkbox" name="menus[]" value="upload_banner"
-                        class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Banner
-                    </label>
-                    <label class="flex items-center gap-2 text-sm ml-4">
-                      <input type="checkbox" name="menus[]" value="product_favorite"
-                        class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Produk Favorit
-                    </label>
-                    <label class="flex items-center gap-2 text-sm ml-4">
-                      <input type="checkbox" name="menus[]" value="product_member"
-                        class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Produk Member
-                    </label>
-                    <label class="flex items-center gap-2 text-sm ml-4">
-                      <input type="checkbox" name="menus[]" value="top_sales"
-                        class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Top Sales
-                    </label>
+                    <div class="ml-4 mt-2 space-y-1">
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="member_poin"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Poin
+                      </label>
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="upload_banner"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Banner
+                      </label>
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="product_favorite"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Produk Favorit
+                      </label>
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="product_member"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Produk Member
+                      </label>
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="top_sales"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Top Sales
+                      </label>
+                    </div>
                   </div>
 
                   <div class="bg-white/70 border border-white/40 rounded-xl shadow p-4 mb-2">
-                    <p class="text-lg font-bold text-gray-800 mb-2">Produk</p>
+                    <p class="text-lg font-bold text-gray-800 mb-2">Produk & Aset</p>
                     <label class="flex items-center gap-2 text-sm ml-4">
                       <input type="checkbox" name="menus[]" value="product"
                         class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Produk Online
+                    </label>
+                    <label class="flex items-center gap-2 text-sm ml-4">
+                      <input type="checkbox" name="menus[]" value="history_aset"
+                        class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Management Aset
+                    </label>
+                    <label class="flex items-center gap-2 text-sm ml-4">
+                      <input type="checkbox" name="menus[]" value="laporan_log_backup"
+                        class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Log Backup
                     </label>
                   </div>
 
@@ -309,8 +452,6 @@ $token = $menuHandler->getToken();
     </section>
 
   </main>
-
-
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -393,9 +534,7 @@ $token = $menuHandler->getToken();
         selectAllCheckbox.checked = allChecked;
       });
     });
-
   </script>
 </body>
-
 
 </html>

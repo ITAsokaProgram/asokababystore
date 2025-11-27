@@ -124,6 +124,7 @@ include '../../../aa_kon_sett.php';
                             <div>
                                 <label class="form-label">No. Seri Faktur</label>
                                 <input type="text" id="inp_no_seri" name="no_seri_fp" class="input-compact" autofocus>
+                                <p id="err_no_seri" class="text-xs text-red-500 mt-1 hidden font-semibold"></p>
                             </div>
 
                             <div>
