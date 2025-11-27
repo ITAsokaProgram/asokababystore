@@ -116,6 +116,8 @@ if ($page < 1) {
                             <thead>
                                 <tr>
                                     <th>No</th>
+                                    <th>Cabang</th>
+
                                     <th>NPWP Supplier</th>
                                     <th>Nama Supplier</th>
                                     <th>NSFP</th>

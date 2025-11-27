@@ -100,8 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (tableBody)
         tableBody.innerHTML = `
               <tr>
-                  <td colspan="10" class="text-center p-8">
-                      <div class="spinner-simple"></div>
+                  <td colspan="11" class="text-center p-8"> <div class="spinner-simple"></div>
                       <p class="mt-2 text-gray-500">Memuat data...</p>
                   </td>
               </tr>`;
@@ -117,8 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function showTableError(message) {
     tableBody.innerHTML = `
         <tr>
-            <td colspan="10" class="text-center p-8 text-red-600">
-                <i class="fas fa-exclamation-triangle fa-lg mb-2"></i>
+            <td colspan="11" class="text-center p-8 text-red-600"> <i class="fas fa-exclamation-triangle fa-lg mb-2"></i>
                 <p>Gagal memuat data: ${message}</p>
             </td>
         </tr>`;
@@ -143,8 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!tabel_data || tabel_data.length === 0) {
       tableBody.innerHTML = `
             <tr>
-                <td colspan="10" class="text-center p-8 text-gray-500">
-                    <i class="fas fa-inbox fa-lg mb-2"></i>
+                <td colspan="11" class="text-center p-8 text-gray-500"> <i class="fas fa-inbox fa-lg mb-2"></i>
                     <p>Tidak ada data ditemukan untuk filter ini.</p>
                 </td>
             </tr>`;
@@ -177,7 +174,7 @@ document.addEventListener("DOMContentLoaded", () => {
       let rowClass = "border-b transition-colors ";
       let badgeHtml = "";
       if (isDuplicate) {
-        rowClass += "bg-yellow-50 hover:bg-yellow-100"; 
+        rowClass += "bg-yellow-50 hover:bg-yellow-100";
         if (currentNsfp.length > 3 && currentNsfp[2] === "1") {
           badgeHtml = `<span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">Pengganti</span>`;
         } else if (
@@ -193,6 +190,9 @@ document.addEventListener("DOMContentLoaded", () => {
       htmlRows += `
             <tr class="${rowClass}">
                 <td class="text-center font-medium text-gray-500">${item_counter}</td>
+                <td class="text-sm text-gray-700 font-semibold">
+                    ${row.Nm_Alias || "-"}
+                </td>
                 <td class="text-sm text-gray-600 font-mono">${
                   row.npwp_penjual || "-"
                 }</td>
