@@ -44,23 +44,25 @@ try {
     $offset = ($page - 1) * $limit;
     $response['pagination']['offset'] = $offset;
 
-    $where_conditions = "DATE(tgl_nota) BETWEEN ? AND ?";
+    // Conditions untuk tabel pembelian
+    $where_conditions = "DATE(p.tgl_nota) BETWEEN ? AND ?";
     $bind_types = 'ss';
     $bind_params = [$tgl_mulai, $tgl_selesai];
 
     if (!empty($search_supplier)) {
-        $where_conditions .= " AND (nama_supplier LIKE ? OR kode_supplier LIKE ?)";
+        $where_conditions .= " AND (p.nama_supplier LIKE ? OR p.kode_supplier LIKE ?)";
         $bind_types .= 'ss';
         $searchTerm = '%' . $search_supplier . '%';
         $bind_params[] = $searchTerm;
         $bind_params[] = $searchTerm;
     }
 
-    $sql_count = "SELECT COUNT(*) as total FROM ff_pembelian WHERE $where_conditions";
+    // 1. Hitung Total Rows
+    $sql_count = "SELECT COUNT(*) as total FROM ff_pembelian p WHERE $where_conditions";
     $stmt_count = $conn->prepare($sql_count);
-    if ($stmt_count === false) {
+    if ($stmt_count === false)
         throw new Exception("Prepare failed (count): " . $conn->error);
-    }
+
     $stmt_count->bind_param($bind_types, ...$bind_params);
     $stmt_count->execute();
     $result_count = $stmt_count->get_result();
@@ -70,18 +72,29 @@ try {
     $response['pagination']['total_rows'] = (int) $total_rows;
     $response['pagination']['total_pages'] = ceil($total_rows / $limit);
 
+    // 2. Ambil Data dengan LEFT JOIN ke Core Tax
+    // Logika: Mencocokkan DPP (pembelian) dengan harga_jual (coretax) DAN PPN
+    // Menggunakan GROUP BY p.id agar baris pembelian tidak duplikat jika ada multiple match di coretax
     $sql_data = "
         SELECT 
-            nama_supplier, 
-            kode_supplier, 
-            tgl_nota, 
-            no_faktur, 
-            dpp, 
-            ppn, 
-            total_terima_fp
-        FROM ff_pembelian
+            p.id,
+            p.nama_supplier, 
+            p.kode_supplier, 
+            p.tgl_nota, 
+            p.no_faktur, 
+            p.dpp, 
+            p.ppn, 
+            p.total_terima_fp,
+            p.ada_di_coretax,
+            p.nsfp,
+            -- Ambil satu kandidat NSFP dari coretax jika cocok
+            MAX(c.nomor_faktur_pajak) as candidate_nsfp,
+            COUNT(c.nomor_faktur_pajak) as match_count
+        FROM ff_pembelian p
+        LEFT JOIN ff_coretax c ON p.dpp = c.harga_jual AND p.ppn = c.ppn
         WHERE $where_conditions
-        ORDER BY tgl_nota DESC, no_faktur ASC
+        GROUP BY p.id
+        ORDER BY p.tgl_nota DESC, p.no_faktur ASC
         LIMIT ? OFFSET ?
     ";
 
@@ -90,9 +103,9 @@ try {
     $bind_params[] = $offset;
 
     $stmt_data = $conn->prepare($sql_data);
-    if ($stmt_data === false) {
+    if ($stmt_data === false)
         throw new Exception("Prepare failed (data): " . $conn->error);
-    }
+
     $stmt_data->bind_param($bind_types, ...$bind_params);
     $stmt_data->execute();
     $result_data = $stmt_data->get_result();

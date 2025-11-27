@@ -112,6 +112,8 @@ if ($page < 1) {
                                     <th class="text-right">DPP</th>
                                     <th class="text-right">PPN</th>
                                     <th class="text-right">Total Terima FP</th>
+                                    <th class="text-center" style="width: 120px;">Status Coretax</th>
+                                    <th class="text-center" style="width: 180px;">NSFP</th>
                                 </tr>
                             </thead>
                             <tbody id="receipt-table-body">

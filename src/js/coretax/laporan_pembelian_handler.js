@@ -9,10 +9,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const paginationInfo = document.getElementById("pagination-info");
   const paginationLinks = document.getElementById("pagination-links");
 
+  // Helper Format Rupiah
   function formatRupiah(number) {
-    if (isNaN(number) || number === null) {
-      return "0";
-    }
+    if (isNaN(number) || number === null) return "0";
     return new Intl.NumberFormat("id-ID", {
       style: "decimal",
       currency: "IDR",
@@ -21,6 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }).format(number);
   }
 
+  // Helper Get URL Params
   function getUrlParams() {
     const params = new URLSearchParams(window.location.search);
     const yesterday = new Date();
@@ -39,6 +39,49 @@ document.addEventListener("DOMContentLoaded", () => {
     params.set("page", newPage);
     return "?" + params.toString();
   }
+
+  // --- FUNGSI BARU: Handle Konfirmasi ---
+  window.handleConfirmCoretax = async function (id, candidateNsfp) {
+    const result = await Swal.fire({
+      title: "Konfirmasi Data?",
+      html: `Data pembelian ini cocok dengan data Core Tax.<br>
+             NSFP Core Tax: <b>${candidateNsfp}</b><br><br>
+             Apakah Anda yakin ingin menghubungkan data ini?`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Ya, Konfirmasi",
+      cancelButtonText: "Batal",
+      confirmButtonColor: "#d63384",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        Swal.fire({
+          title: "Menyimpan...",
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading(),
+        });
+
+        const response = await fetch(
+          "/src/api/coretax/konfirmasi_pembelian.php",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: id, nsfp: candidateNsfp }),
+          }
+        );
+
+        const resData = await response.json();
+
+        if (!response.ok) throw new Error(resData.error || "Gagal konfirmasi");
+
+        await Swal.fire("Berhasil!", "Data telah terkonfirmasi.", "success");
+        loadData(); // Reload table
+      } catch (error) {
+        Swal.fire("Error", error.message, "error");
+      }
+    }
+  };
 
   async function loadData() {
     const params = getUrlParams();
@@ -66,17 +109,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const data = await response.json();
 
-      if (data.error) {
-        throw new Error(data.error);
-      }
+      if (data.error) throw new Error(data.error);
 
-      if (filterInputSupplier) {
+      if (filterInputSupplier)
         filterInputSupplier.value = params.search_supplier;
-      }
-
-      if (pageSubtitle) {
+      if (pageSubtitle)
         pageSubtitle.textContent = `Periode ${params.tgl_mulai} s/d ${params.tgl_selesai}`;
-      }
 
       renderTable(
         data.tabel_data,
@@ -97,13 +135,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (filterSubmitButton)
         filterSubmitButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i><span>Memuat...</span>`;
       if (tableBody)
-        tableBody.innerHTML = `
-              <tr>
-                  <td colspan="8" class="text-center p-8">
-                      <div class="spinner-simple"></div>
-                      <p class="mt-2 text-gray-500">Memuat data...</p>
-                  </td>
-              </tr>`;
+        tableBody.innerHTML = `<tr><td colspan="9" class="text-center p-8"><div class="spinner-simple"></div><p class="mt-2 text-gray-500">Memuat data...</p></td></tr>`;
       if (paginationInfo) paginationInfo.textContent = "";
       if (paginationLinks) paginationLinks.innerHTML = "";
     } else {
@@ -117,7 +149,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function showTableError(message) {
     tableBody.innerHTML = `
         <tr>
-            <td colspan="8" class="text-center p-8 text-red-600">
+            <td colspan="9" class="text-center p-8 text-red-600">
                 <i class="fas fa-exclamation-triangle fa-lg mb-2"></i>
                 <p>Gagal memuat data: ${message}</p>
             </td>
@@ -125,10 +157,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderTable(tabel_data, offset) {
+    // Sesuaikan colspan jadi 10 karena kolom nambah satu
     if (!tabel_data || tabel_data.length === 0) {
       tableBody.innerHTML = `
             <tr>
-                <td colspan="8" class="text-center p-8 text-gray-500">
+                <td colspan="10" class="text-center p-8 text-gray-500">
                     <i class="fas fa-inbox fa-lg mb-2"></i>
                     <p>Tidak ada data ditemukan untuk filter ini.</p>
                 </td>
@@ -151,6 +184,46 @@ document.addEventListener("DOMContentLoaded", () => {
         year: "numeric",
       });
 
+      // --- LOGIKA STATUS & NSFP ---
+      let statusHtml = "";
+      let nsfpHtml = "";
+
+      if (row.ada_di_coretax == 1) {
+        // KONDISI 1: SUDAH DIKONFIRMASI
+        // Status: Badge Hijau
+        statusHtml = `
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                <i class="fas fa-check-circle mr-1"></i> Terkonfirmasi
+            </span>
+          `;
+        // NSFP: Tampilkan nomor yang tersimpan di database pembelian (Tebal Hitam)
+        nsfpHtml = `<span class="font-mono text-sm font-semibold text-gray-800">${
+          row.nsfp || "-"
+        }</span>`;
+      } else if (row.candidate_nsfp) {
+        // KONDISI 2: BELUM KONFIRMASI, TAPI ADA MATCH DI CORETAX
+        // Status: Tombol Konfirmasi
+        statusHtml = `
+            <button onclick="handleConfirmCoretax(${row.id}, '${row.candidate_nsfp}')" 
+                class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-pink-600 hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-colors"
+                title="Klik untuk menghubungkan">
+                <i class="fas fa-link mr-1"></i> Konfirmasi
+            </button>
+          `;
+        // NSFP: Tampilkan kandidat nomor dari Coretax (Warna Abu/Italic untuk indikasi belum save)
+        nsfpHtml = `
+            <div class="flex flex-col items-center">
+                <span class="font-mono text-sm text-gray-500 italic border-b border-dashed border-gray-300 cursor-help" title="Data ditemukan di Core Tax">
+                    ${row.candidate_nsfp}
+                </span>
+            </div>
+          `;
+      } else {
+        // KONDISI 3: TIDAK ADA DATA DI CORETAX
+        statusHtml = `<span class="text-gray-300">-</span>`;
+        nsfpHtml = `<span class="text-gray-300">-</span>`;
+      }
+
       htmlRows += `
             <tr class="hover:bg-gray-50">
                 <td class="text-center font-medium text-gray-500">${item_counter}</td>
@@ -171,6 +244,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td class="text-right font-bold text-gray-800">${formatRupiah(
                   total
                 )}</td>
+                
+                <td class="text-center align-middle whitespace-nowrap">
+                    ${statusHtml}
+                </td>
+                
+                <td class="text-center align-middle whitespace-nowrap">
+                    ${nsfpHtml}
+                </td>
             </tr>
         `;
       item_counter++;
