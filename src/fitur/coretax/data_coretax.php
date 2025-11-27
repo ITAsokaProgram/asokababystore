@@ -116,8 +116,8 @@ if ($page < 1) {
                             <thead>
                                 <tr>
                                     <th>No</th>
-                                    <th>NPWP Penjual</th>
-                                    <th>Nama Penjual</th>
+                                    <th>NPWP Supplier</th>
+                                    <th>Nama Supplier</th>
                                     <th>NSFP</th>
                                     <th>Tgl Faktur Pajak</th>
                                     <th>Masa Pajak</th>
