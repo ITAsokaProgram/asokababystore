@@ -122,7 +122,7 @@ include '../../../aa_kon_sett.php';
 
                         <div class="form-grid">
                             <div>
-                                <label class="form-label">No. Seri Faktur</label>
+                                <label class="form-label">NSFP</label>
                                 <input type="text" id="inp_no_seri" name="nsfp" class="input-compact" autofocus>
                                 <p id="err_no_seri" class="text-xs text-red-500 mt-1 hidden font-semibold"></p>
                             </div>

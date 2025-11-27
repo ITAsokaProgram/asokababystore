@@ -111,7 +111,7 @@ if ($page < 1) {
                                 <option value="non_jadwal" <?php echo $mode === 'non_jadwal' ? 'selected' : ''; ?>>Semua
                                     Master Belum Terkoreksi</option>
                                 <option value="master_exclude_jadwal" <?php echo $mode === 'master_exclude_jadwal' ? 'selected' : ''; ?>>
-                                    Belom Terjadwal dan Belum Terkoreksi
+                                    Belum Terjadwal dan Belum Terkoreksi
                                 </option>
                             </select>
                         </div>
