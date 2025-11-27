@@ -34,7 +34,7 @@ if ($page < 1) {
     <link rel="icon" type="image/png" href="../../../public/images/logo1.png">
 </head>
 
-<body class="bg-gray-50">
+<body class="bg-gray-50 theme-faktur-pajak">
     <?php include '../../component/navigation_report.php' ?>
     <?php include '../../component/sidebar_report.php' ?>
 

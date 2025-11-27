@@ -1084,3 +1084,325 @@ body {
 .btn-warning:active {
   transform: translateY(0);
 }
+
+/* ============================================
+   TEMA PEMBELIAN - PINK (Default)
+   ============================================ */
+.theme-pembelian .header-card {
+  background: linear-gradient(135deg, #ffffff 0%, #fdf2f8 100%);
+  border: 1px solid rgba(236, 72, 153, 0.1);
+}
+
+.theme-pembelian .header-card::before {
+  background: linear-gradient(90deg, #ec4899 0%, #f43f5e 100%);
+}
+
+.theme-pembelian .icon-wrapper {
+  background: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);
+  box-shadow: 0 8px 24px rgba(236, 72, 153, 0.4);
+}
+
+.theme-pembelian .filter-card-simple,
+.theme-pembelian .filter-card {
+  border: 1px solid rgba(236, 72, 153, 0.1);
+}
+
+.theme-pembelian .filter-card-simple::before,
+.theme-pembelian .filter-card::before {
+  background: linear-gradient(90deg, #ec4899 0%, #f43f5e 100%);
+}
+
+.theme-pembelian .table-modern thead {
+  background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%);
+}
+
+.theme-pembelian .table-modern thead th {
+  border-bottom: 2px solid #ec4899;
+}
+
+.theme-pembelian label i {
+  color: #ec4899;
+}
+
+/* ============================================
+   TEMA FAKTUR PAJAK - PURPLE
+   ============================================ */
+.theme-faktur-pajak .header-card {
+  background: linear-gradient(135deg, #ffffff 0%, #faf5ff 100%);
+  border: 1px solid rgba(168, 85, 247, 0.1);
+}
+
+.theme-faktur-pajak .header-card::before {
+  background: linear-gradient(90deg, #a855f7 0%, #9333ea 100%);
+}
+
+.theme-faktur-pajak .icon-wrapper {
+  background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
+  box-shadow: 0 8px 24px rgba(168, 85, 247, 0.4);
+}
+
+.theme-faktur-pajak .filter-card-simple,
+.theme-faktur-pajak .filter-card {
+  border: 1px solid rgba(168, 85, 247, 0.1);
+}
+
+.theme-faktur-pajak .filter-card-simple::before,
+.theme-faktur-pajak .filter-card::before {
+  background: linear-gradient(90deg, #a855f7 0%, #9333ea 100%);
+}
+
+.theme-faktur-pajak .table-modern thead {
+  background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+}
+
+.theme-faktur-pajak .table-modern thead th {
+  border-bottom: 2px solid #a855f7;
+}
+
+.theme-faktur-pajak label i {
+  color: #a855f7;
+}
+
+.theme-faktur-pajak .btn-primary {
+  background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
+  box-shadow: 0 4px 16px rgba(168, 85, 247, 0.3);
+}
+
+.theme-faktur-pajak .btn-primary:hover:not(:disabled) {
+  box-shadow: 0 8px 24px rgba(168, 85, 247, 0.4);
+}
+
+/* ============================================
+   TEMA DATA CORETAX - BLUE
+   ============================================ */
+.theme-coretax .header-card {
+  background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);
+  border: 1px solid rgba(59, 130, 246, 0.1);
+}
+
+.theme-coretax .header-card::before {
+  background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.theme-coretax .icon-wrapper {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+}
+
+.theme-coretax .filter-card-simple,
+.theme-coretax .filter-card {
+  border: 1px solid rgba(59, 130, 246, 0.1);
+}
+
+.theme-coretax .filter-card-simple::before,
+.theme-coretax .filter-card::before {
+  background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.theme-coretax .table-modern thead {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+}
+
+.theme-coretax .table-modern thead th {
+  border-bottom: 2px solid #3b82f6;
+}
+
+.theme-coretax label i {
+  color: #3b82f6;
+}
+
+.theme-coretax .btn-primary {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+}
+
+.theme-coretax .btn-primary:hover:not(:disabled) {
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+}
+
+/* ============================================
+   TEMA RECEIPT HEAD - EMERALD GREEN
+   ============================================ */
+.theme-receipt .header-card {
+  background: linear-gradient(135deg, #ffffff 0%, #ecfdf5 100%);
+  border: 1px solid rgba(16, 185, 129, 0.1);
+}
+
+.theme-receipt .header-card::before {
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+}
+
+.theme-receipt .icon-wrapper {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
+}
+
+.theme-receipt .filter-card-simple,
+.theme-receipt .filter-card {
+  border: 1px solid rgba(16, 185, 129, 0.1);
+}
+
+.theme-receipt .filter-card-simple::before,
+.theme-receipt .filter-card::before {
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+}
+
+.theme-receipt .table-modern thead {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+}
+
+.theme-receipt .table-modern thead th {
+  border-bottom: 2px solid #10b981;
+}
+
+.theme-receipt label i {
+  color: #10b981;
+}
+
+.theme-receipt .btn-primary {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+}
+
+.theme-receipt .btn-primary:hover:not(:disabled) {
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
+}
+
+/* ============================================
+   SHARED HOVER & FOCUS STYLES (Per Theme)
+   ============================================ */
+.theme-pembelian .input-modern:focus {
+  border-color: #ec4899;
+  box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.1);
+}
+
+.theme-faktur-pajak .input-modern:focus {
+  border-color: #a855f7;
+  box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.1);
+}
+
+.theme-coretax .input-modern:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.theme-receipt .input-modern:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+}
+
+/* ============================================
+   TABLE HOVER EFFECTS (Per Theme)
+   ============================================ */
+.theme-pembelian .table-modern tbody tr:hover {
+  background: linear-gradient(
+    90deg,
+    rgba(236, 72, 153, 0.04) 0%,
+    rgba(244, 63, 94, 0.04) 100%
+  );
+}
+
+.theme-faktur-pajak .table-modern tbody tr:hover {
+  background: linear-gradient(
+    90deg,
+    rgba(168, 85, 247, 0.04) 0%,
+    rgba(147, 51, 234, 0.04) 100%
+  );
+}
+
+.theme-coretax .table-modern tbody tr:hover {
+  background: linear-gradient(
+    90deg,
+    rgba(59, 130, 246, 0.04) 0%,
+    rgba(37, 99, 235, 0.04) 100%
+  );
+}
+
+.theme-receipt .table-modern tbody tr:hover {
+  background: linear-gradient(
+    90deg,
+    rgba(16, 185, 129, 0.04) 0%,
+    rgba(5, 150, 105, 0.04) 100%
+  );
+}
+
+/* ============================================
+   PAGINATION STYLES (Per Theme)
+   ============================================ */
+.theme-pembelian #pagination-container {
+  background: linear-gradient(135deg, #fdf2f8 0%, #ffffff 100%);
+  border: 1px solid rgba(236, 72, 153, 0.1);
+}
+
+.theme-faktur-pajak #pagination-container {
+  background: linear-gradient(135deg, #faf5ff 0%, #ffffff 100%);
+  border: 1px solid rgba(168, 85, 247, 0.1);
+}
+
+.theme-coretax #pagination-container {
+  background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
+  border: 1px solid rgba(59, 130, 246, 0.1);
+}
+
+.theme-receipt #pagination-container {
+  background: linear-gradient(135deg, #ecfdf5 0%, #ffffff 100%);
+  border: 1px solid rgba(16, 185, 129, 0.1);
+}
+
+/* Active Pagination Button */
+.theme-pembelian .pagination-active {
+  background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+  border-color: #ec4899;
+  box-shadow: 0 4px 16px rgba(236, 72, 153, 0.35);
+}
+
+.theme-faktur-pajak .pagination-active {
+  background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
+  border-color: #a855f7;
+  box-shadow: 0 4px 16px rgba(168, 85, 247, 0.35);
+}
+
+.theme-coretax .pagination-active {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border-color: #3b82f6;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.35);
+}
+
+.theme-receipt .pagination-active {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border-color: #10b981;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35);
+}
+
+/* Pagination Hover Effects */
+.theme-pembelian
+  .pagination-link:hover:not(.pagination-disabled):not(.pagination-active) {
+  background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%);
+  border-color: #ec4899;
+  color: #ec4899;
+  box-shadow: 0 4px 12px rgba(236, 72, 153, 0.2);
+}
+
+.theme-faktur-pajak
+  .pagination-link:hover:not(.pagination-disabled):not(.pagination-active) {
+  background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+  border-color: #a855f7;
+  color: #a855f7;
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.2);
+}
+
+.theme-coretax
+  .pagination-link:hover:not(.pagination-disabled):not(.pagination-active) {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-color: #3b82f6;
+  color: #3b82f6;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+.theme-receipt
+  .pagination-link:hover:not(.pagination-disabled):not(.pagination-active) {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border-color: #10b981;
+  color: #10b981;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
