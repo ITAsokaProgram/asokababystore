@@ -128,8 +128,8 @@ if ($page < 1) {
                                 <tr>
                                     <th>No</th>
                                     <th>Tgl Tiba</th>
-                                    <th>No Faktur</th>
-                                    <th>No LPB</th>
+                                    <th>Nomor Penerimaan</th>
+                                    <th>Nomor Invoice</th>
                                     <th>Cabang</th>
                                     <th>Supplier</th>
                                     <th class="text-right">DPP (Netto)</th>
