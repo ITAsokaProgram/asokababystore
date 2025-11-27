@@ -159,15 +159,15 @@ document.addEventListener("DOMContentLoaded", () => {
         month: "2-digit",
         year: "numeric",
       });
-      const currentNsfp = row.nomor_faktur_pajak || "";
+      const currentNsfp = row.nsfp || "";
       const currentSuffix =
         currentNsfp.length >= 8 ? currentNsfp.slice(-8) : currentNsfp;
       const prevRow = index > 0 ? tabel_data[index - 1] : null;
-      const prevNsfp = prevRow ? prevRow.nomor_faktur_pajak || "" : "";
+      const prevNsfp = prevRow ? prevRow.nsfp || "" : "";
       const prevSuffix = prevNsfp.length >= 8 ? prevNsfp.slice(-8) : "";
       const nextRow =
         index < tabel_data.length - 1 ? tabel_data[index + 1] : null;
-      const nextNsfp = nextRow ? nextRow.nomor_faktur_pajak || "" : "";
+      const nextNsfp = nextRow ? nextRow.nsfp || "" : "";
       const nextSuffix = nextNsfp.length >= 8 ? nextNsfp.slice(-8) : "";
       const isDuplicate =
         currentSuffix === prevSuffix || currentSuffix === nextSuffix;
@@ -200,7 +200,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   row.nama_penjual
                 }">${row.nama_penjual || "-"}</td>
                 <td class="font-semibold text-gray-700">
-                    ${row.nomor_faktur_pajak}
+                    ${row.nsfp}
                     ${badgeHtml} 
                 </td>
                 <td>${dateFormatted}</td>

@@ -49,7 +49,7 @@ try {
     $bind_params = [$tgl_mulai, $tgl_selesai];
 
     if (!empty($search_supplier)) {
-        $where_conditions .= " AND (nama_supplier LIKE ? OR no_seri_fp LIKE ?)";
+        $where_conditions .= " AND (nama_supplier LIKE ? OR nsfp LIKE ?)";
         $bind_types .= 'ss';
         $searchTerm = '%' . $search_supplier . '%';
         $bind_params[] = $searchTerm;
@@ -72,7 +72,7 @@ try {
 
     $sql_data = "
         SELECT 
-            no_seri_fp, 
+            nsfp, 
             tgl_faktur, 
             nama_supplier, 
             dpp, 
@@ -81,7 +81,7 @@ try {
             total
         FROM ff_faktur_pajak
         WHERE $where_conditions
-        ORDER BY tgl_faktur DESC, no_seri_fp ASC
+        ORDER BY tgl_faktur DESC, nsfp ASC
         LIMIT ? OFFSET ?
     ";
 

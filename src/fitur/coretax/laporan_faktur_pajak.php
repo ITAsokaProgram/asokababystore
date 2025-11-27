@@ -105,7 +105,7 @@ if ($page < 1) {
                             <thead>
                                 <tr>
                                     <th>No</th>
-                                    <th>No Seri FP</th>
+                                    <th>NSFP</th>
                                     <th>Tgl Faktur</th>
                                     <th>Nama Supplier</th>
                                     <th class="text-right">DPP</th>

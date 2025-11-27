@@ -155,7 +155,7 @@ document.addEventListener("DOMContentLoaded", () => {
       htmlRows += `
             <tr class="hover:bg-gray-50">
                 <td class="text-center font-medium text-gray-500">${item_counter}</td>
-                <td class="font-semibold text-gray-700">${row.no_seri_fp}</td>
+                <td class="font-semibold text-gray-700">${row.nsfp}</td>
                 <td>${dateFormatted}</td>
                 <td class="text-sm font-medium text-gray-800">${
                   row.nama_supplier || "-"

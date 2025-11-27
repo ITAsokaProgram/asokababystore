@@ -57,7 +57,7 @@ try {
 
     // UPDATE: Logika pencarian ditambah ke nomor faktur
     if (!empty($search_supplier)) {
-        $where_conditions .= " AND (fc.nama_penjual LIKE ? OR fc.npwp_penjual LIKE ? OR fc.nomor_faktur_pajak LIKE ?)";
+        $where_conditions .= " AND (fc.nama_penjual LIKE ? OR fc.npwp_penjual LIKE ? OR fc.nsfp LIKE ?)";
         $bind_types .= 'sss'; // Tambah satu 's' lagi
         $searchTerm = '%' . $search_supplier . '%';
         $bind_params[] = $searchTerm;
@@ -86,7 +86,7 @@ try {
         SELECT 
             fc.npwp_penjual,
             fc.nama_penjual,
-            fc.nomor_faktur_pajak,
+            fc.nsfp,
             fc.tgl_faktur_pajak,
             fc.masa_pajak,
             fc.tahun,
@@ -98,7 +98,7 @@ try {
         FROM ff_coretax fc
         LEFT JOIN kode_store ks ON fc.kode_store = ks.Kd_Store
         WHERE $where_conditions
-        ORDER BY RIGHT(fc.nomor_faktur_pajak, 8) DESC, fc.nomor_faktur_pajak ASC
+        ORDER BY RIGHT(fc.nsfp, 8) DESC, fc.nsfp ASC
         LIMIT ? OFFSET ?
     ";
     $bind_types .= 'ii';

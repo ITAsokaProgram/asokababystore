@@ -88,8 +88,8 @@ try {
             p.ada_di_coretax,
             p.nsfp,
             -- Ambil SEMUA kandidat NSFP dipisah koma (misal: '010.xxx,010.yyy')
-            GROUP_CONCAT(c.nomor_faktur_pajak SEPARATOR ',') as candidate_nsfps,
-            COUNT(c.nomor_faktur_pajak) as match_count
+            GROUP_CONCAT(c.nsfp SEPARATOR ',') as candidate_nsfps,
+            COUNT(c.nsfp) as match_count
         FROM ff_pembelian p
         LEFT JOIN ff_coretax c ON p.dpp = c.harga_jual AND p.ppn = c.ppn
         WHERE $where_conditions

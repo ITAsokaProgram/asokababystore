@@ -95,7 +95,7 @@ try {
     $duplicate_rows = [];
 
     $sql = "INSERT INTO ff_coretax (
-        kode_store, npwp_penjual, nama_penjual, nomor_faktur_pajak, tgl_faktur_pajak, 
+        kode_store, npwp_penjual, nama_penjual, nsfp, tgl_faktur_pajak, 
         masa_pajak, tahun, masa_pajak_pengkreditkan, tahun_pajak_pengkreditan, 
         harga_jual, dpp_nilai_lain, ppn, ppnbm, 
         perekam, nomor_sp2d, valid, dilaporkan, dilaporkan_oleh_penjual

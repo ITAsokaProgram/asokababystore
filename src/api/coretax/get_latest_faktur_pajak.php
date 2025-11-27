@@ -11,7 +11,7 @@ try {
     }
     $query = "SELECT 
                 id, 
-                no_seri_fp, 
+                nsfp, 
                 tgl_faktur, 
                 nama_supplier, 
                 dpp, 

@@ -25,38 +25,38 @@ try {
         throw new Exception("Data tidak valid");
     }
     $id = isset($input['id']) ? (int) $input['id'] : null;
-    $no_seri_fp = $input['no_seri_fp'] ?? '';
+    $nsfp = $input['nsfp'] ?? '';
     $nama_supplier = $input['nama_supplier'] ?? '';
     $tgl_faktur = !empty($input['tgl_faktur']) ? $input['tgl_faktur'] : NULL;
     $dpp = (float) ($input['dpp'] ?? 0);
     $dpp_nilai_lain = (float) ($input['dpp_nilai_lain'] ?? 0);
     $ppn = (float) ($input['ppn'] ?? 0);
     $total = (float) ($input['total'] ?? 0);
-    if (empty($no_seri_fp)) {
+    if (empty($nsfp)) {
         throw new Exception("No Seri Faktur wajib diisi.");
     }
     if ($id) {
-        $stmt = $conn->prepare("UPDATE ff_faktur_pajak SET no_seri_fp=?, tgl_faktur=?, nama_supplier=?, dpp=?, dpp_nilai_lain=?, ppn=?, total=?, kd_user=?, edit_pada=NOW() WHERE id=?");
+        $stmt = $conn->prepare("UPDATE ff_faktur_pajak SET nsfp=?, tgl_faktur=?, nama_supplier=?, dpp=?, dpp_nilai_lain=?, ppn=?, total=?, kd_user=?, edit_pada=NOW() WHERE id=?");
         if (!$stmt)
             throw new Exception("Prepare Update Error: " . $conn->error);
-        $stmt->bind_param("sssddddii", $no_seri_fp, $tgl_faktur, $nama_supplier, $dpp, $dpp_nilai_lain, $ppn, $total, $kd_user, $id);
+        $stmt->bind_param("sssddddii", $nsfp, $tgl_faktur, $nama_supplier, $dpp, $dpp_nilai_lain, $ppn, $total, $kd_user, $id);
         if (!$stmt->execute()) {
             throw new Exception("Gagal mengupdate data: " . $stmt->error);
         }
         $message = "Data berhasil diperbarui.";
     } else {
-        $check = $conn->prepare("SELECT id FROM ff_faktur_pajak WHERE no_seri_fp = ?");
-        $check->bind_param("s", $no_seri_fp);
+        $check = $conn->prepare("SELECT id FROM ff_faktur_pajak WHERE nsfp = ?");
+        $check->bind_param("s", $nsfp);
         $check->execute();
         $check->store_result();
         if ($check->num_rows > 0) {
-            throw new Exception("No Seri Faktur '$no_seri_fp' sudah ada di database.");
+            throw new Exception("No Seri Faktur '$nsfp' sudah ada di database.");
         }
         $check->close();
-        $stmt = $conn->prepare("INSERT INTO ff_faktur_pajak (no_seri_fp, tgl_faktur, nama_supplier, dpp, dpp_nilai_lain, ppn, total, kd_user) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt = $conn->prepare("INSERT INTO ff_faktur_pajak (nsfp, tgl_faktur, nama_supplier, dpp, dpp_nilai_lain, ppn, total, kd_user) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         if (!$stmt)
             throw new Exception("Prepare Insert Error: " . $conn->error);
-        $stmt->bind_param("sssddddi", $no_seri_fp, $tgl_faktur, $nama_supplier, $dpp, $dpp_nilai_lain, $ppn, $total, $kd_user);
+        $stmt->bind_param("sssddddi", $nsfp, $tgl_faktur, $nama_supplier, $dpp, $dpp_nilai_lain, $ppn, $total, $kd_user);
         if (!$stmt->execute()) {
             throw new Exception("Gagal menyimpan data: " . $stmt->error);
         }

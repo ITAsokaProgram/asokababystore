@@ -123,7 +123,7 @@ include '../../../aa_kon_sett.php';
                         <div class="form-grid">
                             <div>
                                 <label class="form-label">No. Seri Faktur</label>
-                                <input type="text" id="inp_no_seri" name="no_seri_fp" class="input-compact" autofocus>
+                                <input type="text" id="inp_no_seri" name="nsfp" class="input-compact" autofocus>
                                 <p id="err_no_seri" class="text-xs text-red-500 mt-1 hidden font-semibold"></p>
                             </div>
 
@@ -185,7 +185,7 @@ include '../../../aa_kon_sett.php';
                                 <tr>
                                     <th class="w-10 text-center">No</th>
                                     <th>Tgl Faktur</th>
-                                    <th>No Seri FP</th>
+                                    <th>NSFP</th>
                                     <th>Supplier</th>
                                     <th class="text-right">DPP</th>
                                     <th class="text-right">DPP Lain</th>

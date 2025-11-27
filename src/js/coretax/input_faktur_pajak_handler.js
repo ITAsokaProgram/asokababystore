@@ -43,7 +43,7 @@ async function checkDuplicateFP(noSeri) {
   const currentId = inpId.value || 0;
   try {
     const result = await sendRequestGET(
-      `${API_URLS.checkDuplicate}?no_seri_fp=${encodeURIComponent(
+      `${API_URLS.checkDuplicate}?nsfp=${encodeURIComponent(
         noSeri
       )}&exclude_id=${currentId}`
     );
@@ -111,7 +111,7 @@ function renderTable(data) {
             <tr class="hover:bg-pink-50 transition-colors">
                 <td class="text-center text-gray-500">${index + 1}</td>
                 <td>${row.tgl_faktur || "-"}</td>
-                <td class="font-medium text-gray-800">${row.no_seri_fp}</td>
+                <td class="font-medium text-gray-800">${row.nsfp}</td>
                 <td class="text-sm">${row.nama_supplier || "-"}</td>
                 <td class="text-right font-mono">${formatNumber(dpp)}</td>
                 <td class="text-right font-mono">${formatNumber(dppLain)}</td>
@@ -139,7 +139,7 @@ function renderTable(data) {
 function startEditMode(data) {
   resetErrorState();
   inpId.value = data.id;
-  inpNoSeri.value = data.no_seri_fp;
+  inpNoSeri.value = data.nsfp;
   inpNamaSupp.value = data.nama_supplier;
   inpTgl.value = data.tgl_faktur;
   inpDpp.value = formatNumber(data.dpp);
@@ -192,7 +192,7 @@ async function handleSave() {
   isSubmitting = true;
   const payload = {
     id: inpId.value || null,
-    no_seri_fp: noSeri,
+    nsfp: noSeri,
     nama_supplier: namaSupp,
     tgl_faktur: inpTgl.value,
     dpp: parseNumber(inpDpp.value),
