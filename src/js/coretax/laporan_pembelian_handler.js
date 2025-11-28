@@ -2,12 +2,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const tableBody = document.getElementById("receipt-table-body");
   const filterForm = document.getElementById("filter-form");
   const filterSubmitButton = document.getElementById("filter-submit-button");
+  const filterSelectStore = document.getElementById("kd_store");
+  const filterSelectStatus = document.getElementById("status_data");
   const filterInputSupplier = document.getElementById("search_supplier");
   const pageTitle = document.getElementById("page-title");
   const pageSubtitle = document.getElementById("page-subtitle");
   const paginationContainer = document.getElementById("pagination-container");
   const paginationInfo = document.getElementById("pagination-info");
   const paginationLinks = document.getElementById("pagination-links");
+
   function getCookie(name) {
     const value = document.cookie.match(
       "(^|;)\\s*" + name + "\\s*=\\s*([^;]+)"
@@ -15,9 +18,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (value) return value[2];
     return null;
   }
+
   function getToken() {
     return getCookie("admin_token");
   }
+
   function formatRupiah(number) {
     if (isNaN(number) || number === null) return "0";
     return new Intl.NumberFormat("id-ID", {
@@ -27,6 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
       maximumFractionDigits: 0,
     }).format(number);
   }
+
   function getUrlParams() {
     const params = new URLSearchParams(window.location.search);
     const yesterday = new Date();
@@ -35,26 +41,47 @@ document.addEventListener("DOMContentLoaded", () => {
     return {
       tgl_mulai: params.get("tgl_mulai") || yesterdayString,
       tgl_selesai: params.get("tgl_selesai") || yesterdayString,
+      kd_store: params.get("kd_store") || "all",
+      status_data: params.get("status_data") || "all",
       search_supplier: params.get("search_supplier") || "",
       page: parseInt(params.get("page") || "1", 10),
     };
   }
+
   function build_pagination_url(newPage) {
     const params = new URLSearchParams(window.location.search);
     params.set("page", newPage);
     return "?" + params.toString();
   }
+
+  // --- Fungsi Populate Filter Store (Baru) ---
+  function populateStoreFilter(stores, selectedStore) {
+    if (!filterSelectStore || filterSelectStore.options.length > 1) {
+      filterSelectStore.value = selectedStore;
+      return;
+    }
+    stores.forEach((store) => {
+      const option = document.createElement("option");
+      option.value = store.kd_store;
+      option.textContent = `${store.kd_store} - ${store.nm_alias}`;
+      if (store.kd_store === selectedStore) {
+        option.selected = true;
+      }
+      filterSelectStore.appendChild(option);
+    });
+    filterSelectStore.value = selectedStore;
+  }
+
   /**
    * Menangani Konfirmasi
-   * @param {number} id - ID Pembelian
-   * @param {string} candidateString - List NSFP dipisah koma
-   * @param {boolean} isDualMatch - (Baru) Apakah NSFP cocok di Coretax DAN Fisik
+   * (Kode handleConfirmCoretax tetap sama seperti sebelumnya, tidak diubah)
    */
   window.handleConfirmCoretax = async function (
     id,
     candidateString,
     isDualMatch = false
   ) {
+    // ... (Logic konfirmasi tetap sama) ...
     const candidates = candidateString.split(",");
     let selectedNsfp = candidates[0];
     if (candidates.length > 1) {
@@ -89,12 +116,12 @@ document.addEventListener("DOMContentLoaded", () => {
       let htmlContent = "";
       if (isDualMatch) {
         htmlContent = `Data pembelian ini cocok dengan data <b>Coretax</b> dan <b>Fisik</b>.<br>
-                       NSFP: <b class="text-lg">${selectedNsfp}</b><br><br>
-                       Hubungkan data ini?`;
+                        NSFP: <b class="text-lg">${selectedNsfp}</b><br><br>
+                        Hubungkan data ini?`;
       } else {
         htmlContent = `Data pembelian ini cocok dengan data Coretax.<br>
-                       NSFP: <b class="text-lg">${selectedNsfp}</b><br><br>
-                       Hubungkan data ini?`;
+                        NSFP: <b class="text-lg">${selectedNsfp}</b><br><br>
+                        Hubungkan data ini?`;
       }
       const result = await Swal.fire({
         title: "Konfirmasi Data?",
@@ -142,16 +169,22 @@ document.addEventListener("DOMContentLoaded", () => {
       Swal.fire("Error", error.message, "error");
     }
   };
+
   async function loadData() {
     const params = getUrlParams();
     const isPagination = params.page > 1;
     setLoadingState(true, isPagination);
+
+    // Tambahkan parameter baru ke query string
     const queryString = new URLSearchParams({
       tgl_mulai: params.tgl_mulai,
       tgl_selesai: params.tgl_selesai,
+      kd_store: params.kd_store,
+      status_data: params.status_data,
       search_supplier: params.search_supplier,
       page: params.page,
     }).toString();
+
     try {
       const response = await fetch(
         `/src/api/coretax/get_laporan_pembelian.php?${queryString}`
@@ -164,10 +197,32 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       const data = await response.json();
       if (data.error) throw new Error(data.error);
+
+      // --- Handle Store Filter Population ---
+      if (data.stores) {
+        populateStoreFilter(data.stores, params.kd_store);
+      }
+
+      // --- Update UI Inputs ---
       if (filterInputSupplier)
         filterInputSupplier.value = params.search_supplier;
-      if (pageSubtitle)
-        pageSubtitle.textContent = `Periode ${params.tgl_mulai} s/d ${params.tgl_selesai}`;
+      if (filterSelectStatus) filterSelectStatus.value = params.status_data;
+
+      // --- Update Subtitle ---
+      if (pageSubtitle) {
+        let storeName = "";
+        if (
+          filterSelectStore.options.length > 0 &&
+          filterSelectStore.selectedIndex > -1 &&
+          filterSelectStore.value !== "all"
+        ) {
+          storeName =
+            " - " +
+            filterSelectStore.options[filterSelectStore.selectedIndex].text;
+        }
+        pageSubtitle.textContent = `Periode ${params.tgl_mulai} s/d ${params.tgl_selesai}${storeName}`;
+      }
+
       renderTable(
         data.tabel_data,
         data.pagination ? data.pagination.offset : 0
@@ -180,13 +235,14 @@ document.addEventListener("DOMContentLoaded", () => {
       setLoadingState(false);
     }
   }
+
   function setLoadingState(isLoading, isPagination = false) {
     if (isLoading) {
       if (filterSubmitButton) filterSubmitButton.disabled = true;
       if (filterSubmitButton)
         filterSubmitButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i><span>Memuat...</span>`;
       if (tableBody)
-        tableBody.innerHTML = `<tr><td colspan="10" class="text-center p-8"><div class="spinner-simple"></div><p class="mt-2 text-gray-500">Memuat data...</p></td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-8"><div class="spinner-simple"></div><p class="mt-2 text-gray-500">Memuat data...</p></td></tr>`;
       if (paginationInfo) paginationInfo.textContent = "";
       if (paginationLinks) paginationLinks.innerHTML = "";
     } else {
@@ -196,20 +252,22 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   }
+
   function showTableError(message) {
     tableBody.innerHTML = `
         <tr>
-            <td colspan="10" class="text-center p-8 text-red-600">
+            <td colspan="11" class="text-center p-8 text-red-600">
                 <i class="fas fa-exclamation-triangle fa-lg mb-2"></i>
                 <p>Gagal memuat data: ${message}</p>
             </td>
         </tr>`;
   }
+
   function renderTable(tabel_data, offset) {
     if (!tabel_data || tabel_data.length === 0) {
       tableBody.innerHTML = `
             <tr>
-                <td colspan="10" class="text-center p-8 text-gray-500">
+                <td colspan="11" class="text-center p-8 text-gray-500">
                     <i class="fas fa-inbox fa-lg mb-2"></i>
                     <p>Tidak ada data ditemukan untuk filter ini.</p>
                 </td>
@@ -219,6 +277,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let htmlRows = "";
     let item_counter = offset + 1;
     tabel_data.forEach((row) => {
+      // (Logic Render Table tidak berubah signifikan, hanya penyesuaian kolom)
       const dpp = parseFloat(row.dpp) || 0;
       const ppn = parseFloat(row.ppn) || 0;
       const total = parseFloat(row.total_terima_fp) || 0;
@@ -229,6 +288,8 @@ document.addEventListener("DOMContentLoaded", () => {
         month: "2-digit",
         year: "numeric",
       });
+
+      // ... (Logic Candidate/MergedCandidatesMap sama persis dari kode sebelumnya) ...
       let mergedCandidatesMap = new Map();
       if (row.candidate_nsfps) {
         const candidatesRaw = row.candidate_nsfps.split(",");
@@ -275,8 +336,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (a.matchType !== "INVOICE" && b.matchType === "INVOICE") return 1;
         return 0;
       });
+
       let htmlFisik = '<span class="text-gray-300 text-xs">-</span>';
       let htmlCoretax = '<span class="text-gray-300 text-xs">-</span>';
+
       if (row.ada_di_coretax == 1) {
         const badgeConfirmed = `
             <div class="flex flex-col items-center justify-center gap-1">
@@ -345,6 +408,7 @@ document.addEventListener("DOMContentLoaded", () => {
           htmlCoretax = errorHtml;
         }
       }
+
       htmlRows += `
             <tr class="hover:bg-gray-50">
                 <td class="text-center font-medium text-gray-500">${item_counter}</td>
@@ -382,7 +446,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     tableBody.innerHTML = htmlRows;
   }
+
+  // --- Render Pagination ---
   function renderPagination(pagination) {
+    // (Sama persis dengan kode sebelumnya)
     if (!pagination) {
       paginationInfo.textContent = "";
       paginationLinks.innerHTML = "";
@@ -449,6 +516,7 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
     paginationLinks.innerHTML = linksHtml;
   }
+
   if (filterForm) {
     filterForm.addEventListener("submit", (e) => {
       e.preventDefault();

@@ -14,6 +14,7 @@ register_shutdown_function(function () {
 });
 header('Content-Type: application/json');
 $response = [
+    'stores' => [], // Added stores array
     'tabel_data' => [],
     'pagination' => [
         'current_page' => 1,
@@ -29,6 +30,11 @@ try {
     $tgl_mulai = $_GET['tgl_mulai'] ?? $tanggal_kemarin;
     $tgl_selesai = $_GET['tgl_selesai'] ?? $tanggal_kemarin;
     $search_supplier = $_GET['search_supplier'] ?? '';
+
+    // Parameter Baru
+    $kd_store = $_GET['kd_store'] ?? 'all';
+    $status_data = $_GET['status_data'] ?? 'all';
+
     $page = (int) ($_GET['page'] ?? 1);
     if ($page < 1)
         $page = 1;
@@ -37,16 +43,68 @@ try {
     $response['pagination']['current_page'] = $page;
     $offset = ($page - 1) * $limit;
     $response['pagination']['offset'] = $offset;
+
+    // --- 1. Load Data Stores untuk Filter ---
+    $sql_stores = "SELECT kd_store, nm_alias FROM kode_store WHERE display = 'on' ORDER BY Nm_Alias ASC";
+    $result_stores = $conn->query($sql_stores);
+    if ($result_stores) {
+        while ($row = $result_stores->fetch_assoc()) {
+            $response['stores'][] = $row;
+        }
+    }
+
+    // --- 2. Build Query Conditions ---
     $where_conditions = "DATE(p.tgl_nota) BETWEEN ? AND ?";
     $bind_types = 'ss';
     $bind_params = [$tgl_mulai, $tgl_selesai];
-    if (!empty($search_supplier)) {
-        $where_conditions .= " AND (p.nama_supplier LIKE ? OR p.kode_supplier LIKE ?)";
-        $bind_types .= 'ss';
-        $searchTerm = '%' . $search_supplier . '%';
-        $bind_params[] = $searchTerm;
-        $bind_params[] = $searchTerm;
+
+    // Filter Cabang
+    if ($kd_store != 'all') {
+        $where_conditions .= " AND p.kode_store = ?";
+        $bind_types .= 's';
+        $bind_params[] = $kd_store;
     }
+
+    // Filter Status Sinkronisasi
+    if ($status_data != 'all') {
+        if ($status_data == 'unlinked') {
+            $where_conditions .= " AND (p.ada_di_coretax = 0 OR p.ada_di_coretax IS NULL)";
+        } elseif ($status_data == 'linked_any') {
+            $where_conditions .= " AND p.ada_di_coretax = 1";
+        } elseif ($status_data == 'linked_coretax') {
+            $where_conditions .= " AND p.ada_di_coretax = 1 AND p.tipe_nsfp LIKE '%coretax%'";
+        } elseif ($status_data == 'linked_fisik') {
+            $where_conditions .= " AND p.ada_di_coretax = 1 AND p.tipe_nsfp LIKE '%fisik%'";
+        } elseif ($status_data == 'linked_both') {
+            // Mencari yang mengandung coretax DAN fisik
+            $where_conditions .= " AND p.ada_di_coretax = 1 AND p.tipe_nsfp LIKE '%coretax%' AND p.tipe_nsfp LIKE '%fisik%'";
+        }
+    }
+
+    // Filter Search Expanded (Nama, NSFP, DPP, DPP Lain, PPN)
+    if (!empty($search_supplier)) {
+        // Kita gunakan OR untuk mencari di beberapa kolom sekaligus
+        $where_conditions .= " AND (
+            p.nama_supplier LIKE ? 
+            OR p.kode_supplier LIKE ? 
+            OR p.nsfp LIKE ? 
+            OR CAST(p.dpp AS CHAR) LIKE ? 
+            OR CAST(p.dpp_nilai_lain AS CHAR) LIKE ? 
+            OR CAST(p.ppn AS CHAR) LIKE ?
+        )";
+        // Kita butuh 6 parameter string untuk bind
+        $bind_types .= 'ssssss';
+        $searchTerm = '%' . $search_supplier . '%';
+        // Tambahkan parameter sebanyak kolom yang di-search
+        $bind_params[] = $searchTerm; // nama
+        $bind_params[] = $searchTerm; // kode
+        $bind_params[] = $searchTerm; // nsfp
+        $bind_params[] = $searchTerm; // dpp
+        $bind_params[] = $searchTerm; // dpp_nilai_lain
+        $bind_params[] = $searchTerm; // ppn
+    }
+
+    // --- 3. Hitung Total Data (Count) ---
     $sql_count = "SELECT COUNT(*) as total FROM ff_pembelian p WHERE $where_conditions";
     $stmt_count = $conn->prepare($sql_count);
     if ($stmt_count === false)
@@ -58,6 +116,8 @@ try {
     $stmt_count->close();
     $response['pagination']['total_rows'] = (int) $total_rows;
     $response['pagination']['total_pages'] = ceil($total_rows / $limit);
+
+    // --- 4. Main Query Data ---
     $sql_data = "
         SELECT 
             p.id,
