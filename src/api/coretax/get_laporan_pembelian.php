@@ -35,7 +35,6 @@ try {
     $tgl_selesai = $_GET['tgl_selesai'] ?? $tanggal_kemarin;
     $search_supplier = $_GET['search_supplier'] ?? '';
 
-
     $kd_store = $_GET['kd_store'] ?? 'all';
     $status_data = $_GET['status_data'] ?? 'all';
 
@@ -83,7 +82,6 @@ try {
         } elseif ($status_data == 'linked_both') {
             $where_conditions .= " AND p.ada_di_coretax = 1 AND p.tipe_nsfp LIKE '%coretax%' AND p.tipe_nsfp LIKE '%fisik%'";
         } elseif ($status_data == 'need_selection') {
-
             $where_conditions .= " AND (p.ada_di_coretax = 0 OR p.ada_di_coretax IS NULL) 
                                    AND (c.nsfp IS NOT NULL OR f.nsfp IS NOT NULL)";
         }
@@ -93,9 +91,8 @@ try {
     if (!empty($search_supplier)) {
 
         $search_raw = trim($search_supplier);
-
-
         $search_numeric = str_replace('.', '', $search_raw);
+
 
         $where_conditions .= " AND (
             p.nama_supplier LIKE ? 
@@ -105,10 +102,11 @@ try {
             OR CAST(p.dpp AS CHAR) LIKE ? 
             OR CAST(p.dpp_nilai_lain AS CHAR) LIKE ? 
             OR CAST(p.ppn AS CHAR) LIKE ?
+            OR CAST(p.total_terima_fp AS CHAR) LIKE ?
         )";
 
 
-        $bind_types .= 'sssssss';
+        $bind_types .= 'ssssssss';
 
         $termRaw = '%' . $search_raw . '%';
         $termNumeric = '%' . $search_numeric . '%';
@@ -120,8 +118,8 @@ try {
         $bind_params[] = $termNumeric;
         $bind_params[] = $termNumeric;
         $bind_params[] = $termNumeric;
+        $bind_params[] = $termNumeric;
     }
-
 
 
     $sql_count = "SELECT COUNT(DISTINCT p.id) as total 
