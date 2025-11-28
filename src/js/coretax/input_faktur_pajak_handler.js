@@ -345,7 +345,7 @@ function cancelEditMode() {
 }
 async function handleSave() {
   if (inpKodeStore.value === "") {
-    Swal.fire("Gagal", "Pilih Toko/Cabang", "warning");
+    Swal.fire("Gagal", "Pilih Cabang", "warning");
     return;
   }
   const noSeri = inpNoSeri.value.trim();

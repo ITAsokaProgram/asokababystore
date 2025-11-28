@@ -35,7 +35,7 @@ try {
     $tgl_selesai = $_GET['tgl_selesai'] ?? $tanggal_kemarin;
     $search_supplier = $_GET['search_supplier'] ?? '';
 
-    // Parameter Baru
+
     $kd_store = $_GET['kd_store'] ?? 'all';
     $status_data = $_GET['status_data'] ?? 'all';
 
@@ -49,7 +49,7 @@ try {
     $offset = ($page - 1) * $limit;
     $response['pagination']['offset'] = $offset;
 
-    // --- 1. Load Data Stores untuk Filter ---
+
     $sql_stores = "SELECT kd_store, nm_alias FROM kode_store WHERE display = 'on' ORDER BY Nm_Alias ASC";
     $result_stores = $conn->query($sql_stores);
     if ($result_stores) {
@@ -58,19 +58,19 @@ try {
         }
     }
 
-    // --- 2. Build Query Conditions ---
+
     $where_conditions = "DATE(p.tgl_nota) BETWEEN ? AND ?";
     $bind_types = 'ss';
     $bind_params = [$tgl_mulai, $tgl_selesai];
 
-    // Filter Cabang
+
     if ($kd_store != 'all') {
         $where_conditions .= " AND p.kode_store = ?";
         $bind_types .= 's';
         $bind_params[] = $kd_store;
     }
 
-    // Filter Status Sinkronisasi
+
     if ($status_data != 'all') {
         if ($status_data == 'unlinked') {
             $where_conditions .= " AND (p.ada_di_coretax = 0 OR p.ada_di_coretax IS NULL)";
@@ -83,18 +83,18 @@ try {
         } elseif ($status_data == 'linked_both') {
             $where_conditions .= " AND p.ada_di_coretax = 1 AND p.tipe_nsfp LIKE '%coretax%' AND p.tipe_nsfp LIKE '%fisik%'";
         } elseif ($status_data == 'need_selection') {
-            // FIX: Menggunakan c.nsfp dan f.nsfp karena c.id tidak ada di tabel ff_coretax
+
             $where_conditions .= " AND (p.ada_di_coretax = 0 OR p.ada_di_coretax IS NULL) 
                                    AND (c.nsfp IS NOT NULL OR f.nsfp IS NOT NULL)";
         }
     }
 
-    // Filter Search Expanded (Nama, NSFP, No Faktur, DPP, DPP Lain, PPN)
+
     if (!empty($search_supplier)) {
-        // 1. Trim input
+
         $search_raw = trim($search_supplier);
 
-        // 2. Buat versi tanpa titik untuk pencarian angka (misal user ketik 71.079 jadi 71079)
+
         $search_numeric = str_replace('.', '', $search_raw);
 
         $where_conditions .= " AND (
@@ -107,23 +107,23 @@ try {
             OR CAST(p.ppn AS CHAR) LIKE ?
         )";
 
-        // Kita butuh 7 parameter string
+
         $bind_types .= 'sssssss';
 
-        $termRaw = '%' . $search_raw . '%';       // Untuk teks
-        $termNumeric = '%' . $search_numeric . '%'; // Untuk angka
+        $termRaw = '%' . $search_raw . '%';
+        $termNumeric = '%' . $search_numeric . '%';
 
-        $bind_params[] = $termRaw;     // nama_supplier
-        $bind_params[] = $termRaw;     // kode_supplier
-        $bind_params[] = $termRaw;     // nsfp
-        $bind_params[] = $termRaw;     // no_faktur
-        $bind_params[] = $termNumeric; // dpp
-        $bind_params[] = $termNumeric; // dpp_nilai_lain
-        $bind_params[] = $termNumeric; // ppn
+        $bind_params[] = $termRaw;
+        $bind_params[] = $termRaw;
+        $bind_params[] = $termRaw;
+        $bind_params[] = $termRaw;
+        $bind_params[] = $termNumeric;
+        $bind_params[] = $termNumeric;
+        $bind_params[] = $termNumeric;
     }
 
-    // --- 3. Hitung Total Data (Count) ---
-    // JOIN diperlukan agar filter 'need_selection' (c.nsfp/f.nsfp) terbaca
+
+
     $sql_count = "SELECT COUNT(DISTINCT p.id) as total 
                   FROM ff_pembelian p 
                   LEFT JOIN ff_coretax c ON p.dpp = c.harga_jual AND p.ppn = c.ppn AND p.kode_store = c.kode_store
@@ -147,7 +147,7 @@ try {
     $response['pagination']['total_rows'] = (int) $total_rows;
     $response['pagination']['total_pages'] = ceil($total_rows / $limit);
 
-    // --- 4. Main Query Data ---
+
     $sql_data = "
         SELECT 
             p.id,

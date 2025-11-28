@@ -264,7 +264,7 @@ async function handleSave() {
   const noLpb = inpNoLpb.value.trim();
   const namaSupp = inpNamaSupp.value.trim();
   if (inpKodeStore.value === "") {
-    Swal.fire("Gagal", "Pilih Toko/Cabang", "warning");
+    Swal.fire("Gagal", "Pilih Cabang", "warning");
     return;
   }
   if (!noLpb || !namaSupp) {

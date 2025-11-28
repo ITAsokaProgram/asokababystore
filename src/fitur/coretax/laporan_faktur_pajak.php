@@ -5,10 +5,16 @@ $tanggal_kemarin = date('Y-m-d', strtotime('-1 day'));
 
 $default_tgl_mulai = $tanggal_kemarin;
 $default_tgl_selesai = $tanggal_kemarin;
+$default_kd_store = 'all';
+$default_status = 'all';
 $default_page = 1;
 
 $tgl_mulai = $_GET['tgl_mulai'] ?? $default_tgl_mulai;
 $tgl_selesai = $_GET['tgl_selesai'] ?? $default_tgl_selesai;
+$kd_store = $_GET['kd_store'] ?? $default_kd_store;
+$status_data = $_GET['status_data'] ?? $default_status;
+$search_supplier = trim($_GET['search_supplier'] ?? '');
+
 $page = (int) ($_GET['page'] ?? $default_page);
 if ($page < 1) {
     $page = 1;
@@ -58,15 +64,17 @@ if ($page < 1) {
                 </div>
 
                 <div class="filter-card-simple">
-                    <form id="filter-form" class="flex flex-wrap items-end gap-3" method="GET">
-                        <div class="flex-1 min-w-[180px]">
+                    <form id="filter-form" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-3 items-end"
+                        method="GET">
+
+                        <div class="lg:col-span-1">
                             <label for="tgl_mulai" class="block text-xs font-semibold text-gray-700 mb-2">
                                 <i class="fas fa-calendar-alt text-pink-600 mr-1"></i> Dari
                             </label>
                             <input type="date" name="tgl_mulai" id="tgl_mulai" class="input-modern w-full"
                                 value="<?php echo htmlspecialchars($tgl_mulai); ?>">
                         </div>
-                        <div class="flex-1 min-w-[180px]">
+                        <div class="lg:col-span-1">
                             <label for="tgl_selesai" class="block text-xs font-semibold text-gray-700 mb-2">
                                 <i class="fas fa-calendar-alt text-pink-600 mr-1"></i> Sampai
                             </label>
@@ -74,15 +82,39 @@ if ($page < 1) {
                                 value="<?php echo htmlspecialchars($tgl_selesai); ?>">
                         </div>
 
-                        <div class="flex-1 min-w-[200px]">
-                            <label for="search_supplier" class="block text-xs font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-search text-pink-600 mr-1"></i> Cari Supplier / No Seri
+                        <div class="lg:col-span-1">
+                            <label for="kd_store" class="block text-xs font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-store text-pink-600 mr-1"></i> Cabang
                             </label>
-                            <input type="text" name="search_supplier" id="search_supplier" class="input-modern w-full"
-                                placeholder="Ketik Nama Supplier atau No Seri...">
+                            <select name="kd_store" id="kd_store" class="input-modern w-full">
+                                <option value="all">Seluruh Store</option>
+                            </select>
                         </div>
 
-                        <div class="flex-1 min-w-[150px]">
+                        <div class="lg:col-span-1">
+                            <label for="status_data" class="block text-xs font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-link text-pink-600 mr-1"></i> Status
+                            </label>
+                            <select name="status_data" id="status_data" class="input-modern w-full">
+                                <option value="all" <?php echo ($status_data == 'all') ? 'selected' : ''; ?>>Semua Data
+                                </option>
+                                <option value="linked_both" <?php echo ($status_data == 'linked_both') ? 'selected' : ''; ?>>Terhubung Lengkap</option>
+                                <option value="linked_pembelian" <?php echo ($status_data == 'linked_pembelian') ? 'selected' : ''; ?>>Ada di Pembelian</option>
+                                <option value="linked_coretax" <?php echo ($status_data == 'linked_coretax') ? 'selected' : ''; ?>>Ada di Coretax</option>
+                                <option value="unlinked_pembelian" <?php echo ($status_data == 'unlinked_pembelian') ? 'selected' : ''; ?>>Belum Ada Pembelian</option>
+                            </select>
+                        </div>
+
+                        <div class="lg:col-span-1">
+                            <label for="search_supplier" class="block text-xs font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-search text-pink-600 mr-1"></i> Cari Data
+                            </label>
+                            <input type="text" name="search_supplier" id="search_supplier" class="input-modern w-full"
+                                placeholder="Supplier / NSFP / Inv / Rp..."
+                                value="<?php echo htmlspecialchars($search_supplier); ?>">
+                        </div>
+
+                        <div class="lg:col-span-1">
                             <button type="submit" id="filter-submit-button"
                                 class="btn-primary w-full inline-flex items-center justify-center gap-2">
                                 <i class="fas fa-filter"></i>
@@ -105,18 +137,22 @@ if ($page < 1) {
                             <thead>
                                 <tr>
                                     <th>No</th>
-                                    <th>NSFP</th>
                                     <th>Tgl Faktur</th>
+                                    <th>No Invoice</th>
+                                    <th>NSFP</th>
+                                    <th class="text-center">Cabang</th>
                                     <th>Nama Supplier</th>
                                     <th class="text-right">DPP</th>
-                                    <th class="text-right">DPP Nilai Lain</th>
+                                    <th class="text-right">DPP Lain</th>
                                     <th class="text-right">PPN</th>
                                     <th class="text-right">Total</th>
+                                    <th class="text-center" style="width: 100px;">Pembelian</th>
+                                    <th class="text-center" style="width: 100px;">Coretax</th>
                                 </tr>
                             </thead>
                             <tbody id="receipt-table-body">
                                 <tr>
-                                    <td colspan="8" class="text-center p-8">
+                                    <td colspan="12" class="text-center p-8">
                                         <div class="spinner-simple"></div>
                                         <p class="mt-3 text-gray-500 font-medium">Memuat data...</p>
                                     </td>

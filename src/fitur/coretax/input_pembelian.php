@@ -216,7 +216,7 @@ include '../../../aa_kon_sett.php';
                                     <th class="w-10 text-center">No</th>
                                     <th>Tgl Nota</th>
                                     <th>No Invoice</th>
-                                    <th>Toko/Cabang</th>
+                                    <th>Cabang</th>
                                     <th>Supplier</th>
                                     <th class="text-right">DPP</th>
                                     <th class="text-right">DPP Lain</th>

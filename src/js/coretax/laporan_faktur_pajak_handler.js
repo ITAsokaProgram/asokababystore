@@ -2,12 +2,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const tableBody = document.getElementById("receipt-table-body");
   const filterForm = document.getElementById("filter-form");
   const filterSubmitButton = document.getElementById("filter-submit-button");
+  const filterSelectStore = document.getElementById("kd_store");
+  const filterSelectStatus = document.getElementById("status_data");
   const filterInputSupplier = document.getElementById("search_supplier");
   const pageTitle = document.getElementById("page-title");
   const pageSubtitle = document.getElementById("page-subtitle");
   const paginationContainer = document.getElementById("pagination-container");
   const paginationInfo = document.getElementById("pagination-info");
   const paginationLinks = document.getElementById("pagination-links");
+
   function formatRupiah(number) {
     if (isNaN(number) || number === null) {
       return "0";
@@ -19,33 +22,61 @@ document.addEventListener("DOMContentLoaded", () => {
       maximumFractionDigits: 0,
     }).format(number);
   }
+
   function getUrlParams() {
     const params = new URLSearchParams(window.location.search);
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayString = yesterday.toISOString().split("T")[0];
+
     return {
       tgl_mulai: params.get("tgl_mulai") || yesterdayString,
       tgl_selesai: params.get("tgl_selesai") || yesterdayString,
-      search_supplier: params.get("search_supplier") || "",
+      kd_store: params.get("kd_store") || "all",
+      status_data: params.get("status_data") || "all",
+      search_supplier: (params.get("search_supplier") || "").trim(), // TRIM DISINI
       page: parseInt(params.get("page") || "1", 10),
     };
   }
+
   function build_pagination_url(newPage) {
     const params = new URLSearchParams(window.location.search);
     params.set("page", newPage);
     return "?" + params.toString();
   }
+
+  // --- Fungsi Populate Filter Store ---
+  function populateStoreFilter(stores, selectedStore) {
+    if (!filterSelectStore || filterSelectStore.options.length > 1) {
+      filterSelectStore.value = selectedStore;
+      return;
+    }
+    stores.forEach((store) => {
+      const option = document.createElement("option");
+      option.value = store.kd_store;
+      option.textContent = `${store.kd_store} - ${store.nm_alias}`;
+      if (store.kd_store === selectedStore) {
+        option.selected = true;
+      }
+      filterSelectStore.appendChild(option);
+    });
+    filterSelectStore.value = selectedStore;
+  }
+
   async function loadData() {
     const params = getUrlParams();
     const isPagination = params.page > 1;
     setLoadingState(true, isPagination);
+
     const queryString = new URLSearchParams({
       tgl_mulai: params.tgl_mulai,
       tgl_selesai: params.tgl_selesai,
+      kd_store: params.kd_store,
+      status_data: params.status_data,
       search_supplier: params.search_supplier,
       page: params.page,
     }).toString();
+
     try {
       const response = await fetch(
         `/src/api/coretax/get_laporan_faktur_pajak.php?${queryString}`
@@ -60,12 +91,32 @@ document.addEventListener("DOMContentLoaded", () => {
       if (data.error) {
         throw new Error(data.error);
       }
-      if (filterInputSupplier) {
+
+      // --- Handle Store Filter Population ---
+      if (data.stores) {
+        populateStoreFilter(data.stores, params.kd_store);
+      }
+
+      // --- Update UI Inputs ---
+      if (filterInputSupplier)
         filterInputSupplier.value = params.search_supplier;
-      }
+      if (filterSelectStatus) filterSelectStatus.value = params.status_data;
+
+      // --- Update Subtitle ---
       if (pageSubtitle) {
-        pageSubtitle.textContent = `Periode ${params.tgl_mulai} s/d ${params.tgl_selesai}`;
+        let storeName = "";
+        if (
+          filterSelectStore.options.length > 0 &&
+          filterSelectStore.selectedIndex > -1 &&
+          filterSelectStore.value !== "all"
+        ) {
+          storeName =
+            " - " +
+            filterSelectStore.options[filterSelectStore.selectedIndex].text;
+        }
+        pageSubtitle.textContent = `Periode ${params.tgl_mulai} s/d ${params.tgl_selesai}${storeName}`;
       }
+
       renderTable(
         data.tabel_data,
         data.pagination ? data.pagination.offset : 0
@@ -78,6 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
       setLoadingState(false);
     }
   }
+
   function setLoadingState(isLoading, isPagination = false) {
     if (isLoading) {
       if (filterSubmitButton) filterSubmitButton.disabled = true;
@@ -86,7 +138,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (tableBody)
         tableBody.innerHTML = `
               <tr>
-                  <td colspan="8" class="text-center p-8">
+                  <td colspan="12" class="text-center p-8">
                       <div class="spinner-simple"></div>
                       <p class="mt-2 text-gray-500">Memuat data...</p>
                   </td>
@@ -100,20 +152,22 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   }
+
   function showTableError(message) {
     tableBody.innerHTML = `
         <tr>
-            <td colspan="8" class="text-center p-8 text-red-600">
+            <td colspan="12" class="text-center p-8 text-red-600">
                 <i class="fas fa-exclamation-triangle fa-lg mb-2"></i>
                 <p>Gagal memuat data: ${message}</p>
             </td>
         </tr>`;
   }
+
   function renderTable(tabel_data, offset) {
     if (!tabel_data || tabel_data.length === 0) {
       tableBody.innerHTML = `
             <tr>
-                <td colspan="8" class="text-center p-8 text-gray-500">
+                <td colspan="12" class="text-center p-8 text-gray-500">
                     <i class="fas fa-inbox fa-lg mb-2"></i>
                     <p>Tidak ada data ditemukan untuk filter ini.</p>
                 </td>
@@ -133,32 +187,63 @@ document.addEventListener("DOMContentLoaded", () => {
         month: "2-digit",
         year: "numeric",
       });
-      let syncBadges = "";
+
+      // --- LOGIC BADGE ---
+
+      // Badge Pembelian
+      let badgePembelian = `<span class="text-gray-300 text-xs">-</span>`;
       if (row.ada_pembelian == 1) {
-        syncBadges += `<span class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-800 border border-green-200" title="Terhubung dengan Data Pembelian"><i class="fas fa-check mr-1"></i>BELI</span>`;
+        badgePembelian = `
+            <div class="flex flex-col items-center justify-center">
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-800 border border-green-200">
+                    <i class="fas fa-check mr-1"></i> LINKED
+                </span>
+            </div>`;
+      } else {
+        badgePembelian = `
+            <div class="flex flex-col items-center justify-center">
+                 <span class="text-[10px] text-gray-400 italic">Belum Ada</span>
+            </div>`;
       }
+
+      // Badge Coretax
+      let badgeCoretax = `<span class="text-gray-300 text-xs">-</span>`;
       if (row.ada_coretax == 1) {
-        syncBadges += `<span class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-800 border border-purple-200" title="Ada Data Coretax"><i class="fas fa-cloud mr-1"></i>CORETAX</span>`;
+        badgeCoretax = `
+            <div class="flex flex-col items-center justify-center">
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-800 border border-purple-200">
+                    <i class="fas fa-cloud mr-1"></i> OK
+                </span>
+            </div>`;
+      } else {
+        badgeCoretax = `
+            <div class="flex flex-col items-center justify-center">
+                 <span class="text-[10px] text-gray-400 italic">Belum Ada</span>
+            </div>`;
       }
+
       htmlRows += `
             <tr class="hover:bg-gray-50">
                 <td class="text-center font-medium text-gray-500">${item_counter}</td>
-                <td class="font-semibold text-gray-700">
-                    <div class="flex flex-col items-start">
-                        <span class="font-mono">${row.nsfp}</span>
-                        <div class="flex flex-wrap gap-1 mt-0.5">
-                            ${syncBadges}
-                        </div>
-                    </div>
-                </td>
                 <td>${dateFormatted}</td>
+                <td class="font-medium text-gray-700">${
+                  row.no_faktur || "-"
+                }</td>
+                <td class="font-semibold font-mono text-gray-700 text-xs">${
+                  row.nsfp
+                }</td>
+                <td class="">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-800">
+                        ${row.Nm_Alias || row.kode_store || "-"}
+                    </span>
+                </td>
                 <td class="text-sm font-medium text-gray-800">${
                   row.nama_supplier || "-"
                 }</td>
                 <td class="text-right font-mono text-gray-700">${formatRupiah(
                   dpp
                 )}</td>
-                <td class="text-right font-mono text-gray-700">${formatRupiah(
+                <td class="text-right font-mono text-gray-600">${formatRupiah(
                   dpp_lain
                 )}</td>
                 <td class="text-right font-mono text-red-600">${formatRupiah(
@@ -167,12 +252,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td class="text-right font-bold text-gray-800">${formatRupiah(
                   total
                 )}</td>
+                
+                <td class="text-center align-middle border-l border-gray-100 bg-green-50/30">
+                    ${badgePembelian}
+                </td>
+                
+                <td class="text-center align-middle border-l border-gray-100 bg-purple-50/30">
+                    ${badgeCoretax}
+                </td>
             </tr>
         `;
       item_counter++;
     });
     tableBody.innerHTML = htmlRows;
   }
+
   function renderPagination(pagination) {
     if (!pagination) {
       paginationInfo.textContent = "";
@@ -240,10 +334,16 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
     paginationLinks.innerHTML = linksHtml;
   }
+
   if (filterForm) {
     filterForm.addEventListener("submit", (e) => {
       e.preventDefault();
       const formData = new FormData(filterForm);
+
+      // MANUAL TRIM + CLEAN UP
+      const searchVal = formData.get("search_supplier").toString().trim();
+      formData.set("search_supplier", searchVal);
+
       const params = new URLSearchParams(formData);
       params.set("page", "1");
       window.history.pushState({}, "", `?${params.toString()}`);

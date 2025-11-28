@@ -222,7 +222,7 @@ include '../../../aa_kon_sett.php';
                                     <th>Tgl Faktur</th>
                                     <th>No Invoice</th>
                                     <th>NSFP</th>
-                                    <th>Toko/Cabang</th>
+                                    <th>Cabang</th>
                                     <th>Supplier</th>
                                     <th class="text-right">DPP</th>
                                     <th class="text-right">DPP Lain</th>
