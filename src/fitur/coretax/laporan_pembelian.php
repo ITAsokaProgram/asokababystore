@@ -109,13 +109,12 @@ if ($page < 1) {
                                     <th>No Invoice</th>
                                     <th class="text-center">Cabang</th>
                                     <th>Nama Supplier</th>
-
-
                                     <th class="text-right">DPP</th>
                                     <th class="text-right">DPP Nilai Lain</th>
                                     <th class="text-right">PPN</th>
                                     <th class="text-right">Total</th>
-                                    <th class="text-center" style="width: 180px;" colspan="2">NSFP</th>
+                                    <th class="text-center" style="width: 150px;">Fisik</th>
+                                    <th class="text-center" style="width: 150px;">Coretax</th>
                                 </tr>
                             </thead>
                             <tbody id="receipt-table-body">

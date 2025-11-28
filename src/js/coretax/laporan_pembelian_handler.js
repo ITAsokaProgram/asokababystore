@@ -44,7 +44,17 @@ document.addEventListener("DOMContentLoaded", () => {
     params.set("page", newPage);
     return "?" + params.toString();
   }
-  window.handleConfirmCoretax = async function (id, candidateString) {
+  /**
+   * Menangani Konfirmasi
+   * @param {number} id - ID Pembelian
+   * @param {string} candidateString - List NSFP dipisah koma
+   * @param {boolean} isDualMatch - (Baru) Apakah NSFP cocok di Coretax DAN Fisik
+   */
+  window.handleConfirmCoretax = async function (
+    id,
+    candidateString,
+    isDualMatch = false
+  ) {
     const candidates = candidateString.split(",");
     let selectedNsfp = candidates[0];
     if (candidates.length > 1) {
@@ -54,7 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       const { value: userSelection } = await Swal.fire({
         title: "Pilih NSFP",
-        text: "Terdapat beberapa data Coretax yang cocok. Silakan pilih NSFP yang benar:",
+        text: "Terdapat beberapa kandidat NSFP. Silakan pilih yang benar:",
         input: "select",
         inputOptions: inputOptions,
         inputValue: candidates[0],
@@ -76,11 +86,19 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
     } else {
+      let htmlContent = "";
+      if (isDualMatch) {
+        htmlContent = `Data pembelian ini cocok dengan data <b>Coretax</b> dan <b>Fisik</b>.<br>
+                       NSFP: <b class="text-lg">${selectedNsfp}</b><br><br>
+                       Hubungkan data ini?`;
+      } else {
+        htmlContent = `Data pembelian ini cocok dengan data Coretax.<br>
+                       NSFP: <b class="text-lg">${selectedNsfp}</b><br><br>
+                       Hubungkan data ini?`;
+      }
       const result = await Swal.fire({
         title: "Konfirmasi Data?",
-        html: `Data pembelian ini cocok dengan data Coretax.<br>
-               NSFP: <b class="text-lg">${selectedNsfp}</b><br><br>
-               Hubungkan data ini?`,
+        html: htmlContent,
         icon: "question",
         width: "500px",
         showCancelButton: true,
@@ -168,7 +186,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (filterSubmitButton)
         filterSubmitButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i><span>Memuat...</span>`;
       if (tableBody)
-        tableBody.innerHTML = `<tr><td colspan="9" class="text-center p-8"><div class="spinner-simple"></div><p class="mt-2 text-gray-500">Memuat data...</p></td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="10" class="text-center p-8"><div class="spinner-simple"></div><p class="mt-2 text-gray-500">Memuat data...</p></td></tr>`;
       if (paginationInfo) paginationInfo.textContent = "";
       if (paginationLinks) paginationLinks.innerHTML = "";
     } else {
@@ -181,7 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function showTableError(message) {
     tableBody.innerHTML = `
         <tr>
-            <td colspan="9" class="text-center p-8 text-red-600">
+            <td colspan="10" class="text-center p-8 text-red-600">
                 <i class="fas fa-exclamation-triangle fa-lg mb-2"></i>
                 <p>Gagal memuat data: ${message}</p>
             </td>
@@ -211,135 +229,121 @@ document.addEventListener("DOMContentLoaded", () => {
         month: "2-digit",
         year: "numeric",
       });
-      let availableCandidates = [];
-      let usedCandidates = [];
+      let mergedCandidatesMap = new Map();
       if (row.candidate_nsfps) {
         const candidatesRaw = row.candidate_nsfps.split(",");
-        let parsedCandidates = [];
         candidatesRaw.forEach((raw) => {
           const parts = raw.split("|");
           if (parts.length >= 2) {
-            parsedCandidates.push({
-              nsfp: parts[0],
-              status: parts[1],
-              usedBy: parts[2],
-              source: parts[3] || "UNKNOWN",
-              matchType: parts[4] || "VALUE",
-            });
+            const nsfp = parts[0];
+            const status = parts[1];
+            const usedBy = parts[2];
+            const source = parts[3] || "CORETAX";
+            const matchType = parts[4] || "VALUE";
+            if (!mergedCandidatesMap.has(nsfp)) {
+              mergedCandidatesMap.set(nsfp, {
+                nsfp: nsfp,
+                status: status,
+                sources: [source],
+                matchType: matchType,
+                usedBy: usedBy,
+              });
+            } else {
+              const existing = mergedCandidatesMap.get(nsfp);
+              if (!existing.sources.includes(source)) {
+                existing.sources.push(source);
+              }
+              if (matchType === "INVOICE") {
+                existing.matchType = "INVOICE";
+              }
+              if (status === "AVAILABLE") {
+                existing.status = "AVAILABLE";
+              }
+            }
           }
         });
-        const invoiceMatches = parsedCandidates.filter(
-          (c) => c.matchType === "INVOICE" && c.status === "AVAILABLE"
-        );
-        if (invoiceMatches.length > 0) {
-          availableCandidates = invoiceMatches;
-        } else {
-          availableCandidates = parsedCandidates.filter(
-            (c) => c.status === "AVAILABLE"
-          );
-        }
-        const invoiceUsed = parsedCandidates.filter(
-          (c) => c.matchType === "INVOICE" && c.status !== "AVAILABLE"
-        );
-        if (invoiceUsed.length > 0) {
-          usedCandidates = invoiceUsed;
-        } else {
-          usedCandidates = parsedCandidates.filter(
-            (c) => c.status !== "AVAILABLE"
-          );
-        }
       }
-      let statusHtml = "";
-      let nsfpHtml = "";
+      let parsedCandidates = Array.from(mergedCandidatesMap.values());
+      let availableCandidates = parsedCandidates.filter(
+        (c) => c.status === "AVAILABLE"
+      );
+      let usedCandidates = parsedCandidates.filter(
+        (c) => c.status !== "AVAILABLE"
+      );
+      availableCandidates.sort((a, b) => {
+        if (a.matchType === "INVOICE" && b.matchType !== "INVOICE") return -1;
+        if (a.matchType !== "INVOICE" && b.matchType === "INVOICE") return 1;
+        return 0;
+      });
+      let htmlFisik = '<span class="text-gray-300 text-xs">-</span>';
+      let htmlCoretax = '<span class="text-gray-300 text-xs">-</span>';
       if (row.ada_di_coretax == 1) {
-        let tipeBadge = "";
-        if (row.tipe_nsfp) {
-          if (
-            row.tipe_nsfp.includes("coretax") &&
-            row.tipe_nsfp.includes("fisik")
-          ) {
-            tipeBadge =
-              '<span class="text-[10px] px-1 bg-purple-100 text-purple-700 rounded">ALL</span>';
-          } else if (row.tipe_nsfp.includes("fisik")) {
-            tipeBadge =
-              '<span class="text-[10px] px-1 bg-blue-100 text-blue-700 rounded">FISIK</span>';
-          } else {
-            tipeBadge =
-              '<span class="text-[10px] px-1 bg-yellow-100 text-yellow-700 rounded">CORETAX</span>';
-          }
-        }
-        statusHtml = `
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                <i class="fas fa-check-circle mr-1"></i> Terkonfirmasi
-            </span>`;
-        nsfpHtml = `
+        const badgeConfirmed = `
             <div class="flex flex-col items-center justify-center gap-1">
-                <span class="font-mono text-sm font-semibold text-gray-800">${
+                <span class="font-mono text-xs font-semibold text-gray-800">${
                   row.nsfp || "-"
                 }</span>
-                ${tipeBadge}
             </div>`;
+        const tipe = row.tipe_nsfp ? row.tipe_nsfp.toLowerCase() : "";
+        if (tipe === "all" || tipe.includes("fisik")) {
+          htmlFisik = badgeConfirmed;
+        }
+        if (tipe === "all" || tipe.includes("coretax")) {
+          htmlCoretax = badgeConfirmed;
+        }
       } else if (availableCandidates.length > 0) {
         const bestCandidate = availableCandidates[0];
-        const isStrongMatch = bestCandidate.matchType === "INVOICE";
+        const isDualMatch =
+          bestCandidate.sources.includes("FISIK") &&
+          bestCandidate.sources.includes("CORETAX");
         const candidateString = availableCandidates
           .map((c) => c.nsfp)
           .join(",");
         const count = availableCandidates.length;
-        let btnColor = isStrongMatch
-          ? "bg-pink-600 hover:bg-pink-700"
-          : "bg-purple-600 hover:bg-purple-700";
-        let btnIcon = isStrongMatch ? "fa-file-invoice" : "fa-link";
-        let btnText = isStrongMatch ? "Konfirmasi (Invoice)" : "Konfirmasi";
+        const textClass =
+          "text-gray-500 font-medium group-hover:text-gray-800 border-gray-300 group-hover:border-gray-500";
+        let multiIndicator = "";
         if (count > 1) {
-          btnText = `Pilih (${count})`;
-          btnIcon = "fa-list-ul";
+          multiIndicator = `<span class="text-[10px] text-gray-400 mt-0.5 block italic group-hover:text-gray-600">
+                                (Pilih dr ${count} opsi)
+                              </span>`;
         }
-        statusHtml = `
-            <button onclick="handleConfirmCoretax(${row.id}, '${candidateString}')" 
-                class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded shadow-sm text-white ${btnColor} focus:outline-none transition-colors w-full justify-center">
-                <i class="fas ${btnIcon} mr-1"></i> ${btnText}
-            </button>`;
-        nsfpHtml = `
-            <div class="flex flex-col items-center">
-                <span class="font-mono text-sm text-gray-600 border-b border-dashed border-gray-300 cursor-help" title="${
-                  isStrongMatch ? "Nomor Invoice Cocok!" : "Nominal Cocok"
-                }">
+        const actionHtml = `
+            <div class="flex flex-col items-center justify-center cursor-pointer group py-1 select-none"
+                 onclick="handleConfirmCoretax(${row.id}, '${candidateString}', ${isDualMatch})"
+                 title="Klik untuk memilih NSFP ini">
+                <span class="font-mono text-xs ${textClass} border-b border-dashed group-hover:border-solid transition-colors duration-200">
                     ${bestCandidate.nsfp}
                 </span>
-                <div class="flex gap-1 mt-1">
-                    ${
-                      bestCandidate.source === "FISIK"
-                        ? '<span class="text-[9px] px-1 border border-blue-200 bg-blue-50 text-blue-600 rounded">FISIK</span>'
-                        : '<span class="text-[9px] px-1 border border-yellow-200 bg-yellow-50 text-yellow-600 rounded">CORETAX</span>'
-                    }
-                    ${
-                      isStrongMatch
-                        ? '<span class="text-[9px] px-1 bg-green-100 text-green-700 rounded font-bold">INV</span>'
-                        : ""
-                    }
-                </div>
+                ${multiIndicator}
             </div>`;
+        if (isDualMatch) {
+          htmlFisik = actionHtml;
+          htmlCoretax = actionHtml;
+        } else {
+          if (bestCandidate.sources.includes("FISIK")) {
+            htmlFisik = actionHtml;
+          }
+          if (bestCandidate.sources.includes("CORETAX")) {
+            htmlCoretax = actionHtml;
+          }
+        }
       } else if (usedCandidates.length > 0) {
         const firstMatch = usedCandidates[0];
-        const isInvoiceMatch = firstMatch.matchType === "INVOICE";
-        statusHtml = `
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 cursor-help" 
-                  title="NSFP ${
-                    firstMatch.nsfp
-                  } cocok tapi sudah dipakai invoice: ${firstMatch.usedBy}">
-                <i class="fas fa-exclamation-circle mr-1"></i> ${
-                  isInvoiceMatch ? "Inv Ganda" : "Ganda"
-                }
-            </span>`;
-        nsfpHtml = `
+        const errorHtml = `
             <div class="flex flex-col items-center">
-                <span class="text-[10px] text-gray-400 font-mono">${firstMatch.nsfp}</span>
-                <span class="text-[9px] text-red-400">(Sudah Dipakai)</span>
+                <span class="text-[10px] font-bold text-red-500">Ganda/Terpakai</span>
+                <span class="text-[10px] text-gray-400 font-mono decoration-line-through">${firstMatch.nsfp}</span>
             </div>`;
-      } else {
-        statusHtml = `<span class="text-gray-300">-</span>`;
-        nsfpHtml = `<span class="text-gray-300">-</span>`;
+        if (firstMatch.sources.includes("FISIK")) htmlFisik = errorHtml;
+        if (firstMatch.sources.includes("CORETAX")) htmlCoretax = errorHtml;
+        if (
+          firstMatch.sources.includes("FISIK") &&
+          firstMatch.sources.includes("CORETAX")
+        ) {
+          htmlFisik = errorHtml;
+          htmlCoretax = errorHtml;
+        }
       }
       htmlRows += `
             <tr class="hover:bg-gray-50">
@@ -366,11 +370,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td class="text-right font-bold text-gray-800">${formatRupiah(
                   total
                 )}</td>
-                <td class="text-center align-middle">
-                    ${statusHtml}
+                <td class="text-center align-middle border-l border-gray-100 bg-blue-50/30">
+                    ${htmlFisik}
                 </td>
-                <td class="text-center align-middle whitespace-nowrap">
-                    ${nsfpHtml}
+                <td class="text-center align-middle border-l border-gray-100 bg-yellow-50/30">
+                    ${htmlCoretax}
                 </td>
             </tr>
         `;
