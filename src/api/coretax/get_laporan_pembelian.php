@@ -94,7 +94,8 @@ try {
             ) as match_count
         FROM ff_pembelian p
         LEFT JOIN kode_store ks ON p.kode_store = ks.Kd_Store
-        LEFT JOIN ff_coretax c ON p.dpp = c.harga_jual AND p.ppn = c.ppn
+        -- PERUBAHAN DISINI: Menambahkan AND p.kode_store = c.kode_store
+        LEFT JOIN ff_coretax c ON p.dpp = c.harga_jual AND p.ppn = c.ppn AND p.kode_store = c.kode_store
         LEFT JOIN ff_pembelian p_used ON c.nsfp = p_used.nsfp AND p_used.ada_di_coretax = 1
         WHERE $where_conditions
         GROUP BY p.id
@@ -104,12 +105,15 @@ try {
     $bind_types .= 'ii';
     $bind_params[] = $limit;
     $bind_params[] = $offset;
+
     $stmt_data = $conn->prepare($sql_data);
     if ($stmt_data === false)
         throw new Exception("Prepare failed (data): " . $conn->error);
+
     $stmt_data->bind_param($bind_types, ...$bind_params);
     $stmt_data->execute();
     $result_data = $stmt_data->get_result();
+
     while ($row = $result_data->fetch_assoc()) {
         foreach ($row as $key => $value) {
             if (is_string($value)) {
@@ -118,11 +122,13 @@ try {
         }
         $response['tabel_data'][] = $row;
     }
+
     $stmt_data->close();
     $conn->close();
 } catch (Exception $e) {
     http_response_code(500);
     $response['error'] = $e->getMessage();
 }
+
 echo json_encode($response);
 ?>

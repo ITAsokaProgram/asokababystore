@@ -276,7 +276,7 @@ document.addEventListener("DOMContentLoaded", () => {
         statusHtml = `
             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 cursor-help" 
                   title="Nominal DPP & PPN cocok dengan NSFP: ${firstMatch.nsfp}, namun NSFP tersebut sudah dipakai oleh invoice: ${firstMatch.usedBy}">
-                <i class="fas fa-exclamation-circle mr-1"></i> Nominal Kembar
+                <i class="fas fa-exclamation-circle mr-1"></i> DPP, PPN, Cabang Kembar
             </span>`;
         nsfpHtml = `
             <div class="flex flex-col items-center">
