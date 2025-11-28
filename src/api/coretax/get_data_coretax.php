@@ -40,7 +40,7 @@ try {
 
     // Pembersihan input search
     $search_raw = trim($_GET['search_supplier'] ?? '');
-    $search_number = str_replace('.', '', $search_raw);
+    $search_number = str_replace(['.', ','], '', $search_raw); // Hapus titik dan koma untuk pencarian angka
 
     // Pagination
     $page = (int) ($_GET['page'] ?? 1);
@@ -76,46 +76,46 @@ try {
 
     // Filter Search (NPWP, Nama, NSFP, Nominal, Perekam)
     if (!empty($search_raw)) {
+        // PERBAIKAN DISINI: Menambahkan dpp_nilai_lain
         $where_conditions .= " AND (
             fc.nama_penjual LIKE ? 
             OR fc.npwp_penjual LIKE ? 
             OR fc.nsfp LIKE ?
             OR fc.perekam LIKE ?
             OR CAST(fc.harga_jual AS CHAR) LIKE ?
+            OR CAST(fc.dpp_nilai_lain AS CHAR) LIKE ?
             OR CAST(fc.ppn AS CHAR) LIKE ?
         )";
-        $bind_types .= 'ssssss';
+        // Tambahkan 1 tipe string lagi ('s') karena parameter bertambah
+        $bind_types .= 'sssssss';
+
         $searchTermRaw = '%' . $search_raw . '%';
         $searchTermNum = '%' . $search_number . '%';
 
-        $bind_params[] = $searchTermRaw;
-        $bind_params[] = $searchTermRaw;
-        $bind_params[] = $searchTermRaw;
-        $bind_params[] = $searchTermRaw;
-        $bind_params[] = $searchTermNum;
-        $bind_params[] = $searchTermNum;
+        $bind_params[] = $searchTermRaw; // nama
+        $bind_params[] = $searchTermRaw; // npwp
+        $bind_params[] = $searchTermRaw; // nsfp
+        $bind_params[] = $searchTermRaw; // perekam
+        $bind_params[] = $searchTermNum; // harga_jual
+        $bind_params[] = $searchTermNum; // dpp_nilai_lain (ADDED)
+        $bind_params[] = $searchTermNum; // ppn
     }
 
-    // Filter Status (Logic Baru)
+    // Filter Status
     $status_condition = "";
     if ($status_data != 'all') {
         if ($status_data == 'linked_both') {
-            // Terhubung Pembelian DAN Fisik
             $status_condition = " AND p.id IS NOT NULL AND f.id IS NOT NULL";
         } elseif ($status_data == 'linked_pembelian') {
-            // Ada di Pembelian
             $status_condition = " AND p.id IS NOT NULL";
         } elseif ($status_data == 'linked_fisik') {
-            // Ada scan Fisik
             $status_condition = " AND f.id IS NOT NULL";
         } elseif ($status_data == 'unlinked_pembelian') {
-            // Belum ada di pembelian
             $status_condition = " AND p.id IS NULL";
         }
     }
 
-    // 4. Hitung Total Rows 
-    // PERBAIKAN: Menggunakan count(fc.nsfp) bukan fc.id
+    // 4. Hitung Total Rows
     $sql_count = "SELECT COUNT(DISTINCT fc.nsfp) as total 
                   FROM ff_coretax fc
                   LEFT JOIN ff_pembelian p ON fc.nsfp = p.nsfp AND p.ada_di_coretax = 1
@@ -136,7 +136,6 @@ try {
     $response['pagination']['total_pages'] = ceil($total_rows / $limit);
 
     // 5. Main Query Data
-    // PERBAIKAN: Menghapus fc.id dari SELECT
     $sql_data = "
         SELECT 
             fc.npwp_penjual,
