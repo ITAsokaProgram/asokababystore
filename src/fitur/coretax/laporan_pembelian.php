@@ -97,6 +97,11 @@ if ($page < 1) {
                             <select name="status_data" id="status_data" class="input-modern w-full">
                                 <option value="all" <?php echo ($status_data == 'all') ? 'selected' : ''; ?>>Semua Data
                                 </option>
+
+                                <option value="need_selection" <?php echo ($status_data == 'need_selection') ? 'selected' : ''; ?>>
+                                    Siap Pilih NSFP
+                                </option>
+
                                 <option value="unlinked" <?php echo ($status_data == 'unlinked') ? 'selected' : ''; ?>>
                                     Belum Terhubung</option>
                                 <option value="linked_any" <?php echo ($status_data == 'linked_any') ? 'selected' : ''; ?>>Sudah Terhubung (Semua)</option>
@@ -111,7 +116,7 @@ if ($page < 1) {
                                 <i class="fas fa-search text-pink-600 mr-1"></i> Cari Data
                             </label>
                             <input type="text" name="search_supplier" id="search_supplier" class="input-modern w-full"
-                                placeholder="Nama/NSFP/Nominal">
+                                placeholder="Nama/NSFP/Inv/Nominal">
                         </div>
 
                         <div class="lg:col-span-1">

@@ -1,6 +1,7 @@
 <?php
 session_start();
 include '../../../aa_kon_sett.php';
+
 register_shutdown_function(function () {
     $error = error_get_last();
     if ($error !== null && in_array($error['type'], [E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR, E_RECOVERABLE_ERROR])) {
@@ -12,9 +13,11 @@ register_shutdown_function(function () {
         }
     }
 });
+
 header('Content-Type: application/json');
+
 $response = [
-    'stores' => [], // Added stores array
+    'stores' => [],
     'tabel_data' => [],
     'pagination' => [
         'current_page' => 1,
@@ -25,6 +28,7 @@ $response = [
     ],
     'error' => null,
 ];
+
 try {
     $tanggal_kemarin = date('Y-m-d', strtotime('-1 day'));
     $tgl_mulai = $_GET['tgl_mulai'] ?? $tanggal_kemarin;
@@ -38,6 +42,7 @@ try {
     $page = (int) ($_GET['page'] ?? 1);
     if ($page < 1)
         $page = 1;
+
     $limit = 100;
     $response['pagination']['limit'] = $limit;
     $response['pagination']['current_page'] = $page;
@@ -76,44 +81,69 @@ try {
         } elseif ($status_data == 'linked_fisik') {
             $where_conditions .= " AND p.ada_di_coretax = 1 AND p.tipe_nsfp LIKE '%fisik%'";
         } elseif ($status_data == 'linked_both') {
-            // Mencari yang mengandung coretax DAN fisik
             $where_conditions .= " AND p.ada_di_coretax = 1 AND p.tipe_nsfp LIKE '%coretax%' AND p.tipe_nsfp LIKE '%fisik%'";
+        } elseif ($status_data == 'need_selection') {
+            // FIX: Menggunakan c.nsfp dan f.nsfp karena c.id tidak ada di tabel ff_coretax
+            $where_conditions .= " AND (p.ada_di_coretax = 0 OR p.ada_di_coretax IS NULL) 
+                                   AND (c.nsfp IS NOT NULL OR f.nsfp IS NOT NULL)";
         }
     }
 
-    // Filter Search Expanded (Nama, NSFP, DPP, DPP Lain, PPN)
+    // Filter Search Expanded (Nama, NSFP, No Faktur, DPP, DPP Lain, PPN)
     if (!empty($search_supplier)) {
-        // Kita gunakan OR untuk mencari di beberapa kolom sekaligus
+        // 1. Trim input
+        $search_raw = trim($search_supplier);
+
+        // 2. Buat versi tanpa titik untuk pencarian angka (misal user ketik 71.079 jadi 71079)
+        $search_numeric = str_replace('.', '', $search_raw);
+
         $where_conditions .= " AND (
             p.nama_supplier LIKE ? 
             OR p.kode_supplier LIKE ? 
             OR p.nsfp LIKE ? 
+            OR p.no_faktur LIKE ? 
             OR CAST(p.dpp AS CHAR) LIKE ? 
             OR CAST(p.dpp_nilai_lain AS CHAR) LIKE ? 
             OR CAST(p.ppn AS CHAR) LIKE ?
         )";
-        // Kita butuh 6 parameter string untuk bind
-        $bind_types .= 'ssssss';
-        $searchTerm = '%' . $search_supplier . '%';
-        // Tambahkan parameter sebanyak kolom yang di-search
-        $bind_params[] = $searchTerm; // nama
-        $bind_params[] = $searchTerm; // kode
-        $bind_params[] = $searchTerm; // nsfp
-        $bind_params[] = $searchTerm; // dpp
-        $bind_params[] = $searchTerm; // dpp_nilai_lain
-        $bind_params[] = $searchTerm; // ppn
+
+        // Kita butuh 7 parameter string
+        $bind_types .= 'sssssss';
+
+        $termRaw = '%' . $search_raw . '%';       // Untuk teks
+        $termNumeric = '%' . $search_numeric . '%'; // Untuk angka
+
+        $bind_params[] = $termRaw;     // nama_supplier
+        $bind_params[] = $termRaw;     // kode_supplier
+        $bind_params[] = $termRaw;     // nsfp
+        $bind_params[] = $termRaw;     // no_faktur
+        $bind_params[] = $termNumeric; // dpp
+        $bind_params[] = $termNumeric; // dpp_nilai_lain
+        $bind_params[] = $termNumeric; // ppn
     }
 
     // --- 3. Hitung Total Data (Count) ---
-    $sql_count = "SELECT COUNT(*) as total FROM ff_pembelian p WHERE $where_conditions";
+    // JOIN diperlukan agar filter 'need_selection' (c.nsfp/f.nsfp) terbaca
+    $sql_count = "SELECT COUNT(DISTINCT p.id) as total 
+                  FROM ff_pembelian p 
+                  LEFT JOIN ff_coretax c ON p.dpp = c.harga_jual AND p.ppn = c.ppn AND p.kode_store = c.kode_store
+                  LEFT JOIN ff_faktur_pajak f ON (
+                        p.no_faktur = f.no_faktur 
+                        OR 
+                        (p.dpp = f.dpp AND p.ppn = f.ppn AND p.kode_store = f.kode_store)
+                  )
+                  WHERE $where_conditions";
+
     $stmt_count = $conn->prepare($sql_count);
     if ($stmt_count === false)
         throw new Exception("Prepare failed (count): " . $conn->error);
+
     $stmt_count->bind_param($bind_types, ...$bind_params);
     $stmt_count->execute();
     $result_count = $stmt_count->get_result();
     $total_rows = $result_count->fetch_assoc()['total'] ?? 0;
     $stmt_count->close();
+
     $response['pagination']['total_rows'] = (int) $total_rows;
     $response['pagination']['total_pages'] = ceil($total_rows / $limit);
 
@@ -186,31 +216,40 @@ try {
         ORDER BY p.tgl_nota DESC, p.no_faktur ASC
         LIMIT ? OFFSET ?
     ";
+
     $bind_types .= 'ii';
     $bind_params[] = $limit;
     $bind_params[] = $offset;
+
     $stmt_data = $conn->prepare($sql_data);
     if ($stmt_data === false)
         throw new Exception("Prepare failed (data): " . $conn->error);
+
     $stmt_data->bind_param($bind_types, ...$bind_params);
     $stmt_data->execute();
     $result_data = $stmt_data->get_result();
+
     while ($row = $result_data->fetch_assoc()) {
         foreach ($row as $key => $value) {
             if (is_string($value)) {
                 $row[$key] = iconv('UTF-8', 'UTF-8//IGNORE', $value);
             }
         }
+
         if (!empty($row['candidate_nsfps'])) {
             $row['candidate_nsfps'] = trim($row['candidate_nsfps'], ',');
         }
+
         $response['tabel_data'][] = $row;
     }
+
     $stmt_data->close();
     $conn->close();
+
 } catch (Exception $e) {
     http_response_code(500);
     $response['error'] = $e->getMessage();
 }
+
 echo json_encode($response);
 ?>
