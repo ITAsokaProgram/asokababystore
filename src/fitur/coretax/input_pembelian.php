@@ -22,12 +22,9 @@ include '../../../aa_kon_sett.php';
     <link rel="icon" type="image/png" href="../../../public/images/logo1.png">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
-
     <style>
-        /* Styling khusus untuk Single Input Row agar terlihat menyatu */
         .input-row-container {
             background: #fff;
             border: 1px solid #e5e7eb;
@@ -38,9 +35,29 @@ include '../../../aa_kon_sett.php';
 
         .form-grid {
             display: grid;
-            grid-template-columns: 1.5fr 1fr 1.5fr 1fr 1fr 1fr 1fr auto;
-            gap: 10px;
+            gap: 15px;
             align-items: end;
+            grid-template-columns: 1fr;
+        }
+
+        @media (min-width: 640px) {
+            .form-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .form-grid {
+                /* Layout mirip Input Faktur Pajak */
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+
+        @media (min-width: 1536px) {
+            .form-grid {
+                /* Invoice, Store, Supplier, Tgl, DPP, DPP Lain, PPN, Total, Action */
+                grid-template-columns: 1.2fr 1.2fr 1.5fr 1fr 1fr 1fr 1fr 1.2fr auto;
+            }
         }
 
         .form-label {
@@ -126,18 +143,24 @@ include '../../../aa_kon_sett.php';
                         <div class="form-grid">
                             <div>
                                 <label class="form-label">No. Invoice</label>
-                                <input type="text" id="inp_no_lpb" name="no_lpb" class="input-compact" autofocus>
+                                <input type="text" id="inp_no_lpb" name="no_lpb" class="input-compact" autofocus
+                                    placeholder="Cari / Input Invoice...">
                                 <p id="err_no_lpb" class="text-xs text-red-500 mt-1 hidden font-semibold"></p>
                             </div>
 
                             <div>
-                                <label class="form-label">Kode Supp</label>
-                                <input type="text" id="inp_kode_supplier" name="kode_supplier" class="input-compact">
+                                <label class="form-label">Toko / Cabang</label>
+                                <select id="inp_kode_store" name="kode_store"
+                                    class="input-compact bg-white cursor-pointer">
+                                    <option value="">Pilih Toko...</option>
+                                </select>
                             </div>
 
                             <div>
                                 <label class="form-label">Nama Supplier</label>
-                                <input type="text" id="inp_nama_supplier" name="nama_supplier" class="input-compact">
+                                <input type="text" id="inp_nama_supplier" name="nama_supplier" class="input-compact"
+                                    list="supplier_list" placeholder="Ketik nama...">
+                                <datalist id="supplier_list"></datalist>
                             </div>
 
                             <div>
@@ -149,6 +172,12 @@ include '../../../aa_kon_sett.php';
                                 <label class="form-label text-right">DPP</label>
                                 <input type="text" id="inp_dpp" name="dpp" class="input-compact text-right font-mono"
                                     value="0">
+                            </div>
+
+                            <div>
+                                <label class="form-label text-right">DPP Nilai Lain</label>
+                                <input type="text" id="inp_dpp_lain" name="dpp_nilai_lain"
+                                    class="input-compact text-right font-mono" value="0">
                             </div>
 
                             <div>
@@ -179,7 +208,6 @@ include '../../../aa_kon_sett.php';
                     <div class="p-4 border-b border-gray-100 flex justify-between items-center">
                         <h3 class="font-bold text-gray-700"><i class="fas fa-list mr-2 text-pink-500"></i>Data Pembelian
                             Hari Ini</h3>
-
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse table-compact">
@@ -188,8 +216,10 @@ include '../../../aa_kon_sett.php';
                                     <th class="w-10 text-center">No</th>
                                     <th>Tgl Nota</th>
                                     <th>No Invoice</th>
+                                    <th>Toko/Cabang</th>
                                     <th>Supplier</th>
                                     <th class="text-right">DPP</th>
+                                    <th class="text-right">DPP Lain</th>
                                     <th class="text-right">PPN</th>
                                     <th class="text-right">Total</th>
                                     <th class="w-20 text-center">Aksi</th>
@@ -197,7 +227,7 @@ include '../../../aa_kon_sett.php';
                             </thead>
                             <tbody id="table-body">
                                 <tr>
-                                    <td colspan="8" class="text-center p-6 text-gray-500">Memuat data...</td>
+                                    <td colspan="10" class="text-center p-6 text-gray-500">Memuat data...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -213,7 +243,6 @@ include '../../../aa_kon_sett.php';
     <script src="../../js/coretax/input_pembelian_handler.js" type="module"></script>
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
 
 </body>
 

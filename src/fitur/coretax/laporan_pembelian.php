@@ -107,9 +107,11 @@ if ($page < 1) {
                                     <th>No</th>
                                     <th>Tgl Nota</th>
                                     <th>No Invoice</th>
-                                    <th>Kode Supplier</th>
                                     <th>Nama Supplier</th>
+
+
                                     <th class="text-right">DPP</th>
+                                    <th class="text-right">DPP Nilai Lain</th>
                                     <th class="text-right">PPN</th>
                                     <th class="text-right">Total</th>
                                     <th class="text-center" style="width: 180px;" colspan="2">NSFP</th>

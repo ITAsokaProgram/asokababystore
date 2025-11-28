@@ -205,14 +205,34 @@ document.addEventListener("DOMContentLoaded", () => {
       const ppn = parseFloat(row.ppn) || 0;
       const total = parseFloat(row.total_terima_fp) || 0;
       const dateObj = new Date(row.tgl_nota);
+      const dppNilaiLain = parseFloat(row.dpp_nilai_lain) || 0;
       const dateFormatted = dateObj.toLocaleDateString("id-ID", {
         day: "2-digit",
         month: "2-digit",
         year: "numeric",
       });
+      let availableCandidates = [];
+      let usedCandidates = [];
+      if (row.candidate_nsfps) {
+        const candidatesRaw = row.candidate_nsfps.split(",");
+        candidatesRaw.forEach((raw) => {
+          const parts = raw.split("|");
+          if (parts.length >= 2) {
+            const nsfpCode = parts[0];
+            const status = parts[1];
+            const usedBy = parts[2];
+            if (status === "AVAILABLE") {
+              availableCandidates.push(nsfpCode);
+            } else {
+              usedCandidates.push({ nsfp: nsfpCode, usedBy: usedBy });
+            }
+          } else {
+            availableCandidates.push(parts[0]);
+          }
+        });
+      }
       let statusHtml = "";
       let nsfpHtml = "";
-      const matchCount = parseInt(row.match_count) || 0;
       if (row.ada_di_coretax == 1) {
         statusHtml = `
             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -221,38 +241,52 @@ document.addEventListener("DOMContentLoaded", () => {
         nsfpHtml = `<span class="font-mono text-sm font-semibold text-gray-800">${
           row.nsfp || "-"
         }</span>`;
-      } else if (matchCount > 0 && row.candidate_nsfps) {
-        if (matchCount > 1) {
+      } else if (availableCandidates.length > 0) {
+        const candidateString = availableCandidates.join(",");
+        const count = availableCandidates.length;
+        if (count > 1) {
           statusHtml = `
-            <button onclick="handleConfirmCoretax(${row.id}, '${row.candidate_nsfps}')" 
+            <button onclick="handleConfirmCoretax(${row.id}, '${candidateString}')" 
                 class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-purple-600 hover:bg-purple-700 focus:outline-none transition-colors"
-                title="Terdapat ${matchCount} NSFP yang cocok">
-                <i class="fas fa-list-ul mr-1"></i> Pilih NSFP (${matchCount})
-            </button>
-          `;
+                title="Terdapat ${count} NSFP yang cocok">
+                <i class="fas fa-list-ul mr-1"></i> Pilih NSFP (${count})
+            </button>`;
           nsfpHtml = `
             <div class="flex flex-col items-center">
                 <span class="text-xs text-purple-600 font-semibold italic">
-                   ${matchCount} Opsi Ditemukan
+                   ${count} Opsi Ditemukan
                 </span>
-            </div>
-          `;
+            </div>`;
         } else {
           statusHtml = `
-            <button onclick="handleConfirmCoretax(${row.id}, '${row.candidate_nsfps}')" 
+            <button onclick="handleConfirmCoretax(${row.id}, '${candidateString}')" 
                 class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-pink-600 hover:bg-pink-700 focus:outline-none transition-colors"
                 title="Klik untuk menghubungkan">
                 <i class="fas fa-link mr-1"></i> Konfirmasi
-            </button>
-          `;
+            </button>`;
           nsfpHtml = `
             <div class="flex flex-col items-center">
                 <span class="font-mono text-sm text-gray-500 italic border-b border-dashed border-gray-300 cursor-help" title="Data ditemukan di Coretax">
-                    ${row.candidate_nsfps}
+                    ${availableCandidates[0]}
                 </span>
-            </div>
-          `;
+            </div>`;
         }
+      } else if (usedCandidates.length > 0) {
+        const firstMatch = usedCandidates[0];
+        statusHtml = `
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 cursor-help" 
+                  title="Nominal DPP & PPN cocok dengan NSFP: ${firstMatch.nsfp}, namun NSFP tersebut sudah dipakai oleh invoice: ${firstMatch.usedBy}">
+                <i class="fas fa-exclamation-circle mr-1"></i> Nominal Kembar
+            </span>`;
+        nsfpHtml = `
+            <div class="flex flex-col items-center">
+                <span class="text-xs text-orange-600 italic">
+                    (Sudah Terpakai)
+                </span>
+                <span class="text-[10px] text-gray-400">
+                    ${firstMatch.nsfp}
+                </span>
+            </div>`;
       } else {
         statusHtml = `<span class="text-gray-300">-</span>`;
         nsfpHtml = `<span class="text-gray-300">-</span>`;
@@ -262,14 +296,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td class="text-center font-medium text-gray-500">${item_counter}</td>
                 <td>${dateFormatted}</td>
                 <td class="font-semibold text-gray-700">${row.no_faktur}</td>
-                <td class="text-sm text-gray-600">${
-                  row.kode_supplier || "-"
-                }</td>
                 <td class="text-sm font-medium text-gray-800">${
                   row.nama_supplier || "-"
                 }</td>
                 <td class="text-right font-mono text-gray-700">${formatRupiah(
                   dpp
+                )}</td>
+                <td class="text-right font-mono text-gray-700">${formatRupiah(
+                  dppNilaiLain
                 )}</td>
                 <td class="text-right font-mono text-red-600">${formatRupiah(
                   ppn

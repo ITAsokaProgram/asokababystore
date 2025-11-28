@@ -26,21 +26,56 @@ try {
     }
     $id = isset($input['id']) ? (int) $input['id'] : null;
     $no_lpb = $input['no_lpb'] ?? '';
-    $kode_supplier = $input['kode_supplier'] ?? '';
+    $kode_supplier = '';
+    $kode_store = $input['kode_store'] ?? '';
     $nama_supplier = $input['nama_supplier'] ?? '';
     $tgl_nota = $input['tgl_nota'] ?? date('Y-m-d');
+    $d = DateTime::createFromFormat('Y-m-d', $tgl_nota);
+    if (!$d || $d->format('Y-m-d') !== $tgl_nota) {
+        throw new Exception("Format tanggal atau nilai tanggal nota salah, cek tanggal yang diinput");
+    }
+
+    $year = (int) $d->format('Y');
+    if ($year < 2000 || $year > 2099) {
+        throw new Exception("Tahun tanggal nota tidak valid ($year). Mohon periksa input tanggal.");
+    }
     $no_faktur = $input['no_faktur'] ?? '';
     $dpp = (float) ($input['dpp'] ?? 0);
+    $dpp_nilai_lain = (float) ($input['dpp_nilai_lain'] ?? 0);
     $ppn = (float) ($input['ppn'] ?? 0);
     $total_terima_fp = (float) ($input['total_terima_fp'] ?? 0);
     if (empty($no_faktur) || empty($nama_supplier)) {
-        throw new Exception("No Faktur dan Nama Supplier wajib diisi.");
+        throw new Exception("No Invoice dan Nama Supplier wajib diisi.");
     }
     if ($id) {
-        $stmt = $conn->prepare("UPDATE ff_pembelian SET nama_supplier=?, kode_supplier=?, tgl_nota=?, no_faktur=?, dpp=?, ppn=?, total_terima_fp=?, kd_user=?, edit_pada=NOW() WHERE id=?");
+        $query = "UPDATE ff_pembelian SET 
+                    nama_supplier=?, 
+                    kode_store=?, 
+                    tgl_nota=?, 
+                    no_faktur=?, 
+                    dpp=?, 
+                    dpp_nilai_lain=?, 
+                    ppn=?, 
+                    total_terima_fp=?, 
+                    kd_user=?, 
+                    edit_pada=NOW() 
+                  WHERE id=?";
+        $stmt = $conn->prepare($query);
         if (!$stmt)
             throw new Exception("Prepare Update Error: " . $conn->error);
-        $stmt->bind_param("ssssdddii", $nama_supplier, $kode_supplier, $tgl_nota, $no_faktur, $dpp, $ppn, $total_terima_fp, $kd_user, $id);
+        $stmt->bind_param(
+            "ssssddddii",
+            $nama_supplier,
+            $kode_store,
+            $tgl_nota,
+            $no_faktur,
+            $dpp,
+            $dpp_nilai_lain,
+            $ppn,
+            $total_terima_fp,
+            $kd_user,
+            $id
+        );
         if (!$stmt->execute()) {
             throw new Exception("Gagal mengupdate data: " . $stmt->error);
         }
@@ -54,10 +89,25 @@ try {
             throw new Exception("No Faktur '$no_faktur' sudah ada di database.");
         }
         $check->close();
-        $stmt = $conn->prepare("INSERT INTO ff_pembelian (nama_supplier, kode_supplier, tgl_nota, no_faktur, dpp, ppn, total_terima_fp, kd_user) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $query = "INSERT INTO ff_pembelian 
+                  (nama_supplier, kode_supplier, kode_store, tgl_nota, no_faktur, dpp, dpp_nilai_lain, ppn, total_terima_fp, kd_user) 
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $stmt = $conn->prepare($query);
         if (!$stmt)
             throw new Exception("Prepare Insert Error: " . $conn->error);
-        $stmt->bind_param("ssssdddi", $nama_supplier, $kode_supplier, $tgl_nota, $no_faktur, $dpp, $ppn, $total_terima_fp, $kd_user);
+        $stmt->bind_param(
+            "sssssdddii",
+            $nama_supplier,
+            $kode_supplier,
+            $kode_store,
+            $tgl_nota,
+            $no_faktur,
+            $dpp,
+            $dpp_nilai_lain,
+            $ppn,
+            $total_terima_fp,
+            $kd_user
+        );
         if (!$stmt->execute()) {
             throw new Exception("Gagal menyimpan data: " . $stmt->error);
         }

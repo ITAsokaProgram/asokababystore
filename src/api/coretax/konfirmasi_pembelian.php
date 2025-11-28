@@ -39,10 +39,16 @@ try {
         throw new Exception("Prepare failed: " . $conn->error);
     }
     $stmt->bind_param("sii", $nsfp, $kd_user, $id);
+
     if ($stmt->execute()) {
         echo json_encode(['success' => true, 'message' => 'Data berhasil dikonfirmasi ke Coretax']);
     } else {
-        throw new Exception("Gagal mengupdate data: " . $stmt->error);
+        if ($stmt->errno === 1062) {
+            http_response_code(409);
+            throw new Exception("NSFP '$nsfp' sudah digunakan pada data pembelian lain. Mohon periksa kembali.");
+        } else {
+            throw new Exception("Database Error: " . $stmt->error);
+        }
     }
     $stmt->close();
 } catch (Exception $e) {
