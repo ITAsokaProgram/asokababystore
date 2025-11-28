@@ -226,13 +226,19 @@ function renderTable(data) {
   let html = "";
   data.forEach((row, index) => {
     const safeJson = JSON.stringify(row).replace(/"/g, "&quot;");
+    const storeBadge = row.nm_alias
+      ? `<span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded border border-gray-200">${row.nm_alias}</span>`
+      : `<span class="text-gray-400">-</span>`;
     html += `
             <tr class="hover:bg-pink-50 transition-colors">
                 <td class="text-center text-gray-500">${index + 1}</td>
                 <td>${row.tgl_faktur || "-"}</td>
                 <td class="font-bold text-gray-700">${
                   row.no_faktur || "-"
-                }</td> <td class="font-medium text-gray-800">${row.nsfp}</td>
+                }</td> 
+                <td class="font-medium text-gray-800">${row.nsfp}</td>
+                
+                <td>${storeBadge}</td>
                 <td class="text-sm">${row.nama_supplier || "-"}</td>
                 <td class="text-right font-mono">${formatNumber(row.dpp)}</td>
                 <td class="text-right font-mono">${formatNumber(

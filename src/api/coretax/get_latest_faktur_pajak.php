@@ -10,19 +10,21 @@ try {
         throw new Exception("Koneksi Database Gagal: " . mysqli_connect_error());
     }
     $query = "SELECT 
-                id, 
-                nsfp, 
-                no_faktur,  
-                tgl_faktur, 
-                nama_supplier, 
-                dpp, 
-                dpp_nilai_lain, 
-                ppn, 
-                total,
-                kode_store,
-                edit_pada 
-              FROM ff_faktur_pajak 
-              ORDER BY COALESCE(edit_pada, dibuat_pada) DESC, id DESC 
+                fp.id, 
+                fp.nsfp, 
+                fp.no_faktur,  
+                fp.tgl_faktur, 
+                fp.nama_supplier, 
+                fp.dpp, 
+                fp.dpp_nilai_lain, 
+                fp.ppn, 
+                fp.total,
+                fp.kode_store,
+                fp.edit_pada,
+                ks.Nm_Alias as nm_alias 
+              FROM ff_faktur_pajak fp
+              LEFT JOIN kode_store ks ON fp.kode_store = ks.Kd_Store
+              ORDER BY COALESCE(fp.edit_pada, fp.dibuat_pada) DESC, fp.id DESC 
               LIMIT 50";
     $result = $conn->query($query);
     if (!$result) {

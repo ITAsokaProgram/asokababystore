@@ -276,12 +276,12 @@ document.addEventListener("DOMContentLoaded", () => {
         statusHtml = `
             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 cursor-help" 
                   title="Nominal DPP & PPN cocok dengan NSFP: ${firstMatch.nsfp}, namun NSFP tersebut sudah dipakai oleh invoice: ${firstMatch.usedBy}">
-                <i class="fas fa-exclamation-circle mr-1"></i> DPP, PPN, Cabang Kembar
+                <i class="fas fa-exclamation-circle mr-1"></i> Data Kembar
             </span>`;
         nsfpHtml = `
             <div class="flex flex-col items-center">
                 <span class="text-xs text-orange-600 italic">
-                    (Sudah Terpakai)
+                    (Nsfp Sudah Terpakai)
                 </span>
                 <span class="text-[10px] text-gray-400">
                     ${firstMatch.nsfp}
@@ -316,7 +316,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td class="text-right font-bold text-gray-800">${formatRupiah(
                   total
                 )}</td>
-                <td class="text-center align-middle whitespace-nowrap">
+                <td class="text-center align-middle">
                     ${statusHtml}
                 </td>
                 <td class="text-center align-middle whitespace-nowrap">
