@@ -147,18 +147,23 @@ document.addEventListener("DOMContentLoaded", () => {
             </tr>`;
       return;
     }
+
     let htmlRows = "";
     let item_counter = offset + 1;
+
     tabel_data.forEach((row, index) => {
       const harga_jual = parseFloat(row.harga_jual) || 0;
       const dpp_nilai_lain = parseFloat(row.dpp_nilai_lain) || 0;
       const ppn = parseFloat(row.ppn) || 0;
+
       const dateObj = new Date(row.tgl_faktur_pajak);
       const dateFormatted = dateObj.toLocaleDateString("id-ID", {
         day: "2-digit",
         month: "2-digit",
         year: "numeric",
       });
+
+      // --- Logic NSFP Duplikat/Pengganti (Existing) ---
       const currentNsfp = row.nsfp || "";
       const currentSuffix =
         currentNsfp.length >= 8 ? currentNsfp.slice(-8) : currentNsfp;
@@ -169,24 +174,37 @@ document.addEventListener("DOMContentLoaded", () => {
         index < tabel_data.length - 1 ? tabel_data[index + 1] : null;
       const nextNsfp = nextRow ? nextRow.nsfp || "" : "";
       const nextSuffix = nextNsfp.length >= 8 ? nextNsfp.slice(-8) : "";
+
       const isDuplicate =
         currentSuffix === prevSuffix || currentSuffix === nextSuffix;
+
       let rowClass = "border-b transition-colors ";
       let badgeHtml = "";
+
       if (isDuplicate) {
         rowClass += "bg-yellow-50 hover:bg-yellow-100";
         if (currentNsfp.length > 3 && currentNsfp[2] === "1") {
-          badgeHtml = `<span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">Pengganti</span>`;
+          badgeHtml += `<span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-red-100 text-red-800">Pengganti</span>`;
         } else if (
           currentNsfp.length > 3 &&
           currentNsfp[2] === "0" &&
           (nextNsfp[2] === "1" || prevNsfp[2] === "1")
         ) {
-          badgeHtml = `<span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Diganti</span>`;
+          badgeHtml += `<span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-800">Diganti</span>`;
         }
       } else {
         rowClass += "hover:bg-gray-50";
       }
+
+      // --- Logic Indikator Sinkronisasi (New) ---
+      let syncBadges = "";
+      if (row.ada_pembelian == 1) {
+        syncBadges += `<span class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-800 border border-green-200" title="Terhubung dengan Data Pembelian"><i class="fas fa-check mr-1"></i>BELI</span>`;
+      }
+      if (row.ada_fisik == 1) {
+        syncBadges += `<span class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200" title="Ada Data Scan Fisik"><i class="fas fa-file-alt mr-1"></i>FISIK</span>`;
+      }
+
       htmlRows += `
             <tr class="${rowClass}">
                 <td class="text-center font-medium text-gray-500">${item_counter}</td>
@@ -198,10 +216,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 }</td>
                 <td class="text-sm font-medium text-gray-800 truncate max-w-xs" title="${
                   row.nama_penjual
-                }">${row.nama_penjual || "-"}</td>
+                }">
+                    ${row.nama_penjual || "-"}
+                </td>
                 <td class="font-semibold text-gray-700">
-                    ${row.nsfp}
-                    ${badgeHtml} 
+                    <div class="flex flex-col items-start">
+                        <span class="font-mono">${row.nsfp}</span>
+                        <div class="flex flex-wrap gap-1 mt-0.5">
+                            ${badgeHtml}
+                            ${syncBadges}
+                        </div>
+                    </div>
                 </td>
                 <td>${dateFormatted}</td>
                 <td class="text-center text-sm">${row.masa_pajak || "-"}</td>
@@ -219,6 +244,7 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
       item_counter++;
     });
+
     tableBody.innerHTML = htmlRows;
   }
   function renderPagination(pagination) {

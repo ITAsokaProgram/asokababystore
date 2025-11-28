@@ -15,7 +15,6 @@ register_shutdown_function(function () {
 });
 
 header('Content-Type: application/json');
-
 $response = [
     'tabel_data' => [],
     'pagination' => [
@@ -58,9 +57,9 @@ try {
 
     $sql_count = "SELECT COUNT(*) as total FROM ff_faktur_pajak WHERE $where_conditions";
     $stmt_count = $conn->prepare($sql_count);
-    if ($stmt_count === false) {
+    if ($stmt_count === false)
         throw new Exception("Prepare failed (count): " . $conn->error);
-    }
+
     $stmt_count->bind_param($bind_types, ...$bind_params);
     $stmt_count->execute();
     $result_count = $stmt_count->get_result();
@@ -70,18 +69,26 @@ try {
     $response['pagination']['total_rows'] = (int) $total_rows;
     $response['pagination']['total_pages'] = ceil($total_rows / $limit);
 
+    // Main Query dengan JOIN Indikator
     $sql_data = "
         SELECT 
-            nsfp, 
-            tgl_faktur, 
-            nama_supplier, 
-            dpp, 
-            dpp_nilai_lain, 
-            ppn, 
-            total
-        FROM ff_faktur_pajak
+            f.nsfp, 
+            f.tgl_faktur, 
+            f.nama_supplier, 
+            f.dpp, 
+            f.dpp_nilai_lain, 
+            f.ppn, 
+            f.total,
+            -- Indikator
+            IF(p.id IS NOT NULL, 1, 0) as ada_pembelian,
+            IF(c.nsfp IS NOT NULL, 1, 0) as ada_coretax
+        FROM ff_faktur_pajak f
+        -- Cek Pembelian
+        LEFT JOIN ff_pembelian p ON f.nsfp = p.nsfp AND p.ada_di_coretax = 1
+        -- Cek Coretax
+        LEFT JOIN ff_coretax c ON f.nsfp = c.nsfp
         WHERE $where_conditions
-        ORDER BY tgl_faktur DESC, nsfp ASC
+        ORDER BY f.tgl_faktur DESC, f.nsfp ASC
         LIMIT ? OFFSET ?
     ";
 
@@ -90,9 +97,9 @@ try {
     $bind_params[] = $offset;
 
     $stmt_data = $conn->prepare($sql_data);
-    if ($stmt_data === false) {
+    if ($stmt_data === false)
         throw new Exception("Prepare failed (data): " . $conn->error);
-    }
+
     $stmt_data->bind_param($bind_types, ...$bind_params);
     $stmt_data->execute();
     $result_data = $stmt_data->get_result();

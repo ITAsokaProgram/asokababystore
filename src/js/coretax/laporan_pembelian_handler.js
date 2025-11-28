@@ -265,7 +265,7 @@ document.addEventListener("DOMContentLoaded", () => {
               '<span class="text-[10px] px-1 bg-blue-100 text-blue-700 rounded">FISIK</span>';
           } else {
             tipeBadge =
-              '<span class="text-[10px] px-1 bg-gray-100 text-gray-700 rounded">-</span>';
+              '<span class="text-[10px] px-1 bg-yellow-100 text-yellow-700 rounded">CORETAX</span>';
           }
         }
         statusHtml = `
