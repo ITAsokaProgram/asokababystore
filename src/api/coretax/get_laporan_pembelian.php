@@ -69,6 +69,7 @@ try {
             p.ppn, 
             p.total_terima_fp,
             p.ada_di_coretax,
+            ks.Nm_Alias,
             p.nsfp, 
             GROUP_CONCAT(
                 DISTINCT
@@ -92,6 +93,7 @@ try {
                 END
             ) as match_count
         FROM ff_pembelian p
+        LEFT JOIN kode_store ks ON p.kode_store = ks.Kd_Store
         LEFT JOIN ff_coretax c ON p.dpp = c.harga_jual AND p.ppn = c.ppn
         LEFT JOIN ff_pembelian p_used ON c.nsfp = p_used.nsfp AND p_used.ada_di_coretax = 1
         WHERE $where_conditions

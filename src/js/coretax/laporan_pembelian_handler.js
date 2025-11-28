@@ -296,6 +296,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td class="text-center font-medium text-gray-500">${item_counter}</td>
                 <td>${dateFormatted}</td>
                 <td class="font-semibold text-gray-700">${row.no_faktur}</td>
+                <td class="">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-800">
+                        ${row.Nm_Alias || "-"}
+                    </span>
+                </td>
                 <td class="text-sm font-medium text-gray-800">${
                   row.nama_supplier || "-"
                 }</td>

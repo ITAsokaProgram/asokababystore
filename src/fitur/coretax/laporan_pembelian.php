@@ -107,6 +107,7 @@ if ($page < 1) {
                                     <th>No</th>
                                     <th>Tgl Nota</th>
                                     <th>No Invoice</th>
+                                    <th class="text-center">Cabang</th>
                                     <th>Nama Supplier</th>
 
 
