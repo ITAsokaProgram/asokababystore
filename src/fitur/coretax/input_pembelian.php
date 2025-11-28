@@ -141,11 +141,11 @@ include '../../../aa_kon_sett.php';
                         <input type="hidden" id="inp_id" name="id" value="">
 
                         <div class="form-grid">
-                            <div>
-                                <label class="form-label">No. Invoice</label>
+                            <div class="relative"> <label class="form-label">No. Invoice</label>
                                 <input type="text" id="inp_no_lpb" name="no_lpb" class="input-compact" autofocus
                                     placeholder="Cari / Input Invoice...">
-                                <p id="err_no_lpb" class="text-xs text-red-500 mt-1 hidden font-semibold"></p>
+                                <p id="err_no_lpb"
+                                    class="text-xs text-red-500 absolute -bottom-4 left-0 hidden font-semibold"></p>
                             </div>
 
                             <div>

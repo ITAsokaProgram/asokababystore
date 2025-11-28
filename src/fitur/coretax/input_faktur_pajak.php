@@ -139,16 +139,16 @@ include '../../../aa_kon_sett.php';
                         <input type="hidden" id="inp_id" name="id" value="">
 
                         <div class="form-grid">
-                            <div>
-                                <label class="form-label">NSFP</label>
+                            <div class="relative"> <label class="form-label">NSFP</label>
                                 <input type="text" id="inp_no_seri" name="nsfp" class="input-compact" autofocus>
-                                <p id="err_no_seri" class="text-xs text-red-500 mt-1 hidden font-semibold"></p>
+                                <p id="err_no_seri"
+                                    class="text-xs text-red-500 absolute -bottom-4 left-0 hidden font-semibold"></p>
                             </div>
-                            <div>
-                                <label class="form-label">No. Invoice</label>
+                            <div class="relative"> <label class="form-label">No. Invoice</label>
                                 <input type="text" id="inp_no_invoice" name="no_invoice" class="input-compact"
                                     placeholder="Cari Invoice...">
-                                <p id="err_no_invoice" class="text-xs text-red-500 mt-1 hidden font-semibold"></p>
+                                <p id="err_no_invoice"
+                                    class="text-xs text-red-500 absolute -bottom-4 left-0 hidden font-semibold"></p>
                             </div>
                             <div>
                                 <label class="form-label">Toko / Cabang</label>
