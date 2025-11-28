@@ -11,6 +11,9 @@ $default_page = 1;
 $tgl_mulai = $_GET['tgl_mulai'] ?? $default_tgl_mulai;
 $tgl_selesai = $_GET['tgl_selesai'] ?? $default_tgl_selesai;
 $kd_store = $_GET['kd_store'] ?? $default_kd_store;
+// Tambahkan trim disini
+$search_supplier = trim($_GET['search_supplier'] ?? '');
+
 $page = (int) ($_GET['page'] ?? $default_page);
 if ($page < 1) {
     $page = 1;
@@ -87,10 +90,11 @@ if ($page < 1) {
 
                         <div class="md:col-span-1">
                             <label for="search_supplier" class="block text-xs font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-truck text-pink-600 mr-1"></i> Supplier
+                                <i class="fas fa-search text-pink-600 mr-1"></i> Cari Data
                             </label>
                             <input type="text" name="search_supplier" id="search_supplier" class="input-modern w-full"
-                                placeholder="Kode/Nama">
+                                placeholder="Supp / Faktur / Rp..."
+                                value="<?php echo htmlspecialchars($search_supplier); ?>">
                         </div>
 
                         <div class="md:col-span-1">

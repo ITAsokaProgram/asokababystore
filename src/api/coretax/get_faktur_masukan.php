@@ -34,7 +34,12 @@ try {
     $tgl_mulai = $_GET['tgl_mulai'] ?? $tanggal_kemarin;
     $tgl_selesai = $_GET['tgl_selesai'] ?? $tanggal_kemarin;
     $kd_store = $_GET['kd_store'] ?? 'all';
-    $search_supplier = $_GET['search_supplier'] ?? '';
+
+    // BERSIHKAN INPUT
+    $search_raw = trim($_GET['search_supplier'] ?? '');
+    // Hapus titik (untuk format 15.000.000) dan koma (jaga-jaga) agar jadi angka murni
+    $search_number = str_replace(['.', ','], '', $search_raw);
+
     $filter_ppn = $_GET['filter_ppn'] ?? 'all';
 
     $page = (int) ($_GET['page'] ?? 1);
@@ -56,10 +61,6 @@ try {
         }
     }
 
-
-
-
-
     $where_conditions = "DATE(rh.tgl_tiba) BETWEEN ? AND ?";
     $bind_types = 'ss';
     $bind_params = [$tgl_mulai, $tgl_selesai];
@@ -72,12 +73,33 @@ try {
     }
 
 
-    if (!empty($search_supplier)) {
-        $where_conditions .= " AND (rh.kode_supp LIKE ? OR s.nama_supp LIKE ?)";
-        $bind_types .= 'ss';
-        $searchTerm = '%' . $search_supplier . '%';
-        $bind_params[] = $searchTerm;
-        $bind_params[] = $searchTerm;
+    // --- LOGIKA PENCARIAN YANG DIPERBAIKI ---
+    if (!empty($search_raw)) {
+        // Kita gunakan CAST(... AS UNSIGNED) untuk memaksa angka database jadi bilangan bulat (hilangkan .00)
+        // Agar 15.870.865 (input user) cocok dengan 15870865.00 (di database)
+
+        $where_conditions .= " AND (
+            rh.kode_supp LIKE ? 
+            OR s.nama_supp LIKE ?
+            OR rh.no_faktur LIKE ?
+            OR rh.no_lpb LIKE ?
+            OR CAST(rh.gtot AS UNSIGNED) LIKE ?
+            OR CAST(rh.gppn AS UNSIGNED) LIKE ?
+            OR CAST((rh.gtot - rh.gppn) AS UNSIGNED) LIKE ?
+        )";
+
+        $bind_types .= 'sssssss';
+        $termRaw = '%' . $search_raw . '%';
+        $termNum = '%' . $search_number . '%';
+
+        // Urutan parameter
+        $bind_params[] = $termRaw; // kode_supp
+        $bind_params[] = $termRaw; // nama_supp
+        $bind_params[] = $termRaw; // no_faktur
+        $bind_params[] = $termRaw; // no_lpb
+        $bind_params[] = $termNum; // gtot (Grand Total)
+        $bind_params[] = $termNum; // gppn (PPN)
+        $bind_params[] = $termNum; // dpp (Hasil pengurangan)
     }
 
 
