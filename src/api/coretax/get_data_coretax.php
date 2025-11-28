@@ -1,6 +1,8 @@
 <?php
 session_start();
 include '../../../aa_kon_sett.php';
+
+// Error Handling Global
 register_shutdown_function(function () {
     $error = error_get_last();
     if ($error !== null && in_array($error['type'], [E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR, E_RECOVERABLE_ERROR])) {
@@ -12,7 +14,9 @@ register_shutdown_function(function () {
         }
     }
 });
+
 header('Content-Type: application/json');
+
 $response = [
     'stores' => [],
     'tabel_data' => [],
@@ -27,12 +31,18 @@ $response = [
 ];
 
 try {
+    // 1. Parameter Input
     $tanggal_kemarin = date('Y-m-d', strtotime('-1 day'));
     $tgl_mulai = $_GET['tgl_mulai'] ?? $tanggal_kemarin;
     $tgl_selesai = $_GET['tgl_selesai'] ?? $tanggal_kemarin;
     $kd_store = $_GET['kd_store'] ?? 'all';
-    $search_supplier = $_GET['search_supplier'] ?? '';
+    $status_data = $_GET['status_data'] ?? 'all';
 
+    // Pembersihan input search
+    $search_raw = trim($_GET['search_supplier'] ?? '');
+    $search_number = str_replace('.', '', $search_raw);
+
+    // Pagination
     $page = (int) ($_GET['page'] ?? 1);
     if ($page < 1)
         $page = 1;
@@ -43,7 +53,7 @@ try {
     $offset = ($page - 1) * $limit;
     $response['pagination']['offset'] = $offset;
 
-    // Load Stores
+    // 2. Load List Stores (Untuk Dropdown)
     $sql_stores = "SELECT kd_store, nm_alias FROM kode_store WHERE display = 'on' ORDER BY Nm_Alias ASC";
     $result_stores = $conn->query($sql_stores);
     if ($result_stores) {
@@ -52,27 +62,66 @@ try {
         }
     }
 
+    // 3. Build Query Conditions
     $where_conditions = "fc.tgl_faktur_pajak BETWEEN ? AND ?";
     $bind_types = 'ss';
     $bind_params = [$tgl_mulai, $tgl_selesai];
 
+    // Filter Store
     if ($kd_store != 'all') {
         $where_conditions .= " AND fc.kode_store = ?";
         $bind_types .= 's';
         $bind_params[] = $kd_store;
     }
 
-    if (!empty($search_supplier)) {
-        $where_conditions .= " AND (fc.nama_penjual LIKE ? OR fc.npwp_penjual LIKE ? OR fc.nsfp LIKE ?)";
-        $bind_types .= 'sss';
-        $searchTerm = '%' . $search_supplier . '%';
-        $bind_params[] = $searchTerm;
-        $bind_params[] = $searchTerm;
-        $bind_params[] = $searchTerm;
+    // Filter Search (NPWP, Nama, NSFP, Nominal, Perekam)
+    if (!empty($search_raw)) {
+        $where_conditions .= " AND (
+            fc.nama_penjual LIKE ? 
+            OR fc.npwp_penjual LIKE ? 
+            OR fc.nsfp LIKE ?
+            OR fc.perekam LIKE ?
+            OR CAST(fc.harga_jual AS CHAR) LIKE ?
+            OR CAST(fc.ppn AS CHAR) LIKE ?
+        )";
+        $bind_types .= 'ssssss';
+        $searchTermRaw = '%' . $search_raw . '%';
+        $searchTermNum = '%' . $search_number . '%';
+
+        $bind_params[] = $searchTermRaw;
+        $bind_params[] = $searchTermRaw;
+        $bind_params[] = $searchTermRaw;
+        $bind_params[] = $searchTermRaw;
+        $bind_params[] = $searchTermNum;
+        $bind_params[] = $searchTermNum;
     }
 
-    // Hitung Total Rows
-    $sql_count = "SELECT COUNT(*) as total FROM ff_coretax fc WHERE $where_conditions";
+    // Filter Status (Logic Baru)
+    $status_condition = "";
+    if ($status_data != 'all') {
+        if ($status_data == 'linked_both') {
+            // Terhubung Pembelian DAN Fisik
+            $status_condition = " AND p.id IS NOT NULL AND f.id IS NOT NULL";
+        } elseif ($status_data == 'linked_pembelian') {
+            // Ada di Pembelian
+            $status_condition = " AND p.id IS NOT NULL";
+        } elseif ($status_data == 'linked_fisik') {
+            // Ada scan Fisik
+            $status_condition = " AND f.id IS NOT NULL";
+        } elseif ($status_data == 'unlinked_pembelian') {
+            // Belum ada di pembelian
+            $status_condition = " AND p.id IS NULL";
+        }
+    }
+
+    // 4. Hitung Total Rows 
+    // PERBAIKAN: Menggunakan count(fc.nsfp) bukan fc.id
+    $sql_count = "SELECT COUNT(DISTINCT fc.nsfp) as total 
+                  FROM ff_coretax fc
+                  LEFT JOIN ff_pembelian p ON fc.nsfp = p.nsfp AND p.ada_di_coretax = 1
+                  LEFT JOIN ff_faktur_pajak f ON fc.nsfp = f.nsfp
+                  WHERE $where_conditions $status_condition";
+
     $stmt_count = $conn->prepare($sql_count);
     if ($stmt_count === false)
         throw new Exception("Prepare failed (count): " . $conn->error);
@@ -86,7 +135,8 @@ try {
     $response['pagination']['total_rows'] = (int) $total_rows;
     $response['pagination']['total_pages'] = ceil($total_rows / $limit);
 
-    // Main Query dengan JOIN untuk status indikasi
+    // 5. Main Query Data
+    // PERBAIKAN: Menghapus fc.id dari SELECT
     $sql_data = "
         SELECT 
             fc.npwp_penjual,
@@ -95,22 +145,25 @@ try {
             fc.tgl_faktur_pajak,
             fc.masa_pajak,
             fc.tahun,
+            fc.masa_pajak_pengkreditkan,
+            fc.tahun_pajak_pengkreditan,
             fc.harga_jual,
             fc.dpp_nilai_lain,
             fc.ppn,
+            fc.perekam,
             fc.kode_store,
             ks.Nm_Alias,
-            -- Indikasi Data
+            -- Indikasi Status Link
             IF(p.id IS NOT NULL, 1, 0) as ada_pembelian,
             IF(f.id IS NOT NULL, 1, 0) as ada_fisik
         FROM ff_coretax fc
         LEFT JOIN kode_store ks ON fc.kode_store = ks.Kd_Store
-        -- Cek Pembelian (hanya yang sudah dikonfirmasi/linked)
+        -- Join Pembelian (Hanya yg sudah confirmed/linked)
         LEFT JOIN ff_pembelian p ON fc.nsfp = p.nsfp AND p.ada_di_coretax = 1
-        -- Cek Fisik
+        -- Join Fisik (Scan Faktur Pajak)
         LEFT JOIN ff_faktur_pajak f ON fc.nsfp = f.nsfp
-        WHERE $where_conditions
-        ORDER BY RIGHT(fc.nsfp, 8) DESC, fc.nsfp ASC
+        WHERE $where_conditions $status_condition
+        ORDER BY fc.tgl_faktur_pajak DESC, fc.nsfp ASC
         LIMIT ? OFFSET ?
     ";
 

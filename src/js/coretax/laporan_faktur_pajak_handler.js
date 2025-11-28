@@ -196,13 +196,13 @@ document.addEventListener("DOMContentLoaded", () => {
         badgePembelian = `
             <div class="flex flex-col items-center justify-center">
                 <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-800 border border-green-200">
-                    <i class="fas fa-check mr-1"></i> LINKED
+                    <i class="fas fa-check mr-1"></i> OK
                 </span>
             </div>`;
       } else {
         badgePembelian = `
             <div class="flex flex-col items-center justify-center">
-                 <span class="text-[10px] text-gray-400 italic">Belum Ada</span>
+                 <span class="text-[10px] text-gray-400 italic">-</span>
             </div>`;
       }
 
@@ -218,7 +218,7 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         badgeCoretax = `
             <div class="flex flex-col items-center justify-center">
-                 <span class="text-[10px] text-gray-400 italic">Belum Ada</span>
+                 <span class="text-[10px] text-gray-400 italic">-</span>
             </div>`;
       }
 
