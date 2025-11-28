@@ -116,38 +116,55 @@ function build_pagination_url($new_page)
                 </div>
 
                 <div class="filter-card-simple">
-                    <form id="filter-form" class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end" method="GET"
+                    <form id="filter-form" class="flex flex-wrap items-end gap-3" method="GET"
                         action="sales_per_kasir_bon.php">
-                        <div>
-                            <label for="tgl_mulai" class="block text-xs font-semibold text-gray-700 mb-2"> <i
-                                    class="fas fa-calendar-alt text-pink-600 mr-1"></i>
-                                Dari Tanggal
+
+                        <div class="w-full sm:w-[48%] md:w-auto">
+                            <label for="tgl_mulai" class="block text-xs font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-calendar-alt text-pink-600 mr-1"></i> Dari
                             </label>
                             <input type="date" name="tgl_mulai" id="tgl_mulai" class="input-modern w-full"
                                 value="<?php echo htmlspecialchars($tgl_mulai); ?>">
                         </div>
-                        <div>
-                            <label for="tgl_selesai" class="block text-xs font-semibold text-gray-700 mb-2"> <i
-                                    class="fas fa-calendar-alt text-pink-600 mr-1"></i>
-                                Sampai Tanggal
+
+                        <div class="w-full sm:w-[48%] md:w-auto">
+                            <label for="tgl_selesai" class="block text-xs font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-calendar-alt text-pink-600 mr-1"></i> Sampai
                             </label>
                             <input type="date" name="tgl_selesai" id="tgl_selesai" class="input-modern w-full"
                                 value="<?php echo htmlspecialchars($tgl_selesai); ?>">
                         </div>
-                        <div>
-                            <label for="kd_store" class="block text-xs font-semibold text-gray-700 mb-2"> <i
-                                    class="fas fa-store text-pink-600 mr-1"></i>
-                                Pilih Cabang
+
+                        <div class="w-full md:w-[200px]">
+                            <label for="kd_store" class="block text-xs font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-store text-pink-600 mr-1"></i> Cabang
                             </label>
                             <select name="kd_store" id="kd_store" class="input-modern w-full">
                                 <option value="all">Seluruh Store</option>
                             </select>
                         </div>
-                        <button type="submit" id="filter-submit-button"
-                            class="btn-primary inline-flex items-center justify-center gap-2">
-                            <i class="fas fa-filter"></i>
-                            <span>Tampilkan</span>
-                        </button>
+
+                        <div class="w-full md:flex-1 min-w-[200px]">
+                            <label for="search-input" class="block text-xs font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-search text-pink-600 mr-1"></i> Cari Data
+                            </label>
+                            <div class="relative w-full">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                </div>
+                                <input type="text" name="search" id="search-input" class="input-modern w-full pl-10"
+                                    placeholder="PLU / Nama / No Bon..."
+                                    value="<?php echo htmlspecialchars($_GET['search'] ?? ''); ?>" autocomplete="off">
+                            </div>
+                        </div>
+
+                        <div class="w-full md:w-auto">
+                            <button type="submit" id="filter-submit-button"
+                                class="btn-primary w-full inline-flex items-center justify-center gap-2 h-[42px] px-6">
+                                <i class="fas fa-filter"></i>
+                                <span>Tampilkan</span>
+                            </button>
+                        </div>
+
                         <input type="hidden" name="page" value="1">
                     </form>
                 </div>

@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const searchInput = document.getElementById("search-input"); // Ambil elemen input
   const tableBody = document.getElementById("top-sales-table-body");
   const filterForm = document.getElementById("filter-form");
   const filterSubmitButton = document.getElementById("filter-submit-button");
@@ -13,6 +14,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const paginationLinks = document.getElementById("pagination-links");
   const exportExcelButton = document.getElementById("export-excel-btn");
   const exportPdfButton = document.getElementById("export-pdf-btn");
+  const params = getUrlParams();
+  if (searchInput && params.search) {
+    searchInput.value = params.search;
+  }
   function formatRupiah(number) {
     if (isNaN(number) || number === null) {
       return "0";
@@ -38,10 +43,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayString = yesterday.toISOString().split("T")[0];
+
     return {
       tgl_mulai: params.get("tgl_mulai") || yesterdayString,
       tgl_selesai: params.get("tgl_selesai") || yesterdayString,
       kd_store: params.get("kd_store") || "all",
+      search: params.get("search") || "", // <--- TAMBAHKAN INI
       page: parseInt(params.get("page") || "1", 10),
     };
   }
@@ -54,10 +61,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const params = getUrlParams();
     const isPagination = params.page > 1;
     setLoadingState(true, false, isPagination);
+
+    // Update query string
     const queryString = new URLSearchParams({
       tgl_mulai: params.tgl_mulai,
       tgl_selesai: params.tgl_selesai,
       kd_store: params.kd_store,
+      search: params.search, // <--- TAMBAHKAN INI
       page: params.page,
     }).toString();
     try {
@@ -434,10 +444,12 @@ document.addEventListener("DOMContentLoaded", () => {
   async function fetchAllDataForExport() {
     setLoadingState(true, true);
     const params = getUrlParams();
+
     const queryString = new URLSearchParams({
       tgl_mulai: params.tgl_mulai,
       tgl_selesai: params.tgl_selesai,
       kd_store: params.kd_store,
+      search: params.search, // <--- TAMBAHKAN INI
       export: true,
     }).toString();
     try {

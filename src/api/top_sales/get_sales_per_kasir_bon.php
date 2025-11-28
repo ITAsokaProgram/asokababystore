@@ -64,20 +64,49 @@ try {
         }
     }
     $where_conditions = "a.tgl_trans BETWEEN ? AND ?";
+
+    // Inisialisasi array bind params
     $bind_params_data = ['ss', $tgl_mulai, $tgl_selesai];
     $bind_params_summary = ['ss', $tgl_mulai, $tgl_selesai];
+
+    // 1. FILTER STORE (Logika Lama)
     if ($kd_store != 'all') {
         $where_conditions .= " AND a.kd_store = ?";
         $bind_params_data[0] .= 's';
         $bind_params_data[] = $kd_store;
+
         $bind_params_summary[0] .= 's';
         $bind_params_summary[] = $kd_store;
     }
+
+    // 2. FILTER SEARCH (Logika Baru - Tambahkan Ini)
+    $search_keyword = $_GET['search'] ?? '';
+    if (!empty($search_keyword)) {
+        // Search mencakup PLU, Nama Barang (descp), atau No Bon
+        $where_conditions .= " AND (a.plu LIKE ? OR a.descp LIKE ? OR a.no_bon LIKE ?)";
+        $search_param = "%" . $search_keyword . "%";
+
+        // Tambahkan ke params data
+        $bind_params_data[0] .= 'sss';
+        $bind_params_data[] = $search_param;
+        $bind_params_data[] = $search_param;
+        $bind_params_data[] = $search_param;
+
+        // Tambahkan ke params summary (untuk hitung total & count rows)
+        $bind_params_summary[0] .= 'sss';
+        $bind_params_summary[] = $search_param;
+        $bind_params_summary[] = $search_param;
+        $bind_params_summary[] = $search_param;
+    }
+
+    // 3. PAGINATION (Logika Lama - Pastikan ini ada DI BAWAH logika search)
     $sql_calc_found_rows = "";
     $limit_offset_sql = "";
     if (!$is_export) {
         $sql_calc_found_rows = "SQL_CALC_FOUND_ROWS";
         $limit_offset_sql = "LIMIT ? OFFSET ?";
+
+        // Append limit offset hanya ke bind_params_data
         $bind_params_data[0] .= 'ii';
         $bind_params_data[] = $limit;
         $bind_params_data[] = $offset;
