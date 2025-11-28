@@ -3,6 +3,7 @@ const API_URLS = {
   saveData: "/src/api/coretax/save_faktur_pajak.php",
   getData: "/src/api/coretax/get_latest_faktur_pajak.php",
   checkDuplicate: "/src/api/coretax/check_duplicate_fp.php",
+  checkDuplicateInv: "/src/api/coretax/check_duplicate_invoice_fp.php",
   getCoretax: "/src/api/coretax/get_coretax_detail.php",
   searchSupplier: "/src/api/coretax/get_supplier_search.php",
   getStores: "/src/api/shared/get_all_store.php",
@@ -12,6 +13,7 @@ const form = document.getElementById("fp-form");
 const inpId = document.getElementById("inp_id");
 const inpKodeStore = document.getElementById("inp_kode_store");
 const inpNoInvoice = document.getElementById("inp_no_invoice");
+const errNoInvoice = document.getElementById("err_no_invoice");
 const inpNoSeri = document.getElementById("inp_no_seri");
 const errNoSeri = document.getElementById("err_no_seri");
 const inpNamaSupp = document.getElementById("inp_nama_supplier");
@@ -50,6 +52,16 @@ function resetErrorState() {
   inpNoSeri.classList.add("border-gray-300");
   errNoSeri.classList.add("hidden");
   errNoSeri.textContent = "";
+  if (errNoInvoice) {
+    inpNoInvoice.classList.remove(
+      "border-red-500",
+      "bg-red-50",
+      "text-red-700"
+    );
+    inpNoInvoice.classList.add("border-gray-300");
+    errNoInvoice.classList.add("hidden");
+    errNoInvoice.textContent = "";
+  }
 }
 async function loadStoreOptions() {
   try {
@@ -109,10 +121,49 @@ async function checkDuplicateFP(noSeri) {
       }).showToast();
       return true;
     } else {
-      resetErrorState();
+      inpNoSeri.classList.remove("border-red-500", "bg-red-50", "text-red-700");
+      inpNoSeri.classList.add("border-gray-300");
+      errNoSeri.classList.add("hidden");
       return false;
     }
   } catch (error) {
+    return false;
+  }
+}
+async function checkDuplicateInvoiceFunc(noInvoice) {
+  if (!noInvoice) return false;
+  const currentId = inpId.value || 0;
+  try {
+    const result = await sendRequestGET(
+      `${API_URLS.checkDuplicateInv}?no_invoice=${encodeURIComponent(
+        noInvoice
+      )}&exclude_id=${currentId}`
+    );
+    if (result.exists) {
+      inpNoInvoice.classList.add("border-red-500", "bg-red-50", "text-red-700");
+      inpNoInvoice.classList.remove("border-gray-300");
+      if (errNoInvoice) {
+        errNoInvoice.textContent = result.message;
+        errNoInvoice.classList.remove("hidden");
+      }
+      Toastify({
+        text: `⚠️ ${result.message}`,
+        duration: 3000,
+        style: { background: "#ef4444" },
+      }).showToast();
+      return true;
+    } else {
+      inpNoInvoice.classList.remove(
+        "border-red-500",
+        "bg-red-50",
+        "text-red-700"
+      );
+      inpNoInvoice.classList.add("border-gray-300");
+      if (errNoInvoice) errNoInvoice.classList.add("hidden");
+      return false;
+    }
+  } catch (error) {
+    console.error("Check Duplicate Inv Error:", error);
     return false;
   }
 }
@@ -156,28 +207,23 @@ async function fetchCoretaxData(nsfp) {
 }
 async function fetchReceiptData(noInvoice) {
   if (!noInvoice) return;
-
+  const isDuplicate = await checkDuplicateInvoiceFunc(noInvoice);
+  if (isDuplicate) return;
   inpNoInvoice.classList.add("bg-yellow-50", "text-yellow-700");
   const originalPlaceholder = inpNoInvoice.placeholder;
   inpNoInvoice.placeholder = "Mencari...";
-
   try {
     const result = await sendRequestGET(
       `${API_URLS.getReceipt}?no_lpb=${encodeURIComponent(noInvoice)}`
     );
-
     if (result.success && result.data) {
       const d = result.data;
-
       inpNamaSupp.value = d.nama_supplier || "";
-
       if (d.kode_store) {
         inpKodeStore.value = d.kode_store;
       }
-
       inpDpp.value = formatNumber(d.dpp);
       inpPpn.value = formatNumber(d.ppn);
-
       calculateTotal();
       inpNoInvoice.classList.remove("bg-yellow-50", "text-yellow-700");
       inpNoInvoice.classList.add("bg-green-50", "text-green-700");
@@ -193,7 +239,7 @@ async function fetchReceiptData(noInvoice) {
       if (!inpNoSeri.value) inpNoSeri.focus();
     } else {
       Toastify({
-        text: "ℹ️ Data Invoice tidak ditemukan",
+        text: "ℹ️ Data Invoice tidak ditemukan (Input Manual)",
         duration: 2000,
         style: { background: "#3b82f6" },
       }).showToast();
@@ -237,7 +283,6 @@ function renderTable(data) {
                   row.no_faktur || "-"
                 }</td> 
                 <td class="font-medium text-gray-800">${row.nsfp}</td>
-                
                 <td>${storeBadge}</td>
                 <td class="text-sm">${row.nama_supplier || "-"}</td>
                 <td class="text-right font-mono">${formatNumber(row.dpp)}</td>
@@ -265,7 +310,7 @@ function startEditMode(data) {
   resetErrorState();
   inpId.value = data.id;
   inpNoSeri.value = data.nsfp;
-  inpNoInvoice.value = data.no_invoice || "";
+  inpNoInvoice.value = data.no_faktur || "";
   inpNamaSupp.value = data.nama_supplier;
   inpKodeStore.value = data.kode_store || "";
   inpTgl.value = data.tgl_faktur;
@@ -304,19 +349,28 @@ async function handleSave() {
     return;
   }
   const noSeri = inpNoSeri.value.trim();
+  const noInvoice = inpNoInvoice.value.trim();
   if (!noSeri) {
     Swal.fire("Gagal", "NSFP wajib diisi", "warning");
+    return;
+  }
+  if (!noInvoice) {
+    Swal.fire("Gagal", "No Invoice wajib diisi", "warning");
     return;
   }
   if (inpNoSeri.classList.contains("border-red-500")) {
     inpNoSeri.focus();
     return;
   }
+  if (inpNoInvoice.classList.contains("border-red-500")) {
+    inpNoInvoice.focus();
+    return;
+  }
   isSubmitting = true;
   const payload = {
     id: inpId.value || null,
     nsfp: noSeri,
-    no_invoice: inpNoInvoice.value.trim(),
+    no_invoice: noInvoice,
     nama_supplier: inpNamaSupp.value.trim(),
     kode_store: inpKodeStore.value,
     tgl_faktur: inpTgl.value,
@@ -346,8 +400,13 @@ async function handleSave() {
     }
   } catch (error) {
     let msg = error.message;
-    if (msg.includes("Duplicate entry"))
-      msg = "Data Duplikat (NSFP sudah ada).";
+    if (msg.includes("Duplicate entry") || msg.includes("duplikat")) {
+      if (msg.includes("Invoice") || msg.includes("no_faktur")) {
+        msg = "Gagal: Nomor Invoice sudah digunakan.";
+      } else if (msg.includes("NSFP") || msg.includes("nsfp")) {
+        msg = "Gagal: NSFP sudah digunakan.";
+      }
+    }
     Swal.fire("Gagal", msg, "error");
   } finally {
     btnSave.disabled = false;
@@ -369,7 +428,30 @@ document.addEventListener("DOMContentLoaded", () => {
   inpNamaSupp.addEventListener("input", handleSupplierSearch);
   inpNoInvoice.addEventListener("change", (e) => {
     const val = e.target.value.trim();
-    if (val) fetchReceiptData(val);
+    if (val) {
+      fetchReceiptData(val);
+    } else {
+      if (inpNoInvoice.classList.contains("border-red-500")) {
+        inpNoInvoice.classList.remove(
+          "border-red-500",
+          "bg-red-50",
+          "text-red-700"
+        );
+        inpNoInvoice.classList.add("border-gray-300");
+        if (errNoInvoice) errNoInvoice.classList.add("hidden");
+      }
+    }
+  });
+  inpNoInvoice.addEventListener("input", () => {
+    if (inpNoInvoice.classList.contains("border-red-500")) {
+      inpNoInvoice.classList.remove(
+        "border-red-500",
+        "bg-red-50",
+        "text-red-700"
+      );
+      inpNoInvoice.classList.add("border-gray-300");
+      if (errNoInvoice) errNoInvoice.classList.add("hidden");
+    }
   });
   inpNoSeri.addEventListener("change", async (e) => {
     const val = e.target.value.trim();
@@ -389,7 +471,9 @@ document.addEventListener("DOMContentLoaded", () => {
         if (input === inpNoInvoice) {
           const val = input.value.trim();
           if (val) await fetchReceiptData(val);
-          inpNoSeri.focus();
+          if (!inpNoInvoice.classList.contains("border-red-500")) {
+            inpNoSeri.focus();
+          }
           return;
         }
         if (input === inpNoSeri) {
@@ -398,10 +482,12 @@ document.addEventListener("DOMContentLoaded", () => {
           if (inpNamaSupp) inpNamaSupp.focus();
           return;
         }
-        const isReady = inpNoSeri.value && inpNamaSupp.value;
+        const isReady =
+          inpNoSeri.value && inpNamaSupp.value && inpNoInvoice.value;
         const isLast = input.id === "inp_ppn";
-        if (isReady && (isLast || e.ctrlKey)) handleSave();
-        else {
+        if (isReady && (isLast || e.ctrlKey)) {
+          handleSave();
+        } else {
           const next = formInputs[index + 1];
           if (next && !next.readOnly) next.focus();
         }

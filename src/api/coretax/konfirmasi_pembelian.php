@@ -33,19 +33,46 @@ try {
     if (!$id || !$nsfp) {
         throw new Exception("ID Pembelian atau NSFP tidak valid.");
     }
-    $sql = "UPDATE ff_pembelian SET ada_di_coretax = 1, nsfp = ?, kd_user = ? WHERE id = ?";
+    $in_coretax = false;
+    $in_fisik = false;
+    $stmt_check_c = $conn->prepare("SELECT 1 FROM ff_coretax WHERE nsfp = ? LIMIT 1");
+    $stmt_check_c->bind_param("s", $nsfp);
+    $stmt_check_c->execute();
+    if ($stmt_check_c->get_result()->num_rows > 0)
+        $in_coretax = true;
+    $stmt_check_c->close();
+    $stmt_check_f = $conn->prepare("SELECT 1 FROM ff_faktur_pajak WHERE nsfp = ? LIMIT 1");
+    $stmt_check_f->bind_param("s", $nsfp);
+    $stmt_check_f->execute();
+    if ($stmt_check_f->get_result()->num_rows > 0)
+        $in_fisik = true;
+    $stmt_check_f->close();
+    $tipe_nsfp = '';
+    if ($in_coretax && $in_fisik) {
+        $tipe_nsfp = 'coretax,fisik';
+    } else if ($in_coretax) {
+        $tipe_nsfp = 'coretax';
+    } else if ($in_fisik) {
+        $tipe_nsfp = 'fisik';
+    } else {
+        throw new Exception("NSFP tidak ditemukan di data Coretax maupun Fisik.");
+    }
+    $sql = "UPDATE ff_pembelian SET ada_di_coretax = 1, nsfp = ?, tipe_nsfp = ?, kd_user = ? WHERE id = ?";
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
         throw new Exception("Prepare failed: " . $conn->error);
     }
-    $stmt->bind_param("sii", $nsfp, $kd_user, $id);
-
+    $stmt->bind_param("ssii", $nsfp, $tipe_nsfp, $kd_user, $id);
     if ($stmt->execute()) {
-        echo json_encode(['success' => true, 'message' => 'Data berhasil dikonfirmasi ke Coretax']);
+        echo json_encode([
+            'success' => true,
+            'message' => 'Data berhasil dikonfirmasi.',
+            'tipe' => $tipe_nsfp
+        ]);
     } else {
         if ($stmt->errno === 1062) {
             http_response_code(409);
-            throw new Exception("NSFP '$nsfp' sudah digunakan pada data pembelian lain. Mohon periksa kembali.");
+            throw new Exception("NSFP '$nsfp' sudah digunakan pada data pembelian lain.");
         } else {
             throw new Exception("Database Error: " . $stmt->error);
         }

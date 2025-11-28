@@ -1,35 +1,30 @@
 import { sendRequestGET, sendRequestJSON } from "../utils/api_helpers.js";
-
 const API_URLS = {
   getReceipt: "/src/api/coretax/get_receipt_detail.php",
   saveData: "/src/api/coretax/save_pembelian_single.php",
   getData: "/src/api/coretax/get_latest_pembelian.php",
   checkDuplicate: "/src/api/coretax/check_duplicate_invoice.php",
-  getStores: "/src/api/shared/get_all_store.php", // API Toko
-  searchSupplier: "/src/api/coretax/get_supplier_search.php", // API Baru
+  getStores: "/src/api/shared/get_all_store.php",
+  searchSupplier: "/src/api/coretax/get_supplier_search.php",
 };
-
 const form = document.getElementById("single-form");
 const inpId = document.getElementById("inp_id");
 const inpNoLpb = document.getElementById("inp_no_lpb");
 const errNoLpb = document.getElementById("err_no_lpb");
-const inpKodeStore = document.getElementById("inp_kode_store"); // Baru
+const inpKodeStore = document.getElementById("inp_kode_store");
 const inpNamaSupp = document.getElementById("inp_nama_supplier");
-const listSupplier = document.getElementById("supplier_list"); // Baru
+const listSupplier = document.getElementById("supplier_list");
 const inpTgl = document.getElementById("inp_tgl_nota");
 const inpDpp = document.getElementById("inp_dpp");
-const inpDppLain = document.getElementById("inp_dpp_lain"); // Baru
+const inpDppLain = document.getElementById("inp_dpp_lain");
 const inpPpn = document.getElementById("inp_ppn");
 const inpTotal = document.getElementById("inp_total");
-
 const btnSave = document.getElementById("btn-save");
 const btnCancelEdit = document.getElementById("btn-cancel-edit");
 const editIndicator = document.getElementById("edit-mode-indicator");
 const tableBody = document.getElementById("table-body");
-
 let isSubmitting = false;
 let debounceTimer;
-
 function formatNumber(num) {
   if (isNaN(num) || num === null) return "0";
   return new Intl.NumberFormat("id-ID", {
@@ -37,14 +32,11 @@ function formatNumber(num) {
     maximumFractionDigits: 0,
   }).format(num);
 }
-
 function parseNumber(str) {
   if (!str) return 0;
   const cleanStr = str.toString().replace(/\./g, "").replace(",", ".");
   return parseFloat(cleanStr) || 0;
 }
-
-// Rumus Total: DPP + DPP Nilai Lain + PPN
 function calculateTotal() {
   const dpp = parseNumber(inpDpp.value);
   const dppLain = parseNumber(inpDppLain.value);
@@ -52,8 +44,6 @@ function calculateTotal() {
   const total = dpp + dppLain + ppn;
   inpTotal.value = formatNumber(total);
 }
-
-// Load Pilihan Toko/Cabang
 async function loadStoreOptions() {
   try {
     const result = await sendRequestGET(API_URLS.getStores);
@@ -71,8 +61,6 @@ async function loadStoreOptions() {
     console.error("Gagal memuat toko:", error);
   }
 }
-
-// Autocomplete Supplier
 async function handleSupplierSearch(e) {
   const term = e.target.value;
   if (term.length < 2) return;
@@ -94,7 +82,6 @@ async function handleSupplierSearch(e) {
     }
   }, 300);
 }
-
 async function checkDuplicateInvoice(noLpb) {
   if (!noLpb) return false;
   const currentId = inpId.value || 0;
@@ -124,15 +111,12 @@ async function checkDuplicateInvoice(noLpb) {
     return false;
   }
 }
-
 function resetErrorState() {
   inpNoLpb.classList.remove("border-red-500", "bg-red-50", "text-red-700");
   inpNoLpb.classList.add("border-gray-300");
   errNoLpb.classList.add("hidden");
   errNoLpb.textContent = "";
 }
-
-// Fetch data invoice (jika ada data LPB/Receipt sebelumnya)
 async function fetchReceiptData(noLpb) {
   if (!noLpb) return;
   const isDuplicate = await checkDuplicateInvoice(noLpb);
@@ -145,19 +129,13 @@ async function fetchReceiptData(noLpb) {
     );
     if (result.success && result.data) {
       const d = result.data;
-
-      // Mengisi field dengan data yang ditemukan
       inpNamaSupp.value = d.nama_supplier || "";
       if (d.kode_store) {
-        inpKodeStore.value = d.kode_store; // Isi kode store jika ada
+        inpKodeStore.value = d.kode_store;
       }
-
       inpDpp.value = formatNumber(parseFloat(d.dpp) || 0);
       inpPpn.value = formatNumber(parseFloat(d.ppn) || 0);
-      // DPP Lain biasanya manual, default 0 atau sesuai logic bisnis
-
       calculateTotal();
-
       if (!isDuplicate) {
         inpNoLpb.classList.remove("bg-yellow-50", "text-yellow-700");
         inpNoLpb.classList.add("bg-green-50", "text-green-700");
@@ -166,7 +144,7 @@ async function fetchReceiptData(noLpb) {
           1000
         );
       }
-      inpNamaSupp.focus(); // Pindah fokus
+      inpNamaSupp.focus();
     } else {
       if (!isDuplicate) {
         inpNoLpb.classList.remove("bg-yellow-50", "text-yellow-700");
@@ -187,7 +165,6 @@ async function fetchReceiptData(noLpb) {
     inpNoLpb.placeholder = originalPlaceholder;
   }
 }
-
 async function loadTableData() {
   tableBody.innerHTML = `<tr><td colspan="10" class="text-center p-4"><i class="fas fa-spinner fa-spin text-pink-500"></i> Memuat data...</td></tr>`;
   try {
@@ -201,7 +178,6 @@ async function loadTableData() {
     tableBody.innerHTML = `<tr><td colspan="10" class="text-center p-4 text-red-500">Terjadi kesalahan koneksi</td></tr>`;
   }
 }
-
 function renderTable(data) {
   if (data.length === 0) {
     tableBody.innerHTML = `<tr><td colspan="10" class="text-center p-6 text-gray-500">Belum ada data</td></tr>`;
@@ -214,7 +190,6 @@ function renderTable(data) {
     const ppn = parseFloat(row.ppn);
     const total = parseFloat(row.total_terima_fp);
     const safeJson = JSON.stringify(row).replace(/"/g, "&quot;");
-
     html += `
             <tr class="hover:bg-pink-50 transition-colors">
                 <td class="text-center text-gray-500">${index + 1}</td>
@@ -242,7 +217,6 @@ function renderTable(data) {
         `;
   });
   tableBody.innerHTML = html;
-
   document.querySelectorAll(".btn-edit-row").forEach((btn) => {
     btn.addEventListener("click", function () {
       const data = JSON.parse(this.getAttribute("data-row"));
@@ -250,7 +224,6 @@ function renderTable(data) {
     });
   });
 }
-
 function startEditMode(data) {
   resetErrorState();
   inpId.value = data.id;
@@ -272,13 +245,12 @@ function startEditMode(data) {
   btnSave.innerHTML = `<i class="fas fa-sync-alt"></i> <span>Update</span>`;
   btnSave.className = "btn-warning";
 }
-
 function cancelEditMode() {
   form.reset();
   resetErrorState();
   inpId.value = "";
   inpTotal.value = "0";
-  inpKodeStore.value = ""; // Reset toko
+  inpKodeStore.value = "";
   document
     .querySelector(".input-row-container")
     .classList.remove("border-amber-300", "bg-amber-50");
@@ -288,11 +260,9 @@ function cancelEditMode() {
   btnSave.className =
     "btn-primary shadow-lg shadow-pink-500/30 flex items-center gap-2 px-6 py-2";
 }
-
 async function handleSave() {
   const noLpb = inpNoLpb.value.trim();
   const namaSupp = inpNamaSupp.value.trim();
-
   if (inpKodeStore.value === "") {
     Swal.fire("Gagal", "Pilih Toko/Cabang", "warning");
     return;
@@ -305,27 +275,23 @@ async function handleSave() {
     inpNoLpb.focus();
     return;
   }
-
   isSubmitting = true;
   const payload = {
     id: inpId.value || null,
     no_lpb: noLpb,
     no_faktur: noLpb,
-    // kode_supplier dihapus dari payload karena sudah tidak ada inputnya
-    kode_store: inpKodeStore.value, // Kirim kode store
+    kode_store: inpKodeStore.value,
     nama_supplier: namaSupp,
     tgl_nota: inpTgl.value,
     dpp: parseNumber(inpDpp.value),
-    dpp_nilai_lain: parseNumber(inpDppLain.value), // Kirim DPP Lain
+    dpp_nilai_lain: parseNumber(inpDppLain.value),
     ppn: parseNumber(inpPpn.value),
     total_terima_fp: parseNumber(inpTotal.value),
   };
-
   const originalBtnContent = btnSave.innerHTML;
   const originalBtnClass = btnSave.className;
   btnSave.disabled = true;
   btnSave.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Proses...`;
-
   let isSuccess = false;
   try {
     const result = await sendRequestJSON(API_URLS.saveData, payload);
@@ -360,12 +326,9 @@ async function handleSave() {
     }
   }
 }
-
 document.addEventListener("DOMContentLoaded", () => {
   loadStoreOptions();
   loadTableData();
-
-  // Event listeners untuk perhitungan otomatis
   [inpDpp, inpDppLain, inpPpn].forEach((input) => {
     input.addEventListener("input", calculateTotal);
     input.addEventListener("blur", (e) => {
@@ -375,10 +338,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     input.addEventListener("focus", (e) => e.target.select());
   });
-
-  // Autocomplete Nama Supplier
   inpNamaSupp.addEventListener("input", handleSupplierSearch);
-
   inpNoLpb.addEventListener("change", (e) => {
     const val = e.target.value.trim();
     if (val !== "") {
@@ -387,35 +347,27 @@ document.addEventListener("DOMContentLoaded", () => {
       resetErrorState();
     }
   });
-
   inpNoLpb.addEventListener("input", () => {
     if (inpNoLpb.classList.contains("border-red-500")) {
       resetErrorState();
     }
   });
-
-  // Navigasi Enter Key
   const formInputs = Array.from(
     form.querySelectorAll("input:not([type='hidden']), select")
   );
-
   formInputs.forEach((input, index) => {
     input.addEventListener("keydown", async (e) => {
       if (e.key === "Enter") {
         e.preventDefault();
-
         if (input === inpNoLpb) {
           const val = input.value.trim();
           if (val) await fetchReceiptData(val);
-          // Langsung ke toko setelah invoice
           if (inpKodeStore) inpKodeStore.focus();
           return;
         }
-
         const isReadyToSave =
           inpNoLpb.value && inpNamaSupp.value && inpKodeStore.value;
         const isLastInput = input.id === "inp_ppn";
-
         if (isReadyToSave && (isLastInput || e.ctrlKey)) {
           handleSave();
         } else {
@@ -429,7 +381,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
-
   btnSave.addEventListener("click", handleSave);
   btnCancelEdit.addEventListener("click", cancelEditMode);
 });

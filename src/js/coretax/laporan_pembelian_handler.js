@@ -215,77 +215,127 @@ document.addEventListener("DOMContentLoaded", () => {
       let usedCandidates = [];
       if (row.candidate_nsfps) {
         const candidatesRaw = row.candidate_nsfps.split(",");
+        let parsedCandidates = [];
         candidatesRaw.forEach((raw) => {
           const parts = raw.split("|");
           if (parts.length >= 2) {
-            const nsfpCode = parts[0];
-            const status = parts[1];
-            const usedBy = parts[2];
-            if (status === "AVAILABLE") {
-              availableCandidates.push(nsfpCode);
-            } else {
-              usedCandidates.push({ nsfp: nsfpCode, usedBy: usedBy });
-            }
-          } else {
-            availableCandidates.push(parts[0]);
+            parsedCandidates.push({
+              nsfp: parts[0],
+              status: parts[1],
+              usedBy: parts[2],
+              source: parts[3] || "UNKNOWN",
+              matchType: parts[4] || "VALUE",
+            });
           }
         });
+        const invoiceMatches = parsedCandidates.filter(
+          (c) => c.matchType === "INVOICE" && c.status === "AVAILABLE"
+        );
+        if (invoiceMatches.length > 0) {
+          availableCandidates = invoiceMatches;
+        } else {
+          availableCandidates = parsedCandidates.filter(
+            (c) => c.status === "AVAILABLE"
+          );
+        }
+        const invoiceUsed = parsedCandidates.filter(
+          (c) => c.matchType === "INVOICE" && c.status !== "AVAILABLE"
+        );
+        if (invoiceUsed.length > 0) {
+          usedCandidates = invoiceUsed;
+        } else {
+          usedCandidates = parsedCandidates.filter(
+            (c) => c.status !== "AVAILABLE"
+          );
+        }
       }
       let statusHtml = "";
       let nsfpHtml = "";
       if (row.ada_di_coretax == 1) {
+        let tipeBadge = "";
+        if (row.tipe_nsfp) {
+          if (
+            row.tipe_nsfp.includes("coretax") &&
+            row.tipe_nsfp.includes("fisik")
+          ) {
+            tipeBadge =
+              '<span class="text-[10px] px-1 bg-purple-100 text-purple-700 rounded">ALL</span>';
+          } else if (row.tipe_nsfp.includes("fisik")) {
+            tipeBadge =
+              '<span class="text-[10px] px-1 bg-blue-100 text-blue-700 rounded">FISIK</span>';
+          } else {
+            tipeBadge =
+              '<span class="text-[10px] px-1 bg-gray-100 text-gray-700 rounded">-</span>';
+          }
+        }
         statusHtml = `
             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                 <i class="fas fa-check-circle mr-1"></i> Terkonfirmasi
             </span>`;
-        nsfpHtml = `<span class="font-mono text-sm font-semibold text-gray-800">${
-          row.nsfp || "-"
-        }</span>`;
+        nsfpHtml = `
+            <div class="flex flex-col items-center justify-center gap-1">
+                <span class="font-mono text-sm font-semibold text-gray-800">${
+                  row.nsfp || "-"
+                }</span>
+                ${tipeBadge}
+            </div>`;
       } else if (availableCandidates.length > 0) {
-        const candidateString = availableCandidates.join(",");
+        const bestCandidate = availableCandidates[0];
+        const isStrongMatch = bestCandidate.matchType === "INVOICE";
+        const candidateString = availableCandidates
+          .map((c) => c.nsfp)
+          .join(",");
         const count = availableCandidates.length;
+        let btnColor = isStrongMatch
+          ? "bg-pink-600 hover:bg-pink-700"
+          : "bg-purple-600 hover:bg-purple-700";
+        let btnIcon = isStrongMatch ? "fa-file-invoice" : "fa-link";
+        let btnText = isStrongMatch ? "Konfirmasi (Invoice)" : "Konfirmasi";
         if (count > 1) {
-          statusHtml = `
-            <button onclick="handleConfirmCoretax(${row.id}, '${candidateString}')" 
-                class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-purple-600 hover:bg-purple-700 focus:outline-none transition-colors"
-                title="Terdapat ${count} NSFP yang cocok">
-                <i class="fas fa-list-ul mr-1"></i> Pilih NSFP (${count})
-            </button>`;
-          nsfpHtml = `
-            <div class="flex flex-col items-center">
-                <span class="text-xs text-purple-600 font-semibold italic">
-                   ${count} Opsi Ditemukan
-                </span>
-            </div>`;
-        } else {
-          statusHtml = `
-            <button onclick="handleConfirmCoretax(${row.id}, '${candidateString}')" 
-                class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-pink-600 hover:bg-pink-700 focus:outline-none transition-colors"
-                title="Klik untuk menghubungkan">
-                <i class="fas fa-link mr-1"></i> Konfirmasi
-            </button>`;
-          nsfpHtml = `
-            <div class="flex flex-col items-center">
-                <span class="font-mono text-sm text-gray-500 italic border-b border-dashed border-gray-300 cursor-help" title="Data ditemukan di Coretax">
-                    ${availableCandidates[0]}
-                </span>
-            </div>`;
+          btnText = `Pilih (${count})`;
+          btnIcon = "fa-list-ul";
         }
+        statusHtml = `
+            <button onclick="handleConfirmCoretax(${row.id}, '${candidateString}')" 
+                class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded shadow-sm text-white ${btnColor} focus:outline-none transition-colors w-full justify-center">
+                <i class="fas ${btnIcon} mr-1"></i> ${btnText}
+            </button>`;
+        nsfpHtml = `
+            <div class="flex flex-col items-center">
+                <span class="font-mono text-sm text-gray-600 border-b border-dashed border-gray-300 cursor-help" title="${
+                  isStrongMatch ? "Nomor Invoice Cocok!" : "Nominal Cocok"
+                }">
+                    ${bestCandidate.nsfp}
+                </span>
+                <div class="flex gap-1 mt-1">
+                    ${
+                      bestCandidate.source === "FISIK"
+                        ? '<span class="text-[9px] px-1 border border-blue-200 bg-blue-50 text-blue-600 rounded">FISIK</span>'
+                        : '<span class="text-[9px] px-1 border border-yellow-200 bg-yellow-50 text-yellow-600 rounded">CORETAX</span>'
+                    }
+                    ${
+                      isStrongMatch
+                        ? '<span class="text-[9px] px-1 bg-green-100 text-green-700 rounded font-bold">INV</span>'
+                        : ""
+                    }
+                </div>
+            </div>`;
       } else if (usedCandidates.length > 0) {
         const firstMatch = usedCandidates[0];
+        const isInvoiceMatch = firstMatch.matchType === "INVOICE";
         statusHtml = `
             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 cursor-help" 
-                  title="Nominal DPP & PPN cocok dengan NSFP: ${firstMatch.nsfp}, namun NSFP tersebut sudah dipakai oleh invoice: ${firstMatch.usedBy}">
-                <i class="fas fa-exclamation-circle mr-1"></i> Data Kembar
+                  title="NSFP ${
+                    firstMatch.nsfp
+                  } cocok tapi sudah dipakai invoice: ${firstMatch.usedBy}">
+                <i class="fas fa-exclamation-circle mr-1"></i> ${
+                  isInvoiceMatch ? "Inv Ganda" : "Ganda"
+                }
             </span>`;
         nsfpHtml = `
             <div class="flex flex-col items-center">
-                <span class="text-xs text-orange-600 italic">
-                    (Nsfp Sudah Terpakai)
-                </span>
-                <span class="text-[10px] text-gray-400">
-                    ${firstMatch.nsfp}
-                </span>
+                <span class="text-[10px] text-gray-400 font-mono">${firstMatch.nsfp}</span>
+                <span class="text-[9px] text-red-400">(Sudah Dipakai)</span>
             </div>`;
       } else {
         statusHtml = `<span class="text-gray-300">-</span>`;

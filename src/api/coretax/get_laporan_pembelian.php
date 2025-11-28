@@ -69,34 +69,58 @@ try {
             p.ppn, 
             p.total_terima_fp,
             p.ada_di_coretax,
+            p.tipe_nsfp,
             ks.Nm_Alias,
             p.nsfp, 
-            GROUP_CONCAT(
-                DISTINCT
-                CONCAT(
-                    c.nsfp,
-                    '|',
-                    CASE 
-                        WHEN p_used.id IS NOT NULL AND p_used.id != p.id THEN 'USED' 
-                        ELSE 'AVAILABLE' 
-                    END,
-                    '|',
-                    IFNULL(p_used.no_faktur, '')
+            CONCAT_WS(',', 
+                GROUP_CONCAT(
+                    DISTINCT
+                    IF(c.nsfp IS NOT NULL,
+                        CONCAT(
+                            c.nsfp,
+                            '|',
+                            CASE 
+                                WHEN p_used_c.id IS NOT NULL AND p_used_c.id != p.id THEN 'USED' 
+                                ELSE 'AVAILABLE' 
+                            END,
+                            '|',
+                            IFNULL(p_used_c.no_faktur, ''),
+                            '|CORETAX|VALUE'
+                        ),
+                        NULL
+                    )
+                    SEPARATOR ','
+                ),
+                GROUP_CONCAT(
+                    DISTINCT
+                    IF(f.nsfp IS NOT NULL,
+                        CONCAT(
+                            f.nsfp,
+                            '|',
+                            CASE 
+                                WHEN p_used_f.id IS NOT NULL AND p_used_f.id != p.id THEN 'USED' 
+                                ELSE 'AVAILABLE' 
+                            END,
+                            '|',
+                            IFNULL(p_used_f.no_faktur, ''),
+                            '|FISIK|',
+                            IF(p.no_faktur = f.no_faktur, 'INVOICE', 'VALUE')
+                        ),
+                        NULL
+                    )
+                    SEPARATOR ','
                 )
-                SEPARATOR ','
-            ) as candidate_nsfps,
-            COUNT(
-                DISTINCT
-                CASE 
-                    WHEN p_used.id IS NOT NULL AND p_used.id != p.id THEN NULL 
-                    ELSE c.nsfp 
-                END
-            ) as match_count
+            ) as candidate_nsfps
         FROM ff_pembelian p
         LEFT JOIN kode_store ks ON p.kode_store = ks.Kd_Store
-        -- PERUBAHAN DISINI: Menambahkan AND p.kode_store = c.kode_store
         LEFT JOIN ff_coretax c ON p.dpp = c.harga_jual AND p.ppn = c.ppn AND p.kode_store = c.kode_store
-        LEFT JOIN ff_pembelian p_used ON c.nsfp = p_used.nsfp AND p_used.ada_di_coretax = 1
+        LEFT JOIN ff_pembelian p_used_c ON c.nsfp = p_used_c.nsfp AND p_used_c.ada_di_coretax = 1
+        LEFT JOIN ff_faktur_pajak f ON (
+            p.no_faktur = f.no_faktur 
+            OR 
+            (p.dpp = f.dpp AND p.ppn = f.ppn AND p.kode_store = f.kode_store)
+        )
+        LEFT JOIN ff_pembelian p_used_f ON f.nsfp = p_used_f.nsfp AND p_used_f.ada_di_coretax = 1
         WHERE $where_conditions
         GROUP BY p.id
         ORDER BY p.tgl_nota DESC, p.no_faktur ASC
@@ -105,30 +129,28 @@ try {
     $bind_types .= 'ii';
     $bind_params[] = $limit;
     $bind_params[] = $offset;
-
     $stmt_data = $conn->prepare($sql_data);
     if ($stmt_data === false)
         throw new Exception("Prepare failed (data): " . $conn->error);
-
     $stmt_data->bind_param($bind_types, ...$bind_params);
     $stmt_data->execute();
     $result_data = $stmt_data->get_result();
-
     while ($row = $result_data->fetch_assoc()) {
         foreach ($row as $key => $value) {
             if (is_string($value)) {
                 $row[$key] = iconv('UTF-8', 'UTF-8//IGNORE', $value);
             }
         }
+        if (!empty($row['candidate_nsfps'])) {
+            $row['candidate_nsfps'] = trim($row['candidate_nsfps'], ',');
+        }
         $response['tabel_data'][] = $row;
     }
-
     $stmt_data->close();
     $conn->close();
 } catch (Exception $e) {
     http_response_code(500);
     $response['error'] = $e->getMessage();
 }
-
 echo json_encode($response);
 ?>
