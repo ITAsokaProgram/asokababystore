@@ -98,7 +98,7 @@ if ($page < 1) {
                                 </option>
                                 <option value="linked_both" <?php echo ($status_data == 'linked_both') ? 'selected' : ''; ?>>Terhubung Lengkap</option>
                                 <option value="linked_pembelian" <?php echo ($status_data == 'linked_pembelian') ? 'selected' : ''; ?>>Ada Pembelian</option>
-                                <option value="linked_fisik" <?php echo ($status_data == 'linked_fisik') ? 'selected' : ''; ?>>Ada Scan Fisik</option>
+                                <option value="linked_fisik" <?php echo ($status_data == 'linked_fisik') ? 'selected' : ''; ?>>Ada Fisik</option>
                                 <option value="unlinked_pembelian" <?php echo ($status_data == 'unlinked_pembelian') ? 'selected' : ''; ?>>Belum Ada Pembelian</option>
                             </select>
                         </div>
