@@ -1,3 +1,4 @@
+in transaction
 <?php
 include '../../../aa_kon_sett.php';
 
@@ -44,17 +45,21 @@ if (!$menuHandler->initialize()) {
             outline: 2px solid #ec4899;
             outline-offset: 1px;
         }
+
         .w-0 {
             width: 0 !important;
             overflow: hidden;
         }
+
         /* --- Enhanced Table & Modal Styles --- */
-        table th, table td {
+        table th,
+        table td {
             border: 1px solid #e0e7ef;
             padding: 1rem 1.25rem;
             text-align: left;
             vertical-align: middle;
         }
+
         table thead th {
             background: linear-gradient(to right, #ec4899, #3b82f6);
             color: #fff;
@@ -64,20 +69,23 @@ if (!$menuHandler->initialize()) {
             border-bottom: 2px solid #bae6fd;
             padding: 1rem 1.25rem;
         }
+
         table tbody tr:hover {
             background: #f0f9ff;
             transition: background 0.2s;
         }
+
         .glass-container {
-            background: rgba(255,255,255,0.80);
+            background: rgba(255, 255, 255, 0.80);
             backdrop-filter: blur(8px);
             border-radius: 1.25rem;
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
             border: 1.5px solid #bae6fd;
             padding: 2rem;
         }
+
         .loading-glass {
-            background: rgba(255,255,255,0.85);
+            background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(6px);
         }
     </style>
@@ -93,7 +101,8 @@ if (!$menuHandler->initialize()) {
         <div class="glass-container animate-fade-in-up mx-auto mt-10">
             <!-- Header -->
             <header class="text-center mb-8">
-                <h1 class="text-3xl font-bold text-blue-700 flex items-center justify-center gap-3"><i class="fa fa-users"></i> Member & Non Member</h1>
+                <h1 class="text-3xl font-bold text-blue-700 flex items-center justify-center gap-3"><i
+                        class="fa fa-users"></i> Member & Non Member</h1>
             </header>
             <!-- Filter Section -->
             <div class="border border-pink-200 bg-white/80 backdrop-blur rounded-2xl shadow-xl p-8 mb-10">
@@ -102,7 +111,8 @@ if (!$menuHandler->initialize()) {
                         <div id="searchContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
                             <!-- Filter Data -->
                             <div>
-                                <label for="filterRange" class="text-base text-blue-700 font-medium mb-2 block">Data:</label>
+                                <label for="filterRange"
+                                    class="text-base text-blue-700 font-medium mb-2 block">Data:</label>
                                 <select id="filterRange"
                                     class="w-full px-5 py-3 border border-blue-100 rounded-xl shadow-sm text-base text-gray-700 focus:ring-2 focus:ring-pink-300 focus:border-pink-500 transition-all duration-200">
                                     <option value="allTrans" selected>Semua Transaksi</option>
@@ -112,45 +122,26 @@ if (!$menuHandler->initialize()) {
                             </div>
                             <!-- Tanggal Awal -->
                             <div>
-                                <label for="filterRangeDateStart" class="text-base text-blue-700 font-medium mb-2 block">Tanggal:</label>
+                                <label for="filterRangeDateStart"
+                                    class="text-base text-blue-700 font-medium mb-2 block">Tanggal:</label>
                                 <input type="text" id="filterRangeDateStart" readonly
                                     class="w-full px-5 py-3 border border-blue-100 rounded-xl shadow-sm text-base text-gray-700 focus:ring-2 focus:ring-pink-300 focus:border-pink-500 transition-all duration-200" />
                             </div>
                             <!-- Tanggal Akhir -->
                             <div>
-                                <label for="filterRangeDateEnd" class="text-base text-blue-700 font-medium mb-2 block">Ke:</label>
+                                <label for="filterRangeDateEnd"
+                                    class="text-base text-blue-700 font-medium mb-2 block">Ke:</label>
                                 <input type="text" id="filterRangeDateEnd" readonly
                                     class="w-full px-5 py-3 border border-blue-100 rounded-xl shadow-sm text-base text-gray-700 focus:ring-2 focus:ring-pink-300 focus:border-pink-500 transition-all duration-200" />
                             </div>
                             <!-- Cabang + Tombol -->
                             <div>
-                                <label for="cabang" class="text-base text-blue-700 font-medium mb-2 block">Cabang:</label>
+                                <label for="cabang"
+                                    class="text-base text-blue-700 font-medium mb-2 block">Cabang:</label>
                                 <div class="flex gap-2">
                                     <select id="cabang" name="cabang"
                                         class="flex-1 px-5 py-3 border border-blue-100 rounded-xl shadow-sm text-base text-gray-700 focus:ring-2 focus:ring-pink-300 focus:border-pink-500 transition-all duration-200">
-                                        <option value="none">Pilih Cabang</option>
-                                        <option value="ABIN">ABIN</option>
-                                        <option value="ACE">ACE</option>
-                                        <option value="ACIB">ACIB</option>
-                                        <option value="ACIL">ACIL</option>
-                                        <option value="ACIN">ACIN</option>
-                                        <option value="ACSA">ACSA</option>
-                                        <option value="ADET">ADET</option>
-                                        <option value="ADMB">ADMB</option>
-                                        <option value="AHA">AHA</option>
-                                        <option value="AHIN">AHIN</option>
-                                        <option value="ALANG">ALANG</option>
-                                        <option value="ANGIN">ANGIN</option>
-                                        <option value="APEN">APEN</option>
-                                        <option value="APIK">APIK</option>
-                                        <option value="APRS">APRS</option>
-                                        <option value="ARAW">ARAW</option>
-                                        <option value="ARUNG">ARUNG</option>
-                                        <option value="ASIH">ASIH</option>
-                                        <option value="ATIN">ATIN</option>
-                                        <option value="AWIT">AWIT</option>
-                                        <option value="AXY">AXY</option>
-                                        <option value="SEMUA CABANG">SEMUA CABANG</option>
+                                        <option value="none">Loading...</option>
                                     </select>
                                     <button type="button" id="cek"
                                         class="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-blue-700 text-base text-white font-bold shadow-md hover:scale-105 transition-all duration-200 flex items-center gap-2">
@@ -163,23 +154,33 @@ if (!$menuHandler->initialize()) {
                 </div>
                 <!-- Chart Section -->
                 <div class="bg-white/80 backdrop-blur rounded-2xl shadow-xl border border-blue-100 p-8 mb-8 w-full">
-                    <h3 class="text-2xl font-bold text-blue-700 mb-6 text-center flex items-center justify-center gap-2"><i class="fa fa-chart-bar"></i> Grafik Transaksi</h3>
+                    <h3
+                        class="text-2xl font-bold text-blue-700 mb-6 text-center flex items-center justify-center gap-2">
+                        <i class="fa fa-chart-bar"></i> Grafik Transaksi
+                    </h3>
                     <!-- Grafik 1: Total Transaksi -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="p-4 bg-white/90 backdrop-blur rounded-2xl shadow-lg border border-blue-100">
-                            <h4 class="text-xl font-bold text-blue-700 mb-4 text-center flex items-center justify-center gap-2"><i class="fa fa-receipt"></i> Total Transaksi</h4>
+                            <h4
+                                class="text-xl font-bold text-blue-700 mb-4 text-center flex items-center justify-center gap-2">
+                                <i class="fa fa-receipt"></i> Total Transaksi
+                            </h4>
                             <div id="chart1" style="height: 400px;"></div>
                         </div>
                         <!-- Grafik 2: Barang Terlaris -->
                         <div class="p-4 bg-white/90 backdrop-blur rounded-2xl shadow-lg border border-blue-100">
-                            <h4 class="text-xl font-bold text-blue-700 mb-4 text-center flex items-center justify-center gap-2"><i class="fa fa-percentage"></i> Persentase Pembelian</h4>
+                            <h4
+                                class="text-xl font-bold text-blue-700 mb-4 text-center flex items-center justify-center gap-2">
+                                <i class="fa fa-percentage"></i> Persentase Pembelian
+                            </h4>
                             <div id="chart2" style="height: 400px;"></div>
                         </div>
                     </div>
                 </div>
                 <!-- Transaction Table with Tailwind & DataTables -->
                 <div class="bg-white/80 backdrop-blur rounded-2xl shadow-xl border border-blue-100 p-8">
-                    <h3 class="text-xl font-bold text-blue-700 mb-4 flex items-center gap-2"><i class="fa fa-star"></i> Barang Terlaris</h3>
+                    <h3 class="text-xl font-bold text-blue-700 mb-4 flex items-center gap-2"><i class="fa fa-star"></i>
+                        Barang Terlaris</h3>
                     <div class="mt-2">
                         <table id="barangTable" class="w-full text-sm text-left text-gray-700">
                             <thead class="text-xs text-white uppercase">
