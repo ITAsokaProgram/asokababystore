@@ -7,12 +7,14 @@ $default_tgl_mulai = $tanggal_kemarin;
 $default_tgl_selesai = $tanggal_kemarin;
 $default_kd_store = 'all';
 $default_status = 'all';
+$default_ppn = 'all'; // Default PPN
 $default_page = 1;
 
 $tgl_mulai = $_GET['tgl_mulai'] ?? $default_tgl_mulai;
 $tgl_selesai = $_GET['tgl_selesai'] ?? $default_tgl_selesai;
 $kd_store = $_GET['kd_store'] ?? $default_kd_store;
 $status_data = $_GET['status_data'] ?? $default_status;
+$filter_ppn = $_GET['filter_ppn'] ?? $default_ppn; // Tangkap filter PPN
 
 $page = (int) ($_GET['page'] ?? $default_page);
 if ($page < 1) {
@@ -91,17 +93,27 @@ if ($page < 1) {
                         </div>
 
                         <div class="lg:col-span-1">
+                            <label for="filter_ppn" class="block text-xs font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-percent text-pink-600 mr-1"></i> Tipe PKP
+                            </label>
+                            <select name="filter_ppn" id="filter_ppn" class="input-modern w-full">
+                                <option value="all" <?php echo ($filter_ppn == 'all') ? 'selected' : ''; ?>>Semua</option>
+                                <option value="ppn" <?php echo ($filter_ppn == 'ppn') ? 'selected' : ''; ?>>PKP</option>
+                                <option value="non_ppn" <?php echo ($filter_ppn == 'non_ppn') ? 'selected' : ''; ?>>Non
+                                    PKP </option>
+                            </select>
+                        </div>
+
+                        <div class="lg:col-span-1">
                             <label for="status_data" class="block text-xs font-semibold text-gray-700 mb-2">
                                 <i class="fas fa-link text-pink-600 mr-1"></i> Status
                             </label>
                             <select name="status_data" id="status_data" class="input-modern w-full">
                                 <option value="all" <?php echo ($status_data == 'all') ? 'selected' : ''; ?>>Semua Data
                                 </option>
-
                                 <option value="need_selection" <?php echo ($status_data == 'need_selection') ? 'selected' : ''; ?>>
                                     Siap Pilih NSFP
                                 </option>
-
                                 <option value="unlinked" <?php echo ($status_data == 'unlinked') ? 'selected' : ''; ?>>
                                     Belum Terhubung</option>
                                 <option value="linked_any" <?php echo ($status_data == 'linked_any') ? 'selected' : ''; ?>>Sudah Terhubung (Semua)</option>
@@ -116,7 +128,8 @@ if ($page < 1) {
                                 <i class="fas fa-search text-pink-600 mr-1"></i> Cari Data
                             </label>
                             <input type="text" name="search_supplier" id="search_supplier" class="input-modern w-full"
-                                placeholder="Nama/NSFP/Inv/Nominal">
+                                placeholder="Nama/NSFP/Inv/Nominal"
+                                value="<?php echo htmlspecialchars($_GET['search_supplier'] ?? ''); ?>">
                         </div>
 
                         <div class="lg:col-span-1">

@@ -32,6 +32,8 @@ try {
     $search_supplier = $_GET['search_supplier'] ?? '';
     $kd_store = $_GET['kd_store'] ?? 'all';
     $status_data = $_GET['status_data'] ?? 'all';
+    $filter_ppn = $_GET['filter_ppn'] ?? 'all';
+
     $page = (int) ($_GET['page'] ?? 1);
     if ($page < 1)
         $page = 1;
@@ -55,6 +57,16 @@ try {
         $bind_types .= 's';
         $bind_params[] = $kd_store;
     }
+
+
+    if ($filter_ppn != 'all') {
+        if ($filter_ppn == 'ppn') {
+            $where_conditions .= " AND p.ppn != 0";
+        } elseif ($filter_ppn == 'non_ppn') {
+            $where_conditions .= " AND p.ppn = 0";
+        }
+    }
+
     if ($status_data != 'all') {
         if ($status_data == 'unlinked') {
             $where_conditions .= " AND (p.ada_di_coretax = 0 OR p.ada_di_coretax IS NULL)";

@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const filterSubmitButton = document.getElementById("filter-submit-button");
   const filterSelectStore = document.getElementById("kd_store");
   const filterSelectStatus = document.getElementById("status_data");
+  const filterSelectPpn = document.getElementById("filter_ppn"); // NEW
   const filterInputSupplier = document.getElementById("search_supplier");
   const pageTitle = document.getElementById("page-title");
   const pageSubtitle = document.getElementById("page-subtitle");
@@ -39,6 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tgl_selesai: params.get("tgl_selesai") || yesterdayString,
       kd_store: params.get("kd_store") || "all",
       status_data: params.get("status_data") || "all",
+      filter_ppn: params.get("filter_ppn") || "all", // NEW
       search_supplier: params.get("search_supplier") || "",
       page: parseInt(params.get("page") || "1", 10),
     };
@@ -178,6 +180,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tgl_selesai: params.tgl_selesai,
       kd_store: params.kd_store,
       status_data: params.status_data,
+      filter_ppn: params.filter_ppn, // NEW: Add param to query
       search_supplier: params.search_supplier,
       page: params.page,
     }).toString();
@@ -196,9 +199,12 @@ document.addEventListener("DOMContentLoaded", () => {
       if (data.stores) {
         populateStoreFilter(data.stores, params.kd_store);
       }
+      // Update Input values based on URL params (UI Sync)
       if (filterInputSupplier)
         filterInputSupplier.value = params.search_supplier;
       if (filterSelectStatus) filterSelectStatus.value = params.status_data;
+      if (filterSelectPpn) filterSelectPpn.value = params.filter_ppn; // NEW
+
       if (pageSubtitle) {
         let storeName = "";
         if (
