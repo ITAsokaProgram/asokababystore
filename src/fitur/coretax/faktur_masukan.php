@@ -11,7 +11,7 @@ $default_page = 1;
 $tgl_mulai = $_GET['tgl_mulai'] ?? $default_tgl_mulai;
 $tgl_selesai = $_GET['tgl_selesai'] ?? $default_tgl_selesai;
 $kd_store = $_GET['kd_store'] ?? $default_kd_store;
-// Tambahkan trim disini
+// Tambahkan trim disini seperti request
 $search_supplier = trim($_GET['search_supplier'] ?? '');
 
 $page = (int) ($_GET['page'] ?? $default_page);
@@ -63,15 +63,17 @@ if ($page < 1) {
                 </div>
 
                 <div class="filter-card-simple">
-                    <form id="filter-form" class="grid grid-cols-1 md:grid-cols-6 gap-3 items-end" method="GET">
-                        <div class="md:col-span-1">
+                    <form id="filter-form" class="flex flex-wrap items-end gap-3" method="GET">
+
+                        <div class="flex-1 min-w-[150px]">
                             <label for="tgl_mulai" class="block text-xs font-semibold text-gray-700 mb-2">
                                 <i class="fas fa-calendar-alt text-pink-600 mr-1"></i> Dari
                             </label>
                             <input type="date" name="tgl_mulai" id="tgl_mulai" class="input-modern w-full"
                                 value="<?php echo htmlspecialchars($tgl_mulai); ?>">
                         </div>
-                        <div class="md:col-span-1">
+
+                        <div class="flex-1 min-w-[150px]">
                             <label for="tgl_selesai" class="block text-xs font-semibold text-gray-700 mb-2">
                                 <i class="fas fa-calendar-alt text-pink-600 mr-1"></i> Sampai
                             </label>
@@ -79,7 +81,7 @@ if ($page < 1) {
                                 value="<?php echo htmlspecialchars($tgl_selesai); ?>">
                         </div>
 
-                        <div class="md:col-span-1">
+                        <div class="flex-1 min-w-[150px]">
                             <label for="kd_store" class="block text-xs font-semibold text-gray-700 mb-2">
                                 <i class="fas fa-store text-pink-600 mr-1"></i> Cabang
                             </label>
@@ -88,7 +90,7 @@ if ($page < 1) {
                             </select>
                         </div>
 
-                        <div class="md:col-span-1">
+                        <div class="flex-1 min-w-[200px]">
                             <label for="search_supplier" class="block text-xs font-semibold text-gray-700 mb-2">
                                 <i class="fas fa-search text-pink-600 mr-1"></i> Cari Data
                             </label>
@@ -97,7 +99,7 @@ if ($page < 1) {
                                 value="<?php echo htmlspecialchars($search_supplier); ?>">
                         </div>
 
-                        <div class="md:col-span-1">
+                        <div class="flex-1 min-w-[130px]">
                             <label for="filter_ppn" class="block text-xs font-semibold text-gray-700 mb-2">
                                 <i class="fas fa-percent text-pink-600 mr-1"></i> PPN
                             </label>
@@ -108,9 +110,9 @@ if ($page < 1) {
                             </select>
                         </div>
 
-                        <div class="md:col-span-1">
+                        <div class="w-auto">
                             <button type="submit" id="filter-submit-button"
-                                class="btn-primary w-full inline-flex items-center justify-center gap-2">
+                                class="btn-primary w-full inline-flex items-center justify-center gap-2 px-6">
                                 <i class="fas fa-filter"></i>
                                 <span>Tampilkan</span>
                             </button>
