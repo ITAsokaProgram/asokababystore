@@ -12,6 +12,8 @@ const inpId = document.getElementById("inp_id");
 const inpNoLpb = document.getElementById("inp_no_lpb");
 const errNoLpb = document.getElementById("err_no_lpb");
 const inpKodeStore = document.getElementById("inp_kode_store");
+// NEW: Select BTKP
+const inpIsBtkp = document.getElementById("inp_is_btkp");
 const inpNamaSupp = document.getElementById("inp_nama_supplier");
 const listSupplier = document.getElementById("supplier_list");
 const inpTgl = document.getElementById("inp_tgl_nota");
@@ -25,6 +27,7 @@ const editIndicator = document.getElementById("edit-mode-indicator");
 const tableBody = document.getElementById("table-body");
 let isSubmitting = false;
 let debounceTimer;
+
 function formatNumber(num) {
   if (isNaN(num) || num === null) return "0";
   return new Intl.NumberFormat("id-ID", {
@@ -168,21 +171,21 @@ async function fetchReceiptData(noLpb) {
   }
 }
 async function loadTableData() {
-  tableBody.innerHTML = `<tr><td colspan="10" class="text-center p-4"><i class="fas fa-spinner fa-spin text-pink-500"></i> Memuat data...</td></tr>`;
+  tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-4"><i class="fas fa-spinner fa-spin text-pink-500"></i> Memuat data...</td></tr>`;
   try {
     const result = await sendRequestGET(API_URLS.getData);
     if (result.success && Array.isArray(result.data)) {
       renderTable(result.data);
     } else {
-      tableBody.innerHTML = `<tr><td colspan="10" class="text-center p-4 text-red-500">Gagal memuat data</td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-4 text-red-500">Gagal memuat data</td></tr>`;
     }
   } catch (error) {
-    tableBody.innerHTML = `<tr><td colspan="10" class="text-center p-4 text-red-500">Terjadi kesalahan koneksi</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-4 text-red-500">Terjadi kesalahan koneksi</td></tr>`;
   }
 }
 function renderTable(data) {
   if (data.length === 0) {
-    tableBody.innerHTML = `<tr><td colspan="10" class="text-center p-6 text-gray-500">Belum ada data</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-6 text-gray-500">Belum ada data</td></tr>`;
     return;
   }
   let html = "";
@@ -191,6 +194,13 @@ function renderTable(data) {
     const dppLain = parseFloat(row.dpp_nilai_lain || 0);
     const ppn = parseFloat(row.ppn);
     const total = parseFloat(row.total_terima_fp);
+    const isBtkp = row.is_btkp == 1; // Assuming data comes as 1 or 0
+
+    // Badge BTKP
+    const badgeBtkp = isBtkp
+      ? '<span class="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded font-bold border border-purple-200">BTKP</span>'
+      : '<span class="bg-gray-100 text-gray-500 text-xs px-2 py-1 rounded border border-gray-200">Non</span>';
+
     const safeJson = JSON.stringify(row).replace(/"/g, "&quot;");
     html += `
             <tr class="hover:bg-pink-50 transition-colors">
@@ -200,6 +210,7 @@ function renderTable(data) {
                 <td><span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded border border-gray-200">${
                   row.nm_alias || "-"
                 }</span></td>
+                <td class="text-center">${badgeBtkp}</td>
                 <td class="text-sm">${row.nama_supplier}</td>
                 <td class="text-right font-mono">${formatNumber(dpp)}</td>
                 <td class="text-right font-mono text-gray-500">${formatNumber(
@@ -231,6 +242,8 @@ function startEditMode(data) {
   inpId.value = data.id;
   inpNoLpb.value = data.no_faktur;
   inpKodeStore.value = data.kode_store || "";
+  // NEW: Set Value BTKP
+  inpIsBtkp.value = data.is_btkp || "0";
   inpNamaSupp.value = data.nama_supplier;
   inpTgl.value = data.tgl_nota;
   inpDpp.value = formatNumber(data.dpp);
@@ -253,6 +266,8 @@ function cancelEditMode() {
   inpId.value = "";
   inpTotal.value = "0";
   inpKodeStore.value = "";
+  // NEW: Reset BTKP to default
+  inpIsBtkp.value = "0";
   document
     .querySelector(".input-row-container")
     .classList.remove("border-amber-300", "bg-amber-50");
@@ -283,6 +298,7 @@ async function handleSave() {
     no_lpb: noLpb,
     no_faktur: noLpb,
     kode_store: inpKodeStore.value,
+    is_btkp: inpIsBtkp.value, // NEW: Send data
     nama_supplier: namaSupp,
     tgl_nota: inpTgl.value,
     dpp: parseNumber(inpDpp.value),

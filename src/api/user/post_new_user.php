@@ -59,15 +59,22 @@ if ($stmt->num_rows > 0) {
 $stmt->close();
 $hashed_password = password_hash($pass, PASSWORD_ARGON2ID);
 $conn->begin_transaction();
+
 try {
     $stmt = $conn->prepare("
-            INSERT INTO user_account (kode, nama, inisial, password, Hak, kode_toko, kd_store)
+            INSERT INTO user_account (kode, nama, inisial, password, Hak, kode_toko, kd_store) 
             VALUES (?, ?, ?, ?, ?, ?, ?)
         ");
     $stmt->bind_param("issssss", $next_kode, $nama, $username, $hashed_password, $position, $kode_toko, $kd_store);
+
     if (!$stmt->execute()) {
-        throw new Exception("Gagal menyimpan user: " . $stmt->error);
+        if ($conn->errno === 1062) {
+            throw new Exception("Kode User '$next_kode' sudah terdaftar.", 1062);
+        } else {
+            throw new Exception("Gagal menyimpan user: " . $stmt->error);
+        }
     }
+
     $stmt->close();
     if (!empty($menus)) {
         $stmt_get_url = $conn->prepare("SELECT endpoint_url FROM menu_website WHERE menu_code = ?");
@@ -106,8 +113,14 @@ try {
     echo json_encode(['status' => 'success', 'message' => 'User berhasil didaftarkan.']);
 } catch (Exception $e) {
     $conn->rollback();
-    http_response_code(500);
-    echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+
+    if ($e->getCode() === 1062) {
+        http_response_code(409);
+        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+    } else {
+        http_response_code(500);
+        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+    }
 }
 $conn->close();
 ?>

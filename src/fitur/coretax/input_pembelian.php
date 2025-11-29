@@ -55,8 +55,9 @@ include '../../../aa_kon_sett.php';
 
         @media (min-width: 1536px) {
             .form-grid {
-                /* Invoice, Store, Supplier, Tgl, DPP, DPP Lain, PPN, Total, Action */
-                grid-template-columns: 1.2fr 1.2fr 1.5fr 1fr 1fr 1fr 1fr 1.2fr auto;
+                /* Invoice, Store, BTKP, Supplier, Tgl, DPP, DPP Lain, PPN, Total, Action */
+                /* Adjusted columns to fit new input */
+                grid-template-columns: 1.2fr 1.2fr 0.8fr 1.5fr 1fr 1fr 1fr 1fr 1.2fr auto;
             }
         }
 
@@ -157,6 +158,15 @@ include '../../../aa_kon_sett.php';
                             </div>
 
                             <div>
+                                <label class="form-label">Status BTKP</label>
+                                <select id="inp_is_btkp" name="is_btkp"
+                                    class="input-compact bg-white cursor-pointer font-medium text-gray-700">
+                                    <option value="0" selected>Non BTKP</option>
+                                    <option value="1">BTKP</option>
+                                </select>
+                            </div>
+
+                            <div>
                                 <label class="form-label">Nama Supplier</label>
                                 <input type="text" id="inp_nama_supplier" name="nama_supplier" class="input-compact"
                                     list="supplier_list" placeholder="Ketik nama...">
@@ -217,6 +227,7 @@ include '../../../aa_kon_sett.php';
                                     <th>Tgl Nota</th>
                                     <th>No Invoice</th>
                                     <th>Cabang</th>
+                                    <th>Status</th>
                                     <th>Supplier</th>
                                     <th class="text-right">DPP</th>
                                     <th class="text-right">DPP Lain</th>
@@ -227,7 +238,7 @@ include '../../../aa_kon_sett.php';
                             </thead>
                             <tbody id="table-body">
                                 <tr>
-                                    <td colspan="10" class="text-center p-6 text-gray-500">Memuat data...</td>
+                                    <td colspan="11" class="text-center p-6 text-gray-500">Memuat data...</td>
                                 </tr>
                             </tbody>
                         </table>

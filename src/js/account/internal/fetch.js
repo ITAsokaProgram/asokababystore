@@ -6,7 +6,7 @@ export const getUser = async () => {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-       "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     });
     if (response.status === 200) {
@@ -57,14 +57,13 @@ export const getUser = async () => {
     }).showToast();
   }
 };
-
 export const insertUser = async (data) => {
   const token = getCookie("admin_token");
   try {
     const response = await fetch("/src/api/user/post_new_user", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: data,
     });
@@ -74,17 +73,18 @@ export const insertUser = async (data) => {
         title: "Berhasil",
         text: "User berhasil ditambahkan",
         confirmButtonText: "OK",
-      }).then(()=>{
+      }).then(() => {
         window.location.href = "/src/fitur/account/in_new_user";
-      })
+      });
     } else if (response.status === 409) {
       const error = await response.json();
       Swal.fire({
-        icon: "error",
-        title: "Gagal",
+        icon: "warning",
+        title: "Data Duplikat",
         text: error.message,
         confirmButtonText: "OK",
       });
+      throw new Error(error.message);
     } else if (response.status === 401) {
       Swal.fire({
         icon: "error",
@@ -101,7 +101,6 @@ export const insertUser = async (data) => {
     throw error;
   }
 };
-
 export const menuAccess = async () => {
   const token = getCookie("admin_token");
   try {
@@ -109,10 +108,9 @@ export const menuAccess = async () => {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     });
-    
     const allowedMenus = await response.json();
     return allowedMenus.data;
   } catch (error) {
@@ -120,22 +118,23 @@ export const menuAccess = async () => {
     throw error;
   }
 };
-
 export const getUserEdit = async (kode) => {
   const token = getCookie("admin_token");
   try {
-    const response = await fetch(`/src/api/user/get_user_edit_in?kode=${kode}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
-      },
-    });
+    const response = await fetch(
+      `/src/api/user/get_user_edit_in?kode=${kode}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
     if (response.status === 200) {
       const data = await response.json();
       return data;
-    }
-    else if (response.status === 404) { 
+    } else if (response.status === 404) {
       Toastify({
         text: "User tidak ditemukan",
         duration: 1000,
@@ -146,8 +145,7 @@ export const getUserEdit = async (kode) => {
           color: "$fff",
         },
       }).showToast();
-    }
-    else if (response.status === 401) {
+    } else if (response.status === 401) {
       Swal.fire({
         icon: "error",
         title: "Sesi Berakhir",
@@ -156,8 +154,7 @@ export const getUserEdit = async (kode) => {
       }).then(() => {
         window.location.href = "/in_login";
       });
-    }
-    else if (response.status === 500) { 
+    } else if (response.status === 500) {
       Toastify({
         text: "Server Error",
         duration: 1000,
@@ -181,6 +178,5 @@ export const getUserEdit = async (kode) => {
       },
     }).showToast();
   }
-}
-
-export default {getUser, insertUser, menuAccess, getUserEdit};
+};
+export default { getUser, insertUser, menuAccess, getUserEdit };
