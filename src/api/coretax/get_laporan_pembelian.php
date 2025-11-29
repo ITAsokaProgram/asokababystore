@@ -33,6 +33,7 @@ try {
     $kd_store = $_GET['kd_store'] ?? 'all';
     $status_data = $_GET['status_data'] ?? 'all';
     $filter_ppn = $_GET['filter_ppn'] ?? 'all';
+    $filter_btkp = $_GET['filter_btkp'] ?? 'all'; // NEW FILTER
 
     $page = (int) ($_GET['page'] ?? 1);
     if ($page < 1)
@@ -58,12 +59,20 @@ try {
         $bind_params[] = $kd_store;
     }
 
-
     if ($filter_ppn != 'all') {
         if ($filter_ppn == 'ppn') {
             $where_conditions .= " AND p.ppn != 0";
         } elseif ($filter_ppn == 'non_ppn') {
             $where_conditions .= " AND p.ppn = 0";
+        }
+    }
+
+    // NEW LOGIC BTKP
+    if ($filter_btkp != 'all') {
+        if ($filter_btkp == 'btkp') {
+            $where_conditions .= " AND p.is_btkp = 1";
+        } elseif ($filter_btkp == 'non_btkp') {
+            $where_conditions .= " AND (p.is_btkp = 0 OR p.is_btkp IS NULL)";
         }
     }
 
@@ -139,6 +148,7 @@ try {
             p.total_terima_fp,
             p.ada_di_coretax,
             p.tipe_nsfp,
+            p.is_btkp, 
             ks.Nm_Alias,
             p.nsfp, 
             CONCAT_WS(',', 

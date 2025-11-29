@@ -4,7 +4,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const filterSubmitButton = document.getElementById("filter-submit-button");
   const filterSelectStore = document.getElementById("kd_store");
   const filterSelectStatus = document.getElementById("status_data");
-  const filterSelectPpn = document.getElementById("filter_ppn"); // NEW
+  const filterSelectPpn = document.getElementById("filter_ppn");
+  const filterSelectBtkp = document.getElementById("filter_btkp"); // NEW
   const filterInputSupplier = document.getElementById("search_supplier");
   const pageTitle = document.getElementById("page-title");
   const pageSubtitle = document.getElementById("page-subtitle");
@@ -40,7 +41,8 @@ document.addEventListener("DOMContentLoaded", () => {
       tgl_selesai: params.get("tgl_selesai") || yesterdayString,
       kd_store: params.get("kd_store") || "all",
       status_data: params.get("status_data") || "all",
-      filter_ppn: params.get("filter_ppn") || "all", // NEW
+      filter_ppn: params.get("filter_ppn") || "all",
+      filter_btkp: params.get("filter_btkp") || "all", // NEW
       search_supplier: params.get("search_supplier") || "",
       page: parseInt(params.get("page") || "1", 10),
     };
@@ -180,7 +182,8 @@ document.addEventListener("DOMContentLoaded", () => {
       tgl_selesai: params.tgl_selesai,
       kd_store: params.kd_store,
       status_data: params.status_data,
-      filter_ppn: params.filter_ppn, // NEW: Add param to query
+      filter_ppn: params.filter_ppn,
+      filter_btkp: params.filter_btkp, // NEW
       search_supplier: params.search_supplier,
       page: params.page,
     }).toString();
@@ -203,7 +206,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (filterInputSupplier)
         filterInputSupplier.value = params.search_supplier;
       if (filterSelectStatus) filterSelectStatus.value = params.status_data;
-      if (filterSelectPpn) filterSelectPpn.value = params.filter_ppn; // NEW
+      if (filterSelectPpn) filterSelectPpn.value = params.filter_ppn;
+      if (filterSelectBtkp) filterSelectBtkp.value = params.filter_btkp; // NEW
 
       if (pageSubtitle) {
         let storeName = "";
@@ -236,7 +240,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (filterSubmitButton)
         filterSubmitButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i><span>Memuat...</span>`;
       if (tableBody)
-        tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-8"><div class="spinner-simple"></div><p class="mt-2 text-gray-500">Memuat data...</p></td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="12" class="text-center p-8"><div class="spinner-simple"></div><p class="mt-2 text-gray-500">Memuat data...</p></td></tr>`;
       if (paginationInfo) paginationInfo.textContent = "";
       if (paginationLinks) paginationLinks.innerHTML = "";
     } else {
@@ -249,7 +253,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function showTableError(message) {
     tableBody.innerHTML = `
         <tr>
-            <td colspan="11" class="text-center p-8 text-red-600">
+            <td colspan="12" class="text-center p-8 text-red-600">
                 <i class="fas fa-exclamation-triangle fa-lg mb-2"></i>
                 <p>Gagal memuat data: ${message}</p>
             </td>
@@ -259,7 +263,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!tabel_data || tabel_data.length === 0) {
       tableBody.innerHTML = `
             <tr>
-                <td colspan="11" class="text-center p-8 text-gray-500">
+                <td colspan="12" class="text-center p-8 text-gray-500">
                     <i class="fas fa-inbox fa-lg mb-2"></i>
                     <p>Tidak ada data ditemukan untuk filter ini.</p>
                 </td>
@@ -279,6 +283,13 @@ document.addEventListener("DOMContentLoaded", () => {
         month: "2-digit",
         year: "numeric",
       });
+
+      // NEW: Logic BTKP
+      const isBtkp = row.is_btkp == 1;
+      const btkpBadge = isBtkp
+        ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-800 border border-green-200">BTKP</span>`
+        : `<span class="text-gray-300 text-xs">-</span>`;
+
       let mergedCandidatesMap = new Map();
       if (row.candidate_nsfps) {
         const candidatesRaw = row.candidate_nsfps.split(",");
@@ -405,7 +416,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td class="text-center font-medium text-gray-500">${item_counter}</td>
                 <td>${dateFormatted}</td>
                 <td class="font-semibold text-gray-700">${row.no_faktur}</td>
-                <td class="">
+                <td class="text-center">${btkpBadge}</td> <td class="">
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-800">
                         ${row.Nm_Alias || "-"}
                     </span>

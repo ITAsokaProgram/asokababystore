@@ -7,14 +7,16 @@ $default_tgl_mulai = $tanggal_kemarin;
 $default_tgl_selesai = $tanggal_kemarin;
 $default_kd_store = 'all';
 $default_status = 'all';
-$default_ppn = 'all'; // Default PPN
+$default_ppn = 'all';
+$default_btkp = 'all'; // Default BTKP
 $default_page = 1;
 
 $tgl_mulai = $_GET['tgl_mulai'] ?? $default_tgl_mulai;
 $tgl_selesai = $_GET['tgl_selesai'] ?? $default_tgl_selesai;
 $kd_store = $_GET['kd_store'] ?? $default_kd_store;
 $status_data = $_GET['status_data'] ?? $default_status;
-$filter_ppn = $_GET['filter_ppn'] ?? $default_ppn; // Tangkap filter PPN
+$filter_ppn = $_GET['filter_ppn'] ?? $default_ppn;
+$filter_btkp = $_GET['filter_btkp'] ?? $default_btkp; // Tangkap filter BTKP
 
 $page = (int) ($_GET['page'] ?? $default_page);
 if ($page < 1) {
@@ -105,6 +107,20 @@ if ($page < 1) {
                         </div>
 
                         <div class="lg:col-span-1">
+                            <label for="filter_btkp" class="block text-xs font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-box-open text-pink-600 mr-1"></i> Status BTKP
+                            </label>
+                            <select name="filter_btkp" id="filter_btkp" class="input-modern w-full">
+                                <option value="all" <?php echo ($filter_btkp == 'all') ? 'selected' : ''; ?>>Semua
+                                </option>
+                                <option value="btkp" <?php echo ($filter_btkp == 'btkp') ? 'selected' : ''; ?>>BTKP
+                                </option>
+                                <option value="non_btkp" <?php echo ($filter_btkp == 'non_btkp') ? 'selected' : ''; ?>>Non
+                                    BTKP </option>
+                            </select>
+                        </div>
+
+                        <div class="lg:col-span-1">
                             <label for="status_data" class="block text-xs font-semibold text-gray-700 mb-2">
                                 <i class="fas fa-link text-pink-600 mr-1"></i> Status
                             </label>
@@ -123,22 +139,22 @@ if ($page < 1) {
                             </select>
                         </div>
 
-                        <div class="lg:col-span-1">
+                        <div class="lg:col-span-2">
                             <label for="search_supplier" class="block text-xs font-semibold text-gray-700 mb-2">
                                 <i class="fas fa-search text-pink-600 mr-1"></i> Cari Data
                             </label>
-                            <input type="text" name="search_supplier" id="search_supplier" class="input-modern w-full"
-                                placeholder="Nama/NSFP/Inv/Nominal"
-                                value="<?php echo htmlspecialchars($_GET['search_supplier'] ?? ''); ?>">
+                            <div class="flex gap-2">
+                                <input type="text" name="search_supplier" id="search_supplier"
+                                    class="input-modern w-full" placeholder="Nama/NSFP/Inv/Nominal"
+                                    value="<?php echo htmlspecialchars($_GET['search_supplier'] ?? ''); ?>">
+                                <button type="submit" id="filter-submit-button"
+                                    class="btn-primary inline-flex items-center justify-center gap-2 px-6">
+                                    <i class="fas fa-filter"></i>
+                                    <span>Tampilkan</span>
+                                </button>
+                            </div>
                         </div>
 
-                        <div class="lg:col-span-1">
-                            <button type="submit" id="filter-submit-button"
-                                class="btn-primary w-full inline-flex items-center justify-center gap-2">
-                                <i class="fas fa-filter"></i>
-                                <span>Tampilkan</span>
-                            </button>
-                        </div>
                         <input type="hidden" name="page" value="1">
                     </form>
                 </div>
@@ -157,6 +173,7 @@ if ($page < 1) {
                                     <th>No</th>
                                     <th>Tgl Nota</th>
                                     <th>No Invoice</th>
+                                    <th>BTKP</th>
                                     <th class="text-center">Cabang</th>
                                     <th>Nama Supplier</th>
                                     <th class="text-right">DPP</th>
@@ -169,7 +186,7 @@ if ($page < 1) {
                             </thead>
                             <tbody id="receipt-table-body">
                                 <tr>
-                                    <td colspan="11" class="text-center p-8">
+                                    <td colspan="12" class="text-center p-8">
                                         <div class="spinner-simple"></div>
                                         <p class="mt-3 text-gray-500 font-medium">Memuat data...</p>
                                     </td>
