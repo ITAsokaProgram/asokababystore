@@ -28,7 +28,7 @@ if ($page < 1) {
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Coretax</title>
+    <title>Masukan Pajak</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
     <link rel="stylesheet" href="../../style/header.css">
     <link rel="stylesheet" href="../../style/sidebar.css">
@@ -57,7 +57,7 @@ if ($page < 1) {
                                 <i class="fa-solid fa-file-invoice-dollar fa-lg"></i>
                             </div>
                             <div>
-                                <h1 id="page-title" class="text-xl font-bold text-gray-800 mb-1">Data Coretax</h1>
+                                <h1 id="page-title" class="text-xl font-bold text-gray-800 mb-1">Pajak Masukan</h1>
                                 <p id="page-subtitle" class="text-xs text-gray-600">Memuat data faktur pajak...</p>
                             </div>
                         </div>

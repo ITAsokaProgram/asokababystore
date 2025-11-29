@@ -925,7 +925,7 @@ if (isset($_COOKIE['admin_token'])) {
                                 class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
                                 <i
                                     class="fa-solid fa-database mr-2 text-base text-slate-400 group-hover:text-slate-600 group-hover:scale-110 transition-all duration-200"></i>
-                                Data Coretax
+                                Laporan Masukan Pajak
                             </span>
                         </a>
                     </li>
@@ -936,7 +936,7 @@ if (isset($_COOKIE['admin_token'])) {
                                 class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
                                 <i
                                     class="fa-solid fa-file-invoice mr-2 text-base text-slate-400 group-hover:text-slate-600 group-hover:scale-110 transition-all duration-200"></i>
-                                Faktur Masukan
+                                Laporan Penerimaan
                             </span>
                         </a>
                     </li>
@@ -947,7 +947,7 @@ if (isset($_COOKIE['admin_token'])) {
                                 class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
                                 <i
                                     class="fa-solid fa-file-import mr-2 text-base text-slate-400 group-hover:text-slate-600 group-hover:scale-110 transition-all duration-200"></i>
-                                Import Faktur
+                                Import Masukan Pajak
                             </span>
                         </a>
                     </li>
@@ -958,7 +958,7 @@ if (isset($_COOKIE['admin_token'])) {
                                 class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
                                 <i
                                     class="fa-solid fa-pen-to-square mr-2 text-base text-slate-400 group-hover:text-slate-600 group-hover:scale-110 transition-all duration-200"></i>
-                                Input Faktur Pajak
+                                Form Faktur Pajak
                             </span>
                         </a>
                     </li>
@@ -969,7 +969,7 @@ if (isset($_COOKIE['admin_token'])) {
                                 class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
                                 <i
                                     class="fa-solid fa-cart-plus mr-2 text-base text-slate-400 group-hover:text-slate-600 group-hover:scale-110 transition-all duration-200"></i>
-                                Input Pembelian
+                                Form Pembelian
                             </span>
                         </a>
                     </li>
@@ -980,7 +980,7 @@ if (isset($_COOKIE['admin_token'])) {
                                 class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
                                 <i
                                     class="fa-solid fa-file-lines mr-2 text-base text-slate-400 group-hover:text-slate-600 group-hover:scale-110 transition-all duration-200"></i>
-                                Laporan Faktur
+                                Laporan Faktur Pajak
                             </span>
                         </a>
                     </li>

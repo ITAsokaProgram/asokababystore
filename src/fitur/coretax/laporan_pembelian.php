@@ -27,7 +27,7 @@ if ($page < 1) {
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Data Pembelian</title>
+    <title>Rekap Pembelian</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
     <link rel="stylesheet" href="../../style/header.css">
     <link rel="stylesheet" href="../../style/sidebar.css">
@@ -54,7 +54,7 @@ if ($page < 1) {
                                 <i class="fa-solid fa-cart-shopping fa-lg"></i>
                             </div>
                             <div>
-                                <h1 id="page-title" class="text-xl font-bold text-gray-800 mb-1">Laporan Data Pembelian
+                                <h1 id="page-title" class="text-xl font-bold text-gray-800 mb-1">Rekap Data Pembelian
                                 </h1>
                                 <p id="page-subtitle" class="text-xs text-gray-600">Memuat data pembelian...</p>
                             </div>
