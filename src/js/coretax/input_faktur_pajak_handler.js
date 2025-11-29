@@ -43,7 +43,9 @@ function parseNumber(str) {
 }
 function calculateTotal() {
   const dpp = parseNumber(inpDpp.value);
-  const dppLain = parseNumber(inpDppLain.value);
+  const hitungDppLain = Math.round((dpp * 11) / 12);
+  inpDppLain.value = formatNumber(hitungDppLain);
+  const dppLain = hitungDppLain;
   const ppn = parseNumber(inpPpn.value);
   inpTotal.value = formatNumber(dpp + dppLain + ppn);
 }
@@ -417,7 +419,7 @@ async function handleSave() {
 document.addEventListener("DOMContentLoaded", () => {
   loadStoreOptions();
   loadTableData();
-  [inpDpp, inpDppLain, inpPpn].forEach((input) => {
+  [inpDpp, inpPpn].forEach((input) => {
     input.addEventListener("input", calculateTotal);
     input.addEventListener("blur", (e) => {
       e.target.value = formatNumber(parseNumber(e.target.value));
@@ -462,7 +464,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (inpNoSeri.classList.contains("border-red-500")) resetErrorState();
   });
   const formInputs = Array.from(
-    form.querySelectorAll("input:not([type='hidden'])")
+    form.querySelectorAll("input:not([type='hidden']), select")
   );
   formInputs.forEach((input, index) => {
     input.addEventListener("keydown", async (e) => {
@@ -488,8 +490,15 @@ document.addEventListener("DOMContentLoaded", () => {
         if (isReady && (isLast || e.ctrlKey)) {
           handleSave();
         } else {
-          const next = formInputs[index + 1];
-          if (next && !next.readOnly) next.focus();
+          let nextIndex = index + 1;
+          let nextInput = formInputs[nextIndex];
+          while (nextInput && (nextInput.disabled || nextInput.readOnly)) {
+            nextIndex++;
+            nextInput = formInputs[nextIndex];
+          }
+          if (nextInput) {
+            nextInput.focus();
+          }
         }
       }
     });

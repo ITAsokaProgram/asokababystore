@@ -39,7 +39,9 @@ function parseNumber(str) {
 }
 function calculateTotal() {
   const dpp = parseNumber(inpDpp.value);
-  const dppLain = parseNumber(inpDppLain.value);
+  const hitungDppLain = Math.round((dpp * 11) / 12);
+  inpDppLain.value = formatNumber(hitungDppLain);
+  const dppLain = hitungDppLain;
   const ppn = parseNumber(inpPpn.value);
   const total = dpp + dppLain + ppn;
   inpTotal.value = formatNumber(total);
@@ -329,7 +331,7 @@ async function handleSave() {
 document.addEventListener("DOMContentLoaded", () => {
   loadStoreOptions();
   loadTableData();
-  [inpDpp, inpDppLain, inpPpn].forEach((input) => {
+  [inpDpp, inpPpn].forEach((input) => {
     input.addEventListener("input", calculateTotal);
     input.addEventListener("blur", (e) => {
       const val = parseNumber(e.target.value);
@@ -362,8 +364,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (input === inpNoLpb) {
           const val = input.value.trim();
           if (val) await fetchReceiptData(val);
-          if (inpKodeStore) inpKodeStore.focus();
-          return;
+          if (inpKodeStore && !inpKodeStore.disabled) {
+            inpKodeStore.focus();
+            return;
+          }
         }
         const isReadyToSave =
           inpNoLpb.value && inpNamaSupp.value && inpKodeStore.value;
@@ -371,8 +375,13 @@ document.addEventListener("DOMContentLoaded", () => {
         if (isReadyToSave && (isLastInput || e.ctrlKey)) {
           handleSave();
         } else {
-          const nextInput = formInputs[index + 1];
-          if (nextInput && !nextInput.readOnly) {
+          let nextIndex = index + 1;
+          let nextInput = formInputs[nextIndex];
+          while (nextInput && (nextInput.disabled || nextInput.readOnly)) {
+            nextIndex++;
+            nextInput = formInputs[nextIndex];
+          }
+          if (nextInput) {
             nextInput.focus();
           } else if (isReadyToSave) {
             handleSave();

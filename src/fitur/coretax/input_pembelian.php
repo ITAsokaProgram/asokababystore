@@ -177,7 +177,7 @@ include '../../../aa_kon_sett.php';
                             <div>
                                 <label class="form-label text-right">DPP Nilai Lain</label>
                                 <input type="text" id="inp_dpp_lain" name="dpp_nilai_lain"
-                                    class="input-compact text-right font-mono" value="0">
+                                    class="input-compact text-right font-mono input-readonly" disabled value="0">
                             </div>
 
                             <div>
