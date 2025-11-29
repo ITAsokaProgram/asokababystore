@@ -659,13 +659,16 @@ document.addEventListener("DOMContentLoaded", () => {
         font: { bold: true },
         fill: { fgColor: { rgb: "E0E0E0" } },
       };
-      ["B4", "B5", "B6"].forEach((cell) => {
+      ["B5", "B6", "B7"].forEach((cell) => {
         if (ws[cell]) {
           ws[cell].t = "n";
-          ws[cell].s = { numFmt: numFormat };
+          ws[cell].s = { numFmt: numFormat }; 
         }
       });
-      ws["B4"].s = { numFmt: numFormatDec };
+
+      if (ws["B5"]) {
+        ws["B5"].s = { numFmt: numFormatDec };
+      }
       headers.forEach((_, C) => {
         const cell = ws[XLSX.utils.encode_cell({ r: info.length + 1, c: C })];
         if (cell) cell.s = headerStyle;

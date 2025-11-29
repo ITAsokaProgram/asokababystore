@@ -485,10 +485,18 @@ document.addEventListener("DOMContentLoaded", () => {
       Swal.fire("Tidak Ada Data", "Tidak ada data untuk diekspor.", "info");
       return;
     }
+
     try {
       const { tabel_data, summary, date_subtotals } = data;
       const params = getUrlParams();
       const title = [["Laporan Sales per Kasir & Bon"]];
+
+      // Susunan Info:
+      // A2: Periode
+      // A3: Cabang
+      // A4: [] (Kosong) -> Baris 4 KOSONG
+      // A5: Total Qty
+      // ... dst
       const info = [
         ["Periode", `${params.tgl_mulai} s/d ${params.tgl_selesai}`],
         [
@@ -503,6 +511,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ["Total Grs Margin", parseFloat(summary.total_grs_margin) || 0],
         [],
       ];
+
       const headers = [
         "No",
         "PLU",
@@ -512,6 +521,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "Disc",
         "Total",
       ];
+
       const dataRows = [];
       const merges = [];
       let bon_item_counter = 0;
@@ -520,7 +530,9 @@ document.addEventListener("DOMContentLoaded", () => {
       let s_bon_qty = 0,
         s_bon_diskon = 0,
         s_bon_total = 0;
+
       const rowOffset = info.length + 2;
+
       const pushSubtotalBonRow = () => {
         dataRows.push([
           "",
@@ -539,6 +551,7 @@ document.addEventListener("DOMContentLoaded", () => {
         s_bon_diskon = 0;
         s_bon_total = 0;
       };
+
       const pushSubtotalTanggalRow = () => {
         const subtotal = date_subtotals[current_tanggal] || {
           total_qty: 0,
@@ -559,6 +572,7 @@ document.addEventListener("DOMContentLoaded", () => {
           e: { r: dataRows.length + rowOffset - 1, c: 2 },
         });
       };
+
       const pushTanggalHeaderRow = (tanggal) => {
         dataRows.push([`Tanggal: ${tanggal}`]);
         merges.push({
@@ -566,6 +580,7 @@ document.addEventListener("DOMContentLoaded", () => {
           e: { r: dataRows.length + rowOffset - 1, c: 6 },
         });
       };
+
       const pushBonHeaderRow = (row) => {
         dataRows.push([
           `No Trans: ${row.no_bon}`,
@@ -587,17 +602,21 @@ document.addEventListener("DOMContentLoaded", () => {
           e: { r: dataRows.length + rowOffset - 1, c: 6 },
         });
       };
+
       tabel_data.forEach((row, index) => {
         const qty = parseFloat(row.qty) || 0;
         const diskon = parseFloat(row.total_diskon) || 0;
         const total = parseFloat(row.total) || 0;
+
         if (row.tanggal !== current_tanggal) {
           if (current_no_bon !== null) pushSubtotalBonRow();
           if (current_tanggal !== null) pushSubtotalTanggalRow();
+
           pushTanggalHeaderRow(row.tanggal);
           current_tanggal = row.tanggal;
           current_no_bon = null;
         }
+
         if (row.no_bon !== current_no_bon) {
           if (current_no_bon !== null) pushSubtotalBonRow();
           pushBonHeaderRow(row);
@@ -607,9 +626,11 @@ document.addEventListener("DOMContentLoaded", () => {
           s_bon_diskon = 0;
           s_bon_total = 0;
         }
+
         s_bon_qty += qty;
         s_bon_diskon += diskon;
         s_bon_total += total;
+
         dataRows.push([
           bon_item_counter++,
           row.plu,
@@ -620,8 +641,10 @@ document.addEventListener("DOMContentLoaded", () => {
           total,
         ]);
       });
+
       if (current_no_bon !== null) pushSubtotalBonRow();
       if (current_tanggal !== null) pushSubtotalTanggalRow();
+
       dataRows.push([]);
       dataRows.push([
         "",
@@ -636,6 +659,7 @@ document.addEventListener("DOMContentLoaded", () => {
         s: { r: dataRows.length + rowOffset - 1, c: 0 },
         e: { r: dataRows.length + rowOffset - 1, c: 2 },
       });
+
       const ws = XLSX.utils.aoa_to_sheet(title);
       XLSX.utils.sheet_add_aoa(ws, info, { origin: "A2" });
       const headerOrigin = "A" + (info.length + 2);
@@ -643,13 +667,32 @@ document.addEventListener("DOMContentLoaded", () => {
       XLSX.utils.sheet_add_aoa(ws, dataRows, {
         origin: "A" + (info.length + 3),
       });
+
       ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }, ...merges];
-      ws["A1"].s = {
+
+      // Helper untuk menerapkan style dengan aman (Mencegah error undefined)
+      const safeApplyStyle = (cellRef, styleObj) => {
+        if (!ws[cellRef]) return; // Skip jika cell tidak ada
+        ws[cellRef].s = styleObj;
+      };
+
+      const safeApplyFormat = (cellRef, format) => {
+        if (!ws[cellRef]) return;
+        ws[cellRef].t = "n";
+        ws[cellRef].z = format; // .z lebih standar di sheetjs pro/style, .s.numFmt di community
+        if (!ws[cellRef].s) ws[cellRef].s = {};
+        ws[cellRef].s.numFmt = format;
+      };
+
+      // Styling Title
+      safeApplyStyle("A1", {
         font: { bold: true, sz: 16 },
         alignment: { horizontal: "center" },
-      };
+      });
+
       const numFormat = "#,##0";
       const numFormatDec = "#,##0.00";
+
       const headerStyle = {
         font: { bold: true },
         fill: { fgColor: { rgb: "E0E0E0" } },
@@ -677,63 +720,97 @@ document.addEventListener("DOMContentLoaded", () => {
         fill: { fgColor: { rgb: "E2E8F0" } },
         alignment: { horizontal: "right" },
       };
-      ["B4", "B5", "B6", "B7", "B8"].forEach((cell) => {
-        if (ws[cell]) {
-          ws[cell].t = "n";
-          ws[cell].s = { numFmt: numFormat };
-        }
+
+      // --- PERBAIKAN TARGET FORMAT SUMMARY ---
+      // A4 adalah baris kosong, Data summary mulai di baris 5 (B5) sampai baris 9 (B9)
+      ["B5", "B6", "B7", "B8", "B9"].forEach((cell) => {
+        safeApplyFormat(cell, numFormat);
       });
-      ws["B4"].s = { numFmt: numFormatDec };
+      // Jika Net Sales (Row 7) perlu desimal:
+      safeApplyFormat("B7", numFormatDec);
+
+      // Header Column Styles
       headers.forEach((_, C) => {
-        const cell = ws[XLSX.utils.encode_cell({ r: info.length + 1, c: C })];
-        if (cell) cell.s = headerStyle;
+        const cellRef = XLSX.utils.encode_cell({ r: info.length + 1, c: C });
+        safeApplyStyle(cellRef, headerStyle);
       });
+
       const dataRowStartIndex = info.length + 2;
+
+      // Styling Data Rows
       dataRows.forEach((row, R_idx) => {
         const R = R_idx + dataRowStartIndex;
-        if (row.length === 0) return;
-        const label = row[0] || row[2];
+        if (!row || row.length === 0) return;
+
+        const label = row[0] || row[2]; // Label biasanya di col 0 atau col 2 (untuk subtotal)
+
         if (typeof label === "string") {
+          const cellA = XLSX.utils.encode_cell({ r: R, c: 0 });
+          const cellE = XLSX.utils.encode_cell({ r: R, c: 4 });
+
+          // Kolom Harga/Total untuk Subtotal
+          const cellC_next = XLSX.utils.encode_cell({ r: R + 1, c: 2 }); // C
+          const cellD_next = XLSX.utils.encode_cell({ r: R + 1, c: 3 }); // D (Qty)
+          const cellF_next = XLSX.utils.encode_cell({ r: R + 1, c: 5 }); // F (Diskon)
+          const cellG_next = XLSX.utils.encode_cell({ r: R + 1, c: 6 }); // G (Total)
+
           if (label.startsWith("Tanggal:")) {
-            ws[XLSX.utils.encode_cell({ r: R, c: 0 })].s = headerTanggalStyle;
+            safeApplyStyle(cellA, headerTanggalStyle);
           } else if (label.startsWith("No Trans:")) {
-            ws[XLSX.utils.encode_cell({ r: R, c: 0 })].s = headerBonStyle;
-            ws[XLSX.utils.encode_cell({ r: R, c: 4 })].s = headerBonStyle;
+            safeApplyStyle(cellA, headerBonStyle);
+            safeApplyStyle(cellE, headerBonStyle); // Kolom E (Kasir)
           } else if (label.startsWith("Sub Total Bon:")) {
-            ws["C" + (R + 1)].s = { ...subtotalBonStyle, numFmt: numFormat };
-            ws["D" + (R + 1)].s = { ...subtotalBonStyle, numFmt: numFormatDec };
-            ws["F" + (R + 1)].s = { ...subtotalBonStyle, numFmt: numFormat };
-            ws["G" + (R + 1)].s = { ...subtotalBonStyle, numFmt: numFormat };
+            // Kita harus hati-hati, karena cell mungkin undefined jika data kosong
+            // Disini row sekarang (R) adalah row label, nilai ada di kolom C, D, F, G
+            // Tapi kode lama menggunakan R+1 yang aneh karena loop ini sudah di row data.
+            // Jika row[0] kosong, label ada di row[2], ini row yang sama.
+
+            // Koreksi: Gunakan `encode_cell` pada row `R` (bukan R+1) karena kita sedang iterasi row tersebut
+            safeApplyStyle(XLSX.utils.encode_cell({ r: R, c: 2 }), {
+              ...subtotalBonStyle,
+            }); // Label
+
+            const styleNum = { ...subtotalBonStyle, numFmt: numFormat };
+            const styleDec = { ...subtotalBonStyle, numFmt: numFormatDec };
+
+            safeApplyStyle(XLSX.utils.encode_cell({ r: R, c: 3 }), styleDec); // Qty
+            safeApplyStyle(XLSX.utils.encode_cell({ r: R, c: 5 }), styleNum); // Diskon
+            safeApplyStyle(XLSX.utils.encode_cell({ r: R, c: 6 }), styleNum); // Total
           } else if (label.startsWith("Sub Total Tanggal:")) {
-            ws["C" + (R + 1)].s = {
+            safeApplyStyle(XLSX.utils.encode_cell({ r: R, c: 2 }), {
               ...subtotalTanggalStyle,
-              numFmt: numFormat,
-            };
-            ws["D" + (R + 1)].s = {
-              ...subtotalTanggalStyle,
-              numFmt: numFormatDec,
-            };
-            ws["F" + (R + 1)].s = {
-              ...subtotalTanggalStyle,
-              numFmt: numFormat,
-            };
-            ws["G" + (R + 1)].s = {
-              ...subtotalTanggalStyle,
-              numFmt: numFormat,
-            };
+            });
+
+            const styleNum = { ...subtotalTanggalStyle, numFmt: numFormat };
+            const styleDec = { ...subtotalTanggalStyle, numFmt: numFormatDec };
+
+            safeApplyStyle(XLSX.utils.encode_cell({ r: R, c: 3 }), styleDec);
+            safeApplyStyle(XLSX.utils.encode_cell({ r: R, c: 5 }), styleNum);
+            safeApplyStyle(XLSX.utils.encode_cell({ r: R, c: 6 }), styleNum);
           } else if (label.startsWith("GRAND TOTAL")) {
-            ws["C" + (R + 1)].s = { ...grandTotalStyle, numFmt: numFormat };
-            ws["D" + (R + 1)].s = { ...grandTotalStyle, numFmt: numFormatDec };
-            ws["F" + (R + 1)].s = { ...grandTotalStyle, numFmt: numFormat };
-            ws["G" + (R + 1)].s = { ...grandTotalStyle, numFmt: numFormat };
+            safeApplyStyle(XLSX.utils.encode_cell({ r: R, c: 2 }), {
+              ...grandTotalStyle,
+            });
+
+            const styleNum = { ...grandTotalStyle, numFmt: numFormat };
+            const styleDec = { ...grandTotalStyle, numFmt: numFormatDec };
+
+            safeApplyStyle(XLSX.utils.encode_cell({ r: R, c: 3 }), styleDec);
+            safeApplyStyle(XLSX.utils.encode_cell({ r: R, c: 5 }), styleNum);
+            safeApplyStyle(XLSX.utils.encode_cell({ r: R, c: 6 }), styleNum);
           } else if (row[0] && typeof row[0] === "number") {
-            ws["D" + (R + 1)].s = { numFmt: numFormatDec };
-            ws["E" + (R + 1)].s = { numFmt: numFormat };
-            ws["F" + (R + 1)].s = { numFmt: numFormat };
-            ws["G" + (R + 1)].s = { numFmt: numFormat };
+            // Baris Data Item
+            safeApplyFormat(
+              XLSX.utils.encode_cell({ r: R, c: 3 }),
+              numFormatDec
+            ); // Qty
+            safeApplyFormat(XLSX.utils.encode_cell({ r: R, c: 4 }), numFormat); // Harga
+            safeApplyFormat(XLSX.utils.encode_cell({ r: R, c: 5 }), numFormat); // Disc
+            safeApplyFormat(XLSX.utils.encode_cell({ r: R, c: 6 }), numFormat); // Total
           }
         }
       });
+
       ws["!cols"] = [
         { wch: 5 },
         { wch: 12 },
@@ -743,6 +820,7 @@ document.addEventListener("DOMContentLoaded", () => {
         { wch: 15 },
         { wch: 17 },
       ];
+
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Sales Kasir Bon");
       const fileName = `Sales_Kasir_Bon_${params.tgl_mulai}_sd_${params.tgl_selesai}.xlsx`;
