@@ -114,6 +114,7 @@ try {
             a.conv1,
             a.conv2,
             a.qty,
+            a.Keterangan AS keterangan,  
             SUM(a.netto * (CASE WHEN a.timbang='True' THEN a.qty/1000 ELSE a.qty END)) AS netto,
             SUM(IFNULL(a.ppn,0) * (CASE WHEN a.timbang='True' THEN a.qty/1000 ELSE a.qty END)) AS ppn,
             (SUM(a.netto * (CASE WHEN a.timbang='True' THEN a.qty/1000 ELSE a.qty END)) +
@@ -133,7 +134,8 @@ try {
             a.satuan,
             a.conv1,
             a.conv2,
-            a.qty
+            a.qty,
+            a.Keterangan  
         ORDER BY
             tanggal, faktur, a.plu
         $limit_offset_sql

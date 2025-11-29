@@ -175,6 +175,7 @@ if ($page < 1) {
                                     <th>Netto</th>
                                     <th>PPN</th>
                                     <th>Total</th>
+                                    <th>Keterangan</th>
                                 </tr>
                             </thead>
                             <tbody id="return-out-table-body">

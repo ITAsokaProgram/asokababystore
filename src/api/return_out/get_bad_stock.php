@@ -94,6 +94,7 @@ try {
             a.conv1,
             a.conv2,
             a.qty,
+            a.Keterangan,  
             SUM(a.netto * (CASE WHEN a.timbang='True' THEN a.qty/1000 ELSE a.qty END)) AS netto,
             SUM(IFNULL(a.ppn,0) * (CASE WHEN a.timbang='True' THEN a.qty/1000 ELSE a.qty END)) AS ppn,
             (SUM(a.netto * (CASE WHEN a.timbang='True' THEN a.qty/1000 ELSE a.qty END)) +

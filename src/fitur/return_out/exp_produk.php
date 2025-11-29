@@ -167,6 +167,7 @@ if ($page < 1) {
                                     <th>No</th>
                                     <th>PLU</th>
                                     <th>Deskripsi</th>
+                                    <th>Keterangan</th>
                                     <th>Sat</th>
                                     <th>Conv1</th>
                                     <th>Conv2</th>
@@ -178,7 +179,7 @@ if ($page < 1) {
                             </thead>
                             <tbody id="return-out-table-body">
                                 <tr>
-                                    <td colspan="10" class="text-center p-8">
+                                    <td colspan="11" class="text-center p-8">
                                         <div class="spinner-simple"></div>
                                         <p class="mt-3 text-gray-500 font-medium">Memuat data...</p>
                                     </td>

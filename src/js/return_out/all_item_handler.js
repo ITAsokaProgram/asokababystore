@@ -138,7 +138,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (tableBody)
           tableBody.innerHTML = `
                                 <tr>
-                                    <td colspan="10" class="text-center p-8">
+                                    <td colspan="11" class="text-center p-8">
                                         <div class="spinner-simple"></div>
                                         <p class="mt-2 text-gray-500">Memuat data...</p>
                                     </td>
@@ -170,7 +170,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function showTableError(message) {
     tableBody.innerHTML = `
             <tr>
-                <td colspan="10" class="text-center p-8 text-red-600">
+                <td colspan="11" class="text-center p-8 text-red-600">
                     <i class="fas fa-exclamation-triangle fa-lg mb-2"></i>
                     <p>Gagal memuat data: ${message}</p>
                 </td>
@@ -208,7 +208,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!tabel_data || tabel_data.length === 0) {
       tableBody.innerHTML = `
                 <tr>
-                    <td colspan="10" class="text-center p-8 text-gray-500">
+                    <td colspan="11" class="text-center p-8 text-gray-500">
                         <i class="fas fa-inbox fa-lg mb-2"></i>
                         <p>Tidak ada data ditemukan untuk filter ini.</p>
                     </td>
@@ -226,7 +226,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function buildTanggalHeaderRow(tanggal) {
       return `
                 <tr class="header-tanggal-row">
-                    <td colspan="10" class="px-4 py-2">
+                    <td colspan="11" class="px-4 py-2">
                         Tanggal: <span class="font-bold"> ${tanggal} </span>
                     </td>
                 </tr>
@@ -237,7 +237,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return `
                 <tr class="header-faktur-row">
                     <td colspan="3" class="px-4 py-1 pl-6">No Faktur: <strong>${faktur}</strong></td>
-                    <td colspan="7" class="px-4 py-1">Supplier: <strong>${kodesupp} ${
+                    <td colspan="8" class="px-4 py-1">Supplier: <strong>${kodesupp} ${
         namasupp ? "-" : ""
       } ${namasupp || ""} ${inisial}</strong></td>
                 </tr>
@@ -261,8 +261,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     <td class=" px-2 py-2">${formatRupiah(
                       subtotal_faktur_total
                     )}</td>
+                    <td></td> 
                 </tr>
-            `;
+            `;  
     }
     function buildSubtotalTanggalRow(tanggal) {
       const subtotal = date_subtotals[tanggal] || {
@@ -294,6 +295,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const netto = parseFloat(row.netto) || 0;
       const ppn = parseFloat(row.ppn) || 0;
       const total = parseFloat(row.total) || 0;
+      const keterangan = row.keterangan ? row.keterangan : "-";
       if (row.tanggal !== current_tanggal) {
         if (current_tanggal !== null) {
           if (current_faktur !== null) {
@@ -342,6 +344,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <td class="">${formatRupiah(netto)}</td>
                     <td class="">${formatRupiah(ppn)}</td>
                     <td class="">${formatRupiah(total)}</td>
+                    <td class="text-left text-sm text-gray-600">${keterangan}</td>
                 </tr>
             `;
       faktur_item_counter++;

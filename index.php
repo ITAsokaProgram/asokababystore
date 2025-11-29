@@ -537,6 +537,314 @@ if ($stmt->num_rows === 0) {
             </div>
         </section>
 
+        <section id="faq-section" class="py-20 bg-gradient-to-br from-purple-50 via-white to-pink-50">
+            <div class="max-w-6xl mx-auto px-4">
+                <div class="text-center mb-12" data-aos="fade-down" data-aos-duration="800">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-4 gradient-text">Pertanyaan yang Sering Diajukan</h2>
+                    <p class="text-lg text-gray-600 max-w-2xl mx-auto">Temukan jawaban untuk pertanyaan Anda seputar
+                        Asoka Baby Store</p>
+                </div>
+
+                <div class="space-y-4 max-w-4xl mx-auto">
+                    <!-- FAQ 1 -->
+                    <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300"
+                        data-aos="fade-up" data-aos-duration="600" data-aos-delay="50">
+                        <button
+                            class="faq-button w-full text-left px-6 py-5 flex items-center justify-between hover:bg-pink-50 transition-colors duration-300">
+                            <span class="font-semibold text-gray-800 pr-4">Apa saja produk yang tersedia di Asoka Baby
+                                Store?</span>
+                            <i class="fas fa-chevron-down text-pink-500 transition-transform duration-300 faq-icon"></i>
+                        </button>
+                        <div class="faq-content max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
+                            <div class="px-6 pb-6 pt-2 text-gray-600">
+                                Asoka Baby Store menyediakan berbagai kebutuhan bayi dan anak, mulai dari pakaian,
+                                popok, perlengkapan mandi, botol susu, perlengkapan makan, mainan edukatif, stroller,
+                                hingga perlengkapan ibu menyusui. Kami berkomitmen untuk menyediakan produk berkualitas
+                                dengan harga terbaik.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ 2 -->
+                    <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300"
+                        data-aos="fade-up" data-aos-duration="600" data-aos-delay="100">
+                        <button
+                            class="faq-button w-full text-left px-6 py-5 flex items-center justify-between hover:bg-pink-50 transition-colors duration-300">
+                            <span class="font-semibold text-gray-800 pr-4">Apakah produk yang dijual di Asoka Baby Store
+                                original?</span>
+                            <i class="fas fa-chevron-down text-pink-500 transition-transform duration-300 faq-icon"></i>
+                        </button>
+                        <div class="faq-content max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
+                            <div class="px-6 pb-6 pt-2 text-gray-600">
+                                Ya, seluruh produk yang kami jual adalah 100% original dan bergaransi resmi dari brand
+                                terpercaya seperti Cussons, Sweety, MamyPoko, Pigeon, Dodo, BabyHappy, dan merek ternama
+                                lainnya.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ 3 -->
+                    <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300"
+                        data-aos="fade-up" data-aos-duration="600" data-aos-delay="150">
+                        <button
+                            class="faq-button w-full text-left px-6 py-5 flex items-center justify-between hover:bg-pink-50 transition-colors duration-300">
+                            <span class="font-semibold text-gray-800 pr-4">Apakah Asoka Baby Store melayani pembelian
+                                online?</span>
+                            <i class="fas fa-chevron-down text-pink-500 transition-transform duration-300 faq-icon"></i>
+                        </button>
+                        <div class="faq-content max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
+                            <div class="px-6 pb-6 pt-2 text-gray-600">
+                                Ya. Ayah dan Bunda bisa berbelanja secara online melalui:
+                                <ul class="ml-6 mt-2 space-y-1 faq-list">
+                                    <li>WhatsApp Official Store</li>
+                                    <li>Shopee & Tiktok</li>
+                                    <li>Instagram @asokababyofficial</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ 4 -->
+                    <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300"
+                        data-aos="fade-up" data-aos-duration="600" data-aos-delay="200">
+                        <button
+                            class="faq-button w-full text-left px-6 py-5 flex items-center justify-between hover:bg-pink-50 transition-colors duration-300">
+                            <span class="font-semibold text-gray-800 pr-4">Apakah Asoka Baby Store memiliki promo atau
+                                diskon?</span>
+                            <i class="fas fa-chevron-down text-pink-500 transition-transform duration-300 faq-icon"></i>
+                        </button>
+                        <div class="faq-content max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
+                            <div class="px-6 pb-6 pt-2 text-gray-600">
+                                Kami rutin menghadirkan promo bulanan, promo mingguan dan penawaran eksklusif bagi
+                                member setia ASOKA. Informasi promo terbaru dapat dilihat di Media Sosial, Website atau
+                                bisa langsung di toko langsung.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ 5 -->
+                    <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300"
+                        data-aos="fade-up" data-aos-duration="600" data-aos-delay="250">
+                        <button
+                            class="faq-button w-full text-left px-6 py-5 flex items-center justify-between hover:bg-pink-50 transition-colors duration-300">
+                            <span class="font-semibold text-gray-800 pr-4">Bagaimana kebijakan penukaran barang di Asoka
+                                Baby Store?</span>
+                            <i class="fas fa-chevron-down text-pink-500 transition-transform duration-300 faq-icon"></i>
+                        </button>
+                        <div class="faq-content max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
+                            <div class="px-6 pb-6 pt-2 text-gray-600">
+                                Penukaran dapat dilakukan dengan ketentuan berikut:
+                                <ul class="ml-6 mt-2 space-y-1 faq-list">
+                                    <li>Barang belum digunakan dan dalam kondisi baik</li>
+                                    <li>Label Barcode dan kemasan masih lengkap</li>
+                                    <li>Penukaran dilakukan maksimal 1x24 jam setelah pembelian</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ 6 -->
+                    <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300"
+                        data-aos="fade-up" data-aos-duration="600" data-aos-delay="300">
+                        <button
+                            class="faq-button w-full text-left px-6 py-5 flex items-center justify-between hover:bg-pink-50 transition-colors duration-300">
+                            <span class="font-semibold text-gray-800 pr-4">Apakah Asoka Baby Store menerima pembelian
+                                grosir atau reseller?</span>
+                            <i class="fas fa-chevron-down text-pink-500 transition-transform duration-300 faq-icon"></i>
+                        </button>
+                        <div class="faq-content max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
+                            <div class="px-6 pb-6 pt-2 text-gray-600">
+                                Tidak, kami tidak membuka kerja sama untuk reseller dan pembelian secara grosir.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ 7 -->
+                    <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300"
+                        data-aos="fade-up" data-aos-duration="600" data-aos-delay="350">
+                        <button
+                            class="faq-button w-full text-left px-6 py-5 flex items-center justify-between hover:bg-pink-50 transition-colors duration-300">
+                            <span class="font-semibold text-gray-800 pr-4">Bagaimana cara memastikan ketersediaan stok
+                                produk?</span>
+                            <i class="fas fa-chevron-down text-pink-500 transition-transform duration-300 faq-icon"></i>
+                        </button>
+                        <div class="faq-content max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
+                            <div class="px-6 pb-6 pt-2 text-gray-600">
+                                Ayah/Bunda bisa menghubungi admin kami melalui WhatsApp atau Website untuk mengecek
+                                ketersediaan stok sebelum melakukan pembelian.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ 8 -->
+                    <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300"
+                        data-aos="fade-up" data-aos-duration="600" data-aos-delay="400">
+                        <button
+                            class="faq-button w-full text-left px-6 py-5 flex items-center justify-between hover:bg-pink-50 transition-colors duration-300">
+                            <span class="font-semibold text-gray-800 pr-4">Bagaimana sistem pembayaran di Asoka Baby
+                                Store?</span>
+                            <i class="fas fa-chevron-down text-pink-500 transition-transform duration-300 faq-icon"></i>
+                        </button>
+                        <div class="faq-content max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
+                            <div class="px-6 pb-6 pt-2 text-gray-600">
+                                Kami menerima berbagai metode pembayaran di toko:
+                                <ul class="ml-6 mt-2 space-y-1 faq-list">
+                                    <li>Tunai (Cash)</li>
+                                    <li>Debit (Minimal Pembelian Rp50.000)</li>
+                                    <li>QRIS (Minimal Pembelian Rp50.000)</li>
+                                    <li>Kartu Kredit (Minimal Pembelian Rp100.000)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ 9 -->
+                    <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300"
+                        data-aos="fade-up" data-aos-duration="600" data-aos-delay="450">
+                        <button
+                            class="faq-button w-full text-left px-6 py-5 flex items-center justify-between hover:bg-pink-50 transition-colors duration-300">
+                            <span class="font-semibold text-gray-800 pr-4">Apakah Asoka Baby Store memiliki program
+                                member atau poin loyalitas?</span>
+                            <i class="fas fa-chevron-down text-pink-500 transition-transform duration-300 faq-icon"></i>
+                        </button>
+                        <div class="faq-content max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
+                            <div class="px-6 pb-6 pt-2 text-gray-600">
+                                Ya, pelanggan dapat mendaftar menjadi member Asoka Baby Store untuk mendapatkan poin
+                                dari setiap transaksi yang berbelanja minimal Rp100.000 dihitung 1 Poin, Potongan Harga
+                                Khusus member potongan Rp500 s/d Rp1.000 dan Gratis kertas kado Minimal pembelanjaan
+                                Rp50.000.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ 10 -->
+                    <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300"
+                        data-aos="fade-up" data-aos-duration="600" data-aos-delay="500">
+                        <button
+                            class="faq-button w-full text-left px-6 py-5 flex items-center justify-between hover:bg-pink-50 transition-colors duration-300">
+                            <span class="font-semibold text-gray-800 pr-4">Apakah Asoka Baby Store Memiliki Cabang
+                                lain?</span>
+                            <i class="fas fa-chevron-down text-pink-500 transition-transform duration-300 faq-icon"></i>
+                        </button>
+                        <div class="faq-content max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
+                            <div class="px-6 pb-6 pt-2 text-gray-600">
+                                Ya, kami mempunyai cabang yang berdomisili di daerah Jabodetabek, Bangka & Belitung.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ 11 -->
+                    <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300"
+                        data-aos="fade-up" data-aos-duration="600" data-aos-delay="550">
+                        <button
+                            class="faq-button w-full text-left px-6 py-5 flex items-center justify-between hover:bg-pink-50 transition-colors duration-300">
+                            <span class="font-semibold text-gray-800 pr-4">Bagaimana cara menghubungi layanan pelanggan
+                                Asoka Baby Store?</span>
+                            <i class="fas fa-chevron-down text-pink-500 transition-transform duration-300 faq-icon"></i>
+                        </button>
+                        <div class="faq-content max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
+                            <div class="px-6 pb-6 pt-2 text-gray-600">
+                                Untuk pertanyaan, bantuan, atau kerja sama, silakan hubungi:
+                                <ul class="ml-6 mt-2 space-y-1 faq-list">
+                                    <li>WhatsApp: 0817-399-588</li>
+                                    <li>Instagram: @asokababyofficial</li>
+                                    <li>Website: www.asokababystore.com</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <script>
+            // FAQ Accordion Functionality
+            document.addEventListener('DOMContentLoaded', function () {
+                const faqButtons = document.querySelectorAll('.faq-button');
+
+                faqButtons.forEach(button => {
+                    button.addEventListener('click', function () {
+                        const content = this.nextElementSibling;
+                        const icon = this.querySelector('.faq-icon');
+                        const isOpen = content.style.maxHeight && content.style.maxHeight !== '0px';
+
+                        // Close all other FAQs
+                        document.querySelectorAll('.faq-content').forEach(item => {
+                            if (item !== content) {
+                                item.style.maxHeight = '0';
+                                item.previousElementSibling.querySelector('.faq-icon').style.transform = 'rotate(0deg)';
+                            }
+                        });
+
+                        // Toggle current FAQ
+                        if (isOpen) {
+                            content.style.maxHeight = '0';
+                            icon.style.transform = 'rotate(0deg)';
+                        } else {
+                            content.style.maxHeight = content.scrollHeight + 'px';
+                            icon.style.transform = 'rotate(180deg)';
+                        }
+                    });
+                });
+            });
+        </script>
+
+        <style>
+            /* Custom Gradient Bullet Points untuk FAQ List */
+            .faq-list {
+                list-style: none;
+                padding-left: 0;
+            }
+
+            .faq-list li {
+                position: relative;
+                padding-left: 1.5rem;
+            }
+
+            .faq-list li::before {
+                content: '';
+                position: absolute;
+                left: 0;
+                top: 0.6rem;
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #ec4899, #8b5cf6);
+                animation: pulse-dot 2s infinite;
+            }
+
+            /* Variasi warna untuk setiap bullet */
+            .faq-list li:nth-child(1)::before {
+                background: linear-gradient(135deg, #ec4899, #f472b6);
+            }
+
+            .faq-list li:nth-child(2)::before {
+                background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+            }
+
+            .faq-list li:nth-child(3)::before {
+                background: linear-gradient(135deg, #3b82f6, #60a5fa);
+            }
+
+            .faq-list li:nth-child(4)::before {
+                background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            }
+
+            @keyframes pulse-dot {
+
+                0%,
+                100% {
+                    opacity: 1;
+                    transform: scale(1);
+                }
+
+                50% {
+                    opacity: 0.8;
+                    transform: scale(1.1);
+                }
+            }
+        </style>
+
         <!-- Overlay + Modal -->
         <div id="modalMember"
             class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden">

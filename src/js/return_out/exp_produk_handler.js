@@ -138,7 +138,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (tableBody)
           tableBody.innerHTML = `
                                 <tr>
-                                    <td colspan="10" class="text-center p-8">
+                                    <td colspan="11" class="text-center p-8">
                                         <div class="spinner-simple"></div>
                                         <p class="mt-2 text-gray-500">Memuat data...</p>
                                     </td>
@@ -170,7 +170,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function showTableError(message) {
     tableBody.innerHTML = `
             <tr>
-                <td colspan="10" class="text-center p-8 text-red-600">
+                <td colspan="11" class="text-center p-8 text-red-600">
                     <i class="fas fa-exclamation-triangle fa-lg mb-2"></i>
                     <p>Gagal memuat data: ${message}</p>
                 </td>
@@ -208,7 +208,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!tabel_data || tabel_data.length === 0) {
       tableBody.innerHTML = `
                                 <tr>
-                                    <td colspan="10" class="text-center p-8 text-gray-500">
+                                    <td colspan="11" class="text-center p-8 text-gray-500">
                                         <i class="fas fa-inbox fa-lg mb-2"></i>
                                         <p>Tidak ada data ditemukan untuk filter ini.</p>
                                     </td>
@@ -216,7 +216,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     let htmlRows = "";
-    let faktur_item_counter = 0; 
+    let faktur_item_counter = 0;
     let current_tanggal = null;
     let current_faktur = null;
     let subtotal_faktur_qty = 0,
@@ -226,7 +226,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function buildTanggalHeaderRow(tanggal) {
       return `
                                 <tr class="header-tanggal-row">
-                                    <td colspan="10" class="px-4 py-2">
+                                    <td colspan="11" class="px-4 py-2">
                                         Tanggal: <span class="font-bold"> ${tanggal} </span>
                                     </td>
                                 </tr>
@@ -237,7 +237,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return `
                                 <tr class="header-faktur-row">
                                     <td colspan="3" class="px-4 py-1 pl-6">No Faktur: <strong>${faktur}</strong></td>
-                                    <td colspan="7" class="px-4 py-1">Supplier: <strong>${kodesupp} ${
+                                    <td colspan="8" class="px-4 py-1">Supplier: <strong>${kodesupp} ${
         namasupp ? "-" : ""
       } ${namasupp || ""} ${inisial}</strong></td>
                                 </tr>
@@ -246,7 +246,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function buildSubtotalFakturRow() {
       return `
                                 <tr class="subtotal-row">
-                                    <td colspan="6" class="text-right px-4 py-2 font-bold" style="font-style: italic;">
+                                    <td colspan="7" class="text-right px-4 py-2 font-bold" style="font-style: italic;">
                                         Sub Total Faktur: 
                                     </td>
                                     <td class=" px-2 py-2">${formatNumber(
@@ -273,7 +273,7 @@ document.addEventListener("DOMContentLoaded", () => {
       };
       return `
                                 <tr class="subtotal-tanggal-row">
-                                    <td colspan="6" class=" px-4 py-2 text-right font-bold" style="font-style: italic;">Sub Total Tanggal:</td>
+                                    <td colspan="7" class=" px-4 py-2 text-right font-bold" style="font-style: italic;">Sub Total Tanggal:</td>
                                     <td class=" px-2 py-2">${formatNumber(
                                       subtotal.total_qty
                                     )}</td>
@@ -294,6 +294,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const netto = parseFloat(row.netto) || 0;
       const ppn = parseFloat(row.ppn) || 0;
       const total = parseFloat(row.total) || 0;
+      const keterangan = row.Keterangan || "-";
       if (row.tanggal !== current_tanggal) {
         if (current_tanggal !== null) {
           if (current_faktur !== null) {
@@ -318,7 +319,7 @@ document.addEventListener("DOMContentLoaded", () => {
           subtotal_faktur_total = 0;
         }
         current_faktur = row.faktur;
-        faktur_item_counter = 1; 
+        faktur_item_counter = 1;
         htmlRows += buildFakturHeaderRow(
           row.faktur,
           row.kodesupp,
@@ -335,6 +336,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                     <td>${faktur_item_counter}</td>
                                     <td>${row.plu}</td>
                                     <td class="text-left">${row.descp}</td>
+                                    <td class="text-left text-gray-600 italic text-sm">${keterangan}</td> 
                                     <td class="text-left">${row.satuan}</td>
                                     <td class="">${formatNumber(row.conv1)}</td>
                                     <td class="">${formatNumber(row.conv2)}</td>
@@ -344,7 +346,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                     <td class="">${formatRupiah(total)}</td>
                                 </tr>
                             `;
-      faktur_item_counter++; 
+      faktur_item_counter++;
     });
     if (current_faktur !== null) {
       htmlRows += buildSubtotalFakturRow();
@@ -499,7 +501,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ];
       const dataRows = [];
       const merges = [];
-      let faktur_item_counter = 0; 
+      let faktur_item_counter = 0;
       let current_tanggal = null,
         current_faktur = null;
       let s_fak_qty = 0,
@@ -583,7 +585,7 @@ document.addEventListener("DOMContentLoaded", () => {
             s_fak_total = 0;
           }
           current_faktur = row.faktur;
-          faktur_item_counter = 1; 
+          faktur_item_counter = 1;
           const inisial = row.nama_inisial ? `(${row.nama_inisial})` : "";
           const namaSupp = `${row.kodesupp} - ${row.namasupp || ""} ${inisial}`;
           dataRows.push([`No Faktur: ${current_faktur}`, "", "", namaSupp]);
@@ -605,7 +607,7 @@ document.addEventListener("DOMContentLoaded", () => {
         s_tgl_ppn += ppn;
         s_tgl_total += total;
         dataRows.push([
-          faktur_item_counter++, 
+          faktur_item_counter++,
           row.plu,
           row.descp,
           row.satuan,
@@ -805,7 +807,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ],
       ];
       const body = [];
-      let faktur_item_counter = 0; 
+      let faktur_item_counter = 0;
       let current_tanggal = null,
         current_faktur = null;
       let s_fak_qty = 0,
@@ -851,21 +853,21 @@ document.addEventListener("DOMContentLoaded", () => {
         fontSize: 6,
       };
       const subtotalFakturValuesStyles = {
-        halign: "right", 
+        halign: "right",
         fontStyle: "bolditalic",
         fillColor: [254, 253, 232],
         textColor: [113, 63, 18],
         fontSize: 5,
       };
       const subtotalTanggalValuesStyles = {
-        halign: "right", 
+        halign: "right",
         fontStyle: "bolditalic",
         fillColor: [240, 253, 244],
         textColor: [22, 101, 52],
         fontSize: 6,
       };
       const grandTotalValuesStyles = {
-        halign: "right", 
+        halign: "right",
         fontStyle: "bold",
         fillColor: [226, 232, 240],
         fontSize: 6,
@@ -959,7 +961,7 @@ document.addEventListener("DOMContentLoaded", () => {
             s_fak_total = 0;
           }
           current_faktur = row.faktur;
-          faktur_item_counter = 1; 
+          faktur_item_counter = 1;
           const inisial = row.nama_inisial ? `(${row.nama_inisial})` : "";
           const namaSupp = `${row.kodesupp} - ${row.namasupp || ""} ${inisial}`;
           body.push([
@@ -984,7 +986,7 @@ document.addEventListener("DOMContentLoaded", () => {
         s_tgl_ppn += ppn;
         s_tgl_total += total;
         body.push([
-          faktur_item_counter++, 
+          faktur_item_counter++,
           row.plu,
           row.descp,
           row.satuan,
@@ -1018,7 +1020,7 @@ document.addEventListener("DOMContentLoaded", () => {
         },
       ]);
       doc.autoTable({
-        margin: { top: 48, left: 14 }, 
+        margin: { top: 48, left: 14 },
         tableWidth: 266,
         head: head,
         body: body,
@@ -1030,16 +1032,16 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         styles: { fontSize: 5, cellPadding: 1.5 },
         columnStyles: {
-          0: { halign: "right", cellWidth: 8 }, 
-          1: { halign: "left", cellWidth: 20 }, 
-          2: { halign: "left", cellWidth: 98 }, 
-          3: { halign: "center", cellWidth: 10 }, 
-          4: { halign: "right", cellWidth: 15 }, 
-          5: { halign: "right", cellWidth: 15 }, 
-          6: { halign: "right", cellWidth: 20 }, 
-          7: { halign: "right", cellWidth: 30 }, 
-          8: { halign: "right", cellWidth: 25 }, 
-          9: { halign: "right", cellWidth: 25 }, 
+          0: { halign: "right", cellWidth: 8 },
+          1: { halign: "left", cellWidth: 20 },
+          2: { halign: "left", cellWidth: 98 },
+          3: { halign: "center", cellWidth: 10 },
+          4: { halign: "right", cellWidth: 15 },
+          5: { halign: "right", cellWidth: 15 },
+          6: { halign: "right", cellWidth: 20 },
+          7: { halign: "right", cellWidth: 30 },
+          8: { halign: "right", cellWidth: 25 },
+          9: { halign: "right", cellWidth: 25 },
         },
       });
       const fileName = `Return_Out_Exp_Produk_${params.tgl_mulai}_sd_${params.tgl_selesai}.pdf`;
