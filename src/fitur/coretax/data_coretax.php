@@ -38,6 +38,9 @@ if ($page < 1) {
     <link rel="stylesheet" href="../../output2.css">
     <link rel="stylesheet" href="../../style/pink-theme.css">
     <link rel="icon" type="image/png" href="../../../public/images/logo1.png">
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
 </head>
 
 <body class="bg-gray-50 theme-coretax">
@@ -112,11 +115,16 @@ if ($page < 1) {
                                 value="<?php echo htmlspecialchars($search_supplier); ?>">
                         </div>
 
-                        <div class="lg:col-span-1">
+                        <div class="lg:col-span-1 flex gap-2">
                             <button type="submit" id="filter-submit-button"
                                 class="btn-primary w-full inline-flex items-center justify-center gap-2">
                                 <i class="fas fa-filter"></i>
                                 <span>Tampilkan</span>
+                            </button>
+                            <button type="button" id="export-excel-button"
+                                class="w-12 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-2 rounded-lg transition-colors shadow-sm inline-flex items-center justify-center"
+                                title="Export Excel">
+                                <i class="fas fa-file-excel"></i>
                             </button>
                         </div>
                         <input type="hidden" name="page" value="1">
@@ -140,18 +148,16 @@ if ($page < 1) {
                                     <th>NSFP</th>
                                     <th class="text-center">Cabang</th>
                                     <th>Masa/Thn</th>
-                                    <th>Kredit</th>
                                     <th class="text-right">Harga Jual</th>
                                     <th class="text-right">DPP Lain</th>
                                     <th class="text-right">PPN</th>
-                                    <th>Perekam</th>
                                     <th class="text-center" style="width: 80px;">Pembelian</th>
                                     <th class="text-center" style="width: 80px;">Fisik</th>
                                 </tr>
                             </thead>
                             <tbody id="coretax-table-body">
                                 <tr>
-                                    <td colspan="13" class="text-center p-8">
+                                    <td colspan="11" class="text-center p-8">
                                         <div class="spinner-simple"></div>
                                         <p class="mt-3 text-gray-500 font-medium">Memuat data...</p>
                                     </td>
@@ -175,7 +181,6 @@ if ($page < 1) {
     <script src="../../js/coretax/data_coretax_handler.js" type="module"></script>
     <script src="../../js/shared/internal/sidebar-profile.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 
 </html>
