@@ -10,7 +10,7 @@ try {
         throw new Exception("Koneksi Database Gagal");
     }
 
-    // Update query: Tambahkan is_btkp dan nsfp
+    // Update query: WHERE hanya mengecek fp.dibuat_pada hari ini
     $query = "SELECT 
                 fp.id, 
                 fp.nama_supplier, 
@@ -28,8 +28,9 @@ try {
                 ks.nm_alias 
               FROM ff_pembelian as fp
               INNER JOIN kode_store as ks on fp.kode_store = ks.kd_store
+              WHERE DATE(fp.dibuat_pada) = CURDATE()
               ORDER BY COALESCE(fp.edit_pada, fp.dibuat_pada) DESC, fp.id DESC 
-              LIMIT 100";
+              ";
 
     $result = $conn->query($query);
     if (!$result) {
@@ -43,7 +44,7 @@ try {
         $row['dpp_nilai_lain'] = (float) ($row['dpp_nilai_lain'] ?? 0);
         $row['ppn'] = (float) $row['ppn'];
         $row['total_terima_fp'] = (float) $row['total_terima_fp'];
-        $row['is_btkp'] = (int) $row['is_btkp']; // Cast ke int
+        $row['is_btkp'] = (int) $row['is_btkp'];
         $data[] = $row;
     }
 

@@ -162,17 +162,15 @@ if (!$menuHandler->initialize()) {
                                 </select>
                             </div>
 
-                            <div class="flex flex-col justify-end h-full pb-2">
-                                <div class="flex items-center gap-2 p-2 border border-gray-200 rounded-md bg-white hover:border-pink-300 transition-colors cursor-pointer"
-                                    onclick="document.getElementById('inp_is_btkp').click()">
-                                    <input type="checkbox" id="inp_is_btkp" name="is_btkp"
-                                        class="w-5 h-5 text-pink-600 bg-gray-100 border-gray-300 rounded focus:ring-pink-500 focus:ring-2 cursor-pointer">
-                                    <label for="inp_is_btkp"
-                                        class="text-sm font-semibold text-gray-700 cursor-pointer select-none">
-                                        BTKP
-                                    </label>
-                                </div>
-                            </div>
+                            <label for="inp_is_btkp"
+                                class="flex items-center gap-2 p-2 border border-gray-200 rounded-md bg-white hover:border-pink-300 transition-colors cursor-pointer select-none">
+                                <input type="checkbox" id="inp_is_btkp" name="is_btkp"
+                                    class="w-5 h-5 text-pink-600 bg-gray-100 border-gray-300 rounded focus:ring-pink-500 focus:ring-2 cursor-pointer">
+
+                                <span class="text-sm font-semibold text-gray-700">
+                                    BTKP
+                                </span>
+                            </label>
 
                             <div>
                                 <label class="form-label">Nama Supplier</label>
