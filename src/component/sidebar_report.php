@@ -899,7 +899,8 @@ if (isset($_COOKIE['admin_token'])) {
                 </ul>
             </div>
         </div>
-        <div x-data="{ open: false }" class="relative">
+        <div x-data="{ open: false, nestedOpenPembelian: false, nestedOpenFaktur: false, nestedOpenLainnya: false }"
+            class="relative">
             <button @click="open = !open" id="pajakLink"
                 class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-slate-100 hover:to-slate-200 hover:text-slate-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-slate-300">
                 <div class="w-8 flex justify-center">
@@ -918,87 +919,155 @@ if (isset($_COOKIE['admin_token'])) {
                 class="mt-3 ml-4 bg-gradient-to-br from-white to-slate-50 rounded-xl shadow-xl border border-slate-200 z-10 backdrop-blur-sm"
                 style="display: none;">
                 <ul class="py-2 space-y-1">
+
                     <li>
-                        <a href="/src/fitur/coretax/data_coretax.php" data-menu="pajak_data"
-                            class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-slate-100 hover:text-slate-700 transition-all duration-200 group rounded-lg">
+                        <button @click="nestedOpenPembelian = !nestedOpenPembelian"
+                            class="w-full text-left px-4 py-2.5 text-gray-700 hover:bg-slate-100 hover:text-slate-700 transition-all duration-200 flex items-center group cursor-pointer rounded-lg">
                             <span
-                                class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
+                                class="transition-all duration-300 group-hover:translate-x-1 font-medium flex items-center text-sm">
                                 <i
-                                    class="fa-solid fa-database mr-2 text-base text-slate-400 group-hover:text-slate-600 group-hover:scale-110 transition-all duration-200"></i>
-                                Laporan Masukan Pajak
+                                    class="fa-solid fa-cart-shopping mr-2 text-base text-slate-500 group-hover:text-slate-600 transition-all duration-200 group-hover:scale-110"></i>
+                                Pembelian
                             </span>
-                        </a>
+                            <svg class="ml-auto w-3 h-3 transform transition-transform duration-200 group-hover:translate-x-1"
+                                :class="{ 'rotate-180': nestedOpenPembelian }" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div x-show="nestedOpenPembelian" class="ml-4 mt-1" style="display: none;">
+                            <ul class="bg-slate-50 rounded-lg p-2 space-y-1 border border-slate-200">
+                                <li>
+                                    <a href="/src/fitur/coretax/input_pembelian.php" data-menu="pajak_input_pembelian"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-white hover:text-slate-800 transition-all duration-200 group rounded-md shadow-sm hover:shadow-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-plus mr-2 text-sm text-slate-400 group-hover:text-slate-600"></i>
+                                            Form Pembelian
+                                        </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/src/fitur/coretax/laporan_pembelian.php"
+                                        data-menu="pajak_laporan_pembelian"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-white hover:text-slate-800 transition-all duration-200 group rounded-md shadow-sm hover:shadow-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-list mr-2 text-sm text-slate-400 group-hover:text-slate-600"></i>
+                                            Laporan Pembelian
+                                        </span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                     </li>
+
                     <li>
-                        <a href="/src/fitur/coretax/faktur_masukan.php" data-menu="pajak_faktur_masukan"
-                            class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-slate-100 hover:text-slate-700 transition-all duration-200 group rounded-lg">
+                        <button @click="nestedOpenFaktur = !nestedOpenFaktur"
+                            class="w-full text-left px-4 py-2.5 text-gray-700 hover:bg-slate-100 hover:text-slate-700 transition-all duration-200 flex items-center group cursor-pointer rounded-lg">
                             <span
-                                class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
+                                class="transition-all duration-300 group-hover:translate-x-1 font-medium flex items-center text-sm">
                                 <i
-                                    class="fa-solid fa-file-invoice mr-2 text-base text-slate-400 group-hover:text-slate-600 group-hover:scale-110 transition-all duration-200"></i>
-                                Laporan Penerimaan
+                                    class="fa-solid fa-file-invoice-dollar mr-2 text-base text-slate-500 group-hover:text-slate-600 transition-all duration-200 group-hover:scale-110"></i>
+                                Faktur Pajak
                             </span>
-                        </a>
+                            <svg class="ml-auto w-3 h-3 transform transition-transform duration-200 group-hover:translate-x-1"
+                                :class="{ 'rotate-180': nestedOpenFaktur }" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div x-show="nestedOpenFaktur" class="ml-4 mt-1" style="display: none;">
+                            <ul class="bg-slate-50 rounded-lg p-2 space-y-1 border border-slate-200">
+                                <li>
+                                    <a href="/src/fitur/coretax/input_faktur_pajak.php" data-menu="pajak_input_faktur"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-white hover:text-slate-800 transition-all duration-200 group rounded-md shadow-sm hover:shadow-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-pen-to-square mr-2 text-sm text-slate-400 group-hover:text-slate-600"></i>
+                                            Form Faktur
+                                        </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/src/fitur/coretax/laporan_faktur_pajak.php"
+                                        data-menu="pajak_laporan_faktur"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-white hover:text-slate-800 transition-all duration-200 group rounded-md shadow-sm hover:shadow-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-file-lines mr-2 text-sm text-slate-400 group-hover:text-slate-600"></i>
+                                            Laporan Faktur
+                                        </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/src/fitur/coretax/import_faktur.php" data-menu="pajak_import"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-white hover:text-slate-800 transition-all duration-200 group rounded-md shadow-sm hover:shadow-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-file-import mr-2 text-sm text-slate-400 group-hover:text-slate-600"></i>
+                                            Import Masukan
+                                        </span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                     </li>
+
                     <li>
-                        <a href="/src/fitur/coretax/import_faktur.php" data-menu="pajak_import"
-                            class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-slate-100 hover:text-slate-700 transition-all duration-200 group rounded-lg">
+                        <button @click="nestedOpenLainnya = !nestedOpenLainnya"
+                            class="w-full text-left px-4 py-2.5 text-gray-700 hover:bg-slate-100 hover:text-slate-700 transition-all duration-200 flex items-center group cursor-pointer rounded-lg">
                             <span
-                                class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
+                                class="transition-all duration-300 group-hover:translate-x-1 font-medium flex items-center text-sm">
                                 <i
-                                    class="fa-solid fa-file-import mr-2 text-base text-slate-400 group-hover:text-slate-600 group-hover:scale-110 transition-all duration-200"></i>
-                                Import Masukan Pajak
+                                    class="fa-solid fa-folder-open mr-2 text-base text-slate-500 group-hover:text-slate-600 transition-all duration-200 group-hover:scale-110"></i>
+                                Data Lainnya
                             </span>
-                        </a>
+                            <svg class="ml-auto w-3 h-3 transform transition-transform duration-200 group-hover:translate-x-1"
+                                :class="{ 'rotate-180': nestedOpenLainnya }" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div x-show="nestedOpenLainnya" class="ml-4 mt-1" style="display: none;">
+                            <ul class="bg-slate-50 rounded-lg p-2 space-y-1 border border-slate-200">
+                                <li>
+                                    <a href="/src/fitur/coretax/data_coretax.php" data-menu="pajak_data"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-white hover:text-slate-800 transition-all duration-200 group rounded-md shadow-sm hover:shadow-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-database mr-2 text-sm text-slate-400 group-hover:text-slate-600"></i>
+                                            Laporan Masukan
+                                        </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/src/fitur/coretax/faktur_masukan.php" data-menu="pajak_faktur_masukan"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-white hover:text-slate-800 transition-all duration-200 group rounded-md shadow-sm hover:shadow-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-receipt mr-2 text-sm text-slate-400 group-hover:text-slate-600"></i>
+                                            Laporan Penerimaan
+                                        </span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                     </li>
-                    <li>
-                        <a href="/src/fitur/coretax/input_faktur_pajak.php" data-menu="pajak_input_faktur"
-                            class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-slate-100 hover:text-slate-700 transition-all duration-200 group rounded-lg">
-                            <span
-                                class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
-                                <i
-                                    class="fa-solid fa-pen-to-square mr-2 text-base text-slate-400 group-hover:text-slate-600 group-hover:scale-110 transition-all duration-200"></i>
-                                Form Faktur Pajak
-                            </span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/src/fitur/coretax/input_pembelian.php" data-menu="pajak_input_pembelian"
-                            class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-slate-100 hover:text-slate-700 transition-all duration-200 group rounded-lg">
-                            <span
-                                class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
-                                <i
-                                    class="fa-solid fa-cart-plus mr-2 text-base text-slate-400 group-hover:text-slate-600 group-hover:scale-110 transition-all duration-200"></i>
-                                Form Pembelian
-                            </span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/src/fitur/coretax/laporan_faktur_pajak.php" data-menu="pajak_laporan_faktur"
-                            class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-slate-100 hover:text-slate-700 transition-all duration-200 group rounded-lg">
-                            <span
-                                class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
-                                <i
-                                    class="fa-solid fa-file-lines mr-2 text-base text-slate-400 group-hover:text-slate-600 group-hover:scale-110 transition-all duration-200"></i>
-                                Laporan Faktur Pajak
-                            </span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/src/fitur/coretax/laporan_pembelian.php" data-menu="pajak_laporan_pembelian"
-                            class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-slate-100 hover:text-slate-700 transition-all duration-200 group rounded-lg">
-                            <span
-                                class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
-                                <i
-                                    class="fa-solid fa-clipboard-list mr-2 text-base text-slate-400 group-hover:text-slate-600 group-hover:scale-110 transition-all duration-200"></i>
-                                Laporan Pembelian
-                            </span>
-                        </a>
-                    </li>
+
                 </ul>
             </div>
         </div>
-
     </nav>
 </div>
 <script>
@@ -1076,6 +1145,8 @@ if (isset($_COOKIE['admin_token'])) {
             document.getElementById('laporan').classList.add('btn', 'active');
         } else if (currentPath.includes('/src/fitur/koreksi_stok/by_plu')) {
             document.getElementById('laporan').classList.add('btn', 'active');
+        } else if (currentPath.includes('/src/fitur/coretax/')) {
+            document.getElementById('pajakLink').classList.add('btn', 'active');
         }
     });
 </script>
