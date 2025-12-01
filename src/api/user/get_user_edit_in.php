@@ -12,7 +12,7 @@ $headers = getallheaders();
 $authHeader = $headers['Authorization'];
 $token = null;
 if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-    $token = $matches[1]; // ini yang aman dan baku
+    $token = $matches[1];
 }
 if (!$token) {
     http_response_code(401);
@@ -33,6 +33,9 @@ if (!$kode) {
     echo json_encode(['status' => 'error', 'message' => 'Kode tidak valid']);
     exit;
 }
+
+$conn->query("SET SESSION group_concat_max_len = 100000");
+
 $sql = "SELECT ua.nama,ua.hak,ua.inisial, ua.kode , GROUP_CONCAT(ui.menu_code) AS menus, ua.kd_store AS kode_cabang
 FROM user_account AS ua 
 LEFT JOIN user_internal_access AS ui 
@@ -57,6 +60,7 @@ if ($result->num_rows > 0) {
             'hak' => $userData['hak'],
             'inisial' => $userData['inisial'],
             'kode' => $userData['kode'],
+            // Jika menus null (user baru/kosong), kembalikan array kosong
             'menu_code' => $userData['menus'] ? explode(',', $userData['menus']) : [],
             'kode_cabang' => $userData['kode_cabang']
         ]
