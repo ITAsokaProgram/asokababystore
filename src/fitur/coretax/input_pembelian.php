@@ -162,13 +162,16 @@ if (!$menuHandler->initialize()) {
                                 </select>
                             </div>
 
-                            <div>
-                                <label class="form-label">Status BTKP</label>
-                                <select id="inp_is_btkp" name="is_btkp"
-                                    class="input-compact bg-white cursor-pointer font-medium text-gray-700">
-                                    <option value="0" selected>Non BTKP</option>
-                                    <option value="1">BTKP</option>
-                                </select>
+                            <div class="flex flex-col justify-end h-full pb-2">
+                                <div class="flex items-center gap-2 p-2 border border-gray-200 rounded-md bg-white hover:border-pink-300 transition-colors cursor-pointer"
+                                    onclick="document.getElementById('inp_is_btkp').click()">
+                                    <input type="checkbox" id="inp_is_btkp" name="is_btkp"
+                                        class="w-5 h-5 text-pink-600 bg-gray-100 border-gray-300 rounded focus:ring-pink-500 focus:ring-2 cursor-pointer">
+                                    <label for="inp_is_btkp"
+                                        class="text-sm font-semibold text-gray-700 cursor-pointer select-none">
+                                        BTKP
+                                    </label>
+                                </div>
                             </div>
 
                             <div>

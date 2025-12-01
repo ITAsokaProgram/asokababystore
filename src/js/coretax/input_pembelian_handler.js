@@ -6,13 +6,13 @@ const API_URLS = {
   checkDuplicate: "/src/api/coretax/check_duplicate_invoice.php",
   getStores: "/src/api/shared/get_all_store.php",
   searchSupplier: "/src/api/coretax/get_supplier_search.php",
+  deleteData: "/src/api/coretax/delete_pembelian_single.php",
 };
 const form = document.getElementById("single-form");
 const inpId = document.getElementById("inp_id");
 const inpNoLpb = document.getElementById("inp_no_lpb");
 const errNoLpb = document.getElementById("err_no_lpb");
 const inpKodeStore = document.getElementById("inp_kode_store");
-// NEW: Select BTKP
 const inpIsBtkp = document.getElementById("inp_is_btkp");
 const inpNamaSupp = document.getElementById("inp_nama_supplier");
 const listSupplier = document.getElementById("supplier_list");
@@ -27,7 +27,6 @@ const editIndicator = document.getElementById("edit-mode-indicator");
 const tableBody = document.getElementById("table-body");
 let isSubmitting = false;
 let debounceTimer;
-
 function formatNumber(num) {
   if (isNaN(num) || num === null) return "0";
   return new Intl.NumberFormat("id-ID", {
@@ -112,7 +111,6 @@ async function checkDuplicateInvoice(noLpb) {
       return false;
     }
   } catch (error) {
-    console.error("Check Duplicate Error:", error);
     return false;
   }
 }
@@ -135,9 +133,7 @@ async function fetchReceiptData(noLpb) {
     if (result.success && result.data) {
       const d = result.data;
       inpNamaSupp.value = d.nama_supplier || "";
-      if (d.kode_store) {
-        inpKodeStore.value = d.kode_store;
-      }
+      if (d.kode_store) inpKodeStore.value = d.kode_store;
       inpDpp.value = formatNumber(parseFloat(d.dpp) || 0);
       inpPpn.value = formatNumber(parseFloat(d.ppn) || 0);
       calculateTotal();
@@ -161,12 +157,11 @@ async function fetchReceiptData(noLpb) {
       }
     }
   } catch (error) {
-    console.error("Fetch Receipt Error:", error);
+    console.error("Fetch Error", error);
   } finally {
     inpNoLpb.classList.remove("bg-yellow-50", "text-yellow-700");
-    if (isDuplicate) {
+    if (isDuplicate)
       inpNoLpb.classList.add("border-red-500", "bg-red-50", "text-red-700");
-    }
     inpNoLpb.placeholder = originalPlaceholder;
   }
 }
@@ -194,37 +189,50 @@ function renderTable(data) {
     const dppLain = parseFloat(row.dpp_nilai_lain || 0);
     const ppn = parseFloat(row.ppn);
     const total = parseFloat(row.total_terima_fp);
-    const isBtkp = row.is_btkp == 1; // Assuming data comes as 1 or 0
-
-    // Badge BTKP
+    const isBtkp = row.is_btkp == 1;
     const badgeBtkp = isBtkp
       ? '<span class="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded font-bold border border-purple-200">BTKP</span>'
-      : '<span class="bg-gray-100 text-gray-500 text-xs px-2 py-1 rounded border border-gray-200">Non</span>';
-
+      : '<span class="text-gray-400 text-xs px-2">-</span>';
     const safeJson = JSON.stringify(row).replace(/"/g, "&quot;");
     html += `
-            <tr class="hover:bg-pink-50 transition-colors">
-                <td class="text-center text-gray-500">${index + 1}</td>
-                <td>${row.tgl_nota}</td>
-                <td class="font-medium text-gray-800">${row.no_faktur}</td>
+            <tr class="hover:bg-pink-50 transition-colors border-b border-gray-50">
+                <td class="text-center text-gray-500 py-3">${index + 1}</td>
+                <td class="text-sm">${row.tgl_nota}</td>
+                <td class="font-medium text-gray-800 text-sm">${
+                  row.no_faktur
+                }</td>
                 <td><span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded border border-gray-200">${
                   row.nm_alias || "-"
                 }</span></td>
                 <td class="text-center">${badgeBtkp}</td>
-                <td class="text-sm">${row.nama_supplier}</td>
-                <td class="text-right font-mono">${formatNumber(dpp)}</td>
-                <td class="text-right font-mono text-gray-500">${formatNumber(
+                <td class="text-sm truncate max-w-[150px]" title="${
+                  row.nama_supplier
+                }">${row.nama_supplier}</td>
+                <td class="text-right font-mono text-sm">${formatNumber(
+                  dpp
+                )}</td>
+                <td class="text-right font-mono text-gray-500 text-sm">${formatNumber(
                   dppLain
                 )}</td>
-                <td class="text-right font-mono">${formatNumber(ppn)}</td>
-                <td class="text-right font-bold font-mono text-gray-800">${formatNumber(
+                <td class="text-right font-mono text-sm">${formatNumber(
+                  ppn
+                )}</td>
+                <td class="text-right font-bold font-mono text-gray-800 text-sm">${formatNumber(
                   total
                 )}</td>
-                <td class="text-center">
-                    <button class="btn-edit-row text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 p-2 rounded transition-all" 
+                <td class="text-center py-2">
+                    <div class="flex justify-center gap-1">
+                        <button class="btn-edit-row text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 w-8 h-8 flex items-center justify-center rounded transition-all" 
                             data-row="${safeJson}" title="Edit Data">
-                        <i class="fas fa-pencil-alt"></i>
-                    </button>
+                            <i class="fas fa-pencil-alt"></i>
+                        </button>
+                        <button class="btn-delete-row text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 w-8 h-8 flex items-center justify-center rounded transition-all" 
+                            data-id="${row.id}" data-invoice="${
+      row.no_faktur
+    }" title="Hapus Data">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
                 </td>
             </tr>
         `;
@@ -236,14 +244,20 @@ function renderTable(data) {
       startEditMode(data);
     });
   });
+  document.querySelectorAll(".btn-delete-row").forEach((btn) => {
+    btn.addEventListener("click", function () {
+      const id = this.getAttribute("data-id");
+      const invoice = this.getAttribute("data-invoice");
+      handleDelete(id, invoice);
+    });
+  });
 }
 function startEditMode(data) {
   resetErrorState();
   inpId.value = data.id;
   inpNoLpb.value = data.no_faktur;
   inpKodeStore.value = data.kode_store || "";
-  // NEW: Set Value BTKP
-  inpIsBtkp.value = data.is_btkp || "0";
+  inpIsBtkp.checked = data.is_btkp == 1;
   inpNamaSupp.value = data.nama_supplier;
   inpTgl.value = data.tgl_nota;
   inpDpp.value = formatNumber(data.dpp);
@@ -258,7 +272,8 @@ function startEditMode(data) {
   editIndicator.classList.remove("hidden");
   btnCancelEdit.classList.remove("hidden");
   btnSave.innerHTML = `<i class="fas fa-sync-alt"></i> <span>Update</span>`;
-  btnSave.className = "btn-warning";
+  btnSave.className =
+    "btn-warning px-6 py-2 rounded shadow-lg bg-amber-500 text-white hover:bg-amber-600";
 }
 function cancelEditMode() {
   form.reset();
@@ -266,8 +281,7 @@ function cancelEditMode() {
   inpId.value = "";
   inpTotal.value = "0";
   inpKodeStore.value = "";
-  // NEW: Reset BTKP to default
-  inpIsBtkp.value = "0";
+  inpIsBtkp.checked = false;
   document
     .querySelector(".input-row-container")
     .classList.remove("border-amber-300", "bg-amber-50");
@@ -276,6 +290,43 @@ function cancelEditMode() {
   btnSave.innerHTML = `<i class="fas fa-save"></i> <span>Simpan</span>`;
   btnSave.className =
     "btn-primary shadow-lg shadow-pink-500/30 flex items-center gap-2 px-6 py-2";
+}
+function handleDelete(id, invoice) {
+  Swal.fire({
+    title: "Hapus Data?",
+    text: `Anda yakin ingin menghapus Invoice ${invoice}?`,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#ef4444",
+    cancelButtonColor: "#6b7280",
+    confirmButtonText: "Ya, Hapus!",
+    cancelButtonText: "Batal",
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        Swal.fire({
+          title: "Memproses...",
+          text: "Sedang mengecek keterkaitan data...",
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          },
+        });
+        const resp = await sendRequestJSON(API_URLS.deleteData, { id: id });
+        if (resp.success) {
+          Swal.fire("Terhapus!", resp.message, "success");
+          loadTableData();
+          if (inpId.value == id) cancelEditMode();
+        } else {
+          throw new Error(resp.message || "Gagal menghapus data");
+        }
+      } catch (error) {
+        console.error("Delete Error:", error);
+        const errorMsg = error.message || "Terjadi kesalahan sistem";
+        Swal.fire("Gagal", errorMsg, "error");
+      }
+    }
+  });
 }
 async function handleSave() {
   const noLpb = inpNoLpb.value.trim();
@@ -298,7 +349,7 @@ async function handleSave() {
     no_lpb: noLpb,
     no_faktur: noLpb,
     kode_store: inpKodeStore.value,
-    is_btkp: inpIsBtkp.value, // NEW: Send data
+    is_btkp: inpIsBtkp.checked ? 1 : 0,
     nama_supplier: namaSupp,
     tgl_nota: inpTgl.value,
     dpp: parseNumber(inpDpp.value),
@@ -377,6 +428,7 @@ document.addEventListener("DOMContentLoaded", () => {
     input.addEventListener("keydown", async (e) => {
       if (e.key === "Enter") {
         e.preventDefault();
+        if (input.type === "checkbox") return;
         if (input === inpNoLpb) {
           const val = input.value.trim();
           if (val) await fetchReceiptData(val);
@@ -393,7 +445,12 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
           let nextIndex = index + 1;
           let nextInput = formInputs[nextIndex];
-          while (nextInput && (nextInput.disabled || nextInput.readOnly)) {
+          while (
+            nextInput &&
+            (nextInput.disabled ||
+              nextInput.readOnly ||
+              nextInput.type === "hidden")
+          ) {
             nextIndex++;
             nextInput = formInputs[nextIndex];
           }

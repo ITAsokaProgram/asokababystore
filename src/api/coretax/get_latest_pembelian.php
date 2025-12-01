@@ -1,4 +1,5 @@
 <?php
+// src/api/coretax/get_latest_pembelian.php
 session_start();
 ini_set('display_errors', 0);
 header('Content-Type: application/json');
@@ -9,24 +10,26 @@ try {
         throw new Exception("Koneksi Database Gagal");
     }
 
-    // Select kolom baru juga
+    // Update query: Tambahkan is_btkp dan nsfp
     $query = "SELECT 
-                id, 
-                nama_supplier, 
-                kode_supplier, 
-                kode_store, 
-                tgl_nota, 
-                no_faktur, 
-                dpp, 
-                dpp_nilai_lain, 
-                ppn, 
-                total_terima_fp,
-                edit_pada,
+                fp.id, 
+                fp.nama_supplier, 
+                fp.kode_supplier, 
+                fp.kode_store, 
+                fp.tgl_nota, 
+                fp.no_faktur, 
+                fp.dpp, 
+                fp.dpp_nilai_lain, 
+                fp.ppn, 
+                fp.total_terima_fp,
+                fp.edit_pada,
+                fp.is_btkp,
+                fp.nsfp,
                 ks.nm_alias 
               FROM ff_pembelian as fp
-              inner join kode_store as ks on fp.kode_store = ks.kd_store
-              ORDER BY COALESCE(edit_pada, dibuat_pada) DESC, id DESC 
-              LIMIT 50";
+              INNER JOIN kode_store as ks on fp.kode_store = ks.kd_store
+              ORDER BY COALESCE(fp.edit_pada, fp.dibuat_pada) DESC, fp.id DESC 
+              LIMIT 100";
 
     $result = $conn->query($query);
     if (!$result) {
@@ -40,6 +43,7 @@ try {
         $row['dpp_nilai_lain'] = (float) ($row['dpp_nilai_lain'] ?? 0);
         $row['ppn'] = (float) $row['ppn'];
         $row['total_terima_fp'] = (float) $row['total_terima_fp'];
+        $row['is_btkp'] = (int) $row['is_btkp']; // Cast ke int
         $data[] = $row;
     }
 
@@ -47,13 +51,9 @@ try {
 
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode([
-        'success' => false,
-        'message' => $e->getMessage()
-    ]);
+    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 } finally {
-    if (isset($conn)) {
+    if (isset($conn))
         $conn->close();
-    }
 }
 ?>
