@@ -1,22 +1,13 @@
-/**
- * Mengambil nilai cookie berdasarkan nama menggunakan regex.
- * (Sesuai masukan Anda)
- */
 export function getCookie(name) {
   const value = document.cookie.match("(^|;)\\s*" + name + "\\s*=\\s*([^;]+)");
   if (value) return value[2];
   return null;
 }
-/**
- * Helper untuk mengambil token admin secara spesifik.
- */
+
 function getToken() {
   return getCookie("admin_token");
 }
-/**
- * Menangani respons HTTP fetch, kini dengan Toastify & Swal
- * (Meniru pola dari file fetch.js Anda)
- */
+
 const handleResponse = async (response) => {
   if (response.status === 204) {
     Toastify({
@@ -80,9 +71,7 @@ const handleResponse = async (response) => {
   }
   return responseData;
 };
-/**
- * Mengirim request GET dengan header Authorization Bearer.
- */
+
 export const sendRequestGET = async (url) => {
   try {
     const token = getToken();
@@ -111,9 +100,7 @@ export const sendRequestGET = async (url) => {
     throw error;
   }
 };
-/**
- * Mengirim request POST dengan JSON body.
- */
+
 export const sendRequestJSON = async (url, dataObject) => {
   try {
     const token = getToken();
