@@ -4,20 +4,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const filterSubmitButton = document.getElementById("filter-submit-button");
   const filterSelectStore = document.getElementById("kd_store");
   const filterSelectStatus = document.getElementById("status_data");
-
-  // --- UPDATE: Selector Baru ---
   const filterSelectTipePembelian = document.getElementById(
     "filter_tipe_pembelian"
   );
-
   const filterInputSupplier = document.getElementById("search_supplier");
   const pageTitle = document.getElementById("page-title");
   const pageSubtitle = document.getElementById("page-subtitle");
   const paginationContainer = document.getElementById("pagination-container");
   const paginationInfo = document.getElementById("pagination-info");
   const paginationLinks = document.getElementById("pagination-links");
-
-  // --- UPDATE: Element Baru ---
   const filterTypeSelect = document.getElementById("filter_type");
   const containerMonth = document.getElementById("container-month");
   const containerDateRange = document.getElementById("container-date-range");
@@ -25,8 +20,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const filterTahun = document.getElementById("tahun");
   const filterTglMulai = document.getElementById("tgl_mulai");
   const filterTglSelesai = document.getElementById("tgl_selesai");
-
-  // --- UPDATE: Logic Switch Tampilan Filter ---
   function toggleFilterMode() {
     const mode = filterTypeSelect.value;
     if (mode === "month") {
@@ -37,13 +30,10 @@ document.addEventListener("DOMContentLoaded", () => {
       containerDateRange.style.display = "contents";
     }
   }
-
-  // Event Listener untuk ganti mode
   if (filterTypeSelect) {
     filterTypeSelect.addEventListener("change", toggleFilterMode);
     toggleFilterMode();
   }
-
   function getCookie(name) {
     const value = document.cookie.match(
       "(^|;)\\s*" + name + "\\s*=\\s*([^;]+)"
@@ -51,11 +41,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (value) return value[2];
     return null;
   }
-
   function getToken() {
     return getCookie("admin_token");
   }
-
   function formatRupiah(number) {
     if (isNaN(number) || number === null) return "0";
     return new Intl.NumberFormat("id-ID", {
@@ -65,43 +53,32 @@ document.addEventListener("DOMContentLoaded", () => {
       maximumFractionDigits: 0,
     }).format(number);
   }
-
   function getUrlParams() {
     const params = new URLSearchParams(window.location.search);
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayString = yesterday.toISOString().split("T")[0];
-
-    // Default values for Month/Year
     const now = new Date();
     const currentMonth = String(now.getMonth() + 1).padStart(2, "0");
     const currentYear = now.getFullYear();
-
     return {
-      // --- UPDATE: Params Baru ---
       filter_type: params.get("filter_type") || "month",
       bulan: params.get("bulan") || currentMonth,
       tahun: params.get("tahun") || currentYear,
-
       tgl_mulai: params.get("tgl_mulai") || yesterdayString,
       tgl_selesai: params.get("tgl_selesai") || yesterdayString,
       kd_store: params.get("kd_store") || "all",
       status_data: params.get("status_data") || "all",
-
-      // --- UPDATE: Ambil Tipe Pembelian ---
-      filter_tipe_pembelian: params.get("filter_tipe_pembelian") || "all_pkp",
-
+      filter_tipe_pembelian: params.get("filter_tipe_pembelian") || "semua",
       search_supplier: params.get("search_supplier") || "",
       page: parseInt(params.get("page") || "1", 10),
     };
   }
-
   function build_pagination_url(newPage) {
     const params = new URLSearchParams(window.location.search);
     params.set("page", newPage);
     return "?" + params.toString();
   }
-
   function populateStoreFilter(stores, selectedStore) {
     if (!filterSelectStore || filterSelectStore.options.length > 1) {
       filterSelectStore.value = selectedStore;
@@ -118,16 +95,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     filterSelectStore.value = selectedStore;
   }
-
-  // ... (window.handleConfirmCoretax function remains same) ...
-
   async function loadData() {
     const params = getUrlParams();
     const isPagination = params.page > 1;
-
     setLoadingState(true, isPagination);
-
-    // --- UPDATE: Kirim semua parameter baru ke API ---
     const queryString = new URLSearchParams({
       filter_type: params.filter_type,
       bulan: params.bulan,
@@ -136,44 +107,30 @@ document.addEventListener("DOMContentLoaded", () => {
       tgl_selesai: params.tgl_selesai,
       kd_store: params.kd_store,
       status_data: params.status_data,
-
-      // --- UPDATE: Kirim filter baru ---
       filter_tipe_pembelian: params.filter_tipe_pembelian,
-
       search_supplier: params.search_supplier,
       page: params.page,
     }).toString();
-
     try {
       const response = await fetch(
         `/src/api/coretax/get_laporan_pembelian.php?${queryString}`
       );
-
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
           errorData.error || `HTTP error! status: ${response.status}`
         );
       }
-
       const data = await response.json();
-
       if (data.error) throw new Error(data.error);
-
       if (data.stores) {
         populateStoreFilter(data.stores, params.kd_store);
       }
-
-      // Update Input values based on URL params (UI Sync)
       if (filterInputSupplier)
         filterInputSupplier.value = params.search_supplier;
       if (filterSelectStatus) filterSelectStatus.value = params.status_data;
-
-      // --- UPDATE: Sync UI Filter Baru ---
       if (filterSelectTipePembelian)
         filterSelectTipePembelian.value = params.filter_tipe_pembelian;
-
-      // --- UPDATE: Sync UI Filter Type ---
       if (filterTypeSelect) {
         filterTypeSelect.value = params.filter_type;
         toggleFilterMode();
@@ -182,7 +139,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (filterTahun) filterTahun.value = params.tahun;
       if (filterTglMulai) filterTglMulai.value = params.tgl_mulai;
       if (filterTglSelesai) filterTglSelesai.value = params.tgl_selesai;
-
       if (pageSubtitle) {
         let storeName = "";
         if (
@@ -194,8 +150,6 @@ document.addEventListener("DOMContentLoaded", () => {
             " - " +
             filterSelectStore.options[filterSelectStore.selectedIndex].text;
         }
-
-        // --- UPDATE: Subtitle Dinamis ---
         let periodText = "";
         if (params.filter_type === "month") {
           const monthNames = [
@@ -218,10 +172,8 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
           periodText = `Periode ${params.tgl_mulai} s/d ${params.tgl_selesai}`;
         }
-
         pageSubtitle.textContent = `${periodText}${storeName}`;
       }
-
       renderTable(
         data.tabel_data,
         data.pagination ? data.pagination.offset : 0
@@ -234,7 +186,6 @@ document.addEventListener("DOMContentLoaded", () => {
       setLoadingState(false);
     }
   }
-
   function setLoadingState(isLoading, isPagination = false) {
     if (isLoading) {
       if (filterSubmitButton) filterSubmitButton.disabled = true;
@@ -251,11 +202,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   }
-
   function showTableError(message) {
     tableBody.innerHTML = `<tr><td colspan="12" class="text-center p-8 text-red-600"><p>Gagal: ${message}</p></td></tr>`;
   }
-
   function renderTable(tabel_data, offset) {
     if (!tabel_data || tabel_data.length === 0) {
       tableBody.innerHTML = `
@@ -267,10 +216,8 @@ document.addEventListener("DOMContentLoaded", () => {
               </tr>`;
       return;
     }
-
     let htmlRows = "";
     let item_counter = offset + 1;
-
     tabel_data.forEach((row) => {
       const dpp = parseFloat(row.dpp) || 0;
       const ppn = parseFloat(row.ppn) || 0;
@@ -284,9 +231,8 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       const isBtkp = row.is_btkp == 1;
       const btkpBadge = isBtkp
-        ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-800 border border-green-200">BTKP</span>`
+        ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-800 border border-green-200">OK</span>`
         : `<span class="text-gray-300 text-xs">-</span>`;
-
       let mergedCandidatesMap = new Map();
       if (row.candidate_nsfps) {
         const candidatesRaw = row.candidate_nsfps.split(",");
@@ -338,10 +284,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if (a.matchType !== "INVOICE" && b.matchType === "INVOICE") return 1;
         return 0;
       });
-
       let htmlFisik = '<span class="text-gray-300 text-xs">-</span>';
       let htmlCoretax = '<span class="text-gray-300 text-xs">-</span>';
-
       if (row.ada_di_coretax == 1) {
         const badgeConfirmed = `
                   <div class="flex flex-col items-center justify-center gap-1">
@@ -410,7 +354,6 @@ document.addEventListener("DOMContentLoaded", () => {
           htmlCoretax = errorHtml;
         }
       }
-
       htmlRows += `
                   <tr class="hover:bg-gray-50">
                       <td class="text-center font-medium text-gray-500">${item_counter}</td>
@@ -451,7 +394,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     tableBody.innerHTML = htmlRows;
   }
-
   function renderPagination(pagination) {
     if (!pagination) {
       paginationInfo.textContent = "";
@@ -519,7 +461,6 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
     paginationLinks.innerHTML = linksHtml;
   }
-
   if (filterForm) {
     filterForm.addEventListener("submit", (e) => {
       e.preventDefault();
@@ -530,6 +471,5 @@ document.addEventListener("DOMContentLoaded", () => {
       loadData();
     });
   }
-
   loadData();
 });

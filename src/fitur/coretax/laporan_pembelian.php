@@ -2,25 +2,20 @@
 session_start();
 include '../../../aa_kon_sett.php';
 
-// --- UPDATE: Tambah Default Bulan & Tahun ---
 $tanggal_kemarin = date('Y-m-d', strtotime('-1 day'));
 $default_tgl_mulai = $tanggal_kemarin;
 $default_tgl_selesai = $tanggal_kemarin;
 
-// Default Mode: Month
 $default_filter_type = 'month';
-$default_bulan = date('m'); // Bulan saat ini (01-12)
-$default_tahun = date('Y'); // Tahun saat ini
+$default_bulan = date('m');
+$default_tahun = date('Y');
 
 $tgl_mulai = $_GET['tgl_mulai'] ?? $default_tgl_mulai;
 $tgl_selesai = $_GET['tgl_selesai'] ?? $default_tgl_selesai;
 $kd_store = $_GET['kd_store'] ?? 'all';
 $status_data = $_GET['status_data'] ?? 'all';
 
-// --- UPDATE: Filter Gabungan Tipe Pembelian ---
-$filter_tipe_pembelian = $_GET['filter_tipe_pembelian'] ?? 'all_pkp';
-
-// Tangkap parameter baru
+$filter_tipe_pembelian = $_GET['filter_tipe_pembelian'] ?? 'semua';
 $filter_type = $_GET['filter_type'] ?? $default_filter_type;
 $bulan = $_GET['bulan'] ?? $default_bulan;
 $tahun = $_GET['tahun'] ?? $default_tahun;
@@ -31,7 +26,6 @@ if ($page < 1) {
     $page = 1;
 }
 
-// Array Bulan untuk Dropdown
 $list_bulan = [
     '01' => 'Januari',
     '02' => 'Februari',
@@ -163,20 +157,18 @@ if (!$menuHandler->initialize()) {
                                 <i class="fas fa-tags text-pink-600 mr-1"></i> Tipe Pembelian
                             </label>
                             <select name="filter_tipe_pembelian" id="filter_tipe_pembelian" class="input-modern w-full">
-                                <option value="all_pkp" <?php echo ($filter_tipe_pembelian == 'all_pkp') ? 'selected' : ''; ?>>Semua PKP</option>
-                                <option value="pkp" <?php echo ($filter_tipe_pembelian == 'pkp') ? 'selected' : ''; ?>>PKP
+                                <option value="semua" <?php echo ($filter_tipe_pembelian == 'semua') ? 'selected' : ''; ?>>SEMUA</option>
+                                <option value="ppn" <?php echo ($filter_tipe_pembelian == 'ppn') ? 'selected' : ''; ?>>PPN
                                 </option>
-                                <option value="non_pkp" <?php echo ($filter_tipe_pembelian == 'non_pkp') ? 'selected' : ''; ?>>Non PKP</option>
-                                <option value="all_btkp" <?php echo ($filter_tipe_pembelian == 'all_btkp') ? 'selected' : ''; ?>>Semua BTKP</option>
+                                <option value="non_ppn" <?php echo ($filter_tipe_pembelian == 'non_ppn') ? 'selected' : ''; ?>>NON PPN</option>
                                 <option value="btkp" <?php echo ($filter_tipe_pembelian == 'btkp') ? 'selected' : ''; ?>>
                                     BTKP</option>
-                                <option value="non_btkp" <?php echo ($filter_tipe_pembelian == 'non_btkp') ? 'selected' : ''; ?>>Non BTKP</option>
                             </select>
                         </div>
 
                         <div class="lg:col-span-2 lg:col-start-1 lg:row-start-2"> <label for="status_data"
                                 class="block text-xs font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-link text-pink-600 mr-1"></i> Status
+                                <i class="fas fa-link text-pink-600 mr-1"></i> Coretax / Faktur Pajak Fisik
                             </label>
                             <select name="status_data" id="status_data" class="input-modern w-full">
                                 <option value="all" <?php echo ($status_data == 'all') ? 'selected' : ''; ?>>Semua Data

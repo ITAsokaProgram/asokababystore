@@ -1041,7 +1041,7 @@ $isPajakOpen = $isActive('/src/fitur/coretax/');
                                             class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
                                             <i
                                                 class="fa-solid fa-pen-to-square mr-2 text-sm text-slate-400 group-hover:text-slate-600"></i>
-                                            Form Faktur
+                                            Kelola Faktur Pajak Masukan
                                         </span>
                                     </a>
                                 </li>
