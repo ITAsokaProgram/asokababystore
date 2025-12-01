@@ -8801,3 +8801,7 @@ video {
   color: #ec4899;
   border: 2px solid #ec4899;
 }
+.submenu-active {
+    color: #db2777 !important; 
+    font-weight: bold;
+}

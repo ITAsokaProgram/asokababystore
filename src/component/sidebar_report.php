@@ -18,7 +18,41 @@ if (isset($_COOKIE['admin_token'])) {
         $isSuperAdmin = false;
     }
 }
+
+// --- LOGIKA DETEKSI URL OTOMATIS (AGAR MENU TERBUKA 1 KLIK) ---
+$uri = $_SERVER['REQUEST_URI'];
+$isActive = function ($path) use ($uri) {
+    return strpos($uri, $path) !== false;
+};
+
+// 1. Logika Menu TOOLS (Voucher, Jadwal SO, Approval)
+$isVoucherOpen = $isActive('/src/fitur/voucher/');
+$isJadwalSoOpen = $isActive('/src/fitur/laporan/jadwal_so/');
+$isToolsOpen = $isVoucherOpen || $isJadwalSoOpen || $isActive('/src/fitur/approval/izin');
+
+// 2. Logika Menu LAPORAN (Penjualan, Sales Per Kasir, dll)
+$isPenjualanOpen = $isActive('/src/fitur/laporan/in_laporan_sub_dept') ||
+    $isActive('/src/fitur/laporan/in_sales_ratio') ||
+    $isActive('/src/fitur/laporan/in_sales_category') ||
+    $isActive('/src/fitur/laporan/in_transaction') ||
+    $isActive('/src/fitur/top_sales/'); // Termasuk sales_per_kasir_bon
+
+$isPelangganOpen = $isActive('/src/fitur/laporan/in_customer') || $isActive('/src/fitur/laporan/layanan') || $isActive('/src/fitur/laporan/in_review_cust');
+$isReceiptOpen = $isActive('/src/fitur/penerimaan_receipt/');
+$isReturnOpen = $isActive('/src/fitur/return_out/');
+$isMutasiOpen = $isActive('/src/fitur/mutasi_in/');
+$isTransaksiOpen = $isActive('/src/fitur/transaction/');
+$isKoreksiOpen = $isActive('/src/fitur/koreksi_stok/') || $isActive('/src/fitur/koreksi_so/');
+
+$isLaporanOpen = $isPenjualanOpen || $isPelangganOpen || $isReceiptOpen || $isReturnOpen || $isMutasiOpen || $isTransaksiOpen || $isKoreksiOpen || $isActive('/src/fitur/log_backup/');
+
+// 3. Logika Menu PAJAK (Opsional, agar konsisten)
+$isPembelianOpen = $isActive('/src/fitur/coretax/input_pembelian') || $isActive('/src/fitur/coretax/laporan_pembelian');
+$isFakturOpen = $isActive('/src/fitur/coretax/input_faktur') || $isActive('/src/fitur/coretax/laporan_faktur') || $isActive('/src/fitur/coretax/import_faktur');
+$isLainnyaOpen = $isActive('/src/fitur/coretax/data_coretax') || $isActive('/src/fitur/coretax/faktur_masukan');
+$isPajakOpen = $isActive('/src/fitur/coretax/');
 ?>
+
 <div id="sidebar"
     class="bg-white text-gray-700 w-64 h-screen flex flex-col p-6 fixed left-0 top-0 transition-all duration-300 shadow-2xl border-r border-blue-200 z-40">
     <button id="closeSidebar"
@@ -112,8 +146,17 @@ if (isset($_COOKIE['admin_token'])) {
             </div>
         </div>
 
-        <div x-data="{ open: false, nestedOpenPenjualan: false, nestedOpenPelanggan: false , nestedOpenReceipt: false, nestedOpenReturn: false, nestedOpenMutasi: false, nestedOpenTransaksi: false, nestedOpenKoreksi: false, nestedOpenKoreksiSO: false }"
-            class="relative ">
+        <div x-data="{ 
+                open: <?= $isLaporanOpen ? 'true' : 'false' ?>, 
+                nestedOpenPenjualan: <?= $isPenjualanOpen ? 'true' : 'false' ?>, 
+                nestedOpenPelanggan: <?= $isPelangganOpen ? 'true' : 'false' ?>, 
+                nestedOpenReceipt: <?= $isReceiptOpen ? 'true' : 'false' ?>, 
+                nestedOpenReturn: <?= $isReturnOpen ? 'true' : 'false' ?>, 
+                nestedOpenMutasi: <?= $isMutasiOpen ? 'true' : 'false' ?>, 
+                nestedOpenTransaksi: <?= $isTransaksiOpen ? 'true' : 'false' ?>, 
+                nestedOpenKoreksi: <?= $isKoreksiOpen ? 'true' : 'false' ?>, 
+                nestedOpenKoreksiSO: false 
+            }" class="relative ">
             <button @click="open = !open" id="laporan"
                 class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-purple-100 hover:to-purple-200 hover:text-purple-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-purple-300">
                 <div class="w-8 flex justify-center">
@@ -771,7 +814,11 @@ if (isset($_COOKIE['admin_token'])) {
             </div>
         </div>
 
-        <div x-data="{ open: false, nestedOpenJadwalSO: false, nestedOpenVoucher: false }" class="relative ">
+        <div x-data="{ 
+                open: <?= $isToolsOpen ? 'true' : 'false' ?>, 
+                nestedOpenJadwalSO: <?= $isJadwalSoOpen ? 'true' : 'false' ?>, 
+                nestedOpenVoucher: <?= $isVoucherOpen ? 'true' : 'false' ?> 
+            }" class="relative ">
             <button @click="open = !open" id="tools"
                 class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-cyan-100 hover:to-cyan-200 hover:text-cyan-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-cyan-300">
                 <div class="w-8 flex justify-center">
@@ -899,8 +946,12 @@ if (isset($_COOKIE['admin_token'])) {
                 </ul>
             </div>
         </div>
-        <div x-data="{ open: false, nestedOpenPembelian: false, nestedOpenFaktur: false, nestedOpenLainnya: false }"
-            class="relative">
+        <div x-data="{ 
+                open: <?= $isPajakOpen ? 'true' : 'false' ?>, 
+                nestedOpenPembelian: <?= $isPembelianOpen ? 'true' : 'false' ?>, 
+                nestedOpenFaktur: <?= $isFakturOpen ? 'true' : 'false' ?>, 
+                nestedOpenLainnya: <?= $isLainnyaOpen ? 'true' : 'false' ?> 
+            }" class="relative">
             <button @click="open = !open" id="pajakLink"
                 class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-slate-100 hover:to-slate-200 hover:text-slate-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-slate-300">
                 <div class="w-8 flex justify-center">
@@ -1073,81 +1124,102 @@ if (isset($_COOKIE['admin_token'])) {
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const currentPath = window.location.pathname;
+        let activeId = null;
 
+        // --- 1. LOGIKA UNTUK MENU UTAMA (PARENT) ---
+        // Ini menentukan mana menu besar yang terbuka (Pajak, Laporan, Tools, dll)
         if (currentPath.includes('/in_beranda')) {
-            document.getElementById('berandaLink').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/laporan/in_laporan_sub_dept')) {
-            document.getElementById('laporan').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/laporan/in_sales_ratio')) {
-            document.getElementById('laporan').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/laporan/in_sales_category')) {
-            document.getElementById('laporan').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/laporan/in_transaction')) {
-            document.getElementById('laporan').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/log_backup/index.php')) {
-            document.getElementById('laporan').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/top_sales/by_rupiah')) {
-            document.getElementById('laporan').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/top_sales/by_qty')) {
-            document.getElementById('laporan').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/top_sales/by_supplier')) {
-            document.getElementById('laporan').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/top_sales/sales_per_kasir_bon')) {
-            document.getElementById('laporan').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/penerimaan_receipt/detail')) {
-            document.getElementById('laporan').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/penerimaan_receipt/by_supplier')) {
-            document.getElementById('laporan').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/return_out/all_item')) {
-            document.getElementById('laporan').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/return_out/bad_stock')) {
-            document.getElementById('laporan').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/return_out/exp_produk')) {
-            document.getElementById('laporan').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/return_out/hilang_pasangan')) {
-            document.getElementById('laporan').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/mutasi_in/index.php')) {
-            document.getElementById('laporan').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/account/in_new_user')) {
-            document.getElementById('account').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/account/manajemen_user')) {
-            document.getElementById('account').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/transaction/view_promo')) {
-            document.getElementById('laporan').classList.add('btn', 'active');
-            document.getElementById('transaction').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/transaction/invalid_trans')) {
-            document.getElementById('laporan').classList.add('btn', 'active');
-            document.getElementById('transaction').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/transaction/margin')) {
-            document.getElementById('laporan').classList.add('btn', 'active');
-            document.getElementById('transaction').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/transaction/reward_give')) {
-            document.getElementById('laporan').classList.add('btn', 'active');
-            document.getElementById('transaction').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/member/member_poin')) {
-            document.getElementById('member').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/banner/view_banner.php')) {
-            document.getElementById('upload-menu').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/shopee/dashboard_shopee')) {
-            document.getElementById('shopeeLink').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/whatsapp_cs/dashboard_whatsapp')) {
-            document.getElementById('whatsappLink').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/approval/izin')) {
-            document.getElementById('tools').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/koreksi_so/')) {
-            // UPDATED: Now activates 'laporan'
-            document.getElementById('laporan').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/laporan/jadwal_so/')) {
-            document.getElementById('tools').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/voucher/')) {
-            document.getElementById('tools').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/koreksi_stok/by_supplier')) {
-            document.getElementById('laporan').classList.add('btn', 'active');
-        } else if (currentPath.includes('/src/fitur/koreksi_stok/by_plu')) {
-            document.getElementById('laporan').classList.add('btn', 'active');
+            activeId = 'berandaLink';
+        } else if (
+            currentPath.includes('/src/fitur/laporan/') ||
+            currentPath.includes('/src/fitur/top_sales/') ||
+            currentPath.includes('/src/fitur/penerimaan_receipt/') ||
+            currentPath.includes('/src/fitur/return_out/') ||
+            currentPath.includes('/src/fitur/mutasi_in/') ||
+            currentPath.includes('/src/fitur/log_backup/') ||
+            currentPath.includes('/src/fitur/transaction/') ||
+            currentPath.includes('/src/fitur/koreksi_stok/') ||
+            currentPath.includes('/src/fitur/koreksi_so/')
+        ) {
+            activeId = 'laporan';
+            if (currentPath.includes('/src/fitur/transaction/')) activeId = 'transaction';
+        } else if (currentPath.includes('/src/fitur/account/')) {
+            activeId = 'account';
+        } else if (currentPath.includes('/src/fitur/member/')) {
+            activeId = 'member';
+        } else if (currentPath.includes('/src/fitur/banner/')) {
+            activeId = 'upload-menu';
+        } else if (currentPath.includes('/src/fitur/shopee/')) {
+            activeId = 'shopeeLink';
+        } else if (currentPath.includes('/src/fitur/whatsapp_cs/')) {
+            activeId = 'whatsappLink';
+        } else if (
+            currentPath.includes('/src/fitur/approval/izin') ||
+            currentPath.includes('/src/fitur/laporan/jadwal_so/') ||
+            currentPath.includes('/src/fitur/voucher/')
+        ) {
+            activeId = 'tools';
         } else if (currentPath.includes('/src/fitur/coretax/')) {
-            document.getElementById('pajakLink').classList.add('btn', 'active');
+            activeId = 'pajakLink';
         }
+
+        // Terapkan style ke Menu Utama
+        if (activeId) {
+            const element = document.getElementById(activeId);
+            if (element) {
+                element.classList.add('btn', 'active');
+
+                // Scroll menu utama agar terlihat jika layar kecil
+                setTimeout(() => {
+                    element.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center',
+                        inline: 'nearest'
+                    });
+                }, 300);
+            }
+        }
+
+        // --- 2. LOGIKA UNTUK CHILD LINK & SUB MENU (Spesifik) ---
+        // Mencari link <a> yang href-nya SAMA PERSIS dengan URL saat ini
+        const allLinks = document.querySelectorAll('#sidebar nav a');
+
+        allLinks.forEach(link => {
+            // Ambil href dari link
+            const linkHref = link.getAttribute('href');
+
+            // Cek apakah URL browser mengandung href link ini (untuk handle query string) 
+            // atau sama persis
+            if (linkHref && currentPath.includes(linkHref) && linkHref !== '#') {
+
+                // A. Indikasi Menu Child (misal: Laporan Faktur)
+                // Tambahkan class .btn.active agar jadi Pink + Border
+                link.classList.add('btn', 'active');
+
+                // B. Indikasi Sub-Menu Parent (misal: tombol Faktur Pajak)
+                // Kita mencari elemen tombol pembungkus (Accordion button) di atasnya
+                // Struktur: Button -> Div (x-show) -> Ul -> Li -> A (link ini)
+
+                // Cari Div pembungkus terdekat
+                const parentDiv = link.closest('div[x-show]');
+                if (parentDiv) {
+                    // Elemen sebelum div pembungkus biasanya adalah Tombol Sub-Menu
+                    const subMenuButton = parentDiv.previousElementSibling;
+
+                    if (subMenuButton && subMenuButton.tagName === 'BUTTON') {
+                        // Beri warna pink pada teks tombol Sub-Menu
+                        subMenuButton.classList.add('submenu-active');
+
+                        // Opsional: Ganti icon di dalam tombol jadi solid/pink juga
+                        const icon = subMenuButton.querySelector('i');
+                        if (icon) {
+                            icon.classList.remove('text-slate-500', 'text-gray-700');
+                            icon.classList.add('text-pink-600');
+                        }
+                    }
+                }
+            }
+        });
     });
 </script>
 <style>
