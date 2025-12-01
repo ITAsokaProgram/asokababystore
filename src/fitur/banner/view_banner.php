@@ -38,13 +38,6 @@ $token = $menuHandler->getToken();
     <link rel="icon" type="image/png" href="../../../public/images/logo1.png">
 
     <style>
-        .btn.active {
-            background-color: transparent;
-            color: #ec4899;
-            outline: 2px solid #ec4899;
-            outline-offset: 1px;
-        }
-
         /* Enhanced animations */
         .upload-area-hover {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);

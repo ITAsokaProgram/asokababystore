@@ -37,13 +37,6 @@ $token = $menuHandler->getToken();
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <style>
-        .btn.active {
-            background-color: transparent;
-            color: #ec4899;
-            outline: 2px solid #ec4899;
-            outline-offset: 1px;
-        }
-
         /* Custom animation for fade-in-up */
         @keyframes fadeInUp {
             from {

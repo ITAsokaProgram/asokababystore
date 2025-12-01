@@ -35,13 +35,6 @@ $token = $menuHandler->getToken();
 
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <style>
-        .btn.active {
-            background-color: transparent;
-            color: #eab308;
-            outline: 2px solid #eab308;
-            outline-offset: 1px;
-        }
-
         .glass-container {
             background: rgba(255, 255, 255, 0.80);
             backdrop-filter: blur(8px);

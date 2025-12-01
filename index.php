@@ -434,17 +434,7 @@ if ($stmt->num_rows === 0) {
                     <p class="text-lg text-gray-600 max-w-2xl mx-auto">Temukan cabang terdekat dari lokasi Anda</p>
                 </div>
 
-                <!-- Location Stats -->
-                <div class="max-w-4xl mx-auto mb-8" data-aos="fade-up" data-aos-duration="600">
-                    <div
-                        class="bg-gradient-to-r from-pink-50 to-purple-50 border border-pink-100 shadow-xl rounded-2xl p-6">
-                        <div class="text-center">
-                            <h3 class="text-2xl font-bold text-gray-800 mb-2">Temukan Cabang Terdekat</h3>
-                            <p class="text-gray-600">Gunakan peta di bawah untuk menemukan cabang ASOKA Baby Store
-                                terdekat dari lokasi Anda</p>
-                        </div>
-                    </div>
-                </div>
+
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-auto lg:h-[70vh]">
                     <!-- Sidebar scrollable -->

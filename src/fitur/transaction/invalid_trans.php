@@ -47,15 +47,6 @@ $token = $menuHandler->getToken();
 
 
     <style>
-        .btn.active {
-            background-color: transparent;
-            /* background tidak diisi */
-            color: #ec4899;
-            /* warna teks bisa disesuaikan */
-            outline: 2px solid #ec4899;
-            outline-offset: 1px;
-        }
-
         th.th-total-poin,
         th.th-tukar-poin,
         th.th-sisa-poin,
@@ -71,7 +62,8 @@ $token = $menuHandler->getToken();
 
 
     <main id="main-content" class="flex-1 p-6 transition-all duration-300 ml-64 mt-10">
-        <div class="min-h-screen bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-white/30 p-6 animate-fade-in-up">
+        <div
+            class="min-h-screen bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-white/30 p-6 animate-fade-in-up">
             <!-- Judul Halaman -->
             <div class="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
                 <div class="flex items-center gap-4">
@@ -86,8 +78,10 @@ $token = $menuHandler->getToken();
                 <button type="button"
                     class="px-5 py-3 rounded-xl bg-gradient-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600 shadow-md flex items-center gap-2 transition-all duration-200 hover:scale-105"
                     title="Reset" id="reset">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="M3 12a9 9 0 1 0 3.6-7.2M3 3v6h6" />
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                            d="M3 12a9 9 0 1 0 3.6-7.2M3 3v6h6" />
                     </svg>
                     Reset
                 </button>
@@ -105,7 +99,9 @@ $token = $menuHandler->getToken();
                         <!-- Kategori -->
                         <div class="flex flex-col w-full md:w-1/2">
                             <label for="status" class="text-xs text-gray-600 mb-1">Kategori</label>
-                            <select class="border border-gray-300 rounded-xl px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400 transition hover:border-pink-400" id="kategori">
+                            <select
+                                class="border border-gray-300 rounded-xl px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400 transition hover:border-pink-400"
+                                id="kategori">
                                 <option value="allKategori">Pilih Kategori</option>
                                 <option value="%VOID%">Void</option>
                                 <option value="%RETUR%">Retur</option>
@@ -116,7 +112,9 @@ $token = $menuHandler->getToken();
                         <!-- Search Kasir -->
                         <div class="flex flex-col w-full md:w-1/2">
                             <label for="search" class="text-xs text-gray-600 mb-1">Cari Kode Kasir</label>
-                            <input type="text" placeholder="Kode Kasir" class="border border-gray-300 rounded-xl px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400 transition hover:border-pink-400" id="search" />
+                            <input type="text" placeholder="Kode Kasir"
+                                class="border border-gray-300 rounded-xl px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400 transition hover:border-pink-400"
+                                id="search" />
                         </div>
 
                     </div>
@@ -134,7 +132,9 @@ $token = $menuHandler->getToken();
                         <!-- Periode -->
                         <div class="flex flex-col w-full md:w-1/2">
                             <label for="periodeFilter" class="text-xs text-gray-600 mb-1">Periode</label>
-                            <select class="border border-gray-300 rounded-xl px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400 transition hover:border-pink-400" id="periodeFilter">
+                            <select
+                                class="border border-gray-300 rounded-xl px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400 transition hover:border-pink-400"
+                                id="periodeFilter">
                                 <option value="">Custom</option>
                                 <option value="harian">Harian</option>
                                 <option value="mingguan">Mingguan</option>
@@ -146,7 +146,9 @@ $token = $menuHandler->getToken();
                         <!-- Periode -->
                         <div class="flex flex-col w-full md:w-1/2">
                             <label for="periodeFilter" class="text-xs text-gray-600 mb-1">Cabang</label>
-                            <select class="border border-gray-300 rounded-xl px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400 transition hover:border-pink-400" id="cabangFilter">
+                            <select
+                                class="border border-gray-300 rounded-xl px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400 transition hover:border-pink-400"
+                                id="cabangFilter">
                             </select>
                         </div>
                     </div>
@@ -155,16 +157,19 @@ $token = $menuHandler->getToken();
                     <div class="flex flex-col md:flex-row items-end gap-4">
                         <div class="flex flex-col w-full md:w-1/2">
                             <label for="startDate" class="text-xs text-gray-600 mb-1">Tanggal Awal</label>
-                            <input type="date" id="startDate" class="border border-gray-300 rounded-xl px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400 transition hover:border-pink-400 w-full" />
+                            <input type="date" id="startDate"
+                                class="border border-gray-300 rounded-xl px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400 transition hover:border-pink-400 w-full" />
                         </div>
 
                         <div class="flex flex-col w-full md:w-1/2">
                             <label for="endDate" class="text-xs text-gray-600 mb-1">Tanggal Akhir</label>
-                            <input type="date" id="endDate" class="border border-gray-300 rounded-xl px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400 transition hover:border-pink-400 w-full" />
+                            <input type="date" id="endDate"
+                                class="border border-gray-300 rounded-xl px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400 transition hover:border-pink-400 w-full" />
                         </div>
 
                         <!-- Tombol Filter -->
-                        <button id="filterTanggalBtn" class="bg-gradient-to-r from-pink-500 to-rose-400 hover:from-pink-600 hover:to-rose-500 text-white text-sm px-6 py-3 rounded-xl shadow-md flex items-center gap-2 transition-all duration-200 hover:scale-105">
+                        <button id="filterTanggalBtn"
+                            class="bg-gradient-to-r from-pink-500 to-rose-400 hover:from-pink-600 hover:to-rose-500 text-white text-sm px-6 py-3 rounded-xl shadow-md flex items-center gap-2 transition-all duration-200 hover:scale-105">
                             <i class="fa fa-search mr-1"></i> Filter
                         </button>
                     </div>
@@ -173,7 +178,8 @@ $token = $menuHandler->getToken();
             </div>
 
             <!-- Tabel Data -->
-            <div class="overflow-x-auto max-w-full bg-white/90 backdrop-blur rounded-2xl shadow-xl border border-white/30 animate-fade-in-up">
+            <div
+                class="overflow-x-auto max-w-full bg-white/90 backdrop-blur rounded-2xl shadow-xl border border-white/30 animate-fade-in-up">
                 <table class="w-full table-auto text-sm text-left min-w-[900px]" id="allTable">
                     <thead class="bg-gradient-to-r from-pink-400 to-rose-400 text-white text-xs uppercase">
                         <tr>
@@ -202,11 +208,14 @@ $token = $menuHandler->getToken();
         </div>
     </main>
     <!-- Modal Wrapper -->
-    <div id="detailInvalid" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center animate-fade-in-up">
-        <div class="bg-white/95 backdrop-blur-md w-full max-w-6xl rounded-2xl shadow-2xl p-8 relative border border-white/30">
+    <div id="detailInvalid"
+        class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center animate-fade-in-up">
+        <div
+            class="bg-white/95 backdrop-blur-md w-full max-w-6xl rounded-2xl shadow-2xl p-8 relative border border-white/30">
 
             <!-- Close Button -->
-            <button type="button" id="closeModal" class="absolute top-4 right-4 text-gray-500 hover:text-red-500 text-2xl bg-white/80 rounded-full p-2 shadow-md transition-all duration-200">
+            <button type="button" id="closeModal"
+                class="absolute top-4 right-4 text-gray-500 hover:text-red-500 text-2xl bg-white/80 rounded-full p-2 shadow-md transition-all duration-200">
                 <i class="fas fa-times"></i>
             </button>
 
@@ -247,7 +256,8 @@ $token = $menuHandler->getToken();
         </div>
 
         <!-- Modal -->
-        <div id="informasi" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center animate-fade-in-up">
+        <div id="informasi"
+            class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center animate-fade-in-up">
             <div class="bg-white/95 backdrop-blur-md rounded-2xl p-8 w-4/5 max-w-3xl shadow-2xl border border-white/30">
                 <div class="mb-4 border-b pb-2 flex items-center gap-2">
                     <i class="fa fa-info-circle text-pink-500 text-xl"></i>
@@ -287,7 +297,7 @@ $token = $menuHandler->getToken();
         function closeModal() {
             document.getElementById("informasi").classList.add("hidden");
         }
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             flatpickr("#startDate", {
                 dateFormat: "Y-m-d",
                 allowInput: true
@@ -298,18 +308,18 @@ $token = $menuHandler->getToken();
                 allowInput: true
             });
         });
-        document.getElementById("toggle-sidebar").addEventListener("click", function() {
+        document.getElementById("toggle-sidebar").addEventListener("click", function () {
             document.getElementById("sidebar").classList.toggle("open");
         });
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             const sidebar = document.getElementById("sidebar");
             const closeBtn = document.getElementById("closeSidebar");
 
-            closeBtn.addEventListener("click", function() {
+            closeBtn.addEventListener("click", function () {
                 sidebar.classList.remove("open"); // Hilangkan class .open agar sidebar tertutup
             });
         });
-        document.getElementById("toggle-hide").addEventListener("click", function() {
+        document.getElementById("toggle-hide").addEventListener("click", function () {
             var sidebarTexts = document.querySelectorAll(".sidebar-text");
             let mainContent = document.getElementById("main-content");
             let sidebar = document.getElementById("sidebar");
@@ -340,17 +350,17 @@ $token = $menuHandler->getToken();
                 icon.classList.add("fa-angle-left");
             }
         });
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             const profileImg = document.getElementById("profile-img");
             const profileCard = document.getElementById("profile-card");
 
-            profileImg.addEventListener("click", function(event) {
+            profileImg.addEventListener("click", function (event) {
                 event.preventDefault();
                 profileCard.classList.toggle("show");
             });
 
             // Tutup profile-card jika klik di luar
-            document.addEventListener("click", function(event) {
+            document.addEventListener("click", function (event) {
                 if (!profileCard.contains(event.target) && !profileImg.contains(event.target)) {
                     profileCard.classList.remove("show");
                 }

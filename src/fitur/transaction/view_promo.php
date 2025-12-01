@@ -54,15 +54,6 @@ $token = $menuHandler->getToken();
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
 
   <style>
-    .btn.active {
-      background-color: transparent;
-      /* background tidak diisi */
-      color: #ec4899;
-      /* warna teks bisa disesuaikan */
-      outline: 2px solid #ec4899;
-      outline-offset: 1px;
-    }
-
     th.th-total-poin,
     th.th-tukar-poin,
     th.th-sisa-poin,
@@ -79,39 +70,35 @@ $token = $menuHandler->getToken();
 
   <main id="main-content" class="flex-1 p-6 transition-all duration-300 ml-64">
     <div class="w-full mx-auto px-4 py-8">
-      
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6 fade-in">
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        
-        <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-            <i class="fas fa-tags text-blue-600 text-lg"></i>
-          </div>
-          <div>
-            <h1 class="text-2xl font-semibold text-gray-900">Manajemen Promo</h1>
-            <p class="text-gray-500 text-sm">Kelola dan pantau semua promo yang aktif</p>
-          </div>
-        </div>
 
-        <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
-          <div class="relative w-full">
-            <input
-              type="text"
-              id="searchInput"
-              placeholder="Cari promo..."
-              class="pl-10 pr-4 py-2.5 w-full rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200" />
-            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
-          </div>
-          <button
-            onclick="tambahPromo()"
-            class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 hover-lift shadow-sm w-full sm:w-auto flex-shrink-0">
-            <i class="fas fa-plus text-sm"></i>
-            <span class="font-medium">Tambah Promo</span>
-          </button>
-        </div>
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6 fade-in">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
 
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <i class="fas fa-tags text-blue-600 text-lg"></i>
+            </div>
+            <div>
+              <h1 class="text-2xl font-semibold text-gray-900">Manajemen Promo</h1>
+              <p class="text-gray-500 text-sm">Kelola dan pantau semua promo yang aktif</p>
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+            <div class="relative w-full">
+              <input type="text" id="searchInput" placeholder="Cari promo..."
+                class="pl-10 pr-4 py-2.5 w-full rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200" />
+              <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
+            </div>
+            <button onclick="tambahPromo()"
+              class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 hover-lift shadow-sm w-full sm:w-auto flex-shrink-0">
+              <i class="fas fa-plus text-sm"></i>
+              <span class="font-medium">Tambah Promo</span>
+            </button>
+          </div>
+
+        </div>
       </div>
-    </div>
 
       <!-- Table Container -->
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden fade-in">
@@ -120,13 +107,18 @@ $token = $menuHandler->getToken();
             <thead class="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">No</th>
-                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Kode Promo</th>
-                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Supplier</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Kode Promo
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Supplier
+                </th>
                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Store</th>
-                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tanggal</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tanggal
+                </th>
                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Penggunaan</th>
-                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Keterangan</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Penggunaan
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Keterangan
+                </th>
                 <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
               </tr>
             </thead>
@@ -141,7 +133,8 @@ $token = $menuHandler->getToken();
       <div class="mt-6 bg-white rounded-xl shadow-sm border border-gray-200 px-6 py-4 fade-in">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
           <div class="flex items-center space-x-2">
-            <select id="pageSize" class="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
+            <select id="pageSize"
+              class="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
               <option value="10">10 per halaman</option>
               <option value="50">50 per halaman</option>
               <option value="100">100 per halaman</option>
@@ -273,11 +266,7 @@ $token = $menuHandler->getToken();
                     <label for="search-barang" class="text-xs font-medium text-gray-600 mb-1">
                       Pencarian Barang
                     </label>
-                    <input
-                      type="text"
-                      id="search-barang"
-                      placeholder="Cari barang..."
-                      class="w-full h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm 
+                    <input type="text" id="search-barang" placeholder="Cari barang..." class="w-full h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm 
                placeholder:text-gray-400 focus:border-indigo-500 focus:ring-2 
                focus:ring-indigo-100 outline-none transition-all duration-200" />
                   </div>
@@ -287,12 +276,7 @@ $token = $menuHandler->getToken();
                     <label for="allDiskon" class="text-xs font-medium text-gray-600 mb-1">
                       All Diskon (%)
                     </label>
-                    <input
-                      type="number"
-                      id="allDiskon"
-                      placeholder="0"
-                      min="1" max="100"
-                      class="w-full h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm 
+                    <input type="number" id="allDiskon" placeholder="0" min="1" max="100" class="w-full h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm 
                placeholder:text-gray-400 focus:border-indigo-500 focus:ring-2 
                focus:ring-indigo-100 outline-none transition-all duration-200" />
                   </div>
@@ -302,11 +286,7 @@ $token = $menuHandler->getToken();
                     <label for="allPotongan" class="text-xs font-medium text-gray-600 mb-1">
                       All Potongan
                     </label>
-                    <input
-                      type="number"
-                      id="allPotongan"
-                      placeholder="0"
-                      class="w-full h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm 
+                    <input type="number" id="allPotongan" placeholder="0" class="w-full h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm 
                placeholder:text-gray-400 focus:border-indigo-500 focus:ring-2 
                focus:ring-indigo-100 outline-none transition-all duration-200" />
                   </div>
@@ -318,18 +298,30 @@ $token = $menuHandler->getToken();
               <!-- Table Container -->
               <div class="bg-white rounded-xl border border-gray-200 overflow-hidden relative">
                 <div id="loadTable" class="absolute inset-0 bg-white/80 flex justify-center items-center z-10 hidden">
-                  <div class="w-8 h-8 border-2 border-t-transparent border-indigo-500 border-solid rounded-full animate-spin"></div>
+                  <div
+                    class="w-8 h-8 border-2 border-t-transparent border-indigo-500 border-solid rounded-full animate-spin">
+                  </div>
                 </div>
 
                 <div class="max-h-[300px] overflow-y-auto">
                   <table class="w-full">
                     <thead class="bg-gray-50 sticky top-0 z-5">
                       <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-[13%]">Barcode</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-[45%]">Master Barang</th>
-                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider w-[17%]">Harga Jual</th>
-                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider w-[12%]">Diskon</th>
-                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider w-[13%]">Potongan</th>
+                        <th
+                          class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-[13%]">
+                          Barcode</th>
+                        <th
+                          class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-[45%]">
+                          Master Barang</th>
+                        <th
+                          class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider w-[17%]">
+                          Harga Jual</th>
+                        <th
+                          class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider w-[12%]">
+                          Diskon</th>
+                        <th
+                          class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider w-[13%]">
+                          Potongan</th>
                       </tr>
                     </thead>
                     <tbody id="tbody-barang" class="divide-y divide-gray-100">
@@ -436,7 +428,8 @@ $token = $menuHandler->getToken();
                   </select>
                 </div>
                 <div class="space-y-2">
-                  <label for="status_edit_penggunaan" class="block text-sm font-semibold text-gray-700">Status Penggunaan</label>
+                  <label for="status_edit_penggunaan" class="block text-sm font-semibold text-gray-700">Status
+                    Penggunaan</label>
                   <select name="status-edit-penggunaan" id="status_edit_penggunaan"
                     class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all duration-200 hover:border-gray-300">
                     <option value="tidak_dipakai">Tidak Dipakai</option>
@@ -495,29 +488,19 @@ $token = $menuHandler->getToken();
                 <div class="flex flex-wrap items-center gap-4">
                   <div class="flex-1 min-w-[200px] space-y-1">
                     <label class="text-xs font-medium text-gray-600">Pencarian Barang</label>
-                    <input
-                      type="text"
-                      id="search-barang-edit"
-                      placeholder="Cari barang..."
+                    <input type="text" id="search-barang-edit" placeholder="Cari barang..."
                       class="w-full h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm placeholder:text-gray-400 focus:border-slate-500 focus:ring-2 focus:ring-slate-100 outline-none transition-all duration-200" />
                   </div>
 
                   <div class="space-y-1">
                     <label class="text-xs font-medium text-gray-600">All Diskon (%)</label>
-                    <input
-                      type="number"
-                      id="allDiskonEdit"
-                      placeholder="0"
-                      min="1" max="100"
+                    <input type="number" id="allDiskonEdit" placeholder="0" min="1" max="100"
                       class="w-[100px] h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm placeholder:text-gray-400 focus:border-slate-500 focus:ring-2 focus:ring-slate-100 outline-none transition-all duration-200" />
                   </div>
 
                   <div class="space-y-1">
                     <label class="text-xs font-medium text-gray-600">All Potongan</label>
-                    <input
-                      type="number"
-                      id="allPotonganEdit"
-                      placeholder="0"
+                    <input type="number" id="allPotonganEdit" placeholder="0"
                       class="w-[120px] h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm placeholder:text-gray-400 focus:border-slate-500 focus:ring-2 focus:ring-slate-100 outline-none transition-all duration-200" />
                   </div>
                 </div>
@@ -529,11 +512,21 @@ $token = $menuHandler->getToken();
                   <table class="w-full">
                     <thead class="bg-gray-50 sticky top-0 z-5">
                       <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-[13%]">Barcode</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-[45%]">Master Barang</th>
-                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider w-[17%]">Harga Jual</th>
-                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider w-[12%]">Diskon</th>
-                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider w-[13%]">Potongan</th>
+                        <th
+                          class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-[13%]">
+                          Barcode</th>
+                        <th
+                          class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-[45%]">
+                          Master Barang</th>
+                        <th
+                          class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider w-[17%]">
+                          Harga Jual</th>
+                        <th
+                          class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider w-[12%]">
+                          Diskon</th>
+                        <th
+                          class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider w-[13%]">
+                          Potongan</th>
                       </tr>
                     </thead>
                     <tbody id="tbody-barang-edit" class="divide-y divide-gray-100">
@@ -555,7 +548,8 @@ $token = $menuHandler->getToken();
                 <div class="flex items-start gap-3">
                   <i class="fas fa-info-circle text-amber-600 text-sm mt-0.5"></i>
                   <div class="text-xs text-amber-800 leading-relaxed">
-                    <strong>Catatan Penting:</strong> Hanya salah satu antara diskon atau potongan yang bisa diisi per barang.
+                    <strong>Catatan Penting:</strong> Hanya salah satu antara diskon atau potongan yang bisa diisi per
+                    barang.
                     Jika tidak bisa mengubah nilainya, harap hapus terlebih dahulu baik diskon maupun potongannya.
                     Hapus semua bisa dilakukan di all diskon atau all potongan, cukup klik dan tab.
                   </div>
@@ -634,7 +628,8 @@ $token = $menuHandler->getToken();
                       <td class="px-4 py-3 text-gray-700 border-r border-gray-100">Contoh Nama Barang</td>
                       <td class="px-4 py-3 text-gray-700 text-right border-r border-gray-100">Rp 25,000</td>
                       <td class="px-4 py-3 text-center border-r border-gray-100">
-                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <span
+                          class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                           10%
                         </span>
                       </td>
@@ -651,7 +646,8 @@ $token = $menuHandler->getToken();
                         <span class="text-gray-500">-</span>
                       </td>
                       <td class="px-4 py-3 text-center">
-                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        <span
+                          class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                           Rp 5,000
                         </span>
                       </td>
@@ -672,7 +668,9 @@ $token = $menuHandler->getToken();
               <!-- Loading State -->
               <div id="loadingState" class="flex-1 flex items-center justify-center py-12 hidden">
                 <div class="text-center">
-                  <div class="w-8 h-8 border-2 border-t-transparent border-blue-500 border-solid rounded-full animate-spin mx-auto mb-4"></div>
+                  <div
+                    class="w-8 h-8 border-2 border-t-transparent border-blue-500 border-solid rounded-full animate-spin mx-auto mb-4">
+                  </div>
                   <p class="text-gray-500 text-sm">Memuat data...</p>
                 </div>
               </div>
@@ -692,18 +690,18 @@ $token = $menuHandler->getToken();
   <script src="../../js/middleware_auth.js"></script>
   <script src="../../js/promo.js"></script>
   <script>
-    document.getElementById("toggle-sidebar").addEventListener("click", function() {
+    document.getElementById("toggle-sidebar").addEventListener("click", function () {
       document.getElementById("sidebar").classList.toggle("open");
     });
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", function () {
       const sidebar = document.getElementById("sidebar");
       const closeBtn = document.getElementById("closeSidebar");
 
-      closeBtn.addEventListener("click", function() {
+      closeBtn.addEventListener("click", function () {
         sidebar.classList.remove("open"); // Hilangkan class .open agar sidebar tertutup
       });
     });
-    document.getElementById("toggle-hide").addEventListener("click", function() {
+    document.getElementById("toggle-hide").addEventListener("click", function () {
       var sidebarTexts = document.querySelectorAll(".sidebar-text");
       let mainContent = document.getElementById("main-content");
       let sidebar = document.getElementById("sidebar");
@@ -734,17 +732,17 @@ $token = $menuHandler->getToken();
         icon.classList.add("fa-angle-left");
       }
     });
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", function () {
       const profileImg = document.getElementById("profile-img");
       const profileCard = document.getElementById("profile-card");
 
-      profileImg.addEventListener("click", function(event) {
+      profileImg.addEventListener("click", function (event) {
         event.preventDefault();
         profileCard.classList.toggle("show");
       });
 
       // Tutup profile-card jika klik di luar
-      document.addEventListener("click", function(event) {
+      document.addEventListener("click", function (event) {
         if (!profileCard.contains(event.target) && !profileImg.contains(event.target)) {
           profileCard.classList.remove("show");
         }

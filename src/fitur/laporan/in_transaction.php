@@ -37,15 +37,6 @@ if (!$menuHandler->initialize()) {
     <!-- <link rel="stylesheet" href="../../style/output.css"> -->
     <link rel="stylesheet" href="../../output2.css">
     <style>
-        .btn.active {
-            background-color: transparent;
-            /* background tidak diisi */
-            color: #ec4899;
-            /* warna teks bisa disesuaikan */
-            outline: 2px solid #ec4899;
-            outline-offset: 1px;
-        }
-
         .w-0 {
             width: 0 !important;
             overflow: hidden;

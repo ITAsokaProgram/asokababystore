@@ -44,29 +44,25 @@ $token = $menuHandler->getToken();
 
 
     <style>
-        .btn.active {
-            background-color: transparent;
-            color: #ec4899;
-            outline: 2px solid #ec4899;
-            outline-offset: 1px;
-        }
         /* --- Enhanced Glass & Card Styles --- */
         .glass-container {
-            background: rgba(255,255,255,0.80);
+            background: rgba(255, 255, 255, 0.80);
             backdrop-filter: blur(8px);
             border-radius: 1.25rem;
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
             border: 1.5px solid #bae6fd;
             padding: 2rem;
         }
+
         .card-glass {
-            background: rgba(255,255,255,0.95);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(6px);
             border-radius: 1.25rem;
             box-shadow: 0 4px 24px 0 rgba(31, 38, 135, 0.10);
             border: 1.5px solid #22c55e;
             transition: box-shadow 0.2s, transform 0.2s;
         }
+
         .card-glass:hover {
             box-shadow: 0 8px 32px 0 rgba(34, 197, 94, 0.18);
             transform: scale(1.02);
@@ -79,16 +75,19 @@ $token = $menuHandler->getToken();
     <?php include '../../component/sidebar_report.php'; ?>
 
 
-    <main id="main-content" class="flex-1 p-6 transition-all duration-300 ml-64 bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 min-h-screen">
-        <div class="glass-container animate-fade-in-up backdrop-blur-sm bg-white/80 rounded-2xl shadow-xl border border-white/20 p-6">
-            <div class="flex flex-col md:flex-row items-center justify-between mb-8 gap-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200/50">
+    <main id="main-content"
+        class="flex-1 p-6 transition-all duration-300 ml-64 bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 min-h-screen">
+        <div
+            class="glass-container animate-fade-in-up backdrop-blur-sm bg-white/80 rounded-2xl shadow-xl border border-white/20 p-6">
+            <div
+                class="flex flex-col md:flex-row items-center justify-between mb-8 gap-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200/50">
                 <div class="flex flex-col md:flex-row items-center gap-4">
-                    <button
-                        onclick="window.history.back()"
+                    <button onclick="window.history.back()"
                         class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-blue-600 hover:to-emerald-700 text-white px-6 py-3 rounded-xl shadow-lg border-0 text-lg flex items-center gap-3 font-semibold hover:scale-105 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                        <i class="fa-solid fa-arrow-left text-white animate-pulse"></i> 
+                        <i class="fa-solid fa-arrow-left text-white animate-pulse"></i>
                     </button>
-                    <h1 class="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-700 bg-clip-text text-transparent flex items-center gap-3">
+                    <h1
+                        class="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-700 bg-clip-text text-transparent flex items-center gap-3">
                         <i class="fa-solid fa-store text-green-600"></i> Transaksi Cabang
                     </h1>
                 </div>
@@ -97,24 +96,26 @@ $token = $menuHandler->getToken();
                     <span class="font-medium">View Data</span>
                 </div>
             </div>
-            
+
             <div class="space-y-8">
                 <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200/50">
                     <h2 class="text-xl font-semibold text-blue-800 mb-4 flex items-center gap-2">
                         <i class="fa-solid fa-chart-line text-blue-600"></i>
                         Semua Cabang
                     </h2>
-                    <div id="cabang-container-all" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <div id="cabang-container-all"
+                        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
                         <!-- Card cabang akan diisi JS -->
                     </div>
                 </div>
-                
+
                 <div class="bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl p-4 border border-emerald-200/50">
                     <h2 class="text-xl font-semibold text-emerald-800 mb-4 flex items-center gap-2">
                         <i class="fa-solid fa-filter text-emerald-600"></i>
                         Cabang
                     </h2>
-                    <div id="cabang-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <div id="cabang-container"
+                        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
                         <!-- Card cabang akan diisi JS -->
                     </div>
                 </div>
@@ -133,18 +134,18 @@ $token = $menuHandler->getToken();
         function closeModal() {
             document.getElementById("informasi").classList.add("hidden");
         }
-        document.getElementById("toggle-sidebar").addEventListener("click", function() {
+        document.getElementById("toggle-sidebar").addEventListener("click", function () {
             document.getElementById("sidebar").classList.toggle("open");
         });
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             const sidebar = document.getElementById("sidebar");
             const closeBtn = document.getElementById("closeSidebar");
 
-            closeBtn.addEventListener("click", function() {
+            closeBtn.addEventListener("click", function () {
                 sidebar.classList.remove("open"); // Hilangkan class .open agar sidebar tertutup
             });
         });
-        document.getElementById("toggle-hide").addEventListener("click", function() {
+        document.getElementById("toggle-hide").addEventListener("click", function () {
             var sidebarTexts = document.querySelectorAll(".sidebar-text");
             let mainContent = document.getElementById("main-content");
             let sidebar = document.getElementById("sidebar");
@@ -175,17 +176,17 @@ $token = $menuHandler->getToken();
                 icon.classList.add("fa-angle-left");
             }
         });
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             const profileImg = document.getElementById("profile-img");
             const profileCard = document.getElementById("profile-card");
 
-            profileImg.addEventListener("click", function(event) {
+            profileImg.addEventListener("click", function (event) {
                 event.preventDefault();
                 profileCard.classList.toggle("show");
             });
 
             // Tutup profile-card jika klik di luar
-            document.addEventListener("click", function(event) {
+            document.addEventListener("click", function (event) {
                 if (!profileCard.contains(event.target) && !profileImg.contains(event.target)) {
                     profileCard.classList.remove("show");
                 }

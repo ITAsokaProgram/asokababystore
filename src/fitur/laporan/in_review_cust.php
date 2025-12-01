@@ -46,15 +46,6 @@ $token = $menuHandler->getToken();
     <script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js"></script>
 
     <style>
-        .btn.active {
-            background-color: transparent;
-            /* background tidak diisi */
-            color: #ec4899;
-            /* warna teks bisa disesuaikan */
-            outline: 2px solid #ec4899;
-            outline-offset: 1px;
-        }
-
         .medium-zoom-image--opened {
             max-width: 80vw !important;
             max-height: 80vh !important;
@@ -184,9 +175,9 @@ $token = $menuHandler->getToken();
                     class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/30 p-6 mb-6 animate-fade-in-up hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 flex flex-col gap-4">
                     <h3 class="text-lg font-semibold text-gray-800 mb-2 flex items-center">
                         <i class="fas fa-filter mr-2 text-orange-500"></i>
-                        Filter 
+                        Filter
                     </h3>
-                    
+
                     <div>
                         <label class="block text-yellow-400 font-semibold mb-2 flex items-center gap-2">
                             <i class="fa-solid fa-star text-yellow-400"></i>
@@ -245,9 +236,10 @@ $token = $menuHandler->getToken();
                             </div>
                         </div>
                     </div>
-                    
+
                     <div>
-                        <label for="statusFilter" class="block text-yellow-700 font-semibold mb-2 flex items-center gap-2">
+                        <label for="statusFilter"
+                            class="block text-yellow-700 font-semibold mb-2 flex items-center gap-2">
                             <i class="fa-solid fa-tasks text-orange-600"></i>
                             <span class="text-black font-semibold">
                                 Status
@@ -487,7 +479,8 @@ $token = $menuHandler->getToken();
         <!-- Modal Zoom Gambar -->
         <div id="zoomModal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden">
             <img id="zoomImage" src="" class="max-h-[90vh] max-w-[90vw] rounded shadow-lg border border-white" />
-            <button class="absolute top-4 right-4 text-white text-2xl hover:text-gray-300 transition-colors duration-200"
+            <button
+                class="absolute top-4 right-4 text-white text-2xl hover:text-gray-300 transition-colors duration-200"
                 onclick="document.getElementById('zoomModal').classList.add('hidden')">
                 <i class="fas fa-times"></i>
             </button>
@@ -560,7 +553,8 @@ $token = $menuHandler->getToken();
                                 <i class="fas fa-comment-dots mr-2 text-orange-500"></i>
                                 Komentar Pelanggan
                             </label>
-                            <div class="bg-white p-4 rounded-lg border border-gray-200 text-gray-800" id="reviewComment">-
+                            <div class="bg-white p-4 rounded-lg border border-gray-200 text-gray-800"
+                                id="reviewComment">-
                             </div>
                         </div>
                     </div>
@@ -659,11 +653,11 @@ $token = $menuHandler->getToken();
                     </div>
                 </div>
 
-                
+
             </div>
         </div>
         <!-- Modal Chat dengan Customer -->
-         <div id="chatModal"
+        <div id="chatModal"
             class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
             <div
                 class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-2xl relative animate-fade-in-up transition-all duration-300 border border-white/20 max-h-[90vh] flex flex-col">
@@ -718,15 +712,17 @@ $token = $menuHandler->getToken();
                     </div>
                 </div>
 
-               <div class="p-4 border-t border-gray-200 bg-gray-50 rounded-b-2xl">
-                    <div id="chatResolvedMessage" class="hidden text-center text-sm text-gray-600 bg-yellow-100 p-3 rounded-lg mb-3">
+                <div class="p-4 border-t border-gray-200 bg-gray-50 rounded-b-2xl">
+                    <div id="chatResolvedMessage"
+                        class="hidden text-center text-sm text-gray-600 bg-yellow-100 p-3 rounded-lg mb-3">
                         <i class="fas fa-check-circle text-green-500 mr-2"></i>
                         Kasus ini telah diselesaikan. Percakapan ditutup.
                     </div>
 
                     <div id="imagePreviewContainerAdmin" class="hidden relative w-32 mb-3">
                         <img id="imagePreviewAdmin" src="" alt="Preview" class="rounded-lg w-full object-cover">
-                        <button id="removeImagePreviewAdmin" type="button" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-md">
+                        <button id="removeImagePreviewAdmin" type="button"
+                            class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-md">
                             <i class="fas fa-times text-sm"></i>
                         </button>
                     </div>
@@ -752,91 +748,91 @@ $token = $menuHandler->getToken();
             </div>
         </div>
 
-    </div>
-    <!-- custom js file link  -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="../../js/middleware_auth.js"></script>
-    <script src="../../js/review/main.js" type="module"></script>
-    <script>
-        // Sidebar and UI controls only - form handling moved to main.js
-        document.getElementById('toggle-sidebar').addEventListener('click', function () {
-            document.getElementById('sidebar').classList.toggle('open');
-        });
-        
-        document.addEventListener("DOMContentLoaded", function () {
-            const sidebar = document.getElementById("sidebar");
-            const closeBtn = document.getElementById("closeSidebar");
-
-            closeBtn.addEventListener("click", function () {
-                sidebar.classList.remove("open");
-            });
-        });
-        
-        document.getElementById("toggle-hide").addEventListener("click", function () {
-            var sidebarTexts = document.querySelectorAll(".sidebar-text");
-            let mainContent = document.getElementById("main-content");
-            let sidebar = document.getElementById("sidebar");
-            var toggleButton = document.getElementById("toggle-hide");
-            var icon = toggleButton.querySelector("i");
-
-            if (sidebar.classList.contains("w-64")) {
-                sidebar.classList.remove("w-64", "px-5");
-                sidebar.classList.add("w-16", "px-2");
-                sidebarTexts.forEach(text => text.classList.add("hidden"));
-                mainContent.classList.remove("ml-64");
-                mainContent.classList.add("ml-16");
-                toggleButton.classList.add("left-20");
-                toggleButton.classList.remove("left-64");
-                icon.classList.remove("fa-angle-left");
-                icon.classList.add("fa-angle-right");
-            } else {
-                sidebar.classList.remove("w-16", "px-2");
-                sidebar.classList.add("w-64", "px-5");
-                sidebarTexts.forEach(text => text.classList.remove("hidden"));
-                mainContent.classList.remove("ml-16");
-                mainContent.classList.add("ml-64");
-                toggleButton.classList.add("left-64");
-                toggleButton.classList.remove("left-20");
-                icon.classList.remove("fa-angle-right");
-                icon.classList.add("fa-angle-left");
-            }
-        });
-
-        document.addEventListener("DOMContentLoaded", function () {
-            const profileImg = document.getElementById("profile-img");
-            const profileCard = document.getElementById("profile-card");
-
-            profileImg.addEventListener("click", function (event) {
-                event.preventDefault();
-                profileCard.classList.toggle("show");
+        </div>
+        <!-- custom js file link  -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script src="../../js/middleware_auth.js"></script>
+        <script src="../../js/review/main.js" type="module"></script>
+        <script>
+            // Sidebar and UI controls only - form handling moved to main.js
+            document.getElementById('toggle-sidebar').addEventListener('click', function () {
+                document.getElementById('sidebar').classList.toggle('open');
             });
 
-            document.addEventListener("click", function (event) {
-                if (!profileCard.contains(event.target) && !profileImg.contains(event.target)) {
-                    profileCard.classList.remove("show");
+            document.addEventListener("DOMContentLoaded", function () {
+                const sidebar = document.getElementById("sidebar");
+                const closeBtn = document.getElementById("closeSidebar");
+
+                closeBtn.addEventListener("click", function () {
+                    sidebar.classList.remove("open");
+                });
+            });
+
+            document.getElementById("toggle-hide").addEventListener("click", function () {
+                var sidebarTexts = document.querySelectorAll(".sidebar-text");
+                let mainContent = document.getElementById("main-content");
+                let sidebar = document.getElementById("sidebar");
+                var toggleButton = document.getElementById("toggle-hide");
+                var icon = toggleButton.querySelector("i");
+
+                if (sidebar.classList.contains("w-64")) {
+                    sidebar.classList.remove("w-64", "px-5");
+                    sidebar.classList.add("w-16", "px-2");
+                    sidebarTexts.forEach(text => text.classList.add("hidden"));
+                    mainContent.classList.remove("ml-64");
+                    mainContent.classList.add("ml-16");
+                    toggleButton.classList.add("left-20");
+                    toggleButton.classList.remove("left-64");
+                    icon.classList.remove("fa-angle-left");
+                    icon.classList.add("fa-angle-right");
+                } else {
+                    sidebar.classList.remove("w-16", "px-2");
+                    sidebar.classList.add("w-64", "px-5");
+                    sidebarTexts.forEach(text => text.classList.remove("hidden"));
+                    mainContent.classList.remove("ml-16");
+                    mainContent.classList.add("ml-64");
+                    toggleButton.classList.add("left-64");
+                    toggleButton.classList.remove("left-20");
+                    icon.classList.remove("fa-angle-right");
+                    icon.classList.add("fa-angle-left");
                 }
             });
 
-            // Close zoom modal when clicking outside
-            const zoomModal = document.getElementById('zoomModal');
-            if (zoomModal) {
-                zoomModal.addEventListener('click', function (e) {
-                    if (e.target === zoomModal) {
+            document.addEventListener("DOMContentLoaded", function () {
+                const profileImg = document.getElementById("profile-img");
+                const profileCard = document.getElementById("profile-card");
+
+                profileImg.addEventListener("click", function (event) {
+                    event.preventDefault();
+                    profileCard.classList.toggle("show");
+                });
+
+                document.addEventListener("click", function (event) {
+                    if (!profileCard.contains(event.target) && !profileImg.contains(event.target)) {
+                        profileCard.classList.remove("show");
+                    }
+                });
+
+                // Close zoom modal when clicking outside
+                const zoomModal = document.getElementById('zoomModal');
+                if (zoomModal) {
+                    zoomModal.addEventListener('click', function (e) {
+                        if (e.target === zoomModal) {
+                            zoomModal.classList.add('hidden');
+                        }
+                    });
+                }
+
+                // Close zoom modal with Escape key
+                document.addEventListener('keydown', function (e) {
+                    if (e.key === 'Escape' && !zoomModal.classList.contains('hidden')) {
                         zoomModal.classList.add('hidden');
                     }
                 });
-            }
-
-            // Close zoom modal with Escape key
-            document.addEventListener('keydown', function (e) {
-                if (e.key === 'Escape' && !zoomModal.classList.contains('hidden')) {
-                    zoomModal.classList.add('hidden');
-                }
             });
-        });
-    </script>
+        </script>
 </body>
 
 

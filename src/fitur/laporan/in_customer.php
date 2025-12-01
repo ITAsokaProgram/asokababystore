@@ -47,13 +47,6 @@ $token = $menuHandler->getToken();
 
 
     <style>
-        .btn.active {
-            background-color: transparent;
-            color: #ec4899;
-            outline: 2px solid #ec4899;
-            outline-offset: 1px;
-        }
-
         th.th-total-poin,
         th.th-periksa,
         th.th-tukar-poin,
@@ -90,7 +83,7 @@ $token = $menuHandler->getToken();
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
             transition: left 0.5s;
         }
 
@@ -127,17 +120,20 @@ $token = $menuHandler->getToken();
             z-index: auto;
             overflow: visible;
         }
+
         .dataTables_wrapper .dataTables_paginate .paginate_button.current,
         .dataTables_wrapper .dataTables_paginate .paginate_button:active {
             background: linear-gradient(90deg, #db2777 0%, #e11d48 100%);
             color: #fff !important;
             transform: scale(1.08);
         }
+
         .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
             background: linear-gradient(90deg, #f472b6 0%, #fb7185 100%);
             color: #fff !important;
             transform: scale(1.05);
         }
+
         .dataTables_wrapper .dataTables_paginate .paginate_button::before {
             display: none !important;
         }
@@ -169,7 +165,7 @@ $token = $menuHandler->getToken();
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-      
+
 
         /* Enhanced Loading Animation */
         .loading-spinner {
@@ -179,7 +175,9 @@ $token = $menuHandler->getToken();
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         /* Enhanced File Upload Area */
@@ -252,6 +250,7 @@ $token = $menuHandler->getToken();
                 opacity: 0;
                 transform: translateY(30px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -268,7 +267,7 @@ $token = $menuHandler->getToken();
                 margin: 0.5rem;
                 padding: 1rem;
             }
-            
+
             .image-grid {
                 grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
                 gap: 0.5rem;
@@ -283,7 +282,8 @@ $token = $menuHandler->getToken();
 
 
     <main id="main-content" class="flex-1 p-6 transition-all duration-300 ml-64 mt-10">
-        <div class="min-h-screen bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-pink-100 p-8 animate-fade-in-up">
+        <div
+            class="min-h-screen bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-pink-100 p-8 animate-fade-in-up">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
                 <div class="flex items-center gap-4">
                     <div class="bg-gradient-to-r from-pink-500 to-rose-400 p-3 rounded-xl shadow-lg">
@@ -295,7 +295,8 @@ $token = $menuHandler->getToken();
                     </div>
 
                 </div>
-                <div class="border-pink-100 bg-white/80 backdrop-blur rounded-xl shadow px-6 py-4 flex flex-col md:flex-row md:items-end gap-4 animate-fade-in-up">
+                <div
+                    class="border-pink-100 bg-white/80 backdrop-blur rounded-xl shadow px-6 py-4 flex flex-col md:flex-row md:items-end gap-4 animate-fade-in-up">
                     <div class="flex flex-col gap-1 md:mr-4">
                         <label for="filterRange" class="text-sm text-gray-600 font-semibold flex items-center gap-2">
                             <i class="fa fa-filter text-pink-400"></i> Filter
@@ -308,7 +309,8 @@ $token = $menuHandler->getToken();
                         </select>
                     </div>
                     <div class="flex flex-col gap-1 md:mr-4">
-                        <label for="filterRangeDate" class="text-sm text-gray-600 font-semibold flex items-center gap-2">
+                        <label for="filterRangeDate"
+                            class="text-sm text-gray-600 font-semibold flex items-center gap-2">
                             <i class="fa fa-calendar-days text-pink-400"></i> Tanggal
                         </label>
                         <div id="searchContainer" class="flex items-center relative">
@@ -320,7 +322,7 @@ $token = $menuHandler->getToken();
                     </div>
                     <div class="flex flex-col gap-1">
                         <div id="kode" class="flex items-center relative">
-                           
+
                         </div>
                     </div>
                 </div>
@@ -328,14 +330,15 @@ $token = $menuHandler->getToken();
             <!-- Enhanced Table Section -->
             <div class="max-w-8xl mx-auto relative">
                 <!-- Enhanced Loading State -->
-                <div id="loadingTable" class="absolute inset-0 flex justify-center items-center z-10 bg-white/80 backdrop-blur-sm rounded-2xl">
+                <div id="loadingTable"
+                    class="absolute inset-0 flex justify-center items-center z-10 bg-white/80 backdrop-blur-sm rounded-2xl">
                     <div class="text-center">
                         <div class="loading-spinner w-16 h-16 mx-auto mb-4"></div>
                         <p class="text-gray-600 font-semibold">Memuat data aktivitas pelanggan...</p>
                         <p class="text-gray-500 text-sm mt-2">Mohon tunggu sebentar</p>
                     </div>
                 </div>
-                
+
                 <!-- Enhanced Table Container -->
                 <div class="glass-card overflow-hidden animate-fade-in-up">
                     <div class="p-6 bg-gradient-to-r from-pink-50 to-rose-50 border-b border-pink-200">
@@ -363,9 +366,9 @@ $token = $menuHandler->getToken();
             </div>
         </div>
         <!-- Enhanced Detail Modal -->
-        <div id="modalTable" class="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 hidden animate-fade-in-up">
-            <div id="modalContent"
-                class="modal-glass w-full max-w-4xl mx-4 animate-fade-in-up">
+        <div id="modalTable"
+            class="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 hidden animate-fade-in-up">
+            <div id="modalContent" class="modal-glass w-full max-w-4xl mx-4 animate-fade-in-up">
 
                 <!-- Header Modal -->
                 <div class="bg-gradient-to-r from-pink-500 to-rose-500 text-white p-5 rounded-t-2xl shadow-lg">
@@ -379,7 +382,8 @@ $token = $menuHandler->getToken();
                                 <p class="text-pink-100 text-sm">Informasi lengkap aktivitas pelanggan</p>
                             </div>
                         </div>
-                        <button id="closeModal" class="text-white hover:text-pink-200 text-2xl bg-white/20 rounded-full p-3 shadow-lg transition-all duration-300 focus:outline-none hover:bg-white/30 transform hover:scale-110">
+                        <button id="closeModal"
+                            class="text-white hover:text-pink-200 text-2xl bg-white/20 rounded-full p-3 shadow-lg transition-all duration-300 focus:outline-none hover:bg-white/30 transform hover:scale-110">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
@@ -388,7 +392,8 @@ $token = $menuHandler->getToken();
                 <div class="p-4">
                     <div class="overflow-x-auto">
                         <table id="customerTableDetail" class="table-auto display min-w-full">
-                            <thead class="bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold uppercase text-xs">
+                            <thead
+                                class="bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold uppercase text-xs">
                                 <!-- Header tabel, akan diisi lewat JS -->
                             </thead>
                             <tbody class="text-gray-700 font-medium">
@@ -400,7 +405,8 @@ $token = $menuHandler->getToken();
             </div>
         </div>
         <!-- Enhanced Receipt Modal -->
-        <div id="strukModal" class="fixed bg-black/60 backdrop-blur-md inset-0 z-50 hidden items-center justify-center animate-fade-in-up">
+        <div id="strukModal"
+            class="fixed bg-black/60 backdrop-blur-md inset-0 z-50 hidden items-center justify-center animate-fade-in-up">
             <div class="modal-glass w-full max-w-5xl relative">
                 <!-- Enhanced Header -->
                 <div class="bg-gradient-to-r from-pink-500 to-rose-500 text-white p-6 rounded-t-2xl">
@@ -414,12 +420,13 @@ $token = $menuHandler->getToken();
                                 <p class="text-pink-100 text-sm">Informasi lengkap item yang dibeli</p>
                             </div>
                         </div>
-                        <button id="closeModal1" class="text-white hover:text-pink-200 text-2xl bg-white/20 rounded-full p-3 shadow-lg transition-all duration-300 focus:outline-none hover:bg-white/30 transform hover:scale-110">
+                        <button id="closeModal1"
+                            class="text-white hover:text-pink-200 text-2xl bg-white/20 rounded-full p-3 shadow-lg transition-all duration-300 focus:outline-none hover:bg-white/30 transform hover:scale-110">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
                 </div>
-                
+
                 <!-- Enhanced Content -->
                 <div class="p-6">
                     <div class="glass-card">
@@ -432,7 +439,8 @@ $token = $menuHandler->getToken();
         </div>
 
         <!-- Enhanced Upload Modal -->
-        <div id="modalUpload" class="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 hidden animate-fade-in-up">
+        <div id="modalUpload"
+            class="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 hidden animate-fade-in-up">
             <div class="modal-glass w-full max-w-md relative" id="modalUploadContent">
                 <!-- Enhanced Header -->
                 <div class="bg-gradient-to-r from-green-500 to-emerald-500 text-white p-6 rounded-t-2xl">
@@ -461,10 +469,7 @@ $token = $menuHandler->getToken();
                                     <p class="text-lg font-semibold text-gray-700 mb-2">Pilih File untuk Upload</p>
                                     <p class="text-sm text-gray-500">Drag & drop atau klik untuk memilih file</p>
                                 </div>
-                                <input type="file"
-                                    name="file_upload[]"
-                                    id="fileUpload"
-                                    accept="image/jpeg,image/png"
+                                <input type="file" name="file_upload[]" id="fileUpload" accept="image/jpeg,image/png"
                                     multiple
                                     class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-pink-50 file:text-pink-700 hover:file:bg-pink-100 transition-all duration-300" />
                             </div>
@@ -472,7 +477,7 @@ $token = $menuHandler->getToken();
 
                         <!-- Enhanced Preview Area -->
                         <div id="previewArea" class="image-grid mb-6"></div>
-                        
+
                         <!-- Enhanced Buttons -->
                         <div class="flex justify-end gap-3">
                             <button type="button" id="cancelUpload" class="btn-secondary">
@@ -485,7 +490,8 @@ $token = $menuHandler->getToken();
                     </form>
 
                     <!-- Enhanced Upload Overlay -->
-                    <div id="uploadOverlay" class="absolute inset-0 bg-white/90 backdrop-blur-md flex items-center justify-center rounded-2xl hidden z-20">
+                    <div id="uploadOverlay"
+                        class="absolute inset-0 bg-white/90 backdrop-blur-md flex items-center justify-center rounded-2xl hidden z-20">
                         <div class="text-center">
                             <div class="loading-spinner w-12 h-12 mx-auto mb-4"></div>
                             <p class="text-gray-700 font-semibold">Uploading files...</p>
@@ -497,7 +503,8 @@ $token = $menuHandler->getToken();
         </div>
 
         <!-- Enhanced Image Preview Modal -->
-        <div id="imageModal" class="fixed inset-0 bg-black/60 backdrop-blur-md flex justify-center items-center hidden z-50 animate-fade-in-up">
+        <div id="imageModal"
+            class="fixed inset-0 bg-black/60 backdrop-blur-md flex justify-center items-center hidden z-50 animate-fade-in-up">
             <div class="modal-glass max-w-6xl w-full">
                 <!-- Enhanced Header -->
                 <div class="bg-gradient-to-r from-blue-500 to-indigo-500 text-white p-6 rounded-t-2xl">
@@ -511,7 +518,7 @@ $token = $menuHandler->getToken();
                                 <p class="text-blue-100 text-sm">Lihat dan kelola gambar pelanggan</p>
                             </div>
                         </div>
-                        <button onclick="document.getElementById('imageModal').classList.add('hidden')" 
+                        <button onclick="document.getElementById('imageModal').classList.add('hidden')"
                             class="text-white hover:text-blue-200 text-2xl bg-white/20 rounded-full p-3 shadow-lg transition-all duration-300 focus:outline-none hover:bg-white/30 transform hover:scale-110">
                             <i class="fas fa-times"></i>
                         </button>
@@ -551,18 +558,14 @@ $token = $menuHandler->getToken();
                                             <p class="font-semibold text-gray-700">Pilih Gambar Baru</p>
                                             <p class="text-sm text-gray-500">Format: JPG, PNG</p>
                                         </div>
-                                        <input
-                                            type="file"
-                                            name="add_file[]"
-                                            id="addFile"
-                                            accept="image/jpeg,image/png"
+                                        <input type="file" name="add_file[]" id="addFile" accept="image/jpeg,image/png"
                                             multiple
                                             class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 transition-all duration-300" />
                                     </div>
                                 </div>
-                                
+
                                 <div id="previewAreaTambah" class="image-grid mb-4"></div>
-                                
+
                                 <div class="flex justify-end gap-3">
                                     <button type="submit" class="btn-primary">
                                         <i class="fa fa-upload mr-2"></i>Upload Gambar
@@ -573,7 +576,8 @@ $token = $menuHandler->getToken();
                     </div>
 
                     <!-- Enhanced Loading Overlay -->
-                    <div id="uploadOverlay+" class="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center hidden z-50">
+                    <div id="uploadOverlay+"
+                        class="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center hidden z-50">
                         <div class="modal-glass p-8 text-center">
                             <div class="loading-spinner w-16 h-16 mx-auto mb-4"></div>
                             <p class="text-gray-700 font-semibold text-lg">Mengunggah gambar...</p>
@@ -585,7 +589,8 @@ $token = $menuHandler->getToken();
         </div>
 
         <!-- Enhanced Large Image Modal -->
-        <div id="largeImageModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center hidden z-50 animate-fade-in-up">
+        <div id="largeImageModal"
+            class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center hidden z-50 animate-fade-in-up">
             <div class="modal-glass max-w-4xl w-full mx-4">
                 <div class="relative">
                     <button onclick="document.getElementById('largeImageModal').classList.add('hidden')"
@@ -613,9 +618,9 @@ $token = $menuHandler->getToken();
 
     <script>
         // Enhanced UI Interactions
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             // Sidebar toggle
-            document.getElementById("toggle-sidebar").addEventListener("click", function() {
+            document.getElementById("toggle-sidebar").addEventListener("click", function () {
                 document.getElementById("sidebar").classList.toggle("open");
             });
 
@@ -623,7 +628,7 @@ $token = $menuHandler->getToken();
             const sidebar = document.getElementById("sidebar");
             const closeBtn = document.getElementById("closeSidebar");
             if (closeBtn) {
-                closeBtn.addEventListener("click", function() {
+                closeBtn.addEventListener("click", function () {
                     sidebar.classList.remove("open");
                 });
             }
@@ -632,13 +637,13 @@ $token = $menuHandler->getToken();
             const closeModal1 = document.getElementById("closeModal1");
             const strukModal = document.getElementById("strukModal");
             if (closeModal1 && strukModal) {
-                closeModal1.addEventListener("click", function() {
+                closeModal1.addEventListener("click", function () {
                     strukModal.classList.add("hidden");
                 });
             }
 
             // Enhanced sidebar toggle with smooth animations
-            document.getElementById("toggle-hide").addEventListener("click", function() {
+            document.getElementById("toggle-hide").addEventListener("click", function () {
                 var sidebarTexts = document.querySelectorAll(".sidebar-text");
                 let mainContent = document.getElementById("main-content");
                 let sidebar = document.getElementById("sidebar");
@@ -683,13 +688,13 @@ $token = $menuHandler->getToken();
             const profileCard = document.getElementById("profile-card");
 
             if (profileImg && profileCard) {
-                profileImg.addEventListener("click", function(event) {
+                profileImg.addEventListener("click", function (event) {
                     event.preventDefault();
                     profileCard.classList.toggle("show");
                 });
 
                 // Close profile card when clicking outside
-                document.addEventListener("click", function(event) {
+                document.addEventListener("click", function (event) {
                     if (!profileCard.contains(event.target) && !profileImg.contains(event.target)) {
                         profileCard.classList.remove("show");
                     }
@@ -699,12 +704,12 @@ $token = $menuHandler->getToken();
             // Enhanced table row hover effects
             const tableRows = document.querySelectorAll('table tbody tr');
             tableRows.forEach(row => {
-                row.addEventListener('mouseenter', function() {
+                row.addEventListener('mouseenter', function () {
                     this.style.transform = 'scale(1.01)';
                     this.style.transition = 'all 0.3s ease';
                 });
-                
-                row.addEventListener('mouseleave', function() {
+
+                row.addEventListener('mouseleave', function () {
                     this.style.transform = 'scale(1)';
                 });
             });
@@ -712,11 +717,11 @@ $token = $menuHandler->getToken();
             // Enhanced button hover effects
             const buttons = document.querySelectorAll('.btn-primary, .btn-secondary');
             buttons.forEach(button => {
-                button.addEventListener('mouseenter', function() {
+                button.addEventListener('mouseenter', function () {
                     this.style.transform = 'translateY(-2px) scale(1.02)';
                 });
-                
-                button.addEventListener('mouseleave', function() {
+
+                button.addEventListener('mouseleave', function () {
                     this.style.transform = 'translateY(0) scale(1)';
                 });
             });
@@ -724,11 +729,11 @@ $token = $menuHandler->getToken();
             // Enhanced modal animations
             const modals = document.querySelectorAll('[id$="Modal"]');
             modals.forEach(modal => {
-                modal.addEventListener('show', function() {
+                modal.addEventListener('show', function () {
                     this.style.opacity = '0';
                     this.style.transform = 'scale(0.9)';
                     this.classList.remove('hidden');
-                    
+
                     setTimeout(() => {
                         this.style.opacity = '1';
                         this.style.transform = 'scale(1)';
@@ -745,7 +750,7 @@ $token = $menuHandler->getToken();
             // Enhanced file upload interactions
             const fileInputs = document.querySelectorAll('input[type="file"]');
             fileInputs.forEach(input => {
-                input.addEventListener('change', function() {
+                input.addEventListener('change', function () {
                     const fileUploadArea = this.closest('.file-upload-area');
                     if (fileUploadArea && this.files.length > 0) {
                         fileUploadArea.style.borderColor = '#10b981';
@@ -755,7 +760,7 @@ $token = $menuHandler->getToken();
             });
 
             // Enhanced scroll effects
-            window.addEventListener('scroll', function() {
+            window.addEventListener('scroll', function () {
                 const scrolled = window.pageYOffset;
                 const parallax = document.querySelector('.glass-container');
                 if (parallax) {

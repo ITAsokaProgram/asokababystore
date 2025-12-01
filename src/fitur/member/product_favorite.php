@@ -55,13 +55,6 @@ $queryString = http_build_query($queryParams);
 
     <link rel="stylesheet" href="/src/output2.css">
     <style>
-        .btn.active {
-            background-color: transparent;
-            color: #ec4899;
-            outline: 2px solid #ec4899;
-            outline-offset: 1px;
-        }
-
         /* --- Enhanced Glass & Card Styles --- */
         .glass-container {
             background: rgba(255, 255, 255, 0.80);

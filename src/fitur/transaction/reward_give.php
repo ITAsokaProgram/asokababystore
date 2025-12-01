@@ -74,12 +74,6 @@ $token = $menuHandler->getToken();
             --gray-900: #111827;
         }
 
-        .btn.active {
-            background-color: transparent;
-            color: var(--primary-color);
-            outline: 2px solid var(--primary-color);
-            outline-offset: 1px;
-        }
 
         .reward-card {
             transition: all 0.3s ease;
@@ -231,7 +225,8 @@ $token = $menuHandler->getToken();
                     <h1 class="text-3xl lg:text-4xl font-bold text-gray-800 text-center animate-fade-in-up">
                         Kelola Hadiah
                     </h1>
-                    <p class="text-gray-600 text-base mt-3 text-center max-w-md">Tambah dan kelola hadiah untuk member setia</p>
+                    <p class="text-gray-600 text-base mt-3 text-center max-w-md">Tambah dan kelola hadiah untuk member
+                        setia</p>
                 </div>
 
                 <!-- Action Buttons -->
@@ -249,7 +244,8 @@ $token = $menuHandler->getToken();
                             <i class="fas fa-bars-progress text-lg"></i>
                             <span>Histori Penukaran Hadiah</span>
                         </button>
-                        <button onclick="window.location.href='/src/fitur/transaction/rewards/histori_penerimaan_hadiah.php'"
+                        <button
+                            onclick="window.location.href='/src/fitur/transaction/rewards/histori_penerimaan_hadiah.php'"
                             class="px-8 py-4 warning-gradient text-white rounded-xl hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-3 shadow-md cursor-pointer font-semibold hover:scale-105 whitespace-nowrap">
                             <i class="fas fa-history text-lg"></i>
                             <span>Histori Penerimaan Hadiah</span>
@@ -303,11 +299,13 @@ $token = $menuHandler->getToken();
 
                         <!-- Filter Search -->
                         <div class="space-y-3 md:col-span-2">
-                            <label for="filterSearch" class="block text-sm font-semibold text-gray-700">Cari Hadiah</label>
+                            <label for="filterSearch" class="block text-sm font-semibold text-gray-700">Cari
+                                Hadiah</label>
                             <div class="relative">
                                 <input type="text" id="filterSearch" placeholder="Cari berdasarkan nama/plu/karyawan..."
                                     class="w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-700 placeholder-gray-400 transition-all duration-200 bg-white">
-                                <i class="fas fa-search absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                <i
+                                    class="fas fa-search absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                             </div>
                         </div>
                     </div>
@@ -320,17 +318,39 @@ $token = $menuHandler->getToken();
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="primary-gradient text-white">
                                     <tr>
-                                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider w-16">No</th>
-                                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider w-20">PLU</th>
-                                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider min-w-[200px]">Nama Hadiah</th>
-                                        <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider w-20">Poin</th>
-                                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider min-w-[150px]">Karyawan</th>
-                                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider w-24">NIK</th>
-                                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider w-32">Tgl. Dibuat</th>
-                                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider w-32">Tgl. Update</th>
-                                        <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider w-16">Qty</th>
-                                        <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider w-28">Cabang</th>
-                                        <th class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider w-32">Aksi</th>
+                                        <th
+                                            class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider w-16">
+                                            No</th>
+                                        <th
+                                            class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider w-20">
+                                            PLU</th>
+                                        <th
+                                            class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider min-w-[200px]">
+                                            Nama Hadiah</th>
+                                        <th
+                                            class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider w-20">
+                                            Poin</th>
+                                        <th
+                                            class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider min-w-[150px]">
+                                            Karyawan</th>
+                                        <th
+                                            class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider w-24">
+                                            NIK</th>
+                                        <th
+                                            class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider w-32">
+                                            Tgl. Dibuat</th>
+                                        <th
+                                            class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider w-32">
+                                            Tgl. Update</th>
+                                        <th
+                                            class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider w-16">
+                                            Qty</th>
+                                        <th
+                                            class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider w-28">
+                                            Cabang</th>
+                                        <th
+                                            class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider w-32">
+                                            Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tableBody" class="divide-y divide-gray-200 text-gray-700 text-sm bg-white">
@@ -342,10 +362,13 @@ $token = $menuHandler->getToken();
                 </div>
 
                 <!-- Pagination -->
-                <div class="mt-10 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6 pagination-container rounded-xl p-6 shadow-sm">
+                <div
+                    class="mt-10 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6 pagination-container rounded-xl p-6 shadow-sm">
                     <div class="flex items-center gap-4">
-                        <label for="pageSize" class="text-sm font-semibold text-gray-700 whitespace-nowrap">Tampilkan:</label>
-                        <select id="pageSize" class="px-4 py-2 rounded-lg border border-gray-300 text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 text-sm bg-white shadow-sm">
+                        <label for="pageSize"
+                            class="text-sm font-semibold text-gray-700 whitespace-nowrap">Tampilkan:</label>
+                        <select id="pageSize"
+                            class="px-4 py-2 rounded-lg border border-gray-300 text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200 text-sm bg-white shadow-sm">
                             <option value="5">5 per halaman</option>
                             <option value="10" selected>10 per halaman</option>
                             <option value="25">25 per halaman</option>
@@ -356,19 +379,28 @@ $token = $menuHandler->getToken();
                     <div class="text-sm text-gray-600 font-medium" id="dataInfo">Menampilkan data...</div>
 
                     <div class="flex items-center justify-center lg:justify-end">
-                        <div class="flex items-center gap-1 bg-white rounded-lg shadow-sm border border-gray-200 p-1 flex-wrap" id="paginationContainer">
-                            <button id="firstPage" class="p-3 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200" title="Halaman pertama">
+                        <div class="flex items-center gap-1 bg-white rounded-lg shadow-sm border border-gray-200 p-1 flex-wrap"
+                            id="paginationContainer">
+                            <button id="firstPage"
+                                class="p-3 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                                title="Halaman pertama">
                                 <i class="fas fa-angle-double-left text-gray-600 text-sm"></i>
                             </button>
-                            <button id="prevPage" class="p-3 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200" title="Sebelumnya">
+                            <button id="prevPage"
+                                class="p-3 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                                title="Sebelumnya">
                                 <i class="fas fa-angle-left text-gray-600 text-sm"></i>
                             </button>
                             <div class="flex items-center gap-1 mx-3" id="pageNumbers">
                             </div>
-                            <button id="nextPage" class="p-3 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200" title="Selanjutnya">
+                            <button id="nextPage"
+                                class="p-3 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                                title="Selanjutnya">
                                 <i class="fas fa-angle-right text-gray-600 text-sm"></i>
                             </button>
-                            <button id="lastPage" class="p-3 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200" title="Halaman terakhir">
+                            <button id="lastPage"
+                                class="p-3 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                                title="Halaman terakhir">
                                 <i class="fas fa-angle-double-right text-gray-600 text-sm"></i>
                             </button>
                         </div>
@@ -389,7 +421,8 @@ $token = $menuHandler->getToken();
                 </button>
 
                 <!-- Header -->
-                <div class="sticky top-0 z-20 bg-white/95 backdrop-blur-sm border-b border-gray-200 p-8 rounded-t-2xl shadow">
+                <div
+                    class="sticky top-0 z-20 bg-white/95 backdrop-blur-sm border-b border-gray-200 p-8 rounded-t-2xl shadow">
                     <h2 class="text-3xl font-bold text-gray-800 flex items-center gap-4">
                         <div class="primary-gradient p-4 rounded-2xl">
                             <i class="fas fa-gift text-white text-xl"></i>
@@ -459,7 +492,7 @@ $token = $menuHandler->getToken();
                                         placeholder="100" />
                                     <p class="text-xs text-gray-500">Jumlah poin yang harus dikumpulkan member</p>
                                 </div>
-                                
+
                             </div>
                         </div>
 
@@ -470,7 +503,8 @@ $token = $menuHandler->getToken();
                                 Gambar Hadiah
                             </h3>
 
-                            <div class="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center hover:border-indigo-400 transition-colors duration-200 bg-gray-50/50">
+                            <div
+                                class="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center hover:border-indigo-400 transition-colors duration-200 bg-gray-50/50">
                                 <div class="space-y-6">
                                     <i class="fas fa-cloud-upload-alt text-5xl text-gray-400"></i>
                                     <div>
@@ -594,16 +628,16 @@ $token = $menuHandler->getToken();
         }
 
         // Close modal when clicking outside
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             if (e.target.classList.contains('fixed') && e.target.id.includes('modal')) {
                 const modalId = e.target.id;
                 const contentId = e.target.querySelector('div').id;
                 closeModal(modalId, contentId);
             }
-        });     
+        });
 
         // Enhanced pagination and filtering animations
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // Add smooth transitions to all interactive elements
             const interactiveElements = document.querySelectorAll('button, select, input, .stats-card, .reward-card');
             interactiveElements.forEach(element => {
@@ -613,12 +647,12 @@ $token = $menuHandler->getToken();
             // Enhanced hover effects for stats cards
             const statsCards = document.querySelectorAll('.stats-card');
             statsCards.forEach(card => {
-                card.addEventListener('mouseenter', function() {
-                    gsap.to(this, {duration: 0.3, y: -5, boxShadow: '0 10px 30px rgba(0,0,0,0.1)'});
+                card.addEventListener('mouseenter', function () {
+                    gsap.to(this, { duration: 0.3, y: -5, boxShadow: '0 10px 30px rgba(0,0,0,0.1)' });
                 });
-                
-                card.addEventListener('mouseleave', function() {
-                    gsap.to(this, {duration: 0.3, y: 0, boxShadow: '0 4px 12px rgba(0,0,0,0.05)'});
+
+                card.addEventListener('mouseleave', function () {
+                    gsap.to(this, { duration: 0.3, y: 0, boxShadow: '0 4px 12px rgba(0,0,0,0.05)' });
                 });
             });
         });

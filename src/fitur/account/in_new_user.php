@@ -38,14 +38,7 @@ $token = $menuHandler->getToken();
   <link rel="stylesheet" href="../../style/default-font.css">
   <link rel="stylesheet" href="../../output2.css">
   <link rel="icon" type="image/png" href="../../../public/images/logo1.png">
-  <style>
-    .btn.active {
-      background-color: transparent;
-      color: #ec4899;
-      outline: 2px solid #ec4899;
-      outline-offset: 1px;
-    }
-  </style>
+
 </head>
 
 <body class="bg-gray-50 overflow-auto">

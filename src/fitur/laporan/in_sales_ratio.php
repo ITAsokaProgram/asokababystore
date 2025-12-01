@@ -44,15 +44,6 @@ if (!$menuHandler->initialize()) {
     <!-- Setting logo pada tab di website Anda / Favicon -->
     <link rel="icon" type="image/png" href="../../../public/images/logo1.png">
     <style>
-        .btn.active {
-            background-color: transparent;
-            /* background tidak diisi */
-            color: #ec4899;
-            /* warna teks bisa disesuaikan */
-            outline: 2px solid #ec4899;
-            outline-offset: 1px;
-        }
-
         /* --- Enhanced Table & Modal Styles --- */
         table th,
         table td {
@@ -324,7 +315,7 @@ if (!$menuHandler->initialize()) {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="../../js/in_sales_ratio.js"></script>
-     <!-- <script src="../../js/report/sales_ratio/main.js" type="module"></script> -->
+    <!-- <script src="../../js/report/sales_ratio/main.js" type="module"></script> -->
     <script src="../../js/middleware_auth.js"></script>
 
     <script>

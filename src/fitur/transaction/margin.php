@@ -44,15 +44,6 @@ $token = $menuHandler->getToken();
 
 
     <style>
-        .btn.active {
-            background-color: transparent;
-            /* background tidak diisi */
-            color: #ec4899;
-            /* warna teks bisa disesuaikan */
-            outline: 2px solid #ec4899;
-            outline-offset: 1px;
-        }
-
         th.th-total-poin,
         th.th-tukar-poin,
         th.th-sisa-poin,
@@ -68,7 +59,8 @@ $token = $menuHandler->getToken();
 
 
     <main id="main-content" class="flex-1 p-6 transition-all duration-300 ml-64 mt-10">
-        <div class="min-h-screen bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-white/30 p-6 animate-fade-in-up">
+        <div
+            class="min-h-screen bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-white/30 p-6 animate-fade-in-up">
             <!-- Judul Halaman -->
             <div class="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
                 <div class="flex items-center gap-4">
@@ -93,7 +85,9 @@ $token = $menuHandler->getToken();
                         <!-- Periode -->
                         <div class="flex flex-col w-full md:w-1/2">
                             <label for="periodeFilter" class="text-xs text-gray-600 mb-1">Cabang</label>
-                            <select class="border border-gray-300 rounded-xl px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400 transition hover:border-pink-400" id="cabangFilter">
+                            <select
+                                class="border border-gray-300 rounded-xl px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400 transition hover:border-pink-400"
+                                id="cabangFilter">
                                 <option value="">Pilih Cabang</option>
                             </select>
                         </div>
@@ -102,14 +96,17 @@ $token = $menuHandler->getToken();
                     <div class="flex flex-col md:flex-row items-end gap-4">
                         <div class="flex flex-col w-full md:w-1/2">
                             <label for="startDate" class="text-xs text-gray-600 mb-1">Tanggal Awal</label>
-                            <input type="date" id="startDate" class="border border-gray-300 rounded-xl px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400 transition hover:border-pink-400 w-full" />
+                            <input type="date" id="startDate"
+                                class="border border-gray-300 rounded-xl px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400 transition hover:border-pink-400 w-full" />
                         </div>
                         <div class="flex flex-col w-full md:w-1/2">
                             <label for="endDate" class="text-xs text-gray-600 mb-1">Tanggal Akhir</label>
-                            <input type="date" id="endDate" class="border border-gray-300 rounded-xl px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400 transition hover:border-pink-400 w-full" />
+                            <input type="date" id="endDate"
+                                class="border border-gray-300 rounded-xl px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400 transition hover:border-pink-400 w-full" />
                         </div>
                         <!-- Tombol Filter -->
-                        <button id="filter" class="bg-gradient-to-r from-pink-500 to-rose-400 hover:from-pink-600 hover:to-rose-500 text-white text-sm px-6 py-3 rounded-xl shadow-md flex items-center gap-2 transition-all duration-200 hover:scale-105">
+                        <button id="filter"
+                            class="bg-gradient-to-r from-pink-500 to-rose-400 hover:from-pink-600 hover:to-rose-500 text-white text-sm px-6 py-3 rounded-xl shadow-md flex items-center gap-2 transition-all duration-200 hover:scale-105">
                             <i class="fa fa-search mr-1"></i> Filter
                         </button>
                     </div>
@@ -117,7 +114,8 @@ $token = $menuHandler->getToken();
             </div>
 
             <!-- Tabel Data -->
-            <div class="overflow-x-auto max-w-full bg-white/90 backdrop-blur rounded-2xl shadow-xl border border-white/30 animate-fade-in-up">
+            <div
+                class="overflow-x-auto max-w-full bg-white/90 backdrop-blur rounded-2xl shadow-xl border border-white/30 animate-fade-in-up">
                 <table class="w-full table-auto text-sm text-left min-w-[900px]" id="allTable">
                     <thead class="bg-gradient-to-r from-pink-400 to-rose-400 text-white text-xs uppercase">
                         <tr>
@@ -151,11 +149,14 @@ $token = $menuHandler->getToken();
         </div>
     </main>
     <!-- Modal Wrapper -->
-    <div id="detailInvalid" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center animate-fade-in-up">
-        <div class="bg-white/95 backdrop-blur-md w-full max-w-3xl rounded-2xl shadow-2xl p-8 relative border border-white/30">
+    <div id="detailInvalid"
+        class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center animate-fade-in-up">
+        <div
+            class="bg-white/95 backdrop-blur-md w-full max-w-3xl rounded-2xl shadow-2xl p-8 relative border border-white/30">
 
             <!-- Close Button -->
-            <button type="button" id="closeModal" class="absolute top-4 right-4 text-gray-500 hover:text-red-500 text-2xl bg-white/80 rounded-full p-2 shadow-md transition-all duration-200">
+            <button type="button" id="closeModal"
+                class="absolute top-4 right-4 text-gray-500 hover:text-red-500 text-2xl bg-white/80 rounded-full p-2 shadow-md transition-all duration-200">
                 <i class="fas fa-times"></i>
             </button>
 
@@ -195,7 +196,8 @@ $token = $menuHandler->getToken();
     </div>
 
     <!-- Modal -->
-    <div id="informasi" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center animate-fade-in-up">
+    <div id="informasi"
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center animate-fade-in-up">
         <div class="bg-white/95 backdrop-blur-md rounded-2xl p-8 w-4/5 max-w-3xl shadow-2xl border border-white/30">
             <div class="mb-4 border-b pb-2 flex items-center gap-2">
                 <i class="fa fa-info-circle text-pink-500 text-xl"></i>

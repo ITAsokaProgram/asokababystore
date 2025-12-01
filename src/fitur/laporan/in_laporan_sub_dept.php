@@ -41,15 +41,6 @@ $token = $menuHandler->getToken();
 
 
     <style>
-        .btn.active {
-            background-color: transparent;
-            /* background tidak diisi */
-            color: #ec4899;
-            /* warna teks bisa disesuaikan */
-            outline: 2px solid #ec4899;
-            outline-offset: 1px;
-        }
-
         .w-0 {
             width: 0 !important;
             overflow: hidden;
@@ -140,7 +131,7 @@ $token = $menuHandler->getToken();
                         <label for="cabang" class="text-blue-700 font-medium mb-2">Cabang:</label>
                         <select id="cabang" name="cabang"
                             class="w-full px-5 py-3 h-[50px] border border-blue-100 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-400 transition-all duration-200">
-                            
+
                         </select>
                     </div>
 

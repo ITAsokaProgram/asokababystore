@@ -47,15 +47,6 @@ if (!$menuHandler->initialize()) {
     <link rel="icon" type="image/png" href="../../../public/images/logo1.png">
 
     <style>
-        .btn.active {
-            background-color: transparent;
-            /* background tidak diisi */
-            color: #ec4899;
-            /* warna teks bisa disesuaikan */
-            outline: 2px solid #ec4899;
-            outline-offset: 1px;
-        }
-
         /* --- Enhanced Table & Modal Styles --- */
         table th,
         table td {
@@ -154,7 +145,7 @@ if (!$menuHandler->initialize()) {
                     <!-- Export & Table -->
                     <div class="flex flex-col md:flex-row md:items-center md:justify-end mb-4 gap-4" id="wrapper-table">
                         <div class="flex items-center justify-end gap-2 mb-4">
-                            <button id="exportExcel" title="excel" 
+                            <button id="exportExcel" title="excel"
                                 class="bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 text-white px-4 py-2 rounded-xl shadow transition cursor-pointer text-lg flex items-center gap-2">
                                 <i class="fa-regular fa-file-excel"></i> Excel
                             </button>

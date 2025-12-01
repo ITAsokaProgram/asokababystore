@@ -43,80 +43,82 @@ $token = $menuHandler->getToken();
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
-        .btn.active {
-            background-color: transparent;
-            color: #374151;
-            outline: 2px solid #d1d5db;
-            outline-offset: 1px;
-        }
-        
         /* Enhanced animations */
         .fade-in-up {
             animation: fadeInUp 0.6s ease-out;
         }
-        
+
         @keyframes fadeInUp {
             from {
                 opacity: 0;
                 transform: translateY(30px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
-        
+
         .slide-in-left {
             animation: slideInLeft 0.5s ease-out;
         }
-        
+
         @keyframes slideInLeft {
             from {
                 opacity: 0;
                 transform: translateX(-30px);
             }
+
             to {
                 opacity: 1;
                 transform: translateX(0);
             }
         }
-        
+
         .glass-effect {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.2);
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
         }
-        
+
         .gradient-bg {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
-        
+
         .hover-lift {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
+
         .hover-lift:hover {
             transform: translateY(-4px);
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
-        
+
         .icon-bounce {
             animation: bounce 2s infinite;
         }
-        
+
         @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {
+
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
                 transform: translateY(0);
             }
+
             40% {
                 transform: translateY(-8px);
             }
+
             60% {
                 transform: translateY(-4px);
             }
         }
-        
+
         .text-gradient {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
@@ -144,9 +146,10 @@ $token = $menuHandler->getToken();
             <div class="glass-effect rounded-3xl shadow-2xl p-8 fade-in-up">
                 <!-- Back Button -->
                 <div class="mb-8">
-                    <button onclick="window.history.back()" 
+                    <button onclick="window.history.back()"
                         class="bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 px-6 py-3 rounded-xl font-semibold shadow-lg transition-all duration-300 flex items-center gap-3 hover-lift group">
-                        <i class="fas fa-arrow-left text-gray-500 group-hover:text-gray-700 transition-colors duration-300"></i>
+                        <i
+                            class="fas fa-arrow-left text-gray-500 group-hover:text-gray-700 transition-colors duration-300"></i>
                         <span>Kembali ke Daftar</span>
                     </button>
                 </div>
@@ -170,21 +173,21 @@ $token = $menuHandler->getToken();
         function closeModal() {
             document.getElementById("informasi").classList.add("hidden");
         }
-        
-        document.getElementById("toggle-sidebar").addEventListener("click", function() {
+
+        document.getElementById("toggle-sidebar").addEventListener("click", function () {
             document.getElementById("sidebar").classList.toggle("open");
         });
-        
-        document.addEventListener("DOMContentLoaded", function() {
+
+        document.addEventListener("DOMContentLoaded", function () {
             const sidebar = document.getElementById("sidebar");
             const closeBtn = document.getElementById("closeSidebar");
 
-            closeBtn.addEventListener("click", function() {
+            closeBtn.addEventListener("click", function () {
                 sidebar.classList.remove("open");
             });
         });
-        
-        document.getElementById("toggle-hide").addEventListener("click", function() {
+
+        document.getElementById("toggle-hide").addEventListener("click", function () {
             var sidebarTexts = document.querySelectorAll(".sidebar-text");
             let mainContent = document.getElementById("main-content");
             let sidebar = document.getElementById("sidebar");
@@ -215,18 +218,18 @@ $token = $menuHandler->getToken();
                 icon.classList.add("fa-angle-left");
             }
         });
-        
-        document.addEventListener("DOMContentLoaded", function() {
+
+        document.addEventListener("DOMContentLoaded", function () {
             const profileImg = document.getElementById("profile-img");
             const profileCard = document.getElementById("profile-card");
 
-            profileImg.addEventListener("click", function(event) {
+            profileImg.addEventListener("click", function (event) {
                 event.preventDefault();
                 profileCard.classList.toggle("show");
             });
 
             // Tutup profile-card jika klik di luar
-            document.addEventListener("click", function(event) {
+            document.addEventListener("click", function (event) {
                 if (!profileCard.contains(event.target) && !profileImg.contains(event.target)) {
                     profileCard.classList.remove("show");
                 }

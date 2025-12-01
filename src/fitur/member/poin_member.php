@@ -47,14 +47,7 @@ $token = $menuHandler->getToken();
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(6px);
         }
-        .btn.active {
-            background-color: transparent;
-            /* background tidak diisi */
-            color: #ec4899;
-            /* warna teks bisa disesuaikan */
-            outline: 2px solid #ec4899;
-            outline-offset: 1px;
-        }
+
 
         th.th-total-poin,
         th.th-tukar-poin,
@@ -62,19 +55,20 @@ $token = $menuHandler->getToken();
         th.th-transaksi {
             text-align: center !important;
         }
-        
+
         /* Custom animation for fade-in-up */
         @keyframes fadeInUp {
             from {
                 opacity: 0;
                 transform: translateY(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
-        
+
         .animate-fade-in-up {
             animation: fadeInUp 0.6s ease-out;
         }
@@ -88,7 +82,7 @@ $token = $menuHandler->getToken();
 
     <main id="main-content" class="flex-1 p-6 ml-64">
         <div id="progressOverlay"
-             class="fixed inset-0 loading-glass z-50 hidden flex flex-col items-center justify-center space-y-4 animate-fade-in-up">
+            class="fixed inset-0 loading-glass z-50 hidden flex flex-col items-center justify-center space-y-4 animate-fade-in-up">
             <div class="text-lg font-semibold text-blue-700 animate-pulse flex items-center gap-2">
                 <i class="fa fa-spinner fa-spin"></i> Loading data...
             </div>
@@ -99,16 +93,21 @@ $token = $menuHandler->getToken();
         <!-- Enhanced Container with Gradient Background -->
         <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-6">
             <div class="max-w-7xl mx-auto">
-               <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6 md:p-8 mb-8 animate-fade-in-up hover:-translate-y-1 hover:shadow-2xl transition-all duration-300">
-    
-                    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-y-8 lg:gap-x-6">
-                        
+                <div
+                    class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6 md:p-8 mb-8 animate-fade-in-up hover:-translate-y-1 hover:shadow-2xl transition-all duration-300">
+
+                    <div
+                        class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-y-8 lg:gap-x-6">
+
                         <div class="flex items-center space-x-4">
                             <div class="relative shrink-0">
-                                <div class="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg">
+                                <div
+                                    class="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg">
                                     <i class="fas fa-id-card text-white text-2xl"></i>
                                 </div>
-                                <div class="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white animate-pulse"></div>
+                                <div
+                                    class="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white animate-pulse">
+                                </div>
                             </div>
                             <div>
                                 <h2 class="text-2xl font-bold text-gray-800">Data Member Poin</h2>
@@ -119,33 +118,38 @@ $token = $menuHandler->getToken();
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="flex flex-col md:flex-row items-stretch md:items-center gap-6 w-full lg:w-auto">
-                            
+
                             <div class="flex items-center space-x-3 sm:space-x-4 shrink-0">
-                                <div class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg text-center hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
+                                <div
+                                    class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg text-center hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
                                     <div class="text-lg font-bold" id="totalMembers">0</div>
                                     <div class="text-xs opacity-90">Total</div>
                                 </div>
-                                <div class="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg text-center hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
+                                <div
+                                    class="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg text-center hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
                                     <div class="text-lg font-bold" id="activeMembers">0</div>
                                     <div class="text-xs opacity-90">Aktif</div>
                                 </div>
-                                <div class="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg text-center hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
+                                <div
+                                    class="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg text-center hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
                                     <div class="text-lg font-bold" id="totalNonActive">0</div>
                                     <div class="text-xs opacity-90">Nonaktif</div>
                                 </div>
                             </div>
-                            
+
                             <div class="flex flex-col sm:flex-row items-center gap-3 w-full">
                                 <div class="relative group w-full">
-                                    <input type="text" id="search" placeholder="Cari nama atau no HP..." 
+                                    <input type="text" id="search" placeholder="Cari nama atau no HP..."
                                         class="pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm w-full bg-white/90 backdrop-blur-sm shadow-sm transition-all duration-300 group-hover:shadow-md sm:min-w-[280px]">
                                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                        <i class="fas fa-search text-gray-400 group-hover:text-blue-500 transition-colors duration-200"></i>
+                                        <i
+                                            class="fas fa-search text-gray-400 group-hover:text-blue-500 transition-colors duration-200"></i>
                                     </div>
                                 </div>
-                                <select id="status" class="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white/90 backdrop-blur-sm shadow-sm transition-all duration-300 w-full sm:w-auto">
+                                <select id="status"
+                                    class="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white/90 backdrop-blur-sm shadow-sm transition-all duration-300 w-full sm:w-auto">
                                     <option value="allStatus">Semua Status</option>
                                     <option value="aktif">Aktif</option>
                                     <option value="nonaktif">Nonaktif</option>
@@ -157,7 +161,8 @@ $token = $menuHandler->getToken();
                 </div>
 
                 <!-- Table Container with Enhanced Design -->
-                <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-2xl border border-white/30 overflow-hidden animate-fade-in-up hover:-translate-y-1 hover:shadow-2xl transition-all duration-300">
+                <div
+                    class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-2xl border border-white/30 overflow-hidden animate-fade-in-up hover:-translate-y-1 hover:shadow-2xl transition-all duration-300">
                     <!-- Table Header with Gradient -->
                     <div class="bg-gradient-to-r from-blue-400 via-indigo-400 to-blue-500 p-6">
                         <div class="flex items-center justify-between">
@@ -174,15 +179,33 @@ $token = $menuHandler->getToken();
                         <table class="w-full table-auto text-sm text-left">
                             <thead class="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
                                 <tr>
-                                    <th class="px-6 py-4 text-left font-semibold text-gray-700 text-xs uppercase tracking-wider">No</th>
-                                    <th class="px-6 py-4 text-left font-semibold text-gray-700 text-xs uppercase tracking-wider">Nama Member</th>
-                                    <th class="px-6 py-4 text-left font-semibold text-gray-700 text-xs uppercase tracking-wider">No. HP</th>
-                                    <th class="px-6 py-4 text-left font-semibold text-gray-700 text-xs uppercase tracking-wider">Total Poin</th>
-                                    <th class="px-6 py-4 text-left font-semibold text-gray-700 text-xs uppercase tracking-wider">Sisa Poin</th>
-                                    <th class="px-6 py-4 text-left font-semibold text-gray-700 text-xs uppercase tracking-wider">Terakhir Transaksi</th>
-                                    <th class="px-6 py-4 text-left font-semibold text-gray-700 text-xs uppercase tracking-wider">Cabang</th>
-                                    <th class="px-6 py-4 text-left font-semibold text-gray-700 text-xs uppercase tracking-wider">Status</th>
-                                    <th class="px-6 py-4 text-left font-semibold text-gray-700 text-xs uppercase tracking-wider">Aksi</th>
+                                    <th
+                                        class="px-6 py-4 text-left font-semibold text-gray-700 text-xs uppercase tracking-wider">
+                                        No</th>
+                                    <th
+                                        class="px-6 py-4 text-left font-semibold text-gray-700 text-xs uppercase tracking-wider">
+                                        Nama Member</th>
+                                    <th
+                                        class="px-6 py-4 text-left font-semibold text-gray-700 text-xs uppercase tracking-wider">
+                                        No. HP</th>
+                                    <th
+                                        class="px-6 py-4 text-left font-semibold text-gray-700 text-xs uppercase tracking-wider">
+                                        Total Poin</th>
+                                    <th
+                                        class="px-6 py-4 text-left font-semibold text-gray-700 text-xs uppercase tracking-wider">
+                                        Sisa Poin</th>
+                                    <th
+                                        class="px-6 py-4 text-left font-semibold text-gray-700 text-xs uppercase tracking-wider">
+                                        Terakhir Transaksi</th>
+                                    <th
+                                        class="px-6 py-4 text-left font-semibold text-gray-700 text-xs uppercase tracking-wider">
+                                        Cabang</th>
+                                    <th
+                                        class="px-6 py-4 text-left font-semibold text-gray-700 text-xs uppercase tracking-wider">
+                                        Status</th>
+                                    <th
+                                        class="px-6 py-4 text-left font-semibold text-gray-700 text-xs uppercase tracking-wider">
+                                        Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="userTableBody" class="text-gray-700">
@@ -190,7 +213,7 @@ $token = $menuHandler->getToken();
                             </tbody>
                         </table>
                     </div>
-                    
+
                     <!-- Enhanced Pagination Section -->
                     <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-t border-gray-200">
                         <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -206,18 +229,20 @@ $token = $menuHandler->getToken();
                 </div>
             </div>
         </div>
-        
+
         <!-- Floating Action Button -->
         <!-- <div class="fixed bottom-8 right-8 z-50">
             <button class="w-14 h-14 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-full shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300 flex items-center justify-center">
                 <i class="fas fa-plus text-xl"></i>
             </button>
         </div> -->
-        
+
     </main>
     <!-- Enhanced Modal Wrapper -->
-    <div id="memberDetailModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-6xl relative animate-fade-in-up hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 border border-white/20 max-h-[90vh] overflow-hidden">
+    <div id="memberDetailModal"
+        class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div
+            class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-6xl relative animate-fade-in-up hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 border border-white/20 max-h-[90vh] overflow-hidden">
             <!-- Modal Header with Gradient -->
             <div class="bg-gradient-to-r from-blue-400 via-indigo-400 to-blue-500 rounded-t-2xl p-6">
                 <div class="flex items-center justify-between">
@@ -230,7 +255,8 @@ $token = $menuHandler->getToken();
                             <p class="text-white/80 text-sm">Informasi lengkap member dan transaksi poin</p>
                         </div>
                     </div>
-                    <button type="button" id="closeModal" class="text-white/80 hover:text-white transition-colors duration-200">
+                    <button type="button" id="closeModal"
+                        class="text-white/80 hover:text-white transition-colors duration-200">
                         <i class="fas fa-times text-xl"></i>
                     </button>
                 </div>
@@ -268,7 +294,7 @@ $token = $menuHandler->getToken();
                         <i class="fas fa-history mr-2 text-blue-500"></i>
                         Riwayat Transaksi Poin
                     </h3>
-                    
+
                     <div class="max-h-72 overflow-y-auto">
                         <table class="min-w-full text-sm text-left border border-gray-200 rounded-lg overflow-hidden">
                             <thead class="bg-gradient-to-r from-gray-100 to-gray-200">
@@ -276,7 +302,8 @@ $token = $menuHandler->getToken();
                                     <th class="p-3 border-b border-gray-200 font-semibold text-gray-700">No</th>
                                     <th class="p-3 border-b border-gray-200 font-semibold text-gray-700">No Bon</th>
                                     <th class="p-3 border-b border-gray-200 font-semibold text-gray-700">Tanggal</th>
-                                    <th class="p-3 border-b border-gray-200 font-semibold text-green-600">Poin Masuk</th>
+                                    <th class="p-3 border-b border-gray-200 font-semibold text-green-600">Poin Masuk
+                                    </th>
                                     <th class="p-3 border-b border-gray-200 font-semibold text-red-600">Poin Keluar</th>
                                     <th class="p-3 border-b border-gray-200 font-semibold text-blue-600">Total Poin</th>
                                     <th class="p-3 border-b border-gray-200 font-semibold text-gray-700">Cabang</th>
@@ -303,22 +330,22 @@ $token = $menuHandler->getToken();
     <!-- AlpineJS -->
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <!-- Custom JS -->
-    <script src="../../js/loadingbar.js"></script> 
+    <script src="../../js/loadingbar.js"></script>
     <script src="../../js/middleware_auth.js"></script>
     <script type="module" src="/src/js/member_internal/poin.js"></script>
     <script>
-        document.getElementById("toggle-sidebar").addEventListener("click", function() {
+        document.getElementById("toggle-sidebar").addEventListener("click", function () {
             document.getElementById("sidebar").classList.toggle("open");
         });
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             const sidebar = document.getElementById("sidebar");
             const closeBtn = document.getElementById("closeSidebar");
 
-            closeBtn.addEventListener("click", function() {
+            closeBtn.addEventListener("click", function () {
                 sidebar.classList.remove("open"); // Hilangkan class .open agar sidebar tertutup
             });
         });
-        document.getElementById("toggle-hide").addEventListener("click", function() {
+        document.getElementById("toggle-hide").addEventListener("click", function () {
             var sidebarTexts = document.querySelectorAll(".sidebar-text");
             let mainContent = document.getElementById("main-content");
             let sidebar = document.getElementById("sidebar");
@@ -349,17 +376,17 @@ $token = $menuHandler->getToken();
                 icon.classList.add("fa-angle-left");
             }
         });
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             const profileImg = document.getElementById("profile-img");
             const profileCard = document.getElementById("profile-card");
 
-            profileImg.addEventListener("click", function(event) {
+            profileImg.addEventListener("click", function (event) {
                 event.preventDefault();
                 profileCard.classList.toggle("show");
             });
 
             // Tutup profile-card jika klik di luar
-            document.addEventListener("click", function(event) {
+            document.addEventListener("click", function (event) {
                 if (!profileCard.contains(event.target) && !profileImg.contains(event.target)) {
                     profileCard.classList.remove("show");
                 }
