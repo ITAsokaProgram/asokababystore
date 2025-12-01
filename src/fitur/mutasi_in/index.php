@@ -12,6 +12,14 @@ $default_kd_store = 'all';
 $tgl_mulai = $_GET['tgl_mulai'] ?? $default_tgl_mulai;
 $tgl_selesai = $_GET['tgl_selesai'] ?? $default_tgl_selesai;
 $kd_store = $_GET['kd_store'] ?? $default_kd_store;
+
+require_once __DIR__ . '/../../component/menu_handler.php';
+
+$menuHandler = new MenuHandler('laporan_koreksi_plu');
+
+if (!$menuHandler->initialize()) {
+    exit();
+}
 ?>
 
 <!DOCTYPE html>

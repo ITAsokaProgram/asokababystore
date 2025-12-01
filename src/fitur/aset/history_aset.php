@@ -29,6 +29,13 @@ $tanggal_mutasi_to = $_GET['tanggal_mutasi_to'] ?? $default_tgl;
 
 // Tentukan colspan untuk tabel
 $colspan = ($kd_store == '') ? 20 : 19; // 19 kolom default + 1 (jika semua cabang)
+
+require_once __DIR__ . '/../../component/menu_handler.php';
+$menuHandler = new MenuHandler('history_aset');
+
+if (!$menuHandler->initialize()) {
+    exit();
+}
 ?><!doctype html>
 <html lang="id">
 

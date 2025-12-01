@@ -8,6 +8,14 @@ $default_selesai = date('Y-m-15');
 $tgl_mulai = $_GET['tgl_mulai'] ?? $default_mulai;
 $tgl_selesai = $_GET['tgl_selesai'] ?? $default_selesai;
 $kd_store = $_GET['kd_store'] ?? 'all';
+
+require_once __DIR__ . '/../../component/menu_handler.php';
+
+$menuHandler = new MenuHandler('koreksi_so');
+
+if (!$menuHandler->initialize()) {
+    exit();
+}
 ?>
 
 <!DOCTYPE html>

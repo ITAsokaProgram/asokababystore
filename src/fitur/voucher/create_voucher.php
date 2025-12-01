@@ -1,6 +1,13 @@
 <?php
 session_start();
 include '../../../aa_kon_sett.php';
+
+require_once __DIR__ . '/../../component/menu_handler.php';
+$menuHandler = new MenuHandler('voucher_create');
+
+if (!$menuHandler->initialize()) {
+    exit();
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">

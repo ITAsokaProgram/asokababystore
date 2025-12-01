@@ -8,6 +8,13 @@ for ($i = 0; $i < 7; $i++) {
     $date = date('Y-m-d', strtotime("-$i days"));
     $date_options[] = $date;
 }
+
+require_once __DIR__ . '/../../component/menu_handler.php';
+$menuHandler = new MenuHandler('laporan_log_backup');
+
+if (!$menuHandler->initialize()) {
+    exit();
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">

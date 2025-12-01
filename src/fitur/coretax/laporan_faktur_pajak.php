@@ -19,6 +19,12 @@ $page = (int) ($_GET['page'] ?? $default_page);
 if ($page < 1) {
     $page = 1;
 }
+require_once __DIR__ . '/../../component/menu_handler.php';
+
+$menuHandler = new MenuHandler('pajak_laporan_faktur');
+if (!$menuHandler->initialize()) {
+    exit();
+}
 ?>
 
 <!DOCTYPE html>

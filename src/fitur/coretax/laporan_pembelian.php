@@ -45,6 +45,11 @@ $list_bulan = [
     '11' => 'November',
     '12' => 'Desember'
 ];
+require_once __DIR__ . '/../../component/menu_handler.php';
+$menuHandler = new MenuHandler('pajak_laporan_pembelian');
+if (!$menuHandler->initialize()) {
+    exit();
+}
 ?>
 
 <!DOCTYPE html>

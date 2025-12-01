@@ -5,31 +5,32 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
-function build_sort_url($current_sort_by, $current_sort_dir, $new_sort_by) {
-    $params = $_GET;
-    $new_sort_dir = 'ASC';
-    if ($current_sort_by == $new_sort_by && $current_sort_dir == 'ASC') {
-        $new_sort_dir = 'DESC';
-    }
-    $params['sort_by'] = $new_sort_by;
-    $params['sort_dir'] = $new_sort_dir;
-    return '?' . http_build_query($params);
+function build_sort_url($current_sort_by, $current_sort_dir, $new_sort_by)
+{
+  $params = $_GET;
+  $new_sort_dir = 'ASC';
+  if ($current_sort_by == $new_sort_by && $current_sort_dir == 'ASC') {
+    $new_sort_dir = 'DESC';
+  }
+  $params['sort_by'] = $new_sort_by;
+  $params['sort_dir'] = $new_sort_dir;
+  return '?' . http_build_query($params);
 }
 
 require_once __DIR__ . '/../../component/menu_handler.php';
-$menuHandler = new MenuHandler('shopee_dashboard'); 
+$menuHandler = new MenuHandler('shopee_terima_barang');
 if (!$menuHandler->initialize()) {
-    exit();
+  exit();
 }
 
 $vendors = [];
 $stok_items = [];
-$filter_kd_store = '9998';  
+$filter_kd_store = '9998';
 $result_vendors = $conn->query("SELECT DISTINCT VENDOR FROM s_stok_ol WHERE KD_STORE = '9998' AND VENDOR IS NOT NULL AND VENDOR != '' ORDER BY VENDOR");
 if ($result_vendors) {
-    while ($row = $result_vendors->fetch_assoc()) {
-        $vendors[] = $row['VENDOR'];
-    }
+  while ($row = $result_vendors->fetch_assoc()) {
+    $vendors[] = $row['VENDOR'];
+  }
 }
 $filter_vendor = $_GET['vendor'] ?? 'ALL';
 $filter_plu = $_GET['plu'] ?? '';
@@ -39,71 +40,72 @@ $allowed_sort_cols = ['plu', 'ITEM_N', 'DESCP', 'VENDOR', 'Qty', 'hrg_beli', 'pr
 $sort_by = $_GET['sort_by'] ?? 'DESCP';
 $sort_dir = $_GET['sort_dir'] ?? 'ASC';
 if (!in_array($sort_by, $allowed_sort_cols)) {
-    $sort_by = 'DESCP';
+  $sort_by = 'DESCP';
 }
 if (!in_array(strtoupper($sort_dir), ['ASC', 'DESC'])) {
-    $sort_dir = 'ASC';
+  $sort_dir = 'ASC';
 }
 $nama_supplier = '';
 if (!empty($filter_vendor) && $filter_vendor !== 'ALL') {
-    $stmt_supp = $conn->prepare("SELECT nama_supp FROM supplier WHERE kode_supp = ?");
-    if ($stmt_supp) {
-        $stmt_supp->bind_param("s", $filter_vendor);
-        $stmt_supp->execute();
-        $result_supp = $stmt_supp->get_result();
-        if ($row_supp = $result_supp->fetch_assoc()) {
-            $nama_supplier = $row_supp['nama_supp'];
-        }
-        $stmt_supp->close();
+  $stmt_supp = $conn->prepare("SELECT nama_supp FROM supplier WHERE kode_supp = ?");
+  if ($stmt_supp) {
+    $stmt_supp->bind_param("s", $filter_vendor);
+    $stmt_supp->execute();
+    $result_supp = $stmt_supp->get_result();
+    if ($row_supp = $result_supp->fetch_assoc()) {
+      $nama_supplier = $row_supp['nama_supp'];
     }
+    $stmt_supp->close();
+  }
 }
 if (!empty($filter_vendor)) {
-    $params = [];
-    $types = "";
-    $sql_stok = "SELECT KD_STORE, plu, ITEM_N, DESCP, VENDOR, avg_cost, hrg_beli, ppn, netto, price, Qty 
+  $params = [];
+  $types = "";
+  $sql_stok = "SELECT KD_STORE, plu, ITEM_N, DESCP, VENDOR, avg_cost, hrg_beli, ppn, netto, price, Qty 
                  FROM s_stok_ol 
                  WHERE KD_STORE = ?";
-    $params[] = $filter_kd_store;
+  $params[] = $filter_kd_store;
+  $types .= "s";
+  if ($filter_vendor !== 'ALL') {
+    $sql_stok .= " AND VENDOR = ?";
+    $params[] = $filter_vendor;
     $types .= "s";
-    if ($filter_vendor !== 'ALL') {
-        $sql_stok .= " AND VENDOR = ?";
-        $params[] = $filter_vendor;
-        $types .= "s";
+  }
+  if (!empty($filter_plu)) {
+    $sql_stok .= " AND plu LIKE ?";
+    $params[] = "%" . $filter_plu . "%";
+    $types .= "s";
+  }
+  if (!empty($filter_sku)) {
+    $sql_stok .= " AND ITEM_N LIKE ?";
+    $params[] = "%" . $filter_sku . "%";
+    $types .= "s";
+  }
+  if (!empty($filter_descp)) {
+    $sql_stok .= " AND DESCP LIKE ?";
+    $params[] = "%" . $filter_descp . "%";
+    $types .= "s";
+  }
+  $sql_stok .= " ORDER BY $sort_by $sort_dir";
+  $stmt = $conn->prepare($sql_stok);
+  if ($stmt) {
+    if (count($params) > 0) {
+      $stmt->bind_param($types, ...$params);
     }
-    if (!empty($filter_plu)) {
-        $sql_stok .= " AND plu LIKE ?";
-        $params[] = "%" . $filter_plu . "%";
-        $types .= "s";
+    $stmt->execute();
+    $result_stok = $stmt->get_result();
+    if ($result_stok) {
+      while ($row = $result_stok->fetch_assoc()) {
+        $stok_items[] = $row;
+      }
     }
-    if (!empty($filter_sku)) {
-        $sql_stok .= " AND ITEM_N LIKE ?";
-        $params[] = "%" . $filter_sku . "%";
-        $types .= "s";
-    }
-    if (!empty($filter_descp)) {
-        $sql_stok .= " AND DESCP LIKE ?";
-        $params[] = "%" . $filter_descp . "%";
-        $types .= "s";
-    }
-    $sql_stok .= " ORDER BY $sort_by $sort_dir";  
-    $stmt = $conn->prepare($sql_stok);
-    if ($stmt) {
-        if (count($params) > 0) {
-            $stmt->bind_param($types, ...$params);
-        }
-        $stmt->execute();
-        $result_stok = $stmt->get_result();
-        if ($result_stok) {
-            while ($row = $result_stok->fetch_assoc()) {
-                $stok_items[] = $row;
-            }
-        }
-        $stmt->close();
-    }
+    $stmt->close();
+  }
 }
 ?>
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -120,176 +122,208 @@ if (!empty($filter_vendor)) {
   <link rel="icon" type="image/png" href="../../../public/images/logo1.png">
   <style>
     * {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     }
+
     .filter-card {
-        background: white;
-        border-radius: 16px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        transition: transform 0.2s;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      transition: transform 0.2s;
     }
+
     .filter-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
     }
+
     .input-modern {
-        border: 2px solid #e2e8f0;
-        border-radius: 10px;
-        padding: 10px 14px;
-        transition: all 0.3s;
-        font-size: 14px;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 10px 14px;
+      transition: all 0.3s;
+      font-size: 14px;
     }
+
     .input-modern:focus {
-        outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
     }
+
     .btn-secondary {
-        background: #f1f5f9;
-        color: #475569;
-        border-radius: 10px;
-        padding: 10px 20px;
-        font-weight: 600;
-        transition: all 0.3s;
+      background: #f1f5f9;
+      color: #475569;
+      border-radius: 10px;
+      padding: 10px 20px;
+      font-weight: 600;
+      transition: all 0.3s;
     }
+
     .btn-secondary:hover {
-        background: #e2e8f0;
+      background: #e2e8f0;
     }
+
     #temp-receipt-table {
-        border: 1px solid #e2e8f0;
+      border: 1px solid #e2e8f0;
     }
 
     #temp-receipt-table th,
     #temp-receipt-table td {
-        border-bottom: 1px solid #e2e8f0;
-        border-right: 1px solid #e2e8f0;
+      border-bottom: 1px solid #e2e8f0;
+      border-right: 1px solid #e2e8f0;
     }
 
     #temp-receipt-table th:last-child,
     #temp-receipt-table td:last-child {
-        border-right: none;
+      border-right: none;
     }
-    
+
     #temp-receipt-table tfoot tr:last-child td {
-        border-bottom: none;
+      border-bottom: none;
     }
+
     .table-container {
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     }
+
     .table-modern {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
     }
+
     .table-modern thead th {
-        padding: 16px 12px;
-        font-weight: 600;
-        font-size: 13px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        position: sticky;
-        top: 0;
-        z-index: 10;
-        background-color: #f8fafc; /* Menambahkan background agar header tidak transparan saat scroll */
+      padding: 16px 12px;
+      font-weight: 600;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background-color: #f8fafc;
+      /* Menambahkan background agar header tidak transparan saat scroll */
     }
+
     .table-modern thead th a {
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-        gap: 6px;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
+
     .table-modern tbody tr {
-        background: white;
-        transition: all 0.2s;
+      background: white;
+      transition: all 0.2s;
     }
+
     .table-modern tbody tr:hover {
-        background: #f8fafc;
-        /* Hapus transform scale agar lebih rapi */
+      background: #f8fafc;
+      /* Hapus transform scale agar lebih rapi */
     }
+
     .table-modern tbody td {
-        padding: 14px 12px;
-        border-bottom: 1px solid #f1f5f9;
-        font-size: 14px;
+      padding: 14px 12px;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 14px;
     }
+
     .input-qty {
-        width: 90px;
-        border: 2px solid #e2e8f0;
-        border-radius: 8px;
-        padding: 8px;
-        text-align: center;
-        font-weight: 600;
-        transition: all 0.3s;
+      width: 90px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 8px;
+      text-align: center;
+      font-weight: 600;
+      transition: all 0.3s;
     }
+
     .input-qty:focus {
-        outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
     }
+
     .badge {
-        display: inline-block;
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
     }
+
     .badge-info {
-        background: #dbeafe;
-        color: #1e40af;
+      background: #dbeafe;
+      color: #1e40af;
     }
+
     .badge-warning {
-        background: #fef3c7;
-        color: #92400e;
+      background: #fef3c7;
+      color: #92400e;
     }
+
     .modal-overlay {
-        background: rgba(0, 0, 0, 0.6);
-        backdrop-filter: blur(4px);
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
     }
+
     .modal-content {
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
-        animation: slideUp 0.3s ease-out;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+      animation: slideUp 0.3s ease-out;
     }
+
     @keyframes slideUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
+
     .link-history {
-        color: #667eea;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s;
+      color: #667eea;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
     }
+
     .link-history:hover {
-        color: #764ba2;
-        text-decoration: underline;
+      color: #764ba2;
+      text-decoration: underline;
     }
+
     .scroll-container {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
     }
+
     .scroll-container::-webkit-scrollbar {
-        height: 8px;
+      height: 8px;
     }
+
     .scroll-container::-webkit-scrollbar-track {
       background: #f1f5f9;
-        border-radius: 10px;
+      border-radius: 10px;
     }
+
     .scroll-container::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
-        border-radius: 10px;
+      background: #cbd5e1;
+      border-radius: 10px;
     }
+
     .scroll-container::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8;
+      background: #94a3b8;
     }
+
     .btn-primary {
       background: #ffeaf0;
       color: gray;
@@ -299,9 +333,11 @@ if (!empty($filter_vendor)) {
       font-weight: 600;
       transition: all 0.3s;
     }
-     .btn-primary:hover {
+
+    .btn-primary:hover {
       transform: translateY(-2px);
     }
+
     .btn-success {
       background: linear-gradient(135deg, #10b981 0%, #059669 100%);
       color: white;
@@ -310,19 +346,21 @@ if (!empty($filter_vendor)) {
       font-weight: 600;
       box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
     }
+
     .btn-danger {
       background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-      color:white;
+      color: white;
     }
   </style>
 </head>
+
 <body class="bg-gray-50">
   <?php include '../../component/navigation_report.php' ?>
   <?php include '../../component/sidebar_report.php' ?>
   <main id="main-content" class="flex-1 p-6 ml-64">
     <section class="min-h-screen">
       <div class="max-w-7xl mx-auto">
-        
+
         <div class="header-card p-6 rounded-2xl mb-6">
           <div class="flex items-center justify-between flex-wrap gap-4">
             <div class="flex items-center gap-4">
@@ -334,13 +372,14 @@ if (!empty($filter_vendor)) {
                 <p class="text-sm text-gray-600">Pusat</p>
               </div>
             </div>
-            
-            </div>
+
+          </div>
         </div>
-        
+
         <div class="filter-card p-6 mb-6">
           <div class="flex items-center justify-between">
-            <button type="button" id="toggle-filter-section" class="flex items-center gap-3 text-lg font-bold text-gray-800 hover:text-purple-600 transition-colors">
+            <button type="button" id="toggle-filter-section"
+              class="flex items-center gap-3 text-lg font-bold text-gray-800 hover:text-purple-600 transition-colors">
               <i class="fas fa-chevron-down text-purple-600 transition-transform duration-300" id="filter-chevron"></i>
               <i class="fas fa-filter text-purple-600"></i>
               <span class="text-lg font-bold text-gray-800">Produk yang tersedia di pusat</span>
@@ -355,7 +394,8 @@ if (!empty($filter_vendor)) {
           </div>
 
           <div id="filter-content" class="space-y-6">
-            <form method="GET" action="terima_barang.php" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+            <form method="GET" action="terima_barang.php"
+              class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">
                   <i class="fas fa-store text-purple-600 mr-1"></i>
@@ -376,21 +416,24 @@ if (!empty($filter_vendor)) {
                   <i class="fas fa-barcode text-purple-600 mr-1"></i>
                   PLU
                 </label>
-                <input type="text" name="plu" class="input-modern w-full" value="<?php echo htmlspecialchars($filter_plu); ?>" placeholder="Cari PLU...">
+                <input type="text" name="plu" class="input-modern w-full"
+                  value="<?php echo htmlspecialchars($filter_plu); ?>" placeholder="Cari PLU...">
               </div>
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">
                   <i class="fas fa-tag text-purple-600 mr-1"></i>
                   SKU
                 </label>
-                <input type="text" name="sku" class="input-modern w-full" value="<?php echo htmlspecialchars($filter_sku); ?>" placeholder="Cari SKU...">
+                <input type="text" name="sku" class="input-modern w-full"
+                  value="<?php echo htmlspecialchars($filter_sku); ?>" placeholder="Cari SKU...">
               </div>
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">
                   <i class="fas fa-align-left text-purple-600 mr-1"></i>
                   Deskripsi
                 </label>
-                <input type="text" name="descp" class="input-modern w-full" value="<?php echo htmlspecialchars($filter_descp); ?>" placeholder="Cari Deskripsi...">
+                <input type="text" name="descp" class="input-modern w-full"
+                  value="<?php echo htmlspecialchars($filter_descp); ?>" placeholder="Cari Deskripsi...">
               </div>
               <div class="lg:col-span-4">
                 <button type="submit" class="btn-primary inline-flex items-center gap-2 w-full md:w-auto">
@@ -401,53 +444,60 @@ if (!empty($filter_vendor)) {
             </form>
 
             <?php if (!empty($stok_items)): ?>
-            <div class="border-t border-gray-200 pt-6">
-              <h3 class="text-lg font-bold text-gray-800 mb-4">
-                <i class="fas fa-search text-purple-600 mr-2"></i>
-                Hasil Pencarian Stok (<?php echo count($stok_items); ?> item ditemukan)
-              </h3>
-              <div class="table-container scroll-container">
-                <table class="table-modern" id="stock-table" style="min-width: 1500px;">
-                  <thead>
-                    <tr>
-                      <?php  
-                      $sort_icon = function($col_name) use ($sort_by, $sort_dir) {
+              <div class="border-t border-gray-200 pt-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">
+                  <i class="fas fa-search text-purple-600 mr-2"></i>
+                  Hasil Pencarian Stok (<?php echo count($stok_items); ?> item ditemukan)
+                </h3>
+                <div class="table-container scroll-container">
+                  <table class="table-modern" id="stock-table" style="min-width: 1500px;">
+                    <thead>
+                      <tr>
+                        <?php
+                        $sort_icon = function ($col_name) use ($sort_by, $sort_dir) {
                           if ($sort_by == $col_name) {
-                              echo ($sort_dir == 'ASC') ? ' <i class="fas fa-sort-up"></i>' : ' <i class="fas fa-sort-down"></i>';
+                            echo ($sort_dir == 'ASC') ? ' <i class="fas fa-sort-up"></i>' : ' <i class="fas fa-sort-down"></i>';
                           } else {
-                              echo ' <i class="fas fa-sort" style="opacity: 0.3"></i>';
+                            echo ' <i class="fas fa-sort" style="opacity: 0.3"></i>';
                           }
-                      };
-                      ?>
-                      <th>
-                        <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'plu'); ?>">PLU<?php $sort_icon('plu'); ?></a>
-                      </th>
-                      <th>
-                        <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'ITEM_N'); ?>">SKU<?php $sort_icon('ITEM_N'); ?></a>
-                      </th>
-                      <th style="min-width: 250px;">
-                        <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'DESCP'); ?>">Deskripsi<?php $sort_icon('DESCP'); ?></a>
-                      </th>
-                      <?php if ($filter_vendor === 'ALL'): ?>
+                        };
+                        ?>
                         <th>
-                          <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'VENDOR'); ?>">Vendor<?php $sort_icon('VENDOR'); ?></a>
+                          <a
+                            href="<?php echo build_sort_url($sort_by, $sort_dir, 'plu'); ?>">PLU<?php $sort_icon('plu'); ?></a>
                         </th>
-                      <?php endif; ?>
-                      <th>
-                        <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'Qty'); ?>">Stok Saat Ini<?php $sort_icon('Qty'); ?></a>
-                      </th>
-                      <th>
-                        <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'hrg_beli'); ?>">Hrg. Beli<?php $sort_icon('hrg_beli'); ?></a>
-                      </th>
-                      <th>
-                        <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'price'); ?>">Hrg. Jual<?php $sort_icon('price'); ?></a>
-                      </th>
-                      <th>Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <?php foreach ($stok_items as $item): ?>
-                      <tr data-plu="<?php echo htmlspecialchars($item['plu']); ?>"
+                        <th>
+                          <a
+                            href="<?php echo build_sort_url($sort_by, $sort_dir, 'ITEM_N'); ?>">SKU<?php $sort_icon('ITEM_N'); ?></a>
+                        </th>
+                        <th style="min-width: 250px;">
+                          <a
+                            href="<?php echo build_sort_url($sort_by, $sort_dir, 'DESCP'); ?>">Deskripsi<?php $sort_icon('DESCP'); ?></a>
+                        </th>
+                        <?php if ($filter_vendor === 'ALL'): ?>
+                          <th>
+                            <a
+                              href="<?php echo build_sort_url($sort_by, $sort_dir, 'VENDOR'); ?>">Vendor<?php $sort_icon('VENDOR'); ?></a>
+                          </th>
+                        <?php endif; ?>
+                        <th>
+                          <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'Qty'); ?>">Stok Saat
+                            Ini<?php $sort_icon('Qty'); ?></a>
+                        </th>
+                        <th>
+                          <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'hrg_beli'); ?>">Hrg.
+                            Beli<?php $sort_icon('hrg_beli'); ?></a>
+                        </th>
+                        <th>
+                          <a href="<?php echo build_sort_url($sort_by, $sort_dir, 'price'); ?>">Hrg.
+                            Jual<?php $sort_icon('price'); ?></a>
+                        </th>
+                        <th>Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <?php foreach ($stok_items as $item): ?>
+                        <tr data-plu="<?php echo htmlspecialchars($item['plu']); ?>"
                           data-descp="<?php echo htmlspecialchars($item['DESCP']); ?>"
                           data-avg-cost="<?php echo htmlspecialchars($item['avg_cost']); ?>"
                           data-hrg-beli="<?php echo htmlspecialchars($item['hrg_beli']); ?>"
@@ -456,46 +506,47 @@ if (!empty($filter_vendor)) {
                           data-price="<?php echo htmlspecialchars($item['price']); ?>"
                           data-vendor="<?php echo htmlspecialchars($item['VENDOR']); ?>"
                           data-item-n="<?php echo htmlspecialchars($item['ITEM_N']); ?>">
-                        <td class="font-semibold text-gray-900"><?php echo htmlspecialchars($item['plu']); ?></td>
-                        <td><?php echo htmlspecialchars($item['ITEM_N']); ?></td>
-                        <td>
-                          <span class="link-history open-history-modal"
-                                data-plu="<?php echo htmlspecialchars($item['plu']); ?>"
-                                data-descp="<?php echo htmlspecialchars($item['DESCP']); ?>">
-                            <?php echo htmlspecialchars($item['DESCP']); ?>
-                          </span>
-                        </td>
-                        <?php if ($filter_vendor === 'ALL'): ?>
-                          <td><span class="badge badge-info"><?php echo htmlspecialchars($item['VENDOR']); ?></span></td>
-                        <?php endif; ?>
-                        <td><?php echo htmlspecialchars($item['Qty']); ?></td>
-                        <td>Rp <?php echo number_format($item['hrg_beli'], 0, ',', '.'); ?></td>
-                        <td>Rp <?php echo number_format($item['price'], 0, ',', '.'); ?></td>
-                        <td class="flex items-center gap-1">
-                            <button type="button" class="btn-secondary btn-add-to-temp text-xs py-2 px-3 inline-flex items-center gap-1">
-                                <i class="fas fa-plus"></i> Tambah
+                          <td class="font-semibold text-gray-900"><?php echo htmlspecialchars($item['plu']); ?></td>
+                          <td><?php echo htmlspecialchars($item['ITEM_N']); ?></td>
+                          <td>
+                            <span class="link-history open-history-modal"
+                              data-plu="<?php echo htmlspecialchars($item['plu']); ?>"
+                              data-descp="<?php echo htmlspecialchars($item['DESCP']); ?>">
+                              <?php echo htmlspecialchars($item['DESCP']); ?>
+                            </span>
+                          </td>
+                          <?php if ($filter_vendor === 'ALL'): ?>
+                            <td><span class="badge badge-info"><?php echo htmlspecialchars($item['VENDOR']); ?></span></td>
+                          <?php endif; ?>
+                          <td><?php echo htmlspecialchars($item['Qty']); ?></td>
+                          <td>Rp <?php echo number_format($item['hrg_beli'], 0, ',', '.'); ?></td>
+                          <td>Rp <?php echo number_format($item['price'], 0, ',', '.'); ?></td>
+                          <td class="flex items-center gap-1">
+                            <button type="button"
+                              class="btn-secondary btn-add-to-temp text-xs py-2 px-3 inline-flex items-center gap-1">
+                              <i class="fas fa-plus"></i> Tambah
                             </button>
-                            <button type="button" 
-                                    class="btn-danger btn-delete-stok-ol text-xs py-2 px-3 inline-flex items-center gap-1 rounded-md"
-                                    data-plu="<?php echo htmlspecialchars($item['plu']); ?>"
-                                    data-kd-store="<?php echo htmlspecialchars($item['KD_STORE']); ?>"
-                                    data-descp="<?php echo htmlspecialchars($item['DESCP']); ?>">
-                                <i class="fas fa-trash"></i> Hapus
+                            <button type="button"
+                              class="btn-danger btn-delete-stok-ol text-xs py-2 px-3 inline-flex items-center gap-1 rounded-md"
+                              data-plu="<?php echo htmlspecialchars($item['plu']); ?>"
+                              data-kd-store="<?php echo htmlspecialchars($item['KD_STORE']); ?>"
+                              data-descp="<?php echo htmlspecialchars($item['DESCP']); ?>">
+                              <i class="fas fa-trash"></i> Hapus
                             </button>
-                        </td>
-                      </tr>
-                    <?php endforeach; ?>
-                  </tbody>
-                </table>
+                          </td>
+                        </tr>
+                      <?php endforeach; ?>
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
             <?php elseif (!empty($filter_vendor)): ?>
-            <div class="border-t border-gray-200 pt-6">
-              <div class="text-center p-8">
-                <i class="fas fa-inbox text-gray-300 text-5xl mb-4"></i>
-                <p class="text-gray-600">Tidak ada data stok ditemukan untuk filter ini.</p>
+              <div class="border-t border-gray-200 pt-6">
+                <div class="text-center p-8">
+                  <i class="fas fa-inbox text-gray-300 text-5xl mb-4"></i>
+                  <p class="text-gray-600">Tidak ada data stok ditemukan untuk filter ini.</p>
+                </div>
               </div>
-            </div>
             <?php endif; ?>
           </div>
         </div>
@@ -506,19 +557,24 @@ if (!empty($filter_vendor)) {
             overflow: hidden;
             opacity: 1;
           }
+
           #filter-content.no-transition {
             transition: none;
           }
+
           #filter-content.with-transition {
             transition: max-height 0.4s ease-in-out, opacity 0.3s ease-in-out;
           }
+
           #filter-content.collapsed {
             max-height: 0;
             opacity: 0;
           }
+
           #filter-chevron {
             transition: transform 0.3s ease-in-out;
           }
+
           #filter-chevron.rotated {
             transform: rotate(-90deg);
           }
@@ -548,7 +604,7 @@ if (!empty($filter_vendor)) {
             });
           });
         </script>
-        
+
         <div class="filter-card p-6 space-y-8">
           <h3 class="text-lg font-bold">
             <i class="fas fa-shopping-cart text-purple-600 mr-2"></i>
@@ -556,35 +612,37 @@ if (!empty($filter_vendor)) {
           </h3>
           <form id="save-temp-form">
             <div id="quick-add-container" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 pb-5">
-                <div>
-                    <label for="quick-add-vendor" class="block text-sm font-semibold text-gray-700 mb-2">
-                        <i class="fas fa-store text-purple-600 mr-1"></i>
-                        Pilih Vendor
-                    </label>
-                    <select id="quick-add-vendor" class="input-modern w-full">
-                        <option value="">Pilih Vendor...</option>
-                        <?php foreach ($vendors as $vendor_code): ?>
-                            <option value="<?php echo htmlspecialchars($vendor_code); ?>">
-                                <?php echo htmlspecialchars($vendor_code); ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <div>
-                    <label for="quick-add-plu" class="block text-sm font-semibold text-gray-700 mb-2">
-                        <i class="fas fa-search-plus text-purple-600 mr-1"></i>
-                        Masukkan PLU
-                    </label>
-                    <input type="text" id="quick-add-plu" class="input-modern w-full" placeholder="Ketik PLU, lalu Enter...">
-                </div>
-                <div>
-                    <label for="quick-add-button" class="block text-sm font-semibold text-gray-700 mb-2"> <i class="fas fa-add text-purple-600 mr-1"></i>
-                        Tambah Ke Temp
-                    </label>
-                    <button type="button" id="quick-add-button" class="btn-primary inline-flex items-center gap-2 w-full">
-                        <i class="fas fa-plus"></i>
-                    </button>
-                </div>
+              <div>
+                <label for="quick-add-vendor" class="block text-sm font-semibold text-gray-700 mb-2">
+                  <i class="fas fa-store text-purple-600 mr-1"></i>
+                  Pilih Vendor
+                </label>
+                <select id="quick-add-vendor" class="input-modern w-full">
+                  <option value="">Pilih Vendor...</option>
+                  <?php foreach ($vendors as $vendor_code): ?>
+                    <option value="<?php echo htmlspecialchars($vendor_code); ?>">
+                      <?php echo htmlspecialchars($vendor_code); ?>
+                    </option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+              <div>
+                <label for="quick-add-plu" class="block text-sm font-semibold text-gray-700 mb-2">
+                  <i class="fas fa-search-plus text-purple-600 mr-1"></i>
+                  Masukkan PLU
+                </label>
+                <input type="text" id="quick-add-plu" class="input-modern w-full"
+                  placeholder="Ketik PLU, lalu Enter...">
+              </div>
+              <div>
+                <label for="quick-add-button" class="block text-sm font-semibold text-gray-700 mb-2"> <i
+                    class="fas fa-add text-purple-600 mr-1"></i>
+                  Tambah Ke Temp
+                </label>
+                <button type="button" id="quick-add-button" class="btn-primary inline-flex items-center gap-2 w-full">
+                  <i class="fas fa-plus"></i>
+                </button>
+              </div>
             </div>
             <div class="flex flex-wrap items-end gap-4 mb-6 pb-5 border-b border-gray-200">
               <div class="flex-1 min-w-[250px]">
@@ -592,8 +650,9 @@ if (!empty($filter_vendor)) {
                   <i class="fas fa-file-invoice text-purple-600 mr-1"></i>
                   No. LPB (Wajib)
                 </label>
-                <input type="text" id="no_lpb" name="no_lpb" class="input-modern w-full" placeholder="Masukkan No. LPB" required>
-                </div>
+                <input type="text" id="no_lpb" name="no_lpb" class="input-modern w-full" placeholder="Masukkan No. LPB"
+                  required>
+              </div>
               <button type="submit" class="btn-success inline-flex items-center gap-2 whitespace-nowrap">
                 <i class="fas fa-save"></i>
                 <span>Simpan Penerimaan</span>
@@ -602,18 +661,31 @@ if (!empty($filter_vendor)) {
           </form>
 
           <div class="flex flex-wrap items-center gap-4 mb-4">
-            <button type="button" id="delete-selected-temp" class="btn-danger inline-flex items-center gap-2 text-sm py-2 px-4 rounded-lg">
+            <button type="button" id="delete-selected-temp"
+              class="btn-danger inline-flex items-center gap-2 text-sm py-2 px-4 rounded-lg">
               <i class="fas fa-trash-alt"></i> Hapus Pilihan
             </button>
-            <button type="button" id="delete-all-temp" class="btn-danger inline-flex items-center gap-2 text-sm py-2 px-4 rounded-lg">
+            <button type="button" id="delete-all-temp"
+              class="btn-danger inline-flex items-center gap-2 text-sm py-2 px-4 rounded-lg">
               <i class="fas fa-times-circle"></i> Hapus Semua
             </button>
           </div>
 
           <style>
-            .input-qty { width: 100px; }
-            .input-disabled { background-color: #f4f4f5; color: #71717a; border-color: #e4e4e7; }
-            .input-cb-temp { width: 1.2rem; height: 1.2rem; }
+            .input-qty {
+              width: 100px;
+            }
+
+            .input-disabled {
+              background-color: #f4f4f5;
+              color: #71717a;
+              border-color: #e4e4e7;
+            }
+
+            .input-cb-temp {
+              width: 1.2rem;
+              height: 1.2rem;
+            }
           </style>
 
           <div class="table-container scroll-container">
@@ -644,34 +716,37 @@ if (!empty($filter_vendor)) {
                 </tr>
               </tbody>
               <tfoot>
-                  <tr class="bg-gradient-to-r from-blue-50 to-indigo-50">
-                      <td colspan="3" class="p-4 text-right font-semibold text-gray-700">
-                          <i class="fas fa-boxes text-blue-600 mr-2"></i>
-                          Total Quantity:
-                      </td>
-                      <td id="temp-total-qty" class="p-4 text-left font-bold text-blue-900 text-lg">0</td>
-                      <td colspan="12" class="p-4"></td> </tr>
-                  <tr class="bg-gradient-to-r from-purple-50 to-pink-50">
-                      <td colspan="3" class="p-4 text-right font-semibold text-gray-700">
-                          <i class="fas fa-calculator text-purple-600 mr-2"></i>
-                          Grand Total Net (HB × Qty):
-                      </td>
-                      <td id="temp-grand-total-net" class="p-4 text-left font-bold text-purple-900 text-lg" colspan="13">Rp 0</td>
-                  </tr>
-                  <tr class="bg-gradient-to-r from-yellow-50 to-orange-50">
-                      <td colspan="3" class="p-4 text-right font-semibold text-gray-700">
-                          <i class="fas fa-percentage text-orange-600 mr-2"></i>
-                          PPN (11%):
-                      </td>
-                      <td id="temp-ppn" class="p-4 text-left font-bold text-orange-900 text-lg" colspan="13">Rp 0</td>
-                  </tr>
-                  <tr class="bg-gradient-to-r from-green-100 to-emerald-100 border-t-4 border-green-600">
-                      <td colspan="3" class="p-5 text-right font-bold text-gray-800 text-xl">
-                          <i class="fas fa-money-bill-wave text-green-600 mr-2"></i>
-                          Total Penerimaan:
-                      </td>
-                      <td id="temp-total-penerimaan" class="p-5 text-left font-extrabold text-green-800 text-2xl" colspan="13">Rp 0</td>
-                  </tr>
+                <tr class="bg-gradient-to-r from-blue-50 to-indigo-50">
+                  <td colspan="3" class="p-4 text-right font-semibold text-gray-700">
+                    <i class="fas fa-boxes text-blue-600 mr-2"></i>
+                    Total Quantity:
+                  </td>
+                  <td id="temp-total-qty" class="p-4 text-left font-bold text-blue-900 text-lg">0</td>
+                  <td colspan="12" class="p-4"></td>
+                </tr>
+                <tr class="bg-gradient-to-r from-purple-50 to-pink-50">
+                  <td colspan="3" class="p-4 text-right font-semibold text-gray-700">
+                    <i class="fas fa-calculator text-purple-600 mr-2"></i>
+                    Grand Total Net (HB × Qty):
+                  </td>
+                  <td id="temp-grand-total-net" class="p-4 text-left font-bold text-purple-900 text-lg" colspan="13">Rp
+                    0</td>
+                </tr>
+                <tr class="bg-gradient-to-r from-yellow-50 to-orange-50">
+                  <td colspan="3" class="p-4 text-right font-semibold text-gray-700">
+                    <i class="fas fa-percentage text-orange-600 mr-2"></i>
+                    PPN (11%):
+                  </td>
+                  <td id="temp-ppn" class="p-4 text-left font-bold text-orange-900 text-lg" colspan="13">Rp 0</td>
+                </tr>
+                <tr class="bg-gradient-to-r from-green-100 to-emerald-100 border-t-4 border-green-600">
+                  <td colspan="3" class="p-5 text-right font-bold text-gray-800 text-xl">
+                    <i class="fas fa-money-bill-wave text-green-600 mr-2"></i>
+                    Total Penerimaan:
+                  </td>
+                  <td id="temp-total-penerimaan" class="p-5 text-left font-extrabold text-green-800 text-2xl"
+                    colspan="13">Rp 0</td>
+                </tr>
               </tfoot>
             </table>
           </div>
@@ -679,7 +754,9 @@ if (!empty($filter_vendor)) {
       </div>
     </section>
   </main>
-  <div id="itemHistoryModal" class="modal-overlay fixed inset-0 overflow-y-auto h-full w-full flex items-center justify-center z-50" style="display: none;">
+  <div id="itemHistoryModal"
+    class="modal-overlay fixed inset-0 overflow-y-auto h-full w-full flex items-center justify-center z-50"
+    style="display: none;">
     <div class="modal-content relative mx-4 p-6 w-full max-w-3xl">
       <div class="flex justify-between items-center border-b pb-4 mb-4">
         <h3 class="text-xl font-bold text-gray-900">
@@ -694,7 +771,7 @@ if (!empty($filter_vendor)) {
   </div>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
-      
+
       var sidebarTexts = document.querySelectorAll(".sidebar-text");
       let mainContent = document.getElementById("main-content");
       let sidebar = document.getElementById("sidebar");
@@ -704,7 +781,7 @@ if (!empty($filter_vendor)) {
       const profileImg = document.getElementById("profile-img");
       const profileCard = document.getElementById("profile-card");
 
-      if (profileImg) { 
+      if (profileImg) {
         profileImg.addEventListener("click", function (event) {
           event.preventDefault();
           profileCard.classList.toggle("show");
@@ -717,17 +794,17 @@ if (!empty($filter_vendor)) {
         }
       });
 
-      if (toggleButton) { 
+      if (toggleButton) {
         toggleButton.addEventListener("click", function () {
           if (sidebar.classList.contains("w-64")) {
             sidebar.classList.remove("w-64", "px-5");
             sidebar.classList.add("w-16", "px-2");
-            sidebarTexts.forEach((text) => text.classList.add("hidden"));  
+            sidebarTexts.forEach((text) => text.classList.add("hidden"));
             mainContent.classList.remove("ml-64");
-            mainContent.classList.add("ml-16");  
-            toggleButton.classList.add("left-20");  
+            mainContent.classList.add("ml-16");
+            toggleButton.classList.add("left-20");
             toggleButton.classList.remove("left-64");
-            icon.classList.remove("fa-angle-left");  
+            icon.classList.remove("fa-angle-left");
             icon.classList.add("fa-angle-right");
           } else {
             sidebar.classList.remove("w-16", "px-2");
@@ -767,4 +844,5 @@ if (!empty($filter_vendor)) {
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </body>
+
 </html>

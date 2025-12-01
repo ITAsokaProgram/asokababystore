@@ -22,6 +22,13 @@ function build_pagination_url($new_page)
     $params['page'] = $new_page;
     return '?' . http_build_query($params);
 }
+require_once __DIR__ . '/../../component/menu_handler.php';
+
+$menuHandler = new MenuHandler('laporan_topsales_qty');
+
+if (!$menuHandler->initialize()) {
+    exit();
+}
 ?>
 
 <!DOCTYPE html>

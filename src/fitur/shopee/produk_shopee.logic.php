@@ -2,8 +2,8 @@
 session_start();
 include '../../../aa_kon_sett.php';
 require_once __DIR__ . '/lib/ShopeeApiService.php';
-require_once __DIR__ . '/lib/helpers.php'; 
-require_once __DIR__ . '/../../utils/Logger.php'; 
+require_once __DIR__ . '/lib/helpers.php';
+require_once __DIR__ . '/../../utils/Logger.php';
 
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
@@ -16,23 +16,25 @@ if (isset($_GET['code'])) {
     $code = $_GET['code'];
     $shop_id = $_GET['shop_id'] ?? null;
     $main_account_id = $_GET['main_account_id'] ?? null;
-    
+
     $is_main_account = false;
     $id_to_pass = 0;
 
     if ($shop_id) {
-        $id_to_pass = (int)$shop_id;
+        $id_to_pass = (int) $shop_id;
         $is_main_account = false;
     } elseif ($main_account_id) {
-        $id_to_pass = (int)$main_account_id;
+        $id_to_pass = (int) $main_account_id;
         $is_main_account = true;
     }
 
     if ($id_to_pass > 0) {
         $response = $shopeeService->handleOAuthCallback($code, $id_to_pass, $is_main_account);
 
-        if (is_array($response) && isset($response['error']) && $response['error'] === 'error_param' &&
-            isset($response['message']) && $response['message'] === 'Invalid timestamp.') {
+        if (
+            is_array($response) && isset($response['error']) && $response['error'] === 'error_param' &&
+            isset($response['message']) && $response['message'] === 'Invalid timestamp.'
+        ) {
             header('Location: ' . strtok($redirect_uri, '?'));
             exit();
         }
@@ -49,7 +51,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'disconnect') {
 }
 
 require_once __DIR__ . '/../../component/menu_handler.php';
-$menuHandler = new MenuHandler('shopee_dashboard');
+$menuHandler = new MenuHandler('shopee_produk');
 if (!$menuHandler->initialize()) {
     exit();
 }
@@ -75,21 +77,21 @@ if (!empty($search_keyword)) {
     $has_prev_page = ($current_offset_raw != 0);
     $prev_offset = 0;
 } else {
-    $current_offset = (int)$current_offset_raw;
+    $current_offset = (int) $current_offset_raw;
     $has_prev_page = $current_offset > 0;
     $prev_offset = max(0, $current_offset - $page_size);
 }
 
 if ($shopeeService->isConnected()) {
-    
+
     try {
         require_once __DIR__ . '/../../../redis.php';
         if (!isset($redis) || !$redis->ping()) {
             throw new Exception("Koneksi Redis Gagal.");
         }
-        
+
         $cached_products = $redis->get($redisKey);
-        
+
         if ($cached_products) {
             // CACHE HIT: Data ditemukan
             $all_products_from_redis = json_decode($cached_products, true);
@@ -99,15 +101,15 @@ if ($shopeeService->isConnected()) {
                 $redis_error = "Gagal decode JSON dari Redis: " . json_last_error_msg() . ". Mencoba sinkronisasi ulang...";
                 $cached_products = false; // Paksa masuk ke blok sync di bawah
             }
-        } 
-        
+        }
+
         if (!$cached_products) {
-            
-            if (empty($redis_error)) { 
-                 $redis_error = "Cache produk kosong atau kedaluwarsa. Silakan tekan tombol 'Sync Produk ke Cache' untuk mengambil data terbaru.";
+
+            if (empty($redis_error)) {
+                $redis_error = "Cache produk kosong atau kedaluwarsa. Silakan tekan tombol 'Sync Produk ke Cache' untuk mengambil data terbaru.";
             }
             $all_products_from_redis = [];
-      }
+        }
     } catch (Throwable $t) {
         $redis_error = "Error Redis: " . $t->getMessage();
     }
@@ -116,12 +118,12 @@ if ($shopeeService->isConnected()) {
         $filtered_products = $all_products_from_redis;
 
         if (!empty($search_keyword)) {
-            $filtered_products = array_filter($filtered_products, function($item) use ($search_keyword, $search_type) {
+            $filtered_products = array_filter($filtered_products, function ($item) use ($search_keyword, $search_type) {
                 if ($search_type === 'name') {
                     if (isset($item['item_name']) && stripos($item['item_name'], $search_keyword) !== false) {
                         return true;
                     }
-                } else { 
+                } else {
                     if (isset($item['item_sku']) && stripos($item['item_sku'], $search_keyword) !== false) {
                         return true;
                     }
@@ -136,11 +138,11 @@ if ($shopeeService->isConnected()) {
                 return false;
             });
         }
-        
+
         $total_count = count($filtered_products);
-        
+
         $detailed_products = array_slice(array_values($filtered_products), $current_offset, $page_size);
-        
+
         $next_offset_calc = $current_offset + $page_size;
         if ($next_offset_calc >= $total_count) {
             $has_next_page = false;
@@ -151,9 +153,9 @@ if ($shopeeService->isConnected()) {
         }
 
         $pagination_info = [
-            'total_count'   => $total_count,
+            'total_count' => $total_count,
             'has_next_page' => $has_next_page,
-            'next_offset'   => $next_offset
+            'next_offset' => $next_offset
         ];
 
     } else {
@@ -162,7 +164,7 @@ if ($shopeeService->isConnected()) {
         $pagination_info = null;
         $filtered_products = [];
     }
-    
+
     $all_skus = [];
     $sku_stock_map = [];
     $sku_barang_data_map = [];
@@ -190,11 +192,11 @@ if ($shopeeService->isConnected()) {
         $unique_skus = array_unique($all_skus);
         $placeholders = implode(',', array_fill(0, count($unique_skus), '?'));
         $types = str_repeat('s', count($unique_skus));
-        
+
         $sql_barang = "SELECT item_n, plu, DESCP, VENDOR, Harga_Beli, Harga_Jual, qty 
                         FROM s_barang 
                         WHERE kd_store = ? AND item_n IN ($placeholders)";
-        
+
         $stmt_barang = $conn->prepare($sql_barang);
         if ($stmt_barang) {
             $stmt_barang->bind_param("s" . $types, $kd_store, ...$unique_skus);
@@ -209,7 +211,7 @@ if ($shopeeService->isConnected()) {
                     'harga_beli' => $row['Harga_Beli'],
                     'harga_jual' => $row['Harga_Jual']
                 ];
-                $sku_stock_map[$trimmed_sku] = (int)$row['qty'];
+                $sku_stock_map[$trimmed_sku] = (int) $row['qty'];
             }
             $stmt_barang->close();
         }
@@ -217,7 +219,7 @@ if ($shopeeService->isConnected()) {
         $sql_stok_ol = "SELECT item_n, plu, DESCP, VENDOR, hrg_beli, price, Qty 
                         FROM s_stok_ol 
                         WHERE kd_store = ? AND item_n IN ($placeholders)";
-        
+
         $stmt_stok_ol = $conn->prepare($sql_stok_ol);
         if ($stmt_stok_ol) {
             $stmt_stok_ol->bind_param("s" . $types, $kd_store_ol, ...$unique_skus);
@@ -230,18 +232,18 @@ if ($shopeeService->isConnected()) {
                     'vendor' => $row['VENDOR'],
                     'hrg_beli' => $row['hrg_beli'],
                     'price' => $row['price'],
-                    'qty' => (int)$row['Qty']
+                    'qty' => (int) $row['Qty']
                 ];
             }
             $stmt_stok_ol->close();
         }
     }
-    
+
     if ($filter_type == 'all') {
-        $total_count = $search_result_count; 
-        
+        $total_count = $search_result_count;
+
         $detailed_products = array_slice(array_values($filtered_products), $current_offset, $page_size);
-        
+
         $next_offset_calc = $current_offset + $page_size;
         if ($next_offset_calc >= $total_count) {
             $has_next_page = false;
@@ -252,50 +254,50 @@ if ($shopeeService->isConnected()) {
         }
 
         $pagination_info = [
-            'total_count'   => $total_count,
+            'total_count' => $total_count,
             'has_next_page' => $has_next_page,
-            'next_offset'   => $next_offset
+            'next_offset' => $next_offset
         ];
-    } 
-    else {
+    } else {
         $final_filtered_products = [];
         foreach ($filtered_products as $item) {
             $show_product = false;
-            
-            if (isset($item['has_model']) && $item['has_model'] === true && !empty($item['models'])) {
-                
-                $item['matching_models'] = []; 
-                
-                foreach ($item['models'] as $model) {
-                    $shopee_stock = (int)($model['stock_info_v2']['summary_info']['total_available_stock'] 
-                                        ?? $model['stock_info'][0]['seller_stock'] 
-                                        ?? 0);
-                    $sku = trim($model['model_sku'] ?? '');
-                    
-                    if (empty($sku)) continue;
 
-                    $model_matches_filter = false; 
+            if (isset($item['has_model']) && $item['has_model'] === true && !empty($item['models'])) {
+
+                $item['matching_models'] = [];
+
+                foreach ($item['models'] as $model) {
+                    $shopee_stock = (int) ($model['stock_info_v2']['summary_info']['total_available_stock']
+                        ?? $model['stock_info'][0]['seller_stock']
+                        ?? 0);
+                    $sku = trim($model['model_sku'] ?? '');
+
+                    if (empty($sku))
+                        continue;
+
+                    $model_matches_filter = false;
 
                     if ($filter_type == 'pusat' && isset($sku_stok_ol_data_map[$sku])) {
-                        $db_stock_ol = (int)($sku_stok_ol_data_map[$sku]['qty'] ?? 0);
+                        $db_stock_ol = (int) ($sku_stok_ol_data_map[$sku]['qty'] ?? 0);
                         if ($shopee_stock != $db_stock_ol) {
                             $model_matches_filter = true;
                         }
                     } elseif ($filter_type == 'cabang' && isset($sku_stock_map[$sku]) && !isset($sku_stok_ol_data_map[$sku])) {
-                        $db_stock_barang = (int)($sku_stock_map[$sku] ?? 0);
+                        $db_stock_barang = (int) ($sku_stock_map[$sku] ?? 0);
                         if ($shopee_stock != $db_stock_barang) {
                             $model_matches_filter = true;
                         }
                     } elseif ($filter_type == 'beda_harga' && isset($sku_stok_ol_data_map[$sku])) {
-                        $shopee_price = (float)($model['price_info'][0]['original_price'] ?? 0);
-                        $stok_ol_price = (float)($sku_stok_ol_data_map[$sku]['price'] ?? 0);
-                        
-                        if (abs($shopee_price - $stok_ol_price) > 0.001) { 
+                        $shopee_price = (float) ($model['price_info'][0]['original_price'] ?? 0);
+                        $stok_ol_price = (float) ($sku_stok_ol_data_map[$sku]['price'] ?? 0);
+
+                        if (abs($shopee_price - $stok_ol_price) > 0.001) {
                             $model_matches_filter = true;
                         }
-                    } elseif ($filter_type == 'ada_pusat' && isset($sku_stok_ol_data_map[$sku])) { 
+                    } elseif ($filter_type == 'ada_pusat' && isset($sku_stok_ol_data_map[$sku])) {
                         $model_matches_filter = true;
-                    } elseif ($filter_type == 'ada_cabang' && isset($sku_stock_map[$sku]) && !isset($sku_stok_ol_data_map[$sku])) { 
+                    } elseif ($filter_type == 'ada_cabang' && isset($sku_stock_map[$sku]) && !isset($sku_stok_ol_data_map[$sku])) {
                         $model_matches_filter = true;
                     }
 
@@ -305,37 +307,36 @@ if ($shopeeService->isConnected()) {
                 }
 
                 if (!empty($item['matching_models'])) {
-                    $show_product = true; 
+                    $show_product = true;
                 }
 
-            } 
-            else { 
-                $shopee_stock = (int)($item['stock_info_v2']['summary_info']['total_available_stock'] 
-                                    ?? $item['stock_info'][0]['seller_stock'] 
-                                    ?? 0);
+            } else {
+                $shopee_stock = (int) ($item['stock_info_v2']['summary_info']['total_available_stock']
+                    ?? $item['stock_info'][0]['seller_stock']
+                    ?? 0);
                 $sku = trim($item['item_sku'] ?? '');
 
                 if (!empty($sku)) {
                     if ($filter_type == 'pusat' && isset($sku_stok_ol_data_map[$sku])) {
-                        $db_stock_ol = (int)($sku_stok_ol_data_map[$sku]['qty'] ?? 0);
+                        $db_stock_ol = (int) ($sku_stok_ol_data_map[$sku]['qty'] ?? 0);
                         if ($shopee_stock != $db_stock_ol) {
                             $show_product = true;
                         }
                     } elseif ($filter_type == 'cabang' && isset($sku_stock_map[$sku]) && !isset($sku_stok_ol_data_map[$sku])) {
-                        $db_stock_barang = (int)($sku_stock_map[$sku] ?? 0);
+                        $db_stock_barang = (int) ($sku_stock_map[$sku] ?? 0);
                         if ($shopee_stock != $db_stock_barang) {
                             $show_product = true;
                         }
                     } elseif ($filter_type == 'beda_harga' && isset($sku_stok_ol_data_map[$sku])) {
-                        $shopee_price = (float)($item['price_info'][0]['original_price'] ?? 0);
-                        $stok_ol_price = (float)($sku_stok_ol_data_map[$sku]['price'] ?? 0);
-                        
-                        if (abs($shopee_price - $stok_ol_price) > 0.001) { 
+                        $shopee_price = (float) ($item['price_info'][0]['original_price'] ?? 0);
+                        $stok_ol_price = (float) ($sku_stok_ol_data_map[$sku]['price'] ?? 0);
+
+                        if (abs($shopee_price - $stok_ol_price) > 0.001) {
                             $show_product = true;
                         }
-                    } elseif ($filter_type == 'ada_pusat' && isset($sku_stok_ol_data_map[$sku])) { 
+                    } elseif ($filter_type == 'ada_pusat' && isset($sku_stok_ol_data_map[$sku])) {
                         $show_product = true;
-                    } elseif ($filter_type == 'ada_cabang' && isset($sku_stock_map[$sku]) && !isset($sku_stok_ol_data_map[$sku])) { 
+                    } elseif ($filter_type == 'ada_cabang' && isset($sku_stock_map[$sku]) && !isset($sku_stok_ol_data_map[$sku])) {
                         $show_product = true;
                     }
                 }
@@ -345,13 +346,13 @@ if ($shopeeService->isConnected()) {
                 $final_filtered_products[] = $item;
             }
         }
-        
+
         $total_count = count($final_filtered_products);
-        $pagination_threshold = 200; 
+        $pagination_threshold = 200;
 
         if ($total_count > $pagination_threshold) {
             $detailed_products = array_slice(array_values($final_filtered_products), $current_offset, $page_size);
-            
+
             $next_offset_calc = $current_offset + $page_size;
             if ($next_offset_calc >= $total_count) {
                 $has_next_page = false;
@@ -362,13 +363,13 @@ if ($shopeeService->isConnected()) {
             }
 
             $pagination_info = [
-                'total_count'   => $total_count,
+                'total_count' => $total_count,
                 'has_next_page' => $has_next_page,
-                'next_offset'   => $next_offset
+                'next_offset' => $next_offset
             ];
         } else {
             $detailed_products = array_values($final_filtered_products);
-            $pagination_info = null; 
+            $pagination_info = null;
         }
     }
 } else {
