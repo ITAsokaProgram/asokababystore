@@ -1,6 +1,10 @@
 <?php
 session_start();
-include '../../../aa_kon_sett.php';
+require_once __DIR__ . '/../../component/menu_handler.php';
+$menuHandler = new MenuHandler('pajak_input_pembelian');
+if (!$menuHandler->initialize()) {
+    exit();
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
