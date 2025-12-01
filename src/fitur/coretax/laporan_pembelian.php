@@ -16,8 +16,9 @@ $tgl_mulai = $_GET['tgl_mulai'] ?? $default_tgl_mulai;
 $tgl_selesai = $_GET['tgl_selesai'] ?? $default_tgl_selesai;
 $kd_store = $_GET['kd_store'] ?? 'all';
 $status_data = $_GET['status_data'] ?? 'all';
-$filter_ppn = $_GET['filter_ppn'] ?? 'all';
-$filter_btkp = $_GET['filter_btkp'] ?? 'all';
+
+// --- UPDATE: Filter Gabungan Tipe Pembelian ---
+$filter_tipe_pembelian = $_GET['filter_tipe_pembelian'] ?? 'all_pkp';
 
 // Tangkap parameter baru
 $filter_type = $_GET['filter_type'] ?? $default_filter_type;
@@ -157,33 +158,23 @@ if (!$menuHandler->initialize()) {
                             </select>
                         </div>
 
-                        <div class="lg:col-span-1">
-                            <label for="filter_ppn" class="block text-xs font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-percent text-pink-600 mr-1"></i> Tipe PKP
+                        <div class="lg:col-span-2">
+                            <label for="filter_tipe_pembelian" class="block text-xs font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-tags text-pink-600 mr-1"></i> Tipe Pembelian
                             </label>
-                            <select name="filter_ppn" id="filter_ppn" class="input-modern w-full">
-                                <option value="all" <?php echo ($filter_ppn == 'all') ? 'selected' : ''; ?>>Semua</option>
-                                <option value="ppn" <?php echo ($filter_ppn == 'ppn') ? 'selected' : ''; ?>>PKP</option>
-                                <option value="non_ppn" <?php echo ($filter_ppn == 'non_ppn') ? 'selected' : ''; ?>>Non
-                                    PKP </option>
+                            <select name="filter_tipe_pembelian" id="filter_tipe_pembelian" class="input-modern w-full">
+                                <option value="all_pkp" <?php echo ($filter_tipe_pembelian == 'all_pkp') ? 'selected' : ''; ?>>Semua PKP</option>
+                                <option value="pkp" <?php echo ($filter_tipe_pembelian == 'pkp') ? 'selected' : ''; ?>>PKP
+                                </option>
+                                <option value="non_pkp" <?php echo ($filter_tipe_pembelian == 'non_pkp') ? 'selected' : ''; ?>>Non PKP</option>
+                                <option value="all_btkp" <?php echo ($filter_tipe_pembelian == 'all_btkp') ? 'selected' : ''; ?>>Semua BTKP</option>
+                                <option value="btkp" <?php echo ($filter_tipe_pembelian == 'btkp') ? 'selected' : ''; ?>>
+                                    BTKP</option>
+                                <option value="non_btkp" <?php echo ($filter_tipe_pembelian == 'non_btkp') ? 'selected' : ''; ?>>Non BTKP</option>
                             </select>
                         </div>
 
-                        <div class="lg:col-span-1">
-                            <label for="filter_btkp" class="block text-xs font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-box-open text-pink-600 mr-1"></i> Status BTKP
-                            </label>
-                            <select name="filter_btkp" id="filter_btkp" class="input-modern w-full">
-                                <option value="all" <?php echo ($filter_btkp == 'all') ? 'selected' : ''; ?>>Semua
-                                </option>
-                                <option value="btkp" <?php echo ($filter_btkp == 'btkp') ? 'selected' : ''; ?>>BTKP
-                                </option>
-                                <option value="non_btkp" <?php echo ($filter_btkp == 'non_btkp') ? 'selected' : ''; ?>>Non
-                                    BTKP </option>
-                            </select>
-                        </div>
-
-                        <div class="lg:col-span-2"> <label for="status_data"
+                        <div class="lg:col-span-2 lg:col-start-1 lg:row-start-2"> <label for="status_data"
                                 class="block text-xs font-semibold text-gray-700 mb-2">
                                 <i class="fas fa-link text-pink-600 mr-1"></i> Status
                             </label>
@@ -202,7 +193,7 @@ if (!$menuHandler->initialize()) {
                             </select>
                         </div>
 
-                        <div class="lg:col-span-2 lg:col-start-1 lg:row-start-2"> <label for="search_supplier"
+                        <div class="lg:col-span-2 lg:col-start-3 lg:row-start-2"> <label for="search_supplier"
                                 class="block text-xs font-semibold text-gray-700 mb-2">
                                 <i class="fas fa-search text-pink-600 mr-1"></i> Cari Data
                             </label>

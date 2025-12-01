@@ -4,8 +4,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const filterSubmitButton = document.getElementById("filter-submit-button");
   const filterSelectStore = document.getElementById("kd_store");
   const filterSelectStatus = document.getElementById("status_data");
-  const filterSelectPpn = document.getElementById("filter_ppn");
-  const filterSelectBtkp = document.getElementById("filter_btkp");
+
+  // --- UPDATE: Selector Baru ---
+  const filterSelectTipePembelian = document.getElementById(
+    "filter_tipe_pembelian"
+  );
+
   const filterInputSupplier = document.getElementById("search_supplier");
   const pageTitle = document.getElementById("page-title");
   const pageSubtitle = document.getElementById("page-subtitle");
@@ -26,13 +30,6 @@ document.addEventListener("DOMContentLoaded", () => {
   function toggleFilterMode() {
     const mode = filterTypeSelect.value;
     if (mode === "month") {
-      // Tampilkan Bulan/Tahun, Sembunyikan Range Tanggal
-      // Hapus class 'contents' agar display bisa diatur manual, atau gunakan style display langsung
-      // Karena di HTML kita pakai class "contents" (Tailwind) untuk grid child, kita toggle style display saja
-      // Tapi karena 'contents' membuat div hilang dari flow grid, kita perlu hati-hati.
-      // Solusi: Kita toggle class 'hidden' dari Tailwind atau style.display
-
-      // Reset style first (assuming 'contents' class is used in PHP)
       containerMonth.style.display = "contents";
       containerDateRange.style.display = "none";
     } else {
@@ -44,7 +41,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // Event Listener untuk ganti mode
   if (filterTypeSelect) {
     filterTypeSelect.addEventListener("change", toggleFilterMode);
-    // Jalankan saat load pertama kali
     toggleFilterMode();
   }
 
@@ -83,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     return {
       // --- UPDATE: Params Baru ---
-      filter_type: params.get("filter_type") || "month", // Default Month
+      filter_type: params.get("filter_type") || "month",
       bulan: params.get("bulan") || currentMonth,
       tahun: params.get("tahun") || currentYear,
 
@@ -91,8 +87,10 @@ document.addEventListener("DOMContentLoaded", () => {
       tgl_selesai: params.get("tgl_selesai") || yesterdayString,
       kd_store: params.get("kd_store") || "all",
       status_data: params.get("status_data") || "all",
-      filter_ppn: params.get("filter_ppn") || "all",
-      filter_btkp: params.get("filter_btkp") || "all",
+
+      // --- UPDATE: Ambil Tipe Pembelian ---
+      filter_tipe_pembelian: params.get("filter_tipe_pembelian") || "all_pkp",
+
       search_supplier: params.get("search_supplier") || "",
       page: parseInt(params.get("page") || "1", 10),
     };
@@ -122,7 +120,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ... (window.handleConfirmCoretax function remains same) ...
-  // Anda tidak perlu mengubah handleConfirmCoretax
 
   async function loadData() {
     const params = getUrlParams();
@@ -139,8 +136,10 @@ document.addEventListener("DOMContentLoaded", () => {
       tgl_selesai: params.tgl_selesai,
       kd_store: params.kd_store,
       status_data: params.status_data,
-      filter_ppn: params.filter_ppn,
-      filter_btkp: params.filter_btkp,
+
+      // --- UPDATE: Kirim filter baru ---
+      filter_tipe_pembelian: params.filter_tipe_pembelian,
+
       search_supplier: params.search_supplier,
       page: params.page,
     }).toString();
@@ -169,13 +168,15 @@ document.addEventListener("DOMContentLoaded", () => {
       if (filterInputSupplier)
         filterInputSupplier.value = params.search_supplier;
       if (filterSelectStatus) filterSelectStatus.value = params.status_data;
-      if (filterSelectPpn) filterSelectPpn.value = params.filter_ppn;
-      if (filterSelectBtkp) filterSelectBtkp.value = params.filter_btkp;
+
+      // --- UPDATE: Sync UI Filter Baru ---
+      if (filterSelectTipePembelian)
+        filterSelectTipePembelian.value = params.filter_tipe_pembelian;
 
       // --- UPDATE: Sync UI Filter Type ---
       if (filterTypeSelect) {
         filterTypeSelect.value = params.filter_type;
-        toggleFilterMode(); // Pastikan tampilan sesuai value
+        toggleFilterMode();
       }
       if (filterBulan) filterBulan.value = params.bulan;
       if (filterTahun) filterTahun.value = params.tahun;
@@ -197,7 +198,6 @@ document.addEventListener("DOMContentLoaded", () => {
         // --- UPDATE: Subtitle Dinamis ---
         let periodText = "";
         if (params.filter_type === "month") {
-          // Ubah 01 jadi Januari, dst (Manual mapping atau array)
           const monthNames = [
             "Januari",
             "Februari",
@@ -235,9 +235,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ... (Sisanya sama: setLoadingState, showTableError, renderTable, renderPagination) ...
-  // ... Paste sisa fungsi helper di sini ...
-
   function setLoadingState(isLoading, isPagination = false) {
     if (isLoading) {
       if (filterSubmitButton) filterSubmitButton.disabled = true;
@@ -256,107 +253,24 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function showTableError(message) {
-    // (Isi sama seperti file asli)
     tableBody.innerHTML = `<tr><td colspan="12" class="text-center p-8 text-red-600"><p>Gagal: ${message}</p></td></tr>`;
   }
 
   function renderTable(tabel_data, offset) {
-    // (Isi sama seperti file asli)
-    // Pastikan code handleConfirmCoretax dll ada
-    // ... (Kode renderTable asli) ...
     if (!tabel_data || tabel_data.length === 0) {
       tableBody.innerHTML = `
-            <tr>
-                <td colspan="12" class="text-center p-8 text-gray-500">
-                    <i class="fas fa-inbox fa-lg mb-2"></i>
-                    <p>Tidak ada data ditemukan untuk filter ini.</p>
-                </td>
-            </tr>`;
+              <tr>
+                  <td colspan="12" class="text-center p-8 text-gray-500">
+                      <i class="fas fa-inbox fa-lg mb-2"></i>
+                      <p>Tidak ada data ditemukan untuk filter ini.</p>
+                  </td>
+              </tr>`;
       return;
     }
+
     let htmlRows = "";
     let item_counter = offset + 1;
-    tabel_data.forEach((row) => {
-      // ... Logika render row sama persis dengan file lama ...
-      const dpp = parseFloat(row.dpp) || 0;
-      const ppn = parseFloat(row.ppn) || 0;
-      const total = parseFloat(row.total_terima_fp) || 0;
-      const dateObj = new Date(row.tgl_nota);
-      const dppNilaiLain = parseFloat(row.dpp_nilai_lain) || 0;
-      const dateFormatted = dateObj.toLocaleDateString("id-ID", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      });
 
-      const isBtkp = row.is_btkp == 1;
-      const btkpBadge = isBtkp
-        ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-800 border border-green-200">BTKP</span>`
-        : `<span class="text-gray-300 text-xs">-</span>`;
-
-      // ... (Potongan kode logika mergedCandidatesMap sampai htmlCoretax disini tetap sama) ...
-      // Untuk mempersingkat saya tidak paste ulang logika panjang di tengah ini kecuali diminta,
-      // tapi pastikan Anda tidak menghapusnya.
-      // Saya akan tulis placeholder logicnya:
-
-      let htmlFisik = '<span class="text-gray-300 text-xs">-</span>';
-      let htmlCoretax = '<span class="text-gray-300 text-xs">-</span>';
-      // ... (Logic HTML Fisik/Coretax tetap) ...
-
-      // Mocking display for completeness of copy-paste structure
-      if (row.ada_di_coretax == 1) {
-        htmlFisik = "Linked";
-        htmlCoretax = "Linked";
-      }
-
-      htmlRows += `
-            <tr class="hover:bg-gray-50">
-                <td class="text-center font-medium text-gray-500">${item_counter}</td>
-                <td>${dateFormatted}</td>
-                <td class="font-semibold text-gray-700">${row.no_faktur}</td>
-                <td class="text-center">${btkpBadge}</td> 
-                <td class="">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-800">
-                        ${row.Nm_Alias || "-"}
-                    </span>
-                </td>
-                <td class="text-sm font-medium text-gray-800">${
-                  row.nama_supplier || "-"
-                }</td>
-                <td class="text-right font-mono text-gray-700">${formatRupiah(
-                  dpp
-                )}</td>
-                <td class="text-right font-mono text-gray-700">${formatRupiah(
-                  dppNilaiLain
-                )}</td>
-                <td class="text-right font-mono text-red-600">${formatRupiah(
-                  ppn
-                )}</td>
-                <td class="text-right font-bold text-gray-800">${formatRupiah(
-                  total
-                )}</td>
-                <td class="text-center align-middle border-l border-gray-100 bg-blue-50/30">
-                     ${row.ada_di_coretax ? "OK" : "-"} 
-                </td>
-                <td class="text-center align-middle border-l border-gray-100 bg-yellow-50/30">
-                     ${row.ada_di_coretax ? "OK" : "-"}
-                </td>
-            </tr>
-        `;
-      item_counter++;
-    });
-    // NOTE: PLEASE KEEP YOUR ORIGINAL RENDER TABLE LOGIC FOR htmlFisik/htmlCoretax.
-    // I simplified it above just to close the function structure.
-    // Use your existing renderTable content fully.
-
-    // tableBody.innerHTML = htmlRows; // (Uncomment ini jika pakai full code)
-
-    // RE-INJECTING ORIGINAL RENDER LOGIC FROM USER PROMPT TO ENSURE IT WORKS:
-    // (Agar Anda tinggal copy paste file ini, saya akan tulis ulang logika render yang kompleks itu di bawah)
-
-    // ... RESET htmlRows ...
-    htmlRows = "";
-    item_counter = offset + 1;
     tabel_data.forEach((row) => {
       const dpp = parseFloat(row.dpp) || 0;
       const ppn = parseFloat(row.ppn) || 0;
@@ -424,15 +338,17 @@ document.addEventListener("DOMContentLoaded", () => {
         if (a.matchType !== "INVOICE" && b.matchType === "INVOICE") return 1;
         return 0;
       });
+
       let htmlFisik = '<span class="text-gray-300 text-xs">-</span>';
       let htmlCoretax = '<span class="text-gray-300 text-xs">-</span>';
+
       if (row.ada_di_coretax == 1) {
         const badgeConfirmed = `
-               <div class="flex flex-col items-center justify-center gap-1">
-                   <span class="font-mono text-xs font-semibold text-gray-800">${
-                     row.nsfp || "-"
-                   }</span>
-               </div>`;
+                  <div class="flex flex-col items-center justify-center gap-1">
+                      <span class="font-mono text-xs font-semibold text-gray-800">${
+                        row.nsfp || "-"
+                      }</span>
+                  </div>`;
         const tipe = row.tipe_nsfp ? row.tipe_nsfp.toLowerCase() : "";
         if (tipe === "all" || tipe.includes("fisik")) {
           htmlFisik = badgeConfirmed;
@@ -454,18 +370,18 @@ document.addEventListener("DOMContentLoaded", () => {
         let multiIndicator = "";
         if (count > 1) {
           multiIndicator = `<span class="text-[10px] text-gray-400 mt-0.5 block italic group-hover:text-gray-600">
-                                   (Pilih dr ${count} opsi)
-                                 </span>`;
+                                     (Pilih dr ${count} opsi)
+                                   </span>`;
         }
         const actionHtml = `
-               <div class="flex flex-col items-center justify-center cursor-pointer group py-1 select-none"
-                    onclick="handleConfirmCoretax(${row.id}, '${candidateString}', ${isDualMatch})"
-                    title="Klik untuk memilih NSFP ini">
-                   <span class="font-mono text-xs ${textClass} border-b border-dashed group-hover:border-solid transition-colors duration-200">
-                       ${bestCandidate.nsfp}
-                   </span>
-                   ${multiIndicator}
-               </div>`;
+                  <div class="flex flex-col items-center justify-center cursor-pointer group py-1 select-none"
+                      onclick="handleConfirmCoretax(${row.id}, '${candidateString}', ${isDualMatch})"
+                      title="Klik untuk memilih NSFP ini">
+                     <span class="font-mono text-xs ${textClass} border-b border-dashed group-hover:border-solid transition-colors duration-200">
+                         ${bestCandidate.nsfp}
+                     </span>
+                     ${multiIndicator}
+                  </div>`;
         if (isDualMatch) {
           htmlFisik = actionHtml;
           htmlCoretax = actionHtml;
@@ -480,10 +396,10 @@ document.addEventListener("DOMContentLoaded", () => {
       } else if (usedCandidates.length > 0) {
         const firstMatch = usedCandidates[0];
         const errorHtml = `
-               <div class="flex flex-col items-center">
-                   <span class="text-[10px] font-bold text-red-500">Ganda/Terpakai</span>
-                   <span class="text-[10px] text-gray-400 font-mono decoration-line-through">${firstMatch.nsfp}</span>
-               </div>`;
+                  <div class="flex flex-col items-center">
+                      <span class="text-[10px] font-bold text-red-500">Ganda/Terpakai</span>
+                      <span class="text-[10px] text-gray-400 font-mono decoration-line-through">${firstMatch.nsfp}</span>
+                  </div>`;
         if (firstMatch.sources.includes("FISIK")) htmlFisik = errorHtml;
         if (firstMatch.sources.includes("CORETAX")) htmlCoretax = errorHtml;
         if (
@@ -494,46 +410,49 @@ document.addEventListener("DOMContentLoaded", () => {
           htmlCoretax = errorHtml;
         }
       }
+
       htmlRows += `
-               <tr class="hover:bg-gray-50">
-                   <td class="text-center font-medium text-gray-500">${item_counter}</td>
-                   <td>${dateFormatted}</td>
-                   <td class="font-semibold text-gray-700">${row.no_faktur}</td>
-                   <td class="text-center">${btkpBadge}</td> <td class="">
-                       <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-800">
-                           ${row.Nm_Alias || "-"}
-                       </span>
-                   </td>
-                   <td class="text-sm font-medium text-gray-800">${
-                     row.nama_supplier || "-"
-                   }</td>
-                   <td class="text-right font-mono text-gray-700">${formatRupiah(
-                     dpp
-                   )}</td>
-                   <td class="text-right font-mono text-gray-700">${formatRupiah(
-                     dppNilaiLain
-                   )}</td>
-                   <td class="text-right font-mono text-red-600">${formatRupiah(
-                     ppn
-                   )}</td>
-                   <td class="text-right font-bold text-gray-800">${formatRupiah(
-                     total
-                   )}</td>
-                   <td class="text-center align-middle border-l border-gray-100 bg-blue-50/30">
-                       ${htmlFisik}
-                   </td>
-                   <td class="text-center align-middle border-l border-gray-100 bg-yellow-50/30">
-                       ${htmlCoretax}
-                   </td>
-               </tr>
-           `;
+                  <tr class="hover:bg-gray-50">
+                      <td class="text-center font-medium text-gray-500">${item_counter}</td>
+                      <td>${dateFormatted}</td>
+                      <td class="font-semibold text-gray-700">${
+                        row.no_faktur
+                      }</td>
+                      <td class="text-center">${btkpBadge}</td> 
+                      <td class="">
+                          <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-800">
+                              ${row.Nm_Alias || "-"}
+                          </span>
+                      </td>
+                      <td class="text-sm font-medium text-gray-800">${
+                        row.nama_supplier || "-"
+                      }</td>
+                      <td class="text-right font-mono text-gray-700">${formatRupiah(
+                        dpp
+                      )}</td>
+                      <td class="text-right font-mono text-gray-700">${formatRupiah(
+                        dppNilaiLain
+                      )}</td>
+                      <td class="text-right font-mono text-red-600">${formatRupiah(
+                        ppn
+                      )}</td>
+                      <td class="text-right font-bold text-gray-800">${formatRupiah(
+                        total
+                      )}</td>
+                      <td class="text-center align-middle border-l border-gray-100 bg-blue-50/30">
+                          ${htmlFisik}
+                      </td>
+                      <td class="text-center align-middle border-l border-gray-100 bg-yellow-50/30">
+                          ${htmlCoretax}
+                      </td>
+                  </tr>
+              `;
       item_counter++;
     });
     tableBody.innerHTML = htmlRows;
   }
 
   function renderPagination(pagination) {
-    // (Sama seperti file asli)
     if (!pagination) {
       paginationInfo.textContent = "";
       paginationLinks.innerHTML = "";
@@ -550,15 +469,15 @@ document.addEventListener("DOMContentLoaded", () => {
     paginationInfo.textContent = `Menampilkan ${start_row} - ${end_row} dari ${total_rows} data`;
     let linksHtml = "";
     linksHtml += `
-          <a href="${
-            current_page > 1 ? build_pagination_url(current_page - 1) : "#"
-          }" 
-             class="pagination-link ${
-               current_page === 1 ? "pagination-disabled" : ""
-             }">
-              <i class="fas fa-chevron-left"></i>
-          </a>
-      `;
+            <a href="${
+              current_page > 1 ? build_pagination_url(current_page - 1) : "#"
+            }" 
+               class="pagination-link ${
+                 current_page === 1 ? "pagination-disabled" : ""
+               }">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        `;
     const pages_to_show = [];
     const max_pages_around = 2;
     for (let i = 1; i <= total_pages; i++) {
@@ -577,27 +496,27 @@ document.addEventListener("DOMContentLoaded", () => {
         linksHtml += `<span class="pagination-ellipsis">...</span>`;
       }
       linksHtml += `
-            <a href="${build_pagination_url(page_num)}" 
-               class="pagination-link ${
-                 page_num === current_page ? "pagination-active" : ""
-               }">
-               ${page_num}
-            </a>
-        `;
+                <a href="${build_pagination_url(page_num)}" 
+                   class="pagination-link ${
+                     page_num === current_page ? "pagination-active" : ""
+                   }">
+                   ${page_num}
+                </a>
+            `;
       last_page = page_num;
     }
     linksHtml += `
-          <a href="${
-            current_page < total_pages
-              ? build_pagination_url(current_page + 1)
-              : "#"
-          }" 
-             class="pagination-link ${
-               current_page === total_pages ? "pagination-disabled" : ""
-             }">
-              <i class="fas fa-chevron-right"></i>
-          </a>
-      `;
+            <a href="${
+              current_page < total_pages
+                ? build_pagination_url(current_page + 1)
+                : "#"
+            }" 
+               class="pagination-link ${
+                 current_page === total_pages ? "pagination-disabled" : ""
+               }">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        `;
     paginationLinks.innerHTML = linksHtml;
   }
 

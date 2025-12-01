@@ -1,6 +1,7 @@
 <?php
 session_start();
 include '../../../aa_kon_sett.php';
+
 register_shutdown_function(function () {
     $error = error_get_last();
     if ($error !== null && in_array($error['type'], [E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR, E_RECOVERABLE_ERROR])) {
@@ -12,6 +13,7 @@ register_shutdown_function(function () {
         }
     }
 });
+
 header('Content-Type: application/json');
 $response = [
     'stores' => [],
@@ -25,8 +27,11 @@ $response = [
     ],
     'error' => null,
 ];
+
 try {
     $tanggal_kemarin = date('Y-m-d', strtotime('-1 day'));
+
+    // Params Basic
     $filter_type = $_GET['filter_type'] ?? 'month';
     $bulan = $_GET['bulan'] ?? date('m');
     $tahun = $_GET['tahun'] ?? date('Y');
@@ -35,16 +40,21 @@ try {
     $search_supplier = $_GET['search_supplier'] ?? '';
     $kd_store = $_GET['kd_store'] ?? 'all';
     $status_data = $_GET['status_data'] ?? 'all';
-    $filter_ppn = $_GET['filter_ppn'] ?? 'all';
-    $filter_btkp = $_GET['filter_btkp'] ?? 'all';
+
+    // --- UPDATE: Parameter Baru ---
+    $filter_tipe_pembelian = $_GET['filter_tipe_pembelian'] ?? 'all_pkp';
+
     $page = (int) ($_GET['page'] ?? 1);
     if ($page < 1)
         $page = 1;
     $limit = 100;
+
     $response['pagination']['limit'] = $limit;
     $response['pagination']['current_page'] = $page;
     $offset = ($page - 1) * $limit;
     $response['pagination']['offset'] = $offset;
+
+    // Fetch Stores
     $sql_stores = "SELECT kd_store, nm_alias FROM kode_store WHERE display = 'on' ORDER BY Nm_Alias ASC";
     $result_stores = $conn->query($sql_stores);
     if ($result_stores) {
@@ -52,6 +62,8 @@ try {
             $response['stores'][] = $row;
         }
     }
+
+    // Build Where Conditions
     if ($filter_type === 'month') {
         $where_conditions = "MONTH(p.tgl_nota) = ? AND YEAR(p.tgl_nota) = ?";
         $bind_types = 'ss';
@@ -61,25 +73,34 @@ try {
         $bind_types = 'ss';
         $bind_params = [$tgl_mulai, $tgl_selesai];
     }
+
     if ($kd_store != 'all') {
         $where_conditions .= " AND p.kode_store = ?";
         $bind_types .= 's';
         $bind_params[] = $kd_store;
     }
-    if ($filter_ppn != 'all') {
-        if ($filter_ppn == 'ppn') {
+
+    // --- UPDATE: Logic Filter Tipe Pembelian ---
+    switch ($filter_tipe_pembelian) {
+        case 'pkp':
             $where_conditions .= " AND p.ppn != 0";
-        } elseif ($filter_ppn == 'non_ppn') {
+            break;
+        case 'non_pkp':
             $where_conditions .= " AND p.ppn = 0";
-        }
-    }
-    if ($filter_btkp != 'all') {
-        if ($filter_btkp == 'btkp') {
+            break;
+        case 'btkp':
             $where_conditions .= " AND p.is_btkp = 1";
-        } elseif ($filter_btkp == 'non_btkp') {
+            break;
+        case 'non_btkp':
             $where_conditions .= " AND (p.is_btkp = 0 OR p.is_btkp IS NULL)";
-        }
+            break;
+        case 'all_pkp':
+        case 'all_btkp':
+        default:
+            // Tampilkan semua (no filter)
+            break;
     }
+
     if ($status_data != 'all') {
         if ($status_data == 'unlinked') {
             $where_conditions .= " AND (p.ada_di_coretax = 0 OR p.ada_di_coretax IS NULL)";
@@ -96,6 +117,7 @@ try {
                                    AND (c.nsfp IS NOT NULL OR f.nsfp IS NOT NULL)";
         }
     }
+
     if (!empty($search_supplier)) {
         $search_raw = trim($search_supplier);
         $search_numeric = str_replace('.', '', $search_raw);
@@ -121,6 +143,7 @@ try {
         $bind_params[] = $termNumeric;
         $bind_params[] = $termNumeric;
     }
+
     $sql_count = "SELECT COUNT(DISTINCT p.id) as total 
                   FROM ff_pembelian p 
                   LEFT JOIN ff_coretax c ON p.dpp = c.harga_jual AND p.ppn = c.ppn AND p.kode_store = c.kode_store
@@ -130,6 +153,7 @@ try {
                         (p.dpp = f.dpp AND p.ppn = f.ppn AND p.kode_store = f.kode_store)
                   )
                   WHERE $where_conditions";
+
     $stmt_count = $conn->prepare($sql_count);
     if ($stmt_count === false)
         throw new Exception("Prepare failed (count): " . $conn->error);
@@ -138,8 +162,10 @@ try {
     $result_count = $stmt_count->get_result();
     $total_rows = $result_count->fetch_assoc()['total'] ?? 0;
     $stmt_count->close();
+
     $response['pagination']['total_rows'] = (int) $total_rows;
     $response['pagination']['total_pages'] = ceil($total_rows / $limit);
+
     $sql_data = "
         SELECT 
             p.id,
@@ -212,15 +238,18 @@ try {
         ORDER BY p.tgl_nota DESC, p.no_faktur ASC
         LIMIT ? OFFSET ?
     ";
+
     $bind_types .= 'ii';
     $bind_params[] = $limit;
     $bind_params[] = $offset;
+
     $stmt_data = $conn->prepare($sql_data);
     if ($stmt_data === false)
         throw new Exception("Prepare failed (data): " . $conn->error);
     $stmt_data->bind_param($bind_types, ...$bind_params);
     $stmt_data->execute();
     $result_data = $stmt_data->get_result();
+
     while ($row = $result_data->fetch_assoc()) {
         foreach ($row as $key => $value) {
             if (is_string($value)) {
@@ -232,11 +261,14 @@ try {
         }
         $response['tabel_data'][] = $row;
     }
+
     $stmt_data->close();
     $conn->close();
+
 } catch (Exception $e) {
     http_response_code(500);
     $response['error'] = $e->getMessage();
 }
+
 echo json_encode($response);
 ?>
