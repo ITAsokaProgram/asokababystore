@@ -27,14 +27,16 @@ $response = [
 ];
 try {
     $tanggal_kemarin = date('Y-m-d', strtotime('-1 day'));
+    $filter_type = $_GET['filter_type'] ?? 'month';
+    $bulan = $_GET['bulan'] ?? date('m');
+    $tahun = $_GET['tahun'] ?? date('Y');
     $tgl_mulai = $_GET['tgl_mulai'] ?? $tanggal_kemarin;
     $tgl_selesai = $_GET['tgl_selesai'] ?? $tanggal_kemarin;
     $search_supplier = $_GET['search_supplier'] ?? '';
     $kd_store = $_GET['kd_store'] ?? 'all';
     $status_data = $_GET['status_data'] ?? 'all';
     $filter_ppn = $_GET['filter_ppn'] ?? 'all';
-    $filter_btkp = $_GET['filter_btkp'] ?? 'all'; // NEW FILTER
-
+    $filter_btkp = $_GET['filter_btkp'] ?? 'all';
     $page = (int) ($_GET['page'] ?? 1);
     if ($page < 1)
         $page = 1;
@@ -50,15 +52,20 @@ try {
             $response['stores'][] = $row;
         }
     }
-    $where_conditions = "DATE(p.tgl_nota) BETWEEN ? AND ?";
-    $bind_types = 'ss';
-    $bind_params = [$tgl_mulai, $tgl_selesai];
+    if ($filter_type === 'month') {
+        $where_conditions = "MONTH(p.tgl_nota) = ? AND YEAR(p.tgl_nota) = ?";
+        $bind_types = 'ss';
+        $bind_params = [$bulan, $tahun];
+    } else {
+        $where_conditions = "DATE(p.tgl_nota) BETWEEN ? AND ?";
+        $bind_types = 'ss';
+        $bind_params = [$tgl_mulai, $tgl_selesai];
+    }
     if ($kd_store != 'all') {
         $where_conditions .= " AND p.kode_store = ?";
         $bind_types .= 's';
         $bind_params[] = $kd_store;
     }
-
     if ($filter_ppn != 'all') {
         if ($filter_ppn == 'ppn') {
             $where_conditions .= " AND p.ppn != 0";
@@ -66,8 +73,6 @@ try {
             $where_conditions .= " AND p.ppn = 0";
         }
     }
-
-    // NEW LOGIC BTKP
     if ($filter_btkp != 'all') {
         if ($filter_btkp == 'btkp') {
             $where_conditions .= " AND p.is_btkp = 1";
@@ -75,7 +80,6 @@ try {
             $where_conditions .= " AND (p.is_btkp = 0 OR p.is_btkp IS NULL)";
         }
     }
-
     if ($status_data != 'all') {
         if ($status_data == 'unlinked') {
             $where_conditions .= " AND (p.ada_di_coretax = 0 OR p.ada_di_coretax IS NULL)";
