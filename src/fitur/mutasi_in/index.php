@@ -15,7 +15,7 @@ $kd_store = $_GET['kd_store'] ?? $default_kd_store;
 
 require_once __DIR__ . '/../../component/menu_handler.php';
 
-$menuHandler = new MenuHandler('laporan_koreksi_plu');
+$menuHandler = new MenuHandler('laporan_mutasi_in');
 
 if (!$menuHandler->initialize()) {
     exit();
