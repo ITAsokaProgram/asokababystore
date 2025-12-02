@@ -24,15 +24,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   function getUrlParams() {
     const params = new URLSearchParams(window.location.search);
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    const day = String(now.getDate()).padStart(2, "0");
-    const todayString = `${year}-${month}-${day}`;
-    const firstDayString = `${year}-${month}-01`;
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayString = yesterday.toISOString().split("T")[0];
     return {
-      tgl_mulai: params.get("tgl_mulai") || firstDayString,
-      tgl_selesai: params.get("tgl_selesai") || todayString,
+      tgl_mulai: params.get("tgl_mulai") || yesterdayString,
+      tgl_selesai: params.get("tgl_selesai") || yesterdayString,
       kd_store: params.get("kd_store") || "all",
       status_data: params.get("status_data") || "all",
       search_supplier: (params.get("search_supplier") || "").trim(),
@@ -158,6 +155,15 @@ document.addEventListener("DOMContentLoaded", () => {
             </tr>`;
       return;
     }
+    const suffixCounts = {};
+    tabel_data.forEach((row) => {
+      const nsfp = row.nsfp || "";
+      const cleanNsfp = nsfp.replace(/[^0-9]/g, "");
+      if (cleanNsfp.length >= 8) {
+        const suffix = cleanNsfp.slice(-8);
+        suffixCounts[suffix] = (suffixCounts[suffix] || 0) + 1;
+      }
+    });
     let htmlRows = "";
     let item_counter = offset + 1;
     tabel_data.forEach((row, index) => {
@@ -171,28 +177,18 @@ document.addEventListener("DOMContentLoaded", () => {
         year: "numeric",
       });
       const currentNsfp = row.nsfp || "";
-      const currentSuffix =
-        currentNsfp.length >= 8 ? currentNsfp.slice(-8) : currentNsfp;
-      const prevRow = index > 0 ? tabel_data[index - 1] : null;
-      const prevNsfp = prevRow ? prevRow.nsfp || "" : "";
-      const prevSuffix = prevNsfp.length >= 8 ? prevNsfp.slice(-8) : "";
-      const nextRow =
-        index < tabel_data.length - 1 ? tabel_data[index + 1] : null;
-      const nextNsfp = nextRow ? nextRow.nsfp || "" : "";
-      const nextSuffix = nextNsfp.length >= 8 ? nextNsfp.slice(-8) : "";
+      const cleanNsfp = currentNsfp.replace(/[^0-9]/g, "");
+      const currentPrefix = cleanNsfp.substring(0, 3);
+      const currentSuffix = cleanNsfp.length >= 8 ? cleanNsfp.slice(-8) : "";
       const isDuplicate =
-        currentSuffix === prevSuffix || currentSuffix === nextSuffix;
+        currentSuffix !== "" && suffixCounts[currentSuffix] > 1;
       let rowClass = "border-b transition-colors ";
       let duplicateBadge = "";
       if (isDuplicate) {
         rowClass += "bg-yellow-50 hover:bg-yellow-100";
-        if (currentNsfp.length > 3 && currentNsfp[2] === "1") {
+        if (currentPrefix === "041") {
           duplicateBadge = `<span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[9px] font-medium bg-red-100 text-red-800">PENGGANTI</span>`;
-        } else if (
-          currentNsfp.length > 3 &&
-          currentNsfp[2] === "0" &&
-          (nextNsfp[2] === "1" || prevNsfp[2] === "1")
-        ) {
+        } else if (currentPrefix === "040") {
           duplicateBadge = `<span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[9px] font-medium bg-gray-100 text-gray-800">DIGANTI</span>`;
         }
       } else {

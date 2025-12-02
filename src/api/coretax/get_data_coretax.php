@@ -121,17 +121,14 @@ try {
             fc.perekam,
             fc.kode_store,
             ks.Nm_Alias,
-            -- Indikasi Status Link
             IF(p.id IS NOT NULL, 1, 0) as ada_pembelian,
             IF(f.id IS NOT NULL, 1, 0) as ada_fisik
         FROM ff_coretax fc
         LEFT JOIN kode_store ks ON fc.kode_store = ks.Kd_Store
-        -- Join Pembelian (Hanya yg sudah confirmed/linked)
         LEFT JOIN ff_pembelian p ON fc.nsfp = p.nsfp AND p.ada_di_coretax = 1
-        -- Join Fisik (Scan Faktur Pajak)
         LEFT JOIN ff_faktur_pajak f ON fc.nsfp = f.nsfp
         WHERE $where_conditions $status_condition
-        ORDER BY fc.tgl_faktur_pajak DESC, fc.nsfp ASC
+        ORDER BY fc.tgl_faktur_pajak DESC, RIGHT(fc.nsfp, 8) ASC, fc.nsfp ASC
         LIMIT ? OFFSET ?
     ";
     $bind_types .= 'ii';
