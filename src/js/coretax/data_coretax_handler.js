@@ -24,12 +24,15 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   function getUrlParams() {
     const params = new URLSearchParams(window.location.search);
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayString = yesterday.toISOString().split("T")[0];
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const todayString = `${year}-${month}-${day}`;
+    const firstDayString = `${year}-${month}-01`;
     return {
-      tgl_mulai: params.get("tgl_mulai") || yesterdayString,
-      tgl_selesai: params.get("tgl_selesai") || yesterdayString,
+      tgl_mulai: params.get("tgl_mulai") || firstDayString,
+      tgl_selesai: params.get("tgl_selesai") || todayString,
       kd_store: params.get("kd_store") || "all",
       status_data: params.get("status_data") || "all",
       search_supplier: (params.get("search_supplier") || "").trim(),

@@ -86,6 +86,13 @@ if (!$menuHandler->initialize()) {
                                 <p id="page-subtitle" class="text-xs text-gray-600">Memuat data pembelian...</p>
                             </div>
                         </div>
+
+                        <div class="flex items-center gap-2">
+                            <a href="input_pembelian.php"
+                                class="btn-primary flex items-center gap-2 px-4 py-2 shadow-lg shadow-pink-500/30 rounded-lg text-white transition-transform hover:scale-105 text-sm decoration-0">
+                                <i class="fas fa-plus"></i> <span>Input Pembelian</span>
+                            </a>
+                        </div>
                     </div>
                 </div>
 

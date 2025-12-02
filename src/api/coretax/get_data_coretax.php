@@ -1,8 +1,6 @@
 <?php
 session_start();
 include '../../../aa_kon_sett.php';
-
-// Error Handling Global
 register_shutdown_function(function () {
     $error = error_get_last();
     if ($error !== null && in_array($error['type'], [E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR, E_RECOVERABLE_ERROR])) {
@@ -14,9 +12,7 @@ register_shutdown_function(function () {
         }
     }
 });
-
 header('Content-Type: application/json');
-
 $response = [
     'stores' => [],
     'tabel_data' => [],
@@ -29,31 +25,23 @@ $response = [
     ],
     'error' => null,
 ];
-
 try {
-    // 1. Parameter Input
-    $tanggal_kemarin = date('Y-m-d', strtotime('-1 day'));
-    $tgl_mulai = $_GET['tgl_mulai'] ?? $tanggal_kemarin;
-    $tgl_selesai = $_GET['tgl_selesai'] ?? $tanggal_kemarin;
+    $today = date('Y-m-d');
+    $first_day = date('Y-m-01');
+    $tgl_mulai = $_GET['tgl_mulai'] ?? $first_day;
+    $tgl_selesai = $_GET['tgl_selesai'] ?? $today;
     $kd_store = $_GET['kd_store'] ?? 'all';
     $status_data = $_GET['status_data'] ?? 'all';
-
-    // Pembersihan input search
     $search_raw = trim($_GET['search_supplier'] ?? '');
-    $search_number = str_replace(['.', ','], '', $search_raw); // Hapus titik dan koma untuk pencarian angka
-
-    // Pagination
+    $search_number = str_replace(['.', ','], '', $search_raw);
     $page = (int) ($_GET['page'] ?? 1);
     if ($page < 1)
         $page = 1;
     $limit = 100;
-
     $response['pagination']['limit'] = $limit;
     $response['pagination']['current_page'] = $page;
     $offset = ($page - 1) * $limit;
     $response['pagination']['offset'] = $offset;
-
-    // 2. Load List Stores (Untuk Dropdown)
     $sql_stores = "SELECT kd_store, nm_alias FROM kode_store WHERE display = 'on' ORDER BY Nm_Alias ASC";
     $result_stores = $conn->query($sql_stores);
     if ($result_stores) {
@@ -61,22 +49,15 @@ try {
             $response['stores'][] = $row;
         }
     }
-
-    // 3. Build Query Conditions
     $where_conditions = "fc.tgl_faktur_pajak BETWEEN ? AND ?";
     $bind_types = 'ss';
     $bind_params = [$tgl_mulai, $tgl_selesai];
-
-    // Filter Store
     if ($kd_store != 'all') {
         $where_conditions .= " AND fc.kode_store = ?";
         $bind_types .= 's';
         $bind_params[] = $kd_store;
     }
-
-    // Filter Search (NPWP, Nama, NSFP, Nominal, Perekam)
     if (!empty($search_raw)) {
-        // PERBAIKAN DISINI: Menambahkan dpp_nilai_lain
         $where_conditions .= " AND (
             fc.nama_penjual LIKE ? 
             OR fc.npwp_penjual LIKE ? 
@@ -86,22 +67,17 @@ try {
             OR CAST(fc.dpp_nilai_lain AS CHAR) LIKE ?
             OR CAST(fc.ppn AS CHAR) LIKE ?
         )";
-        // Tambahkan 1 tipe string lagi ('s') karena parameter bertambah
         $bind_types .= 'sssssss';
-
         $searchTermRaw = '%' . $search_raw . '%';
         $searchTermNum = '%' . $search_number . '%';
-
-        $bind_params[] = $searchTermRaw; // nama
-        $bind_params[] = $searchTermRaw; // npwp
-        $bind_params[] = $searchTermRaw; // nsfp
-        $bind_params[] = $searchTermRaw; // perekam
-        $bind_params[] = $searchTermNum; // harga_jual
-        $bind_params[] = $searchTermNum; // dpp_nilai_lain (ADDED)
-        $bind_params[] = $searchTermNum; // ppn
+        $bind_params[] = $searchTermRaw;
+        $bind_params[] = $searchTermRaw;
+        $bind_params[] = $searchTermRaw;
+        $bind_params[] = $searchTermRaw;
+        $bind_params[] = $searchTermNum;
+        $bind_params[] = $searchTermNum;
+        $bind_params[] = $searchTermNum;
     }
-
-    // Filter Status
     $status_condition = "";
     if ($status_data != 'all') {
         if ($status_data == 'linked_both') {
@@ -114,28 +90,21 @@ try {
             $status_condition = " AND p.id IS NULL";
         }
     }
-
-    // 4. Hitung Total Rows
     $sql_count = "SELECT COUNT(DISTINCT fc.nsfp) as total 
                   FROM ff_coretax fc
                   LEFT JOIN ff_pembelian p ON fc.nsfp = p.nsfp AND p.ada_di_coretax = 1
                   LEFT JOIN ff_faktur_pajak f ON fc.nsfp = f.nsfp
                   WHERE $where_conditions $status_condition";
-
     $stmt_count = $conn->prepare($sql_count);
     if ($stmt_count === false)
         throw new Exception("Prepare failed (count): " . $conn->error);
-
     $stmt_count->bind_param($bind_types, ...$bind_params);
     $stmt_count->execute();
     $result_count = $stmt_count->get_result();
     $total_rows = $result_count->fetch_assoc()['total'] ?? 0;
     $stmt_count->close();
-
     $response['pagination']['total_rows'] = (int) $total_rows;
     $response['pagination']['total_pages'] = ceil($total_rows / $limit);
-
-    // 5. Main Query Data
     $sql_data = "
         SELECT 
             fc.npwp_penjual,
@@ -165,19 +134,15 @@ try {
         ORDER BY fc.tgl_faktur_pajak DESC, fc.nsfp ASC
         LIMIT ? OFFSET ?
     ";
-
     $bind_types .= 'ii';
     $bind_params[] = $limit;
     $bind_params[] = $offset;
-
     $stmt_data = $conn->prepare($sql_data);
     if ($stmt_data === false)
         throw new Exception("Prepare failed (data): " . $conn->error);
-
     $stmt_data->bind_param($bind_types, ...$bind_params);
     $stmt_data->execute();
     $result_data = $stmt_data->get_result();
-
     while ($row = $result_data->fetch_assoc()) {
         foreach ($row as $key => $value) {
             if (is_string($value)) {
@@ -186,14 +151,11 @@ try {
         }
         $response['tabel_data'][] = $row;
     }
-
     $stmt_data->close();
     $conn->close();
-
 } catch (Exception $e) {
     http_response_code(500);
     $response['error'] = $e->getMessage();
 }
-
 echo json_encode($response);
 ?>

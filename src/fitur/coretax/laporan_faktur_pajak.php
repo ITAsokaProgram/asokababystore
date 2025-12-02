@@ -1,10 +1,8 @@
 <?php
 session_start();
 include '../../../aa_kon_sett.php';
-$tanggal_kemarin = date('Y-m-d', strtotime('-1 day'));
-
-$default_tgl_mulai = $tanggal_kemarin;
-$default_tgl_selesai = $tanggal_kemarin;
+$default_tgl_mulai = date('Y-m-01');
+$default_tgl_selesai = date('Y-m-d');
 $default_kd_store = 'all';
 $default_status = 'all';
 $default_page = 1;
@@ -65,6 +63,13 @@ if (!$menuHandler->initialize()) {
                                 </h1>
                                 <p id="page-subtitle" class="text-xs text-gray-600">Memuat data faktur pajak...</p>
                             </div>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <a href="input_faktur_pajak.php"
+                                class="btn-primary flex items-center gap-2 px-4 py-2 shadow-lg shadow-pink-500/30 rounded-lg text-white transition-transform hover:scale-105 text-sm decoration-0">
+                                <i class="fas fa-plus"></i> <span>Input Faktur</span>
+                            </a>
                         </div>
                     </div>
                 </div>

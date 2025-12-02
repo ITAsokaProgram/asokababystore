@@ -22,19 +22,27 @@ document.addEventListener("DOMContentLoaded", () => {
       maximumFractionDigits: 0,
     }).format(number);
   }
-
   function getUrlParams() {
     const params = new URLSearchParams(window.location.search);
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayString = yesterday.toISOString().split("T")[0];
+
+    // --- UBAH BAGIAN INI ---
+    const now = new Date();
+
+    // Format YYYY-MM-DD untuk hari ini
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+
+    const todayString = `${year}-${month}-${day}`;
+    const firstDayString = `${year}-${month}-01`;
+    // -----------------------
 
     return {
-      tgl_mulai: params.get("tgl_mulai") || yesterdayString,
-      tgl_selesai: params.get("tgl_selesai") || yesterdayString,
+      tgl_mulai: params.get("tgl_mulai") || firstDayString, // Default tgl 1
+      tgl_selesai: params.get("tgl_selesai") || todayString, // Default hari ini
       kd_store: params.get("kd_store") || "all",
       status_data: params.get("status_data") || "all",
-      search_supplier: (params.get("search_supplier") || "").trim(), // TRIM DISINI
+      search_supplier: (params.get("search_supplier") || "").trim(),
       page: parseInt(params.get("page") || "1", 10),
     };
   }

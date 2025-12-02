@@ -26,9 +26,11 @@ $response = [
     'error' => null,
 ];
 try {
-    $tanggal_kemarin = date('Y-m-d', strtotime('-1 day'));
-    $tgl_mulai = $_GET['tgl_mulai'] ?? $tanggal_kemarin;
-    $tgl_selesai = $_GET['tgl_selesai'] ?? $tanggal_kemarin;
+    $today = date('Y-m-d');
+    $first_day = date('Y-m-01');
+
+    $tgl_mulai = $_GET['tgl_mulai'] ?? $first_day;
+    $tgl_selesai = $_GET['tgl_selesai'] ?? $today;
     $search_raw = trim($_GET['search_supplier'] ?? '');
     $search_number = str_replace('.', '', $search_raw);
     $kd_store = $_GET['kd_store'] ?? 'all';

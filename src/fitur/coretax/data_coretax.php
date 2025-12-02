@@ -1,10 +1,8 @@
 <?php
 session_start();
 include '../../../aa_kon_sett.php';
-$tanggal_kemarin = date('Y-m-d', strtotime('-1 day'));
-
-$default_tgl_mulai = $tanggal_kemarin;
-$default_tgl_selesai = $tanggal_kemarin;
+$default_tgl_mulai = date('Y-m-01');
+$default_tgl_selesai = date('Y-m-d');
 $default_kd_store = 'all';
 $default_status = 'all';
 $default_page = 1;
@@ -66,6 +64,13 @@ if (!$menuHandler->initialize()) {
                                 <p id="page-subtitle" class="text-xs text-gray-600">Memuat data faktur pajak...</p>
                             </div>
                         </div>
+
+                        <div class="flex items-center gap-2">
+                            <a href="import_faktur.php"
+                                class="btn-primary flex items-center gap-2 px-4 py-2 shadow-lg shadow-pink-500/30 rounded-lg text-white transition-transform hover:scale-105 text-sm decoration-0">
+                                <i class="fas fa-plus"></i> <span>Import Masukan</span>
+                            </a>
+                        </div>
                     </div>
                 </div>
 
@@ -99,7 +104,8 @@ if (!$menuHandler->initialize()) {
 
                         <div class="lg:col-span-1">
                             <label for="status_data" class="block text-xs font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-link text-pink-600 mr-1"></i> Status
+                                <i class="fas fa-link text-pink-600 mr-1"></i> Coretax / Faktur Pajak Fisik
+
                             </label>
                             <select name="status_data" id="status_data" class="input-modern w-full">
                                 <option value="all" <?php echo ($status_data == 'all') ? 'selected' : ''; ?>>Semua Data
