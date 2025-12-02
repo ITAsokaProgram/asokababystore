@@ -1,5 +1,9 @@
 import { deleteUser } from "./delete_user.js";
-import { displayEditUserModal, resetPassword } from "./edit_user.js";
+import {
+  displayEditUserModal,
+  resetPassword,
+  bulkGrantAccess,
+} from "./edit_user.js";
 import { getUser, getUserEdit } from "./fetch.js";
 import { paginationUserInternal } from "./pagination.js";
 import { renderTableUserInternal } from "./table.js";
@@ -35,6 +39,49 @@ export const init = async () => {
       console.error("Error fetching user data:", error);
     }
   });
+  const btnGrantAll = document.getElementById("btnGrantAll");
+  if (btnGrantAll) {
+    btnGrantAll.addEventListener("click", async () => {
+      Swal.fire({
+        title: "Konfirmasi Akses Massal",
+        html: `Anda akan memberikan <b>SELURUH AKSES</b> (Kecuali Dashboard Sales Graph)<br>kepada <b>SEMUA USER</b> yang aktif.<br><br>Proses ini tidak bisa dibatalkan!`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#7c3aed",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Ya!",
+        cancelButtonText: "Batal",
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          Swal.fire({
+            title: "Sedang Memproses...",
+            html: "Mohon tunggu sebentar, sedang mengupdate database.",
+            allowOutsideClick: false,
+            didOpen: () => {
+              Swal.showLoading();
+            },
+          });
+          try {
+            const res = await bulkGrantAccess();
+            Swal.fire({
+              icon: "success",
+              title: "Selesai!",
+              text: res.message,
+            }).then(() => {
+              window.location.reload();
+            });
+          } catch (error) {
+            console.error("Bulk Error:", error);
+            Swal.fire({
+              icon: "error",
+              title: "Gagal",
+              text: error.message || "Terjadi kesalahan server",
+            });
+          }
+        }
+      });
+    });
+  }
   document.addEventListener("click", async (e) => {
     const button = e.target.closest(".delete");
     if (!button) return;

@@ -116,9 +116,16 @@ $token = $menuHandler->getToken();
                                         class="fas fa-search text-gray-400 group-hover:text-pink-500 transition-colors duration-200"></i>
                                 </div>
                             </div>
+
                             <button
                                 class="px-6 py-3 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-xl hover:from-gray-600 hover:to-gray-700 text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 sm:flex-shrink-0">
                                 <i class="fas fa-undo mr-2"></i>Reset
+                            </button>
+
+                            <button id="btnGrantAll"
+                                class="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl hover:from-purple-700 hover:to-indigo-700 text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105 sm:flex-shrink-0"
+                                title="Berikan semua akses (kecuali sales graph) ke semua user">
+                                <i class="fas fa-layer-group mr-2"></i>Grant All Access
                             </button>
                         </div>
                     </div>

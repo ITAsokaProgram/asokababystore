@@ -120,4 +120,27 @@ export const displayEditUserModal = (userData) => {
     }
   };
 };
-export default { displayEditUserModal, resetPassword };
+export const bulkGrantAccess = async () => {
+  const token = getCookie("admin_token");
+  try {
+    const response = await fetch("/src/api/user/bulk_access_all.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const result = await response.json();
+
+    if (response.status === 200) {
+      return { status: "success", message: result.details };
+    } else {
+      throw new Error(result.message || "Gagal memproses permintaan");
+    }
+  } catch (error) {
+    throw error;
+  }
+};
+
+export default { displayEditUserModal, resetPassword, bulkGrantAccess };
