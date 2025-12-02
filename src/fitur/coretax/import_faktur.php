@@ -1,4 +1,3 @@
-src/fitur/coretax/import_faktur.php:
 <?php
 session_start();
 include '../../../aa_kon_sett.php';
