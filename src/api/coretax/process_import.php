@@ -50,7 +50,7 @@ try {
     try {
         $spreadsheet = IOFactory::load($fileTmpPath);
         $sheet = $spreadsheet->getActiveSheet();
-        $rows = $sheet->toArray(null, true, true, true);
+        $rows = $sheet->toArray(null, true, false, true);
     } catch (Exception $e) {
         throw new Exception("Gagal membaca file Excel: " . $e->getMessage());
     }
