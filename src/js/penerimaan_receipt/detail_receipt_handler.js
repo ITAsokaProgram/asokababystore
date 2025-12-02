@@ -242,10 +242,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tr>
             `;
     }
-    function buildFakturHeaderRow(no_faktur) {
+    function buildFakturHeaderRow(no_faktur, no_lpb) {
+      // Handle jika no_lpb kosong/null
+      const displayLpb = no_lpb ? no_lpb : "-";
+
       return `
                 <tr class="header-faktur-row">
-                    <td colspan="10" class="px-4 py-1 pl-6">No Faktur: <strong>${no_faktur}</strong></td>
+                    <td colspan="10" class="px-4 py-1 pl-6">
+                        <div class="flex items-center gap-4">
+                            <span>No Faktur: <strong>${no_faktur}</strong></span>
+                            <span class="text-gray-400">|</span>
+                            <span>No Invoice: <strong>${displayLpb}</strong></span>
+                        </div>
+                    </td>
                 </tr>
             `;
     }
@@ -304,7 +313,8 @@ document.addEventListener("DOMContentLoaded", () => {
             subtotal_total
           );
         }
-        htmlRows += buildFakturHeaderRow(row.no_faktur);
+        htmlRows += buildFakturHeaderRow(row.no_faktur, row.no_lpb);
+
         current_no_faktur = row.no_faktur;
         faktur_item_counter = 1;
         subtotal_qty = 0;
@@ -551,8 +561,11 @@ document.addEventListener("DOMContentLoaded", () => {
           e: { r: dataRows.length + rowOffset - 1, c: 9 },
         });
       };
-      const pushFakturHeaderRow = (no_faktur) => {
-        dataRows.push([`No Faktur: ${no_faktur}`]);
+      const pushFakturHeaderRow = (no_faktur, no_lpb) => {
+        const displayLpb = no_lpb ? no_lpb : "-";
+        dataRows.push([
+          `No Faktur: ${no_faktur}   |   No Invoice: ${displayLpb}`,
+        ]); // Digabung
         merges.push({
           s: { r: dataRows.length + rowOffset - 1, c: 0 },
           e: { r: dataRows.length + rowOffset - 1, c: 9 },
@@ -578,7 +591,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (current_no_faktur !== null) {
             pushSubtotalFakturRow();
           }
-          pushFakturHeaderRow(row.no_faktur);
+          pushFakturHeaderRow(row.no_faktur, row.no_lpb); // Tambahkan row.no_lpb
           current_no_faktur = row.no_faktur;
           faktur_item_counter = 1;
         }
@@ -916,10 +929,11 @@ document.addEventListener("DOMContentLoaded", () => {
           },
         ]);
       };
-      const pushFakturHeaderRowPdf = (no_faktur) => {
+      const pushFakturHeaderRowPdf = (no_faktur, no_lpb) => {
+        const displayLpb = no_lpb ? no_lpb : "-";
         body.push([
           {
-            content: `No Faktur: ${no_faktur}`,
+            content: `No Faktur: ${no_faktur}      No Invoice: ${displayLpb}`,
             colSpan: 10,
             styles: headerFakturStyles,
           },
@@ -980,7 +994,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (current_no_faktur !== null) {
             pushSubtotalFakturRowPdf();
           }
-          pushFakturHeaderRowPdf(row.no_faktur);
+          pushFakturHeaderRowPdf(row.no_faktur, row.no_lpb);
           current_no_faktur = row.no_faktur;
           faktur_item_counter = 1;
         }
