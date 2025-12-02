@@ -415,10 +415,18 @@ document.addEventListener("DOMContentLoaded", () => {
         month: "2-digit",
         year: "numeric",
       });
-      const isBtkp = row.is_btkp == 1;
-      const btkpBadge = isBtkp
-        ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-800 border border-green-200">BTKP</span>`
-        : `<span class="text-gray-300 text-xs">-</span>`;
+      let statusBadge = '<span class="text-gray-300 text-xs">-</span>';
+
+      if (row.status === "PKP") {
+        statusBadge =
+          '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200">PKP</span>';
+      } else if (row.status === "NON PKP") {
+        statusBadge =
+          '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-800 border border-gray-200">NON PKP</span>';
+      } else if (row.status === "BTKP") {
+        statusBadge =
+          '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-800 border border-purple-200">BTKP</span>';
+      }
       let mergedCandidatesMap = new Map();
       if (row.candidate_nsfps) {
         const candidatesRaw = row.candidate_nsfps.split(",");
@@ -547,7 +555,7 @@ document.addEventListener("DOMContentLoaded", () => {
                       <td class="font-semibold text-gray-700">${
                         row.no_faktur
                       }</td>
-                      <td class="text-center">${btkpBadge}</td> 
+                      <td class="text-center">${statusBadge}</td> 
                       <td class="">
                           <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-800">
                               ${row.Nm_Alias || "-"}
