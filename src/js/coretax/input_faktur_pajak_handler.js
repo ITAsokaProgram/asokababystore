@@ -8,6 +8,7 @@ const API_URLS = {
   searchSupplier: "/src/api/coretax/get_supplier_search.php",
   getStores: "/src/api/shared/get_all_store.php",
   getReceipt: "/src/api/coretax/get_receipt_detail.php",
+  deleteData: "/src/api/coretax/delete_faktur_pajak.php",
 };
 const form = document.getElementById("fp-form");
 const inpId = document.getElementById("inp_id");
@@ -254,21 +255,21 @@ async function fetchReceiptData(noInvoice) {
   }
 }
 async function loadTableData() {
-  tableBody.innerHTML = `<tr><td colspan="10" class="text-center p-4"><i class="fas fa-spinner fa-spin text-pink-500"></i> Memuat data...</td></tr>`;
+  tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-4"><i class="fas fa-spinner fa-spin text-pink-500"></i> Memuat data...</td></tr>`;
   try {
     const result = await sendRequestGET(API_URLS.getData);
     if (result.success && Array.isArray(result.data)) {
       renderTable(result.data);
     } else {
-      tableBody.innerHTML = `<tr><td colspan="10" class="text-center p-4 text-red-500">Gagal memuat data</td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-4 text-red-500">Gagal memuat data</td></tr>`;
     }
   } catch (error) {
-    tableBody.innerHTML = `<tr><td colspan="10" class="text-center p-4 text-red-500">Koneksi Error</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-4 text-red-500">Koneksi Error</td></tr>`;
   }
 }
 function renderTable(data) {
   if (data.length === 0) {
-    tableBody.innerHTML = `<tr><td colspan="10" class="text-center p-6 text-gray-500">Belum ada data</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-6 text-gray-500">Belum ada data</td></tr>`;
     return;
   }
   let html = "";
@@ -278,26 +279,42 @@ function renderTable(data) {
       ? `<span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded border border-gray-200">${row.nm_alias}</span>`
       : `<span class="text-gray-400">-</span>`;
     html += `
-            <tr class="hover:bg-pink-50 transition-colors">
-                <td class="text-center text-gray-500">${index + 1}</td>
-                <td>${row.tgl_faktur || "-"}</td>
-                <td class="font-bold text-gray-700">${
+            <tr class="hover:bg-pink-50 transition-colors border-b border-gray-50">
+                <td class="text-center text-gray-500 py-3">${index + 1}</td>
+                <td class="text-sm">${row.tgl_faktur || "-"}</td>
+                <td class="font-medium text-gray-800 text-sm">${
                   row.no_faktur || "-"
                 }</td> 
-                <td class="font-medium text-gray-800">${row.nsfp}</td>
-                <td>${storeBadge}</td>
-                <td class="text-sm">${row.nama_supplier || "-"}</td>
-                <td class="text-right font-mono">${formatNumber(row.dpp)}</td>
-                <td class="text-right font-mono">${formatNumber(
+                <td class="text-sm text-gray-600">${row.nsfp}</td>
+                <td class="text-center">${storeBadge}</td>
+                <td class="text-sm truncate max-w-[150px]" title="${
+                  row.nama_supplier
+                }">${row.nama_supplier || "-"}</td>
+                <td class="text-right font-mono text-sm">${formatNumber(
+                  row.dpp
+                )}</td>
+                <td class="text-right font-mono text-gray-500 text-sm">${formatNumber(
                   row.dpp_nilai_lain
                 )}</td>
-                <td class="text-right font-mono">${formatNumber(row.ppn)}</td>
-                <td class="text-right font-bold font-mono text-gray-800">${formatNumber(
+                <td class="text-right font-mono text-sm">${formatNumber(
+                  row.ppn
+                )}</td>
+                <td class="text-right font-bold font-mono text-gray-800 text-sm">${formatNumber(
                   row.total
                 )}</td>
-                <td class="text-center">
-                    <button class="btn-edit-row text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 p-2 rounded" 
-                            data-row="${safeJson}"><i class="fas fa-pencil-alt"></i></button>
+                <td class="text-center py-2">
+                    <div class="flex justify-center gap-1">
+                        <button class="btn-edit-row text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 w-8 h-8 flex items-center justify-center rounded transition-all" 
+                            data-row="${safeJson}" title="Edit Data">
+                            <i class="fas fa-pencil-alt"></i>
+                        </button>
+                        <button class="btn-delete-row text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 w-8 h-8 flex items-center justify-center rounded transition-all" 
+                            data-id="${row.id}" data-nsfp="${
+      row.nsfp
+    }" data-invoice="${row.no_faktur || "-"}" title="Hapus Data">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
                 </td>
             </tr>`;
   });
@@ -305,6 +322,14 @@ function renderTable(data) {
   document.querySelectorAll(".btn-edit-row").forEach((btn) => {
     btn.addEventListener("click", function () {
       startEditMode(JSON.parse(this.getAttribute("data-row")));
+    });
+  });
+  document.querySelectorAll(".btn-delete-row").forEach((btn) => {
+    btn.addEventListener("click", function () {
+      const id = this.getAttribute("data-id");
+      const invoice = this.getAttribute("data-invoice");
+      const nsfp = this.getAttribute("data-nsfp");
+      handleDelete(id, invoice, nsfp);
     });
   });
 }
@@ -328,7 +353,8 @@ function startEditMode(data) {
   editIndicator.classList.remove("hidden");
   btnCancelEdit.classList.remove("hidden");
   btnSave.innerHTML = `<i class="fas fa-sync-alt"></i> <span>Update</span>`;
-  btnSave.className = "btn-warning";
+  btnSave.className =
+    "btn-warning px-6 py-2 rounded shadow-lg bg-amber-500 text-white hover:bg-amber-600";
 }
 function cancelEditMode() {
   form.reset();
@@ -345,6 +371,43 @@ function cancelEditMode() {
   btnSave.className =
     "btn-primary shadow-lg shadow-pink-500/30 flex items-center gap-2 px-6 py-2";
 }
+function handleDelete(id, invoice, nsfp) {
+  Swal.fire({
+    title: "Hapus Faktur Pajak?",
+    text: `Anda yakin ingin menghapus Invoice ${invoice} (NSFP: ${nsfp})?`,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#ef4444",
+    cancelButtonColor: "#6b7280",
+    confirmButtonText: "Ya, Hapus!",
+    cancelButtonText: "Batal",
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        Swal.fire({
+          title: "Memproses...",
+          text: "Sedang mengecek validasi data...",
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          },
+        });
+        const resp = await sendRequestJSON(API_URLS.deleteData, { id: id });
+        if (resp.success) {
+          Swal.fire("Terhapus!", resp.message, "success");
+          loadTableData();
+          if (inpId.value == id) cancelEditMode();
+        } else {
+          throw new Error(resp.message || "Gagal menghapus data");
+        }
+      } catch (error) {
+        console.error("Delete Error:", error);
+        const errorMsg = error.message || "Terjadi kesalahan sistem";
+        Swal.fire("Gagal", errorMsg, "error");
+      }
+    }
+  });
+}
 async function handleSave() {
   if (inpKodeStore.value === "") {
     Swal.fire("Gagal", "Pilih Cabang", "warning");
@@ -352,12 +415,26 @@ async function handleSave() {
   }
   const noSeri = inpNoSeri.value.trim();
   const noInvoice = inpNoInvoice.value.trim();
+  const tglFaktur = inpTgl.value;
   if (!noSeri) {
     Swal.fire("Gagal", "NSFP wajib diisi", "warning");
     return;
   }
   if (!noInvoice) {
     Swal.fire("Gagal", "No Invoice wajib diisi", "warning");
+    return;
+  }
+  if (!tglFaktur) {
+    Swal.fire("Gagal", "Tanggal Faktur wajib diisi", "warning");
+    try {
+      inpTgl.showPicker();
+    } catch (e) {
+      inpTgl.focus();
+    }
+    return;
+  }
+  if (inpNoSeri.classList.contains("border-red-500")) {
+    inpNoSeri.focus();
     return;
   }
   if (inpNoSeri.classList.contains("border-red-500")) {
@@ -382,6 +459,7 @@ async function handleSave() {
     total: parseNumber(inpTotal.value),
   };
   const originalBtn = btnSave.innerHTML;
+  const originalClass = btnSave.className;
   btnSave.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Proses...`;
   btnSave.disabled = true;
   try {
@@ -413,6 +491,7 @@ async function handleSave() {
   } finally {
     btnSave.disabled = false;
     btnSave.innerHTML = originalBtn;
+    btnSave.className = originalClass;
     isSubmitting = false;
   }
 }

@@ -131,10 +131,18 @@ if (!$menuHandler->initialize()) {
                             <h1 class="text-xl font-bold text-gray-800">Kelola Pembelian</h1>
                         </div>
                     </div>
-                    <button type="button" id="btn-save"
-                        class="btn-primary flex items-center gap-2 px-6 py-2 shadow-lg shadow-pink-500/30">
-                        <i class="fas fa-save"></i> <span>Simpan</span>
-                    </button>
+
+                    <div class="flex items-center gap-2">
+                        <a href="laporan_pembelian.php"
+                            class="btn-secondary flex items-center gap-2 px-4 py-2 shadow-sm decoration-0">
+                            <i class="fas fa-file-invoice"></i> <span>Lihat Laporan</span>
+                        </a>
+
+                        <button type="button" id="btn-save"
+                            class="btn-primary flex items-center gap-2 px-6 py-2 shadow-lg shadow-pink-500/30">
+                            <i class="fas fa-save"></i> <span>Simpan</span>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="input-row-container mb-6 relative">

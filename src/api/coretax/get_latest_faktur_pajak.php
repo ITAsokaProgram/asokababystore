@@ -24,6 +24,7 @@ try {
                 ks.Nm_Alias as nm_alias 
               FROM ff_faktur_pajak fp
               LEFT JOIN kode_store ks ON fp.kode_store = ks.Kd_Store
+              WHERE DATE(fp.dibuat_pada) = CURDATE()
               ORDER BY COALESCE(fp.edit_pada, fp.dibuat_pada) DESC, fp.id DESC 
               LIMIT 50";
     $result = $conn->query($query);
