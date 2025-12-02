@@ -557,8 +557,8 @@ document.addEventListener("DOMContentLoaded", () => {
                       }</td>
                       <td class="text-center">${statusBadge}</td> 
                       <td class="">
-                          <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-800">
-                              ${row.Nm_Alias || "-"}
+                          <span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded border border-gray-200">
+                              AVTR
                           </span>
                       </td>
                       <td class="text-sm font-medium text-gray-800">${
