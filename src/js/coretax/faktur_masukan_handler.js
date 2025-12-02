@@ -71,6 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
         );
       }
       const data = await response.json();
+      console.log("DATA", data);
 
       if (data.error) {
         throw new Error(data.error);
@@ -179,9 +180,11 @@ document.addEventListener("DOMContentLoaded", () => {
     let item_counter = offset + 1;
 
     tabel_data.forEach((row) => {
-      const gtot = parseFloat(row.gtot) || 0;
+      const raw_nilai_db = parseFloat(row.gtot) || 0;
       const gppn = parseFloat(row.gppn) || 0;
-      const dpp = gtot - gppn;
+
+      const dpp = raw_nilai_db;
+      const total_akhir = dpp + gppn;
 
       const dateObj = new Date(row.tgl_tiba);
       const dateFormatted = dateObj.toLocaleDateString("id-ID", {
@@ -210,7 +213,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   gppn
                 )}</td>
                 <td class="text-right font-bold text-gray-800">${formatRupiah(
-                  gtot
+                  total_akhir
                 )}</td>
             </tr>
         `;
