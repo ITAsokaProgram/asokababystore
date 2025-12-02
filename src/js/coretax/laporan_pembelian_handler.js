@@ -231,7 +231,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       const isBtkp = row.is_btkp == 1;
       const btkpBadge = isBtkp
-        ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-800 border border-green-200">OK</span>`
+        ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-800 border border-green-200">BTKP</span>`
         : `<span class="text-gray-300 text-xs">-</span>`;
       let mergedCandidatesMap = new Map();
       if (row.candidate_nsfps) {

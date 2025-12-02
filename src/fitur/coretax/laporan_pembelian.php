@@ -154,7 +154,7 @@ if (!$menuHandler->initialize()) {
 
                         <div class="lg:col-span-2">
                             <label for="filter_tipe_pembelian" class="block text-xs font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-tags text-pink-600 mr-1"></i> Tipe Pembelian
+                                <i class="fas fa-tags text-pink-600 mr-1"></i> Status
                             </label>
                             <select name="filter_tipe_pembelian" id="filter_tipe_pembelian" class="input-modern w-full">
                                 <option value="semua" <?php echo ($filter_tipe_pembelian == 'semua') ? 'selected' : ''; ?>>SEMUA</option>
@@ -219,7 +219,7 @@ if (!$menuHandler->initialize()) {
                                     <th>No</th>
                                     <th>Tgl Nota</th>
                                     <th>No Invoice</th>
-                                    <th>BTKP</th>
+                                    <th>Status</th>
                                     <th class="text-center">Cabang</th>
                                     <th>Nama Supplier</th>
                                     <th class="text-right">DPP</th>
