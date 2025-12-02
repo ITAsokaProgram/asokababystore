@@ -5,38 +5,24 @@ import { paginationUserInternal } from "./pagination.js";
 import { renderTableUserInternal } from "./table.js";
 import { initSearch, getFilteredData } from "./search.js";
 import { areaCabang } from "./../../kode_cabang/cabang_area.js";
-
 export const init = async () => {
   const token = getCookie("admin_token");
   const response = await getUser();
   let passwordConfirm;
-  // Initialize search functionality
   initSearch(response.data);
-
-  // Make renderTableUserInternal globally available for search
   window.renderTableUserInternal = renderTableUserInternal;
-
-  // Update statistics
   updateStatistics(response.data);
-
   paginationUserInternal(1, 10, response.data, renderTableUserInternal);
-
   document.addEventListener("click", async (e) => {
     const button = e.target.closest(".edit");
     if (!button) return;
-
     const kode = button.getAttribute("data-kode");
-
     try {
       const response = await getUserEdit(kode);
-      const user = response.data; // atau langsung response kalau tanpa `.data`
-
-      // Tampilkan form modal
+      const user = response.data;
       displayEditUserModal(user);
-
-      // Isi select cabang 1 nilai
       const selectCabang = document.getElementById("editCabang");
-      selectCabang.innerHTML = ""; // kosongkan dulu
+      selectCabang.innerHTML = "";
       const option = document.createElement("option");
       option.value = user.kode_cabang;
       option.textContent = `${
@@ -44,7 +30,6 @@ export const init = async () => {
       }`;
       selectCabang.appendChild(option);
       await areaCabang("editCabang");
-      // Tampilkan modal
       modal();
     } catch (error) {
       console.error("Error fetching user data:", error);
@@ -89,7 +74,6 @@ export const init = async () => {
     const modal = document.getElementById("resetPassword");
     const btnSendReset = document.getElementById("save-password");
     modal.classList.remove("hidden");
-
     confirmPass.addEventListener("input", () => {
       const showErrorPass = document.getElementById("error-password");
       if (confirmPass.value !== pass.value) {
@@ -98,7 +82,6 @@ export const init = async () => {
         showErrorPass.classList.add("hidden");
       }
     });
-
     btnSendReset.addEventListener("click", async (e) => {
       const data = {
         id: id,
@@ -108,7 +91,6 @@ export const init = async () => {
       await resetPassword(data);
     });
   });
-
   document.getElementById("close-reset").addEventListener("click", (e) => {
     const modal = document.getElementById("resetPassword");
     modal.classList.add("hidden");
@@ -119,8 +101,6 @@ export const init = async () => {
   document
     .getElementById("cancelEditUser")
     .addEventListener("click", closeModal);
-
-  // Quick action buttons functionality
   document.addEventListener("click", (e) => {
     if (e.target.closest(".quick-action")) {
       const action = e.target.closest(".quick-action").dataset.action;
@@ -128,31 +108,26 @@ export const init = async () => {
     }
   });
 };
-
 const modal = () => {
   document.getElementById("editUserModal").classList.remove("hidden");
 };
 const closeModal = () => {
   document.getElementById("editUserModal").classList.add("hidden");
 };
-
 const updateStatistics = (userData) => {
   const totalUsers = userData.length;
   const activeUsers = userData.filter(
     (user) => user.status !== "inactive"
   ).length;
   const managers = userData.filter((user) => user.hak === "Manajer").length;
-
   document.getElementById("totalUsers").textContent = totalUsers;
   document.getElementById("activeUsers").textContent = activeUsers;
   document.getElementById("managers").textContent = managers;
 };
-
 const handleQuickAction = (action) => {
   const checkboxes = document.querySelectorAll(
     '#editMenus input[type="checkbox"]'
   );
-
   switch (action) {
     case "select-all":
       checkboxes.forEach((checkbox) => (checkbox.checked = true));
@@ -162,5 +137,4 @@ const handleQuickAction = (action) => {
       break;
   }
 };
-
 init();

@@ -1,5 +1,4 @@
 import getCookie from "../../index/utils/cookies.js";
-
 export const editUser = async (kode, formData) => {
   const token = getCookie("admin_token");
   try {
@@ -30,7 +29,6 @@ export const editUser = async (kode, formData) => {
     throw error;
   }
 };
-
 export const resetPassword = async (data) => {
   const token = getCookie("admin_token");
   try {
@@ -66,58 +64,51 @@ export const resetPassword = async (data) => {
     });
   }
 };
-
 export const displayEditUserModal = (userData) => {
   const form = document.querySelector("form");
-
-  // Isi input field
   form.querySelector("#editUserId").value = userData.kode;
   form.querySelector("#editNama").value = userData.nama;
   form.querySelector("#editUsername").value = userData.inisial;
   form.querySelector("#editPosition").value = userData.hak;
   form.querySelector("#editCabang").value = userData.kode_cabang;
-
-  // Reset semua checkbox
-  const checkboxes = form.querySelectorAll("#editMenus input[type='checkbox']");
-  checkboxes.forEach((cb) => (cb.checked = false));
-
-  // Centang akses menu yang sesuai response
-  if (Array.isArray(userData.menu_code)) {
-    userData.menu_code.forEach((menu) => {
-      const checkbox = form.querySelector(`#editMenus input[value="${menu}"]`);
-      if (checkbox) checkbox.checked = true;
-    });
-  }
-
+  const domCheckboxes = form.querySelectorAll(
+    "#editMenus input[type='checkbox']"
+  );
+  domCheckboxes.forEach((cb) => (cb.checked = false));
+  const visibleMenuValues = Array.from(domCheckboxes).map((cb) => cb.value);
+  const currentUserMenus = Array.isArray(userData.menu_code)
+    ? userData.menu_code
+    : [];
+  const hiddenMenus = currentUserMenus.filter(
+    (menuCode) => !visibleMenuValues.includes(menuCode)
+  );
+  currentUserMenus.forEach((menu) => {
+    const checkbox = form.querySelector(`#editMenus input[value="${menu}"]`);
+    if (checkbox) checkbox.checked = true;
+  });
   form.onsubmit = async (e) => {
     e.preventDefault();
-
-    // Ambil nilai dari form manual
     const id_user = form.querySelector("#editUserId").value;
     const name = form.querySelector("#editNama").value;
     const username = form.querySelector("#editUsername").value;
     const position = form.querySelector("#editPosition").value;
     const kode_cabang = form.querySelector("#editCabang").value;
-
-    // Ambil semua menu yang dicentang
-    const menus = [];
+    const selectedVisibleMenus = [];
     const checkboxes = form.querySelectorAll(
       '#editMenus input[type="checkbox"]'
     );
     checkboxes.forEach((cb) => {
-      if (cb.checked) menus.push(cb.value);
+      if (cb.checked) selectedVisibleMenus.push(cb.value);
     });
-
-    // Kirim sebagai JSON object
+    const finalMenus = [...selectedVisibleMenus, ...hiddenMenus];
     const payload = {
       id_user,
       name,
       username,
       position,
-      menus,
+      menus: finalMenus,
       kode_cabang,
     };
-
     try {
       await editUser(id_user, payload);
       Swal.fire("Berhasil", "User berhasil diperbarui", "success").then(() => {
@@ -129,5 +120,4 @@ export const displayEditUserModal = (userData) => {
     }
   };
 };
-
 export default { displayEditUserModal, resetPassword };
