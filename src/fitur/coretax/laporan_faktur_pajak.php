@@ -33,7 +33,6 @@ if (!$menuHandler->initialize()) {
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laporan Faktur Pajak</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
     <link rel="stylesheet" href="../../style/header.css">
     <link rel="stylesheet" href="../../style/sidebar.css">
     <link rel="stylesheet" href="../../style/animation-fade-in.css">
@@ -42,6 +41,8 @@ if (!$menuHandler->initialize()) {
     <link rel="stylesheet" href="../../output2.css">
     <link rel="stylesheet" href="../../style/pink-theme.css">
     <link rel="icon" type="image/png" href="../../../public/images/logo1.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
 </head>
 
 <body class="bg-gray-50 theme-faktur-pajak">
@@ -125,59 +126,66 @@ if (!$menuHandler->initialize()) {
                                 value="<?php echo htmlspecialchars($search_supplier); ?>">
                         </div>
 
-                        <div class="lg:col-span-1">
+                        <div class="lg:col-span-1 flex gap-2">
                             <button type="submit" id="filter-submit-button"
                                 class="btn-primary w-full inline-flex items-center justify-center gap-2">
                                 <i class="fas fa-filter"></i>
                                 <span>Tampilkan</span>
                             </button>
+                            <button type="button" id="export-excel-button"
+                                class="w-12 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-2 rounded-lg transition-colors shadow-sm inline-flex items-center justify-center"
+                                title="Export Excel">
+                                <i class="fas fa-file-excel"></i>
+                            </button>
                         </div>
                         <input type="hidden" name="page" value="1">
                     </form>
                 </div>
+                </form>
+            </div>
 
-                <div class="filter-card">
-                    <div class="flex flex-wrap justify-between items-center mb-3 gap-3">
-                        <h3 class="text-lg font-bold text-gray-800">
-                            <i class="fas fa-list text-pink-600 mr-2"></i>
-                            Hasil Laporan
-                        </h3>
-                    </div>
-                    <div class="table-container">
-                        <table class="table-modern" id="receipt-table">
-                            <thead>
-                                <tr>
-                                    <th>No</th>
-                                    <th>Tgl Faktur</th>
-                                    <th>No Invoice</th>
-                                    <th>NSFP</th>
-                                    <th class="text-center">Cabang</th>
-                                    <th>Nama Supplier</th>
-                                    <th class="text-right">DPP</th>
-                                    <th class="text-right">DPP Lain</th>
-                                    <th class="text-right">PPN</th>
-                                    <th class="text-right">Total</th>
-                                    <th class="text-center" style="width: 100px;">Pembelian</th>
-                                    <th class="text-center" style="width: 100px;">Coretax</th>
-                                </tr>
-                            </thead>
-                            <tbody id="receipt-table-body">
-                                <tr>
-                                    <td colspan="12" class="text-center p-8">
-                                        <div class="spinner-simple"></div>
-                                        <p class="mt-3 text-gray-500 font-medium">Memuat data...</p>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+            <div class="filter-card">
+                <div class="flex flex-wrap justify-between items-center mb-3 gap-3">
+                    <h3 class="text-lg font-bold text-gray-800">
+                        <i class="fas fa-list text-pink-600 mr-2"></i>
+                        Hasil Laporan
+                    </h3>
+                </div>
+                <div class="table-container">
+                    <table class="table-modern" id="receipt-table">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Tgl Faktur</th>
+                                <th>No Invoice</th>
+                                <th>NSFP</th>
+                                <th class="text-center">Cabang</th>
+                                <th>Nama Supplier</th>
+                                <th class="text-right">DPP</th>
+                                <th class="text-right">DPP Lain</th>
+                                <th class="text-right">PPN</th>
+                                <th class="text-right">Total</th>
+                                <th class="text-center" style="width: 100px;">Pembelian</th>
+                                <th class="text-center" style="width: 100px;">Coretax</th>
+                            </tr>
+                        </thead>
+                        <tbody id="receipt-table-body">
+                            <tr>
+                                <td colspan="12" class="text-center p-8">
+                                    <div class="spinner-simple"></div>
+                                    <p class="mt-3 text-gray-500 font-medium">Memuat data...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-                    <div id="pagination-container" class="flex justify-between items-center mt-4">
-                        <span id="pagination-info" class="text-sm text-gray-600"></span>
-                        <div id="pagination-links" class="flex items-center gap-2">
-                        </div>
+                <div id="pagination-container" class="flex justify-between items-center mt-4">
+                    <span id="pagination-info" class="text-sm text-gray-600"></span>
+                    <div id="pagination-links" class="flex items-center gap-2">
                     </div>
                 </div>
+            </div>
 
             </div>
         </section>
