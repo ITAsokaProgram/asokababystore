@@ -330,10 +330,14 @@ document.addEventListener("DOMContentLoaded", () => {
         month: "2-digit",
         year: "numeric",
       });
-      const isBtkp = row.is_btkp == 1;
-      const btkpBadge = isBtkp
-        ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-800 border border-green-200">BTKP</span>`
-        : `<span class="text-gray-300 text-xs">-</span>`;
+      let btkpBadge = "";
+      if (row.status === "BTKP") {
+        btkpBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-800 border border-purple-200">BTKP</span>`;
+      } else if (row.status === "NON PKP") {
+        btkpBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-800 border border-gray-200">NON PKP</span>`;
+      } else {
+        btkpBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200">PKP</span>`;
+      }
       let mergedCandidatesMap = new Map();
       if (row.candidate_nsfps) {
         const candidatesRaw = row.candidate_nsfps.split(",");
@@ -415,8 +419,8 @@ document.addEventListener("DOMContentLoaded", () => {
         let multiIndicator = "";
         if (count > 1) {
           multiIndicator = `<span class="text-[10px] text-gray-400 mt-0.5 block italic group-hover:text-gray-600">
-                                     (Pilih dr ${count} opsi)
-                                   </span>`;
+                                   (Pilih dr ${count} opsi)
+                                  </span>`;
         }
         const actionHtml = `
                   <div class="flex flex-col items-center justify-center cursor-pointer group py-1 select-none"

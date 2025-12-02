@@ -65,20 +65,23 @@ try {
         $bind_types .= 's';
         $bind_params[] = $kd_store;
     }
+
+    // PERBAIKAN LOGIKA STATUS (PKP, NON PKP, BTKP)
     switch ($filter_tipe_pembelian) {
-        case 'ppn':
-            $where_conditions .= " AND p.ppn != 0";
+        case 'PKP':
+            $where_conditions .= " AND p.status = 'PKP'";
             break;
-        case 'non_ppn':
-            $where_conditions .= " AND p.ppn = 0";
+        case 'NON PKP':
+            $where_conditions .= " AND p.status = 'NON PKP'";
             break;
-        case 'btkp':
-            $where_conditions .= " AND p.is_btkp = 1";
+        case 'BTKP':
+            $where_conditions .= " AND p.status = 'BTKP'";
             break;
         case 'semua':
         default:
             break;
     }
+
     if ($status_data != 'all') {
         if ($status_data == 'unlinked') {
             $where_conditions .= " AND (p.ada_di_coretax = 0 OR p.ada_di_coretax IS NULL)";
@@ -151,7 +154,7 @@ try {
             p.total_terima_fp,
             p.ada_di_coretax,
             p.tipe_nsfp,
-            p.is_btkp, 
+            p.status, 
             ks.Nm_Alias,
             p.nsfp, 
             CONCAT_WS(',', 

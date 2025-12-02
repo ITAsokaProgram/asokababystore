@@ -28,8 +28,7 @@ try {
     $no_lpb = $input['no_lpb'] ?? '';
     $kode_supplier = '';
     $kode_store = $input['kode_store'] ?? '';
-    // NEW: Ambil value is_btkp, default 0
-    $is_btkp = isset($input['is_btkp']) ? (int) $input['is_btkp'] : 0;
+    $status = $input['status'] ?? 'PKP';
     $nama_supplier = $input['nama_supplier'] ?? '';
     $tgl_nota = $input['tgl_nota'] ?? date('Y-m-d');
     $d = DateTime::createFromFormat('Y-m-d', $tgl_nota);
@@ -61,15 +60,14 @@ try {
                     ppn=?, 
                     total_terima_fp=?, 
                     kd_user=?, 
-                    is_btkp=?, 
+                    status=?,  
                     edit_pada=NOW() 
                   WHERE id=?";
         $stmt = $conn->prepare($query);
         if (!$stmt)
             throw new Exception("Prepare Update Error: " . $conn->error);
-        // Types: ssssddddiii (is_btkp is integer)
         $stmt->bind_param(
-            "ssssddddiii",
+            "ssssddddisi",
             $nama_supplier,
             $kode_store,
             $tgl_nota,
@@ -79,7 +77,7 @@ try {
             $ppn,
             $total_terima_fp,
             $kd_user,
-            $is_btkp,
+            $status, // string
             $id
         );
         if (!$stmt->execute()) {
@@ -87,24 +85,14 @@ try {
         }
         $message = "Data berhasil diperbarui.";
     } else {
-        $check = $conn->prepare("SELECT id FROM ff_pembelian WHERE no_faktur = ?");
-        $check->bind_param("s", $no_faktur);
-        $check->execute();
-        $check->store_result();
-        if ($check->num_rows > 0) {
-            throw new Exception("No Faktur '$no_faktur' sudah ada di database.");
-        }
-        $check->close();
         // INSERT QUERY
         $query = "INSERT INTO ff_pembelian 
-                  (nama_supplier, kode_supplier, kode_store, tgl_nota, no_faktur, dpp, dpp_nilai_lain, ppn, total_terima_fp, is_btkp, kd_user) 
+                  (nama_supplier, kode_supplier, kode_store, tgl_nota, no_faktur, dpp, dpp_nilai_lain, ppn, total_terima_fp, status, kd_user) 
                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($query);
-        if (!$stmt)
-            throw new Exception("Prepare Insert Error: " . $conn->error);
-        // Types: sssssdddiii (is_btkp inserted before kd_user)
+        // Types: sssssddddsi
         $stmt->bind_param(
-            "sssssdddiii",
+            "sssssddddsi",
             $nama_supplier,
             $kode_supplier,
             $kode_store,
@@ -114,7 +102,7 @@ try {
             $dpp_nilai_lain,
             $ppn,
             $total_terima_fp,
-            $is_btkp,
+            $status, // string
             $kd_user
         );
         if (!$stmt->execute()) {

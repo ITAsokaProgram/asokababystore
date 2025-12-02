@@ -170,15 +170,14 @@ if (!$menuHandler->initialize()) {
                                 </select>
                             </div>
 
-                            <label for="inp_is_btkp"
-                                class="flex items-center gap-2 p-2 border border-gray-200 rounded-md bg-white hover:border-pink-300 transition-colors cursor-pointer select-none">
-                                <input type="checkbox" id="inp_is_btkp" name="is_btkp"
-                                    class="w-5 h-5 text-pink-600 bg-gray-100 border-gray-300 rounded focus:ring-pink-500 focus:ring-2 cursor-pointer">
-
-                                <span class="text-sm font-semibold text-gray-700">
-                                    BTKP
-                                </span>
-                            </label>
+                            <div>
+                                <label class="form-label">Status</label>
+                                <select id="inp_status" name="status" class="input-compact bg-white cursor-pointer">
+                                    <option value="PKP">PKP</option>
+                                    <option value="NON PKP">NON PKP</option>
+                                    <option value="BTKP">BTKP</option>
+                                </select>
+                            </div>
 
                             <div>
                                 <label class="form-label">Nama Supplier</label>
@@ -201,7 +200,7 @@ if (!$menuHandler->initialize()) {
                             <div>
                                 <label class="form-label text-right">DPP Nilai Lain</label>
                                 <input type="text" id="inp_dpp_lain" name="dpp_nilai_lain"
-                                    class="input-compact text-right font-mono input-readonly" disabled value="0">
+                                    class="input-compact text-right font-mono" value="0">
                             </div>
 
                             <div>

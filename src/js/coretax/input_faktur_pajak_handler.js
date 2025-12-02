@@ -46,9 +46,8 @@ function calculateTotal() {
   const dpp = parseNumber(inpDpp.value);
   const hitungDppLain = Math.round((dpp * 11) / 12);
   inpDppLain.value = formatNumber(hitungDppLain);
-  const dppLain = hitungDppLain;
   const ppn = parseNumber(inpPpn.value);
-  inpTotal.value = formatNumber(dpp + dppLain + ppn);
+  inpTotal.value = formatNumber(dpp + ppn);
 }
 function resetErrorState() {
   inpNoSeri.classList.remove("border-red-500", "bg-red-50", "text-red-700");

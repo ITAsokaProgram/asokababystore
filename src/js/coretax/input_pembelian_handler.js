@@ -13,7 +13,7 @@ const inpId = document.getElementById("inp_id");
 const inpNoLpb = document.getElementById("inp_no_lpb");
 const errNoLpb = document.getElementById("err_no_lpb");
 const inpKodeStore = document.getElementById("inp_kode_store");
-const inpIsBtkp = document.getElementById("inp_is_btkp");
+const inpStatus = document.getElementById("inp_status");
 const inpNamaSupp = document.getElementById("inp_nama_supplier");
 const listSupplier = document.getElementById("supplier_list");
 const inpTgl = document.getElementById("inp_tgl_nota");
@@ -41,11 +41,10 @@ function parseNumber(str) {
 }
 function calculateTotal() {
   const dpp = parseNumber(inpDpp.value);
-  const hitungDppLain = Math.round((dpp * 11) / 12);
-  inpDppLain.value = formatNumber(hitungDppLain);
-  const dppLain = hitungDppLain;
   const ppn = parseNumber(inpPpn.value);
-  const total = dpp + dppLain + ppn;
+
+  const total = dpp + ppn;
+
   inpTotal.value = formatNumber(total);
 }
 async function loadStoreOptions() {
@@ -189,11 +188,19 @@ function renderTable(data) {
     const dppLain = parseFloat(row.dpp_nilai_lain || 0);
     const ppn = parseFloat(row.ppn);
     const total = parseFloat(row.total_terima_fp);
-    const isBtkp = row.is_btkp == 1;
-    const badgeBtkp = isBtkp
-      ? '<span class="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded font-bold border border-purple-200">BTKP</span>'
-      : '<span class="text-gray-400 text-xs px-2">-</span>';
+
     const safeJson = JSON.stringify(row).replace(/"/g, "&quot;");
+    let badgeStatus = "";
+    if (row.status === "BTKP") {
+      badgeStatus =
+        '<span class="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded font-bold border border-purple-200">BTKP</span>';
+    } else if (row.status === "NON PKP") {
+      badgeStatus =
+        '<span class="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded font-bold border border-gray-200">NON PKP</span>';
+    } else {
+      badgeStatus =
+        '<span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded font-bold border border-blue-200">PKP</span>';
+    }
     html += `
             <tr class="hover:bg-pink-50 transition-colors border-b border-gray-50">
                 <td class="text-center text-gray-500 py-3">${index + 1}</td>
@@ -204,7 +211,7 @@ function renderTable(data) {
                 <td><span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded border border-gray-200">${
                   row.nm_alias || "-"
                 }</span></td>
-                <td class="text-center">${badgeBtkp}</td>
+                <td class="text-center">${badgeStatus}</td>
                 <td class="text-sm truncate max-w-[150px]" title="${
                   row.nama_supplier
                 }">${row.nama_supplier}</td>
@@ -257,12 +264,15 @@ function startEditMode(data) {
   inpId.value = data.id;
   inpNoLpb.value = data.no_faktur;
   inpKodeStore.value = data.kode_store || "";
-  inpIsBtkp.checked = data.is_btkp == 1;
+
+  inpStatus.value = data.status || "PKP";
+
   inpNamaSupp.value = data.nama_supplier;
   inpTgl.value = data.tgl_nota;
   inpDpp.value = formatNumber(data.dpp);
   inpDppLain.value = formatNumber(data.dpp_nilai_lain || 0);
   inpPpn.value = formatNumber(data.ppn);
+
   calculateTotal();
   inpNoLpb.focus();
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -281,7 +291,7 @@ function cancelEditMode() {
   inpId.value = "";
   inpTotal.value = "0";
   inpKodeStore.value = "";
-  inpIsBtkp.checked = false;
+  inpStatus.value = "PKP";
   document
     .querySelector(".input-row-container")
     .classList.remove("border-amber-300", "bg-amber-50");
@@ -349,11 +359,14 @@ async function handleSave() {
     no_lpb: noLpb,
     no_faktur: noLpb,
     kode_store: inpKodeStore.value,
-    is_btkp: inpIsBtkp.checked ? 1 : 0,
+
+    // Update Payload Status
+    status: inpStatus.value,
+
     nama_supplier: namaSupp,
     tgl_nota: inpTgl.value,
     dpp: parseNumber(inpDpp.value),
-    dpp_nilai_lain: parseNumber(inpDppLain.value),
+    dpp_nilai_lain: parseNumber(inpDppLain.value), // Ambil value manual
     ppn: parseNumber(inpPpn.value),
     total_terima_fp: parseNumber(inpTotal.value),
   };
@@ -398,8 +411,10 @@ async function handleSave() {
 document.addEventListener("DOMContentLoaded", () => {
   loadStoreOptions();
   loadTableData();
-  [inpDpp, inpPpn].forEach((input) => {
-    input.addEventListener("input", calculateTotal);
+  [inpDpp, inpPpn, inpDppLain].forEach((input) => {
+    input.addEventListener("input", () => {
+      if (input !== inpDppLain) calculateTotal();
+    });
     input.addEventListener("blur", (e) => {
       const val = parseNumber(e.target.value);
       e.target.value = formatNumber(val);

@@ -165,10 +165,10 @@ if (!$menuHandler->initialize()) {
                             </label>
                             <select name="filter_tipe_pembelian" id="filter_tipe_pembelian" class="input-modern w-full">
                                 <option value="semua" <?php echo ($filter_tipe_pembelian == 'semua') ? 'selected' : ''; ?>>SEMUA</option>
-                                <option value="ppn" <?php echo ($filter_tipe_pembelian == 'ppn') ? 'selected' : ''; ?>>PPN
+                                <option value="PKP" <?php echo ($filter_tipe_pembelian == 'PKP') ? 'selected' : ''; ?>>PKP
                                 </option>
-                                <option value="non_ppn" <?php echo ($filter_tipe_pembelian == 'non_ppn') ? 'selected' : ''; ?>>NON PPN</option>
-                                <option value="btkp" <?php echo ($filter_tipe_pembelian == 'btkp') ? 'selected' : ''; ?>>
+                                <option value="NON PKP" <?php echo ($filter_tipe_pembelian == 'NON PKP') ? 'selected' : ''; ?>>NON PKP</option>
+                                <option value="BTKP" <?php echo ($filter_tipe_pembelian == 'BTKP') ? 'selected' : ''; ?>>
                                     BTKP</option>
                             </select>
                         </div>
