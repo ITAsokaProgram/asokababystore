@@ -51,7 +51,7 @@ async function loadStoreOptions() {
   try {
     const result = await sendRequestGET(API_URLS.getStores);
     if (result.success && Array.isArray(result.data)) {
-      let html = '<option value="">Pilih Toko...</option>';
+      let html = '<option value="">Pilih Cabang</option>';
       result.data.forEach((store) => {
         const displayName = store.Nm_Alias
           ? `${store.Nm_Alias} (${store.Kd_Store})`
@@ -291,7 +291,8 @@ function cancelEditMode() {
   inpId.value = "";
   inpTotal.value = "0";
   inpKodeStore.value = "";
-  inpStatus.value = "PKP";
+  inpStatus.value = "";
+
   document
     .querySelector(".input-row-container")
     .classList.remove("border-amber-300", "bg-amber-50");
@@ -341,10 +342,22 @@ function handleDelete(id, invoice) {
 async function handleSave() {
   const noLpb = inpNoLpb.value.trim();
   const namaSupp = inpNamaSupp.value.trim();
+
   if (inpKodeStore.value === "") {
     Swal.fire("Gagal", "Pilih Cabang", "warning");
     return;
   }
+
+  if (inpStatus.value === "") {
+    Swal.fire(
+      "Gagal",
+      "Silahkan pilih Status terlebih dahulu (PKP/NON PKP/BTKP)",
+      "warning"
+    );
+    inpStatus.focus();
+    return;
+  }
+
   if (!noLpb || !namaSupp) {
     Swal.fire("Gagal", "No Invoice dan Nama Supplier harus diisi", "warning");
     return;

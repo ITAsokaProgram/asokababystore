@@ -28,7 +28,7 @@ try {
     $no_lpb = $input['no_lpb'] ?? '';
     $kode_supplier = '';
     $kode_store = $input['kode_store'] ?? '';
-    $status = $input['status'] ?? 'PKP';
+    $status = $input['status'] ?? '';
     $nama_supplier = $input['nama_supplier'] ?? '';
     $tgl_nota = $input['tgl_nota'] ?? date('Y-m-d');
     $d = DateTime::createFromFormat('Y-m-d', $tgl_nota);
@@ -45,6 +45,9 @@ try {
     $dpp_nilai_lain = (float) ($input['dpp_nilai_lain'] ?? 0);
     $ppn = (float) ($input['ppn'] ?? 0);
     $total_terima_fp = (float) ($input['total_terima_fp'] ?? 0);
+    if (empty($status)) {
+        throw new Exception("Status wajib dipilih (PKP/NON PKP/BTKP).");
+    }
     if (empty($no_faktur) || empty($nama_supplier)) {
         throw new Exception("No Invoice dan Nama Supplier wajib diisi.");
     }

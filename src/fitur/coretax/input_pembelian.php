@@ -157,22 +157,24 @@ if (!$menuHandler->initialize()) {
                         <div class="form-grid">
                             <div class="relative"> <label class="form-label">No. Invoice</label>
                                 <input type="text" id="inp_no_lpb" name="no_lpb" class="input-compact" autofocus
-                                    placeholder="Cari / Input Invoice...">
+                                    placeholder="">
                                 <p id="err_no_lpb"
                                     class="text-xs text-red-500 absolute -bottom-4 left-0 hidden font-semibold"></p>
                             </div>
 
                             <div>
-                                <label class="form-label">Toko / Cabang</label>
+                                <label class="form-label">Cabang</label>
                                 <select id="inp_kode_store" name="kode_store"
                                     class="input-compact bg-white cursor-pointer">
-                                    <option value="">Pilih Toko...</option>
+                                    <option value="">Pilih Cabang</option>
                                 </select>
                             </div>
 
                             <div>
                                 <label class="form-label">Status</label>
-                                <select id="inp_status" name="status" class="input-compact bg-white cursor-pointer">
+                                <select id="inp_status" name="status" class="input-compact bg-white cursor-pointer"
+                                    style="min-width:112px;">
+                                    <option value="">Pilih Status</option>
                                     <option value="PKP">PKP</option>
                                     <option value="NON PKP">NON PKP</option>
                                     <option value="BTKP">BTKP</option>
@@ -182,7 +184,7 @@ if (!$menuHandler->initialize()) {
                             <div>
                                 <label class="form-label">Nama Supplier</label>
                                 <input type="text" id="inp_nama_supplier" name="nama_supplier" class="input-compact"
-                                    list="supplier_list" placeholder="Ketik nama...">
+                                    list="supplier_list" placeholder="">
                                 <datalist id="supplier_list"></datalist>
                             </div>
 
