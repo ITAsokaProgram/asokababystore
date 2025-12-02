@@ -20,6 +20,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const filterTahun = document.getElementById("tahun");
   const filterTglMulai = document.getElementById("tgl_mulai");
   const filterTglSelesai = document.getElementById("tgl_selesai");
+  const exportExcelButton = document.getElementById("export-excel-button");
+  if (exportExcelButton) {
+    exportExcelButton.addEventListener("click", handleExportExcel);
+  }
   function toggleFilterMode() {
     const mode = filterTypeSelect.value;
     if (mode === "month") {
@@ -53,6 +57,186 @@ document.addEventListener("DOMContentLoaded", () => {
       maximumFractionDigits: 0,
     }).format(number);
   }
+  async function handleExportExcel() {
+    const params = getUrlParams();
+    let periodeText = "";
+    if (params.filter_type === "month") {
+      const monthNames = [
+        "Januari",
+        "Februari",
+        "Maret",
+        "April",
+        "Mei",
+        "Juni",
+        "Juli",
+        "Agustus",
+        "September",
+        "Oktober",
+        "November",
+        "Desember",
+      ];
+      const mIndex = parseInt(params.bulan) - 1;
+      periodeText = `BULAN ${monthNames[mIndex].toUpperCase()} ${params.tahun}`;
+    } else {
+      periodeText = `${params.tgl_mulai} s/d ${params.tgl_selesai}`;
+    }
+    Swal.fire({
+      title: "Menyiapkan Excel...",
+      text: "Sedang mengambil seluruh data...",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+    try {
+      const queryString = new URLSearchParams({
+        filter_type: params.filter_type,
+        bulan: params.bulan,
+        tahun: params.tahun,
+        tgl_mulai: params.tgl_mulai,
+        tgl_selesai: params.tgl_selesai,
+        kd_store: params.kd_store,
+        status_data: params.status_data,
+        filter_tipe_pembelian: params.filter_tipe_pembelian,
+        search_supplier: params.search_supplier,
+      }).toString();
+      const response = await fetch(
+        `/src/api/coretax/get_export_laporan_pembelian.php?${queryString}`
+      );
+      if (!response.ok) throw new Error("Gagal mengambil data export");
+      const result = await response.json();
+      if (result.error) throw new Error(result.error);
+      const data = result.data;
+      if (!data || data.length === 0) {
+        Swal.fire("Info", "Tidak ada data untuk diexport", "info");
+        return;
+      }
+      const workbook = new ExcelJS.Workbook();
+      const sheet = workbook.addWorksheet("Rekap Pembelian");
+      sheet.columns = [
+        { key: "no", width: 5 },
+        { key: "tgl_nota", width: 12 },
+        { key: "no_faktur", width: 20 },
+        { key: "status", width: 10 },
+        { key: "cabang", width: 15 },
+        { key: "supplier", width: 35 },
+        { key: "dpp", width: 15 },
+        { key: "dpp_lain", width: 15 },
+        { key: "ppn", width: 15 },
+        { key: "total", width: 15 },
+        { key: "status_fisik", width: 12 },
+        { key: "status_coretax", width: 12 },
+      ];
+      sheet.mergeCells("A1:L1");
+      const titleCell = sheet.getCell("A1");
+      titleCell.value = `REKAP PEMBELIAN - ${periodeText}`;
+      titleCell.font = { name: "Arial", size: 14, bold: true };
+      titleCell.alignment = { horizontal: "center" };
+      const headers = [
+        "No",
+        "Tgl Nota",
+        "No Invoice",
+        "Status",
+        "Cabang",
+        "Nama Supplier",
+        "DPP",
+        "DPP Nilai Lain",
+        "PPN",
+        "Total",
+        "Fisik",
+        "Coretax",
+      ];
+      const headerRow = sheet.getRow(3);
+      headerRow.values = headers;
+      headerRow.eachCell((cell) => {
+        cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
+        cell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "FFDB2777" },
+        };
+        cell.alignment = { horizontal: "center", vertical: "middle" };
+        cell.border = {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          bottom: { style: "thin" },
+          right: { style: "thin" },
+        };
+      });
+      let rowNum = 4;
+      data.forEach((item, index) => {
+        const r = sheet.getRow(rowNum);
+        let statusFisik = "-";
+        let statusCoretax = "-";
+        if (item.ada_di_coretax == 1) {
+          const tipe = (item.tipe_nsfp || "").toLowerCase();
+          if (tipe === "all" || tipe.includes("fisik")) statusFisik = "OK";
+          if (tipe === "all" || tipe.includes("coretax")) statusCoretax = "OK";
+        }
+        r.values = [
+          index + 1,
+          item.tgl_nota,
+          item.no_faktur,
+          item.status,
+          item.Nm_Alias || item.kode_store,
+          item.nama_supplier,
+          parseFloat(item.dpp) || 0,
+          parseFloat(item.dpp_nilai_lain) || 0,
+          parseFloat(item.ppn) || 0,
+          parseFloat(item.total_terima_fp) || 0,
+          statusFisik,
+          statusCoretax,
+        ];
+        r.getCell(1).alignment = { horizontal: "center" };
+        r.getCell(2).alignment = { horizontal: "center" };
+        r.getCell(4).alignment = { horizontal: "center" };
+        r.getCell(5).alignment = { horizontal: "center" };
+        const currencyFmt = "#,##0";
+        r.getCell(7).numFmt = currencyFmt;
+        r.getCell(8).numFmt = currencyFmt;
+        r.getCell(9).numFmt = currencyFmt;
+        r.getCell(10).numFmt = currencyFmt;
+        r.getCell(11).alignment = { horizontal: "center" };
+        r.getCell(12).alignment = { horizontal: "center" };
+        r.eachCell((cell) => {
+          cell.border = {
+            top: { style: "thin" },
+            left: { style: "thin" },
+            bottom: { style: "thin" },
+            right: { style: "thin" },
+          };
+        });
+        rowNum++;
+      });
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = window.URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      let filename = `Rekap_Pembelian_`;
+      if (params.filter_type === "month") {
+        filename += `${params.bulan}_${params.tahun}`;
+      } else {
+        filename += `${params.tgl_mulai}_sd_${params.tgl_selesai}`;
+      }
+      anchor.download = `${filename}.xlsx`;
+      anchor.click();
+      window.URL.revokeObjectURL(url);
+      Swal.fire({
+        icon: "success",
+        title: "Berhasil",
+        text: "Data berhasil diexport ke Excel.",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    } catch (e) {
+      console.error(e);
+      Swal.fire("Error", e.message, "error");
+    }
+  }
+
   function getUrlParams() {
     const params = new URLSearchParams(window.location.search);
     const yesterday = new Date();
@@ -95,107 +279,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     filterSelectStore.value = selectedStore;
   }
-  window.handleConfirmCoretax = async function (
-    id,
-    candidateString,
-    isDualMatch = false
-  ) {
-    const candidatesRaw = candidateString.split(",");
-    let selectedNsfp = candidatesRaw[0].split("###")[0];
-    let selectedName = candidatesRaw[0].split("###")[1] || "";
-    if (candidatesRaw.length > 1) {
-      const inputOptions = {};
-      candidatesRaw.forEach((rawItem) => {
-        const parts = rawItem.split("###");
-        const nsfpVal = parts[0];
-        const supplierName = parts[1] || "Tanpa Nama";
-        inputOptions[nsfpVal] = `${nsfpVal} - ${supplierName}`;
-      });
-      const { value: userSelection } = await Swal.fire({
-        title: "Pilih NSFP",
-        text: "Terdapat beberapa kandidat NSFP. Silakan pilih yang benar:",
-        input: "select",
-        inputOptions: inputOptions,
-        inputValue: selectedNsfp,
-        inputPlaceholder: "Pilih NSFP...",
-        width: "600px",
-        showCancelButton: true,
-        confirmButtonText: "Pilih & Konfirmasi",
-        cancelButtonText: "Batal",
-        confirmButtonColor: "#d63384",
-        inputValidator: (value) => {
-          if (!value) {
-            return "Anda harus memilih salah satu NSFP!";
-          }
-        },
-      });
-      if (userSelection) {
-        selectedNsfp = userSelection;
-      } else {
-        return;
-      }
-    } else {
-      let htmlContent = "";
-      const nameDisplay = selectedName
-        ? `<br><span class="text-sm text-gray-600 font-medium">(${selectedName})</span>`
-        : "";
-      if (isDualMatch) {
-        htmlContent = `Data pembelian ini cocok dengan data <b>Coretax</b> dan <b>Fisik</b>.<br>
-                        NSFP: <b class="text-lg">${selectedNsfp}</b>
-                        ${nameDisplay}<br><br>
-                        Hubungkan data ini?`;
-      } else {
-        htmlContent = `Data pembelian ini cocok dengan data Coretax.<br>
-                        NSFP: <b class="text-lg">${selectedNsfp}</b>
-                        ${nameDisplay}<br><br>
-                        Hubungkan data ini?`;
-      }
-      const result = await Swal.fire({
-        title: "Konfirmasi Data?",
-        html: htmlContent,
-        icon: "question",
-        width: "500px",
-        showCancelButton: true,
-        confirmButtonText: "Ya, Konfirmasi",
-        cancelButtonText: "Batal",
-        confirmButtonColor: "#d63384",
-      });
-      if (!result.isConfirmed) return;
-    }
-    try {
-      const token = getToken();
-      if (!token) {
-        throw new Error("Sesi habis. Silakan login kembali.");
-      }
-      Swal.fire({
-        title: "Menyimpan...",
-        allowOutsideClick: false,
-        didOpen: () => Swal.showLoading(),
-      });
-      const response = await fetch(
-        "/src/api/coretax/konfirmasi_pembelian.php",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ id: id, nsfp: selectedNsfp }),
-        }
-      );
-      const resData = await response.json();
-      if (response.status === 401) {
-        throw new Error(
-          "Sesi tidak valid atau kadaluarsa. Silakan login ulang."
-        );
-      }
-      if (!response.ok) throw new Error(resData.error || "Gagal konfirmasi");
-      await Swal.fire("Berhasil!", "Data telah terkonfirmasi.", "success");
-      loadData();
-    } catch (error) {
-      Swal.fire("Error", error.message, "error");
-    }
-  };
   async function loadData() {
     const params = getUrlParams();
     const isPagination = params.page > 1;
@@ -290,6 +373,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function setLoadingState(isLoading, isPagination = false) {
     if (isLoading) {
       if (filterSubmitButton) filterSubmitButton.disabled = true;
+      if (exportExcelButton) exportExcelButton.disabled = true;
       if (filterSubmitButton)
         filterSubmitButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i><span>Memuat...</span>`;
       if (tableBody)
@@ -301,6 +385,7 @@ document.addEventListener("DOMContentLoaded", () => {
         filterSubmitButton.disabled = false;
         filterSubmitButton.innerHTML = `<i class="fas fa-filter"></i><span>Tampilkan</span>`;
       }
+      if (exportExcelButton) exportExcelButton.disabled = false;
     }
   }
   function showTableError(message) {
@@ -330,14 +415,10 @@ document.addEventListener("DOMContentLoaded", () => {
         month: "2-digit",
         year: "numeric",
       });
-      let btkpBadge = "";
-      if (row.status === "BTKP") {
-        btkpBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-800 border border-purple-200">BTKP</span>`;
-      } else if (row.status === "NON PKP") {
-        btkpBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-800 border border-gray-200">NON PKP</span>`;
-      } else {
-        btkpBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200">PKP</span>`;
-      }
+      const isBtkp = row.is_btkp == 1;
+      const btkpBadge = isBtkp
+        ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-800 border border-green-200">BTKP</span>`
+        : `<span class="text-gray-300 text-xs">-</span>`;
       let mergedCandidatesMap = new Map();
       if (row.candidate_nsfps) {
         const candidatesRaw = row.candidate_nsfps.split(",");
@@ -419,8 +500,8 @@ document.addEventListener("DOMContentLoaded", () => {
         let multiIndicator = "";
         if (count > 1) {
           multiIndicator = `<span class="text-[10px] text-gray-400 mt-0.5 block italic group-hover:text-gray-600">
-                                   (Pilih dr ${count} opsi)
-                                  </span>`;
+                                     (Pilih dr ${count} opsi)
+                                   </span>`;
         }
         const actionHtml = `
                   <div class="flex flex-col items-center justify-center cursor-pointer group py-1 select-none"

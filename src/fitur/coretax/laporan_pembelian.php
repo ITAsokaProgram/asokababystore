@@ -55,7 +55,6 @@ if (!$menuHandler->initialize()) {
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rekap Pembelian</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
     <link rel="stylesheet" href="../../style/header.css">
     <link rel="stylesheet" href="../../style/sidebar.css">
     <link rel="stylesheet" href="../../style/animation-fade-in.css">
@@ -64,6 +63,8 @@ if (!$menuHandler->initialize()) {
     <link rel="stylesheet" href="../../output2.css">
     <link rel="stylesheet" href="../../style/pink-theme.css">
     <link rel="icon" type="image/png" href="../../../public/images/logo1.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
 </head>
 
 <body class="bg-gray-50 theme-pembelian">
@@ -192,18 +193,26 @@ if (!$menuHandler->initialize()) {
                             </select>
                         </div>
 
-                        <div class="lg:col-span-2 lg:col-start-3 lg:row-start-2"> <label for="search_supplier"
-                                class="block text-xs font-semibold text-gray-700 mb-2">
+                        <div class="lg:col-span-2 lg:col-start-3 lg:row-start-2">
+                            <label for="search_supplier" class="block text-xs font-semibold text-gray-700 mb-2">
                                 <i class="fas fa-search text-pink-600 mr-1"></i> Cari Data
                             </label>
                             <div class="flex gap-2">
                                 <input type="text" name="search_supplier" id="search_supplier"
                                     class="input-modern w-full"
-                                    value="<?php echo htmlspecialchars($_GET['search_supplier'] ?? ''); ?>">
+                                    value="<?php echo htmlspecialchars($_GET['search_supplier'] ?? ''); ?>"
+                                    placeholder="Supplier / NSFP / Rp...">
+
                                 <button type="submit" id="filter-submit-button"
                                     class="btn-primary inline-flex items-center justify-center gap-2 px-6">
                                     <i class="fas fa-filter"></i>
                                     <span>Tampilkan</span>
+                                </button>
+
+                                <button type="button" id="export-excel-button"
+                                    class="w-12 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-2 rounded-lg transition-colors shadow-sm inline-flex items-center justify-center"
+                                    title="Export Excel">
+                                    <i class="fas fa-file-excel"></i>
                                 </button>
                             </div>
                         </div>
