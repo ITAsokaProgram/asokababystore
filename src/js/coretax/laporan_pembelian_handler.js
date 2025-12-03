@@ -660,7 +660,7 @@ document.addEventListener("DOMContentLoaded", () => {
                       <td class="text-center">${statusBadge}</td> 
                       <td class="">
                           <span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded border border-gray-200">
-                              AVTR
+                              ${row.Nm_Alias || row.kode_store || "-"}
                           </span>
                       </td>
                       <td class="text-sm font-medium text-gray-800">${
