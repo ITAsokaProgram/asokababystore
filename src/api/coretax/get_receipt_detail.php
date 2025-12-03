@@ -20,7 +20,7 @@ try {
             rh.gppn as ppn
         FROM receipt_head rh
         LEFT JOIN supplier s ON rh.kode_supp = s.kode_supp AND rh.kd_store = s.kd_store
-        WHERE rh.no_lpb = ? 
+        WHERE TRIM(rh.no_lpb) = ?  
         LIMIT 1
     ";
     $stmt = $conn->prepare($query);
