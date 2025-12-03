@@ -21,6 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const filterTglMulai = document.getElementById("tgl_mulai");
   const filterTglSelesai = document.getElementById("tgl_selesai");
   const exportExcelButton = document.getElementById("export-excel-button");
+
   if (exportExcelButton) {
     exportExcelButton.addEventListener("click", handleExportExcel);
   }
@@ -57,6 +58,107 @@ document.addEventListener("DOMContentLoaded", () => {
       maximumFractionDigits: 0,
     }).format(number);
   }
+  window.handleConfirmCoretax = async function (
+    id,
+    candidateString,
+    isDualMatch = false
+  ) {
+    const candidatesRaw = candidateString.split(",");
+    let selectedNsfp = candidatesRaw[0].split("###")[0];
+    let selectedName = candidatesRaw[0].split("###")[1] || "";
+    if (candidatesRaw.length > 1) {
+      const inputOptions = {};
+      candidatesRaw.forEach((rawItem) => {
+        const parts = rawItem.split("###");
+        const nsfpVal = parts[0];
+        const supplierName = parts[1] || "Tanpa Nama";
+        inputOptions[nsfpVal] = `${nsfpVal} - ${supplierName}`;
+      });
+      const { value: userSelection } = await Swal.fire({
+        title: "Pilih NSFP",
+        text: "Terdapat beberapa kandidat NSFP. Silakan pilih yang benar:",
+        input: "select",
+        inputOptions: inputOptions,
+        inputValue: selectedNsfp,
+        inputPlaceholder: "Pilih NSFP...",
+        width: "600px",
+        showCancelButton: true,
+        confirmButtonText: "Pilih & Konfirmasi",
+        cancelButtonText: "Batal",
+        confirmButtonColor: "#d63384",
+        inputValidator: (value) => {
+          if (!value) {
+            return "Anda harus memilih salah satu NSFP!";
+          }
+        },
+      });
+      if (userSelection) {
+        selectedNsfp = userSelection;
+      } else {
+        return;
+      }
+    } else {
+      let htmlContent = "";
+      const nameDisplay = selectedName
+        ? `<br><span class="text-sm text-gray-600 font-medium">(${selectedName})</span>`
+        : "";
+      if (isDualMatch) {
+        htmlContent = `Data pembelian ini cocok dengan data <b>Coretax</b> dan <b>Fisik</b>.<br>
+                        NSFP: <b class="text-lg">${selectedNsfp}</b>
+                        ${nameDisplay}<br><br>
+                        Hubungkan data ini?`;
+      } else {
+        htmlContent = `Data pembelian ini cocok dengan data Coretax.<br>
+                        NSFP: <b class="text-lg">${selectedNsfp}</b>
+                        ${nameDisplay}<br><br>
+                        Hubungkan data ini?`;
+      }
+      const result = await Swal.fire({
+        title: "Konfirmasi Data?",
+        html: htmlContent,
+        icon: "question",
+        width: "500px",
+        showCancelButton: true,
+        confirmButtonText: "Ya, Konfirmasi",
+        cancelButtonText: "Batal",
+        confirmButtonColor: "#d63384",
+      });
+      if (!result.isConfirmed) return;
+    }
+    try {
+      const token = getToken();
+      if (!token) {
+        throw new Error("Sesi habis. Silakan login kembali.");
+      }
+      Swal.fire({
+        title: "Menyimpan...",
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
+      });
+      const response = await fetch(
+        "/src/api/coretax/konfirmasi_pembelian.php",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ id: id, nsfp: selectedNsfp }),
+        }
+      );
+      const resData = await response.json();
+      if (response.status === 401) {
+        throw new Error(
+          "Sesi tidak valid atau kadaluarsa. Silakan login ulang."
+        );
+      }
+      if (!response.ok) throw new Error(resData.error || "Gagal konfirmasi");
+      await Swal.fire("Berhasil!", "Data telah terkonfirmasi.", "success");
+      loadData();
+    } catch (error) {
+      Swal.fire("Error", error.message, "error");
+    }
+  };
   async function handleExportExcel() {
     const params = getUrlParams();
     let periodeText = "";

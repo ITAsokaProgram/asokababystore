@@ -5,11 +5,9 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/../../../aa_kon_sett.php';
 
 try {
-    // Query disesuaikan dengan struktur tabel yang Anda berikan
-    // Kita filter agar hanya mengambil data yang latitude-nya ada isinya
-    $query = "SELECT Kd_Store, Nm_Store, latitude, longitude, map_link, kota, alm_toko, telp 
+    $query = "SELECT Kd_Store, Nm_Store, latitude, longitude, map_link, kota, alm_toko, telp, display 
               FROM kode_store 
-              WHERE latitude IS NOT NULL AND latitude != ''
+              WHERE latitude IS NOT NULL AND latitude != '' AND display = 'on'
               ORDER BY kota ASC, Nm_Store ASC";
 
     $result = $conn->query($query);

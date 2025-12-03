@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/src/output2.css">
+    <link rel="icon" type="image/png" href="/images/logo1.png" />
+
 
     <style>
         #map {
@@ -27,7 +29,7 @@
         <h4 class="text-xl font-bold mb-3">Daftar Lokasi</h4>
         <div id="location-list" class="space-y-4">
             <p class="text-gray-400 text-sm text-center py-10">Memuat data...</p>
-        </div> 
+        </div>
     </div>
 
     <div id="map"></div>
@@ -36,16 +38,16 @@
     <script>
         // 1. Inisialisasi Peta
         const map = L.map('map').setView([-6.1503038, 106.7107386], 11);
-        
+
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
         const asokaIcon = L.icon({
-            iconUrl: 'public/images/marker2.png', 
-            iconSize: [32, 50], 
-            iconAnchor: [16, 32], 
-            popupAnchor: [0, -32] 
+            iconUrl: 'public/images/marker2.png',
+            iconSize: [32, 50],
+            iconAnchor: [16, 32],
+            popupAnchor: [0, -32]
         });
 
         const locationList = document.getElementById('location-list');
@@ -90,7 +92,7 @@
                 if (isNaN(loc.coords[0]) || isNaN(loc.coords[1])) return;
 
                 // B. Buat Marker di Peta
-                let marker = L.marker(loc.coords, {icon: asokaIcon}).addTo(map)
+                let marker = L.marker(loc.coords, { icon: asokaIcon }).addTo(map)
                     .bindPopup(`
                         <h3 class='text-lg font-bold mb-2 text-black'>${loc.name}</h3>
                         <p class='text-sm text-gray-600'>${loc.address}</p>
@@ -105,7 +107,7 @@
                 // C. Buat Item di Sidebar (Design Gradient Teal Anda)
                 let listItem = document.createElement('div');
                 listItem.className = "location-item flex-col p-4 rounded-lg shadow-xl flex gap-3 cursor-pointer hover:bg-gray-200 bg-white border border-gray-100"; // Saya tambah bg-white agar jelas
-                
+
                 listItem.innerHTML = `
                     <div class="flex justify-center">
                         <img src="${loc.image}" alt="logo" class="w-[10rem] h-[3rem] object-contain">
