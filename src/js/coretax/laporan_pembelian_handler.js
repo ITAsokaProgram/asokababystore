@@ -218,7 +218,7 @@ document.addEventListener("DOMContentLoaded", () => {
       sheet.columns = [
         { key: "no", width: 5 },
         { key: "tgl_nota", width: 12 },
-        { key: "no_faktur", width: 20 },
+        { key: "no_invoice", width: 20 }, // GANTI no_faktur JADI no_invoice
         { key: "status", width: 10 },
         { key: "cabang", width: 15 },
         { key: "supplier", width: 35 },
@@ -278,7 +278,7 @@ document.addEventListener("DOMContentLoaded", () => {
         r.values = [
           index + 1,
           item.tgl_nota,
-          item.no_faktur,
+          item.no_invoice, // UPDATE: Pakai no_invoice
           item.status,
           item.Nm_Alias || item.kode_store,
           item.nama_supplier,
@@ -654,9 +654,11 @@ document.addEventListener("DOMContentLoaded", () => {
                   <tr class="hover:bg-gray-50">
                       <td class="text-center font-medium text-gray-500">${item_counter}</td>
                       <td>${dateFormatted}</td>
+                      
                       <td class="font-semibold text-gray-700">${
-                        row.no_faktur
+                        row.no_invoice || "-"
                       }</td>
+
                       <td class="text-center">${statusBadge}</td> 
                       <td class="">
                           <span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded border border-gray-200">

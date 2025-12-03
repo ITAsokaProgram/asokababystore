@@ -76,7 +76,7 @@ try {
             p.nama_supplier LIKE ? 
             OR p.kode_supplier LIKE ? 
             OR p.nsfp LIKE ? 
-            OR p.no_faktur LIKE ? 
+            OR p.no_invoice LIKE ?  -- GANTI no_faktur JADI no_invoice
             OR CAST(p.dpp AS CHAR) LIKE ? 
             OR CAST(p.dpp_nilai_lain AS CHAR) LIKE ? 
             OR CAST(p.ppn AS CHAR) LIKE ?
@@ -85,6 +85,7 @@ try {
         $bind_types .= 'ssssssss';
         $termRaw = '%' . $search_raw . '%';
         $termNumeric = '%' . $search_numeric . '%';
+
         $bind_params[] = $termRaw;
         $bind_params[] = $termRaw;
         $bind_params[] = $termRaw;
@@ -99,6 +100,7 @@ try {
             p.id,
             p.nama_supplier, 
             p.tgl_nota, 
+            p.no_invoice, -- TAMBAHKAN no_invoice
             p.no_faktur, 
             p.dpp_nilai_lain,
             p.dpp, 
@@ -119,7 +121,7 @@ try {
         )
         WHERE $where_conditions
         GROUP BY p.id
-        ORDER BY p.tgl_nota DESC, p.no_faktur ASC
+        ORDER BY p.tgl_nota DESC, p.no_invoice ASC -- GANTI ORDER BY
     ";
     $stmt_data = $conn->prepare($sql_data);
     if ($stmt_data === false)

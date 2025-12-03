@@ -105,7 +105,7 @@ try {
             p.nama_supplier LIKE ? 
             OR p.kode_supplier LIKE ? 
             OR p.nsfp LIKE ? 
-            OR p.no_faktur LIKE ? 
+            OR p.no_invoice LIKE ?  -- GANTI no_faktur JADI no_invoice
             OR CAST(p.dpp AS CHAR) LIKE ? 
             OR CAST(p.dpp_nilai_lain AS CHAR) LIKE ? 
             OR CAST(p.ppn AS CHAR) LIKE ?
@@ -114,10 +114,11 @@ try {
         $bind_types .= 'ssssssss';
         $termRaw = '%' . $search_raw . '%';
         $termNumeric = '%' . $search_numeric . '%';
+
         $bind_params[] = $termRaw;
         $bind_params[] = $termRaw;
         $bind_params[] = $termRaw;
-        $bind_params[] = $termRaw;
+        $bind_params[] = $termRaw; // Bind ke no_invoice
         $bind_params[] = $termNumeric;
         $bind_params[] = $termNumeric;
         $bind_params[] = $termNumeric;
@@ -147,7 +148,8 @@ try {
             p.id,
             p.nama_supplier, 
             p.tgl_nota, 
-            p.no_faktur, 
+            p.no_invoice, -- TAMBAHKAN no_invoice
+            p.no_faktur,  -- Tetap ambil no_faktur jika perlu untuk logic matching lama
             p.dpp_nilai_lain,
             p.dpp, 
             p.ppn, 
@@ -211,7 +213,7 @@ try {
         LEFT JOIN ff_pembelian p_used_f ON f.nsfp = p_used_f.nsfp AND p_used_f.ada_di_coretax = 1
         WHERE $where_conditions
         GROUP BY p.id
-        ORDER BY p.tgl_nota DESC, p.no_faktur ASC
+        ORDER BY p.tgl_nota DESC, p.no_invoice ASC -- GANTI ORDER BY no_invoice
         LIMIT ? OFFSET ?
     ";
     $bind_types .= 'ii';
