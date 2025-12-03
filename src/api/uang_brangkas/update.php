@@ -1,8 +1,8 @@
-src/api/uang_brangkas/update.php:
 <?php
 session_start();
 ini_set('display_errors', 0);
 require_once __DIR__ . '/../../../aa_kon_sett.php';
+require_once __DIR__ . '/../../auth/middleware_login.php';
 
 header('Content-Type: application/json');
 
@@ -11,40 +11,50 @@ try {
         throw new Exception('Method Not Allowed');
     }
 
+
+    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+    if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
+        $token = $matches[1];
+        if (!verify_token($token)) {
+            throw new Exception("Sesi login berakhir/tidak valid.");
+        }
+    } else {
+        throw new Exception("Token otorisasi diperlukan.");
+    }
+
     $input = json_decode(file_get_contents('php://input'), true);
 
-    // 1. Identifikasi Row yang akan diupdate (Primary Key Composite)
+
     $pk_tanggal = $input['pk_tanggal'] ?? null;
     $pk_jam = $input['pk_jam'] ?? null;
     $pk_user_hitung = $input['pk_user_hitung'] ?? null;
 
     if (!$pk_tanggal || !$pk_jam || !$pk_user_hitung) {
-        throw new Exception("Data tidak valid. Primary Key tidak ditemukan.");
+        throw new Exception("Data tidak valid. Primary Key hilang.");
     }
 
-    // 2. Data Baru & Otorisasi
-    // User Cek baru (jika ganti supervisor) atau tetap yang lama
+
     $user_cek = $input['user_cek'] ?? null;
     $kode_otorisasi = $input['kode_otorisasi'] ?? '';
     $keterangan = $input['keterangan'] ?? '';
 
     if (empty($user_cek) || empty($kode_otorisasi)) {
-        throw new Exception("Update memerlukan User Cek dan Kode Otorisasi yang valid.");
+        throw new Exception("Update memerlukan User Cek dan Kode Otorisasi.");
     }
 
-    // 3. Validasi Otorisasi (Harus valid untuk tanggal dari record yang diedit)
-    // NOTE: Validasi menggunakan Tanggal Record (pk_tanggal) agar password sesuai dengan tanggal transaksi
+
+
     $sql_auth = "SELECT kode_user FROM otorisasi_user WHERE kode_user = ? AND PASSWORD = ? AND tanggal = ?";
     $stmt_auth = $conn->prepare($sql_auth);
     $stmt_auth->bind_param("iss", $user_cek, $kode_otorisasi, $pk_tanggal);
     $stmt_auth->execute();
 
     if ($stmt_auth->get_result()->num_rows === 0) {
-        throw new Exception("Otorisasi Gagal! Password salah atau tidak cocok untuk tanggal transaksi ($pk_tanggal).");
+        throw new Exception("Otorisasi Gagal! Kode salah atau tidak cocok untuk tanggal transaksi ($pk_tanggal).");
     }
     $stmt_auth->close();
 
-    // 4. Kalkulasi Ulang Total
+
     $denominations = [
         'qty_100rb' => 100000,
         'qty_50rb' => 50000,
@@ -67,7 +77,7 @@ try {
         $total_nominal += ($qty * $val);
     }
 
-    // 5. Proses Update
+
     $conn->begin_transaction();
 
     $sql_update = "
@@ -85,11 +95,7 @@ try {
 
     $stmt = $conn->prepare($sql_update);
 
-    // Tipe Data Bind:
-    // user_cek(i), kode(s) = is
-    // qty(11 ints) = iiiiiiiiiii
-    // total(d), ket(s) = ds
-    // PK: ssi
+
     $types = "is" . str_repeat("i", 11) . "dsssi";
 
     $params = array_merge(
@@ -104,17 +110,12 @@ try {
         throw new Exception("Gagal Update: " . $stmt->error);
     }
 
-    if ($stmt->affected_rows === 0) {
-        // Bisa jadi karena data sama persis, atau ID tidak ketemu
-        // Kita anggap sukses saja jika tidak error, tapi beri pesan info
-    }
-
     $stmt->close();
     $conn->commit();
 
     echo json_encode([
         'success' => true,
-        'message' => 'Data uang brangkas berhasil diperbarui.',
+        'message' => 'Data berhasil diperbarui.',
         'total_nominal' => $total_nominal
     ]);
 

@@ -104,7 +104,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                     <th>No</th>
                                     <th>Waktu Hitung</th>
                                     <th>User Hitung</th>
-                                    <th>Supervisor (Cek)</th>
+                                    <th>User Check</th>
                                     <th>Total Nominal</th>
                                     <th>Keterangan</th>
                                     <th class="text-center">Aksi</th>
@@ -162,14 +162,6 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                         (Auto)</label>
                                     <div class="text-2xl font-bold text-pink-600" id="display-total-nominal">Rp 0</div>
                                 </div>
-
-                                <div>
-                                    <label class="block text-xs font-semibold text-gray-700 mb-1">User Penghitung
-                                        (ID)</label>
-                                    <input type="number" name="user_hitung" id="user_hitung" class="input-modern w-full"
-                                        required>
-                                </div>
-
                                 <div class="p-3 border border-red-200 rounded-lg bg-red-50">
                                     <h4 class="text-xs font-bold text-red-600 mb-2 border-b border-red-200 pb-1">
                                         Otorisasi Supervisor</h4>
@@ -199,67 +191,54 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                     <div
                                         class="col-span-2 text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
                                         Uang Kertas</div>
-
-                                    <div class="flex items-center justify-between bg-gray-50 p-2 rounded">
-                                        <label class="text-sm font-medium w-24">100.000</label>
-                                        <input type="number" name="qty_100rb"
-                                            class="input-denim input-modern w-24 text-right" min="0" value="0">
-                                    </div>
-                                    <div class="flex items-center justify-between bg-gray-50 p-2 rounded">
-                                        <label class="text-sm font-medium w-24">50.000</label>
-                                        <input type="number" name="qty_50rb"
-                                            class="input-denim input-modern w-24 text-right" min="0" value="0">
-                                    </div>
-                                    <div class="flex items-center justify-between bg-gray-50 p-2 rounded">
-                                        <label class="text-sm font-medium w-24">20.000</label>
-                                        <input type="number" name="qty_20rb"
-                                            class="input-denim input-modern w-24 text-right" min="0" value="0">
-                                    </div>
-                                    <div class="flex items-center justify-between bg-gray-50 p-2 rounded">
-                                        <label class="text-sm font-medium w-24">10.000</label>
-                                        <input type="number" name="qty_10rb"
-                                            class="input-denim input-modern w-24 text-right" min="0" value="0">
-                                    </div>
-                                    <div class="flex items-center justify-between bg-gray-50 p-2 rounded">
-                                        <label class="text-sm font-medium w-24">5.000</label>
-                                        <input type="number" name="qty_5rb"
-                                            class="input-denim input-modern w-24 text-right" min="0" value="0">
-                                    </div>
-                                    <div class="flex items-center justify-between bg-gray-50 p-2 rounded">
-                                        <label class="text-sm font-medium w-24">2.000</label>
-                                        <input type="number" name="qty_2rb"
-                                            class="input-denim input-modern w-24 text-right" min="0" value="0">
-                                    </div>
-                                    <div class="flex items-center justify-between bg-gray-50 p-2 rounded">
-                                        <label class="text-sm font-medium w-24">1.000</label>
-                                        <input type="number" name="qty_1rb"
-                                            class="input-denim input-modern w-24 text-right" min="0" value="0">
-                                    </div>
+                                    <div class="flex items-center justify-between bg-gray-50 p-2 rounded"><label
+                                            class="text-sm font-medium w-24">100.000</label><input type="number"
+                                            name="qty_100rb" class="input-denim input-modern w-24 text-right" min="0"
+                                            value="0"></div>
+                                    <div class="flex items-center justify-between bg-gray-50 p-2 rounded"><label
+                                            class="text-sm font-medium w-24">50.000</label><input type="number"
+                                            name="qty_50rb" class="input-denim input-modern w-24 text-right" min="0"
+                                            value="0"></div>
+                                    <div class="flex items-center justify-between bg-gray-50 p-2 rounded"><label
+                                            class="text-sm font-medium w-24">20.000</label><input type="number"
+                                            name="qty_20rb" class="input-denim input-modern w-24 text-right" min="0"
+                                            value="0"></div>
+                                    <div class="flex items-center justify-between bg-gray-50 p-2 rounded"><label
+                                            class="text-sm font-medium w-24">10.000</label><input type="number"
+                                            name="qty_10rb" class="input-denim input-modern w-24 text-right" min="0"
+                                            value="0"></div>
+                                    <div class="flex items-center justify-between bg-gray-50 p-2 rounded"><label
+                                            class="text-sm font-medium w-24">5.000</label><input type="number"
+                                            name="qty_5rb" class="input-denim input-modern w-24 text-right" min="0"
+                                            value="0"></div>
+                                    <div class="flex items-center justify-between bg-gray-50 p-2 rounded"><label
+                                            class="text-sm font-medium w-24">2.000</label><input type="number"
+                                            name="qty_2rb" class="input-denim input-modern w-24 text-right" min="0"
+                                            value="0"></div>
+                                    <div class="flex items-center justify-between bg-gray-50 p-2 rounded"><label
+                                            class="text-sm font-medium w-24">1.000</label><input type="number"
+                                            name="qty_1rb" class="input-denim input-modern w-24 text-right" min="0"
+                                            value="0"></div>
 
                                     <div
                                         class="col-span-2 text-xs font-bold text-gray-500 uppercase tracking-wide mt-2 mb-1">
                                         Uang Koin</div>
-
-                                    <div class="flex items-center justify-between bg-gray-50 p-2 rounded">
-                                        <label class="text-sm font-medium w-24">1.000 (Koin)</label>
-                                        <input type="number" name="qty_1000_koin"
-                                            class="input-denim input-modern w-24 text-right" min="0" value="0">
-                                    </div>
-                                    <div class="flex items-center justify-between bg-gray-50 p-2 rounded">
-                                        <label class="text-sm font-medium w-24">500</label>
-                                        <input type="number" name="qty_500_koin"
-                                            class="input-denim input-modern w-24 text-right" min="0" value="0">
-                                    </div>
-                                    <div class="flex items-center justify-between bg-gray-50 p-2 rounded">
-                                        <label class="text-sm font-medium w-24">200</label>
-                                        <input type="number" name="qty_200_koin"
-                                            class="input-denim input-modern w-24 text-right" min="0" value="0">
-                                    </div>
-                                    <div class="flex items-center justify-between bg-gray-50 p-2 rounded">
-                                        <label class="text-sm font-medium w-24">100</label>
-                                        <input type="number" name="qty_100_koin"
-                                            class="input-denim input-modern w-24 text-right" min="0" value="0">
-                                    </div>
+                                    <div class="flex items-center justify-between bg-gray-50 p-2 rounded"><label
+                                            class="text-sm font-medium w-24">1.000 (Koin)</label><input type="number"
+                                            name="qty_1000_koin" class="input-denim input-modern w-24 text-right"
+                                            min="0" value="0"></div>
+                                    <div class="flex items-center justify-between bg-gray-50 p-2 rounded"><label
+                                            class="text-sm font-medium w-24">500</label><input type="number"
+                                            name="qty_500_koin" class="input-denim input-modern w-24 text-right" min="0"
+                                            value="0"></div>
+                                    <div class="flex items-center justify-between bg-gray-50 p-2 rounded"><label
+                                            class="text-sm font-medium w-24">200</label><input type="number"
+                                            name="qty_200_koin" class="input-denim input-modern w-24 text-right" min="0"
+                                            value="0"></div>
+                                    <div class="flex items-center justify-between bg-gray-50 p-2 rounded"><label
+                                            class="text-sm font-medium w-24">100</label><input type="number"
+                                            name="qty_100_koin" class="input-denim input-modern w-24 text-right" min="0"
+                                            value="0"></div>
                                 </div>
                             </div>
                         </div>
