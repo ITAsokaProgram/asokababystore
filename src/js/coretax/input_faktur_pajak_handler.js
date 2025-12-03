@@ -28,6 +28,8 @@ const btnSave = document.getElementById("btn-save");
 const btnCancelEdit = document.getElementById("btn-cancel-edit");
 const editIndicator = document.getElementById("edit-mode-indicator");
 const tableBody = document.getElementById("table-body");
+const inpSearchTable = document.getElementById("inp_search_table");
+let globalTableData = [];
 let isSubmitting = false;
 let debounceTimer;
 function formatNumber(num) {
@@ -258,7 +260,8 @@ async function loadTableData() {
   try {
     const result = await sendRequestGET(API_URLS.getData);
     if (result.success && Array.isArray(result.data)) {
-      renderTable(result.data);
+      globalTableData = result.data;
+      renderTable(globalTableData);
     } else {
       tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-4 text-red-500">Gagal memuat data</td></tr>`;
     }
@@ -494,9 +497,47 @@ async function handleSave() {
     isSubmitting = false;
   }
 }
+function handleTableSearch(e) {
+  const searchTerm = e.target.value.trim().toLowerCase();
+  const cleanNumberTerm = searchTerm.replace(/\./g, "");
+  if (searchTerm === "") {
+    renderTable(globalTableData);
+    return;
+  }
+  const filteredData = globalTableData.filter((row) => {
+    const textFields = [
+      row.nsfp,
+      row.no_faktur,
+      row.nama_supplier,
+      row.nm_alias,
+      row.tgl_faktur,
+    ];
+    const isTextMatch = textFields.some((field) =>
+      String(field || "")
+        .toLowerCase()
+        .includes(searchTerm)
+    );
+    if (isTextMatch) return true;
+    const numberFields = [row.dpp, row.dpp_nilai_lain, row.ppn, row.total];
+    const isNumberMatch = numberFields.some((num) => {
+      const rawVal = parseFloat(num || 0);
+      const formattedVal = formatNumber(rawVal);
+      const rawString = String(rawVal);
+      if (formattedVal.toLowerCase().includes(searchTerm)) return true;
+      if (rawString.includes(cleanNumberTerm) && cleanNumberTerm !== "")
+        return true;
+      return false;
+    });
+    return isNumberMatch;
+  });
+  renderTable(filteredData);
+}
 document.addEventListener("DOMContentLoaded", () => {
   loadStoreOptions();
   loadTableData();
+  if (inpSearchTable) {
+    inpSearchTable.addEventListener("input", handleTableSearch);
+  }
   [inpDpp, inpPpn].forEach((input) => {
     input.addEventListener("input", calculateTotal);
     input.addEventListener("blur", (e) => {
