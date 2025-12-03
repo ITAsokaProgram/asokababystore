@@ -24,8 +24,10 @@ try {
                 ks.nm_alias 
               FROM ff_pembelian as fp
               INNER JOIN kode_store as ks on fp.kode_store = ks.kd_store
-              WHERE DATE(fp.dibuat_pada) = CURDATE()
+            --   WHERE DATE(fp.dibuat_pada) = CURDATE()
               ORDER BY COALESCE(fp.edit_pada, fp.dibuat_pada) DESC, fp.id DESC 
+            --   LIMIT 50
+              
               ";
     $result = $conn->query($query);
     if (!$result) {
