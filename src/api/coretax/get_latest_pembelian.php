@@ -3,6 +3,7 @@ session_start();
 ini_set('display_errors', 0);
 header('Content-Type: application+json');
 require_once __DIR__ . '/../../../aa_kon_sett.php';
+
 try {
     if (!$conn) {
         throw new Exception("Koneksi Database Gagal");
@@ -20,20 +21,25 @@ try {
     if ($sortOption === 'date') {
         $orderClause = "fp.tgl_nota DESC, fp.dibuat_pada DESC";
     }
+
     $whereClauses = ["1=1"];
     $params = [];
     $types = "";
+
     if (!empty($filterDate)) {
         $whereClauses[] = "fp.tgl_nota = ?";
         $params[] = $filterDate;
         $types .= "s";
     }
+
     if (!empty($search)) {
         $cleanNumber = str_replace(['.', ','], '', $search);
         $isNumeric = is_numeric($cleanNumber);
         $searchLike = "%" . $search . "%";
+
+        // Ubah pencarian: cari di no_invoice
         $textClause = "(
-            fp.no_faktur LIKE ? OR 
+            fp.no_invoice LIKE ? OR 
             fp.nama_supplier LIKE ? OR 
             ks.nm_alias LIKE ? OR
             fp.status LIKE ?
@@ -43,6 +49,7 @@ try {
         $params[] = $searchLike;
         $params[] = $searchLike;
         $types .= "ssss";
+
         if ($isNumeric && $cleanNumber != '') {
             $whereClauses[] = "(" . $textClause . " OR fp.dpp = ? OR fp.dpp_nilai_lain = ? OR fp.ppn = ? OR fp.total_terima_fp = ? )";
             $params[] = $cleanNumber;
@@ -54,13 +61,17 @@ try {
             $whereClauses[] = $textClause;
         }
     }
+
     $sqlWhere = implode(" AND ", $whereClauses);
+
+    // Select no_invoice juga
     $query = "SELECT 
                 fp.id, 
                 fp.nama_supplier, 
                 fp.kode_supplier, 
                 fp.kode_store, 
                 fp.tgl_nota, 
+                fp.no_invoice, 
                 fp.no_faktur, 
                 fp.dpp, 
                 fp.dpp_nilai_lain, 
@@ -75,19 +86,24 @@ try {
               WHERE $sqlWhere
               ORDER BY $orderClause 
               LIMIT ? OFFSET ?";
+
     $params[] = $limit;
     $params[] = $offset;
     $types .= "ii";
+
     $stmt = $conn->prepare($query);
     if (!$stmt) {
         throw new Exception("SQL Prepare Error: " . $conn->error);
     }
+
     if (!empty($params)) {
         $stmt->bind_param($types, ...$params);
     }
+
     $stmt->execute();
     $result = $stmt->get_result();
     $data = [];
+
     while ($row = $result->fetch_assoc()) {
         $row['id'] = (int) $row['id'];
         $row['dpp'] = (float) $row['dpp'];
@@ -96,13 +112,16 @@ try {
         $row['total_terima_fp'] = (float) $row['total_terima_fp'];
         $data[] = $row;
     }
+
     $hasMore = count($data) === $limit;
+
     echo json_encode([
         'success' => true,
         'data' => $data,
         'page' => $page,
         'has_more' => $hasMore
     ]);
+
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);

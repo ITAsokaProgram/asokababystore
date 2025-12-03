@@ -53,15 +53,12 @@ if (!$menuHandler->initialize()) {
 
         @media (min-width: 1024px) {
             .form-grid {
-                /* Layout mirip Input Faktur Pajak */
                 grid-template-columns: repeat(5, 1fr);
             }
         }
 
         @media (min-width: 1536px) {
             .form-grid {
-                /* Invoice, Store, BTKP, Supplier, Tgl, DPP, DPP Lain, PPN, Total, Action */
-                /* Adjusted columns to fit new input */
                 grid-template-columns: 1.2fr 1.2fr 0.8fr 1.5fr 1fr 1fr 1fr 1fr 1.2fr auto;
             }
         }
@@ -165,9 +162,10 @@ if (!$menuHandler->initialize()) {
 
                             <div class="relative">
                                 <label class="form-label">No. Invoice</label>
-                                <input type="text" id="inp_no_lpb" name="no_lpb" class="input-compact"
-                                    placeholder="Pilih cabang dulu...">
-                                <p id="err_no_lpb" class="text-red-500 absolute -bottom-4 left-0 hidden font-semibold"
+                                <input type="text" id="inp_no_invoice" name="no_invoice" class="input-compact"
+                                    placeholder="Input No Invoice (LPB)...">
+                                <p id="err_no_invoice"
+                                    class="text-red-500 absolute -bottom-4 left-0 hidden font-semibold"
                                     style="font-size: 0.55rem"></p>
                             </div>
 
