@@ -1,13 +1,16 @@
 import { sendRequestGET, sendRequestJSON } from "../utils/api_helpers.js";
+
 const API_URLS = {
   getReceipt: "/src/api/coretax/get_receipt_detail.php",
   saveData: "/src/api/coretax/save_pembelian_single.php",
-  getData: "/src/api/coretax/get_latest_pembelian.php",
+  getData: "/src/api/coretax/get_latest_pembelian.php", // API Baru
   checkDuplicate: "/src/api/coretax/check_duplicate_invoice.php",
   getStores: "/src/api/shared/get_all_store.php",
   searchSupplier: "/src/api/coretax/get_supplier_search.php",
   deleteData: "/src/api/coretax/delete_pembelian_single.php",
 };
+
+// --- DOM Elements ---
 const form = document.getElementById("single-form");
 const inpId = document.getElementById("inp_id");
 const inpNoLpb = document.getElementById("inp_no_lpb");
@@ -24,11 +27,27 @@ const inpTotal = document.getElementById("inp_total");
 const btnSave = document.getElementById("btn-save");
 const btnCancelEdit = document.getElementById("btn-cancel-edit");
 const editIndicator = document.getElementById("edit-mode-indicator");
+
+// Table & Filter Elements
 const tableBody = document.getElementById("table-body");
 const inpSearchTable = document.getElementById("inp_search_table");
+const filterTgl = document.getElementById("filter_tgl"); // Baru
+const loaderRow = document.getElementById("loader-row"); // Baru
+
+// --- Variables State ---
 let isSubmitting = false;
 let debounceTimer;
-let globalTableData = [];
+let searchDebounceTimer;
+
+// Infinity Scroll State
+let currentPage = 1;
+let isLoadingData = false;
+let hasMoreData = true;
+let currentSearchTerm = "";
+let currentDateFilter = "";
+let tableRowIndex = 0; // Untuk penomoran berlanjut
+
+// --- Formatters ---
 function formatNumber(num) {
   if (isNaN(num) || num === null) return "0";
   return new Intl.NumberFormat("id-ID", {
@@ -36,17 +55,21 @@ function formatNumber(num) {
     maximumFractionDigits: 0,
   }).format(num);
 }
+
 function parseNumber(str) {
   if (!str) return 0;
   const cleanStr = str.toString().replace(/\./g, "").replace(",", ".");
   return parseFloat(cleanStr) || 0;
 }
+
 function calculateTotal() {
   const dpp = parseNumber(inpDpp.value);
   const ppn = parseNumber(inpPpn.value);
   const total = dpp + ppn;
   inpTotal.value = formatNumber(total);
 }
+
+// --- Initial Loaders ---
 async function loadStoreOptions() {
   try {
     const result = await sendRequestGET(API_URLS.getStores);
@@ -64,6 +87,177 @@ async function loadStoreOptions() {
     console.error("Gagal memuat toko:", error);
   }
 }
+
+// --- Data Fetching Logic (Server Side Filtering & Infinity Scroll) ---
+
+async function fetchTableData(reset = false) {
+  if (isLoadingData) return;
+  if (!hasMoreData && !reset) return;
+
+  isLoadingData = true;
+
+  if (reset) {
+    currentPage = 1;
+    tableRowIndex = 0;
+    hasMoreData = true;
+    tableBody.innerHTML = "";
+    loaderRow.classList.remove("hidden");
+  } else {
+    loaderRow.classList.remove("hidden");
+  }
+
+  try {
+    // Bangun URL dengan parameter
+    const params = new URLSearchParams({
+      page: currentPage,
+      search: currentSearchTerm,
+      date: currentDateFilter,
+    });
+
+    const result = await sendRequestGET(
+      `${API_URLS.getData}?${params.toString()}`
+    );
+
+    if (result.success && Array.isArray(result.data)) {
+      if (result.data.length === 0 && currentPage === 1) {
+        tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-6 text-gray-500">Data tidak ditemukan</td></tr>`;
+        hasMoreData = false;
+      } else {
+        renderTableRows(result.data);
+        hasMoreData = result.has_more; // Backend memberitahu jika masih ada data
+        if (hasMoreData) currentPage++;
+      }
+    } else {
+      if (currentPage === 1) {
+        tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-4 text-red-500">Gagal memuat data</td></tr>`;
+      }
+    }
+  } catch (error) {
+    console.error(error);
+    if (currentPage === 1) {
+      tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-4 text-red-500">Terjadi kesalahan koneksi</td></tr>`;
+    }
+  } finally {
+    isLoadingData = false;
+    // Sembunyikan loader jika tidak ada data lagi
+    if (!hasMoreData) {
+      loaderRow.classList.add("hidden");
+    }
+  }
+}
+
+function renderTableRows(data) {
+  let html = "";
+  data.forEach((row) => {
+    tableRowIndex++;
+    const dpp = parseFloat(row.dpp);
+    const dppLain = parseFloat(row.dpp_nilai_lain || 0);
+    const ppn = parseFloat(row.ppn);
+    const total = parseFloat(row.total_terima_fp);
+    const safeJson = JSON.stringify(row).replace(/"/g, "&quot;");
+
+    let badgeStatus = "";
+    if (row.status === "BTKP") {
+      badgeStatus =
+        '<span class="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded font-bold border border-purple-200">BTKP</span>';
+    } else if (row.status === "NON PKP") {
+      badgeStatus =
+        '<span class="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded font-bold border border-gray-200">NON PKP</span>';
+    } else {
+      badgeStatus =
+        '<span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded font-bold border border-blue-200">PKP</span>';
+    }
+
+    // Buat element tr
+    const tr = document.createElement("tr");
+    tr.className = "hover:bg-pink-50 transition-colors border-b border-gray-50";
+    tr.innerHTML = `
+        <td class="text-center text-gray-500 py-3">${tableRowIndex}</td>
+        <td class="text-sm">${row.tgl_nota}</td>
+        <td class="font-medium text-gray-800 text-sm">${row.no_faktur}</td>
+        <td><span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded border border-gray-200">${
+          row.nm_alias || "-"
+        }</span></td>
+        <td class="text-center">${badgeStatus}</td>
+        <td class="text-sm truncate max-w-[150px]" title="${
+          row.nama_supplier
+        }">${row.nama_supplier}</td>
+        <td class="text-right font-mono text-sm">${formatNumber(dpp)}</td>
+        <td class="text-right font-mono text-gray-500 text-sm">${formatNumber(
+          dppLain
+        )}</td>
+        <td class="text-right font-mono text-sm">${formatNumber(ppn)}</td>
+        <td class="text-right font-bold font-mono text-gray-800 text-sm">${formatNumber(
+          total
+        )}</td>
+        <td class="text-center py-2">
+            <div class="flex justify-center gap-1">
+                <button class="btn-edit-row text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 w-8 h-8 flex items-center justify-center rounded transition-all" 
+                    title="Edit Data">
+                    <i class="fas fa-pencil-alt"></i>
+                </button>
+                <button class="btn-delete-row text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 w-8 h-8 flex items-center justify-center rounded transition-all" 
+                    data-id="${row.id}" data-invoice="${
+      row.no_faktur
+    }" title="Hapus Data">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </div>
+        </td>
+    `;
+
+    // Attach Event Listeners langsung ke element
+    const btnEdit = tr.querySelector(".btn-edit-row");
+    btnEdit.addEventListener("click", () => startEditMode(row)); // Pass row object directly
+
+    const btnDelete = tr.querySelector(".btn-delete-row");
+    btnDelete.addEventListener("click", function () {
+      handleDelete(
+        this.getAttribute("data-id"),
+        this.getAttribute("data-invoice")
+      );
+    });
+
+    tableBody.appendChild(tr);
+  });
+}
+
+// --- Infinity Scroll Observer ---
+function setupInfinityScroll() {
+  const observerOptions = {
+    root: document.getElementById("table-scroll-container"), // Container scrollable
+    rootMargin: "100px", // Preload sebelum benar-benar sampai bawah
+    threshold: 0.1,
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting && !isLoadingData && hasMoreData) {
+      fetchTableData(false); // Load next page
+    }
+  }, observerOptions);
+
+  observer.observe(loaderRow);
+}
+
+// --- Handling Events ---
+
+// Debounce Search agar tidak request tiap ketik
+function handleSearchInput(e) {
+  const term = e.target.value;
+  clearTimeout(searchDebounceTimer);
+
+  searchDebounceTimer = setTimeout(() => {
+    currentSearchTerm = term;
+    fetchTableData(true); // Reset ke page 1
+  }, 600); // Tunggu 600ms
+}
+
+function handleDateFilter(e) {
+  currentDateFilter = e.target.value;
+  fetchTableData(true); // Reset ke page 1
+}
+
+// --- Other Logic (Existing) ---
 async function handleSupplierSearch(e) {
   const term = e.target.value;
   if (term.length < 2) return;
@@ -85,6 +279,7 @@ async function handleSupplierSearch(e) {
     }
   }, 300);
 }
+
 async function checkDuplicateInvoice(noLpb) {
   if (!noLpb) return false;
   const currentId = inpId.value || 0;
@@ -113,12 +308,14 @@ async function checkDuplicateInvoice(noLpb) {
     return false;
   }
 }
+
 function resetErrorState() {
   inpNoLpb.classList.remove("border-red-500", "bg-red-50", "text-red-700");
   inpNoLpb.classList.add("border-gray-300");
   errNoLpb.classList.add("hidden");
   errNoLpb.textContent = "";
 }
+
 async function fetchReceiptData(noLpb) {
   if (!noLpb) return;
   const isDuplicate = await checkDuplicateInvoice(noLpb);
@@ -164,141 +361,7 @@ async function fetchReceiptData(noLpb) {
     inpNoLpb.placeholder = originalPlaceholder;
   }
 }
-async function loadTableData() {
-  tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-4"><i class="fas fa-spinner fa-spin text-pink-500"></i> Memuat data...</td></tr>`;
-  try {
-    const result = await sendRequestGET(API_URLS.getData);
-    if (result.success && Array.isArray(result.data)) {
-      globalTableData = result.data;
-      renderTable(globalTableData);
-    } else {
-      tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-4 text-red-500">Gagal memuat data</td></tr>`;
-    }
-  } catch (error) {
-    tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-4 text-red-500">Terjadi kesalahan koneksi</td></tr>`;
-  }
-}
-function renderTable(data) {
-  if (data.length === 0) {
-    tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-6 text-gray-500">Data tidak ditemukan</td></tr>`;
-    return;
-  }
-  let html = "";
-  data.forEach((row, index) => {
-    const dpp = parseFloat(row.dpp);
-    const dppLain = parseFloat(row.dpp_nilai_lain || 0);
-    const ppn = parseFloat(row.ppn);
-    const total = parseFloat(row.total_terima_fp);
-    const safeJson = JSON.stringify(row).replace(/"/g, "&quot;");
-    let badgeStatus = "";
-    if (row.status === "BTKP") {
-      badgeStatus =
-        '<span class="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded font-bold border border-purple-200">BTKP</span>';
-    } else if (row.status === "NON PKP") {
-      badgeStatus =
-        '<span class="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded font-bold border border-gray-200">NON PKP</span>';
-    } else {
-      badgeStatus =
-        '<span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded font-bold border border-blue-200">PKP</span>';
-    }
-    html += `
-            <tr class="hover:bg-pink-50 transition-colors border-b border-gray-50">
-                <td class="text-center text-gray-500 py-3">${index + 1}</td>
-                <td class="text-sm">${row.tgl_nota}</td>
-                <td class="font-medium text-gray-800 text-sm">${
-                  row.no_faktur
-                }</td>
-                <td><span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded border border-gray-200">${
-                  row.nm_alias || "-"
-                }</span></td>
-                <td class="text-center">${badgeStatus}</td>
-                <td class="text-sm truncate max-w-[150px]" title="${
-                  row.nama_supplier
-                }">${row.nama_supplier}</td>
-                <td class="text-right font-mono text-sm">${formatNumber(
-                  dpp
-                )}</td>
-                <td class="text-right font-mono text-gray-500 text-sm">${formatNumber(
-                  dppLain
-                )}</td>
-                <td class="text-right font-mono text-sm">${formatNumber(
-                  ppn
-                )}</td>
-                <td class="text-right font-bold font-mono text-gray-800 text-sm">${formatNumber(
-                  total
-                )}</td>
-                <td class="text-center py-2">
-                    <div class="flex justify-center gap-1">
-                        <button class="btn-edit-row text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 w-8 h-8 flex items-center justify-center rounded transition-all" 
-                            data-row="${safeJson}" title="Edit Data">
-                            <i class="fas fa-pencil-alt"></i>
-                        </button>
-                        <button class="btn-delete-row text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 w-8 h-8 flex items-center justify-center rounded transition-all" 
-                            data-id="${row.id}" data-invoice="${
-      row.no_faktur
-    }" title="Hapus Data">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `;
-  });
-  tableBody.innerHTML = html;
-  document.querySelectorAll(".btn-edit-row").forEach((btn) => {
-    btn.addEventListener("click", function () {
-      const data = JSON.parse(this.getAttribute("data-row"));
-      startEditMode(data);
-    });
-  });
-  document.querySelectorAll(".btn-delete-row").forEach((btn) => {
-    btn.addEventListener("click", function () {
-      const id = this.getAttribute("data-id");
-      const invoice = this.getAttribute("data-invoice");
-      handleDelete(id, invoice);
-    });
-  });
-}
-function handleTableSearch(e) {
-  const searchTerm = e.target.value.trim().toLowerCase();
-  const cleanNumberTerm = searchTerm.replace(/\./g, "");
-  if (searchTerm === "") {
-    renderTable(globalTableData);
-    return;
-  }
-  const filteredData = globalTableData.filter((row) => {
-    const textFields = [
-      row.no_faktur,
-      row.nama_supplier,
-      row.nm_alias,
-      row.status,
-      row.tgl_nota,
-    ];
-    const isTextMatch = textFields.some((field) =>
-      String(field || "")
-        .toLowerCase()
-        .includes(searchTerm)
-    );
-    if (isTextMatch) return true;
-    const numberFields = [
-      row.dpp,
-      row.dpp_nilai_lain,
-      row.ppn,
-      row.total_terima_fp,
-    ];
-    const isNumberMatch = numberFields.some((num) => {
-      const rawVal = parseFloat(num || 0);
-      const formattedVal = formatNumber(rawVal);
-      const rawString = String(rawVal);
-      if (formattedVal.toLowerCase().includes(searchTerm)) return true;
-      if (rawString.includes(cleanNumberTerm) && cleanNumberTerm !== "")
-        return true;
-      return false;
-    });
-    return isNumberMatch;
-  });
-  renderTable(filteredData);
-}
+
 function startEditMode(data) {
   resetErrorState();
   inpId.value = data.id;
@@ -322,6 +385,7 @@ function startEditMode(data) {
   btnSave.className =
     "btn-warning px-6 py-2 rounded shadow-lg bg-amber-500 text-white hover:bg-amber-600";
 }
+
 function cancelEditMode() {
   form.reset();
   resetErrorState();
@@ -338,6 +402,7 @@ function cancelEditMode() {
   btnSave.className =
     "btn-primary shadow-lg shadow-pink-500/30 flex items-center gap-2 px-6 py-2";
 }
+
 function handleDelete(id, invoice) {
   Swal.fire({
     title: "Hapus Data?",
@@ -353,16 +418,14 @@ function handleDelete(id, invoice) {
       try {
         Swal.fire({
           title: "Memproses...",
-          text: "Sedang mengecek keterkaitan data...",
+          text: "Sedang menghapus...",
           allowOutsideClick: false,
-          didOpen: () => {
-            Swal.showLoading();
-          },
+          didOpen: () => Swal.showLoading(),
         });
         const resp = await sendRequestJSON(API_URLS.deleteData, { id: id });
         if (resp.success) {
           Swal.fire("Terhapus!", resp.message, "success");
-          loadTableData();
+          fetchTableData(true); // Reload table reset
           if (inpId.value == id) cancelEditMode();
         } else {
           throw new Error(resp.message || "Gagal menghapus data");
@@ -375,6 +438,7 @@ function handleDelete(id, invoice) {
     }
   });
 }
+
 async function handleSave() {
   const noLpb = inpNoLpb.value.trim();
   const namaSupp = inpNamaSupp.value.trim();
@@ -430,7 +494,7 @@ async function handleSave() {
         showConfirmButton: false,
       });
       cancelEditMode();
-      loadTableData();
+      fetchTableData(true); // Reset table load
       inpNoLpb.focus();
     } else {
       throw new Error(result.message || "Gagal menyimpan data");
@@ -451,12 +515,21 @@ async function handleSave() {
     }
   }
 }
+
+// --- Main Event Listeners ---
 document.addEventListener("DOMContentLoaded", () => {
   loadStoreOptions();
-  loadTableData();
-  if (inpSearchTable) {
-    inpSearchTable.addEventListener("input", handleTableSearch);
-  }
+
+  // Setup Table Listeners
+  if (inpSearchTable)
+    inpSearchTable.addEventListener("input", handleSearchInput);
+  if (filterTgl) filterTgl.addEventListener("change", handleDateFilter);
+
+  // Initial Data Load
+  fetchTableData(true);
+  setupInfinityScroll();
+
+  // Form Field Listeners
   [inpDpp, inpPpn, inpDppLain].forEach((input) => {
     input.addEventListener("input", () => {
       if (input !== inpDppLain) calculateTotal();
@@ -468,7 +541,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     input.addEventListener("focus", (e) => e.target.select());
   });
+
   inpNamaSupp.addEventListener("input", handleSupplierSearch);
+
   inpNoLpb.addEventListener("change", (e) => {
     const val = e.target.value.trim();
     if (val !== "") {
@@ -477,11 +552,14 @@ document.addEventListener("DOMContentLoaded", () => {
       resetErrorState();
     }
   });
+
   inpNoLpb.addEventListener("input", () => {
     if (inpNoLpb.classList.contains("border-red-500")) {
       resetErrorState();
     }
   });
+
+  // Enter Key Navigation
   const formInputs = Array.from(
     form.querySelectorAll("input:not([type='hidden']), select")
   );
@@ -524,6 +602,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
+
   btnSave.addEventListener("click", handleSave);
   btnCancelEdit.addEventListener("click", cancelEditMode);
 });
