@@ -230,9 +230,18 @@ if (!$menuHandler->initialize()) {
                 </div>
 
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div class="p-4 border-b border-gray-100 flex justify-between items-center">
-                        <h3 class="font-bold text-gray-700"><i class="fas fa-list mr-2 text-pink-500"></i>Data Pembelian
-                            Hari Ini</h3>
+                    <div
+                        class="p-4 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-3">
+                        <h3 class="font-bold text-gray-700 whitespace-nowrap">
+                            <i class="fas fa-list mr-2 text-pink-500"></i>Data Pembelian Hari Ini
+                        </h3>
+
+                        <div class="relative w-full sm:w-64">
+                            <input type="text" id="inp_search_table"
+                                class="w-full pl-4 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 transition-all"
+                                placeholder="Cari data (Invoice, Harga, dll)...">
+
+                        </div>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse table-compact">

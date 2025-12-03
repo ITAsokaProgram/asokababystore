@@ -25,8 +25,10 @@ const btnSave = document.getElementById("btn-save");
 const btnCancelEdit = document.getElementById("btn-cancel-edit");
 const editIndicator = document.getElementById("edit-mode-indicator");
 const tableBody = document.getElementById("table-body");
+const inpSearchTable = document.getElementById("inp_search_table");
 let isSubmitting = false;
 let debounceTimer;
+let globalTableData = [];
 function formatNumber(num) {
   if (isNaN(num) || num === null) return "0";
   return new Intl.NumberFormat("id-ID", {
@@ -42,9 +44,7 @@ function parseNumber(str) {
 function calculateTotal() {
   const dpp = parseNumber(inpDpp.value);
   const ppn = parseNumber(inpPpn.value);
-
   const total = dpp + ppn;
-
   inpTotal.value = formatNumber(total);
 }
 async function loadStoreOptions() {
@@ -169,7 +169,8 @@ async function loadTableData() {
   try {
     const result = await sendRequestGET(API_URLS.getData);
     if (result.success && Array.isArray(result.data)) {
-      renderTable(result.data);
+      globalTableData = result.data;
+      renderTable(globalTableData);
     } else {
       tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-4 text-red-500">Gagal memuat data</td></tr>`;
     }
@@ -179,7 +180,7 @@ async function loadTableData() {
 }
 function renderTable(data) {
   if (data.length === 0) {
-    tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-6 text-gray-500">Belum ada data</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-6 text-gray-500">Data tidak ditemukan</td></tr>`;
     return;
   }
   let html = "";
@@ -188,7 +189,6 @@ function renderTable(data) {
     const dppLain = parseFloat(row.dpp_nilai_lain || 0);
     const ppn = parseFloat(row.ppn);
     const total = parseFloat(row.total_terima_fp);
-
     const safeJson = JSON.stringify(row).replace(/"/g, "&quot;");
     let badgeStatus = "";
     if (row.status === "BTKP") {
@@ -259,20 +259,57 @@ function renderTable(data) {
     });
   });
 }
+function handleTableSearch(e) {
+  const searchTerm = e.target.value.trim().toLowerCase();
+  const cleanNumberTerm = searchTerm.replace(/\./g, "");
+  if (searchTerm === "") {
+    renderTable(globalTableData);
+    return;
+  }
+  const filteredData = globalTableData.filter((row) => {
+    const textFields = [
+      row.no_faktur,
+      row.nama_supplier,
+      row.nm_alias,
+      row.status,
+      row.tgl_nota,
+    ];
+    const isTextMatch = textFields.some((field) =>
+      String(field || "")
+        .toLowerCase()
+        .includes(searchTerm)
+    );
+    if (isTextMatch) return true;
+    const numberFields = [
+      row.dpp,
+      row.dpp_nilai_lain,
+      row.ppn,
+      row.total_terima_fp,
+    ];
+    const isNumberMatch = numberFields.some((num) => {
+      const rawVal = parseFloat(num || 0);
+      const formattedVal = formatNumber(rawVal);
+      const rawString = String(rawVal);
+      if (formattedVal.toLowerCase().includes(searchTerm)) return true;
+      if (rawString.includes(cleanNumberTerm) && cleanNumberTerm !== "")
+        return true;
+      return false;
+    });
+    return isNumberMatch;
+  });
+  renderTable(filteredData);
+}
 function startEditMode(data) {
   resetErrorState();
   inpId.value = data.id;
   inpNoLpb.value = data.no_faktur;
   inpKodeStore.value = data.kode_store || "";
-
   inpStatus.value = data.status || "PKP";
-
   inpNamaSupp.value = data.nama_supplier;
   inpTgl.value = data.tgl_nota;
   inpDpp.value = formatNumber(data.dpp);
   inpDppLain.value = formatNumber(data.dpp_nilai_lain || 0);
   inpPpn.value = formatNumber(data.ppn);
-
   calculateTotal();
   inpNoLpb.focus();
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -292,7 +329,6 @@ function cancelEditMode() {
   inpTotal.value = "0";
   inpKodeStore.value = "";
   inpStatus.value = "";
-
   document
     .querySelector(".input-row-container")
     .classList.remove("border-amber-300", "bg-amber-50");
@@ -342,12 +378,10 @@ function handleDelete(id, invoice) {
 async function handleSave() {
   const noLpb = inpNoLpb.value.trim();
   const namaSupp = inpNamaSupp.value.trim();
-
   if (inpKodeStore.value === "") {
     Swal.fire("Gagal", "Pilih Cabang", "warning");
     return;
   }
-
   if (inpStatus.value === "") {
     Swal.fire(
       "Gagal",
@@ -357,7 +391,6 @@ async function handleSave() {
     inpStatus.focus();
     return;
   }
-
   if (!noLpb || !namaSupp) {
     Swal.fire("Gagal", "No Invoice dan Nama Supplier harus diisi", "warning");
     return;
@@ -372,14 +405,11 @@ async function handleSave() {
     no_lpb: noLpb,
     no_faktur: noLpb,
     kode_store: inpKodeStore.value,
-
-    // Update Payload Status
     status: inpStatus.value,
-
     nama_supplier: namaSupp,
     tgl_nota: inpTgl.value,
     dpp: parseNumber(inpDpp.value),
-    dpp_nilai_lain: parseNumber(inpDppLain.value), // Ambil value manual
+    dpp_nilai_lain: parseNumber(inpDppLain.value),
     ppn: parseNumber(inpPpn.value),
     total_terima_fp: parseNumber(inpTotal.value),
   };
@@ -424,6 +454,9 @@ async function handleSave() {
 document.addEventListener("DOMContentLoaded", () => {
   loadStoreOptions();
   loadTableData();
+  if (inpSearchTable) {
+    inpSearchTable.addEventListener("input", handleTableSearch);
+  }
   [inpDpp, inpPpn, inpDppLain].forEach((input) => {
     input.addEventListener("input", () => {
       if (input !== inpDppLain) calculateTotal();
