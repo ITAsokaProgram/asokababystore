@@ -155,19 +155,20 @@ if (!$menuHandler->initialize()) {
                         <input type="hidden" id="inp_id" name="id" value="">
 
                         <div class="form-grid">
-                            <div class="relative"> <label class="form-label">No. Invoice</label>
-                                <input type="text" id="inp_no_lpb" name="no_lpb" class="input-compact" autofocus
-                                    placeholder="">
-                                <p id="err_no_lpb"
-                                    class="text-xs text-red-500 absolute -bottom-4 left-0 hidden font-semibold"></p>
-                            </div>
-
                             <div>
                                 <label class="form-label">Cabang</label>
                                 <select id="inp_kode_store" name="kode_store"
                                     class="input-compact bg-white cursor-pointer">
                                     <option value="">Pilih Cabang</option>
                                 </select>
+                            </div>
+
+                            <div class="relative">
+                                <label class="form-label">No. Invoice</label>
+                                <input type="text" id="inp_no_lpb" name="no_lpb" class="input-compact"
+                                    placeholder="Pilih cabang dulu...">
+                                <p id="err_no_lpb" class="text-red-500 absolute -bottom-4 left-0 hidden font-semibold"
+                                    style="font-size: 0.55rem"></p>
                             </div>
 
                             <div>

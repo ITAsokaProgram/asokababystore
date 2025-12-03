@@ -312,21 +312,47 @@ function resetErrorState() {
 }
 async function fetchReceiptData(noLpb) {
   if (!noLpb) return;
+
+  // 1. Cek apakah Cabang sudah dipilih
+  const selectedStore = inpKodeStore.value;
+  if (!selectedStore) {
+    Swal.fire({
+      icon: "warning",
+      title: "Cabang Belum Dipilih",
+      text: "Harap pilih cabang terlebih dahulu sebelum mengisi Nomor Invoice.",
+      timer: 2000,
+      showConfirmButton: false,
+    });
+    inpNoLpb.value = ""; // Kosongkan invoice
+    inpKodeStore.focus(); // Arahkan kursor ke cabang
+    return;
+  }
+
   const isDuplicate = await checkDuplicateInvoice(noLpb);
   inpNoLpb.classList.add("bg-yellow-50", "text-yellow-700");
   const originalPlaceholder = inpNoLpb.placeholder;
   inpNoLpb.placeholder = "Mencari...";
+
   try {
+    // Kirim kode_store ke API
     const result = await sendRequestGET(
-      `${API_URLS.getReceipt}?no_lpb=${encodeURIComponent(noLpb)}`
+      `${API_URLS.getReceipt}?no_lpb=${encodeURIComponent(
+        noLpb
+      )}&kode_store=${encodeURIComponent(selectedStore)}`
     );
+
     if (result.success && result.data) {
       const d = result.data;
+
+      // Auto fill data
       inpNamaSupp.value = d.nama_supplier || "";
-      if (d.kode_store) inpKodeStore.value = d.kode_store;
+      // inpKodeStore sudah dipilih user, jadi tidak perlu di-overwrite kecuali untuk memastikan
+      // if (d.kode_store) inpKodeStore.value = d.kode_store;
+
       inpDpp.value = formatNumber(parseFloat(d.dpp) || 0);
       inpPpn.value = formatNumber(parseFloat(d.ppn) || 0);
       calculateTotal();
+
       if (!isDuplicate) {
         inpNoLpb.classList.remove("bg-yellow-50", "text-yellow-700");
         inpNoLpb.classList.add("bg-green-50", "text-green-700");
@@ -337,13 +363,28 @@ async function fetchReceiptData(noLpb) {
       }
       inpNamaSupp.focus();
     } else {
-      if (!isDuplicate) {
-        inpNoLpb.classList.remove("bg-yellow-50", "text-yellow-700");
-        Toastify({
-          text: "Info: Data invoice baru (input manual)",
-          duration: 2000,
-          style: { background: "#3b82f6" },
-        }).showToast();
+      // HANDLE ERROR / NOT FOUND
+      inpNoLpb.classList.remove("bg-yellow-50", "text-yellow-700");
+
+      if (result.error_type === "wrong_store") {
+        // Kasus: Invoice ada tapi salah cabang
+        Swal.fire({
+          icon: "error",
+          title: "Salah Cabang",
+          text: result.message,
+          confirmButtonColor: "#ef4444",
+        });
+        inpNoLpb.value = ""; // Clear inputan salah
+        inpNoLpb.focus();
+      } else {
+        // Kasus: Data tidak ditemukan (Input Manual)
+        if (!isDuplicate) {
+          Toastify({
+            text: "Info: Data invoice baru (input manual)",
+            duration: 2000,
+            style: { background: "#3b82f6" },
+          }).showToast();
+        }
       }
     }
   } catch (error) {
@@ -524,6 +565,16 @@ document.addEventListener("DOMContentLoaded", () => {
       calculateTotal();
     });
     input.addEventListener("focus", (e) => e.target.select());
+  });
+  inpKodeStore.addEventListener("change", () => {
+    if (inpNoLpb.value !== "") {
+      inpNoLpb.value = "";
+      inpNamaSupp.value = "";
+      inpDpp.value = "0";
+      inpPpn.value = "0";
+      calculateTotal();
+      inpNoLpb.focus();
+    }
   });
   inpNamaSupp.addEventListener("input", handleSupplierSearch);
   inpNoLpb.addEventListener("change", (e) => {
