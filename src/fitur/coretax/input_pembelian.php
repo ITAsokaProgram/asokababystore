@@ -232,11 +232,17 @@ if (!$menuHandler->initialize()) {
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     <div
                         class="p-4 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center gap-3">
-                        <h3 class="font-bold text-gray-700 whitespace-nowrap">
-                            <i class="fas fa-list mr-2 text-pink-500"></i>Data Pembelian
-                        </h3>
 
                         <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                            <div class="relative">
+                                <select id="filter_sort"
+                                    class="w-full pl-3 pr-8 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-pink-400 transition-all text-gray-600 bg-white cursor-pointer">
+                                    <option value="created">Input Terbaru</option>
+                                    <option value="date">Nota Terbaru</option>
+                                </select>
+
+                            </div>
+
                             <div class="relative">
                                 <input type="date" id="filter_tgl"
                                     class="w-full sm:w-auto pl-3 pr-2 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-pink-400 transition-all text-gray-600"
@@ -252,7 +258,7 @@ if (!$menuHandler->initialize()) {
                         </div>
                     </div>
 
-                    <div class="overflow-x-auto relative" style="max-height: 600px; overflow-y: auto;"
+                    <div class="overflow-x-auto relative" style="max-height: 380px; overflow-y: auto;"
                         id="table-scroll-container">
                         <table class="w-full text-left border-collapse table-compact sticky top-0">
                             <thead class="sticky top-0 z-10 shadow-sm">

@@ -1,16 +1,13 @@
 import { sendRequestGET, sendRequestJSON } from "../utils/api_helpers.js";
-
 const API_URLS = {
   getReceipt: "/src/api/coretax/get_receipt_detail.php",
   saveData: "/src/api/coretax/save_pembelian_single.php",
-  getData: "/src/api/coretax/get_latest_pembelian.php", // API Baru
+  getData: "/src/api/coretax/get_latest_pembelian.php",
   checkDuplicate: "/src/api/coretax/check_duplicate_invoice.php",
   getStores: "/src/api/shared/get_all_store.php",
   searchSupplier: "/src/api/coretax/get_supplier_search.php",
   deleteData: "/src/api/coretax/delete_pembelian_single.php",
 };
-
-// --- DOM Elements ---
 const form = document.getElementById("single-form");
 const inpId = document.getElementById("inp_id");
 const inpNoLpb = document.getElementById("inp_no_lpb");
@@ -27,27 +24,21 @@ const inpTotal = document.getElementById("inp_total");
 const btnSave = document.getElementById("btn-save");
 const btnCancelEdit = document.getElementById("btn-cancel-edit");
 const editIndicator = document.getElementById("edit-mode-indicator");
-
-// Table & Filter Elements
 const tableBody = document.getElementById("table-body");
 const inpSearchTable = document.getElementById("inp_search_table");
-const filterTgl = document.getElementById("filter_tgl"); // Baru
-const loaderRow = document.getElementById("loader-row"); // Baru
-
-// --- Variables State ---
+const filterSort = document.getElementById("filter_sort");
+const filterTgl = document.getElementById("filter_tgl");
+const loaderRow = document.getElementById("loader-row");
 let isSubmitting = false;
 let debounceTimer;
 let searchDebounceTimer;
-
-// Infinity Scroll State
 let currentPage = 1;
 let isLoadingData = false;
 let hasMoreData = true;
 let currentSearchTerm = "";
 let currentDateFilter = "";
-let tableRowIndex = 0; // Untuk penomoran berlanjut
-
-// --- Formatters ---
+let currentSortOption = "created";
+let tableRowIndex = 0;
 function formatNumber(num) {
   if (isNaN(num) || num === null) return "0";
   return new Intl.NumberFormat("id-ID", {
@@ -55,21 +46,17 @@ function formatNumber(num) {
     maximumFractionDigits: 0,
   }).format(num);
 }
-
 function parseNumber(str) {
   if (!str) return 0;
   const cleanStr = str.toString().replace(/\./g, "").replace(",", ".");
   return parseFloat(cleanStr) || 0;
 }
-
 function calculateTotal() {
   const dpp = parseNumber(inpDpp.value);
   const ppn = parseNumber(inpPpn.value);
   const total = dpp + ppn;
   inpTotal.value = formatNumber(total);
 }
-
-// --- Initial Loaders ---
 async function loadStoreOptions() {
   try {
     const result = await sendRequestGET(API_URLS.getStores);
@@ -87,33 +74,34 @@ async function loadStoreOptions() {
     console.error("Gagal memuat toko:", error);
   }
 }
-
-// --- Data Fetching Logic (Server Side Filtering & Infinity Scroll) ---
 let currentRequestController = null;
 async function fetchTableData(reset = false) {
-  if (isLoadingData && !reset) return; // Kalau load more, jangan tumpuk
+  if (isLoadingData && !reset) return;
 
-  // 1. BEST PRACTICE: Cancel request sebelumnya jika ada request baru (Reset mode)
   if (reset) {
     if (currentRequestController) {
       currentRequestController.abort();
     }
     currentRequestController = new AbortController();
+
+    // Reset loading UI
+    tableBody.innerHTML = `
+        <tr>
+            <td colspan="11" class="text-center p-8">
+                <div class="flex flex-col items-center justify-center">
+                    <i class="fas fa-circle-notch fa-spin text-pink-500 text-3xl mb-3"></i>
+                    <span class="text-gray-500 font-medium animate-pulse">Memuat data...</span>
+                </div>
+            </td>
+        </tr>
+    `;
+    loaderRow.classList.add("hidden");
   }
 
   if (!hasMoreData && !reset) return;
 
   isLoadingData = true;
-
-  // UI UX: Jangan hapus total HTML jika reset, cukup kasih state loading
-  if (reset) {
-    currentPage = 1;
-    tableRowIndex = 0;
-    hasMoreData = true;
-    // Opsional: tableBody.innerHTML = ""; // Hapus baris ini agar tidak nge-blink
-    // Ganti dengan menampilkan loading overlay atau biarkan data lama tertampil sampai data baru datang
-    loaderRow.classList.remove("hidden");
-  } else {
+  if (!reset) {
     loaderRow.classList.remove("hidden");
   }
 
@@ -122,26 +110,28 @@ async function fetchTableData(reset = false) {
       page: currentPage,
       search: currentSearchTerm,
       date: currentDateFilter,
+      sort: currentSortOption, // <--- TAMBAHAN PARAMETER KE API
     });
 
-    // Masukkan signal ke fetch options
     const signal = reset ? currentRequestController.signal : null;
-
-    // Modifikasi helper sendRequestGET kamu agar menerima signal (opsional, atau pakai fetch native di sini)
-    // Anggaplah kita pakai fetch native untuk contoh controller
     const response = await fetch(`${API_URLS.getData}?${params.toString()}`, {
       signal,
     });
+
     const result = await response.json();
 
-    // Jika ini reset (pencarian baru), baru kita kosongkan tabel SEBELUM render data baru
     if (reset) {
       tableBody.innerHTML = "";
+      currentPage = 1;
+      tableRowIndex = 0;
     }
 
+    // ... sisa logika sama seperti sebelumnya ...
     if (result.success && Array.isArray(result.data)) {
+      // Logika render data
       if (result.data.length === 0 && currentPage === 1) {
-        tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-6 text-gray-500">Data tidak ditemukan</td></tr>`;
+        // Render kosong
+        tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-8 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-300">Data tidak ditemukan</td></tr>`;
         hasMoreData = false;
       } else {
         renderTableRows(result.data);
@@ -150,26 +140,24 @@ async function fetchTableData(reset = false) {
       }
     }
   } catch (error) {
-    if (error.name === "AbortError") {
-      console.log("Request dibatalkan karena ada input baru");
-      return; // Jangan set loading false, biarkan flow berikutnya jalan
-    }
+    // ... error handling sama ...
+    if (error.name === "AbortError") return;
     console.error(error);
     if (currentPage === 1) {
       tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-4 text-red-500">Terjadi kesalahan koneksi</td></tr>`;
     }
   } finally {
-    // Hanya matikan loading jika bukan abort error
+    // ... finally block sama ...
     if (
       !currentRequestController ||
       (currentRequestController && !currentRequestController.signal.aborted)
     ) {
       isLoadingData = false;
-      if (!hasMoreData) loaderRow.classList.add("hidden");
+      if (hasMoreData) loaderRow.classList.remove("hidden");
+      else loaderRow.classList.add("hidden");
     }
   }
 }
-
 function renderTableRows(data) {
   let html = "";
   data.forEach((row) => {
@@ -179,7 +167,6 @@ function renderTableRows(data) {
     const ppn = parseFloat(row.ppn);
     const total = parseFloat(row.total_terima_fp);
     const safeJson = JSON.stringify(row).replace(/"/g, "&quot;");
-
     let badgeStatus = "";
     if (row.status === "BTKP") {
       badgeStatus =
@@ -191,8 +178,6 @@ function renderTableRows(data) {
       badgeStatus =
         '<span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded font-bold border border-blue-200">PKP</span>';
     }
-
-    // Buat element tr
     const tr = document.createElement("tr");
     tr.className = "hover:bg-pink-50 transition-colors border-b border-gray-50";
     tr.innerHTML = `
@@ -229,11 +214,8 @@ function renderTableRows(data) {
             </div>
         </td>
     `;
-
-    // Attach Event Listeners langsung ke element
     const btnEdit = tr.querySelector(".btn-edit-row");
-    btnEdit.addEventListener("click", () => startEditMode(row)); // Pass row object directly
-
+    btnEdit.addEventListener("click", () => startEditMode(row));
     const btnDelete = tr.querySelector(".btn-delete-row");
     btnDelete.addEventListener("click", function () {
       handleDelete(
@@ -241,47 +223,38 @@ function renderTableRows(data) {
         this.getAttribute("data-invoice")
       );
     });
-
     tableBody.appendChild(tr);
   });
 }
-
-// --- Infinity Scroll Observer ---
 function setupInfinityScroll() {
   const observerOptions = {
-    root: document.getElementById("table-scroll-container"), // Container scrollable
-    rootMargin: "100px", // Preload sebelum benar-benar sampai bawah
+    root: document.getElementById("table-scroll-container"),
+    rootMargin: "100px",
     threshold: 0.1,
   };
-
   const observer = new IntersectionObserver((entries) => {
     if (entries[0].isIntersecting && !isLoadingData && hasMoreData) {
-      fetchTableData(false); // Load next page
+      fetchTableData(false);
     }
   }, observerOptions);
-
   observer.observe(loaderRow);
 }
-
-// --- Handling Events ---
-
-// Debounce Search agar tidak request tiap ketik
 function handleSearchInput(e) {
   const term = e.target.value;
   clearTimeout(searchDebounceTimer);
-
   searchDebounceTimer = setTimeout(() => {
     currentSearchTerm = term;
-    fetchTableData(true); // Reset ke page 1
-  }, 600); // Tunggu 600ms
+    fetchTableData(true);
+  }, 600);
 }
-
+function handleSortFilter(e) {
+  currentSortOption = e.target.value;
+  fetchTableData(true);
+}
 function handleDateFilter(e) {
   currentDateFilter = e.target.value;
-  fetchTableData(true); // Reset ke page 1
+  fetchTableData(true);
 }
-
-// --- Other Logic (Existing) ---
 async function handleSupplierSearch(e) {
   const term = e.target.value;
   if (term.length < 2) return;
@@ -303,7 +276,6 @@ async function handleSupplierSearch(e) {
     }
   }, 300);
 }
-
 async function checkDuplicateInvoice(noLpb) {
   if (!noLpb) return false;
   const currentId = inpId.value || 0;
@@ -332,14 +304,12 @@ async function checkDuplicateInvoice(noLpb) {
     return false;
   }
 }
-
 function resetErrorState() {
   inpNoLpb.classList.remove("border-red-500", "bg-red-50", "text-red-700");
   inpNoLpb.classList.add("border-gray-300");
   errNoLpb.classList.add("hidden");
   errNoLpb.textContent = "";
 }
-
 async function fetchReceiptData(noLpb) {
   if (!noLpb) return;
   const isDuplicate = await checkDuplicateInvoice(noLpb);
@@ -385,7 +355,6 @@ async function fetchReceiptData(noLpb) {
     inpNoLpb.placeholder = originalPlaceholder;
   }
 }
-
 function startEditMode(data) {
   resetErrorState();
   inpId.value = data.id;
@@ -409,7 +378,6 @@ function startEditMode(data) {
   btnSave.className =
     "btn-warning px-6 py-2 rounded shadow-lg bg-amber-500 text-white hover:bg-amber-600";
 }
-
 function cancelEditMode() {
   form.reset();
   resetErrorState();
@@ -426,7 +394,6 @@ function cancelEditMode() {
   btnSave.className =
     "btn-primary shadow-lg shadow-pink-500/30 flex items-center gap-2 px-6 py-2";
 }
-
 function handleDelete(id, invoice) {
   Swal.fire({
     title: "Hapus Data?",
@@ -449,7 +416,7 @@ function handleDelete(id, invoice) {
         const resp = await sendRequestJSON(API_URLS.deleteData, { id: id });
         if (resp.success) {
           Swal.fire("Terhapus!", resp.message, "success");
-          fetchTableData(true); // Reload table reset
+          fetchTableData(true);
           if (inpId.value == id) cancelEditMode();
         } else {
           throw new Error(resp.message || "Gagal menghapus data");
@@ -462,7 +429,6 @@ function handleDelete(id, invoice) {
     }
   });
 }
-
 async function handleSave() {
   const noLpb = inpNoLpb.value.trim();
   const namaSupp = inpNamaSupp.value.trim();
@@ -518,7 +484,7 @@ async function handleSave() {
         showConfirmButton: false,
       });
       cancelEditMode();
-      fetchTableData(true); // Reset table load
+      fetchTableData(true);
       inpNoLpb.focus();
     } else {
       throw new Error(result.message || "Gagal menyimpan data");
@@ -540,20 +506,14 @@ async function handleSave() {
   }
 }
 
-// --- Main Event Listeners ---
 document.addEventListener("DOMContentLoaded", () => {
   loadStoreOptions();
-
-  // Setup Table Listeners
   if (inpSearchTable)
     inpSearchTable.addEventListener("input", handleSearchInput);
   if (filterTgl) filterTgl.addEventListener("change", handleDateFilter);
-
-  // Initial Data Load
+  if (filterSort) filterSort.addEventListener("change", handleSortFilter);
   fetchTableData(true);
   setupInfinityScroll();
-
-  // Form Field Listeners
   [inpDpp, inpPpn, inpDppLain].forEach((input) => {
     input.addEventListener("input", () => {
       if (input !== inpDppLain) calculateTotal();
@@ -565,9 +525,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     input.addEventListener("focus", (e) => e.target.select());
   });
-
   inpNamaSupp.addEventListener("input", handleSupplierSearch);
-
   inpNoLpb.addEventListener("change", (e) => {
     const val = e.target.value.trim();
     if (val !== "") {
@@ -576,14 +534,11 @@ document.addEventListener("DOMContentLoaded", () => {
       resetErrorState();
     }
   });
-
   inpNoLpb.addEventListener("input", () => {
     if (inpNoLpb.classList.contains("border-red-500")) {
       resetErrorState();
     }
   });
-
-  // Enter Key Navigation
   const formInputs = Array.from(
     form.querySelectorAll("input:not([type='hidden']), select")
   );
@@ -626,7 +581,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
-
   btnSave.addEventListener("click", handleSave);
   btnCancelEdit.addEventListener("click", cancelEditMode);
 });

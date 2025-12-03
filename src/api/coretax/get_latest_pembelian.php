@@ -1,7 +1,7 @@
 <?php
 session_start();
 ini_set('display_errors', 0);
-header('Content-Type: application/json');
+header('Content-Type: application+json');
 require_once __DIR__ . '/../../../aa_kon_sett.php';
 try {
     if (!$conn) {
@@ -12,6 +12,14 @@ try {
     $offset = ($page - 1) * $limit;
     $search = isset($_GET['search']) ? trim($_GET['search']) : '';
     $filterDate = isset($_GET['date']) ? trim($_GET['date']) : '';
+
+    $sortOption = isset($_GET['sort']) ? $_GET['sort'] : 'created';
+
+    $orderClause = "fp.dibuat_pada DESC";
+
+    if ($sortOption === 'date') {
+        $orderClause = "fp.tgl_nota DESC, fp.dibuat_pada DESC";
+    }
     $whereClauses = ["1=1"];
     $params = [];
     $types = "";
@@ -36,10 +44,12 @@ try {
         $params[] = $searchLike;
         $types .= "ssss";
         if ($isNumeric && $cleanNumber != '') {
-            $whereClauses[] = "(" . $textClause . " OR fp.dpp = ? OR fp.total_terima_fp = ? )";
+            $whereClauses[] = "(" . $textClause . " OR fp.dpp = ? OR fp.dpp_nilai_lain = ? OR fp.ppn = ? OR fp.total_terima_fp = ? )";
             $params[] = $cleanNumber;
             $params[] = $cleanNumber;
-            $types .= "dd";
+            $params[] = $cleanNumber;
+            $params[] = $cleanNumber;
+            $types .= "dddd";
         } else {
             $whereClauses[] = $textClause;
         }
@@ -63,7 +73,7 @@ try {
               FROM ff_pembelian as fp
               INNER JOIN kode_store as ks on fp.kode_store = ks.kd_store
               WHERE $sqlWhere
-              ORDER BY fp.tgl_nota DESC, fp.id DESC 
+              ORDER BY $orderClause 
               LIMIT ? OFFSET ?";
     $params[] = $limit;
     $params[] = $offset;
