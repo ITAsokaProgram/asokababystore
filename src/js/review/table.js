@@ -127,9 +127,15 @@ export const renderTableReview = (data, offset) => {
                         )}</span>
                     </div>
                 </td>
-                <td class="px-4 py-3 text-sm text-gray-700 font-mono transition-all duration-200 truncate">${
-                  item.no_bon
-                }</td>
+                <td class="px-4 py-3 text-sm text-gray-700 font-mono transition-all duration-200 truncate">
+    <a href="/src/fitur/laporan/view_struk.php?kode=${item.no_bon}" 
+       target="_blank"
+       class="text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 group"
+       title="Lihat Struk">
+        ${item.no_bon}
+        <i class="fas fa-external-link-alt text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"></i>
+    </a>
+</td>
                 <td class="px-4 py-3 text-sm text-gray-700 font-mono transition-all duration-200 truncate">${
                   item.kategori
                 }</td>
