@@ -179,4 +179,45 @@ export const getUserEdit = async (kode) => {
     }).showToast();
   }
 };
-export default { getUser, insertUser, menuAccess, getUserEdit };
+export const setOtorisasiUser = async (data) => {
+  const token = getCookie("admin_token");
+  try {
+    const response = await fetch("/src/api/user/set_otorisasi.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      Swal.fire({
+        icon: "success",
+        title: "Berhasil",
+        text: result.message,
+        timer: 1500,
+        showConfirmButton: false,
+      });
+      return true;
+    } else {
+      throw new Error(result.message);
+    }
+  } catch (error) {
+    Swal.fire({
+      icon: "error",
+      title: "Gagal",
+      text: error.message || "Terjadi kesalahan server",
+    });
+    return false;
+  }
+};
+export default {
+  getUser,
+  insertUser,
+  menuAccess,
+  getUserEdit,
+  setOtorisasiUser,
+};

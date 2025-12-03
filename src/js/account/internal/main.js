@@ -4,15 +4,15 @@ import {
   resetPassword,
   bulkGrantAccess,
 } from "./edit_user.js";
-import { getUser, getUserEdit } from "./fetch.js";
+import { getUser, getUserEdit, setOtorisasiUser } from "./fetch.js";
 import { paginationUserInternal } from "./pagination.js";
 import { renderTableUserInternal } from "./table.js";
 import { initSearch, getFilteredData } from "./search.js";
 import { areaCabang } from "./../../kode_cabang/cabang_area.js";
+import getCookie from "../../index/utils/cookies.js";
 export const init = async () => {
   const token = getCookie("admin_token");
   const response = await getUser();
-  let passwordConfirm;
   initSearch(response.data);
   window.renderTableUserInternal = renderTableUserInternal;
   updateStatistics(response.data);
@@ -141,6 +141,42 @@ export const init = async () => {
   document.getElementById("close-reset").addEventListener("click", (e) => {
     const modal = document.getElementById("resetPassword");
     modal.classList.add("hidden");
+  });
+  const modalOto = document.getElementById("modalOtorisasi");
+  const formOto = document.getElementById("formOtorisasi");
+  const closeOtoBtn = document.getElementById("close-otorisasi");
+  const cancelOtoBtn = document.getElementById("btn-cancel-otorisasi");
+  const closeModalOto = () => {
+    if (modalOto) modalOto.classList.add("hidden");
+    if (formOto) formOto.reset();
+  };
+  document.addEventListener("click", (e) => {
+    const button = e.target.closest(".otorisasi");
+    if (!button) return;
+    const kode = button.getAttribute("data-kode");
+    const nama = button.getAttribute("data-nama");
+    document.getElementById("oto_kode_user").value = kode;
+    document.getElementById("oto_nama_user").textContent = nama;
+    const today = new Date().toISOString().split("T")[0];
+    document.getElementById("oto_tanggal").value = today;
+    if (modalOto) modalOto.classList.remove("hidden");
+  });
+  if (formOto) {
+    formOto.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const data = {
+        kode_user: document.getElementById("oto_kode_user").value,
+        tanggal: document.getElementById("oto_tanggal").value,
+        password: document.getElementById("oto_password").value,
+      };
+      const success = await setOtorisasiUser(data);
+      if (success) {
+        closeModalOto();
+      }
+    });
+  }
+  [closeOtoBtn, cancelOtoBtn].forEach((el) => {
+    if (el) el.addEventListener("click", closeModalOto);
   });
   document
     .getElementById("closeEditModal")

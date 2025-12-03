@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   function formatRupiah(number) {
     return new Intl.NumberFormat("id-ID", {
-      style: "currency",
+      style: "decimal",
       currency: "IDR",
       minimumFractionDigits: 0,
     }).format(number);
@@ -57,15 +57,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td class="text-sm text-gray-800">${
                   row.tanggal
                 }<br><span class="text-xs text-gray-500">${row.jam}</span></td>
-                <td class="text-center text-sm">${row.user_hitung}</td>
-                <td class="text-center text-sm">${row.user_cek}</td>
-                <td class="text-right text-sm font-bold text-pink-600 pr-4">${formatRupiah(
+                <td class="text-left text-sm">${row.user_hitung}</td>
+                <td class="text-left text-sm">${row.user_cek}</td>
+                <td class="text-left text-sm font-bold text-pink-600 pr-4">${formatRupiah(
                   row.total_nominal
                 )}</td>
                 <td class="text-sm text-gray-600 truncate max-w-xs">${
                   row.keterangan || "-"
                 }</td>
-                <td class="text-center">
+                <td class="text-left">
                     <button onclick="window.editBrangkas('${encodeURIComponent(
                       JSON.stringify(row)
                     )}')" class="text-blue-600 hover:text-blue-800">

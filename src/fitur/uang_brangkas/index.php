@@ -32,6 +32,9 @@ require_once __DIR__ . '/../../component/menu_handler.php';
     <link rel="stylesheet" href="../../output2.css">
     <link rel="stylesheet" href="../../style/pink-theme.css">
     <link rel="icon" type="image/png" href="../../../public/images/logo1.png">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>

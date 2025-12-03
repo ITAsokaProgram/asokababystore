@@ -837,6 +837,57 @@ $token = $menuHandler->getToken();
             </div>
         </div>
     </div>
+    <div id="modalOtorisasi"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 transform transition-all scale-100">
+            <div class="flex justify-between items-center mb-4 border-b pb-2">
+                <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-key text-teal-500 mr-2"></i> Set Otorisasi
+                </h2>
+                <button type="button" id="close-otorisasi" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form id="formOtorisasi">
+                <input type="hidden" id="oto_kode_user">
+                <div class="space-y-4">
+                    <div class="bg-blue-50 p-3 rounded-lg border border-blue-100 mb-2">
+                        <p class="text-sm text-blue-800">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            User: <span id="oto_nama_user" class="font-bold"></span>
+                        </p>
+                    </div>
+
+                    <div>
+                        <label for="oto_tanggal" class="block text-sm font-medium text-gray-700 mb-1">Berlaku
+                            Tanggal</label>
+                        <input type="date" id="oto_tanggal" required
+                            class="block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500 transition-colors">
+                    </div>
+
+                    <div>
+                        <label for="oto_password" class="block text-sm font-medium text-gray-700 mb-1">Kode
+                            Otorisasi</label>
+                        <input type="text" id="oto_password" placeholder="Masukkan kode unik..." required
+                            class="block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500 transition-colors font-mono text-lg tracking-wide">
+                        <p class="text-xs text-gray-500 mt-1">Kode ini digunakan untuk validasi User Cek di Uang
+                            Brangkas.</p>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-2 pt-6">
+                    <button type="button" id="btn-cancel-otorisasi"
+                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+                        Batal
+                    </button>
+                    <button type="submit"
+                        class="px-4 py-2 text-sm font-medium text-white bg-green-500 rounded-lg hover:from-teal-600 hover:to-emerald-600 shadow-md hover:shadow-lg transition-all">
+                        <i class="fas fa-save mr-1"></i> Simpan Kode
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>

@@ -36,9 +36,9 @@ export const renderTableUserInternal = (data, offset = 0) => {
     let kodeCabangClass = "bg-blue-100 text-blue-800";
     if (userGroup.kode_cabang === "Pusat") {
       kodeCabangClass = "bg-pink-100 text-pink-800";
-    } else{
+    } else {
       kodeCabangClass = "bg-green-100 text-green-800";
-    } 
+    }
 
     row.innerHTML = `
       <td class="px-6 py-4 text-sm font-medium text-gray-900">${
@@ -65,14 +65,32 @@ export const renderTableUserInternal = (data, offset = 0) => {
       <td class="px-6 py-4">
         <div class="max-w-[300px]">
           <div class="text-xs text-gray-600 mb-1">Akses Menu:</div>
-          <div class="flex flex-wrap gap-1 menu-list" data-kode="${userGroup.kode}">
+          <div class="flex flex-wrap gap-1 menu-list" data-kode="${
+            userGroup.kode
+          }">
             ${(() => {
-              const menus = (userGroup.menu_code || "").split(",").map(m => m.trim()).filter(Boolean);
+              const menus = (userGroup.menu_code || "")
+                .split(",")
+                .map((m) => m.trim())
+                .filter(Boolean);
               if (menus.length <= 5) {
-                return menus.map(menu => `<span class=\"inline-block px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md\">${menu}</span>`).join("");
+                return menus
+                  .map(
+                    (menu) =>
+                      `<span class=\"inline-block px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md\">${menu}</span>`
+                  )
+                  .join("");
               } else {
-                const firstFive = menus.slice(0, 5).map(menu => `<span class=\"inline-block px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md\">${menu}</span>`).join("");
-                return `${firstFive}<button class=\"inline-block px-2 py-1 bg-gray-200 text-gray-700 text-xs rounded-md cursor-pointer show-more-menu\" data-all='${menus.map(m => m.replace(/'/g, "&#39;")).join(",")}' data-kode='${userGroup.kode}'>...</button>`;
+                const firstFive = menus
+                  .slice(0, 5)
+                  .map(
+                    (menu) =>
+                      `<span class=\"inline-block px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md\">${menu}</span>`
+                  )
+                  .join("");
+                return `${firstFive}<button class=\"inline-block px-2 py-1 bg-gray-200 text-gray-700 text-xs rounded-md cursor-pointer show-more-menu\" data-all='${menus
+                  .map((m) => m.replace(/'/g, "&#39;"))
+                  .join(",")}' data-kode='${userGroup.kode}'>...</button>`;
               }
             })()}
           </div>
@@ -102,6 +120,15 @@ export const renderTableUserInternal = (data, offset = 0) => {
             Hapus
           </button>
           <button
+            class="px-3 py-2 rounded-lg bg-green-500 hover:bg-green-600 text-white text-sm font-medium shadow transition duration-200 otorisasi flex items-center"
+            data-kode="${userGroup.kode}"
+            data-nama="${userGroup.nama}"
+            title="Set Kode Otorisasi"
+          >
+            <i class="fas fa-key mr-1"></i>
+            Oto
+          </button>
+          <button
             class="px-3 py-2 rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-medium shadow transition duration-200 reset flex items-center"
             data-kode="${userGroup.kode}"
             title="Reset Password"
@@ -117,18 +144,37 @@ export const renderTableUserInternal = (data, offset = 0) => {
 
   // Fungsi untuk attach event listener ke tombol show-more-menu dan Tutup
   function attachShowMoreMenuListeners() {
-    document.querySelectorAll('.show-more-menu').forEach(btn => {
-      btn.onclick = function(e) {
-        const kode = btn.getAttribute('data-kode');
-        const container = document.querySelector(`.menu-list[data-kode='${kode}']`);
-        const allMenus = btn.getAttribute('data-all').split(',');
-        if (!btn.classList.contains('expanded')) {
+    document.querySelectorAll(".show-more-menu").forEach((btn) => {
+      btn.onclick = function (e) {
+        const kode = btn.getAttribute("data-kode");
+        const container = document.querySelector(
+          `.menu-list[data-kode='${kode}']`
+        );
+        const allMenus = btn.getAttribute("data-all").split(",");
+        if (!btn.classList.contains("expanded")) {
           // Expand
-          container.innerHTML = allMenus.map(menu => `<span class=\"inline-block px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md\">${menu}</span>`).join('') + `<button class=\"inline-block px-2 py-1 bg-gray-200 text-gray-700 text-xs rounded-md cursor-pointer show-more-menu expanded\" data-all='${allMenus.map(m => m.replace(/'/g, "&#39;")).join(",")}' data-kode='${kode}'>Tutup</button>`;
+          container.innerHTML =
+            allMenus
+              .map(
+                (menu) =>
+                  `<span class=\"inline-block px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md\">${menu}</span>`
+              )
+              .join("") +
+            `<button class=\"inline-block px-2 py-1 bg-gray-200 text-gray-700 text-xs rounded-md cursor-pointer show-more-menu expanded\" data-all='${allMenus
+              .map((m) => m.replace(/'/g, "&#39;"))
+              .join(",")}' data-kode='${kode}'>Tutup</button>`;
         } else {
           // Collapse
-          const firstFive = allMenus.slice(0, 5).map(menu => `<span class=\"inline-block px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md\">${menu}</span>`).join('');
-          container.innerHTML = `${firstFive}<button class=\"inline-block px-2 py-1 bg-gray-200 text-gray-700 text-xs rounded-md cursor-pointer show-more-menu\" data-all='${allMenus.map(m => m.replace(/'/g, "&#39;")).join(",")}' data-kode='${kode}'>...</button>`;
+          const firstFive = allMenus
+            .slice(0, 5)
+            .map(
+              (menu) =>
+                `<span class=\"inline-block px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md\">${menu}</span>`
+            )
+            .join("");
+          container.innerHTML = `${firstFive}<button class=\"inline-block px-2 py-1 bg-gray-200 text-gray-700 text-xs rounded-md cursor-pointer show-more-menu\" data-all='${allMenus
+            .map((m) => m.replace(/'/g, "&#39;"))
+            .join(",")}' data-kode='${kode}'>...</button>`;
         }
         // Pasang ulang event listener setelah isi diubah
         attachShowMoreMenuListeners();
