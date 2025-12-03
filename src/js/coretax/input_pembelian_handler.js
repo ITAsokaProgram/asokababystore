@@ -89,34 +89,55 @@ async function loadStoreOptions() {
 }
 
 // --- Data Fetching Logic (Server Side Filtering & Infinity Scroll) ---
-
+let currentRequestController = null;
 async function fetchTableData(reset = false) {
-  if (isLoadingData) return;
+  if (isLoadingData && !reset) return; // Kalau load more, jangan tumpuk
+
+  // 1. BEST PRACTICE: Cancel request sebelumnya jika ada request baru (Reset mode)
+  if (reset) {
+    if (currentRequestController) {
+      currentRequestController.abort();
+    }
+    currentRequestController = new AbortController();
+  }
+
   if (!hasMoreData && !reset) return;
 
   isLoadingData = true;
 
+  // UI UX: Jangan hapus total HTML jika reset, cukup kasih state loading
   if (reset) {
     currentPage = 1;
     tableRowIndex = 0;
     hasMoreData = true;
-    tableBody.innerHTML = "";
+    // Opsional: tableBody.innerHTML = ""; // Hapus baris ini agar tidak nge-blink
+    // Ganti dengan menampilkan loading overlay atau biarkan data lama tertampil sampai data baru datang
     loaderRow.classList.remove("hidden");
   } else {
     loaderRow.classList.remove("hidden");
   }
 
   try {
-    // Bangun URL dengan parameter
     const params = new URLSearchParams({
       page: currentPage,
       search: currentSearchTerm,
       date: currentDateFilter,
     });
 
-    const result = await sendRequestGET(
-      `${API_URLS.getData}?${params.toString()}`
-    );
+    // Masukkan signal ke fetch options
+    const signal = reset ? currentRequestController.signal : null;
+
+    // Modifikasi helper sendRequestGET kamu agar menerima signal (opsional, atau pakai fetch native di sini)
+    // Anggaplah kita pakai fetch native untuk contoh controller
+    const response = await fetch(`${API_URLS.getData}?${params.toString()}`, {
+      signal,
+    });
+    const result = await response.json();
+
+    // Jika ini reset (pencarian baru), baru kita kosongkan tabel SEBELUM render data baru
+    if (reset) {
+      tableBody.innerHTML = "";
+    }
 
     if (result.success && Array.isArray(result.data)) {
       if (result.data.length === 0 && currentPage === 1) {
@@ -124,24 +145,27 @@ async function fetchTableData(reset = false) {
         hasMoreData = false;
       } else {
         renderTableRows(result.data);
-        hasMoreData = result.has_more; // Backend memberitahu jika masih ada data
+        hasMoreData = result.has_more;
         if (hasMoreData) currentPage++;
-      }
-    } else {
-      if (currentPage === 1) {
-        tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-4 text-red-500">Gagal memuat data</td></tr>`;
       }
     }
   } catch (error) {
+    if (error.name === "AbortError") {
+      console.log("Request dibatalkan karena ada input baru");
+      return; // Jangan set loading false, biarkan flow berikutnya jalan
+    }
     console.error(error);
     if (currentPage === 1) {
       tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-4 text-red-500">Terjadi kesalahan koneksi</td></tr>`;
     }
   } finally {
-    isLoadingData = false;
-    // Sembunyikan loader jika tidak ada data lagi
-    if (!hasMoreData) {
-      loaderRow.classList.add("hidden");
+    // Hanya matikan loading jika bukan abort error
+    if (
+      !currentRequestController ||
+      (currentRequestController && !currentRequestController.signal.aborted)
+    ) {
+      isLoadingData = false;
+      if (!hasMoreData) loaderRow.classList.add("hidden");
     }
   }
 }
