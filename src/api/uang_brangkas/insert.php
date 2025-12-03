@@ -32,7 +32,7 @@ try {
     $kode_otorisasi = $input['kode_otorisasi'] ?? '';
     $keterangan = $input['keterangan'] ?? '';
     if (empty($user_cek)) {
-        throw new Exception("User Cek (Supervisor) wajib diisi.");
+        throw new Exception("User Cek wajib diisi.");
     }
     if (empty($kode_otorisasi)) {
         throw new Exception("Kode Otorisasi wajib diisi.");

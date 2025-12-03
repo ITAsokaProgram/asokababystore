@@ -24,7 +24,7 @@ try {
     if ($data) {
         echo json_encode([
             'exists' => true,
-            'message' => "No Invoice sudah digunakan",
+            'message' => "Invoice sudah digunakan",
             'data' => $data
         ]);
     } else {

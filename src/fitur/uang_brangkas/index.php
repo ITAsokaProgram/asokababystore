@@ -162,14 +162,14 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                             <div class="lg:col-span-1 space-y-4">
                                 <div class="bg-pink-50 p-4 rounded-lg border border-pink-100">
                                     <label class="block text-xs font-bold text-gray-700 mb-1">Total Nominal
-                                        (Auto)</label>
+                                    </label>
                                     <div class="text-2xl font-bold text-pink-600" id="display-total-nominal">Rp 0</div>
                                 </div>
                                 <div class="p-3 border border-red-200 rounded-lg bg-red-50">
                                     <h4 class="text-xs font-bold text-red-600 mb-2 border-b border-red-200 pb-1">
-                                        Otorisasi Supervisor</h4>
+                                        Otorisasi User Check</h4>
                                     <div class="mb-2">
-                                        <label class="block text-xs font-semibold text-gray-700 mb-1">User Supervisor
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">User Check
                                             (ID)</label>
                                         <input type="number" name="user_cek" id="user_cek" class="input-modern w-full"
                                             placeholder="ID SPV" required>
@@ -264,6 +264,8 @@ require_once __DIR__ . '/../../component/menu_handler.php';
     <script src="/src/js/middleware_auth.js"></script>
     <script src="../../js/uang_brangkas/handler.js" type="module"></script>
     <script src="../../js/shared/internal/sidebar-profile.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
 </body>
 
 </html>

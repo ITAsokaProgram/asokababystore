@@ -57,8 +57,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td class="text-sm text-gray-800">${
                   row.tanggal
                 }<br><span class="text-xs text-gray-500">${row.jam}</span></td>
-                <td class="text-left text-sm">${row.user_hitung}</td>
-                <td class="text-left text-sm">${row.user_cek}</td>
+                
+                <td class="text-left text-sm font-medium text-gray-700">${
+                  row.nama_user_hitung
+                }</td>
+                <td class="text-left text-sm font-medium text-gray-700">${
+                  row.nama_user_cek
+                }</td>
+                
                 <td class="text-left text-sm font-bold text-pink-600 pr-4">${formatRupiah(
                   row.total_nominal
                 )}</td>
