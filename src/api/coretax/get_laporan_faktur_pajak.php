@@ -62,7 +62,7 @@ try {
         $where_conditions .= " AND (
             f.nama_supplier LIKE ? 
             OR f.nsfp LIKE ? 
-            OR f.no_faktur LIKE ?
+            OR f.no_invoice LIKE ?
             OR CAST(f.total AS CHAR) LIKE ?
             OR CAST(f.dpp AS CHAR) LIKE ?
             OR CAST(f.dpp_nilai_lain AS CHAR) LIKE ?
@@ -110,7 +110,7 @@ try {
         SELECT 
             f.id,
             f.nsfp, 
-            f.no_faktur,
+            f.no_invoice,
             f.tgl_faktur, 
             f.nama_supplier, 
             f.dpp, 

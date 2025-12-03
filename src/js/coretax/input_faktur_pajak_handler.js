@@ -29,9 +29,20 @@ const btnCancelEdit = document.getElementById("btn-cancel-edit");
 const editIndicator = document.getElementById("edit-mode-indicator");
 const tableBody = document.getElementById("table-body");
 const inpSearchTable = document.getElementById("inp_search_table");
-let globalTableData = [];
+const filterSort = document.getElementById("filter_sort");
+const filterTgl = document.getElementById("filter_tgl");
+const loaderRow = document.getElementById("loader-row");
 let isSubmitting = false;
 let debounceTimer;
+let searchDebounceTimer;
+let currentPage = 1;
+let isLoadingData = false;
+let hasMoreData = true;
+let currentSearchTerm = "";
+let currentDateFilter = "";
+let currentSortOption = "created";
+let tableRowIndex = 0;
+let currentRequestController = null;
 function formatNumber(num) {
   if (isNaN(num) || num === null) return "0";
   return new Intl.NumberFormat("id-ID", {
@@ -83,6 +94,157 @@ async function loadStoreOptions() {
   } catch (error) {
     console.error(error);
   }
+}
+async function fetchTableData(reset = false) {
+  if (isLoadingData && !reset) return;
+  if (reset) {
+    if (currentRequestController) {
+      currentRequestController.abort();
+    }
+    currentRequestController = new AbortController();
+    tableBody.innerHTML = `
+        <tr>
+            <td colspan="11" class="text-center p-8">
+                <div class="flex flex-col items-center justify-center">
+                    <i class="fas fa-circle-notch fa-spin text-pink-500 text-3xl mb-3"></i>
+                    <span class="text-gray-500 font-medium animate-pulse">Memuat data...</span>
+                </div>
+            </td>
+        </tr>
+    `;
+    loaderRow.classList.add("hidden");
+  }
+  if (!hasMoreData && !reset) return;
+  isLoadingData = true;
+  if (!reset) loaderRow.classList.remove("hidden");
+  try {
+    const params = new URLSearchParams({
+      page: currentPage,
+      search: currentSearchTerm,
+      date: currentDateFilter,
+      sort: currentSortOption,
+    });
+    const signal = reset ? currentRequestController.signal : null;
+    const response = await fetch(`${API_URLS.getData}?${params.toString()}`, {
+      signal,
+    });
+    const result = await response.json();
+    if (reset) {
+      tableBody.innerHTML = "";
+      currentPage = 1;
+      tableRowIndex = 0;
+    }
+    if (result.success && Array.isArray(result.data)) {
+      if (result.data.length === 0 && currentPage === 1) {
+        tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-8 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-300">Data tidak ditemukan</td></tr>`;
+        hasMoreData = false;
+      } else {
+        renderTableRows(result.data);
+        hasMoreData = result.has_more;
+        if (hasMoreData) currentPage++;
+      }
+    }
+  } catch (error) {
+    if (error.name === "AbortError") return;
+    console.error(error);
+    if (currentPage === 1) {
+      tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-4 text-red-500">Terjadi kesalahan koneksi</td></tr>`;
+    }
+  } finally {
+    if (
+      !currentRequestController ||
+      (currentRequestController && !currentRequestController.signal.aborted)
+    ) {
+      isLoadingData = false;
+      if (hasMoreData) loaderRow.classList.remove("hidden");
+      else loaderRow.classList.add("hidden");
+    }
+  }
+}
+function renderTableRows(data) {
+  data.forEach((row) => {
+    tableRowIndex++;
+    const safeJson = JSON.stringify(row).replace(/"/g, "&quot;");
+    const storeBadge = row.nm_alias
+      ? `<span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded border border-gray-200">${row.nm_alias}</span>`
+      : `<span class="text-gray-400">-</span>`;
+    const tr = document.createElement("tr");
+    tr.className = "hover:bg-pink-50 transition-colors border-b border-gray-50";
+    tr.innerHTML = `
+        <td class="text-center text-gray-500 py-3">${tableRowIndex}</td>
+        <td class="text-sm">${row.tgl_faktur || "-"}</td>
+        <td class="font-medium text-gray-800 text-sm">${
+          row.no_invoice || "-"
+        }</td> 
+        <td class="text-sm text-gray-600">${row.nsfp}</td>
+        <td class="text-center">${storeBadge}</td>
+        <td class="text-sm truncate max-w-[150px]" title="${
+          row.nama_supplier
+        }">${row.nama_supplier || "-"}</td>
+        <td class="text-right font-mono text-sm">${formatNumber(row.dpp)}</td>
+        <td class="text-right font-mono text-gray-500 text-sm">${formatNumber(
+          row.dpp_nilai_lain
+        )}</td>
+        <td class="text-right font-mono text-sm">${formatNumber(row.ppn)}</td>
+        <td class="text-right font-bold font-mono text-gray-800 text-sm">${formatNumber(
+          row.total
+        )}</td>
+        <td class="text-center py-2">
+            <div class="flex justify-center gap-1">
+                <button class="btn-edit-row text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 w-8 h-8 flex items-center justify-center rounded transition-all" 
+                    title="Edit Data">
+                    <i class="fas fa-pencil-alt"></i>
+                </button>
+                <button class="btn-delete-row text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 w-8 h-8 flex items-center justify-center rounded transition-all" 
+                    data-id="${row.id}" data-nsfp="${row.nsfp}" data-invoice="${
+      row.no_invoice || "-"
+    }" title="Hapus Data">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </div>
+        </td>
+    `;
+    tr.querySelector(".btn-edit-row").addEventListener("click", () =>
+      startEditMode(row)
+    );
+    tr.querySelector(".btn-delete-row").addEventListener("click", function () {
+      handleDelete(
+        this.getAttribute("data-id"),
+        this.getAttribute("data-invoice"),
+        this.getAttribute("data-nsfp")
+      );
+    });
+    tableBody.appendChild(tr);
+  });
+}
+function setupInfinityScroll() {
+  const observerOptions = {
+    root: document.getElementById("table-scroll-container"),
+    rootMargin: "100px",
+    threshold: 0.1,
+  };
+  const observer = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting && !isLoadingData && hasMoreData) {
+      fetchTableData(false);
+    }
+  }, observerOptions);
+  observer.observe(loaderRow);
+}
+function handleSearchInput(e) {
+  const term = e.target.value;
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    currentSearchTerm = term;
+    fetchTableData(true);
+  }, 600);
+}
+function handleSortFilter(e) {
+  currentSortOption = e.target.value;
+  fetchTableData(true);
+}
+function handleDateFilter(e) {
+  currentDateFilter = e.target.value;
+  fetchTableData(true);
 }
 async function handleSupplierSearch(e) {
   const term = e.target.value;
@@ -211,6 +373,19 @@ async function fetchCoretaxData(nsfp) {
 }
 async function fetchReceiptData(noInvoice) {
   if (!noInvoice) return;
+  const selectedStore = inpKodeStore.value;
+  if (!selectedStore) {
+    Swal.fire({
+      icon: "warning",
+      title: "Cabang Belum Dipilih",
+      text: "Harap pilih cabang terlebih dahulu sebelum mengisi Nomor Invoice.",
+      timer: 2000,
+      showConfirmButton: false,
+    });
+    inpNoInvoice.value = "";
+    inpKodeStore.focus();
+    return;
+  }
   const isDuplicate = await checkDuplicateInvoiceFunc(noInvoice);
   if (isDuplicate) return;
   inpNoInvoice.classList.add("bg-yellow-50", "text-yellow-700");
@@ -218,14 +393,13 @@ async function fetchReceiptData(noInvoice) {
   inpNoInvoice.placeholder = "Mencari...";
   try {
     const result = await sendRequestGET(
-      `${API_URLS.getReceipt}?no_lpb=${encodeURIComponent(noInvoice)}`
+      `${API_URLS.getReceipt}?no_lpb=${encodeURIComponent(
+        noInvoice
+      )}&kode_store=${encodeURIComponent(selectedStore)}`
     );
     if (result.success && result.data) {
       const d = result.data;
       inpNamaSupp.value = d.nama_supplier || "";
-      if (d.kode_store) {
-        inpKodeStore.value = d.kode_store;
-      }
       inpDpp.value = formatNumber(d.dpp);
       inpPpn.value = formatNumber(d.ppn);
       calculateTotal();
@@ -242,11 +416,23 @@ async function fetchReceiptData(noInvoice) {
       );
       if (!inpNoSeri.value) inpNoSeri.focus();
     } else {
-      Toastify({
-        text: "ℹ️ Data Invoice tidak ditemukan (Input Manual)",
-        duration: 2000,
-        style: { background: "#3b82f6" },
-      }).showToast();
+      inpNoInvoice.classList.remove("bg-yellow-50", "text-yellow-700");
+      if (result.error_type === "wrong_store") {
+        Swal.fire({
+          icon: "error",
+          title: "Salah Cabang",
+          text: result.message,
+          confirmButtonColor: "#ef4444",
+        });
+        inpNoInvoice.value = "";
+        inpNoInvoice.focus();
+      } else {
+        Toastify({
+          text: "ℹ️ Data Invoice tidak ditemukan (Input Manual)",
+          duration: 2000,
+          style: { background: "#3b82f6" },
+        }).showToast();
+      }
     }
   } catch (error) {
     console.error("Fetch Receipt Error:", error);
@@ -255,91 +441,11 @@ async function fetchReceiptData(noInvoice) {
     inpNoInvoice.placeholder = originalPlaceholder;
   }
 }
-async function loadTableData() {
-  tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-4"><i class="fas fa-spinner fa-spin text-pink-500"></i> Memuat data...</td></tr>`;
-  try {
-    const result = await sendRequestGET(API_URLS.getData);
-    if (result.success && Array.isArray(result.data)) {
-      globalTableData = result.data;
-      renderTable(globalTableData);
-    } else {
-      tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-4 text-red-500">Gagal memuat data</td></tr>`;
-    }
-  } catch (error) {
-    tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-4 text-red-500">Koneksi Error</td></tr>`;
-  }
-}
-function renderTable(data) {
-  if (data.length === 0) {
-    tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-6 text-gray-500">Belum ada data</td></tr>`;
-    return;
-  }
-  let html = "";
-  data.forEach((row, index) => {
-    const safeJson = JSON.stringify(row).replace(/"/g, "&quot;");
-    const storeBadge = row.nm_alias
-      ? `<span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded border border-gray-200">${row.nm_alias}</span>`
-      : `<span class="text-gray-400">-</span>`;
-    html += `
-            <tr class="hover:bg-pink-50 transition-colors border-b border-gray-50">
-                <td class="text-center text-gray-500 py-3">${index + 1}</td>
-                <td class="text-sm">${row.tgl_faktur || "-"}</td>
-                <td class="font-medium text-gray-800 text-sm">${
-                  row.no_faktur || "-"
-                }</td> 
-                <td class="text-sm text-gray-600">${row.nsfp}</td>
-                <td class="text-center">${storeBadge}</td>
-                <td class="text-sm truncate max-w-[150px]" title="${
-                  row.nama_supplier
-                }">${row.nama_supplier || "-"}</td>
-                <td class="text-right font-mono text-sm">${formatNumber(
-                  row.dpp
-                )}</td>
-                <td class="text-right font-mono text-gray-500 text-sm">${formatNumber(
-                  row.dpp_nilai_lain
-                )}</td>
-                <td class="text-right font-mono text-sm">${formatNumber(
-                  row.ppn
-                )}</td>
-                <td class="text-right font-bold font-mono text-gray-800 text-sm">${formatNumber(
-                  row.total
-                )}</td>
-                <td class="text-center py-2">
-                    <div class="flex justify-center gap-1">
-                        <button class="btn-edit-row text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 w-8 h-8 flex items-center justify-center rounded transition-all" 
-                            data-row="${safeJson}" title="Edit Data">
-                            <i class="fas fa-pencil-alt"></i>
-                        </button>
-                        <button class="btn-delete-row text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 w-8 h-8 flex items-center justify-center rounded transition-all" 
-                            data-id="${row.id}" data-nsfp="${
-      row.nsfp
-    }" data-invoice="${row.no_faktur || "-"}" title="Hapus Data">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>`;
-  });
-  tableBody.innerHTML = html;
-  document.querySelectorAll(".btn-edit-row").forEach((btn) => {
-    btn.addEventListener("click", function () {
-      startEditMode(JSON.parse(this.getAttribute("data-row")));
-    });
-  });
-  document.querySelectorAll(".btn-delete-row").forEach((btn) => {
-    btn.addEventListener("click", function () {
-      const id = this.getAttribute("data-id");
-      const invoice = this.getAttribute("data-invoice");
-      const nsfp = this.getAttribute("data-nsfp");
-      handleDelete(id, invoice, nsfp);
-    });
-  });
-}
 function startEditMode(data) {
   resetErrorState();
   inpId.value = data.id;
   inpNoSeri.value = data.nsfp;
-  inpNoInvoice.value = data.no_faktur || "";
+  inpNoInvoice.value = data.no_invoice || "";
   inpNamaSupp.value = data.nama_supplier;
   inpKodeStore.value = data.kode_store || "";
   inpTgl.value = data.tgl_faktur;
@@ -388,7 +494,7 @@ function handleDelete(id, invoice, nsfp) {
       try {
         Swal.fire({
           title: "Memproses...",
-          text: "Sedang mengecek validasi data...",
+          text: "Sedang menghapus...",
           allowOutsideClick: false,
           didOpen: () => {
             Swal.showLoading();
@@ -397,7 +503,7 @@ function handleDelete(id, invoice, nsfp) {
         const resp = await sendRequestJSON(API_URLS.deleteData, { id: id });
         if (resp.success) {
           Swal.fire("Terhapus!", resp.message, "success");
-          loadTableData();
+          fetchTableData(true);
           if (inpId.value == id) cancelEditMode();
         } else {
           throw new Error(resp.message || "Gagal menghapus data");
@@ -413,6 +519,7 @@ function handleDelete(id, invoice, nsfp) {
 async function handleSave() {
   if (inpKodeStore.value === "") {
     Swal.fire("Gagal", "Pilih Cabang", "warning");
+    inpKodeStore.focus();
     return;
   }
   const noSeri = inpNoSeri.value.trim();
@@ -433,10 +540,6 @@ async function handleSave() {
     } catch (e) {
       inpTgl.focus();
     }
-    return;
-  }
-  if (inpNoSeri.classList.contains("border-red-500")) {
-    inpNoSeri.focus();
     return;
   }
   if (inpNoSeri.classList.contains("border-red-500")) {
@@ -475,7 +578,7 @@ async function handleSave() {
         showConfirmButton: false,
       });
       cancelEditMode();
-      loadTableData();
+      fetchTableData(true);
       inpNoInvoice.focus();
     } else {
       throw new Error(result.message);
@@ -483,7 +586,7 @@ async function handleSave() {
   } catch (error) {
     let msg = error.message;
     if (msg.includes("Duplicate entry") || msg.includes("duplikat")) {
-      if (msg.includes("Invoice") || msg.includes("no_faktur")) {
+      if (msg.includes("Invoice") || msg.includes("no_invoice")) {
         msg = "Gagal: Nomor Invoice sudah digunakan.";
       } else if (msg.includes("NSFP") || msg.includes("nsfp")) {
         msg = "Gagal: NSFP sudah digunakan.";
@@ -497,47 +600,15 @@ async function handleSave() {
     isSubmitting = false;
   }
 }
-function handleTableSearch(e) {
-  const searchTerm = e.target.value.trim().toLowerCase();
-  const cleanNumberTerm = searchTerm.replace(/\./g, "");
-  if (searchTerm === "") {
-    renderTable(globalTableData);
-    return;
-  }
-  const filteredData = globalTableData.filter((row) => {
-    const textFields = [
-      row.nsfp,
-      row.no_faktur,
-      row.nama_supplier,
-      row.nm_alias,
-      row.tgl_faktur,
-    ];
-    const isTextMatch = textFields.some((field) =>
-      String(field || "")
-        .toLowerCase()
-        .includes(searchTerm)
-    );
-    if (isTextMatch) return true;
-    const numberFields = [row.dpp, row.dpp_nilai_lain, row.ppn, row.total];
-    const isNumberMatch = numberFields.some((num) => {
-      const rawVal = parseFloat(num || 0);
-      const formattedVal = formatNumber(rawVal);
-      const rawString = String(rawVal);
-      if (formattedVal.toLowerCase().includes(searchTerm)) return true;
-      if (rawString.includes(cleanNumberTerm) && cleanNumberTerm !== "")
-        return true;
-      return false;
-    });
-    return isNumberMatch;
-  });
-  renderTable(filteredData);
-}
 document.addEventListener("DOMContentLoaded", () => {
   loadStoreOptions();
-  loadTableData();
+  fetchTableData(true);
+  setupInfinityScroll();
   if (inpSearchTable) {
-    inpSearchTable.addEventListener("input", handleTableSearch);
+    inpSearchTable.addEventListener("input", handleSearchInput);
   }
+  if (filterTgl) filterTgl.addEventListener("change", handleDateFilter);
+  if (filterSort) filterSort.addEventListener("change", handleSortFilter);
   [inpDpp, inpPpn].forEach((input) => {
     input.addEventListener("input", calculateTotal);
     input.addEventListener("blur", (e) => {
@@ -561,6 +632,16 @@ document.addEventListener("DOMContentLoaded", () => {
         inpNoInvoice.classList.add("border-gray-300");
         if (errNoInvoice) errNoInvoice.classList.add("hidden");
       }
+    }
+  });
+  inpKodeStore.addEventListener("change", () => {
+    if (inpNoInvoice.value !== "") {
+      inpNoInvoice.value = "";
+      inpNamaSupp.value = "";
+      inpDpp.value = "0";
+      inpPpn.value = "0";
+      calculateTotal();
+      inpNoInvoice.focus();
     }
   });
   inpNoInvoice.addEventListener("input", () => {
@@ -592,9 +673,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (input === inpNoInvoice) {
           const val = input.value.trim();
           if (val) await fetchReceiptData(val);
-          if (!inpNoInvoice.classList.contains("border-red-500")) {
-            inpNoSeri.focus();
-          }
           return;
         }
         if (input === inpNoSeri) {
@@ -603,21 +681,22 @@ document.addEventListener("DOMContentLoaded", () => {
           if (inpNamaSupp) inpNamaSupp.focus();
           return;
         }
-        const isReady =
-          inpNoSeri.value && inpNamaSupp.value && inpNoInvoice.value;
-        const isLast = input.id === "inp_ppn";
-        if (isReady && (isLast || e.ctrlKey)) {
-          handleSave();
+        let nextIndex = index + 1;
+        let nextInput = formInputs[nextIndex];
+        while (
+          nextInput &&
+          (nextInput.disabled ||
+            nextInput.readOnly ||
+            nextInput.type === "hidden")
+        ) {
+          nextIndex++;
+          nextInput = formInputs[nextIndex];
+        }
+        if (nextInput) {
+          nextInput.focus();
         } else {
-          let nextIndex = index + 1;
-          let nextInput = formInputs[nextIndex];
-          while (nextInput && (nextInput.disabled || nextInput.readOnly)) {
-            nextIndex++;
-            nextInput = formInputs[nextIndex];
-          }
-          if (nextInput) {
-            nextInput.focus();
-          }
+          input.blur();
+          handleSave();
         }
       }
     });

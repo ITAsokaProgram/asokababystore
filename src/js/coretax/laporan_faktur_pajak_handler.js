@@ -207,7 +207,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   <td class="text-center font-medium text-gray-500">${item_counter}</td>
                   <td>${dateFormatted}</td>
                   <td class="font-medium text-gray-700">${
-                    row.no_faktur || "-"
+                    row.no_invoice || "-"
                   }</td>
                   <td class="font-semibold font-mono text-gray-700 text-xs">${
                     row.nsfp
@@ -413,7 +413,7 @@ document.addEventListener("DOMContentLoaded", () => {
         r.values = [
           index + 1,
           item.tgl_faktur,
-          item.no_faktur,
+          item.no_invoice,
           item.nsfp,
           item.Nm_Alias || item.kode_store,
           item.nama_supplier,

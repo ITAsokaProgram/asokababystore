@@ -21,7 +21,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const filterTglMulai = document.getElementById("tgl_mulai");
   const filterTglSelesai = document.getElementById("tgl_selesai");
   const exportExcelButton = document.getElementById("export-excel-button");
-
   if (exportExcelButton) {
     exportExcelButton.addEventListener("click", handleExportExcel);
   }
@@ -218,7 +217,7 @@ document.addEventListener("DOMContentLoaded", () => {
       sheet.columns = [
         { key: "no", width: 5 },
         { key: "tgl_nota", width: 12 },
-        { key: "no_invoice", width: 20 }, // GANTI no_faktur JADI no_invoice
+        { key: "no_invoice", width: 20 },
         { key: "status", width: 10 },
         { key: "cabang", width: 15 },
         { key: "supplier", width: 35 },
@@ -278,7 +277,7 @@ document.addEventListener("DOMContentLoaded", () => {
         r.values = [
           index + 1,
           item.tgl_nota,
-          item.no_invoice, // UPDATE: Pakai no_invoice
+          item.no_invoice,
           item.status,
           item.Nm_Alias || item.kode_store,
           item.nama_supplier,
@@ -338,7 +337,6 @@ document.addEventListener("DOMContentLoaded", () => {
       Swal.fire("Error", e.message, "error");
     }
   }
-
   function getUrlParams() {
     const params = new URLSearchParams(window.location.search);
     const yesterday = new Date();
@@ -518,7 +516,6 @@ document.addEventListener("DOMContentLoaded", () => {
         year: "numeric",
       });
       let statusBadge = '<span class="text-gray-300 text-xs">-</span>';
-
       if (row.status === "PKP") {
         statusBadge =
           '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200">PKP</span>';
@@ -582,83 +579,99 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       let htmlFisik = '<span class="text-gray-300 text-xs">-</span>';
       let htmlCoretax = '<span class="text-gray-300 text-xs">-</span>';
+      let isLinkedFisik = false;
+      let isLinkedCoretax = false;
+      let existingNsfpBadge = "";
       if (row.ada_di_coretax == 1) {
-        const badgeConfirmed = `
+        existingNsfpBadge = `
                   <div class="flex flex-col items-center justify-center gap-1">
                       <span class="font-mono text-xs font-semibold text-gray-800">${
                         row.nsfp || "-"
                       }</span>
                   </div>`;
-        const tipe = row.tipe_nsfp ? row.tipe_nsfp.toLowerCase() : "";
-        if (tipe === "all" || tipe.includes("fisik")) {
-          htmlFisik = badgeConfirmed;
+        const tipe = (row.tipe_nsfp || "").toLowerCase();
+        if (tipe === "all") {
+          isLinkedFisik = true;
+          isLinkedCoretax = true;
+        } else {
+          if (tipe.includes("fisik")) isLinkedFisik = true;
+          if (tipe.includes("coretax")) isLinkedCoretax = true;
         }
-        if (tipe === "all" || tipe.includes("coretax")) {
-          htmlCoretax = badgeConfirmed;
-        }
-      } else if (availableCandidates.length > 0) {
-        const bestCandidate = availableCandidates[0];
-        const isDualMatch =
-          bestCandidate.sources.includes("FISIK") &&
-          bestCandidate.sources.includes("CORETAX");
-        const candidateString = availableCandidates
-          .map((c) => `${c.nsfp}###${c.supplierName}`)
-          .join(",");
-        const count = availableCandidates.length;
-        const textClass =
-          "text-gray-500 font-medium group-hover:text-gray-800 border-gray-300 group-hover:border-gray-500";
-        let multiIndicator = "";
-        if (count > 1) {
-          multiIndicator = `<span class="text-[10px] text-gray-400 mt-0.5 block italic group-hover:text-gray-600">
-                                     (Pilih dr ${count} opsi)
-                                   </span>`;
-        }
-        const actionHtml = `
+        if (isLinkedFisik) htmlFisik = existingNsfpBadge;
+        if (isLinkedCoretax) htmlCoretax = existingNsfpBadge;
+      }
+      if (!isLinkedFisik || !isLinkedCoretax) {
+        const candidatesFisik = availableCandidates.filter((c) =>
+          c.sources.includes("FISIK")
+        );
+        const candidatesCoretax = availableCandidates.filter((c) =>
+          c.sources.includes("CORETAX")
+        );
+        const createActionHtml = (candidateList, isDualMode) => {
+          if (candidateList.length === 0) return null;
+          const bestCandidate = candidateList[0];
+          const candidateString = availableCandidates
+            .map((c) => `${c.nsfp}###${c.supplierName}`)
+            .join(",");
+          const count = availableCandidates.length;
+          const textClass =
+            "text-gray-500 font-medium group-hover:text-gray-800 border-gray-300 group-hover:border-gray-500";
+          let multiIndicator = "";
+          if (count > 1) {
+            multiIndicator = `<span class="text-[10px] text-gray-400 mt-0.5 block italic group-hover:text-gray-600">
+                                    (Pilih dr ${count} opsi)
+                                  </span>`;
+          }
+          return `
                   <div class="flex flex-col items-center justify-center cursor-pointer group py-1 select-none"
-                      onclick="handleConfirmCoretax(${row.id}, '${candidateString}', ${isDualMatch})"
+                      onclick="handleConfirmCoretax(${row.id}, '${candidateString}', ${isDualMode})"
                       title="Klik untuk memilih NSFP ini">
                      <span class="font-mono text-xs ${textClass} border-b border-dashed group-hover:border-solid transition-colors duration-200">
                          ${bestCandidate.nsfp}
                      </span>
                      ${multiIndicator}
                   </div>`;
-        if (isDualMatch) {
-          htmlFisik = actionHtml;
-          htmlCoretax = actionHtml;
-        } else {
-          if (bestCandidate.sources.includes("FISIK")) {
-            htmlFisik = actionHtml;
-          }
-          if (bestCandidate.sources.includes("CORETAX")) {
-            htmlCoretax = actionHtml;
+        };
+        if (!isLinkedFisik) {
+          const actionBtn = createActionHtml(candidatesFisik, false);
+          if (actionBtn) {
+            htmlFisik = actionBtn;
+          } else if (usedCandidates.some((c) => c.sources.includes("FISIK"))) {
+            const used = usedCandidates.find((c) =>
+              c.sources.includes("FISIK")
+            );
+            htmlFisik = `<div class="flex flex-col items-center"><span class="text-[10px] font-bold text-red-500">Ganda</span><span class="text-[10px] text-gray-400 decoration-line-through">${used.nsfp}</span></div>`;
           }
         }
-      } else if (usedCandidates.length > 0) {
-        const firstMatch = usedCandidates[0];
-        const errorHtml = `
-                  <div class="flex flex-col items-center">
-                      <span class="text-[10px] font-bold text-red-500">Ganda/Terpakai</span>
-                      <span class="text-[10px] text-gray-400 font-mono decoration-line-through">${firstMatch.nsfp}</span>
-                  </div>`;
-        if (firstMatch.sources.includes("FISIK")) htmlFisik = errorHtml;
-        if (firstMatch.sources.includes("CORETAX")) htmlCoretax = errorHtml;
-        if (
-          firstMatch.sources.includes("FISIK") &&
-          firstMatch.sources.includes("CORETAX")
-        ) {
-          htmlFisik = errorHtml;
-          htmlCoretax = errorHtml;
+        if (!isLinkedCoretax) {
+          const actionBtn = createActionHtml(candidatesCoretax, false);
+          if (actionBtn) {
+            htmlCoretax = actionBtn;
+          } else if (
+            usedCandidates.some((c) => c.sources.includes("CORETAX"))
+          ) {
+            const used = usedCandidates.find((c) =>
+              c.sources.includes("CORETAX")
+            );
+            htmlCoretax = `<div class="flex flex-col items-center"><span class="text-[10px] font-bold text-red-500">Ganda</span><span class="text-[10px] text-gray-400 decoration-line-through">${used.nsfp}</span></div>`;
+          }
+        }
+        const dualCandidates = availableCandidates.filter(
+          (c) => c.sources.includes("FISIK") && c.sources.includes("CORETAX")
+        );
+        if (dualCandidates.length > 0 && !isLinkedFisik && !isLinkedCoretax) {
+          const actionBtn = createActionHtml(dualCandidates, true);
+          htmlFisik = actionBtn;
+          htmlCoretax = actionBtn;
         }
       }
       htmlRows += `
                   <tr class="hover:bg-gray-50">
                       <td class="text-center font-medium text-gray-500">${item_counter}</td>
                       <td>${dateFormatted}</td>
-                      
                       <td class="font-semibold text-gray-700">${
                         row.no_invoice || "-"
                       }</td>
-
                       <td class="text-center">${statusBadge}</td> 
                       <td class="">
                           <span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded border border-gray-200">

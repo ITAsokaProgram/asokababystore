@@ -24,7 +24,7 @@ try {
     if ($id === 0) {
         throw new Exception("ID tidak valid");
     }
-    $queryCheck = "SELECT nsfp, no_faktur FROM ff_faktur_pajak WHERE id = ?";
+    $queryCheck = "SELECT nsfp, no_invoice FROM ff_faktur_pajak WHERE id = ?";
     $stmtCheck = $conn->prepare($queryCheck);
     $stmtCheck->bind_param("i", $id);
     $stmtCheck->execute();
@@ -34,7 +34,7 @@ try {
     }
     $row = $resCheck->fetch_assoc();
     $nsfp = $row['nsfp'];
-    $no_faktur = $row['no_faktur'];
+    $no_invoice = $row['no_invoice'];
     if (!empty($nsfp)) {
         $qPembelian = "SELECT id FROM ff_pembelian WHERE nsfp = ? LIMIT 1";
         $stmtPembelian = $conn->prepare($qPembelian);
@@ -48,7 +48,7 @@ try {
     $stmtDel = $conn->prepare($queryDel);
     $stmtDel->bind_param("i", $id);
     if ($stmtDel->execute()) {
-        echo json_encode(['success' => true, 'message' => "Data Faktur (Invoice: $no_faktur) berhasil dihapus."]);
+        echo json_encode(['success' => true, 'message' => "Data Faktur (Invoice: $no_invoice) berhasil dihapus."]);
     } else {
         throw new Exception("Gagal menghapus data dari database.");
     }

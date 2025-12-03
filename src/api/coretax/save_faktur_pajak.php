@@ -52,7 +52,7 @@ try {
 
 
     $exclude_id = $id ? $id : 0;
-    $checkInv = $conn->prepare("SELECT id FROM ff_faktur_pajak WHERE no_faktur = ? AND id != ?");
+    $checkInv = $conn->prepare("SELECT id FROM ff_faktur_pajak WHERE no_invoice = ? AND id != ?");
     $checkInv->bind_param("si", $no_invoice, $exclude_id);
     $checkInv->execute();
     $checkInv->store_result();
@@ -63,7 +63,7 @@ try {
 
     if ($id) {
 
-        $stmt = $conn->prepare("UPDATE ff_faktur_pajak SET nsfp=?, no_faktur=?, tgl_faktur=?, nama_supplier=?, dpp=?, dpp_nilai_lain=?, ppn=?, total=?, kd_user=?, kode_store=?, edit_pada=NOW() WHERE id=?");
+        $stmt = $conn->prepare("UPDATE ff_faktur_pajak SET nsfp=?, no_invoice=?, tgl_faktur=?, nama_supplier=?, dpp=?, dpp_nilai_lain=?, ppn=?, total=?, kd_user=?, kode_store=?, edit_pada=NOW() WHERE id=?");
         if (!$stmt)
             throw new Exception("Prepare Update Error: " . $conn->error);
 
@@ -87,7 +87,7 @@ try {
         }
         $check->close();
 
-        $stmt = $conn->prepare("INSERT INTO ff_faktur_pajak (nsfp, no_faktur, tgl_faktur, nama_supplier, dpp, dpp_nilai_lain, ppn, total, kd_user, kode_store) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt = $conn->prepare("INSERT INTO ff_faktur_pajak (nsfp, no_invoice, tgl_faktur, nama_supplier, dpp, dpp_nilai_lain, ppn, total, kd_user, kode_store) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         if (!$stmt)
             throw new Exception("Prepare Insert Error: " . $conn->error);
 
@@ -105,7 +105,7 @@ try {
 
     $msg = $e->getMessage();
     if (strpos($conn->error, 'Duplicate entry') !== false) {
-        if (strpos($conn->error, 'no_faktur') !== false) {
+        if (strpos($conn->error, 'no_invoice') !== false) {
             $msg = "No Invoice sudah terdaftar (Duplikat).";
         } elseif (strpos($conn->error, 'nsfp') !== false) {
             $msg = "NSFP sudah terdaftar (Duplikat).";

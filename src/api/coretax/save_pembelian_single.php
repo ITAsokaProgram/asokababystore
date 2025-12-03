@@ -26,21 +26,21 @@ try {
     }
     $id = isset($input['id']) ? (int) $input['id'] : null;
     $no_lpb = $input['no_lpb'] ?? '';
-    $kode_supplier = '';
+    $kode_supplier = $input['kode_supplier'] ?? '';
     $kode_store = $input['kode_store'] ?? '';
     $status = $input['status'] ?? '';
     $nama_supplier = $input['nama_supplier'] ?? '';
+    $no_faktur = $input['no_faktur'] ?? '';
     $tgl_nota = $input['tgl_nota'] ?? date('Y-m-d');
     $d = DateTime::createFromFormat('Y-m-d', $tgl_nota);
     if (!$d || $d->format('Y-m-d') !== $tgl_nota) {
         throw new Exception("Format tanggal atau nilai tanggal nota salah, cek tanggal yang diinput");
     }
-
     $year = (int) $d->format('Y');
     if ($year < 2000 || $year > 2099) {
         throw new Exception("Tahun tanggal nota tidak valid ($year). Mohon periksa input tanggal.");
     }
-    $no_faktur = $input['no_faktur'] ?? '';
+    $no_invoice = $input['no_invoice'] ?? '';
     $dpp = (float) ($input['dpp'] ?? 0);
     $dpp_nilai_lain = (float) ($input['dpp_nilai_lain'] ?? 0);
     $ppn = (float) ($input['ppn'] ?? 0);
@@ -48,15 +48,16 @@ try {
     if (empty($status)) {
         throw new Exception("Status wajib dipilih (PKP/NON PKP/BTKP).");
     }
-    if (empty($no_faktur) || empty($nama_supplier)) {
+    if (empty($no_invoice) || empty($nama_supplier)) {
         throw new Exception("No Invoice dan Nama Supplier wajib diisi.");
     }
     if ($id) {
-        // UPDATE QUERY
         $query = "UPDATE ff_pembelian SET 
                     nama_supplier=?, 
+                    kode_supplier=?,  
                     kode_store=?, 
                     tgl_nota=?, 
+                    no_invoice=?, 
                     no_faktur=?, 
                     dpp=?, 
                     dpp_nilai_lain=?, 
@@ -70,17 +71,19 @@ try {
         if (!$stmt)
             throw new Exception("Prepare Update Error: " . $conn->error);
         $stmt->bind_param(
-            "ssssddddisi",
+            "ssssssddddisi",
             $nama_supplier,
+            $kode_supplier,
             $kode_store,
             $tgl_nota,
+            $no_invoice,
             $no_faktur,
             $dpp,
             $dpp_nilai_lain,
             $ppn,
             $total_terima_fp,
             $kd_user,
-            $status, // string
+            $status,
             $id
         );
         if (!$stmt->execute()) {
@@ -88,24 +91,25 @@ try {
         }
         $message = "Data berhasil diperbarui.";
     } else {
-        // INSERT QUERY
         $query = "INSERT INTO ff_pembelian 
-                  (nama_supplier, kode_supplier, kode_store, tgl_nota, no_faktur, dpp, dpp_nilai_lain, ppn, total_terima_fp, status, kd_user) 
-                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                  (nama_supplier, kode_supplier, kode_store, tgl_nota, no_invoice, no_faktur, dpp, dpp_nilai_lain, ppn, total_terima_fp, status, kd_user) 
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($query);
-        // Types: sssssddddsi
+        if (!$stmt)
+            throw new Exception("Prepare Insert Error: " . $conn->error);
         $stmt->bind_param(
-            "sssssddddsi",
+            "ssssssddddsi",
             $nama_supplier,
             $kode_supplier,
             $kode_store,
             $tgl_nota,
+            $no_invoice,
             $no_faktur,
             $dpp,
             $dpp_nilai_lain,
             $ppn,
             $total_terima_fp,
-            $status, // string
+            $status,
             $kd_user
         );
         if (!$stmt->execute()) {

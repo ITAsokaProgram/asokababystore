@@ -150,6 +150,7 @@ if (!$menuHandler->initialize()) {
 
                     <form id="single-form" autocomplete="off">
                         <input type="hidden" id="inp_id" name="id" value="">
+                        <input type="hidden" id="inp_kode_supplier" name="kode_supplier" value="">
 
                         <div class="form-grid">
                             <div>

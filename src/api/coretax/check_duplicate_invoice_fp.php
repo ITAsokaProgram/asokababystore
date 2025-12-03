@@ -10,7 +10,7 @@ try {
         echo json_encode(['exists' => false]);
         exit;
     }
-    $query = "SELECT id, nsfp, tgl_faktur FROM ff_faktur_pajak WHERE no_faktur = ? AND id != ? LIMIT 1";
+    $query = "SELECT id, nsfp, tgl_faktur FROM ff_faktur_pajak WHERE no_invoice = ? AND id != ? LIMIT 1";
     $stmt = $conn->prepare($query);
     if (!$stmt)
         throw new Exception($conn->error);

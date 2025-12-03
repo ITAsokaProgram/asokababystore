@@ -65,7 +65,6 @@ try {
         $bind_types .= 's';
         $bind_params[] = $kd_store;
     }
-
     // PERBAIKAN LOGIKA STATUS (PKP, NON PKP, BTKP)
     switch ($filter_tipe_pembelian) {
         case 'PKP':
@@ -81,7 +80,6 @@ try {
         default:
             break;
     }
-
     if ($status_data != 'all') {
         if ($status_data == 'unlinked') {
             $where_conditions .= " AND (p.ada_di_coretax = 0 OR p.ada_di_coretax IS NULL)";
@@ -105,7 +103,7 @@ try {
             p.nama_supplier LIKE ? 
             OR p.kode_supplier LIKE ? 
             OR p.nsfp LIKE ? 
-            OR p.no_invoice LIKE ?  -- GANTI no_faktur JADI no_invoice
+            OR p.no_invoice LIKE ?  
             OR CAST(p.dpp AS CHAR) LIKE ? 
             OR CAST(p.dpp_nilai_lain AS CHAR) LIKE ? 
             OR CAST(p.ppn AS CHAR) LIKE ?
@@ -114,7 +112,6 @@ try {
         $bind_types .= 'ssssssss';
         $termRaw = '%' . $search_raw . '%';
         $termNumeric = '%' . $search_numeric . '%';
-
         $bind_params[] = $termRaw;
         $bind_params[] = $termRaw;
         $bind_params[] = $termRaw;
@@ -128,7 +125,7 @@ try {
                   FROM ff_pembelian p 
                   LEFT JOIN ff_coretax c ON p.dpp = c.harga_jual AND p.ppn = c.ppn AND p.kode_store = c.kode_store
                   LEFT JOIN ff_faktur_pajak f ON (
-                        p.no_faktur = f.no_faktur 
+                        p.no_invoice = f.no_invoice 
                         OR 
                         (p.dpp = f.dpp AND p.ppn = f.ppn AND p.kode_store = f.kode_store)
                   )
@@ -148,8 +145,8 @@ try {
             p.id,
             p.nama_supplier, 
             p.tgl_nota, 
-            p.no_invoice, -- TAMBAHKAN no_invoice
-            p.no_faktur,  -- Tetap ambil no_faktur jika perlu untuk logic matching lama
+            p.no_invoice, 
+            p.no_faktur,  
             p.dpp_nilai_lain,
             p.dpp, 
             p.ppn, 
@@ -171,7 +168,7 @@ try {
                                 ELSE 'AVAILABLE' 
                             END,
                             '|',
-                            IFNULL(p_used_c.no_faktur, ''),
+                            IFNULL(p_used_c.no_invoice, ''),
                             '|CORETAX|VALUE|',
                             REPLACE(IFNULL(c.nama_penjual, ''), '|', ' ')
                         ),
@@ -190,9 +187,9 @@ try {
                                 ELSE 'AVAILABLE' 
                             END,
                             '|',
-                            IFNULL(p_used_f.no_faktur, ''),
+                            IFNULL(p_used_f.no_invoice, ''),
                             '|FISIK|',
-                            IF(p.no_faktur = f.no_faktur, 'INVOICE', 'VALUE'),
+                            IF(p.no_invoice = f.no_invoice, 'INVOICE', 'VALUE'),
                             '|',
                             REPLACE(IFNULL(f.nama_supplier, ''), '|', ' ')
                         ),
@@ -206,14 +203,14 @@ try {
         LEFT JOIN ff_coretax c ON p.dpp = c.harga_jual AND p.ppn = c.ppn AND p.kode_store = c.kode_store
         LEFT JOIN ff_pembelian p_used_c ON c.nsfp = p_used_c.nsfp AND p_used_c.ada_di_coretax = 1
         LEFT JOIN ff_faktur_pajak f ON (
-            p.no_faktur = f.no_faktur 
+            p.no_invoice = f.no_invoice 
             OR 
             (p.dpp = f.dpp AND p.ppn = f.ppn AND p.kode_store = f.kode_store)
         )
         LEFT JOIN ff_pembelian p_used_f ON f.nsfp = p_used_f.nsfp AND p_used_f.ada_di_coretax = 1
         WHERE $where_conditions
         GROUP BY p.id
-        ORDER BY p.tgl_nota DESC, p.no_invoice ASC -- GANTI ORDER BY no_invoice
+        ORDER BY p.tgl_nota DESC, p.no_invoice ASC 
         LIMIT ? OFFSET ?
     ";
     $bind_types .= 'ii';

@@ -3,18 +3,15 @@ session_start();
 ini_set('display_errors', 0);
 header('Content-Type: application/json');
 require_once __DIR__ . '/../../../aa_kon_sett.php';
-
 try {
-    $no_lpb = $_GET['no_lpb'] ?? ''; // Inputan user (invoice)
+    $no_lpb = $_GET['no_lpb'] ?? '';
     $req_kode_store = $_GET['kode_store'] ?? '';
-
     if (empty($no_lpb)) {
         throw new Exception("Parameter No Invoice kosong");
     }
     if (empty($req_kode_store)) {
         throw new Exception("Cabang belum dipilih");
     }
-
     $query = "
         SELECT 
             rh.no_lpb,
@@ -33,7 +30,6 @@ try {
         WHERE TRIM(rh.no_lpb) = ?  
         LIMIT 1
     ";
-
     $stmt = $conn->prepare($query);
     if (!$stmt)
         throw new Exception($conn->error);
@@ -41,7 +37,6 @@ try {
     $stmt->execute();
     $result = $stmt->get_result();
     $data = $result->fetch_assoc();
-
     if ($data) {
         if ($data['kd_store'] !== $req_kode_store) {
             $nama_cabang_asli = $data['Nm_Alias'] ? $data['Nm_Alias'] : ($data['Nm_Store'] ?? $data['kd_store']);
@@ -52,16 +47,14 @@ try {
             ]);
             exit;
         }
-
         if (!empty($data['tgl_nota'])) {
             $data['tgl_nota'] = date('Y-m-d', strtotime($data['tgl_nota']));
         }
-
         echo json_encode([
             'success' => true,
             'data' => [
-                'no_invoice' => $data['no_lpb'],  // Mapping Invoice
-                'no_faktur' => $data['no_faktur'], // Mapping Faktur (Hidden)
+                'no_invoice' => $data['no_lpb'],
+                'no_faktur' => $data['no_faktur'],
                 'tgl_nota' => $data['tgl_nota'],
                 'kode_supplier' => $data['kode_supp'],
                 'nama_supplier' => $data['nama_supp'],

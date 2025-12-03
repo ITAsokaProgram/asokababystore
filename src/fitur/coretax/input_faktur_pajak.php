@@ -152,17 +152,7 @@ if (!$menuHandler->initialize()) {
                         <input type="hidden" id="inp_id" name="id" value="">
 
                         <div class="form-grid">
-                            <div class="relative"> <label class="form-label">NSFP</label>
-                                <input type="text" id="inp_no_seri" name="nsfp" class="input-compact" autofocus>
-                                <p id="err_no_seri"
-                                    class="text-xs text-red-500 absolute -bottom-4 left-0 hidden font-semibold"></p>
-                            </div>
-                            <div class="relative"> <label class="form-label">No. Invoice</label>
-                                <input type="text" id="inp_no_invoice" name="no_invoice" class="input-compact"
-                                    placeholder="Cari Invoice...">
-                                <p id="err_no_invoice"
-                                    class="text-xs text-red-500 absolute -bottom-4 left-0 hidden font-semibold"></p>
-                            </div>
+
                             <div>
                                 <label class="form-label">Toko / Cabang</label>
                                 <select id="inp_kode_store" name="kode_store"
@@ -171,7 +161,21 @@ if (!$menuHandler->initialize()) {
                                 </select>
                             </div>
 
+                            <div class="relative">
+                                <label class="form-label">NSFP</label>
+                                <input type="text" id="inp_no_seri" name="nsfp" class="input-compact"
+                                    placeholder="Input NSFP...">
+                                <p id="err_no_seri"
+                                    class="text-xs text-red-500 absolute -bottom-4 left-0 hidden font-semibold"></p>
+                            </div>
 
+                            <div class="relative">
+                                <label class="form-label">No. Invoice</label>
+                                <input type="text" id="inp_no_invoice" name="no_invoice" class="input-compact"
+                                    placeholder="Input No Invoice...">
+                                <p id="err_no_invoice"
+                                    class="text-xs text-red-500 absolute -bottom-4 left-0 hidden font-semibold"></p>
+                            </div>
 
                             <div>
                                 <label class="form-label">Nama Supplier</label>
@@ -223,20 +227,36 @@ if (!$menuHandler->initialize()) {
 
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     <div
-                        class="p-4 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-3">
-                        <h3 class="font-bold text-gray-700 whitespace-nowrap">
-                            <i class="fas fa-list mr-2 text-pink-500"></i>Data Faktur Pajak Hari Ini
-                        </h3>
+                        class="p-4 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center gap-3">
 
-                        <div class="relative w-full sm:w-64">
-                            <input type="text" id="inp_search_table"
-                                class="w-full pl-4 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 transition-all"
-                                placeholder="Cari data (NSFP, Harga, dll)...">
+                        <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                            <div class="relative">
+                                <select id="filter_sort"
+                                    class="w-full pl-3 pr-8 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-pink-400 transition-all text-gray-600 bg-white cursor-pointer">
+                                    <option value="created">Input Terbaru</option>
+                                    <option value="date">Faktur Terbaru</option>
+                                </select>
+                            </div>
+
+                            <div class="relative">
+                                <input type="date" id="filter_tgl"
+                                    class="w-full sm:w-auto pl-3 pr-2 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-pink-400 transition-all text-gray-600"
+                                    title="Filter Tanggal Faktur">
+                            </div>
+
+                            <div class="relative w-full sm:w-64">
+                                <input type="text" id="inp_search_table"
+                                    class="w-full pl-4 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 transition-all"
+                                    placeholder="Cari NSFP, Invoice, Supplier...">
+                                <i class="fas fa-search absolute right-3 top-2 text-gray-400 text-xs"></i>
+                            </div>
                         </div>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse table-compact">
-                            <thead>
+
+                    <div class="overflow-x-auto relative" style="max-height: 380px; overflow-y: auto;"
+                        id="table-scroll-container">
+                        <table class="w-full text-left border-collapse table-compact sticky top-0">
+                            <thead class="sticky top-0 z-10 shadow-sm">
                                 <tr>
                                     <th class="w-10 text-center">No</th>
                                     <th>Tgl Faktur</th>
@@ -252,8 +272,13 @@ if (!$menuHandler->initialize()) {
                                 </tr>
                             </thead>
                             <tbody id="table-body">
-                                <tr>
-                                    <td colspan="9" class="text-center p-6 text-gray-500">Memuat data...</td>
+                            </tbody>
+                            <tbody id="loading-sentinel">
+                                <tr class="hidden" id="loader-row">
+                                    <td colspan="11" class="text-center p-4">
+                                        <i class="fas fa-circle-notch fa-spin text-pink-500 text-xl"></i>
+                                        <span class="ml-2 text-gray-500 text-sm">Memuat data lainnya...</span>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>

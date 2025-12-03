@@ -76,7 +76,7 @@ try {
             p.nama_supplier LIKE ? 
             OR p.kode_supplier LIKE ? 
             OR p.nsfp LIKE ? 
-            OR p.no_invoice LIKE ?  -- GANTI no_faktur JADI no_invoice
+            OR p.no_invoice LIKE ?  
             OR CAST(p.dpp AS CHAR) LIKE ? 
             OR CAST(p.dpp_nilai_lain AS CHAR) LIKE ? 
             OR CAST(p.ppn AS CHAR) LIKE ?
@@ -85,7 +85,6 @@ try {
         $bind_types .= 'ssssssss';
         $termRaw = '%' . $search_raw . '%';
         $termNumeric = '%' . $search_numeric . '%';
-
         $bind_params[] = $termRaw;
         $bind_params[] = $termRaw;
         $bind_params[] = $termRaw;
@@ -100,7 +99,7 @@ try {
             p.id,
             p.nama_supplier, 
             p.tgl_nota, 
-            p.no_invoice, -- TAMBAHKAN no_invoice
+            p.no_invoice, 
             p.no_faktur, 
             p.dpp_nilai_lain,
             p.dpp, 
@@ -115,13 +114,13 @@ try {
         LEFT JOIN kode_store ks ON p.kode_store = ks.Kd_Store
         LEFT JOIN ff_coretax c ON p.dpp = c.harga_jual AND p.ppn = c.ppn AND p.kode_store = c.kode_store
         LEFT JOIN ff_faktur_pajak f ON (
-            p.no_faktur = f.no_faktur 
+            p.no_invoice = f.no_invoice 
             OR 
             (p.dpp = f.dpp AND p.ppn = f.ppn AND p.kode_store = f.kode_store)
         )
         WHERE $where_conditions
         GROUP BY p.id
-        ORDER BY p.tgl_nota DESC, p.no_invoice ASC -- GANTI ORDER BY
+        ORDER BY p.tgl_nota DESC, p.no_invoice ASC 
     ";
     $stmt_data = $conn->prepare($sql_data);
     if ($stmt_data === false)

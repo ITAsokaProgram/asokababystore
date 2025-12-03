@@ -1,5 +1,4 @@
 import { sendRequestGET, sendRequestJSON } from "../utils/api_helpers.js";
-
 const API_URLS = {
   getReceipt: "/src/api/coretax/get_receipt_detail.php",
   saveData: "/src/api/coretax/save_pembelian_single.php",
@@ -9,13 +8,11 @@ const API_URLS = {
   searchSupplier: "/src/api/coretax/get_supplier_search.php",
   deleteData: "/src/api/coretax/delete_pembelian_single.php",
 };
-
 const form = document.getElementById("single-form");
 const inpId = document.getElementById("inp_id");
-// Diganti jadi inp_no_invoice
+const inpKodeSupplier = document.getElementById("inp_kode_supplier");
 const inpNoInvoice = document.getElementById("inp_no_invoice");
 const errNoInvoice = document.getElementById("err_no_invoice");
-
 const inpKodeStore = document.getElementById("inp_kode_store");
 const inpStatus = document.getElementById("inp_status");
 const inpNamaSupp = document.getElementById("inp_nama_supplier");
@@ -33,10 +30,7 @@ const inpSearchTable = document.getElementById("inp_search_table");
 const filterSort = document.getElementById("filter_sort");
 const filterTgl = document.getElementById("filter_tgl");
 const loaderRow = document.getElementById("loader-row");
-
-// Variable untuk menyimpan no_faktur (hidden)
 let detectedNoFaktur = null;
-
 let isSubmitting = false;
 let debounceTimer;
 let searchDebounceTimer;
@@ -47,7 +41,6 @@ let currentSearchTerm = "";
 let currentDateFilter = "";
 let currentSortOption = "created";
 let tableRowIndex = 0;
-
 function formatNumber(num) {
   if (isNaN(num) || num === null) return "0";
   return new Intl.NumberFormat("id-ID", {
@@ -55,20 +48,17 @@ function formatNumber(num) {
     maximumFractionDigits: 0,
   }).format(num);
 }
-
 function parseNumber(str) {
   if (!str) return 0;
   const cleanStr = str.toString().replace(/\./g, "").replace(",", ".");
   return parseFloat(cleanStr) || 0;
 }
-
 function calculateTotal() {
   const dpp = parseNumber(inpDpp.value);
   const ppn = parseNumber(inpPpn.value);
   const total = dpp + ppn;
   inpTotal.value = formatNumber(total);
 }
-
 async function loadStoreOptions() {
   try {
     const result = await sendRequestGET(API_URLS.getStores);
@@ -86,18 +76,14 @@ async function loadStoreOptions() {
     console.error("Gagal memuat toko:", error);
   }
 }
-
 let currentRequestController = null;
 async function fetchTableData(reset = false) {
   if (isLoadingData && !reset) return;
-
   if (reset) {
     if (currentRequestController) {
       currentRequestController.abort();
     }
     currentRequestController = new AbortController();
-
-    // Reset loading UI
     tableBody.innerHTML = `
         <tr>
             <td colspan="11" class="text-center p-8">
@@ -110,14 +96,11 @@ async function fetchTableData(reset = false) {
     `;
     loaderRow.classList.add("hidden");
   }
-
   if (!hasMoreData && !reset) return;
-
   isLoadingData = true;
   if (!reset) {
     loaderRow.classList.remove("hidden");
   }
-
   try {
     const params = new URLSearchParams({
       page: currentPage,
@@ -125,20 +108,16 @@ async function fetchTableData(reset = false) {
       date: currentDateFilter,
       sort: currentSortOption,
     });
-
     const signal = reset ? currentRequestController.signal : null;
     const response = await fetch(`${API_URLS.getData}?${params.toString()}`, {
       signal,
     });
-
     const result = await response.json();
-
     if (reset) {
       tableBody.innerHTML = "";
       currentPage = 1;
       tableRowIndex = 0;
     }
-
     if (result.success && Array.isArray(result.data)) {
       if (result.data.length === 0 && currentPage === 1) {
         tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-8 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-300">Data tidak ditemukan</td></tr>`;
@@ -166,7 +145,6 @@ async function fetchTableData(reset = false) {
     }
   }
 }
-
 function renderTableRows(data) {
   data.forEach((row) => {
     tableRowIndex++;
@@ -174,7 +152,6 @@ function renderTableRows(data) {
     const dppLain = parseFloat(row.dpp_nilai_lain || 0);
     const ppn = parseFloat(row.ppn);
     const total = parseFloat(row.total_terima_fp);
-
     let badgeStatus = "";
     if (row.status === "BTKP") {
       badgeStatus =
@@ -188,8 +165,6 @@ function renderTableRows(data) {
     }
     const tr = document.createElement("tr");
     tr.className = "hover:bg-pink-50 transition-colors border-b border-gray-50";
-
-    // TAMPILKAN no_invoice, bukan no_faktur
     tr.innerHTML = `
         <td class="text-center text-gray-500 py-3">${tableRowIndex}</td>
         <td class="text-sm">${row.tgl_nota}</td>
@@ -236,7 +211,6 @@ function renderTableRows(data) {
     tableBody.appendChild(tr);
   });
 }
-
 function setupInfinityScroll() {
   const observerOptions = {
     root: document.getElementById("table-scroll-container"),
@@ -250,7 +224,6 @@ function setupInfinityScroll() {
   }, observerOptions);
   observer.observe(loaderRow);
 }
-
 function handleSearchInput(e) {
   const term = e.target.value;
   clearTimeout(searchDebounceTimer);
@@ -259,17 +232,14 @@ function handleSearchInput(e) {
     fetchTableData(true);
   }, 600);
 }
-
 function handleSortFilter(e) {
   currentSortOption = e.target.value;
   fetchTableData(true);
 }
-
 function handleDateFilter(e) {
   currentDateFilter = e.target.value;
   fetchTableData(true);
 }
-
 async function handleSupplierSearch(e) {
   const term = e.target.value;
   if (term.length < 2) return;
@@ -291,7 +261,6 @@ async function handleSupplierSearch(e) {
     }
   }, 300);
 }
-
 async function checkDuplicateInvoice(noInvoice) {
   if (!noInvoice) return false;
   const currentId = inpId.value || 0;
@@ -320,21 +289,15 @@ async function checkDuplicateInvoice(noInvoice) {
     return false;
   }
 }
-
 function resetErrorState() {
   inpNoInvoice.classList.remove("border-red-500", "bg-red-50", "text-red-700");
   inpNoInvoice.classList.add("border-gray-300");
   errNoInvoice.classList.add("hidden");
   errNoInvoice.textContent = "";
 }
-
 async function fetchReceiptData(noInvoice) {
   if (!noInvoice) return;
-
-  // Reset detected faktur saat search baru
   detectedNoFaktur = null;
-
-  // 1. Cek apakah Cabang sudah dipilih
   const selectedStore = inpKodeStore.value;
   if (!selectedStore) {
     Swal.fire({
@@ -344,36 +307,29 @@ async function fetchReceiptData(noInvoice) {
       timer: 2000,
       showConfirmButton: false,
     });
-    inpNoInvoice.value = ""; // Kosongkan invoice
-    inpKodeStore.focus(); // Arahkan kursor ke cabang
+    inpNoInvoice.value = "";
+    inpKodeStore.focus();
     return;
   }
-
   const isDuplicate = await checkDuplicateInvoice(noInvoice);
   inpNoInvoice.classList.add("bg-yellow-50", "text-yellow-700");
   const originalPlaceholder = inpNoInvoice.placeholder;
   inpNoInvoice.placeholder = "Mencari...";
-
   try {
-    // Kirim no_invoice sebagai no_lpb ke API
     const result = await sendRequestGET(
       `${API_URLS.getReceipt}?no_lpb=${encodeURIComponent(
         noInvoice
       )}&kode_store=${encodeURIComponent(selectedStore)}`
     );
-
     if (result.success && result.data) {
       const d = result.data;
-
-      // SIMPAN NO FAKTUR KE VARIABEL GLOBAL (HIDDEN)
       detectedNoFaktur = d.no_faktur;
 
-      // Auto fill data
-      inpNamaSupp.value = d.nama_supplier || "";
+      inpKodeSupplier.value = d.kode_supplier || "";
+
       inpDpp.value = formatNumber(parseFloat(d.dpp) || 0);
       inpPpn.value = formatNumber(parseFloat(d.ppn) || 0);
       calculateTotal();
-
       if (!isDuplicate) {
         inpNoInvoice.classList.remove("bg-yellow-50", "text-yellow-700");
         inpNoInvoice.classList.add("bg-green-50", "text-green-700");
@@ -384,11 +340,8 @@ async function fetchReceiptData(noInvoice) {
       }
       inpNamaSupp.focus();
     } else {
-      // HANDLE ERROR / NOT FOUND
-      // Reset detected no faktur if not found
       detectedNoFaktur = null;
       inpNoInvoice.classList.remove("bg-yellow-50", "text-yellow-700");
-
       if (result.error_type === "wrong_store") {
         Swal.fire({
           icon: "error",
@@ -399,7 +352,6 @@ async function fetchReceiptData(noInvoice) {
         inpNoInvoice.value = "";
         inpNoInvoice.focus();
       } else {
-        // Kasus: Data tidak ditemukan (Input Manual)
         if (!isDuplicate) {
           Toastify({
             text: "Info: Data invoice baru (input manual)",
@@ -418,17 +370,12 @@ async function fetchReceiptData(noInvoice) {
     inpNoInvoice.placeholder = originalPlaceholder;
   }
 }
-
 function startEditMode(data) {
   resetErrorState();
+  inpKodeSupplier.value = data.kode_supplier || "";
   inpId.value = data.id;
-
-  // Load data ke input
   inpNoInvoice.value = data.no_invoice;
-
-  // Load hidden no faktur dari data yang diedit
   detectedNoFaktur = data.no_faktur;
-
   inpKodeStore.value = data.kode_store || "";
   inpStatus.value = data.status || "PKP";
   inpNamaSupp.value = data.nama_supplier;
@@ -448,15 +395,15 @@ function startEditMode(data) {
   btnSave.className =
     "btn-warning px-6 py-2 rounded shadow-lg bg-amber-500 text-white hover:bg-amber-600";
 }
-
 function cancelEditMode() {
   form.reset();
   resetErrorState();
   inpId.value = "";
+  inpKodeSupplier.value = ""; // TAMBAHKAN INI
   inpTotal.value = "0";
   inpKodeStore.value = "";
   inpStatus.value = "";
-  detectedNoFaktur = null; // Reset hidden var
+  detectedNoFaktur = null;
   document
     .querySelector(".input-row-container")
     .classList.remove("border-amber-300", "bg-amber-50");
@@ -466,7 +413,6 @@ function cancelEditMode() {
   btnSave.className =
     "btn-primary shadow-lg shadow-pink-500/30 flex items-center gap-2 px-6 py-2";
 }
-
 function handleDelete(id, invoice) {
   Swal.fire({
     title: "Hapus Data?",
@@ -502,11 +448,9 @@ function handleDelete(id, invoice) {
     }
   });
 }
-
 async function handleSave() {
   const noInvoiceVal = inpNoInvoice.value.trim();
   const namaSupp = inpNamaSupp.value.trim();
-
   if (inpKodeStore.value === "") {
     Swal.fire("Gagal", "Pilih Cabang", "warning");
     return;
@@ -528,15 +472,13 @@ async function handleSave() {
     inpNoInvoice.focus();
     return;
   }
-
   isSubmitting = true;
-
-  // PAYLOAD UPDATE: Kirim no_invoice dan no_faktur (hidden)
   const payload = {
     id: inpId.value || null,
     no_invoice: noInvoiceVal,
-    no_faktur: detectedNoFaktur, // Bisa null jika manual
+    no_faktur: detectedNoFaktur,
     kode_store: inpKodeStore.value,
+    kode_supplier: inpKodeSupplier.value,
     status: inpStatus.value,
     nama_supplier: namaSupp,
     tgl_nota: inpTgl.value,
@@ -545,7 +487,6 @@ async function handleSave() {
     ppn: parseNumber(inpPpn.value),
     total_terima_fp: parseNumber(inpTotal.value),
   };
-
   const originalBtnContent = btnSave.innerHTML;
   const originalBtnClass = btnSave.className;
   btnSave.disabled = true;
@@ -584,7 +525,6 @@ async function handleSave() {
     }
   }
 }
-
 document.addEventListener("DOMContentLoaded", () => {
   loadStoreOptions();
   if (inpSearchTable)
@@ -593,7 +533,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (filterSort) filterSort.addEventListener("change", handleSortFilter);
   fetchTableData(true);
   setupInfinityScroll();
-
   [inpDpp, inpPpn, inpDppLain].forEach((input) => {
     input.addEventListener("input", () => {
       if (input !== inpDppLain) calculateTotal();
@@ -605,7 +544,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     input.addEventListener("focus", (e) => e.target.select());
   });
-
   inpKodeStore.addEventListener("change", () => {
     if (inpNoInvoice.value !== "") {
       inpNoInvoice.value = "";
@@ -616,10 +554,7 @@ document.addEventListener("DOMContentLoaded", () => {
       inpNoInvoice.focus();
     }
   });
-
   inpNamaSupp.addEventListener("input", handleSupplierSearch);
-
-  // Event Change pada Invoice
   inpNoInvoice.addEventListener("change", (e) => {
     const val = e.target.value.trim();
     if (val !== "") {
@@ -628,24 +563,19 @@ document.addEventListener("DOMContentLoaded", () => {
       resetErrorState();
     }
   });
-
   inpNoInvoice.addEventListener("input", () => {
     if (inpNoInvoice.classList.contains("border-red-500")) {
       resetErrorState();
     }
   });
-
   const formInputs = Array.from(
     form.querySelectorAll("input:not([type='hidden']), select")
   );
-
   formInputs.forEach((input, index) => {
     input.addEventListener("keydown", async (e) => {
       if (e.key === "Enter") {
         e.preventDefault();
         if (input.type === "checkbox") return;
-
-        // Logika Enter pada Invoice
         if (input === inpNoInvoice) {
           const val = input.value.trim();
           if (val) await fetchReceiptData(val);
@@ -654,11 +584,9 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
           }
         }
-
         const isReadyToSave =
           inpNoInvoice.value && inpNamaSupp.value && inpKodeStore.value;
         const isLastInput = input.id === "inp_ppn";
-
         if (isReadyToSave && (isLastInput || e.ctrlKey)) {
           handleSave();
         } else {
@@ -682,7 +610,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
-
   btnSave.addEventListener("click", handleSave);
   btnCancelEdit.addEventListener("click", cancelEditMode);
 });
