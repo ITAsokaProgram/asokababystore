@@ -177,16 +177,14 @@ document.addEventListener("DOMContentLoaded", () => {
       const displayNsfp = row.final_nsfp
         ? `<span class="font-mono text-gray-700 font-medium">${row.final_nsfp}</span>`
         : '<span class="text-gray-400">-</span>';
+
+      // PERUBAHAN DISINI: Hanya badge "PM"
       let statusBadges = "";
-      if (parseInt(row.badge_coretax) === 1) {
-        statusBadges += `<span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded font-bold border border-blue-200 mr-1" title="Data ada di Coretax">Coretax</span>`;
-      }
       if (parseInt(row.badge_beli) === 1) {
-        statusBadges += `<span class="bg-green-100 text-green-700 text-xs px-2 py-1 rounded font-bold border border-green-200 mr-1" title="Data ada di Laporan Pembelian">Beli</span>`;
+        // Ganti teks "Beli" jadi "PM"
+        statusBadges += `<span class="bg-green-100 text-green-700 text-xs px-2 py-1 rounded font-bold border border-green-200 mr-1" title="Data ada di Laporan Pembelian">PM</span>`;
       }
-      if (parseInt(row.badge_faktur) === 1) {
-        statusBadges += `<span class="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded font-bold border border-purple-200 mr-1" title="Data ada di Faktur Pajak">Faktur</span>`;
-      }
+
       if (statusBadges === "") {
         statusBadges = '<span class="text-gray-300 text-xs italic">-</span>';
       }

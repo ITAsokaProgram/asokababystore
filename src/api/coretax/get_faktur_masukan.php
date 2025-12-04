@@ -113,29 +113,16 @@ try {
             rh.gppn,
             rh.ppn,
             COALESCE(
-                p_inv.nsfp, f_inv.nsfp,         
-                p_fak.nsfp, f_fak.nsfp,         
+                p_inv.nsfp, f_inv.nsfp,          
+                p_fak.nsfp, f_fak.nsfp,          
                 p_val.nsfp, f_val.nsfp, c_val.nsfp 
             ) as final_nsfp,
-            CASE 
-                WHEN c_val.nsfp IS NOT NULL THEN 1 
-                WHEN p_inv.ada_di_coretax = 1 THEN 1
-                WHEN p_fak.ada_di_coretax = 1 THEN 1
-                WHEN p_val.ada_di_coretax = 1 THEN 1
-                ELSE 0 
-            END as badge_coretax,
             CASE 
                 WHEN p_inv.id IS NOT NULL THEN 1
                 WHEN p_fak.id IS NOT NULL THEN 1
                 WHEN p_val.id IS NOT NULL THEN 1
                 ELSE 0 
-            END as badge_beli,
-            CASE 
-                WHEN f_inv.id IS NOT NULL THEN 1
-                WHEN f_fak.id IS NOT NULL THEN 1
-                WHEN f_val.id IS NOT NULL THEN 1
-                ELSE 0 
-            END as badge_faktur
+            END as badge_beli
         FROM receipt_head rh
         LEFT JOIN supplier s ON rh.kode_supp = s.kode_supp AND rh.kd_store = s.kd_store
         LEFT JOIN kode_store ks ON rh.kd_store = ks.Kd_Store
