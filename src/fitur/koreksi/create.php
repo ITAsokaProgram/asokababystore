@@ -3,7 +3,7 @@ session_start();
 include '../../../aa_kon_sett.php';
 
 require_once __DIR__ . '/../../component/menu_handler.php';
-// $menuHandler = new MenuHandler('receipt_create'); 
+// $menuHandler = new MenuHandler('koreksi_create'); 
 // if (!$menuHandler->initialize()) { exit(); }
 ?>
 <!DOCTYPE html>
@@ -12,7 +12,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Input Receipt Baru</title>
+    <title>Input Koreksi Baru</title>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
     <link rel="stylesheet" href="../../style/header.css">
@@ -30,7 +30,6 @@ require_once __DIR__ . '/../../component/menu_handler.php';
 
 
     <style>
-        /* Style untuk Autocomplete Dropdown */
         .autocomplete-items {
             position: absolute;
             border: 1px solid #d4d4d4;
@@ -80,11 +79,11 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                     <div class="flex items-center justify-between flex-wrap gap-3">
                         <div class="flex items-center gap-3">
                             <div class="icon-wrapper">
-                                <i class="fa-solid fa-receipt fa-lg"></i>
+                                <i class="fa-solid fa-file-pen fa-lg"></i>
                             </div>
                             <div>
-                                <h1 class="text-xl font-bold text-gray-800 mb-1">Input Receipt</h1>
-                                <p class="text-xs text-gray-600">Buat data penerimaan baru.</p>
+                                <h1 class="text-xl font-bold text-gray-800 mb-1">Input Koreksi</h1>
+                                <p class="text-xs text-gray-600">Buat data koreksi baru.</p>
                             </div>
                         </div>
                         <a href="index.php"
@@ -95,13 +94,13 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                     </div>
                 </div>
 
-                <form id="formReceipt" class="filter-card">
+                <form id="formKoreksi" class="filter-card">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                         <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Receipt <span
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Koreksi <span
                                     class="text-red-500">*</span></label>
-                            <input type="date" name="tgl_receipt" id="tgl_receipt" class="input-modern w-full" required
+                            <input type="date" name="tgl_koreksi" id="tgl_koreksi" class="input-modern w-full" required
                                 value="<?= date('Y-m-d') ?>">
                         </div>
 
@@ -109,7 +108,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                             <label class="block text-xs font-semibold text-gray-700 mb-1">Nomor Faktur <span
                                     class="text-red-500">*</span></label>
                             <input type="text" name="no_faktur" id="no_faktur" class="input-modern w-full uppercase"
-                                placeholder="Contoh: 1900-RC..." required>
+                                placeholder="Contoh: INV-001..." required>
                         </div>
 
                         <div class="relative">
@@ -129,16 +128,16 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-1">Total Penerimaan (Rp)</label>
-                            <input type="text" name="total_penerimaan_display" id="total_penerimaan_display"
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Total Koreksi (Rp)</label>
+                            <input type="text" name="total_koreksi_display" id="total_koreksi_display"
                                 class="input-modern w-full" placeholder="0" onkeyup="formatCurrency(this)">
-                            <input type="hidden" name="total_penerimaan" id="total_penerimaan">
+                            <input type="hidden" name="total_koreksi" id="total_koreksi">
                         </div>
 
                         <div class="md:col-span-2">
                             <label class="block text-xs font-semibold text-gray-700 mb-1">Keterangan</label>
                             <textarea name="keterangan" id="keterangan" class="input-modern w-full h-24"
-                                placeholder="Keterangan tambahan..."></textarea>
+                                placeholder="Keterangan koreksi..."></textarea>
                         </div>
 
                     </div>
@@ -147,7 +146,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                         <button type="submit" id="btn-submit"
                             class="btn-primary w-full py-3 flex items-center justify-center gap-2 text-base shadow-lg shadow-pink-200">
                             <i class="fa-solid fa-save"></i>
-                            <span>Simpan Receipt</span>
+                            <span>Simpan Koreksi</span>
                         </button>
                     </div>
                 </form>
@@ -157,19 +156,18 @@ require_once __DIR__ . '/../../component/menu_handler.php';
     </main>
 
     <script src="/src/js/middleware_auth.js"></script>
-    <script src="../../js/receipt/create_handler.js" type="module"></script>
+    <script src="../../js/koreksi/create_handler.js" type="module"></script>
 
     <script>
-        // Simple currency formatter untuk UI
         function formatCurrency(input) {
             let value = input.value.replace(/[^0-9]/g, '');
             if (value) {
                 let formatted = new Intl.NumberFormat('id-ID').format(value);
                 input.value = formatted;
-                document.getElementById('total_penerimaan').value = value;
+                document.getElementById('total_koreksi').value = value;
             } else {
                 input.value = '';
-                document.getElementById('total_penerimaan').value = 0;
+                document.getElementById('total_koreksi').value = 0;
             }
         }
     </script>
