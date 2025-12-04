@@ -152,6 +152,8 @@ require_once __DIR__ . '/../../component/menu_handler.php';
 
     <script src="/src/js/middleware_auth.js"></script>
     <script src="../../js/return/create_handler.js" type="module"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
 
     <script>
         // Simple currency formatter untuk UI

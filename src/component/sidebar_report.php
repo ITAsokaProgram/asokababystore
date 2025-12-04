@@ -28,8 +28,11 @@ $isActive = function ($path) use ($uri) {
 // 1. Logika Menu TOOLS (Voucher, Jadwal SO, Approval)
 $isVoucherOpen = $isActive('/src/fitur/voucher/');
 $isJadwalSoOpen = $isActive('/src/fitur/laporan/jadwal_so/');
-$isToolsOpen = $isVoucherOpen || $isJadwalSoOpen || $isActive('/src/fitur/approval/izin');
+$isReceiptToolOpen = $isActive('/src/fitur/receipt/');
+$isReturnToolOpen = $isActive('/src/fitur/return/');
+$isKoreksiToolOpen = $isActive('/src/fitur/koreksi/');
 
+$isToolsOpen = $isVoucherOpen || $isJadwalSoOpen || $isActive('/src/fitur/approval/izin') || $isReceiptToolOpen || $isReturnToolOpen || $isKoreksiToolOpen;
 // 2. Logika Menu LAPORAN (Penjualan, Sales Per Kasir, dll)
 $isPenjualanOpen = $isActive('/src/fitur/laporan/in_laporan_sub_dept') ||
     $isActive('/src/fitur/laporan/in_sales_ratio') ||
@@ -817,7 +820,10 @@ $isPajakOpen = $isActive('/src/fitur/coretax/');
         <div x-data="{ 
                 open: <?= $isToolsOpen ? 'true' : 'false' ?>, 
                 nestedOpenJadwalSO: <?= $isJadwalSoOpen ? 'true' : 'false' ?>, 
-                nestedOpenVoucher: <?= $isVoucherOpen ? 'true' : 'false' ?> 
+                nestedOpenVoucher: <?= $isVoucherOpen ? 'true' : 'false' ?>,
+                nestedOpenReceipt: <?= $isReceiptToolOpen ? 'true' : 'false' ?>,
+                nestedOpenReturn: <?= $isReturnToolOpen ? 'true' : 'false' ?>,
+                nestedOpenKoreksi: <?= $isKoreksiToolOpen ? 'true' : 'false' ?>
             }" class="relative ">
             <button @click="open = !open" id="tools"
                 class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-cyan-100 hover:to-cyan-200 hover:text-cyan-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-cyan-300">
@@ -848,6 +854,144 @@ $isPajakOpen = $isActive('/src/fitur/coretax/');
                                 Approval Koreksi
                             </span>
                         </a>
+                    </li>
+
+                    <li>
+                        <button @click="nestedOpenReceipt = !nestedOpenReceipt"
+                            class="w-full text-left px-4 py-2.5 text-gray-700 hover:bg-cyan-100 hover:text-cyan-700 transition-all duration-200 flex items-center group cursor-pointer rounded-lg">
+                            <span
+                                class="transition-all duration-300 group-hover:translate-x-1 font-medium flex items-center">
+                                <i
+                                    class="fa-solid fa-receipt mr-2 text-lg text-cyan-500 group-hover:text-cyan-600 transition-all duration-200 group-hover:scale-110"></i>
+                                Receipt
+                            </span>
+                            <svg class="ml-auto w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1"
+                                :class="{ 'rotate-180': nestedOpenReceipt }" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div x-show="nestedOpenReceipt" @click.away="nestedOpenReceipt = false" class="ml-4 mt-1"
+                            style="display: none;">
+                            <ul
+                                class="bg-gradient-to-br from-cyan-50 to-blue-50 rounded-lg p-2 space-y-1 border border-cyan-200">
+                                <li>
+                                    <a href="/src/fitur/receipt/index.php" data-menu="receipt_index"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-cyan-100 hover:text-cyan-600 transition-all duration-200 group rounded-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-list mr-2 text-base text-cyan-400 group-hover:text-cyan-600 group-hover:scale-110 transition-all duration-200"></i>
+                                            Data Receipt
+                                        </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/src/fitur/receipt/create.php" data-menu="receipt_create"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-cyan-100 hover:text-cyan-600 transition-all duration-200 group rounded-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-plus mr-2 text-base text-cyan-400 group-hover:text-cyan-600 group-hover:scale-110 transition-all duration-200"></i>
+                                            Buat Receipt
+                                        </span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
+                    <li>
+                        <button @click="nestedOpenReturn = !nestedOpenReturn"
+                            class="w-full text-left px-4 py-2.5 text-gray-700 hover:bg-cyan-100 hover:text-cyan-700 transition-all duration-200 flex items-center group cursor-pointer rounded-lg">
+                            <span
+                                class="transition-all duration-300 group-hover:translate-x-1 font-medium flex items-center">
+                                <i
+                                    class="fa-solid fa-rotate-left mr-2 text-lg text-cyan-500 group-hover:text-cyan-600 transition-all duration-200 group-hover:scale-110"></i>
+                                Return
+                            </span>
+                            <svg class="ml-auto w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1"
+                                :class="{ 'rotate-180': nestedOpenReturn }" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div x-show="nestedOpenReturn" @click.away="nestedOpenReturn = false" class="ml-4 mt-1"
+                            style="display: none;">
+                            <ul
+                                class="bg-gradient-to-br from-cyan-50 to-orange-50 rounded-lg p-2 space-y-1 border border-cyan-200">
+                                <li>
+                                    <a href="/src/fitur/return/index.php" data-menu="return_index"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-cyan-100 hover:text-cyan-600 transition-all duration-200 group rounded-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-list mr-2 text-base text-cyan-400 group-hover:text-cyan-600 group-hover:scale-110 transition-all duration-200"></i>
+                                            Data Return
+                                        </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/src/fitur/return/create.php" data-menu="return_create"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-cyan-100 hover:text-cyan-600 transition-all duration-200 group rounded-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-plus mr-2 text-base text-cyan-400 group-hover:text-cyan-600 group-hover:scale-110 transition-all duration-200"></i>
+                                            Buat Return
+                                        </span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
+                    <li>
+                        <button @click="nestedOpenKoreksi = !nestedOpenKoreksi"
+                            class="w-full text-left px-4 py-2.5 text-gray-700 hover:bg-cyan-100 hover:text-cyan-700 transition-all duration-200 flex items-center group cursor-pointer rounded-lg">
+                            <span
+                                class="transition-all duration-300 group-hover:translate-x-1 font-medium flex items-center">
+                                <i
+                                    class="fa-solid fa-pen-to-square mr-2 text-lg text-cyan-500 group-hover:text-cyan-600 transition-all duration-200 group-hover:scale-110"></i>
+                                Koreksi
+                            </span>
+                            <svg class="ml-auto w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1"
+                                :class="{ 'rotate-180': nestedOpenKoreksi }" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div x-show="nestedOpenKoreksi" @click.away="nestedOpenKoreksi = false" class="ml-4 mt-1"
+                            style="display: none;">
+                            <ul
+                                class="bg-gradient-to-br from-cyan-50 to-red-50 rounded-lg p-2 space-y-1 border border-cyan-200">
+                                <li>
+                                    <a href="/src/fitur/koreksi/index.php" data-menu="koreksi_index"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-cyan-100 hover:text-cyan-600 transition-all duration-200 group rounded-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-list mr-2 text-base text-cyan-400 group-hover:text-cyan-600 group-hover:scale-110 transition-all duration-200"></i>
+                                            Data Koreksi
+                                        </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/src/fitur/koreksi/create.php" data-menu="koreksi_create"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-cyan-100 hover:text-cyan-600 transition-all duration-200 group rounded-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-plus mr-2 text-base text-cyan-400 group-hover:text-cyan-600 group-hover:scale-110 transition-all duration-200"></i>
+                                            Buat Koreksi
+                                        </span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                     </li>
 
                     <li>
@@ -1156,7 +1300,10 @@ $isPajakOpen = $isActive('/src/fitur/coretax/');
         } else if (
             currentPath.includes('/src/fitur/approval/izin') ||
             currentPath.includes('/src/fitur/laporan/jadwal_so/') ||
-            currentPath.includes('/src/fitur/voucher/')
+            currentPath.includes('/src/fitur/voucher/') ||
+            currentPath.includes('/src/fitur/receipt/') ||
+            currentPath.includes('/src/fitur/return/') ||
+            currentPath.includes('/src/fitur/koreksi/')
         ) {
             activeId = 'tools';
         } else if (currentPath.includes('/src/fitur/coretax/')) {
