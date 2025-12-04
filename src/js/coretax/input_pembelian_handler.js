@@ -8,11 +8,13 @@ const API_URLS = {
   checkDuplicate: "/src/api/coretax/check_duplicate_invoice.php",
   getStores: "/src/api/shared/get_all_store.php",
   searchSupplier: "/src/api/coretax/get_supplier_search.php",
+  searchSupplierCode: "/src/api/coretax/get_supplier_code_search.php",
   deleteData: "/src/api/coretax/delete_pembelian_single.php",
 };
 const form = document.getElementById("single-form");
 const inpId = document.getElementById("inp_id");
 const inpKodeSupplier = document.getElementById("inp_kode_supplier");
+const listKodeSupplier = document.getElementById("kode_supplier_list_data");
 const inpNoInvoice = document.getElementById("inp_no_invoice");
 const errNoInvoice = document.getElementById("err_no_invoice");
 const inpKodeStore = document.getElementById("inp_kode_store");
@@ -32,14 +34,13 @@ const inpSearchTable = document.getElementById("inp_search_table");
 const filterSort = document.getElementById("filter_sort");
 const filterTgl = document.getElementById("filter_tgl");
 const loaderRow = document.getElementById("loader-row");
-
 const btnExport = document.getElementById("btn-export");
 const btnImport = document.getElementById("btn-import");
 const inpFileImport = document.getElementById("file_import");
-
 let detectedNoFaktur = null;
 let isSubmitting = false;
 let debounceTimer;
+let debounceCodeTimer;
 let searchDebounceTimer;
 let currentPage = 1;
 let isLoadingData = false;
@@ -65,6 +66,27 @@ function calculateTotal() {
   const ppn = parseNumber(inpPpn.value);
   const total = dpp + ppn;
   inpTotal.value = formatNumber(total);
+}
+async function handleSupplierCodeSearch(e) {
+  const term = e.target.value;
+  if (term.length < 1) return;
+  clearTimeout(debounceCodeTimer);
+  debounceCodeTimer = setTimeout(async () => {
+    try {
+      const result = await sendRequestGET(
+        `${API_URLS.searchSupplierCode}?term=${encodeURIComponent(term)}`
+      );
+      if (result.success && Array.isArray(result.data)) {
+        let options = "";
+        result.data.forEach((item) => {
+          options += `<option value="${item.code}">${item.code} - ${item.name}</option>`;
+        });
+        listKodeSupplier.innerHTML = options;
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }, 300);
 }
 async function loadStoreOptions() {
   try {
@@ -537,43 +559,33 @@ async function handleExport() {
     allowOutsideClick: false,
     didOpen: () => Swal.showLoading(),
   });
-
   try {
     const params = new URLSearchParams({
       search: currentSearchTerm,
       date: currentDateFilter,
       sort: currentSortOption,
     });
-
     const response = await fetch(`${API_URLS.getExport}?${params.toString()}`);
     const result = await response.json();
-
     if (!result.success) throw new Error(result.message);
-
     const data = result.data;
     if (!data || data.length === 0) {
       Swal.fire("Info", "Tidak ada data untuk diexport", "info");
       return;
     }
-
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet("Data Pembelian");
-
-    // 1. UPDATE KOLOM: Sesuai urutan Import PHP yang baru
-    // Urutan: Tgl, Invoice, Kd Supp, Nm Supp, Kd Store, Status, DPP, DPP Lain, PPN
     sheet.columns = [
-      { header: "Tgl Nota", key: "tgl_nota", width: 12 }, // A
-      { header: "No Invoice", key: "no_invoice", width: 25 }, // B
-      { header: "Kode Supplier", key: "kode_supplier", width: 15 }, // C
-      { header: "Nama Supplier", key: "nama_supplier", width: 35 }, // D
-      { header: "Kode Cabang", key: "kode_store", width: 12 }, // E
-      { header: "Status", key: "status", width: 10 }, // F
-      { header: "DPP", key: "dpp", width: 15 }, // G
-      { header: "DPP Nilai Lain", key: "dpp_nilai_lain", width: 15 }, // H (BARU)
-      { header: "PPN", key: "ppn", width: 15 }, // I
+      { header: "Tgl Nota", key: "tgl_nota", width: 12 },
+      { header: "No Invoice", key: "no_invoice", width: 25 },
+      { header: "Kode Supplier", key: "kode_supplier", width: 15 },
+      { header: "Nama Supplier", key: "nama_supplier", width: 35 },
+      { header: "Kode Cabang", key: "kode_store", width: 12 },
+      { header: "Status", key: "status", width: 10 },
+      { header: "DPP", key: "dpp", width: 15 },
+      { header: "DPP Nilai Lain", key: "dpp_nilai_lain", width: 15 },
+      { header: "PPN", key: "ppn", width: 15 },
     ];
-
-    // Styling Header (Sama seperti sebelumnya)
     const headerRow = sheet.getRow(1);
     sheet.columns.forEach((col, index) => {
       const cell = headerRow.getCell(index + 1);
@@ -591,29 +603,23 @@ async function handleExport() {
         right: { style: "thin" },
       };
     });
-
-    // Isi Data
     data.forEach((row) => {
       const r = sheet.addRow({
         tgl_nota: row.tgl_nota,
         no_invoice: row.no_invoice,
-        kode_supplier: row.kode_supplier || "", // Ambil dari API
+        kode_supplier: row.kode_supplier || "",
         nama_supplier: row.nama_supplier,
         kode_store: row.kode_store,
         status: row.status,
         dpp: parseFloat(row.dpp) || 0,
-        dpp_nilai_lain: parseFloat(row.dpp_nilai_lain) || 0, // Masukkan Nilai Lain
+        dpp_nilai_lain: parseFloat(row.dpp_nilai_lain) || 0,
         ppn: parseFloat(row.ppn) || 0,
       });
-
       r.getCell("kode_store").alignment = { horizontal: "center" };
     });
-
-    // Formatting Number (Rupiah)
     ["dpp", "dpp_nilai_lain", "ppn"].forEach((key) => {
       sheet.getColumn(key).numFmt = "#,##0";
     });
-
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -630,46 +636,34 @@ async function handleExport() {
     Swal.fire("Gagal Export", error.message, "error");
   }
 }
-
-// --- FUNGSI IMPORT EXCEL (DIPERBAIKI TAMPILAN ERROR) ---
 async function handleImport(e) {
   const file = e.target.files[0];
   if (!file) return;
-
   const formData = new FormData();
   formData.append("file_excel", file);
-
   const token = document.cookie.match(
     "(^|;)\\s*admin_token\\s*=\\s*([^;]+)"
   )?.[2];
-
   Swal.fire({
     title: "Sedang Mengimport...",
     html: "Mohon tunggu, validasi data sedang berjalan...",
     allowOutsideClick: false,
     didOpen: () => Swal.showLoading(),
   });
-
   try {
     const headers = {};
     if (token) headers["Authorization"] = `Bearer ${token}`;
-
     const response = await fetch(API_URLS.processImport, {
       method: "POST",
       headers: headers,
       body: formData,
     });
-
     const result = await response.json();
-
     if (result.success) {
-      // 3. MENAMPILKAN LOG ERROR DI UI
       let msgHtml = `<div class="text-center mb-3 text-sm">${result.message.replace(
         /\n/g,
         "<br>"
       )}</div>`;
-
-      // Cek jika ada logs error
       if (result.logs && result.logs.length > 0) {
         msgHtml += `
                 <div class="mt-2 text-left bg-red-50 border border-red-200 rounded-lg p-3">
@@ -680,11 +674,10 @@ async function handleImport(e) {
                 </div>
             `;
       }
-
       Swal.fire({
         title: "Proses Selesai",
         html: msgHtml,
-        icon: result.logs && result.logs.length > 0 ? "warning" : "success", // Icon warning jika ada yang gagal
+        icon: result.logs && result.logs.length > 0 ? "warning" : "success",
         width: "500px",
       }).then(() => {
         fetchTableData(true);
@@ -698,7 +691,6 @@ async function handleImport(e) {
     inpFileImport.value = "";
   }
 }
-
 document.addEventListener("DOMContentLoaded", () => {
   loadStoreOptions();
   if (inpSearchTable)
@@ -707,8 +699,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (filterSort) filterSort.addEventListener("change", handleSortFilter);
   fetchTableData(true);
   setupInfinityScroll();
-
-  // Input Formatting Listeners
   [inpDpp, inpPpn, inpDppLain].forEach((input) => {
     input.addEventListener("input", () => {
       if (input !== inpDppLain) calculateTotal();
@@ -720,8 +710,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     input.addEventListener("focus", (e) => e.target.select());
   });
-
-  // Store Change Listener
   inpKodeStore.addEventListener("change", () => {
     if (inpNoInvoice.value !== "") {
       inpNoInvoice.value = "";
@@ -732,9 +720,10 @@ document.addEventListener("DOMContentLoaded", () => {
       inpNoInvoice.focus();
     }
   });
-
   inpNamaSupp.addEventListener("input", handleSupplierSearch);
-
+  if (inpKodeSupplier) {
+    inpKodeSupplier.addEventListener("input", handleSupplierCodeSearch);
+  }
   inpNoInvoice.addEventListener("change", (e) => {
     const val = e.target.value.trim();
     if (val !== "") {
@@ -743,14 +732,11 @@ document.addEventListener("DOMContentLoaded", () => {
       resetErrorState();
     }
   });
-
   inpNoInvoice.addEventListener("input", () => {
     if (inpNoInvoice.classList.contains("border-red-500")) {
       resetErrorState();
     }
   });
-
-  // ENTER Key Logic
   const formInputs = Array.from(
     form.querySelectorAll("input:not([type='hidden']), select")
   );
@@ -793,13 +779,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
-
   btnSave.addEventListener("click", handleSave);
   btnCancelEdit.addEventListener("click", cancelEditMode);
-
-  // EVENT LISTENERS EXPORT / IMPORT
   if (btnExport) btnExport.addEventListener("click", handleExport);
-
   if (btnImport) {
     btnImport.addEventListener("click", () => {
       Swal.fire({
@@ -829,6 +811,5 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
   }
-
   if (inpFileImport) inpFileImport.addEventListener("change", handleImport);
 });

@@ -164,7 +164,7 @@ if (!$menuHandler->initialize()) {
 
                     <form id="single-form" autocomplete="off">
                         <input type="hidden" id="inp_id" name="id" value="">
-                        <input type="hidden" id="inp_kode_supplier" name="kode_supplier" value="">
+
 
                         <div class="form-grid">
                             <div>
@@ -193,6 +193,13 @@ if (!$menuHandler->initialize()) {
                                     <option value="NON PKP">NON PKP</option>
                                     <option value="BTKP">BTKP</option>
                                 </select>
+                            </div>
+
+                            <div>
+                                <label class="form-label">Kode Supplier</label>
+                                <input type="text" id="inp_kode_supplier" name="kode_supplier" class="input-compact"
+                                    list="kode_supplier_list_data" placeholder="Ketik Kode..." autocomplete="off">
+                                <datalist id="kode_supplier_list_data"></datalist>
                             </div>
 
                             <div>
