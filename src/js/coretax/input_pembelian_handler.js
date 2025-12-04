@@ -3,6 +3,8 @@ const API_URLS = {
   getReceipt: "/src/api/coretax/get_receipt_detail.php",
   saveData: "/src/api/coretax/save_pembelian_single.php",
   getData: "/src/api/coretax/get_latest_pembelian.php",
+  getExport: "/src/api/coretax/get_export_pembelian.php",
+  processImport: "/src/api/coretax/process_import_pembelian.php",
   checkDuplicate: "/src/api/coretax/check_duplicate_invoice.php",
   getStores: "/src/api/shared/get_all_store.php",
   searchSupplier: "/src/api/coretax/get_supplier_search.php",
@@ -30,6 +32,11 @@ const inpSearchTable = document.getElementById("inp_search_table");
 const filterSort = document.getElementById("filter_sort");
 const filterTgl = document.getElementById("filter_tgl");
 const loaderRow = document.getElementById("loader-row");
+
+const btnExport = document.getElementById("btn-export");
+const btnImport = document.getElementById("btn-import");
+const inpFileImport = document.getElementById("file_import");
+
 let detectedNoFaktur = null;
 let isSubmitting = false;
 let debounceTimer;
@@ -324,9 +331,7 @@ async function fetchReceiptData(noInvoice) {
     if (result.success && result.data) {
       const d = result.data;
       detectedNoFaktur = d.no_faktur;
-
       inpKodeSupplier.value = d.kode_supplier || "";
-
       inpDpp.value = formatNumber(parseFloat(d.dpp) || 0);
       inpPpn.value = formatNumber(parseFloat(d.ppn) || 0);
       calculateTotal();
@@ -399,7 +404,7 @@ function cancelEditMode() {
   form.reset();
   resetErrorState();
   inpId.value = "";
-  inpKodeSupplier.value = ""; // TAMBAHKAN INI
+  inpKodeSupplier.value = "";
   inpTotal.value = "0";
   inpKodeStore.value = "";
   inpStatus.value = "";
@@ -525,6 +530,175 @@ async function handleSave() {
     }
   }
 }
+async function handleExport() {
+  Swal.fire({
+    title: "Menyiapkan Excel...",
+    text: "Sedang mengambil data...",
+    allowOutsideClick: false,
+    didOpen: () => Swal.showLoading(),
+  });
+
+  try {
+    const params = new URLSearchParams({
+      search: currentSearchTerm,
+      date: currentDateFilter,
+      sort: currentSortOption,
+    });
+
+    const response = await fetch(`${API_URLS.getExport}?${params.toString()}`);
+    const result = await response.json();
+
+    if (!result.success) throw new Error(result.message);
+
+    const data = result.data;
+    if (!data || data.length === 0) {
+      Swal.fire("Info", "Tidak ada data untuk diexport", "info");
+      return;
+    }
+
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet("Data Pembelian");
+
+    // 1. UPDATE KOLOM: Sesuai urutan Import PHP yang baru
+    // Urutan: Tgl, Invoice, Kd Supp, Nm Supp, Kd Store, Status, DPP, DPP Lain, PPN
+    sheet.columns = [
+      { header: "Tgl Nota", key: "tgl_nota", width: 12 }, // A
+      { header: "No Invoice", key: "no_invoice", width: 25 }, // B
+      { header: "Kode Supplier", key: "kode_supplier", width: 15 }, // C
+      { header: "Nama Supplier", key: "nama_supplier", width: 35 }, // D
+      { header: "Kode Cabang", key: "kode_store", width: 12 }, // E
+      { header: "Status", key: "status", width: 10 }, // F
+      { header: "DPP", key: "dpp", width: 15 }, // G
+      { header: "DPP Nilai Lain", key: "dpp_nilai_lain", width: 15 }, // H (BARU)
+      { header: "PPN", key: "ppn", width: 15 }, // I
+    ];
+
+    // Styling Header (Sama seperti sebelumnya)
+    const headerRow = sheet.getRow(1);
+    sheet.columns.forEach((col, index) => {
+      const cell = headerRow.getCell(index + 1);
+      cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FFEC4899" },
+      };
+      cell.alignment = { horizontal: "center", vertical: "middle" };
+      cell.border = {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        bottom: { style: "thin" },
+        right: { style: "thin" },
+      };
+    });
+
+    // Isi Data
+    data.forEach((row) => {
+      const r = sheet.addRow({
+        tgl_nota: row.tgl_nota,
+        no_invoice: row.no_invoice,
+        kode_supplier: row.kode_supplier || "", // Ambil dari API
+        nama_supplier: row.nama_supplier,
+        kode_store: row.kode_store,
+        status: row.status,
+        dpp: parseFloat(row.dpp) || 0,
+        dpp_nilai_lain: parseFloat(row.dpp_nilai_lain) || 0, // Masukkan Nilai Lain
+        ppn: parseFloat(row.ppn) || 0,
+      });
+
+      r.getCell("kode_store").alignment = { horizontal: "center" };
+    });
+
+    // Formatting Number (Rupiah)
+    ["dpp", "dpp_nilai_lain", "ppn"].forEach((key) => {
+      sheet.getColumn(key).numFmt = "#,##0";
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    const url = window.URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `Pembelian_${new Date().toISOString().slice(0, 10)}.xlsx`;
+    anchor.click();
+    window.URL.revokeObjectURL(url);
+    Swal.close();
+  } catch (error) {
+    console.error(error);
+    Swal.fire("Gagal Export", error.message, "error");
+  }
+}
+
+// --- FUNGSI IMPORT EXCEL (DIPERBAIKI TAMPILAN ERROR) ---
+async function handleImport(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append("file_excel", file);
+
+  const token = document.cookie.match(
+    "(^|;)\\s*admin_token\\s*=\\s*([^;]+)"
+  )?.[2];
+
+  Swal.fire({
+    title: "Sedang Mengimport...",
+    html: "Mohon tunggu, validasi data sedang berjalan...",
+    allowOutsideClick: false,
+    didOpen: () => Swal.showLoading(),
+  });
+
+  try {
+    const headers = {};
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    const response = await fetch(API_URLS.processImport, {
+      method: "POST",
+      headers: headers,
+      body: formData,
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      // 3. MENAMPILKAN LOG ERROR DI UI
+      let msgHtml = `<div class="text-center mb-3 text-sm">${result.message.replace(
+        /\n/g,
+        "<br>"
+      )}</div>`;
+
+      // Cek jika ada logs error
+      if (result.logs && result.logs.length > 0) {
+        msgHtml += `
+                <div class="mt-2 text-left bg-red-50 border border-red-200 rounded-lg p-3">
+                    <p class="text-xs font-bold text-red-700 mb-2">Detail Error:</p>
+                    <ul class="list-disc pl-4 text-xs text-red-600 font-mono overflow-y-auto max-h-[150px] custom-scrollbar">
+                        ${result.logs.map((log) => `<li>${log}</li>`).join("")}
+                    </ul>
+                </div>
+            `;
+      }
+
+      Swal.fire({
+        title: "Proses Selesai",
+        html: msgHtml,
+        icon: result.logs && result.logs.length > 0 ? "warning" : "success", // Icon warning jika ada yang gagal
+        width: "500px",
+      }).then(() => {
+        fetchTableData(true);
+      });
+    } else {
+      throw new Error(result.message);
+    }
+  } catch (error) {
+    Swal.fire("Gagal Import", error.message, "error");
+  } finally {
+    inpFileImport.value = "";
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   loadStoreOptions();
   if (inpSearchTable)
@@ -533,6 +707,8 @@ document.addEventListener("DOMContentLoaded", () => {
   if (filterSort) filterSort.addEventListener("change", handleSortFilter);
   fetchTableData(true);
   setupInfinityScroll();
+
+  // Input Formatting Listeners
   [inpDpp, inpPpn, inpDppLain].forEach((input) => {
     input.addEventListener("input", () => {
       if (input !== inpDppLain) calculateTotal();
@@ -544,6 +720,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     input.addEventListener("focus", (e) => e.target.select());
   });
+
+  // Store Change Listener
   inpKodeStore.addEventListener("change", () => {
     if (inpNoInvoice.value !== "") {
       inpNoInvoice.value = "";
@@ -554,7 +732,9 @@ document.addEventListener("DOMContentLoaded", () => {
       inpNoInvoice.focus();
     }
   });
+
   inpNamaSupp.addEventListener("input", handleSupplierSearch);
+
   inpNoInvoice.addEventListener("change", (e) => {
     const val = e.target.value.trim();
     if (val !== "") {
@@ -563,11 +743,14 @@ document.addEventListener("DOMContentLoaded", () => {
       resetErrorState();
     }
   });
+
   inpNoInvoice.addEventListener("input", () => {
     if (inpNoInvoice.classList.contains("border-red-500")) {
       resetErrorState();
     }
   });
+
+  // ENTER Key Logic
   const formInputs = Array.from(
     form.querySelectorAll("input:not([type='hidden']), select")
   );
@@ -610,6 +793,42 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
+
   btnSave.addEventListener("click", handleSave);
   btnCancelEdit.addEventListener("click", cancelEditMode);
+
+  // EVENT LISTENERS EXPORT / IMPORT
+  if (btnExport) btnExport.addEventListener("click", handleExport);
+
+  if (btnImport) {
+    btnImport.addEventListener("click", () => {
+      Swal.fire({
+        title: "Import Data Pembelian",
+        html: `
+        <div class="text-left text-sm text-gray-600 mb-4">
+            <p class="mb-2">Gunakan format Excel (.xlsx) urutan kolom:</p>
+            <table class="w-full text-xs border border-gray-200">
+                <tr class="bg-gray-100 font-bold">
+                    <td>A</td><td>B</td><td>C</td><td>D</td><td>E</td><td>F</td><td>G</td><td>H</td><td>I</td>
+                </tr>
+                <tr>
+                    <td>Tgl</td><td>Invoice</td><td>Kd Supp</td><td>Nm Supp</td><td>Store</td><td>Status</td><td>DPP</td><td>DPP Lain</td><td>PPN</td>
+                </tr>
+            </table>
+            <p class="mt-2 text-xs italic">*Baris pertama (Header) akan dilewati.</p>
+        </div>
+    `,
+        icon: "info",
+        showCancelButton: true,
+        confirmButtonText: "Pilih File",
+        confirmButtonColor: "#3b82f6",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          inpFileImport.click();
+        }
+      });
+    });
+  }
+
+  if (inpFileImport) inpFileImport.addEventListener("change", handleImport);
 });

@@ -4,10 +4,11 @@ ini_set('display_errors', 0);
 header('Content-Type: application/json');
 require_once __DIR__ . '/../../../aa_kon_sett.php';
 try {
-    $no_lpb = $_GET['no_lpb'] ?? '';
+    $raw_no_lpb = $_GET['no_lpb'] ?? '';
+    $no_lpb = trim(urldecode($raw_no_lpb));
     $req_kode_store = $_GET['kode_store'] ?? '';
     if (empty($no_lpb)) {
-        throw new Exception("Parameter No Invoice kosong");
+        throw new Exception("Parameter No Invoice (no_lpb) kosong");
     }
     if (empty($req_kode_store)) {
         throw new Exception("Cabang belum dipilih");
@@ -27,23 +28,26 @@ try {
         FROM receipt_head rh
         LEFT JOIN supplier s ON rh.kode_supp = s.kode_supp AND rh.kd_store = s.kd_store
         LEFT JOIN kode_store ks ON rh.kd_store = ks.kd_store
-        WHERE TRIM(rh.no_lpb) = ?  
+        WHERE rh.no_lpb LIKE CONCAT('%', ?, '%')
         LIMIT 1
     ";
     $stmt = $conn->prepare($query);
-    if (!$stmt)
-        throw new Exception($conn->error);
+    if (!$stmt) {
+        throw new Exception("Database Error: " . $conn->error);
+    }
     $stmt->bind_param("s", $no_lpb);
     $stmt->execute();
     $result = $stmt->get_result();
     $data = $result->fetch_assoc();
     if ($data) {
-        if ($data['kd_store'] !== $req_kode_store) {
+        $db_store = trim($data['kd_store']);
+        $req_store = trim($req_kode_store);
+        if ($db_store != $req_store) {
             $nama_cabang_asli = $data['Nm_Alias'] ? $data['Nm_Alias'] : ($data['Nm_Store'] ?? $data['kd_store']);
             echo json_encode([
                 'success' => false,
                 'error_type' => 'wrong_store',
-                'message' => "Nomor invoice ini terdaftar milik cabang [{$nama_cabang_asli}], bukan cabang yang Anda pilih."
+                'message' => "Nomor invoice ini terdaftar milik cabang [{$nama_cabang_asli}] (Kode: $db_store), bukan cabang yang Anda pilih (Kode: $req_store)."
             ]);
             exit;
         }
@@ -64,7 +68,10 @@ try {
             ]
         ]);
     } else {
-        echo json_encode(['success' => false, 'message' => 'Data receipt tidak ditemukan, silahkan input manual']);
+        echo json_encode([
+            'success' => false,
+            'message' => "Data receipt '$no_lpb' tidak ditemukan di database."
+        ]);
     }
 } catch (Exception $e) {
     http_response_code(500);
