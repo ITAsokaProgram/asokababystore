@@ -89,7 +89,7 @@ try {
             $kode_store_final = $storeMap[$lookupKey];
         } else {
             $count_fail++;
-            $logs[] = "Baris $idx: Gagal - Cabang dengan alias '$alias_store_input' tidak ditemukan di database.";
+            $logs[] = "Baris $idx: Gagal - Cabang dengan nama '$alias_store_input' tidak ditemukan di database.";
             continue;
         }
         $dpp = clean_excel_number($row['G'] ?? 0);
