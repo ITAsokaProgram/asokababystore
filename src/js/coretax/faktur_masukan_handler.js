@@ -10,7 +10,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const paginationContainer = document.getElementById("pagination-container");
   const paginationInfo = document.getElementById("pagination-info");
   const paginationLinks = document.getElementById("pagination-links");
-
   function formatRupiah(number) {
     if (isNaN(number) || number === null) {
       return "0";
@@ -22,35 +21,29 @@ document.addEventListener("DOMContentLoaded", () => {
       maximumFractionDigits: 0,
     }).format(number);
   }
-
   function getUrlParams() {
     const params = new URLSearchParams(window.location.search);
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayString = yesterday.toISOString().split("T")[0];
-
     return {
       tgl_mulai: params.get("tgl_mulai") || yesterdayString,
       tgl_selesai: params.get("tgl_selesai") || yesterdayString,
       kd_store: params.get("kd_store") || "all",
-      // MODIFIED: Added trim()
       search_supplier: (params.get("search_supplier") || "").trim(),
       filter_ppn: params.get("filter_ppn") || "all",
       page: parseInt(params.get("page") || "1", 10),
     };
   }
-
   function build_pagination_url(newPage) {
     const params = new URLSearchParams(window.location.search);
     params.set("page", newPage);
     return "?" + params.toString();
   }
-
   async function loadData() {
     const params = getUrlParams();
     const isPagination = params.page > 1;
     setLoadingState(true, isPagination);
-
     const queryString = new URLSearchParams({
       tgl_mulai: params.tgl_mulai,
       tgl_selesai: params.tgl_selesai,
@@ -59,7 +52,6 @@ document.addEventListener("DOMContentLoaded", () => {
       filter_ppn: params.filter_ppn,
       page: params.page,
     }).toString();
-
     try {
       const response = await fetch(
         `/src/api/coretax/get_faktur_masukan.php?${queryString}`
@@ -72,23 +64,18 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       const data = await response.json();
       console.log("DATA", data);
-
       if (data.error) {
         throw new Error(data.error);
       }
-
       if (data.stores) {
         populateStoreFilter(data.stores, params.kd_store);
       }
-
       if (filterInputSupplier) {
         filterInputSupplier.value = params.search_supplier;
       }
-
       if (filterSelectPPN) {
         filterSelectPPN.value = params.filter_ppn;
       }
-
       if (pageSubtitle) {
         let storeName = "Seluruh Cabang";
         if (
@@ -100,7 +87,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         pageSubtitle.textContent = `Periode ${params.tgl_mulai} s/d ${params.tgl_selesai} - ${storeName}`;
       }
-
       renderTable(
         data.tabel_data,
         data.pagination ? data.pagination.offset : 0
@@ -113,7 +99,6 @@ document.addEventListener("DOMContentLoaded", () => {
       setLoadingState(false);
     }
   }
-
   function setLoadingState(isLoading, isPagination = false) {
     if (isLoading) {
       if (filterSubmitButton) filterSubmitButton.disabled = true;
@@ -136,7 +121,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   }
-
   function showTableError(message) {
     tableBody.innerHTML = `
         <tr>
@@ -146,7 +130,6 @@ document.addEventListener("DOMContentLoaded", () => {
             </td>
         </tr>`;
   }
-
   function populateStoreFilter(stores, selectedStore) {
     if (!filterSelectStore || filterSelectStore.options.length > 1) {
       filterSelectStore.value = selectedStore;
@@ -163,47 +146,58 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     filterSelectStore.value = selectedStore;
   }
-
   function renderTable(tabel_data, offset) {
     if (!tabel_data || tabel_data.length === 0) {
       tableBody.innerHTML = `
             <tr>
-                <td colspan="9" class="text-center p-8 text-gray-500">
+                <td colspan="11" class="text-center p-8 text-gray-500">
                     <i class="fas fa-inbox fa-lg mb-2"></i>
                     <p>Tidak ada data ditemukan untuk filter ini.</p>
                 </td>
             </tr>`;
       return;
     }
-
     let htmlRows = "";
     let item_counter = offset + 1;
-
     tabel_data.forEach((row) => {
       const raw_nilai_db = parseFloat(row.gtot) || 0;
       const gppn = parseFloat(row.gppn) || 0;
-
-      const dpp = raw_nilai_db;
-      const total_akhir = dpp + gppn;
-
+      const dpp = raw_nilai_db - gppn;
+      const total_akhir = raw_nilai_db;
       const dateObj = new Date(row.tgl_tiba);
       const dateFormatted = dateObj.toLocaleDateString("id-ID", {
         day: "2-digit",
         month: "2-digit",
         year: "numeric",
       });
-
       const inisial = row.nama_inisial ? `(${row.nama_inisial})` : "";
       const namaSupp = `${row.nama_supp || ""} ${inisial}`;
       const namaAlias = row.Nm_Alias ? row.Nm_Alias : "";
       const displayCabang = `${namaAlias}`;
-
+      const displayNsfp = row.final_nsfp
+        ? `<span class="font-mono text-gray-700 font-medium">${row.final_nsfp}</span>`
+        : '<span class="text-gray-400">-</span>';
+      let statusBadges = "";
+      if (parseInt(row.badge_coretax) === 1) {
+        statusBadges += `<span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded font-bold border border-blue-200 mr-1" title="Data ada di Coretax">Coretax</span>`;
+      }
+      if (parseInt(row.badge_beli) === 1) {
+        statusBadges += `<span class="bg-green-100 text-green-700 text-xs px-2 py-1 rounded font-bold border border-green-200 mr-1" title="Data ada di Laporan Pembelian">Beli</span>`;
+      }
+      if (parseInt(row.badge_faktur) === 1) {
+        statusBadges += `<span class="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded font-bold border border-purple-200 mr-1" title="Data ada di Faktur Pajak">Faktur</span>`;
+      }
+      if (statusBadges === "") {
+        statusBadges = '<span class="text-gray-300 text-xs italic">-</span>';
+      }
       htmlRows += `
             <tr class="hover:bg-gray-50">
                 <td class="text-center font-medium text-gray-500">${item_counter}</td>
                 <td>${dateFormatted}</td>
                 <td class="font-semibold text-gray-700">${row.no_faktur}</td>
                 <td class="text-sm text-gray-600">${row.no_lpb || "-"}</td>
+                <td class="text-sm text-center">${displayNsfp}</td>
+                <td class="text-center whitespace-nowrap">${statusBadges}</td>
                 <td><span class="badge-store">${displayCabang}</span></td>
                 <td class="text-sm truncate max-w-xs" title="${namaSupp}">${namaSupp}</td>
                 <td class="text-right font-mono text-gray-700">${formatRupiah(
@@ -221,30 +215,22 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     tableBody.innerHTML = htmlRows;
   }
-
   function renderPagination(pagination) {
     if (!pagination) {
       paginationInfo.textContent = "";
       paginationLinks.innerHTML = "";
       return;
     }
-
     const { current_page, total_pages, total_rows, limit, offset } = pagination;
-
     if (total_rows === 0) {
       paginationInfo.textContent = "Menampilkan 0 dari 0 data";
       paginationLinks.innerHTML = "";
       return;
     }
-
     const start_row = offset + 1;
     const end_row = Math.min(offset + limit, total_rows);
-
     paginationInfo.textContent = `Menampilkan ${start_row} - ${end_row} dari ${total_rows} data`;
-
     let linksHtml = "";
-
-    // Previous Button
     linksHtml += `
           <a href="${
             current_page > 1 ? build_pagination_url(current_page - 1) : "#"
@@ -255,11 +241,8 @@ document.addEventListener("DOMContentLoaded", () => {
               <i class="fas fa-chevron-left"></i>
           </a>
       `;
-
-    // Page Numbers logic
     const pages_to_show = [];
     const max_pages_around = 2;
-
     for (let i = 1; i <= total_pages; i++) {
       if (
         i === 1 ||
@@ -270,7 +253,6 @@ document.addEventListener("DOMContentLoaded", () => {
         pages_to_show.push(i);
       }
     }
-
     let last_page = 0;
     for (const page_num of pages_to_show) {
       if (last_page !== 0 && page_num > last_page + 1) {
@@ -286,8 +268,6 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
       last_page = page_num;
     }
-
-    // Next Button
     linksHtml += `
           <a href="${
             current_page < total_pages
@@ -300,25 +280,19 @@ document.addEventListener("DOMContentLoaded", () => {
               <i class="fas fa-chevron-right"></i>
           </a>
       `;
-
     paginationLinks.innerHTML = linksHtml;
   }
-
   if (filterForm) {
     filterForm.addEventListener("submit", (e) => {
       e.preventDefault();
       const formData = new FormData(filterForm);
-
-      // MODIFIED: Manual Trim sebelum submit
       const searchVal = formData.get("search_supplier").toString().trim();
       formData.set("search_supplier", searchVal);
-
       const params = new URLSearchParams(formData);
       params.set("page", "1");
       window.history.pushState({}, "", `?${params.toString()}`);
       loadData();
     });
   }
-
   loadData();
 });

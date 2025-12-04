@@ -141,6 +141,8 @@ if (!$menuHandler->initialize()) {
                                     <th>Tgl Tiba</th>
                                     <th>Nomor Penerimaan</th>
                                     <th>Nomor Invoice</th>
+                                    <th>NSFP</th>
+                                    <th>Status</th>
                                     <th>Cabang</th>
                                     <th>Supplier</th>
                                     <th class="text-right">DPP (Netto)</th>

@@ -26,9 +26,6 @@ $response = [
     'error' => null,
 ];
 try {
-    // TODO: ini entah kenapa salah  / ga sama dengan receipt
-    // https://asokababystore.com/src/fitur/penerimaan_receipt/detail?tgl_mulai=2025-11-29&tgl_selesai=2025-11-29&kd_store=1502&page=1
-    // https://asokababystore.com/src/fitur/penerimaan_receipt/detail?tgl_mulai=2025-11-29&tgl_selesai=2025-11-29&kd_store=1502&page=1
     $tanggal_kemarin = date('Y-m-d', strtotime('-1 day'));
     $tgl_mulai = $_GET['tgl_mulai'] ?? $tanggal_kemarin;
     $tgl_selesai = $_GET['tgl_selesai'] ?? $tanggal_kemarin;
@@ -114,10 +111,50 @@ try {
             s.nama_inisial,
             rh.gtot,
             rh.gppn,
-            rh.ppn
+            rh.ppn,
+            COALESCE(
+                p_inv.nsfp, f_inv.nsfp,         
+                p_fak.nsfp, f_fak.nsfp,         
+                p_val.nsfp, f_val.nsfp, c_val.nsfp 
+            ) as final_nsfp,
+            CASE 
+                WHEN c_val.nsfp IS NOT NULL THEN 1 
+                WHEN p_inv.ada_di_coretax = 1 THEN 1
+                WHEN p_fak.ada_di_coretax = 1 THEN 1
+                WHEN p_val.ada_di_coretax = 1 THEN 1
+                ELSE 0 
+            END as badge_coretax,
+            CASE 
+                WHEN p_inv.id IS NOT NULL THEN 1
+                WHEN p_fak.id IS NOT NULL THEN 1
+                WHEN p_val.id IS NOT NULL THEN 1
+                ELSE 0 
+            END as badge_beli,
+            CASE 
+                WHEN f_inv.id IS NOT NULL THEN 1
+                WHEN f_fak.id IS NOT NULL THEN 1
+                WHEN f_val.id IS NOT NULL THEN 1
+                ELSE 0 
+            END as badge_faktur
         FROM receipt_head rh
         LEFT JOIN supplier s ON rh.kode_supp = s.kode_supp AND rh.kd_store = s.kd_store
         LEFT JOIN kode_store ks ON rh.kd_store = ks.Kd_Store
+        LEFT JOIN ff_pembelian p_inv ON (rh.no_faktur = p_inv.no_invoice OR rh.no_lpb = p_inv.no_invoice) AND rh.kd_store = p_inv.kode_store
+        LEFT JOIN ff_faktur_pajak f_inv ON (rh.no_faktur = f_inv.no_invoice OR rh.no_lpb = f_inv.no_invoice) AND rh.kd_store = f_inv.kode_store
+        LEFT JOIN ff_pembelian p_fak ON rh.no_faktur = p_fak.no_faktur AND rh.kd_store = p_fak.kode_store
+        LEFT JOIN ff_faktur_pajak f_fak ON rh.no_faktur = f_fak.no_faktur AND rh.kd_store = f_fak.kode_store
+        LEFT JOIN ff_pembelian p_val ON 
+            ROUND(rh.gtot - rh.gppn, 0) = ROUND(p_val.dpp, 0) 
+            AND ROUND(rh.gppn, 0) = ROUND(p_val.ppn, 0) 
+            AND rh.kd_store = p_val.kode_store
+        LEFT JOIN ff_faktur_pajak f_val ON 
+            ROUND(rh.gtot - rh.gppn, 0) = ROUND(f_val.dpp, 0) 
+            AND ROUND(rh.gppn, 0) = ROUND(f_val.ppn, 0) 
+            AND rh.kd_store = f_val.kode_store
+        LEFT JOIN ff_coretax c_val ON 
+            ROUND(rh.gtot - rh.gppn, 0) = ROUND(c_val.harga_jual, 0) 
+            AND ROUND(rh.gppn, 0) = ROUND(c_val.ppn, 0) 
+            AND rh.kd_store = c_val.kode_store
         WHERE $where_conditions
         ORDER BY rh.tgl_tiba DESC, rh.no_faktur ASC
         LIMIT ? OFFSET ?
