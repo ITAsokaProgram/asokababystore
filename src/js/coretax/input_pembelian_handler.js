@@ -580,7 +580,7 @@ async function handleExport() {
       { header: "No Invoice", key: "no_invoice", width: 25 },
       { header: "Kode Supplier", key: "kode_supplier", width: 15 },
       { header: "Nama Supplier", key: "nama_supplier", width: 35 },
-      { header: "Kode Cabang", key: "kode_store", width: 12 },
+      { header: "Cabang", key: "kode_store", width: 15 },
       { header: "Status", key: "status", width: 10 },
       { header: "DPP", key: "dpp", width: 15 },
       { header: "DPP Nilai Lain", key: "dpp_nilai_lain", width: 15 },
@@ -609,7 +609,7 @@ async function handleExport() {
         no_invoice: row.no_invoice,
         kode_supplier: row.kode_supplier || "",
         nama_supplier: row.nama_supplier,
-        kode_store: row.kode_store,
+        kode_store: row.nm_alias,
         status: row.status,
         dpp: parseFloat(row.dpp) || 0,
         dpp_nilai_lain: parseFloat(row.dpp_nilai_lain) || 0,
@@ -794,10 +794,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     <td>A</td><td>B</td><td>C</td><td>D</td><td>E</td><td>F</td><td>G</td><td>H</td><td>I</td>
                 </tr>
                 <tr>
-                    <td>Tgl</td><td>Invoice</td><td>Kd Supp</td><td>Nm Supp</td><td>Store</td><td>Status</td><td>DPP</td><td>DPP Lain</td><td>PPN</td>
+                    <td>Tgl</td><td>Invoice</td><td>Kd Supp</td><td>Nm Supp</td><td>Nm Cabang</td><td>Status</td><td>DPP</td><td>DPP Lain</td><td>PPN</td>
                 </tr>
             </table>
-            <p class="mt-2 text-xs italic">*Baris pertama (Header) akan dilewati.</p>
+            <p class="mt-2 text-xs italic">*Kolom E diisi <b>Nama Alias Cabang</b> (Contoh: ADET, ASOKA), bukan kode.</p>
+            <p class="mt-1 text-xs italic">*Baris pertama (Header) akan dilewati.</p>
         </div>
     `,
         icon: "info",

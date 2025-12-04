@@ -9,13 +9,16 @@ require_once __DIR__ . '/../../../vendor/autoload.php';
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 header('Content-Type: application/json');
-function clean_excel_number($val) {
-    if (empty($val)) return 0;
+function clean_excel_number($val)
+{
+    if (empty($val))
+        return 0;
     $cleaned = preg_replace('/[^0-9.,-]/', '', $val);
-    if ($cleaned === '') return false;
+    if ($cleaned === '')
+        return false;
     if (strpos($cleaned, '.') !== false && strpos($cleaned, ',') !== false) {
-        $cleaned = str_replace('.', '', $cleaned); 
-        $cleaned = str_replace(',', '.', $cleaned); 
+        $cleaned = str_replace('.', '', $cleaned);
+        $cleaned = str_replace(',', '.', $cleaned);
     } elseif (strpos($cleaned, ',') !== false) {
         $cleaned = str_replace(',', '.', $cleaned);
     }
@@ -45,6 +48,16 @@ try {
     } catch (Exception $e) {
         throw new Exception("File Excel corrupt atau format salah.");
     }
+    $storeMap = [];
+    $queryStore = $conn->query("SELECT Kd_Store, Nm_Alias FROM kode_store");
+    if ($queryStore) {
+        while ($rowStore = $queryStore->fetch_assoc()) {
+            $key = strtoupper(trim($rowStore['Nm_Alias']));
+            if (!empty($key)) {
+                $storeMap[$key] = $rowStore['Kd_Store'];
+            }
+        }
+    }
     $count_success = 0;
     $count_fail = 0;
     $count_skip = 0;
@@ -54,19 +67,29 @@ try {
         (tgl_nota, no_invoice, kode_supplier, nama_supplier, kode_store, status, dpp, dpp_nilai_lain, ppn, total_terima_fp, kd_user) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
     foreach ($rows as $idx => $row) {
-        if ($idx < 2) continue;
+        if ($idx < 2)
+            continue;
         $tgl_raw = $row['A'];
         $no_invoice = trim($row['B'] ?? '');
         $kode_supplier = trim($row['C'] ?? '');
         $nama_supplier = trim($row['D'] ?? '');
-        $kode_store = trim($row['E'] ?? '');
+        $alias_store_input = trim($row['E'] ?? '');
         $status = strtoupper(trim($row['F'] ?? ''));
-        if (empty($no_invoice) && empty($nama_supplier) && empty($kode_store)) {
-            continue; 
+        if (empty($no_invoice) && empty($nama_supplier) && empty($alias_store_input)) {
+            continue;
         }
-        if (empty($no_invoice) || empty($nama_supplier) || empty($kode_store)) {
+        if (empty($no_invoice) || empty($nama_supplier) || empty($alias_store_input)) {
             $count_fail++;
-            $logs[] = "Baris $idx: Gagal - No Invoice, Nama Supplier, atau Kode Store tidak boleh kosong.";
+            $logs[] = "Baris $idx: Gagal - No Invoice, Nama Supplier, atau Nama Cabang tidak boleh kosong.";
+            continue;
+        }
+        $lookupKey = strtoupper($alias_store_input);
+        $kode_store_final = '';
+        if (isset($storeMap[$lookupKey])) {
+            $kode_store_final = $storeMap[$lookupKey];
+        } else {
+            $count_fail++;
+            $logs[] = "Baris $idx: Gagal - Cabang dengan alias '$alias_store_input' tidak ditemukan di database.";
             continue;
         }
         $dpp = clean_excel_number($row['G'] ?? 0);
@@ -85,7 +108,8 @@ try {
                     $tgl_nota = Date::excelToDateTimeObject($tgl_raw)->format('Y-m-d');
                 } else {
                     $ts = strtotime($tgl_raw);
-                    if ($ts) $tgl_nota = date('Y-m-d', $ts);
+                    if ($ts)
+                        $tgl_nota = date('Y-m-d', $ts);
                 }
             }
         } catch (\Throwable $th) {
@@ -99,7 +123,7 @@ try {
             continue;
         }
         if (!in_array($status, ['PKP', 'NON PKP', 'BTKP'])) {
-            $status = 'PKP'; 
+            $status = 'PKP';
         }
         $stmtInsert->bind_param(
             "ssssssddddi",
@@ -107,7 +131,7 @@ try {
             $no_invoice,
             $kode_supplier,
             $nama_supplier,
-            $kode_store,
+            $kode_store_final,
             $status,
             $dpp,
             $dpp_lain,
