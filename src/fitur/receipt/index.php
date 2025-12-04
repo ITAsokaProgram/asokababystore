@@ -2,15 +2,15 @@
 session_start();
 include '../../../aa_kon_sett.php';
 
-// Default Dates
 $tgl_selesai = date('Y-m-d');
 $tgl_mulai = date('Y-m-d', strtotime('-1 month'));
 $page = (int) ($_GET['page'] ?? 1);
 
-// Gunakan MenuHandler yang sama atau buat baru jika perlu
 require_once __DIR__ . '/../../component/menu_handler.php';
-$menuHandler = new MenuHandler('receipt_index'); // Pastikan permission 'receipt_index' ada atau sesuaikan
-// if (!$menuHandler->initialize()) { exit(); } // Uncomment jika permission sudah setup
+$menuHandler = new MenuHandler('receipt_index');
+if (!$menuHandler->initialize()) {
+    exit();
+}
 ?>
 
 <!DOCTYPE html>

@@ -274,6 +274,14 @@ $token = $menuHandler->getToken();
                     <p class="text-lg font-bold text-gray-800 mb-2">Laporan - Penerimaan</p>
                     <div class="ml-4 mt-2 space-y-1">
                       <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="receipt_index"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Data Receipt
+                      </label>
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="receipt_create"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Buat Receipt
+                      </label>
+                      <label class="flex items-center gap-2 text-sm">
                         <input type="checkbox" name="menus[]" value="laporan_receipt_detail"
                           class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Detail Receipt
                       </label>
@@ -287,6 +295,14 @@ $token = $menuHandler->getToken();
                   <div class="bg-white/70 border border-white/40 rounded-xl shadow p-4 mb-2">
                     <p class="text-lg font-bold text-gray-800 mb-2">Laporan - Retur Keluar</p>
                     <div class="ml-4 mt-2 space-y-1">
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="return_index"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Data Return
+                      </label>
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="return_create"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Buat Return
+                      </label>
                       <label class="flex items-center gap-2 text-sm">
                         <input type="checkbox" name="menus[]" value="laporan_return_all"
                           class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Return All Item
@@ -309,6 +325,14 @@ $token = $menuHandler->getToken();
                   <div class="bg-white/70 border border-white/40 rounded-xl shadow p-4 mb-2">
                     <p class="text-lg font-bold text-gray-800 mb-2">Mutasi & Koreksi Stok</p>
                     <div class="ml-4 mt-2 space-y-1">
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="koreksi_index"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Data Koreksi
+                      </label>
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="koreksi_create"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Buat Koreksi
+                      </label>
                       <label class="flex items-center gap-2 text-sm">
                         <input type="checkbox" name="menus[]" value="laporan_mutasi_in"
                           class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Mutasi Invoice

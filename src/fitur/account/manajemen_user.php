@@ -561,6 +561,18 @@ $token = $menuHandler->getToken();
                             <div class="space-y-2">
                                 <label
                                     class="flex items-center gap-3 p-2 rounded-lg hover:bg-indigo-50 transition-colors duration-200">
+                                    <input type="checkbox" name="menus[]" value="koreksi_index"
+                                        class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" />
+                                    <span class="text-sm">Data Koreksi</span>
+                                </label>
+                                <label
+                                    class="flex items-center gap-3 p-2 rounded-lg hover:bg-indigo-50 transition-colors duration-200">
+                                    <input type="checkbox" name="menus[]" value="koreksi_create"
+                                        class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" />
+                                    <span class="text-sm">Buat Koreksi</span>
+                                </label>
+                                <label
+                                    class="flex items-center gap-3 p-2 rounded-lg hover:bg-indigo-50 transition-colors duration-200">
                                     <input type="checkbox" name="menus[]" value="laporan_mutasi_in"
                                         class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" />
                                     <span class="text-sm">Mutasi Invoice</span>
@@ -597,7 +609,6 @@ $token = $menuHandler->getToken();
                                 </label>
                             </div>
                         </div>
-
                         <div
                             class="bg-white rounded-xl p-4 shadow-sm border border-indigo-200 hover:shadow-md transition-shadow duration-200">
                             <div class="flex items-center mb-3">
@@ -627,6 +638,18 @@ $token = $menuHandler->getToken();
                                 <p class="font-semibold text-gray-800">🔙 Retur Keluar</p>
                             </div>
                             <div class="space-y-2">
+                                <label
+                                    class="flex items-center gap-3 p-2 rounded-lg hover:bg-red-50 transition-colors duration-200">
+                                    <input type="checkbox" name="menus[]" value="return_index"
+                                        class="w-4 h-4 text-red-600 rounded focus:ring-red-500" />
+                                    <span class="text-sm">Data Return</span>
+                                </label>
+                                <label
+                                    class="flex items-center gap-3 p-2 rounded-lg hover:bg-red-50 transition-colors duration-200">
+                                    <input type="checkbox" name="menus[]" value="return_create"
+                                        class="w-4 h-4 text-red-600 rounded focus:ring-red-500" />
+                                    <span class="text-sm">Buat Return</span>
+                                </label>
                                 <label
                                     class="flex items-center gap-3 p-2 rounded-lg hover:bg-red-50 transition-colors duration-200">
                                     <input type="checkbox" name="menus[]" value="laporan_return_all"
@@ -661,6 +684,18 @@ $token = $menuHandler->getToken();
                                 <p class="font-semibold text-gray-800">🚛 Penerimaan</p>
                             </div>
                             <div class="space-y-2">
+                                <label
+                                    class="flex items-center gap-3 p-2 rounded-lg hover:bg-teal-50 transition-colors duration-200">
+                                    <input type="checkbox" name="menus[]" value="receipt_index"
+                                        class="w-4 h-4 text-teal-600 rounded focus:ring-teal-500" />
+                                    <span class="text-sm">Data Receipt</span>
+                                </label>
+                                <label
+                                    class="flex items-center gap-3 p-2 rounded-lg hover:bg-teal-50 transition-colors duration-200">
+                                    <input type="checkbox" name="menus[]" value="receipt_create"
+                                        class="w-4 h-4 text-teal-600 rounded focus:ring-teal-500" />
+                                    <span class="text-sm">Buat Receipt</span>
+                                </label>
                                 <label
                                     class="flex items-center gap-3 p-2 rounded-lg hover:bg-teal-50 transition-colors duration-200">
                                     <input type="checkbox" name="menus[]" value="laporan_receipt_detail"
