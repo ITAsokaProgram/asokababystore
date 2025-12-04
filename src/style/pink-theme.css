@@ -1405,3 +1405,175 @@ body {
   color: #10b981;
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
 }
+/* ============================================
+   PERBAIKAN WARNA BUTTON - TAMBAHKAN KE pink-theme.css
+   ============================================ */
+
+/* Button Export - Hijau */
+.btn-export {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3) !important;
+}
+
+.btn-export:hover:not(:disabled) {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4) !important;
+}
+
+/* Button Import - Biru */
+.btn-import {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3) !important;
+}
+
+.btn-import:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4) !important;
+}
+
+/* Button Lihat Laporan - Abu-abu */
+.btn-report {
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 4px 16px rgba(107, 114, 128, 0.3) !important;
+  padding: 0.5rem 0.75rem !important; /* Sama dengan button lainnya */
+}
+
+.btn-report:hover:not(:disabled) {
+  background: linear-gradient(135deg, #4b5563 0%, #374151 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(107, 114, 128, 0.4) !important;
+}
+
+/* Samakan ukuran semua button */
+.btn-export,
+.btn-import,
+.btn-report,
+.btn-primary {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.header-card {
+  background: linear-gradient(135deg, #ffffff 0%, #fdf2f8 100%);
+  backdrop-filter: blur(10px);
+  border-radius: 1rem;
+  box-shadow: 0 10px 40px rgba(236, 72, 153, 0.15);
+  border: 1px solid rgba(236, 72, 153, 0.1);
+  position: relative;
+  overflow: hidden;
+  padding: 1rem;
+}
+
+.header-card .flex {
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* Responsive untuk Mobile & Tablet */
+@media (max-width: 1024px) {
+  .header-card {
+    padding: 0.75rem;
+  }
+
+  .header-card > .flex {
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  /* Button Container */
+  .header-card .flex.items-center.gap-2 {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  /* Buttons akan stack di mobile jika terlalu panjang */
+  .header-card button,
+  .header-card a.btn-secondary {
+    flex: 1 1 auto;
+    min-width: max-content;
+    justify-content: center;
+  }
+
+  /* Icon wrapper lebih kecil di mobile */
+  .header-card .icon-wrapper {
+    width: 40px;
+    height: 40px;
+  }
+
+  /* Title lebih kecil */
+  .header-card h1 {
+    font-size: 1.125rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .header-card {
+    padding: 0.625rem;
+  }
+
+  /* Full width untuk semua buttons di mobile kecil */
+  .header-card .flex.items-center.gap-2 {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .header-card button,
+  .header-card a.btn-secondary {
+    width: 100%;
+  }
+
+  .header-card h1 {
+    font-size: 1rem;
+  }
+
+  .header-card .icon-wrapper {
+    width: 36px;
+    height: 36px;
+  }
+
+  /* Span text pada button bisa disembunyikan, hanya icon */
+  .header-card button span,
+  .header-card a.btn-secondary span {
+    display: inline; /* Tetap tampilkan di mobile */
+  }
+}
+
+/* Tablet Landscape */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .header-card .flex.items-center.gap-2 {
+    justify-content: flex-start;
+    gap: 0.5rem;
+  }
+
+  .header-card button,
+  .header-card a.btn-secondary {
+    font-size: 0.8125rem;
+    padding: 0.5rem 0.75rem;
+  }
+}
+
+/* Desktop - Tampilan normal */
+@media (min-width: 1025px) {
+  .header-card > .flex {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
