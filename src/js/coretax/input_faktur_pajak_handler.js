@@ -13,6 +13,7 @@ const API_URLS = {
 const form = document.getElementById("fp-form");
 const inpId = document.getElementById("inp_id");
 const inpKodeStore = document.getElementById("inp_kode_store");
+const inpKodeSupplier = document.getElementById("inp_kode_supplier");
 const inpNoInvoice = document.getElementById("inp_no_invoice");
 const errNoInvoice = document.getElementById("err_no_invoice");
 const inpNoSeri = document.getElementById("inp_no_seri");
@@ -32,6 +33,7 @@ const inpSearchTable = document.getElementById("inp_search_table");
 const filterSort = document.getElementById("filter_sort");
 const filterTgl = document.getElementById("filter_tgl");
 const loaderRow = document.getElementById("loader-row");
+let detectedNoFaktur = null;
 let isSubmitting = false;
 let debounceTimer;
 let searchDebounceTimer;
@@ -164,7 +166,6 @@ async function fetchTableData(reset = false) {
 function renderTableRows(data) {
   data.forEach((row) => {
     tableRowIndex++;
-    const safeJson = JSON.stringify(row).replace(/"/g, "&quot;");
     const storeBadge = row.nm_alias
       ? `<span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded border border-gray-200">${row.nm_alias}</span>`
       : `<span class="text-gray-400">-</span>`;
@@ -373,6 +374,7 @@ async function fetchCoretaxData(nsfp) {
 }
 async function fetchReceiptData(noInvoice) {
   if (!noInvoice) return;
+  detectedNoFaktur = null;
   const selectedStore = inpKodeStore.value;
   if (!selectedStore) {
     Swal.fire({
@@ -387,7 +389,6 @@ async function fetchReceiptData(noInvoice) {
     return;
   }
   const isDuplicate = await checkDuplicateInvoiceFunc(noInvoice);
-  if (isDuplicate) return;
   inpNoInvoice.classList.add("bg-yellow-50", "text-yellow-700");
   const originalPlaceholder = inpNoInvoice.placeholder;
   inpNoInvoice.placeholder = "Mencari...";
@@ -399,23 +400,28 @@ async function fetchReceiptData(noInvoice) {
     );
     if (result.success && result.data) {
       const d = result.data;
+      detectedNoFaktur = d.no_faktur;
+      inpKodeSupplier.value = d.kode_supplier || "";
       inpNamaSupp.value = d.nama_supplier || "";
       inpDpp.value = formatNumber(d.dpp);
       inpPpn.value = formatNumber(d.ppn);
       calculateTotal();
-      inpNoInvoice.classList.remove("bg-yellow-50", "text-yellow-700");
-      inpNoInvoice.classList.add("bg-green-50", "text-green-700");
-      Toastify({
-        text: "✅ Data Invoice ditemukan",
-        duration: 2000,
-        style: { background: "#10b981" },
-      }).showToast();
-      setTimeout(
-        () => inpNoInvoice.classList.remove("bg-green-50", "text-green-700"),
-        1000
-      );
+      if (!isDuplicate) {
+        inpNoInvoice.classList.remove("bg-yellow-50", "text-yellow-700");
+        inpNoInvoice.classList.add("bg-green-50", "text-green-700");
+        Toastify({
+          text: "✅ Data Invoice ditemukan",
+          duration: 2000,
+          style: { background: "#10b981" },
+        }).showToast();
+        setTimeout(
+          () => inpNoInvoice.classList.remove("bg-green-50", "text-green-700"),
+          1000
+        );
+      }
       if (!inpNoSeri.value) inpNoSeri.focus();
     } else {
+      detectedNoFaktur = null;
       inpNoInvoice.classList.remove("bg-yellow-50", "text-yellow-700");
       if (result.error_type === "wrong_store") {
         Swal.fire({
@@ -427,23 +433,29 @@ async function fetchReceiptData(noInvoice) {
         inpNoInvoice.value = "";
         inpNoInvoice.focus();
       } else {
-        Toastify({
-          text: "ℹ️ Data Invoice tidak ditemukan (Input Manual)",
-          duration: 2000,
-          style: { background: "#3b82f6" },
-        }).showToast();
+        if (!isDuplicate) {
+          Toastify({
+            text: "ℹ️ Data Invoice tidak ditemukan (Input Manual)",
+            duration: 2000,
+            style: { background: "#3b82f6" },
+          }).showToast();
+        }
       }
     }
   } catch (error) {
     console.error("Fetch Receipt Error:", error);
   } finally {
     inpNoInvoice.classList.remove("bg-yellow-50", "text-yellow-700");
+    if (isDuplicate)
+      inpNoInvoice.classList.add("border-red-500", "bg-red-50", "text-red-700");
     inpNoInvoice.placeholder = originalPlaceholder;
   }
 }
 function startEditMode(data) {
   resetErrorState();
   inpId.value = data.id;
+  inpKodeSupplier.value = data.kode_supplier || "";
+  detectedNoFaktur = data.no_faktur;
   inpNoSeri.value = data.nsfp;
   inpNoInvoice.value = data.no_invoice || "";
   inpNamaSupp.value = data.nama_supplier;
@@ -469,6 +481,8 @@ function cancelEditMode() {
   resetErrorState();
   inpId.value = "";
   inpKodeStore.value = "";
+  inpKodeSupplier.value = "";
+  detectedNoFaktur = null;
   inpTotal.value = "0";
   document
     .querySelector(".input-row-container")
@@ -555,6 +569,8 @@ async function handleSave() {
     id: inpId.value || null,
     nsfp: noSeri,
     no_invoice: noInvoice,
+    no_faktur: detectedNoFaktur,
+    kode_supplier: inpKodeSupplier.value,
     nama_supplier: inpNamaSupp.value.trim(),
     kode_store: inpKodeStore.value,
     tgl_faktur: inpTgl.value,
@@ -673,13 +689,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (input === inpNoInvoice) {
           const val = input.value.trim();
           if (val) await fetchReceiptData(val);
-          return;
         }
         if (input === inpNoSeri) {
           const val = input.value.trim();
           if (val) await fetchCoretaxData(val);
-          if (inpNamaSupp) inpNamaSupp.focus();
-          return;
         }
         let nextIndex = index + 1;
         let nextInput = formInputs[nextIndex];
@@ -692,10 +705,14 @@ document.addEventListener("DOMContentLoaded", () => {
           nextIndex++;
           nextInput = formInputs[nextIndex];
         }
-        if (nextInput) {
+        const isReadyToSave =
+          inpNoInvoice.value && inpNoSeri.value && inpKodeStore.value;
+        const isLastInput = input.id === "inp_ppn";
+        if (isReadyToSave && (isLastInput || e.ctrlKey)) {
+          handleSave();
+        } else if (nextInput) {
           nextInput.focus();
-        } else {
-          input.blur();
+        } else if (isReadyToSave) {
           handleSave();
         }
       }
