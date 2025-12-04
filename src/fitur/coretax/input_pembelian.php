@@ -198,8 +198,7 @@ if (!$menuHandler->initialize()) {
                             <div>
                                 <label class="form-label">Kode Supplier</label>
                                 <input type="text" id="inp_kode_supplier" name="kode_supplier" class="input-compact"
-                                    list="kode_supplier_list_data" placeholder="Ketik Kode..." autocomplete="off">
-                                <datalist id="kode_supplier_list_data"></datalist>
+                                    placeholder="Input Kode Manual..." autocomplete="off">
                             </div>
 
                             <div>

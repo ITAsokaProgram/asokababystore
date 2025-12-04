@@ -8,13 +8,11 @@ const API_URLS = {
   checkDuplicate: "/src/api/coretax/check_duplicate_invoice.php",
   getStores: "/src/api/shared/get_all_store.php",
   searchSupplier: "/src/api/coretax/get_supplier_search.php",
-  searchSupplierCode: "/src/api/coretax/get_supplier_code_search.php",
   deleteData: "/src/api/coretax/delete_pembelian_single.php",
 };
 const form = document.getElementById("single-form");
 const inpId = document.getElementById("inp_id");
 const inpKodeSupplier = document.getElementById("inp_kode_supplier");
-const listKodeSupplier = document.getElementById("kode_supplier_list_data");
 const inpNoInvoice = document.getElementById("inp_no_invoice");
 const errNoInvoice = document.getElementById("err_no_invoice");
 const inpKodeStore = document.getElementById("inp_kode_store");
@@ -40,7 +38,6 @@ const inpFileImport = document.getElementById("file_import");
 let detectedNoFaktur = null;
 let isSubmitting = false;
 let debounceTimer;
-let debounceCodeTimer;
 let searchDebounceTimer;
 let currentPage = 1;
 let isLoadingData = false;
@@ -67,27 +64,7 @@ function calculateTotal() {
   const total = dpp + ppn;
   inpTotal.value = formatNumber(total);
 }
-async function handleSupplierCodeSearch(e) {
-  const term = e.target.value;
-  if (term.length < 1) return;
-  clearTimeout(debounceCodeTimer);
-  debounceCodeTimer = setTimeout(async () => {
-    try {
-      const result = await sendRequestGET(
-        `${API_URLS.searchSupplierCode}?term=${encodeURIComponent(term)}`
-      );
-      if (result.success && Array.isArray(result.data)) {
-        let options = "";
-        result.data.forEach((item) => {
-          options += `<option value="${item.code}">${item.code} - ${item.name}</option>`;
-        });
-        listKodeSupplier.innerHTML = options;
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  }, 300);
-}
+
 async function loadStoreOptions() {
   try {
     const result = await sendRequestGET(API_URLS.getStores);
@@ -201,7 +178,7 @@ function renderTableRows(data) {
         <td><span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded border border-gray-200">${
           row.nm_alias || "-"
         }</span></td>
-        <td class="text-center">${badgeStatus}</td>
+        <td class="">${badgeStatus}</td>
         <td class="text-sm truncate max-w-[150px]" title="${
           row.nama_supplier
         }">${row.nama_supplier}</td>
@@ -721,9 +698,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
   inpNamaSupp.addEventListener("input", handleSupplierSearch);
-  if (inpKodeSupplier) {
-    inpKodeSupplier.addEventListener("input", handleSupplierCodeSearch);
-  }
+
   inpNoInvoice.addEventListener("change", (e) => {
     const val = e.target.value.trim();
     if (val !== "") {
