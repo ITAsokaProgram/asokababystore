@@ -131,7 +131,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (tableBody)
           tableBody.innerHTML = `
                         <tr>
-                            <td colspan="6" class="text-center p-8">
+                            <td colspan="7" class="text-center p-8">
                                 <div class="spinner-simple"></div>
                                 <p class="mt-2 text-gray-500">Memuat data...</p>
                             </td>
@@ -162,7 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function showTableError(message) {
     tableBody.innerHTML = `
             <tr>
-                <td colspan="6" class="text-center p-8 text-red-600">
+                <td colspan="7" class="text-center p-8 text-red-600">
                     <i class="fas fa-exclamation-triangle fa-lg mb-2"></i>
                     <p>Gagal memuat data: ${message}</p>
                 </td>
@@ -193,7 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!tabel_data || tabel_data.length === 0) {
       tableBody.innerHTML = `
                 <tr>
-                    <td colspan="6" class="text-center p-8 text-gray-500">
+                    <td colspan="7" class="text-center p-8 text-gray-500">
                         <i class="fas fa-inbox fa-lg mb-2"></i>
                         <p>Tidak ada data ditemukan untuk filter ini.</p>
                     </td>
@@ -206,8 +206,11 @@ document.addEventListener("DOMContentLoaded", () => {
       htmlRows += `
                 <tr>
                     <td>${item_counter}</td>
+                    <td class="font-medium text-gray-700">${
+                      row.no_lpb || "-"
+                    }</td>
                     <td>${row.kodesupp}</td>
-                    <td class="text-left">${row.namasupp}</td>
+                    <td class="text-left">${row.namasupp || "-"}</td>
                     <td class=" font-semibold">${formatRupiah(row.netto)}</td>
                     <td class="">${formatRupiah(row.ppn)}</td>
                     <td class=" font-bold">${formatRupiah(row.total)}</td>
@@ -215,7 +218,6 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
       item_counter++;
     });
-
     tableBody.innerHTML = htmlRows;
   }
   function renderPagination(pagination) {
@@ -285,9 +287,6 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
     paginationLinks.innerHTML = linksHtml;
   }
-  /**
-   * Mengambil semua data dari API untuk keperluan export.
-   */
   async function fetchAllDataForExport() {
     setLoadingState(true, true);
     const params = getUrlParams();
@@ -324,9 +323,6 @@ document.addEventListener("DOMContentLoaded", () => {
       setLoadingState(false);
     }
   }
-  /**
-   * Fungsi untuk export data ke Excel
-   */
   async function exportToExcel() {
     const data = await fetchAllDataForExport();
     if (!data || !data.tabel_data || data.tabel_data.length === 0) {
@@ -351,6 +347,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ];
       const headers = [
         "No",
+        "No LPB",
         "Kode Supp",
         "Nama Supplier",
         "Netto",
@@ -362,6 +359,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tabel_data.forEach((row) => {
         dataRows.push([
           item_counter++,
+          row.no_lpb,
           row.kodesupp,
           row.namasupp,
           parseFloat(row.netto) || 0,
@@ -371,6 +369,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       dataRows.push([]);
       dataRows.push([
+        "",
         "",
         "",
         "GRAND TOTAL",
@@ -385,7 +384,7 @@ document.addEventListener("DOMContentLoaded", () => {
       XLSX.utils.sheet_add_aoa(ws, dataRows, {
         origin: "A" + (info.length + 3),
       });
-      ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }];
+      ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }];
       ws["A1"].s = {
         font: { bold: true, sz: 16 },
         alignment: { horizontal: "center" },
@@ -408,12 +407,12 @@ document.addEventListener("DOMContentLoaded", () => {
       const dataRowStartIndex = info.length + 2;
       dataRows.forEach((row, R_idx) => {
         const R = R_idx + dataRowStartIndex;
-        if (row[2] === "GRAND TOTAL") {
-          ws[XLSX.utils.encode_cell({ r: R, c: 2 })].s = {
+        if (row[3] === "GRAND TOTAL") {
+          ws[XLSX.utils.encode_cell({ r: R, c: 3 })].s = {
             font: { bold: true, sz: 12 },
             alignment: { horizontal: "right" },
           };
-          ["D", "E", "F"].forEach((col) => {
+          ["E", "F", "G"].forEach((col) => {
             const cell = ws[col + (R + 1)];
             if (cell) {
               cell.t = "n";
@@ -421,7 +420,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
           });
         } else if (row.length > 0) {
-          ["D", "E", "F"].forEach((col) => {
+          ["E", "F", "G"].forEach((col) => {
             const cell = ws[col + (R + 1)];
             if (cell) {
               cell.t = "n";
@@ -432,6 +431,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       ws["!cols"] = [
         { wch: 5 },
+        { wch: 15 },
         { wch: 12 },
         { wch: 35 },
         { wch: 17 },
@@ -447,9 +447,6 @@ document.addEventListener("DOMContentLoaded", () => {
       Swal.fire("Export Gagal", "Terjadi kesalahan: " + error.message, "error");
     }
   }
-  /**
-   * Fungsi untuk export data ke PDF
-   */
   async function exportToPDF() {
     const data = await fetchAllDataForExport();
     if (!data || !data.tabel_data || data.tabel_data.length === 0) {
@@ -486,13 +483,14 @@ document.addEventListener("DOMContentLoaded", () => {
         { align: "right" }
       );
       const head = [
-        ["No", "Kode Supp", "Nama Supplier", "Netto", "PPN", "Total"],
+        ["No", "No LPB", "Kode Supp", "Nama Supplier", "Netto", "PPN", "Total"],
       ];
       const body = [];
       let item_counter = 1;
       tabel_data.forEach((row) => {
         body.push([
           item_counter++,
+          row.no_lpb,
           row.kodesupp,
           row.namasupp,
           formatRupiah(row.netto),
@@ -503,7 +501,7 @@ document.addEventListener("DOMContentLoaded", () => {
       body.push([
         {
           content: `GRAND TOTAL`,
-          colSpan: 3,
+          colSpan: 4,
           styles: {
             halign: "right",
             fontStyle: "bold",
@@ -554,9 +552,10 @@ document.addEventListener("DOMContentLoaded", () => {
           0: { halign: "right" },
           1: { halign: "left" },
           2: { halign: "left" },
-          3: { halign: "right" },
+          3: { halign: "left" },
           4: { halign: "right" },
           5: { halign: "right" },
+          6: { halign: "right" },
         },
       });
       const fileName = `Receipt_by_Supplier_${params.tgl_mulai}_sd_${params.tgl_selesai}.pdf`;

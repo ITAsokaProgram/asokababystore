@@ -103,6 +103,7 @@ try {
     $sql_data = "
         SELECT
             $sql_calc_found_rows
+            a.no_lpb, 
             a.kode_supp AS kodesupp,
             b.nama_supp AS namasupp,
             SUM(ifnull(a.netto,0)*(case when a.timbang='true' then a.qty_rec/1000 else a.qty_rec end)) as netto,
@@ -119,9 +120,9 @@ try {
         WHERE
             $where_conditions
         GROUP BY
-            a.kode_supp, b.nama_supp
+            a.no_lpb, a.kode_supp, b.nama_supp
         ORDER BY
-            namasupp ASC
+            namasupp ASC, a.no_lpb ASC
         $limit_offset_sql
     ";
 

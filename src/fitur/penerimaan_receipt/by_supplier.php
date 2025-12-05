@@ -175,6 +175,7 @@ if (!$menuHandler->initialize()) {
                             <thead>
                                 <tr>
                                     <th>No</th>
+                                    <th>No LPB</th>
                                     <th>Kode Supp</th>
                                     <th>Nama Supplier</th>
                                     <th>Netto</th>
