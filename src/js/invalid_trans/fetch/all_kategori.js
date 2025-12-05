@@ -1,6 +1,26 @@
 import { paginationDetail } from "../table/pagination.js";
 import getCookie from "./../../index/utils/cookies.js";
-
+export const refreshParentTable = async () => {
+  try {
+    const source = sessionStorage.getItem("kategori_source");
+    const { paginationKat } = await import("../table/pagination.js");
+    if (source === "kategori_by_tanggal") {
+      const start = document.getElementById("startDate").value;
+      const end = document.getElementById("endDate").value;
+      const kat = document.getElementById("kategori").value;
+      const per = document.getElementById("periodeFilter").value;
+      const cab = document.getElementById("cabangFilter").value;
+      await fetchKategoriByTgl(start, end, kat, per, cab);
+      paginationKat(1, 10, "kategori_by_tanggal");
+    } else {
+      await fetchAllKategori();
+      paginationKat(1, 10, "kategori_invalid");
+    }
+  } catch (error) {
+    console.warn("Soft refresh failed, forcing browser reload...", error);
+    window.location.reload();
+  }
+};
 export const fetchAllKategori = async () => {
   const token = getCookie("admin_token");
   try {
@@ -70,7 +90,6 @@ export const fetchAllKategori = async () => {
     }).showToast();
   }
 };
-
 export const fetchDetailKategori = async (
   kategori,
   kode,
@@ -148,7 +167,6 @@ export const fetchDetailKategori = async (
     }).showToast();
   }
 };
-
 export const fetchKategoriByTgl = async (
   start,
   end,
@@ -227,8 +245,6 @@ export const fetchKategoriByTgl = async (
     }).showToast();
   }
 };
-
-// Function Single Update (Existing)
 export const fetchCekData = async (
   data,
   kategori,
@@ -252,14 +268,11 @@ export const fetchCekData = async (
         Swal.showValidationMessage("Keterangan tidak boleh kosong");
         return false;
       }
-
       const payload = {
         ...data,
         ket: keterangan,
       };
-      // Tampilkan loading spinner
       Swal.showLoading();
-
       return fetch("/src/api/invalid/update_checking", {
         method: "POST",
         headers: {
@@ -271,7 +284,7 @@ export const fetchCekData = async (
         .then((response) => response.json())
         .then((res) => {
           if (res.status === "success") {
-            return res.message; // Ini akan dikirim ke then() di bawah
+            return res.message;
           } else {
             throw new Error(res.message);
           }
@@ -280,17 +293,15 @@ export const fetchCekData = async (
           Swal.showValidationMessage(`Gagal: ${error.message}`);
         });
     },
-  }).then((result) => {
+  }).then(async (result) => {
     if (result.isConfirmed && result.value) {
-      Swal.fire("Tersimpan!", result.value, "success").then(async () => {
-        await fetchDetailKategori(kategori, kode, startDate, endDate);
-        paginationDetail(1, 10, "detail_kategori");
-      });
+      await Swal.fire("Tersimpan!", result.value, "success");
+      await fetchDetailKategori(kategori, kode, startDate, endDate);
+      paginationDetail(1, 10, "detail_kategori");
+      await refreshParentTable();
     }
   });
 };
-
-// Function Bulk Update (New)
 export const fetchBulkCekData = async (
   items,
   keterangan,
@@ -305,9 +316,7 @@ export const fetchBulkCekData = async (
     ket: keterangan,
     nama: sessionStorage.getItem("userName"),
   };
-
   Swal.showLoading();
-
   try {
     const response = await fetch("/src/api/invalid/update_checking", {
       method: "POST",
@@ -317,14 +326,11 @@ export const fetchBulkCekData = async (
       },
       body: JSON.stringify(payload),
     });
-
     const res = await response.json();
-
     if (res.status === "success") {
-      Swal.fire("Berhasil!", res.message, "success").then(async () => {
-        await fetchDetailKategori(kategori, kode, startDate, endDate);
-        return true; // Signal success
-      });
+      await Swal.fire("Berhasil!", res.message, "success");
+      await fetchDetailKategori(kategori, kode, startDate, endDate);
+      await refreshParentTable();
       return true;
     } else {
       throw new Error(res.message);
@@ -334,10 +340,8 @@ export const fetchBulkCekData = async (
     return false;
   }
 };
-
 export const fetchKeterangan = async (plu, kasir, tgl, jam, store) => {
   const token = getCookie("admin_token");
-
   try {
     const response = await fetch(
       `/src/api/invalid/get_keterangan?plu=${plu}&kasir=${kasir}&tgl=${tgl}&jam=${jam}&cabang=${store}`,
@@ -396,7 +400,6 @@ export const fetchKeterangan = async (plu, kasir, tgl, jam, store) => {
     }).showToast();
   }
 };
-
 export const fetchTopInvalid = async () => {
   const token = getCookie("admin_token");
   try {
@@ -424,7 +427,6 @@ export const fetchTopInvalid = async () => {
     }).showToast();
   }
 };
-
 export const fetchTopRetur = async () => {
   const token = getCookie("admin_token");
   try {
@@ -452,7 +454,6 @@ export const fetchTopRetur = async () => {
     }).showToast();
   }
 };
-
 export const fetchExportDetails = async (cabang) => {
   const token = getCookie("admin_token");
   try {
@@ -466,7 +467,6 @@ export const fetchExportDetails = async (cabang) => {
         },
       }
     );
-
     if (response.status === 200) {
       const result = await response.json();
       return result.data;
@@ -481,7 +481,6 @@ export const fetchExportDetails = async (cabang) => {
     return [];
   }
 };
-
 export default {
   fetchAllKategori,
   fetchDetailKategori,
@@ -492,4 +491,5 @@ export default {
   fetchTopInvalid,
   fetchTopRetur,
   fetchExportDetails,
+  refreshParentTable,
 };
