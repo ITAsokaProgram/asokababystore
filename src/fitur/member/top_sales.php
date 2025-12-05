@@ -273,12 +273,7 @@ $token = $menuHandler->getToken();
                     &times;
                 </button>
                 <div class="flex items-center space-x-2">
-                    <div id="modal-icon"
-                        class="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
+
                     <div>
                         <h2 id="modal-title" class="text-2xl font-bold"></h2>
                         <p id="modal-subtitle" class="text-blue-100 text-sm"></p>

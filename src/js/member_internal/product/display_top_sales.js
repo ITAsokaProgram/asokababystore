@@ -31,6 +31,7 @@ let itemsPerPage = 10;
 let currentSearch = "";
 let currentSort = "belanja";
 let totalPages = 1;
+let lastMemberData = null;
 const initTopSalesDisplay = async () => {
   setupEventListeners();
   await loadTop50Cards();
@@ -69,8 +70,10 @@ const setupEventListeners = () => {
           transactionResponse.detail_transaction &&
           transactionResponse.detail_transaction.length > 0
         ) {
+          lastMemberData = transactionResponse.detail_transaction;
           showDetailModal(transactionResponse.detail_transaction);
         } else {
+          lastMemberData = null;
           showDetailModal([]);
           showToast("Tidak ada data transaksi ditemukan", "warning");
         }
@@ -87,6 +90,7 @@ const setupEventListeners = () => {
       showGlobalLoading();
       try {
         const nonMember = nonMemberEl.dataset.nonMember;
+        lastMemberData = null;
         const transactionResponse = await fetchTransaction({
           no_trans: nonMember,
           ...currentDateFilter,
@@ -96,9 +100,11 @@ const setupEventListeners = () => {
           transactionResponse.detail_transaction &&
           transactionResponse.detail_transaction.length > 0
         ) {
-          showDetailModal(transactionResponse.detail_transaction);
+          showDetailModal(transactionResponse.detail_transaction, null, {
+            status: "Non-Member",
+          });
         } else {
-          showDetailModal([]);
+          showDetailModal([], null, { status: "Non-Member" });
           showToast("Tidak ada data transaksi ditemukan", "warning");
         }
       } catch (error) {
@@ -114,18 +120,31 @@ const setupEventListeners = () => {
       showGlobalLoading();
       try {
         const noTrans = detailTransactionEl.dataset.detailTransaction;
-
+        const kdCust = detailTransactionEl.dataset.kdCust;
         const transactionResponse = await fetchTransaction({
           no_trans: noTrans,
           ...currentDateFilter,
         });
-
         if (
           transactionResponse &&
           transactionResponse.detail_transaction &&
           transactionResponse.detail_transaction.length > 0
         ) {
-          showDetailModal(transactionResponse.detail_transaction);
+          let backAction = null;
+          if (lastMemberData && kdCust) {
+            backAction = () => {
+              showDetailModal(lastMemberData);
+            };
+          }
+          const statusInfo = {
+            status: kdCust ? "Active Member" : "Non-Member",
+            kd_cust: kdCust,
+          };
+          showDetailModal(
+            transactionResponse.detail_transaction,
+            backAction,
+            statusInfo
+          );
         } else {
           showToast("Detail transaksi tidak ditemukan", "warning");
         }

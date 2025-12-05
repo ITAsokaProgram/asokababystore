@@ -1,21 +1,26 @@
-function showDetailModal(data) {
+function showDetailModal(data, backHandler = null, extraInfo = null) {
   const modal = document.getElementById("detail-modal");
   const title = document.getElementById("modal-title");
   const subtitle = document.getElementById("modal-subtitle");
   const content = document.getElementById("modal-content");
   const timestamp = document.getElementById("modal-timestamp");
-  const icon = document.getElementById("modal-icon");
+  const oldBackBtn = document.getElementById("modal-back-btn");
+  if (oldBackBtn) oldBackBtn.remove();
   timestamp.textContent = `Ditampilkan pada: ${new Date().toLocaleString(
     "id-ID"
   )}`;
-  if (data[0].kd_cust) {
-    title.textContent = "Detail Member";
+  let backButtonHtml = "";
+  if (backHandler) {
+    backButtonHtml = `
+      <button id="modal-back-btn" class="mr-3 p-1 rounded-full hover:bg-white hover:bg-opacity-20 transition-all text-white focus:outline-none">
+          <
+      </button>
+      `;
+  }
+  if (data[0] && data[0].kd_cust) {
+    if (!backHandler) backButtonHtml = "";
+    title.innerHTML = `${backButtonHtml}Detail Member`;
     subtitle.textContent = `ID: ${data[0].kd_cust}`;
-    icon.innerHTML = `
-              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-            `;
     content.innerHTML = `
                   <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-2 border border-blue-200"> <h3 class="text-lg font-semibold text-blue-800 mb-2 flex items-center"> <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                               <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"/>
@@ -98,7 +103,7 @@ function showDetailModal(data) {
                                   <div class="font-semibold text-green-600">${formatCurrency(
                                     item.nominal
                                   )}</div>
-                                  <div class="text-sm text-green-500 cursor-pointer" data-detail-transaction="${
+                                  <div class="text-sm text-green-500 cursor-pointer hover:text-green-700 underline" data-detail-transaction="${
                                     item.no_trans
                                   }" data-kd-cust="${item.kd_cust}">Detail</div>
                               </div>
@@ -109,14 +114,20 @@ function showDetailModal(data) {
                       </div>
                   </div>
                 `;
-  } else if (data[0].kode_transaksi) {
-    title.textContent = "Detail";
-    subtitle.textContent = `ID: ${data[0].kode_transaksi}`;
-    icon.innerHTML = `
-              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
-              </svg>
-            `;
+  } else if (data[0] && data[0].kode_transaksi) {
+    const statusText =
+      extraInfo && extraInfo.status ? extraInfo.status : "Non-Member";
+    const statusClass =
+      statusText === "Active Member"
+        ? "bg-green-100 text-green-800"
+        : "bg-gray-100 text-gray-800";
+    const subtitleText =
+      extraInfo && extraInfo.kd_cust
+        ? `ID Member: ${extraInfo.kd_cust} | Trans: ${data[0].kode_transaksi}`
+        : `ID Trans: ${data[0].kode_transaksi}`;
+    title.innerHTML = `${backButtonHtml}Detail Item`;
+    subtitle.textContent = subtitleText;
+
     content.innerHTML = `
                   <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-2 border border-green-200"> <h3 class="text-lg font-semibold text-green-800 mb-2 flex items-center"> <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                               <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
@@ -125,13 +136,13 @@ function showDetailModal(data) {
                       </h3>
                       <div class="grid grid-cols-2 gap-2"> <div class="space-y-1"> <div class="flex justify-between">
                                   <span class="font-medium text-gray-600">Kode Transaksi:</span>
-                                  <span class="font-semibold text-gray-800">${
+                                  <span class="font-semibold text-gray-800 text-xs">${
                                     data[0].kode_transaksi
                                   }</span>
                               </div>
                               <div class="flex justify-between">
                                   <span class="font-medium text-gray-600">Status:</span>
-                                  <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-medium">Non-Member</span>
+                                  <span class="${statusClass} px-2 py-1 rounded-full text-xs font-medium">${statusText}</span>
                               </div>
                               <div class="flex justify-between">
                                   <span class="font-medium text-gray-600">Kasir:</span>
@@ -208,9 +219,7 @@ function showDetailModal(data) {
                           </div>
                       </div>
                   </div>
-                  <div class="bg-gray-50 rounded-xl p-2 border border-gray-200"> <h3 class="text-lg font-semibold text-gray-800 mb-2 flex items-center"> <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                              <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                          </svg>
+                  <div class="bg-gray-50 rounded-xl p-2 border border-gray-200"> <h3 class="text-lg font-semibold text-gray-800 mb-2 flex items-center"> 
                           Informasi Transaksi
                       </h3>
                       <div class="space-y-1"> <div class="flex justify-between items-center py-1 border-b border-gray-200"> <div>
@@ -244,7 +253,8 @@ function showDetailModal(data) {
                   </div>
                 `;
   } else {
-    title.textContent = "Detail Transaksi";
+    if (backHandler) title.innerHTML = `${backButtonHtml}Detail Transaksi`;
+    else title.textContent = "Detail Transaksi";
     subtitle.textContent = "Data tidak ditemukan";
     content.innerHTML = `
     <div class="bg-red-50 rounded-xl p-2 border border-red-200"> <h3 class="text-lg font-semibold text-red-800">Tidak ada data</h3>
@@ -253,6 +263,12 @@ function showDetailModal(data) {
     `;
   }
   modal.classList.remove("hidden");
+  if (backHandler) {
+    const backBtn = document.getElementById("modal-back-btn");
+    if (backBtn) {
+      backBtn.addEventListener("click", backHandler);
+    }
+  }
 }
 function formatCurrency(amount) {
   return new Intl.NumberFormat("id-ID", {
@@ -267,17 +283,12 @@ function showDetailModalMember(data) {
   const subtitle = document.getElementById("modal-subtitle");
   const content = document.getElementById("modal-content");
   const timestamp = document.getElementById("modal-timestamp");
-  const icon = document.getElementById("modal-icon");
   timestamp.textContent = `Ditampilkan pada: ${new Date().toLocaleString(
     "id-ID"
   )}`;
   title.textContent = "Detail Transaksi Member";
   subtitle.textContent = `ID: ${data[0].kode_transaksi}`;
-  icon.innerHTML = `
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
-                </svg>
-              `;
+
   content.innerHTML = `
                   <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-2 border border-green-200"> <h3 class="text-lg font-semibold text-green-800 mb-2 flex items-center"> <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                               <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
@@ -368,9 +379,7 @@ function showDetailModalMember(data) {
                           </div>
                       </div>
                   </div>
-                  <div class="bg-gray-50 rounded-xl p-2 border border-gray-200"> <h3 class="text-lg font-semibold text-gray-800 mb-2 flex items-center"> <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                              <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                          </svg>
+                  <div class="bg-gray-50 rounded-xl p-2 border border-gray-200"> <h3 class="text-lg font-semibold text-gray-800 mb-2 flex items-center"> 
                           Informasi Transaksi
                       </h3>
                       <div class="space-y-1"> <div class="flex justify-between items-center py-1 border-b border-gray-200"> <div>
