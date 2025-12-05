@@ -5,11 +5,8 @@ require_once __DIR__ . "/../../auth/middleware_login.php";
 header("Content-Type:application/json");
 header("Access-Control-Allow-Methods: POST");
 
-
-
-
 $headers = getallheaders();
-if(!isset($headers['Authorization'])){
+if (!isset($headers['Authorization'])) {
     http_response_code(401);
     echo json_encode(['status' => "Unauthenticated", 'message' => 'Request ditolak, token tidak ditemukan']);
     exit;
@@ -17,42 +14,55 @@ if(!isset($headers['Authorization'])){
 $authHeader = $headers['Authorization'];
 $token = null;
 if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-    $token = $matches[1]; 
+    $token = $matches[1];
 }
 
 
 $inputJSON = json_decode(file_get_contents('php://input'), true);
 $verif = verify_token($token);
-$ket_cek = $inputJSON['ket'];
-$plu = $inputJSON['plu'];
-$kode_toko = $inputJSON['kd_store'];
-$kode_kasir = $inputJSON['kasir'];
-$tgl_trans = $inputJSON['tgl'];
-$jam_trans = $inputJSON['jam'];
-$nama = $inputJSON['nama'];
-$sql = "UPDATE invtrans SET ket_cek =? , nama_cek = ?  WHERE kode_toko = ? AND plu = ? AND kode_kasir = ? AND tgl_trans = ? AND jam_trs = ?";
 
-$stmt = $conn->prepare($sql);
-error_log("BIND VALUES: " . json_encode([
-  $ket_cek, $nama, $kode_toko, $plu, $kode_kasir, $tgl_trans, $jam_trans
-]));
-$stmt->bind_param("sssssss", $ket_cek, $nama, $kode_toko, $plu, $kode_kasir, $tgl_trans, $jam_trans);
-if (!$stmt) {
-    http_response_code(500);
-    echo json_encode(['status' => 'error', 'message' => 'Server Error']);
+// Modifikasi: Support Single update dan Bulk Update
+// Jika ada key 'items', berarti bulk update. Jika tidak, bungkus single data jadi array.
+$items = isset($inputJSON['items']) ? $inputJSON['items'] : [$inputJSON];
+
+$ket_cek = $inputJSON['ket'];
+// Nama user bisa diambil dari payload luar atau item pertama (tergantung implementasi JS)
+$nama = $inputJSON['nama'] ?? 'User';
+
+if (empty($items)) {
+    http_response_code(400);
+    echo json_encode(['status' => 'error', 'message' => 'Tidak ada data yang dikirim']);
     exit;
 }
-$stmt->execute();
-if ($stmt->affected_rows === 0) {
-    http_response_code(200);
-    echo json_encode([
-        'status' => 'warning',
-        'message' => 'Query sukses tapi tidak ada data yang diubah. Periksa kondisi WHERE.'
-    ]);
-    exit;
+
+$successCount = 0;
+$stmt = $conn->prepare("UPDATE invtrans SET ket_cek = ?, nama_cek = ? WHERE kode_toko = ? AND plu = ? AND kode_kasir = ? AND tgl_trans = ? AND jam_trs = ?");
+
+foreach ($items as $item) {
+    // Normalisasi variable dari item array
+    $plu = $item['plu'];
+    // Handle kemungkinan perbedaan nama key (kd_store vs cabang)
+    $kode_toko = $item['kd_store'] ?? $item['cabang'] ?? '';
+    $kode_kasir = $item['kasir'];
+    $tgl_trans = $item['tgl'];
+    $jam_trans = $item['jam'];
+
+    // Bind parameter dalam loop
+    $stmt->bind_param("sssssss", $ket_cek, $nama, $kode_toko, $plu, $kode_kasir, $tgl_trans, $jam_trans);
+
+    if ($stmt->execute()) {
+        $successCount++;
+    }
 }
-http_response_code(200);
-echo json_encode(['status' => 'success', 'message' => 'Berhasil update keterangan']);
 
 $stmt->close();
 $conn->close();
+
+if ($successCount > 0) {
+    http_response_code(200);
+    echo json_encode(['status' => 'success', 'message' => "Berhasil mengupdate $successCount data"]);
+} else {
+    http_response_code(500);
+    echo json_encode(['status' => 'error', 'message' => 'Gagal mengupdate data']);
+}
+?>

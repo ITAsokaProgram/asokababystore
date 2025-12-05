@@ -36,6 +36,12 @@ export const renderAllKategori = (data, offset = 0) => {
 
 export const renderDetailAllKategori = (data, offset = 0) => {
   const tbody = document.querySelector("#detailTbody");
+
+  // Reset UI Bulk Update
+  const checkAll = document.getElementById("checkAllDetail");
+  if (checkAll) checkAll.checked = false;
+  document.getElementById("btnBulkUpdate")?.classList.add("hidden");
+
   tbody.innerHTML = "";
   let row = "";
   data.forEach((item, index) => {
@@ -46,15 +52,34 @@ export const renderDetailAllKategori = (data, offset = 0) => {
       year: "numeric",
     });
 
+    // Membuat string JSON untuk value checkbox agar mudah diambil
+    const rowData = JSON.stringify({
+      kasir: item.kode,
+      plu: item.barcode,
+      tgl: item.tgl.split(" ")[0], // format YYYY-MM-DD
+      jam: item.jam,
+      kd_store: item.kode_toko,
+      cabang: item.cabang, // backup
+    });
+
     row += `
         <tr class="border-b hover:bg-gray-50 text-center">
+            <td class="px-2 py-2">
+                 <input type="checkbox" class="check-detail-item cursor-pointer w-4 h-4 text-pink-600 bg-gray-100 border-gray-300 rounded focus:ring-pink-500" value='${rowData}'>
+            </td>
             <td class='px-4 '> ${offset + index + 1} </td>
             <td class='px-4 '> ${item.kode} </td>
             <td class='px-4  text-center'> ${item.kasir} </td>
             <td class='px-4 '> ${item.barcode} </td>
-            <td class='px-4 truncate' title="${item.no_trans}"> ${item.no_trans} </td>
-            <td class='px-4  text-left truncate' title="${item.nama_product}"> ${item.nama_product} </td>
-            <td class='px-4 text-left truncate' title="${item.ket}"> ${item.ket} </td>
+            <td class='px-4 truncate' title="${item.no_trans}"> ${
+      item.no_trans
+    } </td>
+            <td class='px-4  text-left truncate' title="${
+              item.nama_product
+            }"> ${item.nama_product} </td>
+            <td class='px-4 text-left truncate' title="${item.ket}"> ${
+      item.ket
+    } </td>
             <td class='px-4  text-center truncate' title="${tgl}"> ${tgl} </td>
             <td class='px-4  text-center'> ${item.jam} </td>
             <td class='px-4   text-center'> ${item.cabang} </td>
@@ -150,14 +175,20 @@ export const renderTopInvalid = (data, offset = 0, limit = 20) => {
         <td class="text-center">${i + 1}</td>
         <td class="text-center">${item.tanggal.split(" ")[0]}</td>
         <td class="text-center font-mono text-xs">${item.kategori}</td>
-        <td class="truncate text-center" title="${item.cabang}">${item.cabang}</td>
-        <td class="truncate text-center" title="${item.kasir}">${item.kasir}</td>
-        <td class="text-center text-green-700 font-bold">${item.jml_gagal ?? 0}</td>
+        <td class="truncate text-center" title="${item.cabang}">${
+      item.cabang
+    }</td>
+        <td class="truncate text-center" title="${item.kasir}">${
+      item.kasir
+    }</td>
+        <td class="text-center text-green-700 font-bold">${
+          item.jml_gagal ?? 0
+        }</td>
       </tr>
     `;
   }
-  tbody.insertAdjacentHTML('beforeend', row);
-}
+  tbody.insertAdjacentHTML("beforeend", row);
+};
 
 export default {
   renderAllKategori,

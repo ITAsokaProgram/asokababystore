@@ -288,7 +288,7 @@ export const detailCabang = (data) => {
         }</div>
       </td>
       <td class="px-2 py-3 w-24">
-        <div class="truncate font-mono text-xs" title="${trx.no_bon}">${
+        <div class=" font-mono text-xs" title="${trx.no_bon}">${
           trx.no_bon
         }</div>
       </td>

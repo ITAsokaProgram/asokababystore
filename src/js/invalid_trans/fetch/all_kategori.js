@@ -1,5 +1,6 @@
 import { paginationDetail } from "../table/pagination.js";
 import getCookie from "./../../index/utils/cookies.js";
+
 export const fetchAllKategori = async () => {
   const token = getCookie("admin_token");
   try {
@@ -227,6 +228,7 @@ export const fetchKategoriByTgl = async (
   }
 };
 
+// Function Single Update (Existing)
 export const fetchCekData = async (
   data,
   kategori,
@@ -286,6 +288,51 @@ export const fetchCekData = async (
       });
     }
   });
+};
+
+// Function Bulk Update (New)
+export const fetchBulkCekData = async (
+  items,
+  keterangan,
+  kategori,
+  kode,
+  startDate,
+  endDate
+) => {
+  const token = getCookie("admin_token");
+  const payload = {
+    items: items,
+    ket: keterangan,
+    nama: sessionStorage.getItem("userName"),
+  };
+
+  Swal.showLoading();
+
+  try {
+    const response = await fetch("/src/api/invalid/update_checking", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const res = await response.json();
+
+    if (res.status === "success") {
+      Swal.fire("Berhasil!", res.message, "success").then(async () => {
+        await fetchDetailKategori(kategori, kode, startDate, endDate);
+        return true; // Signal success
+      });
+      return true;
+    } else {
+      throw new Error(res.message);
+    }
+  } catch (error) {
+    Swal.fire("Gagal", error.message, "error");
+    return false;
+  }
 };
 
 export const fetchKeterangan = async (plu, kasir, tgl, jam, store) => {
@@ -440,6 +487,7 @@ export default {
   fetchDetailKategori,
   fetchKategoriByTgl,
   fetchCekData,
+  fetchBulkCekData,
   fetchKeterangan,
   fetchTopInvalid,
   fetchTopRetur,

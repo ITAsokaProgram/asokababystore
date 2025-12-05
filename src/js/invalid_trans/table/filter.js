@@ -2,6 +2,7 @@ import {
   fetchKategoriByTgl,
   fetchDetailKategori,
   fetchCekData,
+  fetchBulkCekData, // Import fungsi bulk baru
   fetchKeterangan,
 } from "../fetch/all_kategori.js";
 import { openDetailModal } from "./all_kategori.js";
@@ -98,7 +99,7 @@ export const filterByTanggal = () => {
       const kode = btn.getAttribute("data-kode");
       const kategori = btn.getAttribute("data-kat");
       const split = kategori.split(" ")[0];
-      const likeKategori = `%${split}%`; 
+      const likeKategori = `%${split}%`;
       if (kode && kategori) {
         openDetailModal();
         await fetchDetailKategori(
@@ -107,9 +108,112 @@ export const filterByTanggal = () => {
           startDateInput.value,
           endDateInput.value
         );
-        paginationDetail(1, 10, "detail_kategori");
+        paginationDetail(1, 100, "detail_kategori");
       }
     });
+
+  // ========== LOGIC BULK UPDATE & CHECKBOX START ==========
+  const modalDetail = document.getElementById("detailInvalid");
+  const checkAll = document.getElementById("checkAllDetail");
+  const btnBulk = document.getElementById("btnBulkUpdate");
+
+  // Fungsi Helper Toggle Tombol Bulk
+  function toggleBulkButton() {
+    const checkedBoxes = modalDetail.querySelectorAll(
+      ".check-detail-item:checked"
+    );
+    if (checkedBoxes.length > 0) {
+      btnBulk.classList.remove("hidden");
+      btnBulk.innerHTML = `<i class="fas fa-edit"></i> Update (${checkedBoxes.length}) Item`;
+    } else {
+      btnBulk.classList.add("hidden");
+    }
+  }
+
+  // Event Listener Check All
+  if (checkAll) {
+    checkAll.addEventListener("change", function () {
+      const checkboxes = modalDetail.querySelectorAll(".check-detail-item");
+      checkboxes.forEach((cb) => (cb.checked = this.checked));
+      toggleBulkButton();
+    });
+  }
+
+  // Event Listener Check Item (Delegation)
+  modalDetail.addEventListener("change", function (e) {
+    if (e.target.classList.contains("check-detail-item")) {
+      const allCheckboxes = modalDetail.querySelectorAll(".check-detail-item");
+      const allChecked = Array.from(allCheckboxes).every((cb) => cb.checked);
+      if (checkAll) checkAll.checked = allChecked;
+      toggleBulkButton();
+    }
+  });
+
+  // Event Listener Tombol Bulk Update Click
+  if (btnBulk) {
+    btnBulk.addEventListener("click", function () {
+      const checkedBoxes = modalDetail.querySelectorAll(
+        ".check-detail-item:checked"
+      );
+      if (checkedBoxes.length === 0) return;
+
+      const itemsToUpdate = [];
+      let kodeSample = "";
+
+      checkedBoxes.forEach((cb) => {
+        const data = JSON.parse(cb.value);
+        itemsToUpdate.push(data);
+        kodeSample = data.kasir; // Ambil salah satu kode kasir untuk parameter refresh
+      });
+
+      // Ambil kategori dari session untuk parameter refresh
+      let kategoriSample = "";
+      const sessionDetail = JSON.parse(
+        sessionStorage.getItem("detail_kategori") || "{}"
+      );
+      const dataRaw = sessionDetail.data || [];
+      if (dataRaw.length > 0) {
+        const rawKat = dataRaw[0].kategori.split(" ")[0];
+        kategoriSample = `%${rawKat}%`;
+      }
+
+      Swal.fire({
+        title: `Update ${itemsToUpdate.length} Data`,
+        input: "text",
+        inputLabel: "Masukkan Keterangan untuk semua data terpilih",
+        inputPlaceholder: "Tulis keterangan di sini...",
+        showCancelButton: true,
+        confirmButtonText: "Update Semua",
+        confirmButtonColor: "#d33",
+        preConfirm: (keterangan) => {
+          if (!keterangan) {
+            Swal.showValidationMessage("Keterangan tidak boleh kosong");
+            return false;
+          }
+          return keterangan;
+        },
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          const success = await fetchBulkCekData(
+            itemsToUpdate,
+            result.value,
+            kategoriSample,
+            kodeSample,
+            startDateInput.value,
+            endDateInput.value
+          );
+
+          if (success) {
+            paginationDetail(1, 10, "detail_kategori");
+            if (checkAll) checkAll.checked = false;
+            toggleBulkButton();
+          }
+        }
+      });
+    });
+  }
+  // ========== LOGIC BULK UPDATE END ==========
+
   document.addEventListener("click", async function (e) {
     const button = e.target.closest(".periksa");
     if (!button) return;
