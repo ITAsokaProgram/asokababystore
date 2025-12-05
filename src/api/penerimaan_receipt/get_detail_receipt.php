@@ -75,12 +75,10 @@ try {
     if (!empty($search_query)) {
         $where_conditions .= " AND (a.no_faktur LIKE ? OR a.plu LIKE ? OR a.barcode LIKE ?)";
         $search_term = "%" . $search_query . "%";
-
         $bind_params_data[0] .= 'sss';
         $bind_params_data[] = $search_term;
         $bind_params_data[] = $search_term;
         $bind_params_data[] = $search_term;
-
         $bind_params_summary[0] .= 'sss';
         $bind_params_summary[] = $search_term;
         $bind_params_summary[] = $search_term;
@@ -101,9 +99,8 @@ try {
             DATE(a.tgl_tiba) AS tgl_tiba, 
             a.no_faktur,
             a.no_lpb,
+            a.jam,
             a.plu,
-            -- Pastikan kolom barcode di-select jika ingin ditampilkan atau hanya untuk filter saja
-            -- a.barcode, 
             a.descp AS deskripsi,
             a.satuan AS sat,
             a.conv1,
@@ -122,7 +119,7 @@ try {
         WHERE
             $where_conditions
         GROUP BY
-            DATE(a.tgl_tiba), a.no_faktur, a.no_lpb, a.plu, a.barcode, a.descp, a.satuan, a.conv1, a.conv2, a.no_ord, a.kode_supp, b.nama_supp, a.qty_rec, a.timbang, a.ppn_bm, a.netto, a.ppn 
+            DATE(a.tgl_tiba), a.no_faktur, a.no_lpb, a.plu, a.barcode, a.descp, a.satuan, a.conv1, a.conv2, a.no_ord, a.kode_supp, b.nama_supp, a.qty_rec, a.timbang, a.ppn_bm, a.netto, a.ppn, a.jam
         ORDER BY
             DATE(a.tgl_tiba), a.no_faktur, a.plu 
         $limit_offset_sql

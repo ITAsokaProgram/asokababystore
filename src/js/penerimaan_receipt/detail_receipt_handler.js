@@ -248,8 +248,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tr>
             `;
     }
-    function buildFakturHeaderRow(no_faktur, no_lpb) {
+    function buildFakturHeaderRow(no_faktur, no_lpb, jam) {
       const displayLpb = no_lpb ? no_lpb : "-";
+      const displayJam = jam ? jam : "-";
+
       return `
                 <tr class="header-faktur-row">
                     <td colspan="10" class="px-4 py-1 pl-6">
@@ -257,6 +259,9 @@ document.addEventListener("DOMContentLoaded", () => {
                             <span>No Faktur: <strong>${no_faktur}</strong></span>
                             <span class="text-gray-400">|</span>
                             <span>No Invoice: <strong>${displayLpb}</strong></span>
+                            
+                            <span class="text-gray-400">|</span>
+                            <span>Jam: <strong>${displayJam}</strong></span>
                         </div>
                     </td>
                 </tr>
@@ -317,7 +322,8 @@ document.addEventListener("DOMContentLoaded", () => {
             subtotal_total
           );
         }
-        htmlRows += buildFakturHeaderRow(row.no_faktur, row.no_lpb);
+        htmlRows += buildFakturHeaderRow(row.no_faktur, row.no_lpb, row.jam);
+
         current_no_faktur = row.no_faktur;
         faktur_item_counter = 1;
         subtotal_qty = 0;
@@ -569,11 +575,14 @@ document.addEventListener("DOMContentLoaded", () => {
           e: { r: dataRows.length + rowOffset - 1, c: 9 },
         });
       };
-      const pushFakturHeaderRow = (no_faktur, no_lpb) => {
+      const pushFakturHeaderRow = (no_faktur, no_lpb, jam) => {
         const displayLpb = no_lpb ? no_lpb : "-";
+        const displayJam = jam ? jam : "-";
+
         dataRows.push([
-          `No Faktur: ${no_faktur}   |   No Invoice: ${displayLpb}`,
+          `No Faktur: ${no_faktur}   |   No Invoice: ${displayLpb}   |   Jam: ${displayJam}`,
         ]);
+
         merges.push({
           s: { r: dataRows.length + rowOffset - 1, c: 0 },
           e: { r: dataRows.length + rowOffset - 1, c: 9 },
@@ -599,7 +608,8 @@ document.addEventListener("DOMContentLoaded", () => {
           if (current_no_faktur !== null) {
             pushSubtotalFakturRow();
           }
-          pushFakturHeaderRow(row.no_faktur, row.no_lpb);
+          pushFakturHeaderRow(row.no_faktur, row.no_lpb, row.jam);
+
           current_no_faktur = row.no_faktur;
           faktur_item_counter = 1;
         }
@@ -937,11 +947,13 @@ document.addEventListener("DOMContentLoaded", () => {
           },
         ]);
       };
-      const pushFakturHeaderRowPdf = (no_faktur, no_lpb) => {
+      const pushFakturHeaderRowPdf = (no_faktur, no_lpb, jam) => {
         const displayLpb = no_lpb ? no_lpb : "-";
+        const displayJam = jam ? jam : "-";
+
         body.push([
           {
-            content: `No Faktur: ${no_faktur}      No Invoice: ${displayLpb}`,
+            content: `No Faktur: ${no_faktur}      No Invoice: ${displayLpb}      Jam: ${displayJam}`,
             colSpan: 10,
             styles: headerFakturStyles,
           },
@@ -1002,7 +1014,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (current_no_faktur !== null) {
             pushSubtotalFakturRowPdf();
           }
-          pushFakturHeaderRowPdf(row.no_faktur, row.no_lpb);
+          pushFakturHeaderRowPdf(row.no_faktur, row.no_lpb, row.jam);
           current_no_faktur = row.no_faktur;
           faktur_item_counter = 1;
         }
