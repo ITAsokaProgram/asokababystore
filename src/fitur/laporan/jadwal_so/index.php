@@ -60,7 +60,7 @@ $sync = $_GET['sync'] ?? $default_sync;
                         </div>
                     </div>
 
-                    <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div class="mt-4 grid grid-cols-1 md:grid-cols-4 gap-3">
                         <div class="summary-card total flex gap-4 items-center">
                             <div class="summary-icon">
                                 <i class="fas fa-list-ul fa-lg"></i>
@@ -70,6 +70,17 @@ $sync = $_GET['sync'] ?? $default_sync;
                                 <p id="summary-total" class="text-2xl font-bold truncate text-gray-900">-</p>
                             </div>
                         </div>
+
+                        <div class="summary-card flex gap-4 items-center" style="border-left: 4px solid #3B82F6;">
+                            <div class="summary-icon" style="background-color: #DBEAFE; color: #1D4ED8;">
+                                <i class="fas fa-cog fa-spin fa-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xs font-semibold text-gray-600 mb-1">Proses</h3>
+                                <p id="summary-proses" class="text-2xl font-bold truncate text-gray-900">-</p>
+                            </div>
+                        </div>
+
                         <div class="summary-card flex gap-4 items-center" style="border-left: 4px solid #10B981;">
                             <div class="summary-icon" style="background-color: #D1FAE5; color: #059669;">
                                 <i class="fas fa-check-circle fa-lg"></i>
@@ -79,6 +90,7 @@ $sync = $_GET['sync'] ?? $default_sync;
                                 <p id="summary-selesai" class="text-2xl font-bold truncate text-gray-900">-</p>
                             </div>
                         </div>
+
                         <div class="summary-card flex gap-4 items-center warning">
                             <div class="summary-icon">
                                 <i class="fas fa-clock fa-lg"></i>
@@ -120,20 +132,27 @@ $sync = $_GET['sync'] ?? $default_sync;
                                 <i class="fas fa-tasks text-pink-600 mr-1"></i> Status
                             </label>
                             <select name="status" id="status" class="input-modern w-full">
-                                <option value="all" <?php echo $status == 'all' ? 'selected' : ''; ?>>Semua Status</option>
-                                <option value="Selesai" <?php echo $status == 'Selesai' ? 'selected' : ''; ?>>Selesai</option>
-                                <option value="Tunggu" <?php echo $status == 'Tunggu' ? 'selected' : ''; ?>>Tunggu</option>
+                                <option value="all" <?php echo $status == 'all' ? 'selected' : ''; ?>>Semua Status
+                                </option>
+                                <option value="Proses" <?php echo $status == 'Proses' ? 'selected' : ''; ?>>Proses
+                                </option>
+                                <option value="Selesai" <?php echo $status == 'Selesai' ? 'selected' : ''; ?>>Selesai
+                                </option>
+                                <option value="Tunggu" <?php echo $status == 'Tunggu' ? 'selected' : ''; ?>>Tunggu
+                                </option>
                             </select>
                         </div>
-                        
+
                         <div>
                             <label for="sync" class="block text-xs font-semibold text-gray-700 mb-2">
                                 <i class="fas fa-sync text-pink-600 mr-1"></i> Status Sync
                             </label>
                             <select name="sync" id="sync" class="input-modern w-full">
                                 <option value="all" <?php echo $sync == 'all' ? 'selected' : ''; ?>>Semua</option>
-                                <option value="False" <?php echo $sync == 'False' ? 'selected' : ''; ?>>Pending (False)</option>
-                                <option value="True" <?php echo $sync == 'True' ? 'selected' : ''; ?>>Synced (True)</option>
+                                <option value="False" <?php echo $sync == 'False' ? 'selected' : ''; ?>>Pending (False)
+                                </option>
+                                <option value="True" <?php echo $sync == 'True' ? 'selected' : ''; ?>>Synced (True)
+                                </option>
                             </select>
                         </div>
 
@@ -206,4 +225,5 @@ $sync = $_GET['sync'] ?? $default_sync;
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 </body>
+
 </html>

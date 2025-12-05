@@ -18,6 +18,7 @@ $is_export = filter_var($_GET['export'] ?? false, FILTER_VALIDATE_BOOLEAN);
 $response = [
     'summary' => [
         'total_jadwal' => 0,
+        'total_proses' => 0,
         'total_selesai' => 0,
         'total_tunggu' => 0,
     ],
@@ -113,6 +114,7 @@ try {
         SELECT 
             COUNT(*) as total_jadwal,
             SUM(CASE WHEN status = 'Selesai' THEN 1 ELSE 0 END) as total_selesai,
+            SUM(CASE WHEN status = 'Proses' THEN 1 ELSE 0 END) as total_proses, 
             SUM(CASE WHEN status = 'Tunggu' OR status IS NULL THEN 1 ELSE 0 END) as total_tunggu
         FROM $table_name
         WHERE $where_sql

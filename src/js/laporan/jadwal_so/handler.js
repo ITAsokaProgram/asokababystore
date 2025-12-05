@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const filterSelectStore = document.getElementById("kd_store");
   const filterSelectSync = document.getElementById("sync");
   const summaryTotal = document.getElementById("summary-total");
+  const summaryProses = document.getElementById("summary-proses");
   const summarySelesai = document.getElementById("summary-selesai");
   const summaryTunggu = document.getElementById("summary-tunggu");
   const pageSubtitle = document.getElementById("page-subtitle");
@@ -73,6 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateSummaryCards(summary) {
     if (!summary) return;
     summaryTotal.textContent = summary.total_jadwal || "0";
+    summaryProses.textContent = summary.total_proses || "0";
     summarySelesai.textContent = summary.total_selesai || "0";
     summaryTunggu.textContent = summary.total_tunggu || "0";
   }
@@ -94,6 +96,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const status = row.status || "Tunggu";
       if (status === "Selesai") {
         statusBadge = `<span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Selesai</span>`;
+      } else if (status === "Proses") {
+        statusBadge = `<span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Proses</span>`;
       } else {
         statusBadge = `<span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">${status}</span>`;
       }
