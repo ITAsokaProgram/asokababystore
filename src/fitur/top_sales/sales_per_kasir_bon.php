@@ -157,7 +157,7 @@ if (!$menuHandler->initialize()) {
                                 <i class="fas fa-search text-pink-600 mr-1"></i> Cari Data
                             </label>
                             <input type="text" name="search" id="search-input" class="input-modern w-full"
-                                placeholder="PLU / Nama / No Bon..."
+                                placeholder="PLU / Barang / Bon / Supplier..."
                                 value="<?php echo htmlspecialchars($_GET['search'] ?? ''); ?>">
                         </div>
 

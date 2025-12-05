@@ -63,50 +63,34 @@ try {
             $response['stores'][] = $row;
         }
     }
+    $join_sql = " LEFT JOIN supplier s ON a.kode_supp = s.kode_supp AND a.kd_store = s.kd_store ";
     $where_conditions = "a.tgl_trans BETWEEN ? AND ?";
-
-    // Inisialisasi array bind params
     $bind_params_data = ['ss', $tgl_mulai, $tgl_selesai];
     $bind_params_summary = ['ss', $tgl_mulai, $tgl_selesai];
-
-    // 1. FILTER STORE (Logika Lama)
     if ($kd_store != 'all') {
         $where_conditions .= " AND a.kd_store = ?";
         $bind_params_data[0] .= 's';
         $bind_params_data[] = $kd_store;
-
         $bind_params_summary[0] .= 's';
         $bind_params_summary[] = $kd_store;
     }
-
-    // 2. FILTER SEARCH (Logika Baru - Tambahkan Ini)
     $search_keyword = $_GET['search'] ?? '';
     if (!empty($search_keyword)) {
-        // Search mencakup PLU, Nama Barang (descp), atau No Bon
-        $where_conditions .= " AND (a.plu LIKE ? OR a.descp LIKE ? OR a.no_bon LIKE ?)";
+        $where_conditions .= " AND (a.plu LIKE ? OR a.descp LIKE ? OR a.no_bon LIKE ? OR a.kode_supp LIKE ? OR s.nama_supp LIKE ?)";
         $search_param = "%" . $search_keyword . "%";
-
-        // Tambahkan ke params data
-        $bind_params_data[0] .= 'sss';
-        $bind_params_data[] = $search_param;
-        $bind_params_data[] = $search_param;
-        $bind_params_data[] = $search_param;
-
-        // Tambahkan ke params summary (untuk hitung total & count rows)
-        $bind_params_summary[0] .= 'sss';
-        $bind_params_summary[] = $search_param;
-        $bind_params_summary[] = $search_param;
-        $bind_params_summary[] = $search_param;
+        $search_types = 'sssss';
+        $bind_params_data[0] .= $search_types;
+        for ($i = 0; $i < 5; $i++)
+            $bind_params_data[] = $search_param;
+        $bind_params_summary[0] .= $search_types;
+        for ($i = 0; $i < 5; $i++)
+            $bind_params_summary[] = $search_param;
     }
-
-    // 3. PAGINATION (Logika Lama - Pastikan ini ada DI BAWAH logika search)
     $sql_calc_found_rows = "";
     $limit_offset_sql = "";
     if (!$is_export) {
         $sql_calc_found_rows = "SQL_CALC_FOUND_ROWS";
         $limit_offset_sql = "LIMIT ? OFFSET ?";
-
-        // Append limit offset hanya ke bind_params_data
         $bind_params_data[0] .= 'ii';
         $bind_params_data[] = $limit;
         $bind_params_data[] = $offset;
@@ -114,12 +98,14 @@ try {
     $sql_data = "
         SELECT
             $sql_calc_found_rows
-            DATE(a.tgl_trans) AS tanggal, -- <-- UBAH KE DATE()
+            DATE(a.tgl_trans) AS tanggal,
             a.kode_kasir,
             a.nama_kasir,
             a.no_bon,
             FLOOR(a.plu / 10) AS plu,
             a.descp AS nama_barang,
+            a.kode_supp,        -- Opsional: kalau mau ditampilkan di frontend nanti
+            s.nama_supp,        -- Opsional: dari tabel supplier
             (CASE MOD(a.plu, 10)
                 WHEN 0 THEN a.qty * a.conv2
                 WHEN 1 THEN a.qty * (a.conv2 / a.conv1)
@@ -133,11 +119,12 @@ try {
             (IFNULL((a.harga * a.qty) - ((a.harga - a.hrg_promo) * a.qty) - (a.hrg_promo * (IFNULL(a.diskon1, 0) / 100) * a.qty) - ((a.hrg_promo - (a.hrg_promo * (IFNULL(a.diskon1, 0) / 100))) * (IFNULL(a.diskon2, 0) / 100) * a.qty), 0) - (a.diskon3 * a.qty)) AS total
         FROM
             trans_b a
+        $join_sql  -- Tambahkan JOIN disini
         WHERE
             $where_conditions
         ORDER BY
-            tanggal ASC, a.no_bon ASC, a.kode_kasir ASC -- <-- UBAH ORDER BY
-        $limit_offset_sql   
+            tanggal ASC, a.no_bon ASC, a.kode_kasir ASC
+        $limit_offset_sql    
     ";
     $stmt_data = $conn->prepare($sql_data);
     if ($stmt_data === false) {
@@ -156,10 +143,10 @@ try {
     }
     $stmt_data->close();
     if (!$is_export) {
-
         $sql_count_total = "
             SELECT COUNT(*) AS total_rows
             FROM trans_b a
+            $join_sql  -- Tambahkan JOIN disini juga
             WHERE $where_conditions
         ";
         $stmt_count = $conn->prepare($sql_count_total);
@@ -170,10 +157,8 @@ try {
         $stmt_count->execute();
         $total_rows = $stmt_count->get_result()->fetch_assoc()['total_rows'] ?? 0;
         $stmt_count->close();
-
         $response['pagination']['total_rows'] = (int) $total_rows;
         $response['pagination']['total_pages'] = ceil($total_rows / $limit);
-
         if ($page > $response['pagination']['total_pages'] && $total_rows > 0) {
             $page = $response['pagination']['total_pages'];
             $response['pagination']['current_page'] = $page;
@@ -181,8 +166,6 @@ try {
             $response['pagination']['offset'] = $offset;
         }
     }
-
-
     $sql_summary = "
         SELECT
             SUM((
@@ -205,13 +188,11 @@ try {
                 (IFNULL(a.ppn * a.qty, 0)) - 
                 (a.diskon3 * a.qty)
             )) AS total_grs_margin,
-            
             SUM((CASE MOD(a.plu, 10)
                 WHEN 0 THEN a.qty * a.conv2
                 WHEN 1 THEN a.qty * (a.conv2 / a.conv1)
                 ELSE a.qty
             END)) AS total_qty,
-            
             SUM((
                 ((a.harga - a.hrg_promo) * a.qty) + 
                 (a.hrg_promo * (IFNULL(a.diskon1, 0) / 100) * a.qty) +
@@ -220,11 +201,10 @@ try {
             )) AS total_total_diskon
         FROM
             trans_b a
+        $join_sql  -- Tambahkan JOIN disini juga
         WHERE
             $where_conditions
     ";
-
-
     $stmt_summary = $conn->prepare($sql_summary);
     if ($stmt_summary === false) {
         throw new Exception("Prepare failed (sql_summary): " . $conn->error);
@@ -234,20 +214,14 @@ try {
     $result_summary = $stmt_summary->get_result();
     $summary_data = $result_summary->fetch_assoc();
     $stmt_summary->close();
-
-
     if ($summary_data) {
         $response['summary']['total_net_sales'] = $summary_data['total_net_sales'] ?? 0;
         $response['summary']['total_grs_margin'] = $summary_data['total_grs_margin'] ?? 0;
         $response['summary']['total_hpp'] = $summary_data['total_hpp'] ?? 0;
-
         $response['summary']['total_qty'] = $summary_data['total_qty'] ?? 0;
         $response['summary']['total_total_diskon'] = $summary_data['total_total_diskon'] ?? 0;
-
         $response['summary']['total_total'] = $summary_data['total_net_sales'] ?? 0;
     }
-
-
     $sql_date_summary = "
         SELECT
             DATE(a.tgl_trans) AS tanggal,
@@ -256,14 +230,12 @@ try {
                 WHEN 1 THEN a.qty * (a.conv2 / a.conv1)
                 ELSE a.qty
             END)) AS total_qty,
-            
             SUM((
                 ((a.harga - a.hrg_promo) * a.qty) + 
                 (a.hrg_promo * (IFNULL(a.diskon1, 0) / 100) * a.qty) +
                 ((a.hrg_promo - (a.hrg_promo * (IFNULL(a.diskon1, 0) / 100))) * (IFNULL(a.diskon2, 0) / 100) * a.qty) +
                 (a.diskon3 * a.qty)
             )) AS total_total_diskon,
-
             SUM((
                 IFNULL(
                     (a.harga * a.qty) - 
@@ -275,6 +247,7 @@ try {
             )) AS total_total
         FROM
             trans_b a
+        $join_sql  -- Tambahkan JOIN disini juga
         WHERE
             $where_conditions
         GROUP BY
@@ -282,16 +255,13 @@ try {
         ORDER BY
             tanggal
     ";
-
     $stmt_date_summary = $conn->prepare($sql_date_summary);
     if ($stmt_date_summary === false) {
         throw new Exception("Prepare failed (sql_date_summary): " . $conn->error);
     }
-
     $stmt_date_summary->bind_param(...$bind_params_summary);
     $stmt_date_summary->execute();
     $result_date_summary = $stmt_date_summary->get_result();
-
     while ($date_row = $result_date_summary->fetch_assoc()) {
         $response['date_subtotals'][$date_row['tanggal']] = [
             'total_qty' => $date_row['total_qty'] ?? 0,
@@ -300,9 +270,6 @@ try {
         ];
     }
     $stmt_date_summary->close();
-
-
-
     $conn->close();
 } catch (Exception $e) {
     http_response_code(500);
