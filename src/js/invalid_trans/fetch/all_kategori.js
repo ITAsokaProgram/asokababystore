@@ -1,28 +1,41 @@
 import { paginationDetail } from "../table/pagination.js";
 import getCookie from "./../../index/utils/cookies.js";
+const showLoading = () => {
+  Swal.fire({
+    title: "",
+    html: "",
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    },
+  });
+};
 export const refreshParentTable = async () => {
   try {
     const source = sessionStorage.getItem("kategori_source");
     const { paginationKat } = await import("../table/pagination.js");
+    showLoading();
     if (source === "kategori_by_tanggal") {
       const start = document.getElementById("startDate").value;
       const end = document.getElementById("endDate").value;
       const kat = document.getElementById("kategori").value;
       const per = document.getElementById("periodeFilter").value;
       const cab = document.getElementById("cabangFilter").value;
-      await fetchKategoriByTgl(start, end, kat, per, cab);
+      await fetchKategoriByTgl(start, end, kat, per, cab, false);
       paginationKat(1, 10, "kategori_by_tanggal");
     } else {
-      await fetchAllKategori();
+      await fetchAllKategori(false);
       paginationKat(1, 10, "kategori_invalid");
     }
+    Swal.close();
   } catch (error) {
     console.warn("Soft refresh failed, forcing browser reload...", error);
     window.location.reload();
   }
 };
-export const fetchAllKategori = async () => {
+export const fetchAllKategori = async (useLoading = true) => {
   const token = getCookie("admin_token");
+  if (useLoading) showLoading();
   try {
     const response = await fetch("/src/api/invalid/all_kategori", {
       method: "GET",
@@ -31,6 +44,7 @@ export const fetchAllKategori = async () => {
         Authorization: `Bearer ${token}`,
       },
     });
+    if (useLoading) Swal.close();
     if (response.status === 200) {
       const data = await response.json();
       sessionStorage.setItem("kategori_invalid", JSON.stringify(data));
@@ -78,6 +92,7 @@ export const fetchAllKategori = async () => {
       }).showToast();
     }
   } catch (error) {
+    if (useLoading) Swal.close();
     Toastify({
       text: "Gagal mengambil data refresh halaman",
       duration: 1000,
@@ -97,6 +112,7 @@ export const fetchDetailKategori = async (
   end = null
 ) => {
   const token = getCookie("admin_token");
+  showLoading();
   try {
     const response = await fetch(
       `/src/api/invalid/detail_kategori?kategori=${kategori}&kode=${kode}&start=${start}&end=${end}`,
@@ -108,6 +124,7 @@ export const fetchDetailKategori = async (
         },
       }
     );
+    Swal.close();
     if (response.status === 200) {
       const data = await response.json();
       sessionStorage.setItem("detail_kategori", JSON.stringify(data));
@@ -155,6 +172,7 @@ export const fetchDetailKategori = async (
       }).showToast();
     }
   } catch (error) {
+    Swal.close();
     Toastify({
       text: "Gagal mengambil data refresh halaman",
       duration: 1000,
@@ -172,9 +190,11 @@ export const fetchKategoriByTgl = async (
   end,
   kategori,
   periode,
-  cabang
+  cabang,
+  useLoading = true
 ) => {
   const token = getCookie("admin_token");
+  if (useLoading) showLoading();
   try {
     const response = await fetch(
       `/src/api/invalid/filter_tgl_kat?start=${start}&end=${end}&kategori=${kategori}&periode=${periode}&cabang=${cabang}`,
@@ -186,6 +206,7 @@ export const fetchKategoriByTgl = async (
         },
       }
     );
+    if (useLoading) Swal.close();
     if (response.status === 200) {
       const data = await response.json();
       sessionStorage.setItem("kategori_by_tanggal", JSON.stringify(data));
@@ -233,6 +254,7 @@ export const fetchKategoriByTgl = async (
       }).showToast();
     }
   } catch (error) {
+    if (useLoading) Swal.close();
     Toastify({
       text: "Gagal mengambil data refresh halaman",
       duration: 1000,
@@ -297,7 +319,7 @@ export const fetchCekData = async (
     if (result.isConfirmed && result.value) {
       await Swal.fire("Tersimpan!", result.value, "success");
       await fetchDetailKategori(kategori, kode, startDate, endDate);
-      paginationDetail(1, 10, "detail_kategori");
+      paginationDetail(1, 100, "detail_kategori");
       await refreshParentTable();
     }
   });
@@ -456,6 +478,7 @@ export const fetchTopRetur = async () => {
 };
 export const fetchExportDetails = async (cabang) => {
   const token = getCookie("admin_token");
+  showLoading();
   try {
     const response = await fetch(
       `/src/api/invalid/export_details.php?cabang=${cabang || ""}`,
@@ -467,6 +490,7 @@ export const fetchExportDetails = async (cabang) => {
         },
       }
     );
+    Swal.close();
     if (response.status === 200) {
       const result = await response.json();
       return result.data;
@@ -474,6 +498,7 @@ export const fetchExportDetails = async (cabang) => {
     return [];
   } catch (error) {
     console.error(error);
+    Swal.close();
     Toastify({
       text: "Gagal mengambil data export",
       style: { background: "#f87171" },

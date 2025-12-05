@@ -2,7 +2,7 @@ import {
   fetchKategoriByTgl,
   fetchDetailKategori,
   fetchCekData,
-  fetchBulkCekData, // Import fungsi bulk baru
+  fetchBulkCekData,
   fetchKeterangan,
 } from "../fetch/all_kategori.js";
 import { openDetailModal } from "./all_kategori.js";
@@ -16,19 +16,21 @@ const formatDate = (date) => {
   const dd = String(d.getDate()).padStart(2, "0");
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const yyyy = d.getFullYear();
-  return `${yyyy}-${mm}-${dd}`; // contoh: 03-07-2025
+  return `${yyyy}-${mm}-${dd}`;
 };
-
 export const filterByTanggal = () => {
   const periodeSelect = document.getElementById("periodeFilter");
   const startDateInput = document.getElementById("startDate");
   const endDateInput = document.getElementById("endDate");
   const kategoriSelect = document.getElementById("kategori");
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(today.getDate() - 1);
-  startDateInput.value = formatDate(yesterday);
-  endDateInput.value = formatDate(today);
+  const cabangSelect = document.getElementById("cabangFilter");
+  if (!startDateInput.value) {
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+    startDateInput.value = formatDate(yesterday);
+    endDateInput.value = formatDate(today);
+  }
   periodeSelect.addEventListener("change", () => {
     const today = new Date();
     const value = periodeSelect.value;
@@ -39,63 +41,68 @@ export const filterByTanggal = () => {
         start = formatDate(yesterday);
         end = formatDate(today);
         break;
-
       case "mingguan":
         const weekStart = new Date(today);
         weekStart.setDate(today.getDate() - 6);
         start = formatDate(weekStart);
         end = formatDate(today);
         break;
-
       case "bulanan":
         const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
         const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
         start = formatDate(monthStart);
         end = formatDate(monthEnd);
         break;
-
       case "tahunan":
         const yearStart = new Date(today.getFullYear(), 0, 1);
         const yearEnd = new Date(today.getFullYear(), 11, 31);
         start = formatDate(yearStart);
         end = formatDate(yearEnd);
         break;
-
       default:
         start = "";
         end = "";
         break;
     }
-
-    startDateInput.value = start;
-    endDateInput.value = end;
+    if (start && end) {
+      startDateInput.value = start;
+      endDateInput.value = end;
+    }
   });
   const btn = document.getElementById("filterTanggalBtn");
-  const selectPeriode = document.getElementById("periodeFilter");
-  const selectCabang = document.getElementById("cabangFilter");
   btn.addEventListener("click", async (e) => {
     e.preventDefault();
-
+    const startVal = startDateInput.value;
+    const endVal = endDateInput.value;
     const kategoriValue = kategoriSelect.value;
-
-    // Tunggu fetch selesai
+    const periodeVal = periodeSelect.value;
+    const cabangVal = cabangSelect.value;
+    const params = new URLSearchParams();
+    params.set("start", startVal);
+    params.set("end", endVal);
+    params.set("kategori", kategoriValue);
+    if (periodeVal) params.set("periode", periodeVal);
+    if (cabangVal) params.set("cabang", cabangVal);
+    window.history.pushState(
+      {},
+      "",
+      `${window.location.pathname}?${params.toString()}`
+    );
     const data = await fetchKategoriByTgl(
-      startDateInput.value,
-      endDateInput.value,
+      startVal,
+      endVal,
       kategoriValue,
-      selectPeriode.value,
-      selectCabang.value
+      periodeVal,
+      cabangVal
     );
     paginationKat(1, 10, "kategori_by_tanggal");
     initSearchFilter("kategori_by_tanggal", "kategori_search_tanggal");
   });
-
   document
     .getElementById("allTable")
     .addEventListener("click", async function (e) {
       const btn = e.target.closest(".lihat-detail");
       if (!btn) return;
-
       const kode = btn.getAttribute("data-kode");
       const kategori = btn.getAttribute("data-kat");
       const split = kategori.split(" ")[0];
@@ -111,13 +118,9 @@ export const filterByTanggal = () => {
         paginationDetail(1, 100, "detail_kategori");
       }
     });
-
-  // ========== LOGIC BULK UPDATE & CHECKBOX START ==========
   const modalDetail = document.getElementById("detailInvalid");
   const checkAll = document.getElementById("checkAllDetail");
   const btnBulk = document.getElementById("btnBulkUpdate");
-
-  // Fungsi Helper Toggle Tombol Bulk
   function toggleBulkButton() {
     const checkedBoxes = modalDetail.querySelectorAll(
       ".check-detail-item:checked"
@@ -129,8 +132,6 @@ export const filterByTanggal = () => {
       btnBulk.classList.add("hidden");
     }
   }
-
-  // Event Listener Check All
   if (checkAll) {
     checkAll.addEventListener("change", function () {
       const checkboxes = modalDetail.querySelectorAll(".check-detail-item");
@@ -138,8 +139,6 @@ export const filterByTanggal = () => {
       toggleBulkButton();
     });
   }
-
-  // Event Listener Check Item (Delegation)
   modalDetail.addEventListener("change", function (e) {
     if (e.target.classList.contains("check-detail-item")) {
       const allCheckboxes = modalDetail.querySelectorAll(".check-detail-item");
@@ -148,25 +147,19 @@ export const filterByTanggal = () => {
       toggleBulkButton();
     }
   });
-
-  // Event Listener Tombol Bulk Update Click
   if (btnBulk) {
     btnBulk.addEventListener("click", function () {
       const checkedBoxes = modalDetail.querySelectorAll(
         ".check-detail-item:checked"
       );
       if (checkedBoxes.length === 0) return;
-
       const itemsToUpdate = [];
       let kodeSample = "";
-
       checkedBoxes.forEach((cb) => {
         const data = JSON.parse(cb.value);
         itemsToUpdate.push(data);
-        kodeSample = data.kasir; // Ambil salah satu kode kasir untuk parameter refresh
+        kodeSample = data.kasir;
       });
-
-      // Ambil kategori dari session untuk parameter refresh
       let kategoriSample = "";
       const sessionDetail = JSON.parse(
         sessionStorage.getItem("detail_kategori") || "{}"
@@ -176,7 +169,6 @@ export const filterByTanggal = () => {
         const rawKat = dataRaw[0].kategori.split(" ")[0];
         kategoriSample = `%${rawKat}%`;
       }
-
       Swal.fire({
         title: `Update ${itemsToUpdate.length} Data`,
         input: "text",
@@ -202,9 +194,8 @@ export const filterByTanggal = () => {
             startDateInput.value,
             endDateInput.value
           );
-
           if (success) {
-            paginationDetail(1, 10, "detail_kategori");
+            paginationDetail(1, 100, "detail_kategori");
             if (checkAll) checkAll.checked = false;
             toggleBulkButton();
           }
@@ -212,8 +203,6 @@ export const filterByTanggal = () => {
       });
     });
   }
-  // ========== LOGIC BULK UPDATE END ==========
-
   document.addEventListener("click", async function (e) {
     const button = e.target.closest(".periksa");
     if (!button) return;
@@ -227,7 +216,6 @@ export const filterByTanggal = () => {
       jam: button.getAttribute("data-jam"),
       kd_store: button.getAttribute("data-toko"),
     };
-
     await fetchCekData(
       data,
       kategori,
@@ -249,7 +237,6 @@ export const filterByTanggal = () => {
       jam: button.getAttribute("data-jam"),
       cabang: button.getAttribute("data-toko"),
     };
-
     const ket = await fetchKeterangan(
       data.plu,
       data.kasir,
@@ -262,7 +249,6 @@ export const filterByTanggal = () => {
     keterangan.textContent = ket.data[0].ket_cek;
   });
 };
-
 const searchFilter = (options) => {
   const {
     inputId = "search",
@@ -271,39 +257,29 @@ const searchFilter = (options) => {
     outputKey = "kategori_search",
     renderFunction = paginationKat,
   } = options;
-
   const search = document.getElementById(inputId);
   if (!search) return;
-
   search.addEventListener("input", () => {
     const keyword = search.value.trim().toLowerCase();
     const session = sessionStorage.getItem(sessionKey);
     if (!session) return;
-
     try {
       const parsed = JSON.parse(session);
       const data = parsed.data;
-
       const filtered = data.filter((item) => {
         const field = item[searchField];
         return field?.toString().toLowerCase().includes(keyword);
       });
-
-      // simpan hasil pencarian
       sessionStorage.setItem(outputKey, JSON.stringify({ data: filtered }));
-
-      // render ulang
       renderFunction(1, 10, outputKey);
     } catch (err) {
       console.error("Error parsing sessionStorage data:", err);
     }
   });
 };
-
 export const initSearchFilter = (mode = "kategori_invalid", output) => {
-  const sessionKey = mode; // contoh: "kategori_filtered" atau "kategori_invalid"
+  const sessionKey = mode;
   const outputKey = output;
-
   searchFilter({
     inputId: "search",
     sessionKey: sessionKey,
@@ -312,5 +288,4 @@ export const initSearchFilter = (mode = "kategori_invalid", output) => {
     renderFunction: paginationKat,
   });
 };
-
 export default { initSearchFilter, filterByTanggal };
