@@ -17,7 +17,7 @@ export const kodeCabang = async (selectId) => {
       if (data.data === "Pusat") {
         allOption.value = "all";
       } else {
-        allOption.value = data.data.map((item) => item.store).join(",");
+        allOption.value = "all";
       }
       select.appendChild(allOption);
       if (data.data !== "Pusat") {

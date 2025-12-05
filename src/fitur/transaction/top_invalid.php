@@ -74,13 +74,15 @@
                     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                         <div class="flex items-center gap-4">
                             <div class="flex-shrink-0">
-                                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-gray-700 to-gray-600 shadow-lg flex items-center justify-center">
+                                <div
+                                    class="w-16 h-16 rounded-2xl bg-gradient-to-br from-gray-700 to-gray-600 shadow-lg flex items-center justify-center">
                                     <i class="fas fa-ban text-white text-2xl"></i>
                                 </div>
                             </div>
                             <div>
-                                <h1 class="text-3xl font-bold text-gray-900 tracking-tight">TOP Invalid VOID Transaction</h1>
-                                <p class="text-gray-600 text-base mt-1">Laporan transaksi VOID tidak valid untuk monitoring</p>
+                                <h1 class="text-3xl font-bold text-gray-900 tracking-tight">TOP Invalid VOID Transaction
+                                </h1>
+                                <p class="text-gray-600 text-base mt-1">Laporan data hari ini dan kemarin</p>
                             </div>
                         </div>
 
@@ -90,7 +92,8 @@
                                     class="appearance-none bg-white border border-gray-300 rounded-xl px-4 py-3 pr-10 text-sm font-medium focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all duration-200 hover:border-gray-400 min-w-[160px]">
                                     <option value="">Pilih Cabang</option>
                                 </select>
-                                <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none text-xs"></i>
+                                <i
+                                    class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none text-xs"></i>
                             </div>
 
                             <button id="btn-export-excel"
@@ -114,7 +117,8 @@
                             </div>
                         </div>
                         <div class="flex-1">
-                            <div class="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">Total VOID Invalid</div>
+                            <div class="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">Total VOID
+                                Invalid</div>
                             <div class="text-3xl font-bold text-gray-900" id="total-void">0</div>
                         </div>
                     </div>
@@ -128,13 +132,15 @@
                             </div>
                         </div>
                         <div class="flex-1">
-                            <div class="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">Cabang Terbanyak</div>
+                            <div class="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">Cabang
+                                Terbanyak</div>
                             <div class="text-3xl font-bold text-gray-900" id="top-cabang">-</div>
                         </div>
                     </div>
                 </div>
 
-                <div class="stat-card bg-white border border-gray-200 rounded-2xl p-6 shadow-sm md:col-span-2 lg:col-span-1">
+                <div
+                    class="stat-card bg-white border border-gray-200 rounded-2xl p-6 shadow-sm md:col-span-2 lg:col-span-1">
                     <div class="flex items-center gap-4">
                         <div class="flex-shrink-0">
                             <div class="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
@@ -142,7 +148,8 @@
                             </div>
                         </div>
                         <div class="flex-1">
-                            <div class="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">Status Monitor</div>
+                            <div class="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">Status Monitor
+                            </div>
                             <div class="text-3xl font-bold text-gray-900">Active</div>
                         </div>
                     </div>
@@ -178,7 +185,9 @@
                     <!-- Loading State -->
                     <div id="loading-row" class="hidden p-8 text-center">
                         <div class="flex items-center justify-center gap-3">
-                            <div class="w-5 h-5 border-2 border-t-transparent border-gray-400 border-solid rounded-full animate-spin"></div>
+                            <div
+                                class="w-5 h-5 border-2 border-t-transparent border-gray-400 border-solid rounded-full animate-spin">
+                            </div>
                             <span class="text-gray-600 font-medium">Memuat data...</span>
                         </div>
                     </div>
@@ -191,8 +200,10 @@
             </div>
 
             <!-- MODAL DETAIL -->
-            <div id="modal-detail" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden transition-all duration-300">
-                <div class="bg-white rounded-3xl shadow-2xl border border-gray-100 w-full max-w-7xl mx-4 overflow-hidden max-h-[90vh] flex flex-col">
+            <div id="modal-detail"
+                class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden transition-all duration-300">
+                <div
+                    class="bg-white rounded-3xl shadow-2xl border border-gray-100 w-full max-w-7xl mx-4 overflow-hidden max-h-[90vh] flex flex-col">
                     <!-- Modal Header -->
                     <div class="bg-gradient-to-r from-gray-800 to-gray-700 px-8 py-6 relative">
                         <button onclick="closeModal()"
@@ -222,14 +233,17 @@
                                         <thead class="bg-gray-50 sticky top-0 z-10">
                                             <tr>
                                                 <th class="px-4 py-3 text-left font-semibold text-gray-700">No</th>
-                                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Nama Produk</th>
+                                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Nama Produk
+                                                </th>
                                                 <th class="px-4 py-3 text-left font-semibold text-gray-700">No Bon</th>
                                                 <th class="px-4 py-3 text-left font-semibold text-gray-700">Jam</th>
                                                 <th class="px-4 py-3 text-left font-semibold text-gray-700">Cabang</th>
                                                 <th class="px-4 py-3 text-left font-semibold text-gray-700">Kasir</th>
-                                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Kode Kasir</th>
+                                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Kode Kasir
+                                                </th>
                                                 <th class="px-4 py-3 text-left font-semibold text-gray-700">Tanggal</th>
-                                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Keterangan</th>
+                                                <th class="px-4 py-3 text-left font-semibold text-gray-700">Keterangan
+                                                </th>
                                             </tr>
                                         </thead>
                                         <tbody id="modal-detail-tbody" class="divide-y divide-gray-100">

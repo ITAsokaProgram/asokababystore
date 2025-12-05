@@ -288,7 +288,7 @@ export const fetchCekData = async (
   });
 };
 
-export const fetchKeterangan = async (plu, kasir, tgl , jam , store) => {
+export const fetchKeterangan = async (plu, kasir, tgl, jam, store) => {
   const token = getCookie("admin_token");
 
   try {
@@ -406,6 +406,35 @@ export const fetchTopRetur = async () => {
   }
 };
 
+export const fetchExportDetails = async (cabang) => {
+  const token = getCookie("admin_token");
+  try {
+    const response = await fetch(
+      `/src/api/invalid/export_details.php?cabang=${cabang || ""}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (response.status === 200) {
+      const result = await response.json();
+      return result.data;
+    }
+    return [];
+  } catch (error) {
+    console.error(error);
+    Toastify({
+      text: "Gagal mengambil data export",
+      style: { background: "#f87171" },
+    }).showToast();
+    return [];
+  }
+};
+
 export default {
   fetchAllKategori,
   fetchDetailKategori,
@@ -414,4 +443,5 @@ export default {
   fetchKeterangan,
   fetchTopInvalid,
   fetchTopRetur,
+  fetchExportDetails,
 };

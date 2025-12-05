@@ -3,6 +3,7 @@ import { kodeCabang } from "../../kode_cabang/kd.js";
 import {
   fetchTopInvalid,
   fetchDetailKategori,
+  fetchExportDetails,
 } from "../../../js/invalid_trans/fetch/all_kategori.js";
 let loadedCount = 0;
 const pageSize = 20;
@@ -23,7 +24,6 @@ const init = async () => {
   document.getElementById("top-cabang").textContent = topCabang;
   document.getElementById("void-table-body").innerHTML = "";
   loadMoreData();
-  // Infinite scroll handler
   const tableContainer = document.getElementById("table-scroll-container");
   tableContainer.addEventListener("scroll", function () {
     const { scrollTop, scrollHeight, clientHeight } = tableContainer;
@@ -34,18 +34,19 @@ const init = async () => {
       loadMoreData();
     }
   });
-
   const cabangSelect = document.getElementById("cabang-select");
   cabangSelect.addEventListener("change", function () {
+    const selectedValue = this.value;
+
     filteredData =
-      this.value === "all"
+      selectedValue === "" || selectedValue === "all"
         ? dataVoid.data
-        : dataVoid.data.filter((d) => d.kode_cabang === this.value);
+        : dataVoid.data.filter((d) => d.kode_cabang === selectedValue);
+
     loadedCount = 0;
     document.getElementById("void-table-body").innerHTML = "";
     loadMoreData();
   });
-  // Modal logic
   window.showModal = async function (row) {
     const kode = row.getAttribute("data-kasir");
     const kategori = row.getAttribute("data-void");
@@ -92,56 +93,85 @@ function loadMoreData() {
 init();
 document
   .getElementById("btn-export-excel")
-  .addEventListener("click", function () {
-    const exportData = filteredData.slice(0, loadedCount);
-    const wsData = [
-      [
-        "No",
-        "Nama Produk",
-        "No Bon",
-        "Jam",
-        "Cabang",
-        "Kasir",
-        "Kode Kasir",
-        "Tanggal",
-        "Keterangan",
-      ],
-      ...exportData.map((row, idx) => [
-        idx + 1,
-        row.nama_product || "",
-        row.no_bon || "",
-        row.jam || "",
-        row.cabang || "",
-        row.kasir || "",
-        row.kode_kasir || "",
-        row.tanggal || "",
-        row.keterangan || "",
-      ]),
-    ];
-    const ws = XLSX.utils.aoa_to_sheet(wsData);
-    const range = XLSX.utils.decode_range(ws["!ref"]);
-    for (let C = range.s.c; C <= range.e.c; ++C) {
-      const cell = ws[XLSX.utils.encode_cell({ r: 0, c: C })];
-      if (cell) {
-        cell.s = {
-          font: { bold: true, color: { rgb: "FFFFFF" } },
-          fill: { fgColor: { rgb: "228B22" } },
-          alignment: { horizontal: "center", vertical: "center" },
-        };
+  .addEventListener("click", async function () {
+    const btn = this;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Downloading...';
+    btn.disabled = true;
+    try {
+      const cabangSelect = document.getElementById("cabang-select").value;
+      const detailData = await fetchExportDetails(cabangSelect);
+      if (!detailData || detailData.length === 0) {
+        Toastify({
+          text: "Tidak ada data untuk di-export",
+          style: { background: "#f87171" },
+        }).showToast();
+        return;
       }
+      const wsData = [
+        [
+          "No",
+          "Cabang",
+          "Tanggal",
+          "Jam",
+          "No Bon",
+          "Kode Kasir",
+          "Nama Kasir",
+          "Nama Produk (DESCP)",
+          "Qty",
+          "Harga",
+          "Keterangan",
+        ],
+        ...detailData.map((row, idx) => [
+          idx + 1,
+          row.cabang || "",
+          row.tanggal || "",
+          row.jam || "",
+          row.no_bon || "",
+          row.kode_kasir || "",
+          row.nama_kasir || "",
+          row.nama_product || "",
+          row.qty || 0,
+          row.harga || 0,
+          row.keterangan || "",
+        ]),
+      ];
+      const ws = XLSX.utils.aoa_to_sheet(wsData);
+      const range = XLSX.utils.decode_range(ws["!ref"]);
+      for (let C = range.s.c; C <= range.e.c; ++C) {
+        const cell = ws[XLSX.utils.encode_cell({ r: 0, c: C })];
+        if (cell) {
+          cell.s = {
+            font: { bold: true, color: { rgb: "FFFFFF" } },
+            fill: { fgColor: { rgb: "228B22" } },
+            alignment: { horizontal: "center", vertical: "center" },
+          };
+        }
+      }
+      ws["!cols"] = [
+        { wch: 5 },
+        { wch: 15 },
+        { wch: 12 },
+        { wch: 10 },
+        { wch: 15 },
+        { wch: 12 },
+        { wch: 15 },
+        { wch: 35 },
+        { wch: 8 },
+        { wch: 12 },
+        { wch: 25 },
+      ];
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Data Detail Invalid");
+      XLSX.writeFile(wb, "Detail_Invalid_Transaction.xlsx");
+    } catch (err) {
+      console.error(err);
+      Toastify({
+        text: "Gagal membuat file excel",
+        style: { background: "#f87171" },
+      }).showToast();
+    } finally {
+      btn.innerHTML = originalText;
+      btn.disabled = false;
     }
-    ws["!cols"] = [
-      { wch: 5 }, // No
-      { wch: 20 }, // Nama Produk
-      { wch: 15 }, // No Bon
-      { wch: 10 }, // Jam
-      { wch: 15 }, // Cabang
-      { wch: 15 }, // Kasir
-      { wch: 15 }, // Kode Kasir
-      { wch: 12 }, // Tanggal
-      { wch: 30 }, // Keterangan
-    ];
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Detail Invalid VOID");
-    XLSX.writeFile(wb, "Detail_Invalid_VOID.xlsx");
   });
