@@ -11,17 +11,16 @@ export const kodeCabang = async (selectId) => {
       },
     });
     const data = await response.json();
-
     if (response.status === 200) {
       const allOption = document.createElement("option");
       allOption.textContent = "Semua Cabang";
-      if(data.data === "Pusat") {
-        allOption.value = "Pusat";
-      }else{
+      if (data.data === "Pusat") {
+        allOption.value = "all";
+      } else {
         allOption.value = data.data.map((item) => item.store).join(",");
       }
       select.appendChild(allOption);
-      if(data.data !== "Pusat"){
+      if (data.data !== "Pusat") {
         data.data.forEach((item) => {
           const option = document.createElement("option");
           option.value = item.store;
@@ -36,5 +35,4 @@ export const kodeCabang = async (selectId) => {
     console.log(error);
   }
 };
-
 export default { kodeCabang };

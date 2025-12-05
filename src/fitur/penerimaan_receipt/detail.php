@@ -96,8 +96,19 @@ if ($page < 1) {
                 </div>
 
                 <div class="filter-card-simple">
-                    <form id="filter-form" class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end" method="GET"
-                        action="detail.php">
+                    <form id="filter-form" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 items-end"
+                        method="GET" action="detail.php">
+
+                        <div class="lg:col-span-1">
+                            <label for="search_query" class="block text-xs font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-search text-pink-600 mr-1"></i>
+                                Cari Data
+                            </label>
+                            <input type="text" name="search_query" id="search_query" class="input-modern w-full"
+                                placeholder="No Faktur / PLU / Barcode"
+                                value="<?php echo htmlspecialchars($_GET['search_query'] ?? ''); ?>">
+                        </div>
+
                         <div>
                             <label for="tgl_mulai" class="block text-xs font-semibold text-gray-700 mb-2"> <i
                                     class="fas fa-calendar-alt text-pink-600 mr-1"></i>

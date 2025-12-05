@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const filterSearchQuery = document.getElementById("search_query");
   const tableBody = document.getElementById("detail-receipt-table-body");
   const filterForm = document.getElementById("filter-form");
   const filterSubmitButton = document.getElementById("filter-submit-button");
@@ -42,6 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tgl_mulai: params.get("tgl_mulai") || yesterdayString,
       tgl_selesai: params.get("tgl_selesai") || yesterdayString,
       kd_store: params.get("kd_store") || "all",
+      search_query: params.get("search_query") || "",
       page: parseInt(params.get("page") || "1", 10),
     };
   }
@@ -58,8 +60,12 @@ document.addEventListener("DOMContentLoaded", () => {
       tgl_mulai: params.tgl_mulai,
       tgl_selesai: params.tgl_selesai,
       kd_store: params.kd_store,
+      search_query: params.search_query,
       page: params.page,
     }).toString();
+    if (filterSearchQuery) {
+      filterSearchQuery.value = params.search_query;
+    }
     try {
       const response = await fetch(
         `/src/api/penerimaan_receipt/get_detail_receipt.php?${queryString}`
@@ -243,9 +249,7 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
     }
     function buildFakturHeaderRow(no_faktur, no_lpb) {
-      // Handle jika no_lpb kosong/null
       const displayLpb = no_lpb ? no_lpb : "-";
-
       return `
                 <tr class="header-faktur-row">
                     <td colspan="10" class="px-4 py-1 pl-6">
@@ -314,7 +318,6 @@ document.addEventListener("DOMContentLoaded", () => {
           );
         }
         htmlRows += buildFakturHeaderRow(row.no_faktur, row.no_lpb);
-
         current_no_faktur = row.no_faktur;
         faktur_item_counter = 1;
         subtotal_qty = 0;
@@ -433,6 +436,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tgl_mulai: params.tgl_mulai,
       tgl_selesai: params.tgl_selesai,
       kd_store: params.kd_store,
+      search_query: params.search_query,
       export: true,
     }).toString();
     try {
@@ -472,12 +476,16 @@ document.addEventListener("DOMContentLoaded", () => {
       const { tabel_data, summary, date_subtotals } = data;
       const params = getUrlParams();
       const title = [["Laporan Detail Receipt"]];
+      const searchQueryText = params.search_query
+        ? params.search_query
+        : "Semua";
       const info = [
         ["Periode", `${params.tgl_mulai} s/d ${params.tgl_selesai}`],
         [
           "Cabang",
           filterSelectStore.options[filterSelectStore.selectedIndex].text,
         ],
+        ["Filter Pencarian", searchQueryText],
         [],
         ["Total Netto", parseFloat(summary.total_netto) || 0],
         ["Total PPN", parseFloat(summary.total_ppn) || 0],
@@ -565,7 +573,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const displayLpb = no_lpb ? no_lpb : "-";
         dataRows.push([
           `No Faktur: ${no_faktur}   |   No Invoice: ${displayLpb}`,
-        ]); // Digabung
+        ]);
         merges.push({
           s: { r: dataRows.length + rowOffset - 1, c: 0 },
           e: { r: dataRows.length + rowOffset - 1, c: 9 },
@@ -591,7 +599,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (current_no_faktur !== null) {
             pushSubtotalFakturRow();
           }
-          pushFakturHeaderRow(row.no_faktur, row.no_lpb); // Tambahkan row.no_lpb
+          pushFakturHeaderRow(row.no_faktur, row.no_lpb);
           current_no_faktur = row.no_faktur;
           faktur_item_counter = 1;
         }

@@ -39,6 +39,7 @@ try {
     $tgl_mulai = $_GET['tgl_mulai'] ?? $tanggal_kemarin;
     $tgl_selesai = $_GET['tgl_selesai'] ?? $tanggal_kemarin;
     $kd_store = $_GET['kd_store'] ?? 'all';
+    $search_query = $_GET['search_query'] ?? '';
     $page = 1;
     $limit = 100;
     if (!$is_export) {
@@ -71,6 +72,20 @@ try {
         $bind_params_summary[0] .= 's';
         $bind_params_summary[] = $kd_store;
     }
+    if (!empty($search_query)) {
+        $where_conditions .= " AND (a.no_faktur LIKE ? OR a.plu LIKE ? OR a.barcode LIKE ?)";
+        $search_term = "%" . $search_query . "%";
+
+        $bind_params_data[0] .= 'sss';
+        $bind_params_data[] = $search_term;
+        $bind_params_data[] = $search_term;
+        $bind_params_data[] = $search_term;
+
+        $bind_params_summary[0] .= 'sss';
+        $bind_params_summary[] = $search_term;
+        $bind_params_summary[] = $search_term;
+        $bind_params_summary[] = $search_term;
+    }
     $sql_calc_found_rows = "";
     $limit_offset_sql = "";
     if (!$is_export) {
@@ -87,6 +102,8 @@ try {
             a.no_faktur,
             a.no_lpb,
             a.plu,
+            -- Pastikan kolom barcode di-select jika ingin ditampilkan atau hanya untuk filter saja
+            -- a.barcode, 
             a.descp AS deskripsi,
             a.satuan AS sat,
             a.conv1,
@@ -105,7 +122,7 @@ try {
         WHERE
             $where_conditions
         GROUP BY
-            DATE(a.tgl_tiba), a.no_faktur, a.no_lpb, a.plu, a.descp, a.satuan, a.conv1, a.conv2, a.no_ord, a.kode_supp, b.nama_supp, a.qty_rec, a.timbang, a.ppn_bm, a.netto, a.ppn 
+            DATE(a.tgl_tiba), a.no_faktur, a.no_lpb, a.plu, a.barcode, a.descp, a.satuan, a.conv1, a.conv2, a.no_ord, a.kode_supp, b.nama_supp, a.qty_rec, a.timbang, a.ppn_bm, a.netto, a.ppn 
         ORDER BY
             DATE(a.tgl_tiba), a.no_faktur, a.plu 
         $limit_offset_sql
