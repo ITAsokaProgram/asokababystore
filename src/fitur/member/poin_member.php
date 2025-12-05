@@ -120,25 +120,6 @@ $token = $menuHandler->getToken();
                         </div>
 
                         <div class="flex flex-col md:flex-row items-stretch md:items-center gap-6 w-full lg:w-auto">
-
-                            <div class="flex items-center space-x-3 sm:space-x-4 shrink-0">
-                                <div
-                                    class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg text-center hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
-                                    <div class="text-lg font-bold" id="totalMembers">0</div>
-                                    <div class="text-xs opacity-90">Total</div>
-                                </div>
-                                <div
-                                    class="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg text-center hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
-                                    <div class="text-lg font-bold" id="activeMembers">0</div>
-                                    <div class="text-xs opacity-90">Aktif</div>
-                                </div>
-                                <div
-                                    class="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg text-center hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
-                                    <div class="text-lg font-bold" id="totalNonActive">0</div>
-                                    <div class="text-xs opacity-90">Nonaktif</div>
-                                </div>
-                            </div>
-
                             <div class="flex flex-col sm:flex-row items-center gap-3 w-full">
                                 <div class="relative group w-full">
                                     <input type="text" id="search" placeholder="Cari nama atau no HP..."
@@ -148,6 +129,10 @@ $token = $menuHandler->getToken();
                                             class="fas fa-search text-gray-400 group-hover:text-blue-500 transition-colors duration-200"></i>
                                     </div>
                                 </div>
+                                <select id="filterCabang"
+                                    class="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white/90 backdrop-blur-sm shadow-sm transition-all duration-300 w-full sm:w-auto">
+                                    <option value="">Semua Cabang</option>
+                                </select>
                                 <select id="status"
                                     class="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white/90 backdrop-blur-sm shadow-sm transition-all duration-300 w-full sm:w-auto">
                                     <option value="allStatus">Semua Status</option>
