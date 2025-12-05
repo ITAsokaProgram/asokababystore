@@ -127,28 +127,7 @@ if (!$menuHandler->initialize()) {
                         <label for="cabang" class="text-blue-700 font-medium mb-2">Cabang:</label>
                         <select id="cabang" name="cabang"
                             class="w-full px-5 py-3 border border-blue-100 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-400 transition-all duration-200 h-[50px]">
-                            <option value="ABIN">ABIN</option>
-                            <option value="ACE">ACE</option>
-                            <option value="ACIB">ACIB</option>
-                            <option value="ACIL">ACIL</option>
-                            <option value="ACIN">ACIN</option>
-                            <option value="ACSA">ACSA</option>
-                            <option value="ADET">ADET</option>
-                            <option value="ADMB">ADMB</option>
-                            <option value="AHA">AHA</option>
-                            <option value="AHIN">AHIN</option>
-                            <option value="ALANG">ALANG</option>
-                            <option value="ANGIN">ANGIN</option>
-                            <option value="APEN">APEN</option>
-                            <option value="APIK">APIK</option>
-                            <option value="APRS">APRS</option>
-                            <option value="ARAW">ARAW</option>
-                            <option value="ARUNG">ARUNG</option>
-                            <option value="ASIH">ASIH</option>
-                            <option value="ATIN">ATIN</option>
-                            <option value="AWIT">AWIT</option>
-                            <option value="AXY">AXY</option>
-                            <option value="SEMUA CABANG">SEMUA CABANG</option>
+                            <option value="" disabled selected>Memuat data cabang...</option>
                         </select>
                     </div>
 
