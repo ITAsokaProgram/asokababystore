@@ -109,6 +109,14 @@ if (!$menuHandler->initialize()) {
 
                 <div class="filter-card-simple mb-4 p-4">
                     <form id="filter-form" class="flex flex-wrap items-end gap-3">
+                        <div class="flex-1 min-w-[200px]">
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Cari No Faktur</label>
+                            <div class="relative">
+                                <input type=" text" name="search_query" id="search_query"
+                                    class="input-modern w-full h-9 pl-9 text-sm" placeholder="Ketikan nomor faktur..."
+                                    value="<?php echo htmlspecialchars($_GET['search_query'] ?? ''); ?>">
+                            </div>
+                        </div>
                         <div class="flex-1 min-w-[140px]">
                             <label class="block text-xs font-semibold text-gray-700 mb-1">Dari Tanggal</label>
                             <input type="date" name="tgl_mulai" id="tgl_mulai" class="input-modern w-full h-9 text-sm"

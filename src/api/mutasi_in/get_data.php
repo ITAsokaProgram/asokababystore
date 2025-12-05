@@ -8,6 +8,7 @@ try {
     $kd_store = $_GET['kd_store'] ?? 'all';
     $status_cetak = $_GET['status_cetak'] ?? 'all';
     $status_terima = $_GET['status_terima'] ?? 'all';
+    $search_query = $_GET['search_query'] ?? '';
     $is_export = isset($_GET['export']) && $_GET['export'] === 'true';
 
     $page = (int) ($_GET['page'] ?? 1);
@@ -20,10 +21,22 @@ try {
     $params = [$tgl_mulai, $tgl_selesai];
     $types = "ss";
 
+
     if ($kd_store !== 'all') {
         $where .= " AND mi.kode_dari = ?";
         $params[] = $kd_store;
         $types .= "s";
+    }
+
+    if (!empty($search_query)) {
+        $where .= " AND (mi.no_faktur LIKE ? OR mi.no_mmd LIKE ?)";
+
+        $wildcard = "%" . $search_query . "%";
+
+        $params[] = $wildcard;
+        $params[] = $wildcard;
+
+        $types .= "ss";
     }
 
     if ($status_cetak !== 'all') {

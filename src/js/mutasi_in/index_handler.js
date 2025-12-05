@@ -45,12 +45,16 @@ document.addEventListener("DOMContentLoaded", () => {
       kd_store: params.get("kd_store") || "all",
       status_cetak: params.get("status_cetak") || "all",
       status_terima: params.get("status_terima") || "all",
+      search_query: params.get("search_query") || "", // Tambahkan ini
       page: parseInt(params.get("page") || "1", 10),
     };
   }
   async function loadData() {
     const params = getUrlParams();
     setLoadingState(true);
+
+    if (document.getElementById("search_query"))
+      document.getElementById("search_query").value = params.search_query;
     if (document.getElementById("tgl_mulai"))
       document.getElementById("tgl_mulai").value = params.tgl_mulai;
     if (document.getElementById("tgl_selesai"))
@@ -265,18 +269,24 @@ document.addEventListener("DOMContentLoaded", () => {
   if (filterForm) {
     filterForm.addEventListener("submit", (e) => {
       e.preventDefault();
+      // Ambil value dari input baru
+      const searchQuery = document.getElementById("search_query").value;
       const tglMulai = document.getElementById("tgl_mulai").value;
       const tglSelesai = document.getElementById("tgl_selesai").value;
       const kdStore = document.getElementById("kd_store").value;
       const statusCetak = document.getElementById("status_cetak").value;
       const statusTerima = document.getElementById("status_terima").value;
+
       const url = new URL(window.location);
+      // Set params baru
+      url.searchParams.set("search_query", searchQuery);
       url.searchParams.set("tgl_mulai", tglMulai);
       url.searchParams.set("tgl_selesai", tglSelesai);
       url.searchParams.set("kd_store", kdStore);
       url.searchParams.set("status_cetak", statusCetak);
       url.searchParams.set("status_terima", statusTerima);
       url.searchParams.set("page", 1);
+
       window.history.pushState({}, "", url);
       loadData();
     });
