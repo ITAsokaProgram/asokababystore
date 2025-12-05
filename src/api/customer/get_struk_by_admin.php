@@ -1,42 +1,30 @@
 <?php
-// src/api/customer/get_struk_by_admin.php
-
 require_once __DIR__ . ("/../../../aa_kon_sett.php");
 require_once __DIR__ . ("/../../auth/middleware_login.php");
-
 header('Content-Type: application/json');
-
-// --- 1. Validasi Token Admin (Sama seperti sebelumnya) ---
 $headers = getallheaders();
 $authHeader = isset($headers['Authorization']) ? $headers['Authorization'] : '';
 $token = null;
 if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
     $token = $matches[1];
 }
-
 if (!$token) {
     http_response_code(401);
     echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
     exit;
 }
-
 $verify = verify_token($token);
 if (!$verify) {
     http_response_code(401);
     echo json_encode(['status' => 'error', 'message' => 'Token Invalid']);
     exit;
 }
-
-// --- 2. Ambil Parameter (HANYA KODE/NO_BON) ---
 $kd_tr = $_GET['kode'] ?? '';
-
 if (empty($kd_tr)) {
     http_response_code(400);
     echo json_encode(['status' => 'error', 'message' => 'Kode transaksi tidak boleh kosong']);
     exit;
 }
-
-// --- 3. Query Data (WHERE hanya pakai t.no_bon) ---
 $sql = "SELECT 
     t.kd_store,
     c.kd_cust AS member, 
@@ -68,25 +56,20 @@ LEFT JOIN kode_store ks ON t.kd_store = ks.kd_store
 LEFT JOIN pembayaran_b tp ON t.kd_cust = tp.kd_cust AND t.no_bon = tp.no_faktur
 WHERE t.no_bon = ? 
 ORDER BY t.jam_trs, t.no_bon, t.descp";
-
 $stmt = $conn->prepare($sql);
 if (!$stmt) {
     http_response_code(500);
     echo json_encode(['status' => 'error', 'message' => 'Database Error']);
     exit;
 }
-
-// Bind param hanya 1 string (s) untuk kode transaksi
 $stmt->bind_param("s", $kd_tr);
 $stmt->execute();
 $result = $stmt->get_result();
 $data = $result->fetch_all(MYSQLI_ASSOC);
-
 http_response_code(200);
 echo json_encode([
     'detail_transaction' => $data
 ]);
-
 $stmt->close();
 $conn->close();
 ?>

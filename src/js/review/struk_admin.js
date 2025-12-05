@@ -1,8 +1,6 @@
 import getCookie from "../index/utils/cookies.js";
-
 window.onload = function () {
   const token = getCookie("admin_token");
-
   if (!token) {
     Swal.fire({
       icon: "error",
@@ -14,11 +12,8 @@ window.onload = function () {
     });
     return;
   }
-
   const params = new URLSearchParams(window.location.search);
   const kd_tr = params.get("kode");
-  // const kd_cust tidak diperlukan lagi
-
   if (!kd_tr) {
     Swal.fire({
       icon: "error",
@@ -27,8 +22,6 @@ window.onload = function () {
     });
     return;
   }
-
-  // Fetch HANYA mengirim parameter kode
   fetch(`/src/api/customer/get_struk_by_admin.php?kode=${kd_tr}`, {
     method: "GET",
     headers: {
@@ -56,7 +49,6 @@ window.onload = function () {
       });
     });
 };
-
 const btnPrint = document.getElementById("print");
 if (btnPrint) {
   btnPrint.addEventListener("click", (e) => {
@@ -64,33 +56,24 @@ if (btnPrint) {
     downloadStrukAsPDF();
   });
 }
-
-// --- Helper Functions (Sama persis dengan customer side) ---
-
 function hitungDiskon(harga, diskon) {
   return diskon > 0 ? harga * (diskon / 100) : 0;
 }
-
 function renderItem(d, i) {
   const harga = Number(d.harga);
   const qty = Number(d.qty);
   const diskon = Number(d.diskon || 0);
   const hrgPromo = Number(d.hrg_promo || 0);
   const nilaiDiskon = hitungDiskon(harga, diskon);
-
   const adaPromo = hrgPromo > 0;
   const selisihHemat = harga - hrgPromo;
-
   let hargaSetelahDiskon = harga;
-
   if (diskon > 0) {
     hargaSetelahDiskon = harga - nilaiDiskon;
   } else if (adaPromo) {
     hargaSetelahDiskon = hrgPromo;
   }
-
   const totalItem = hargaSetelahDiskon * qty;
-
   const keteranganPromo =
     diskon > 0
       ? `<div class="flex justify-between text-xs">
@@ -103,7 +86,6 @@ function renderItem(d, i) {
               <span>${totalItem.toLocaleString("id-ID")}</span>
             </div>`
       : "";
-
   return `
     <div class="mb-1 leading-tight">
         <div>${i + 1}# ${d.item}</div>
@@ -114,16 +96,13 @@ function renderItem(d, i) {
         ${keteranganPromo}
     </div>`;
 }
-
 function hideNumber(v) {
-  // Versi Admin mungkin tidak perlu di-hide full, tapi kita ikuti pola customer dulu
   const s = String(v ?? "");
   if (s.length > 4) {
     return s.slice(0, 4) + "****" + s.slice(-4);
   }
   return s;
 }
-
 function renderStruk(transactions) {
   const {
     tanggal,
@@ -141,12 +120,10 @@ function renderStruk(transactions) {
     credit1,
     no_kredit1,
   } = transactions[0];
-
   let total = 0;
   let totalQty = 0;
   let totalDiskon = 0;
   let totalPromo = 0;
-
   const rows = transactions
     .map((d, i) => {
       const harga = Number(d.harga);
@@ -154,12 +131,9 @@ function renderStruk(transactions) {
       const diskon = Number(d.diskon || 0);
       const hrgPromo = Number(d.hrg_promo || 0);
       const nilaiDiskon = hitungDiskon(harga, diskon);
-
       const adaPromo = hrgPromo > 0;
       const selisihHemat = harga - hrgPromo;
-
       let hargaAkhir = harga;
-
       if (diskon > 0) {
         hargaAkhir = harga - nilaiDiskon;
         totalDiskon += nilaiDiskon * qty;
@@ -169,14 +143,11 @@ function renderStruk(transactions) {
           totalPromo += selisihHemat * qty;
         }
       }
-
       total += hargaAkhir * qty;
       totalQty += qty;
       return renderItem(d, i);
     })
     .join("");
-
-  // Struktur HTML Render (Copied from customer side)
   const html = `
     <div class="text-xs font-mono bg-white border border-gray-300 rounded shadow text-black p-5">
         <div class="flex justify-center mb-3">
@@ -187,7 +158,6 @@ function renderStruk(transactions) {
           <p class="text-[11px]">${alamat_store}</p>
       </div>
     </div>
-
     <div class="text-xs font-mono bg-white border border-gray-300 p-2 rounded shadow text-black space-y-0.5 mt-2 m-auto p-5">
         <p id="kode_trans"><strong>No Trans</strong>: ${
           transactions[0].kode_transaksi
@@ -196,20 +166,17 @@ function renderStruk(transactions) {
         <p><strong>Nama Cust</strong>: ${pelanggan}</p>
         <p>${tanggal} ${jam_trs}</p>
     </div>
-
     <div class="text-xs font-mono bg-white border border-gray-300 p-2 rounded shadow text-black mt-2 m-auto p-7">
         ${rows}
         <hr class="my-1 border-gray-400" />
         <div class="grid grid-cols-3 gap-x-2 space-y-1">
             <div>Total Qty</div><div class="text-right"></div><div class="text-right">${totalQty}</div>
-            
             <div>Nilai Hemat</div><div class="text-right">Rp.</div><div class="text-right">${totalPromo.toLocaleString(
               "id-ID"
             )}</div>
             <div>Diskon Item</div><div class="text-right">Rp.</div><div class="text-right">${totalDiskon.toLocaleString(
               "id-ID"
             )}</div>
-            
             <div class="font-bold pt-1">Sub Total</div>
             <div class="text-right font-bold pt-1">Rp.</div>
             <div class="text-right font-bold pt-1">${total.toLocaleString(
@@ -217,7 +184,6 @@ function renderStruk(transactions) {
             )}</div>
         </div>
     </div>
-
     <div class="text-xs font-mono bg-white border border-gray-300 p-2 rounded shadow text-black mt-2 m-auto p-5">
        ${pembayaran({
          cash,
@@ -228,16 +194,13 @@ function renderStruk(transactions) {
          nm_kartu,
        })}
     </div>
-
     <div class="text-xs font-mono bg-white border border-gray-300 p-2 rounded shadow text-black text-center mt-2">
         <p class="uppercase font-bold">TERIMAKASIH</p>
         <p>ASOKA BABY STORE</p>
     </div>
     `;
-
   document.getElementById("struk-container").innerHTML = html;
 }
-
 const pembayaran = ({
   cash,
   credit1,
@@ -246,44 +209,45 @@ const pembayaran = ({
   no_kredit1,
   nm_kartu,
 }) => {
+  const nCash = Number(cash) || 0;
+  const nCredit = Number(credit1) || 0;
+  const nVoucher = Number(voucher1) || 0;
+  const nKembalian = Number(kembalian) || 0;
   let html = '<div class="grid grid-cols-3 gap-x-2">';
-  if (cash > 0) {
-    html += `<div>Tunai</div><div class="text-right">Rp.</div><div class="text-right">${cash.toLocaleString(
+  if (nCash > 0) {
+    html += `<div>Tunai</div><div class="text-right">Rp.</div><div class="text-right">${nCash.toLocaleString(
       "id-ID"
     )}</div>`;
   }
-  if (credit1 > 0) {
+  if (nCredit > 0) {
     html += `<div>Kartu</div><div class="text-right col-span-2"></div>
              <div class="text-left col-span-2">${
                no_kredit1 ? no_kredit1.replace(/[a-zA-Z`]/g, "*") : ""
              }</div>
-             <div></div><div>${nm_kartu}</div>
-             <div class="text-right">Rp.</div><div class="text-right">${credit1.toLocaleString(
+             <div></div><div>${nm_kartu || "-"}</div>
+             <div class="text-right">Rp.</div><div class="text-right">${nCredit.toLocaleString(
                "id-ID"
              )}</div>`;
   }
-  if (voucher1 > 0) {
-    html += `<div>Voucher</div><div class="text-right">Rp.</div><div class="text-right">${voucher1.toLocaleString(
+  if (nVoucher > 0) {
+    html += `<div>Voucher</div><div class="text-right">Rp.</div><div class="text-right">${nVoucher.toLocaleString(
       "id-ID"
     )}</div>`;
   }
   html += `<div></div><div class="col-span-2 text-right"></div>
-           <div>Kembalian</div><div class="text-right">Rp.</div><div class="text-right">${kembalian.toLocaleString(
+           <div>Kembalian</div><div class="text-right">Rp.</div><div class="text-right">${nKembalian.toLocaleString(
              "id-ID"
            )}</div>
          </div>`;
   return html;
 };
-
 function downloadStrukAsPDF() {
   const { jsPDF } = window.jspdf;
   const kode = document.getElementById("kode_trans").textContent.trim();
   const strukHTML = document.getElementById("struk-container");
   const pdfContainer = document.getElementById("pdf-container");
-
   pdfContainer.innerHTML = strukHTML.innerHTML;
   pdfContainer.className = "w-[360px] text-sm font-mono";
-
   setTimeout(() => {
     html2canvas(pdfContainer, { scale: 2, width: 360, useCORS: true }).then(
       (canvas) => {

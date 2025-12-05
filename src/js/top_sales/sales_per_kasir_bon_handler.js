@@ -257,10 +257,20 @@ document.addEventListener("DOMContentLoaded", () => {
       return `
                 <tr class="header-faktur-row">
                     <td colspan="3" class="px-4 py-1 pl-6">
-                        No Trans: <strong>${row.no_bon}</strong>
+                        No Trans: 
+                        <a href="/src/fitur/laporan/view_struk.php?kode=${
+                          row.no_bon ? row.no_bon.trim() : ""
+                        }"
+                           target="_blank" 
+                           class="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                           title="Lihat Struk">
+                           <strong>${row.no_bon}</strong>
+                        </a>
                     </td>
                     <td colspan="4" class="px-4 py-1">
-                        Kasir: <strong>${row.kode_kasir} - ${row.nama_kasir}</strong>
+                        Kasir: <strong>${row.kode_kasir} - ${
+        row.nama_kasir
+      }</strong>
                     </td>
                 </tr>
             `;
