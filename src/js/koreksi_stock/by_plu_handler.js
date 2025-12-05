@@ -42,6 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tgl_mulai: params.get("tgl_mulai") || yesterdayString,
       tgl_selesai: params.get("tgl_selesai") || yesterdayString,
       kd_store: params.get("kd_store") || "all",
+      search_query: params.get("search_query") || "", // Tambahan
       page: parseInt(params.get("page") || "1", 10),
     };
   }
@@ -54,10 +55,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const params = getUrlParams();
     const isPagination = params.page > 1;
     setLoadingState(true, false, isPagination);
+
+    // Tambahkan search_query ke query string API
     const queryString = new URLSearchParams({
       tgl_mulai: params.tgl_mulai,
       tgl_selesai: params.tgl_selesai,
       kd_store: params.kd_store,
+      search_query: params.search_query, // Tambahan
       page: params.page,
     }).toString();
     try {
@@ -452,6 +456,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tgl_mulai: params.tgl_mulai,
       tgl_selesai: params.tgl_selesai,
       kd_store: params.kd_store,
+      search_query: params.search_query, // Tambahan
       export: true,
     }).toString();
     try {

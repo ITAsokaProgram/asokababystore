@@ -38,6 +38,7 @@ try {
     $tgl_mulai = $_GET['tgl_mulai'] ?? $tanggal_kemarin;
     $tgl_selesai = $_GET['tgl_selesai'] ?? $tanggal_kemarin;
     $kd_store = $_GET['kd_store'] ?? 'all';
+    $search_query = $_GET['search_query'] ?? '';
     $page = 1;
     $limit = 100;
     if (!$is_export) {
@@ -69,6 +70,21 @@ try {
         $bind_params_data[] = $kd_store;
         $bind_params_summary[0] .= 's';
         $bind_params_summary[] = $kd_store;
+    }
+    if (!empty($search_query)) {
+        // Cari di PLU, Deskripsi, No Faktur, No Koreksi, No RCK
+        $where_conditions .= " AND (plu LIKE ? OR deskripsi LIKE ? OR no_faktur LIKE ? OR no_kor LIKE ? OR no_RCK LIKE ?)";
+        $search_term = "%" . $search_query . "%";
+
+        // Tambahkan tipe parameter (5 string)
+        $bind_params_data[0] .= 'sssss';
+        $bind_params_summary[0] .= 'sssss';
+
+        // Tambahkan value parameter (search term diulang 5 kali)
+        for ($i = 0; $i < 5; $i++) {
+            $bind_params_data[] = $search_term;
+            $bind_params_summary[] = $search_term;
+        }
     }
     $sql_calc_found_rows = "";
     $limit_offset_sql = "";
