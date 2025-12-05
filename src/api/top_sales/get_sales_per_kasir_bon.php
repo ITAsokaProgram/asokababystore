@@ -100,6 +100,7 @@ try {
             $sql_calc_found_rows
             DATE(a.tgl_trans) AS tanggal,
             a.kode_kasir,
+            a.jam_trs,
             a.nama_kasir,
             a.no_bon,
             FLOOR(a.plu / 10) AS plu,
