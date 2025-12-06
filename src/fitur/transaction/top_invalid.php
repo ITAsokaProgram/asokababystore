@@ -274,6 +274,8 @@
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="../../js/ui/navbar_toogle.js" type="module"></script>
     <script type="module" src="../../js/invalid_trans/top/best.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 
 </html>
