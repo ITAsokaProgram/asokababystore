@@ -449,7 +449,7 @@ function sendDataToBar(filter) {
   formData.append("filter", filter);
 
   $.ajax({
-    url: `https://asokababystore.com/src/api/ratio/in_sales_ratio_proses_bar?filter=${filter}`,
+    url: `/src/api/ratio/in_sales_ratio_proses_bar?filter=${filter}`,
     method: "POST",
     dataType: "json",
     processData: false,

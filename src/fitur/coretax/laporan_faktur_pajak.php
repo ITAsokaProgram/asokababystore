@@ -144,7 +144,7 @@ if (!$menuHandler->initialize()) {
                 </form>
             </div>
 
-            <div class="filter-card">
+            <div class="filter-card max-w-7xl mx-auto">
                 <div class="flex flex-wrap justify-between items-center mb-3 gap-3">
                     <h3 class="text-lg font-bold text-gray-800">
                         <i class="fas fa-list text-pink-600 mr-2"></i>

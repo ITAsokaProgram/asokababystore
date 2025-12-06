@@ -1,5 +1,6 @@
 <?php
 require_once "../../../aa_kon_sett.php";
+header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=utf-8");
 ini_set('display_errors', 0);
 error_reporting(E_ALL);
