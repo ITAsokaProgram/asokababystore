@@ -118,6 +118,7 @@ try {
             fc.harga_jual,
             fc.dpp_nilai_lain,
             fc.ppn,
+            fc.referensi,    
             fc.status_faktur,
             fc.esign_status,
             fc.kode_store,

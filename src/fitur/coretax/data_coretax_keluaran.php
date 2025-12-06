@@ -139,16 +139,16 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                             <thead>
                                 <tr>
                                     <th>No</th>
-                                    <th>Tgl Faktur</th>
-                                    <th>NPWP / Nama Pembeli</th>
+                                    <th>NPWP Pembeli</th>
+                                    <th>Nama Pembeli</th>
                                     <th>NSFP</th>
-                                    <th class="text-center">Cabang</th>
-                                    <th>Masa/Thn</th>
-                                    <th class="text-right">Harga Jual</th>
-                                    <th class="text-right">DPP Lain</th>
+                                    <th>Tgl Faktur</th>
+                                    <th>Masa</th>
+                                    <th>Tahun</th>
+                                    <th class="text-right">DPP</th>
+                                    <th class="text-right">DPP Nilai Lain</th>
                                     <th class="text-right">PPN</th>
-                                    <th class="text-center">Status</th>
-                                    <th class="text-center">E-Sign</th>
+                                    <th>Referensi</th>
                                 </tr>
                             </thead>
                             <tbody id="coretax-table-body">

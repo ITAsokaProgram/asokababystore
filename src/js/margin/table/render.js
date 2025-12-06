@@ -266,9 +266,13 @@ export const renderMinusMarginCards = (data) => {
         .join("")}
   `;
 };
-
 export const renderDetailMargin = (data) => {
-  const container = document.getElementById("detailTbody");
+  // SEBELUMNYA (SALAH):
+  // const container = document.getElementById("detailTbody");
+
+  // SESUDAH (BENAR): Sesuaikan dengan ID di HTML
+  const container = document.getElementById("modal-detail-tbody");
+
   if (!container) return;
 
   container.innerHTML = "";
@@ -276,6 +280,7 @@ export const renderDetailMargin = (data) => {
   const formatAngka = (angka) => Number(angka).toLocaleString("id-ID");
 
   data.forEach((item, index) => {
+    // ... logic row ...
     row += `
     <tr class="hover:bg-emerald-50 text-center">
     <td class="px-4 py-2 text-center">${index + 1}</td>
