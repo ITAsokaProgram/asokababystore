@@ -17,21 +17,18 @@ if (!$token) {
 }
 $verif = verify_token($token);
 $input = json_decode(file_get_contents("php://input"), true);
-$plu = $input['plu'];
-$bon = $input['bon'];
-$barang = $input['barang'];
-$qty = $input['qty'];
-$gros = $input['gros'];
-$net = $input['net'];
-$avg = $input['avg'];
-$ppn = $input['ppn'];
-$margin = $input['margin'];
-$tgl = $input['tgl'];
-$cabang = $input['cabang'];
-$ket = $input['keterangan'];
-$nama = $input['nama'];
-$kd_store = $input['kd'];
+$items = isset($input['items']) ? $input['items'] : [];
+if (empty($items) && isset($input['plu'])) {
+    $items[] = $input;
+}
+$ket_global = $input['keterangan'] ?? ($input['ket'] ?? '-');
+$nama_user = $input['nama'] ?? 'User';
 $tanggal = date('Y-m-d H:i:s');
+if (empty($items)) {
+    http_response_code(400);
+    echo json_encode(['status' => 'error', 'message' => 'Tidak ada data yang dikirim']);
+    exit;
+}
 $sql = "INSERT INTO margin
 (plu, no_bon, descp, qty, gross, net, avg_cost, ppn, margin_min, tanggal, kd_store, cabang, ket_cek, nama_cek, status_cek, tanggal_cek)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
@@ -46,37 +43,56 @@ if (!$stmt) {
     echo json_encode(['status' => 'error', 'message' => 'Server Error: ' . $conn->error]);
     exit;
 }
-$stmt->bind_param(
-    "sssidddddssssss",
-    $plu,
-    $bon,
-    $barang,
-    $qty,
-    $gros,
-    $net,
-    $avg,
-    $ppn,
-    $margin,
-    $tgl,
-    $kd_store,
-    $cabang,
-    $ket,
-    $nama,
-    $tanggal
-);
-if ($stmt->execute()) {
+$successCount = 0;
+foreach ($items as $item) {
+    $plu = $item['plu'];
+    $bon = $item['bon'] ?? $item['no_bon'];
+    $barang = $item['barang'] ?? $item['descp'];
+    $qty = $item['qty'];
+    $gros = $item['gros'] ?? $item['gross'] ?? 0;
+    $net = $item['net'] ?? 0;
+    $avg = $item['avg'] ?? $item['avg_cost'] ?? 0;
+    $ppn = $item['ppn'] ?? 0;
+    $margin = $item['margin'] ?? 0;
+    $tgl = $item['tgl'] ?? $item['tanggal'];
+    $kd_store = $item['kd'] ?? $item['kd_store'];
+    $cabang = $item['cabang'];
+    $ket = $item['keterangan'] ?? $ket_global;
+    $stmt->bind_param(
+        "sssidddddssssss",
+        $plu,
+        $bon,
+        $barang,
+        $qty,
+        $gros,
+        $net,
+        $avg,
+        $ppn,
+        $margin,
+        $tgl,
+        $kd_store,
+        $cabang,
+        $ket,
+        $nama_user,
+        $tanggal
+    );
+    if ($stmt->execute()) {
+        $successCount++;
+    }
+}
+$stmt->close();
+$conn->close();
+if ($successCount > 0) {
     http_response_code(200);
     echo json_encode([
         'status' => 'success',
-        'message' => 'Berhasil update data'
+        'message' => "Berhasil update $successCount data"
     ]);
 } else {
     http_response_code(500);
     echo json_encode([
         'status' => 'warning',
-        'message' => 'Gagal update: ' . $stmt->error
+        'message' => 'Gagal update data atau data tidak berubah'
     ]);
-    exit;
 }
-$stmt->close();
-$conn->close();
+?>
