@@ -16,11 +16,10 @@ if ($page < 1) {
     $page = 1;
 }
 require_once __DIR__ . '/../../component/menu_handler.php';
-// Ganti identifier menu sesuai kebutuhan database menu Anda, misal 'pajak_keluaran'
-// $menuHandler = new MenuHandler('pajak_keluaran');
-// if (!$menuHandler->initialize()) {
-//     exit();
-// }
+$menuHandler = new MenuHandler('pajak_keluaran');
+if (!$menuHandler->initialize()) {
+    exit();
+}
 ?>
 
 <!DOCTYPE html>

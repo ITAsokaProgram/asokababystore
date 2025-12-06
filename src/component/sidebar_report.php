@@ -25,14 +25,16 @@ $isActive = function ($path) use ($uri) {
     return strpos($uri, $path) !== false;
 };
 
-// 1. Logika Menu TOOLS (Voucher, Jadwal SO, Approval)
+// 1. Logika Menu TOOLS (Voucher, Jadwal SO, Approval, Uang Brankas)
 $isVoucherOpen = $isActive('/src/fitur/voucher/');
 $isJadwalSoOpen = $isActive('/src/fitur/laporan/jadwal_so/');
 $isReceiptToolOpen = $isActive('/src/fitur/receipt/');
 $isReturnToolOpen = $isActive('/src/fitur/return/');
 $isKoreksiToolOpen = $isActive('/src/fitur/koreksi/');
+$isUangBrankasOpen = $isActive('/src/fitur/uang_brangkas/'); // Tambahan Baru
 
-$isToolsOpen = $isVoucherOpen || $isJadwalSoOpen || $isActive('/src/fitur/approval/izin') || $isReceiptToolOpen || $isReturnToolOpen || $isKoreksiToolOpen;
+$isToolsOpen = $isVoucherOpen || $isJadwalSoOpen || $isActive('/src/fitur/approval/izin') || $isReceiptToolOpen || $isReturnToolOpen || $isKoreksiToolOpen || $isUangBrankasOpen;
+
 // 2. Logika Menu LAPORAN (Penjualan, Sales Per Kasir, dll)
 $isPenjualanOpen = $isActive('/src/fitur/laporan/in_laporan_sub_dept') ||
     $isActive('/src/fitur/laporan/in_sales_ratio') ||
@@ -49,10 +51,13 @@ $isKoreksiOpen = $isActive('/src/fitur/koreksi_stok/') || $isActive('/src/fitur/
 
 $isLaporanOpen = $isPenjualanOpen || $isPelangganOpen || $isReceiptOpen || $isReturnOpen || $isMutasiOpen || $isTransaksiOpen || $isKoreksiOpen || $isActive('/src/fitur/log_backup/');
 
-// 3. Logika Menu PAJAK (Opsional, agar konsisten)
+// 3. Logika Menu PAJAK
 $isPembelianOpen = $isActive('/src/fitur/coretax/input_pembelian') || $isActive('/src/fitur/coretax/laporan_pembelian');
+$isPengeluaranOpen = $isActive('/src/fitur/coretax/data_coretax_keluaran.php') || $isActive('/src/fitur/coretax/import_faktur_keluaran.php'); // Tambahan Baru
+$isMasukanOpen = $isActive('/src/fitur/coretax/data_coretax.php') || $isActive('/src/fitur/coretax/import_faktur.php');
 $isFakturOpen = $isActive('/src/fitur/coretax/input_faktur') || $isActive('/src/fitur/coretax/laporan_faktur') || $isActive('/src/fitur/coretax/import_faktur');
 $isLainnyaOpen = $isActive('/src/fitur/coretax/data_coretax') || $isActive('/src/fitur/coretax/faktur_masukan');
+
 $isPajakOpen = $isActive('/src/fitur/coretax/');
 ?>
 
@@ -1087,14 +1092,28 @@ $isPajakOpen = $isActive('/src/fitur/coretax/');
                         </div>
                     </li>
 
+                    <li>
+                        <a href="/src/fitur/uang_brangkas/index.php" data-menu="uang_brankas"
+                            class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-cyan-100 hover:text-cyan-700 transition-all duration-200 group rounded-lg">
+                            <span
+                                class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
+                                <i
+                                    class="fa-solid fa-vault mr-2 text-base text-cyan-400 group-hover:text-cyan-600 group-hover:scale-110 transition-all duration-200"></i>
+                                Uang Brankas
+                            </span>
+                        </a>
+                    </li>
+
                 </ul>
             </div>
         </div>
         <div x-data="{ 
                 open: <?= $isPajakOpen ? 'true' : 'false' ?>, 
                 nestedOpenPembelian: <?= $isPembelianOpen ? 'true' : 'false' ?>, 
-                nestedOpenFaktur: <?= $isFakturOpen ? 'true' : 'false' ?>, 
-                nestedOpenLainnya: <?= $isLainnyaOpen ? 'true' : 'false' ?> 
+                nestedOpenPengeluaran: <?= $isPengeluaranOpen ? 'true' : 'false' ?>,
+                nestedOpenMasukan: <?= $isMasukanOpen ? 'true' : 'false' ?>, 
+                nestedOpenFaktur: <?= $isFakturOpen ? 'true' : 'false' ?>,
+                nestedOpenLainnya: <?= $isLainnyaOpen ? 'true' : 'false' ?>
             }" class="relative">
             <button @click="open = !open" id="pajakLink"
                 class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-slate-100 hover:to-slate-200 hover:text-slate-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-slate-300">
@@ -1161,13 +1180,102 @@ $isPajakOpen = $isActive('/src/fitur/coretax/');
                     </li>
 
                     <li>
+                        <button @click="nestedOpenPengeluaran = !nestedOpenPengeluaran"
+                            class="w-full text-left px-4 py-2.5 text-gray-700 hover:bg-slate-100 hover:text-slate-700 transition-all duration-200 flex items-center group cursor-pointer rounded-lg">
+                            <span
+                                class="transition-all duration-300 group-hover:translate-x-1 font-medium flex items-center text-sm">
+                                <i
+                                    class="fa-solid fa-money-bill-trend-up mr-2 text-base text-slate-500 group-hover:text-slate-600 transition-all duration-200 group-hover:scale-110"></i>
+                                Pengeluaran
+                            </span>
+                            <svg class="ml-auto w-3 h-3 transform transition-transform duration-200 group-hover:translate-x-1"
+                                :class="{ 'rotate-180': nestedOpenPengeluaran }" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div x-show="nestedOpenPengeluaran" class="ml-4 mt-1" style="display: none;">
+                            <ul class="bg-slate-50 rounded-lg p-2 space-y-1 border border-slate-200">
+                                <li>
+                                    <a href="/src/fitur/coretax/data_coretax_keluaran.php" data-menu="pajak_keluaran"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-white hover:text-slate-800 transition-all duration-200 group rounded-md shadow-sm hover:shadow-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-table-list mr-2 text-sm text-slate-400 group-hover:text-slate-600"></i>
+                                            Data Keluaran
+                                        </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/src/fitur/coretax/import_faktur_keluaran.php"
+                                        data-menu="pajak_keluaran_import"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-white hover:text-slate-800 transition-all duration-200 group rounded-md shadow-sm hover:shadow-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-file-import mr-2 text-sm text-slate-400 group-hover:text-slate-600"></i>
+                                            Import Keluaran
+                                        </span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
+                    <li>
+                        <button @click="nestedOpenMasukan = !nestedOpenMasukan"
+                            class="w-full text-left px-4 py-2.5 text-gray-700 hover:bg-slate-100 hover:text-slate-700 transition-all duration-200 flex items-center group cursor-pointer rounded-lg">
+                            <span
+                                class="transition-all duration-300 group-hover:translate-x-1 font-medium flex items-center text-sm">
+                                <i
+                                    class="fa-solid fa-inbox mr-2 text-base text-slate-500 group-hover:text-slate-600 transition-all duration-200 group-hover:scale-110"></i>
+                                Masukan
+                            </span>
+                            <svg class="ml-auto w-3 h-3 transform transition-transform duration-200 group-hover:translate-x-1"
+                                :class="{ 'rotate-180': nestedOpenMasukan }" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <div x-show="nestedOpenMasukan" class="ml-4 mt-1" style="display: none;">
+                            <ul class="bg-slate-50 rounded-lg p-2 space-y-1 border border-slate-200">
+                                <li>
+                                    <a href="/src/fitur/coretax/data_coretax.php" data-menu="pajak_data"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-white hover:text-slate-800 transition-all duration-200 group rounded-md shadow-sm hover:shadow-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-database mr-2 text-sm text-slate-400 group-hover:text-slate-600"></i>
+                                            Laporan Masukan
+                                        </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/src/fitur/coretax/import_faktur.php" data-menu="pajak_import"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-white hover:text-slate-800 transition-all duration-200 group rounded-md shadow-sm hover:shadow-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i
+                                                class="fa-solid fa-file-import mr-2 text-sm text-slate-400 group-hover:text-slate-600"></i>
+                                            Import Masukan
+                                        </span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
+                    <li>
                         <button @click="nestedOpenFaktur = !nestedOpenFaktur"
                             class="w-full text-left px-4 py-2.5 text-gray-700 hover:bg-slate-100 hover:text-slate-700 transition-all duration-200 flex items-center group cursor-pointer rounded-lg">
                             <span
                                 class="transition-all duration-300 group-hover:translate-x-1 font-medium flex items-center text-sm">
                                 <i
-                                    class="fa-solid fa-file-invoice-dollar mr-2 text-base text-slate-500 group-hover:text-slate-600 transition-all duration-200 group-hover:scale-110"></i>
-                                Faktur Pajak
+                                    class="fa-solid fa-pen-to-square mr-2 text-base text-slate-500 group-hover:text-slate-600 transition-all duration-200 group-hover:scale-110"></i>
+                                Faktur Manual
                             </span>
                             <svg class="ml-auto w-3 h-3 transform transition-transform duration-200 group-hover:translate-x-1"
                                 :class="{ 'rotate-180': nestedOpenFaktur }" fill="none" stroke="currentColor"
@@ -1184,8 +1292,8 @@ $isPajakOpen = $isActive('/src/fitur/coretax/');
                                         <span
                                             class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
                                             <i
-                                                class="fa-solid fa-pen-to-square mr-2 text-sm text-slate-400 group-hover:text-slate-600"></i>
-                                            Kelola Faktur Pajak Masukan
+                                                class="fa-solid fa-keyboard mr-2 text-sm text-slate-400 group-hover:text-slate-600"></i>
+                                            Input Manual
                                         </span>
                                     </a>
                                 </li>
@@ -1197,18 +1305,7 @@ $isPajakOpen = $isActive('/src/fitur/coretax/');
                                             class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
                                             <i
                                                 class="fa-solid fa-file-lines mr-2 text-sm text-slate-400 group-hover:text-slate-600"></i>
-                                            Laporan Faktur
-                                        </span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="/src/fitur/coretax/import_faktur.php" data-menu="pajak_import"
-                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-white hover:text-slate-800 transition-all duration-200 group rounded-md shadow-sm hover:shadow-md">
-                                        <span
-                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
-                                            <i
-                                                class="fa-solid fa-file-import mr-2 text-sm text-slate-400 group-hover:text-slate-600"></i>
-                                            Import Masukan
+                                            Laporan Manual
                                         </span>
                                     </a>
                                 </li>
@@ -1234,17 +1331,6 @@ $isPajakOpen = $isActive('/src/fitur/coretax/');
                         </button>
                         <div x-show="nestedOpenLainnya" class="ml-4 mt-1" style="display: none;">
                             <ul class="bg-slate-50 rounded-lg p-2 space-y-1 border border-slate-200">
-                                <li>
-                                    <a href="/src/fitur/coretax/data_coretax.php" data-menu="pajak_data"
-                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-white hover:text-slate-800 transition-all duration-200 group rounded-md shadow-sm hover:shadow-md">
-                                        <span
-                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
-                                            <i
-                                                class="fa-solid fa-database mr-2 text-sm text-slate-400 group-hover:text-slate-600"></i>
-                                            Laporan Masukan
-                                        </span>
-                                    </a>
-                                </li>
                                 <li>
                                     <a href="/src/fitur/coretax/faktur_masukan.php" data-menu="pajak_faktur_masukan"
                                         class="flex items-center px-3 py-2 text-gray-700 hover:bg-white hover:text-slate-800 transition-all duration-200 group rounded-md shadow-sm hover:shadow-md">
@@ -1303,7 +1389,8 @@ $isPajakOpen = $isActive('/src/fitur/coretax/');
             currentPath.includes('/src/fitur/voucher/') ||
             currentPath.includes('/src/fitur/receipt/') ||
             currentPath.includes('/src/fitur/return/') ||
-            currentPath.includes('/src/fitur/koreksi/')
+            currentPath.includes('/src/fitur/koreksi/') ||
+            currentPath.includes('/src/fitur/uang_brangkas/') // Include Uang Brankas di script juga
         ) {
             activeId = 'tools';
         } else if (currentPath.includes('/src/fitur/coretax/')) {
