@@ -162,8 +162,8 @@ document.addEventListener("DOMContentLoaded", () => {
     tabel_data.forEach((row) => {
       const raw_nilai_db = parseFloat(row.gtot) || 0;
       const gppn = parseFloat(row.gppn) || 0;
-      const dpp = raw_nilai_db - gppn;
-      const total_akhir = raw_nilai_db;
+      const dpp = raw_nilai_db;
+      const total_akhir = raw_nilai_db + gppn;
       const dateObj = new Date(row.tgl_tiba);
       const dateFormatted = dateObj.toLocaleDateString("id-ID", {
         day: "2-digit",
@@ -177,14 +177,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const displayNsfp = row.final_nsfp
         ? `<span class="font-mono text-gray-700 font-medium">${row.final_nsfp}</span>`
         : '<span class="text-gray-400">-</span>';
-
-      // PERUBAHAN DISINI: Hanya badge "PM"
       let statusBadges = "";
       if (parseInt(row.badge_beli) === 1) {
-        // Ganti teks "Beli" jadi "PM"
         statusBadges += `<span class="bg-green-100 text-green-700 text-xs px-2 py-1 rounded font-bold border border-green-200 mr-1" title="Data ada di Laporan Pembelian">PM</span>`;
       }
-
       if (statusBadges === "") {
         statusBadges = '<span class="text-gray-300 text-xs italic">-</span>';
       }
