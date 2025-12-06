@@ -60,9 +60,9 @@ document.getElementById("toggle-hide").addEventListener("click", function () {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
+  console.log("TEST");
   const profileImg = document.getElementById("profile-img");
   const profileCard = document.getElementById("profile-card");
-
   profileImg.addEventListener("click", function (event) {
     event.preventDefault();
     profileCard.classList.toggle("show");
@@ -398,6 +398,8 @@ function sendKodeSupp1(page, filter) {
 }
 function sendDataToBar(filter) {
   var selectRatio = document.querySelector("#ratio_number").value;
+
+  // Validasi client-side sudah benar
   if (selectRatio === "none") {
     Swal.fire({
       icon: "warning",
@@ -425,11 +427,17 @@ function sendDataToBar(filter) {
     barChart.resize();
   }, 300);
   resetBarChart();
+
   formData.append("ajax", true);
   formData.append(
     "csrf_token",
     document.querySelector("[name='csrf_token']").value
   );
+
+  // --- TAMBAHKAN BARIS INI ---
+  formData.append("ratio", selectRatio);
+  // ---------------------------
+
   formData.append("kode_supp1", document.querySelector("#kode_supp1")?.value);
   formData.append("kode_supp2", document.querySelector("#kode_supp2")?.value);
   formData.append("kode_supp3", document.querySelector("#kode_supp3")?.value);
