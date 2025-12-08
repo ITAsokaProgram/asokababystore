@@ -114,6 +114,12 @@ if (!$menuHandler->initialize()) {
                                 placeholder="Contoh: 1900-RC..." required>
                         </div>
 
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Nomor Invoice</label>
+                            <input type="text" name="no_invoice" id="no_invoice" class="input-modern w-full uppercase"
+                                placeholder="Optional...">
+                        </div>
+
                         <div class="relative">
                             <label class="block text-xs font-semibold text-gray-700 mb-1">Kode Supplier <span
                                     class="text-red-500">*</span></label>

@@ -55,7 +55,11 @@ document.addEventListener("DOMContentLoaded", () => {
             )}</td>
             <td class="font-medium text-pink-600">${row.kode_supp}</td>
             <td class="text-sm text-gray-700">${row.nama_supplier || "-"}</td>
+            
             <td class="text-sm font-bold text-gray-800">${row.no_faktur}</td>
+            
+            <td class="text-sm text-gray-600">${row.no_invoice || "-"}</td>
+
             <td class="text-right font-mono text-gray-700">${formatRupiah(
               row.total_penerimaan
             )}</td>

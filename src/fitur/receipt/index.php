@@ -96,6 +96,7 @@ if (!$menuHandler->initialize()) {
                                     <th>Kode Supplier</th>
                                     <th>Nama Supplier</th>
                                     <th>No Faktur</th>
+                                    <th>No Invoice</th>
                                     <th class="text-right">Total Penerimaan</th>
                                     <th>Keterangan</th>
                                 </tr>

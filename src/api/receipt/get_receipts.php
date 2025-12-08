@@ -29,9 +29,11 @@ try {
     $params = [$tgl_mulai, $tgl_selesai];
     $types = "ss";
     if (!empty($search_faktur)) {
-        $where_clauses[] = "no_faktur LIKE ?";
-        $params[] = "%" . $search_faktur . "%";
-        $types .= "s";
+        $where_clauses[] = "(no_faktur LIKE ? OR no_invoice LIKE ?)";
+        $searchTerm = "%" . $search_faktur . "%";
+        $params[] = $searchTerm;
+        $params[] = $searchTerm;
+        $types .= "ss";
     }
     $where_sql = implode(" AND ", $where_clauses);
     $sql_count = "SELECT COUNT(*) as total FROM c_receipt WHERE $where_sql";
