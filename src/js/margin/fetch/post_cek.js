@@ -18,19 +18,50 @@ async function refreshTable(start, end, cabang) {
 export const fetchUpdateMargin = (data, start, end, cabang) => {
   const token = getCookie("admin_token");
 
+  // HTML Form untuk SweetAlert
+  const htmlContent = `
+    <div class="flex flex-col gap-4 text-left">
+        <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">Keterangan</label>
+            <input id="swal-input-ket" class="swal2-input !m-0 !w-full" placeholder="Keterangan pengecekan">
+        </div>
+        <div class="p-3 bg-red-50 border border-red-100 rounded-lg">
+            <h4 class="text-xs font-bold text-red-600 mb-2 border-b border-red-200 pb-1">OTORISASI USER CHECK</h4>
+            <div class="mb-3">
+                <label class="block text-xs font-semibold text-gray-700 mb-1">User Check (Inisial)</label>
+                <input id="swal-input-user" class="swal2-input !m-0 !w-full !h-10 !text-sm" placeholder="Contoh: ADM" autocomplete="off">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Kode Otorisasi</label>
+                <input type="password" id="swal-input-pass" class="swal2-input !m-0 !w-full !h-10 !text-sm" placeholder="Password Otorisasi">
+            </div>
+        </div>
+    </div>
+  `;
+
   Swal.fire({
-    title: "Masukkan Keterangan",
-    input: "text",
-    inputLabel: `PLU: ${data.plu} | Bon: ${data.bon}`,
-    inputPlaceholder: "Tulis keterangan di sini...",
+    title: "Update Checking",
+    html: htmlContent,
     showCancelButton: true,
-    confirmButtonText: "Kirim",
-    confirmButtonColor: "#d33",
-    allowOutsideClick: false,
-    allowEscapeKey: false,
-    preConfirm: (keterangan) => {
+    confirmButtonText: '<i class="fas fa-save mr-2"></i> Simpan',
+    confirmButtonColor: "#db2777", // Pink-600
+    cancelButtonText: "Batal",
+    focusConfirm: false,
+    preConfirm: () => {
+      const keterangan = document.getElementById("swal-input-ket").value;
+      const userCheck = document.getElementById("swal-input-user").value;
+      const passAuth = document.getElementById("swal-input-pass").value;
+
       if (!keterangan) {
         Swal.showValidationMessage("Keterangan tidak boleh kosong");
+        return false;
+      }
+      if (!userCheck) {
+        Swal.showValidationMessage("Nama User Check wajib diisi");
+        return false;
+      }
+      if (!passAuth) {
+        Swal.showValidationMessage("Kode Otorisasi wajib diisi");
         return false;
       }
 
@@ -39,11 +70,13 @@ export const fetchUpdateMargin = (data, start, end, cabang) => {
         items: [{ ...data }],
         keterangan: keterangan,
         nama: data.nama,
+        nama_user_cek: userCheck, // Tambahan
+        kode_otorisasi: passAuth, // Tambahan
       };
 
       Swal.showLoading();
 
-      return fetch("/src/api/margin/update_checking", {
+      return fetch("/src/api/margin/update_checking.php", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -60,12 +93,18 @@ export const fetchUpdateMargin = (data, start, end, cabang) => {
           }
         })
         .catch((error) => {
-          Swal.showValidationMessage(`Gagal: ${error.message}`);
+          Swal.showValidationMessage(`${error.message}`);
         });
     },
   }).then((result) => {
-    if (result.isConfirmed && result.value) {
-      Swal.fire("Tersimpan!", result.value, "success").then(async () => {
+    if (result.isConfirmed) {
+      Swal.fire({
+        icon: "success",
+        title: "Berhasil",
+        text: result.value, // Pesan dari server
+        timer: 1500,
+        showConfirmButton: false,
+      }).then(async () => {
         await refreshTable(start, end, cabang);
       });
     }
@@ -75,7 +114,7 @@ export const fetchUpdateMargin = (data, start, end, cabang) => {
 // Bulk Update
 export const fetchBulkUpdateMargin = async (
   items,
-  keterangan,
+  formValues, // Menerima object {keterangan, userCheck, passAuth}
   start,
   end,
   cabang
@@ -83,14 +122,16 @@ export const fetchBulkUpdateMargin = async (
   const token = getCookie("admin_token");
   const payload = {
     items: items,
-    keterangan: keterangan,
+    keterangan: formValues.keterangan,
+    nama_user_cek: formValues.userCheck,
+    kode_otorisasi: formValues.passAuth,
     nama: sessionStorage.getItem("userName"),
   };
 
   Swal.showLoading();
 
   try {
-    const response = await fetch("/src/api/margin/update_checking", {
+    const response = await fetch("/src/api/margin/update_checking.php", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

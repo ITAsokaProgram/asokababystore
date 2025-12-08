@@ -92,6 +92,7 @@ const init = async () => {
       nama: sessionStorage.getItem("userName"),
       kd: button.getAttribute("data-store"),
     };
+    // Fungsi ini sekarang akan memunculkan popup otorisasi
     fetchUpdateMargin(data, start.value, end.value, currentCabang);
   });
 
@@ -170,26 +171,63 @@ const init = async () => {
       itemsToUpdate.push(data);
     });
 
+    // Form HTML untuk Bulk Update (sama dengan Single Update)
+    const htmlContent = `
+        <div class="flex flex-col gap-4 text-left">
+            <div class="bg-blue-50 p-3 rounded text-sm text-blue-700 mb-2">
+                <i class="fas fa-info-circle"></i> Anda akan mengupdate <b>${itemsToUpdate.length}</b> data sekaligus.
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Keterangan (Massal)</label>
+                <input id="swal-bulk-ket" class="swal2-input !m-0 !w-full" placeholder="Keterangan update massal">
+            </div>
+            <div class="p-3 bg-red-50 border border-red-100 rounded-lg">
+                <h4 class="text-xs font-bold text-red-600 mb-2 border-b border-red-200 pb-1">OTORISASI USER CHECK</h4>
+                <div class="mb-3">
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">User Check (Inisial)</label>
+                    <input id="swal-bulk-user" class="swal2-input !m-0 !w-full !h-10 !text-sm" placeholder="Contoh: ADM" autocomplete="off">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Kode Otorisasi</label>
+                    <input type="password" id="swal-bulk-pass" class="swal2-input !m-0 !w-full !h-10 !text-sm" placeholder="Password Otorisasi">
+                </div>
+            </div>
+        </div>
+    `;
+
     Swal.fire({
-      title: `Update ${itemsToUpdate.length} Data`,
-      input: "text",
-      inputLabel: "Masukkan Keterangan untuk semua data terpilih",
-      inputPlaceholder: "Tulis keterangan di sini...",
+      title: "Bulk Update Checking",
+      html: htmlContent,
       showCancelButton: true,
       confirmButtonText: "Update Semua",
-      confirmButtonColor: "#d33",
-      preConfirm: (keterangan) => {
+      confirmButtonColor: "#db2777",
+      cancelButtonText: "Batal",
+      focusConfirm: false,
+      preConfirm: () => {
+        const keterangan = document.getElementById("swal-bulk-ket").value;
+        const userCheck = document.getElementById("swal-bulk-user").value;
+        const passAuth = document.getElementById("swal-bulk-pass").value;
+
         if (!keterangan) {
           Swal.showValidationMessage("Keterangan tidak boleh kosong");
           return false;
         }
-        return keterangan;
+        if (!userCheck) {
+          Swal.showValidationMessage("Nama User Check wajib diisi");
+          return false;
+        }
+        if (!passAuth) {
+          Swal.showValidationMessage("Kode Otorisasi wajib diisi");
+          return false;
+        }
+
+        return { keterangan, userCheck, passAuth };
       },
     }).then(async (result) => {
       if (result.isConfirmed) {
         const success = await fetchBulkUpdateMargin(
           itemsToUpdate,
-          result.value,
+          result.value, // Mengirim object otorisasi
           start.value,
           end.value,
           selectCabang.value
