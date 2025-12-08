@@ -1,4 +1,6 @@
+import getCookie from "../index/utils/cookies.js";
 let currentSelectedRow = null;
+let userCanPrint = false;
 document.addEventListener("DOMContentLoaded", () => {
   const tableBody = document.getElementById("mutasi-table-body");
   const filterForm = document.getElementById("filter-form");
@@ -45,14 +47,13 @@ document.addEventListener("DOMContentLoaded", () => {
       kd_store: params.get("kd_store") || "all",
       status_cetak: params.get("status_cetak") || "all",
       status_terima: params.get("status_terima") || "all",
-      search_query: params.get("search_query") || "", // Tambahkan ini
+      search_query: params.get("search_query") || "",
       page: parseInt(params.get("page") || "1", 10),
     };
   }
   async function loadData() {
     const params = getUrlParams();
     setLoadingState(true);
-
     if (document.getElementById("search_query"))
       document.getElementById("search_query").value = params.search_query;
     if (document.getElementById("tgl_mulai"))
@@ -66,12 +67,23 @@ document.addEventListener("DOMContentLoaded", () => {
     if (document.getElementById("status_terima"))
       document.getElementById("status_terima").value = params.status_terima;
     const queryString = new URLSearchParams(params).toString();
+    const token = getCookie("admin_token");
+
     try {
+      // TAMBAHKAN OPTIONS HEADERS PADA FETCH
       const response = await fetch(
-        `/src/api/mutasi_in/get_data.php?${queryString}`
+        `/src/api/mutasi_in/get_data.php?${queryString}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // INI KUNCINYA
+          },
+        }
       );
       const data = await response.json();
       if (data.error) throw new Error(data.error);
+      userCanPrint = data.allow_print === true;
       if (data.stores) populateStoreFilter(data.stores, params.kd_store);
       if (data.summary) {
         if (summaryQty)
@@ -136,11 +148,26 @@ document.addEventListener("DOMContentLoaded", () => {
     data.forEach((row, index) => {
       const isReceived = row.receipt === "True";
       const isPrinted = row.cetak === "True";
-      const printBtnClass = isReceived
-        ? isPrinted
-          ? "bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200"
-          : "bg-pink-600 text-white hover:bg-pink-700 shadow-sm"
-        : "bg-gray-200 text-gray-400 cursor-not-allowed";
+      let printBtnClass = "";
+      let printIcon = '<i class="fas fa-print"></i>';
+      let btnTitle = "";
+      let btnLabel = isPrinted ? "Ulang" : "Cetak";
+      if (!userCanPrint) {
+        printBtnClass =
+          "bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed opacity-75";
+        printIcon = '<i class="fas fa-lock"></i>';
+        btnTitle = "Anda tidak memiliki akses untuk mencetak invoice";
+      } else if (!isReceived) {
+        printBtnClass = "bg-gray-200 text-gray-400 cursor-not-allowed";
+        btnTitle = "Barang belum diterima";
+      } else if (isPrinted) {
+        printBtnClass =
+          "bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200";
+        btnTitle = "Cetak Ulang";
+      } else {
+        printBtnClass = "bg-pink-600 text-white hover:bg-pink-700 shadow-sm";
+        btnTitle = "Cetak Faktur";
+      }
       const rowId = `row-${index}`;
       html += `
       <tr id="${rowId}" class="hover:bg-pink-50 cursor-pointer transition-colors border-b border-gray-100" 
@@ -203,12 +230,8 @@ document.addEventListener("DOMContentLoaded", () => {
         row.kode_dari
       }', '${row.receipt}', '${row.cetak}', '${row.tgl_raw}')"
                   class="px-3 py-1.5 rounded text-xs font-medium transition-colors flex items-center gap-1 mx-auto ${printBtnClass}"
-                  ${
-                    !isReceived
-                      ? 'disabled title="Barang belum diterima"'
-                      : `title="${isPrinted ? "Cetak Ulang" : "Cetak Faktur"}"`
-                  }>
-                  <i class="fas fa-print"></i> ${isPrinted ? "Ulang" : "Cetak"}
+                  title="${btnTitle}">
+                  ${printIcon} ${btnLabel}
               </button>
           </td>
       </tr>
@@ -269,16 +292,13 @@ document.addEventListener("DOMContentLoaded", () => {
   if (filterForm) {
     filterForm.addEventListener("submit", (e) => {
       e.preventDefault();
-      // Ambil value dari input baru
       const searchQuery = document.getElementById("search_query").value;
       const tglMulai = document.getElementById("tgl_mulai").value;
       const tglSelesai = document.getElementById("tgl_selesai").value;
       const kdStore = document.getElementById("kd_store").value;
       const statusCetak = document.getElementById("status_cetak").value;
       const statusTerima = document.getElementById("status_terima").value;
-
       const url = new URL(window.location);
-      // Set params baru
       url.searchParams.set("search_query", searchQuery);
       url.searchParams.set("tgl_mulai", tglMulai);
       url.searchParams.set("tgl_selesai", tglSelesai);
@@ -286,7 +306,6 @@ document.addEventListener("DOMContentLoaded", () => {
       url.searchParams.set("status_cetak", statusCetak);
       url.searchParams.set("status_terima", statusTerima);
       url.searchParams.set("page", 1);
-
       window.history.pushState({}, "", url);
       loadData();
     });
@@ -397,9 +416,17 @@ window.handlePrint = async function (
   isPrinted,
   tglMutasi
 ) {
-  if (isReceived !== "True") {
+  if (!userCanPrint) {
     Swal.fire(
       "Akses Ditolak",
+      "Anda tidak memiliki izin untuk mencetak invoice/faktur. Silahkan hubungi IT.",
+      "error"
+    );
+    return;
+  }
+  if (isReceived !== "True") {
+    Swal.fire(
+      "Belum Diterima",
       "Barang belum diterima. Tidak dapat mencetak faktur.",
       "warning"
     );

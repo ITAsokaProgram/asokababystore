@@ -590,6 +590,12 @@ $token = $menuHandler->getToken();
                                     <span class="text-sm">Mutasi Invoice</span>
                                 </label>
                                 <label
+                                    class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 transition-colors duration-200">
+                                    <input type="checkbox" name="menus[]" value="izin_cetak"
+                                        class="w-4 h-4 text-slate-600 rounded focus:ring-slate-500" />
+                                    <span class="text-sm"> Izin Cetak Invoice</span>
+                                </label>
+                                <label
                                     class="flex items-center gap-3 p-2 rounded-lg hover:bg-indigo-50 transition-colors duration-200">
                                     <input type="checkbox" name="menus[]" value="laporan_koreksi_supplier"
                                         class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" />
@@ -805,12 +811,7 @@ $token = $menuHandler->getToken();
                                         class="w-4 h-4 text-pink-600 rounded focus:ring-pink-500" />
                                     <span class="text-sm">Top Sales</span>
                                 </label>
-                                <label
-                                    class="flex items-center gap-3 p-2 rounded-lg hover:bg-pink-50 transition-colors duration-200">
-                                    <input type="checkbox" name="menus[]" value="management_member"
-                                        class="w-4 h-4 text-pink-600 rounded focus:ring-pink-500" />
-                                    <span class="text-sm">Kelola Member</span>
-                                </label>
+
                             </div>
                         </div>
 

@@ -1,8 +1,49 @@
 <?php
 header('Content-Type: application/json');
 include '../../../aa_kon_sett.php';
+// Include library auth untuk verifikasi token
+require_once __DIR__ . "/../../auth/middleware_login.php";
 
 try {
+    // --- BAGIAN BARU: CEK PERMISSION IZIN CETAK ---
+    $allow_print = false; // Default: Tidak boleh cetak
+
+    // 1. Ambil Token dari Header
+    $headers = getallheaders();
+    $token = null;
+    if (isset($headers['Authorization']) && preg_match('/^Bearer\s(\S+)$/', $headers['Authorization'], $matches)) {
+        $token = $matches[1];
+    }
+
+    // 2. Verifikasi User
+    if ($token) {
+        $user = verify_token($token); // Fungsi dari middleware_login.php
+        if ($user) {
+            // Support object (stdClass) atau array result
+            $user_id = $user->kode ?? $user->id ?? 0;
+
+            // 3. Cek Database Permission
+            // Mencari apakah user punya menu 'izin_cetak' dengan can_view = 1
+            $checkSql = "SELECT 1 FROM user_internal_access 
+                         WHERE id_user = ? AND menu_code = 'izin_cetak' AND can_view = 1 
+                         LIMIT 1";
+
+            $stmtPerm = $conn->prepare($checkSql);
+            if ($stmtPerm) {
+                $stmtPerm->bind_param("i", $user_id);
+                $stmtPerm->execute();
+                $stmtPerm->store_result();
+
+                if ($stmtPerm->num_rows > 0) {
+                    $allow_print = true; // User punya izin
+                }
+                $stmtPerm->close();
+            }
+        }
+    }
+    // --- END BAGIAN BARU ---
+
+    // --- LOGIKA DATA EXISTING (FILTER & SEARCH) ---
     $tgl_mulai = $_GET['tgl_mulai'] ?? date('Y-m-d');
     $tgl_selesai = $_GET['tgl_selesai'] ?? date('Y-m-d');
     $kd_store = $_GET['kd_store'] ?? 'all';
@@ -21,7 +62,6 @@ try {
     $params = [$tgl_mulai, $tgl_selesai];
     $types = "ss";
 
-
     if ($kd_store !== 'all') {
         $where .= " AND mi.kode_dari = ?";
         $params[] = $kd_store;
@@ -30,12 +70,9 @@ try {
 
     if (!empty($search_query)) {
         $where .= " AND (mi.no_faktur LIKE ? OR mi.no_mmd LIKE ?)";
-
         $wildcard = "%" . $search_query . "%";
-
         $params[] = $wildcard;
         $params[] = $wildcard;
-
         $types .= "ss";
     }
 
@@ -51,7 +88,7 @@ try {
         $types .= "s";
     }
 
-
+    // Hitung Summary
     $querySummary = "
         SELECT 
             SUM(mi.qty) as total_qty,
@@ -74,7 +111,7 @@ try {
         'total_grand' => $resSummary['total_grand'] ?? 0,
     ];
 
-
+    // Query Data Utama
     $limitClause = "";
     $paramsData = $params;
     $typesData = $types;
@@ -85,7 +122,6 @@ try {
         $paramsData[] = $offset;
         $typesData .= "ii";
     }
-
 
     $query = "
         SELECT 
@@ -129,7 +165,7 @@ try {
         $data[] = $row;
     }
 
-
+    // Pagination Calculation
     $pagination = null;
     if (!$is_export) {
         $queryCount = "SELECT COUNT(DISTINCT mi.no_faktur) as total FROM mutasi_in mi WHERE $where";
@@ -146,14 +182,16 @@ try {
         ];
     }
 
-
+    // List Toko untuk Filter
     $stores = [];
     $storeRes = $conn->query("SELECT kd_store, nm_alias FROM kode_store ORDER BY kd_store");
     while ($s = $storeRes->fetch_assoc()) {
         $stores[] = $s;
     }
 
+    // Output JSON dengan status allow_print
     echo json_encode([
+        'allow_print' => $allow_print, // Variable boolean hasil cek permission
         'summary' => $summary,
         'tabel_data' => $data,
         'stores' => $stores,

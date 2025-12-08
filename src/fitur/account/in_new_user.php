@@ -345,6 +345,12 @@ $token = $menuHandler->getToken();
                         <input type="checkbox" name="menus[]" value="laporan_mutasi_in"
                           class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Mutasi Invoice
                       </label>
+                      <label
+                        class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 transition-colors duration-200">
+                        <input type="checkbox" name="menus[]" value="izin_cetak"
+                          class="w-4 h-4 text-slate-600 rounded focus:ring-slate-500" />
+                        <span class="text-sm"> Izin Cetak Invoice</span>
+                      </label>
                       <label class="flex items-center gap-2 text-sm">
                         <input type="checkbox" name="menus[]" value="laporan_koreksi_supplier"
                           class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Koreksi (Supplier)
