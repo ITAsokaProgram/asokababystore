@@ -96,7 +96,6 @@ document
     formData.append("page", currentPage);
     formData.append("query_type", "query3");
 
-
     $.ajax({
       url: `../../api/subdepartemen/post_data_sub_dept.php?filter=${filter}`,
       method: "POST",
@@ -417,7 +416,6 @@ function updateTable(data, tableId) {
       cell3.classList.add("text-center");
     }
   });
-
 }
 
 // Fungsi untuk memperbarui chart
@@ -527,17 +525,14 @@ function btnSubSend(page, filter) {
   // formData.append("limit", document.querySelector("#limitData").value);
   formData.append("page", page);
 
-
   fetch(`../../api/subdepartemen/post_data_sub_dept.php?filter=${filter}`, {
     method: "POST",
     body: formData,
   })
     .then((res) => res.json())
     .then((jsonResponse) => {
-
       if (jsonResponse.status === "success") {
         if (jsonResponse.tableData) {
-
           tableDataCache = jsonResponse.tableData;
           totalPages = jsonResponse.totalPages || 1;
           localStorage.setItem(
@@ -582,7 +577,6 @@ function formatCurrency(value) {
 }
 // Update Chart Diagram
 function updateChart(labels, data, table) {
-
   const newData = labels.map((label, index) => {
     const row = table[index] || {};
     const qtyValue = row.Qty || 0;
@@ -1310,7 +1304,6 @@ function updateThead(trId) {
   const subdeptHead = subdeptElement.value.trim();
   const kodeSupHead = kodeSupElement.value.trim();
 
-
   if (isSubdeptActive && isPromo) {
     tableHead.textContent = "NAMA BARANG";
   } else if (isSubdeptActive) {
@@ -1639,7 +1632,6 @@ async function exportQuery(query) {
   // ---------- header info ----------
   const headers = ["No", labelHeader, "QTY", "TOTAL"];
 
- 
   const logoDataUrl = await urlToDataURL("/images/logo.png");
   const nowStr = new Date().toLocaleString("id-ID");
 
@@ -1674,7 +1666,7 @@ async function exportQuery(query) {
       3: { halign: "right", cellWidth: 35 }, // Total (kanan)
     },
     margin: { top: 50, left: 10, right: 10 },
-    showFoot: 'lastPage',
+    showFoot: "lastPage",
     foot: rows.length
       ? [["", "TOTAL", fmtInt(sumQty), fmtRp(sumTotal)]]
       : undefined,
@@ -1742,7 +1734,6 @@ function exportToExcel() {
 }
 
 function exportToPDF() {
-
   if (activeQueryType === "query1") {
     exportQuery(activeQueryType);
   } else if (activeQueryType === "query2") {
@@ -1841,7 +1832,7 @@ async function exportToPDFModal() {
       2: { halign: "center", cellWidth: 25 }, // QTY
       3: { halign: "right", cellWidth: 35 }, // TOTAL
     },
-    showFoot: 'lastPage',
+    showFoot: "lastPage",
     foot: rows.length
       ? [["", "TOTAL", fmtInt(sumQty), fmtRp(sumTotal)]]
       : undefined,

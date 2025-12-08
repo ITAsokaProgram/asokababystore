@@ -53,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     CONCAT(ROUND((SUM(t.qty) * 100.0 / total_qty.total), 2), '%') AS Percentage,
     ROUND((SUM(t.hrg_promo * t.qty) * 100.0 / total_qty.total_rp), 2) AS persentase_rp
 FROM 
-    trans t
+    trans_b t
 JOIN 
     subdept s ON t.subdept = s.SubDept
 CROSS JOIN (
@@ -227,12 +227,12 @@ GROUP BY periode
 ORDER BY tgl_trans ASC, $filter ASC";
 
             $params = array_merge(
-                [$endDate, $startDate, $endDate, $startDate], 
-                $kd_store,                                    
+                [$endDate, $startDate, $endDate, $startDate],
+                $kd_store,
                 [$subDataDept, $kode_supp, $startDate, $endDate],
                 [$subDataDept, $startDate, $endDate, $kode_supp],
-                $kd_store,  
-                $kd_store,                                    
+                $kd_store,
+                $kd_store,
                 [$startDate, $endDate, $subDataDept, $kode_supp]
             );
 
