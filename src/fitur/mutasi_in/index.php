@@ -8,12 +8,10 @@ $sebulan_lalu = date('Y-m-d', strtotime('-1 month'));
 $default_tgl_mulai = $sebulan_lalu;
 $default_tgl_selesai = $hari_ini;
 $default_kd_store = 'all';
-$default_kd_store_tujuan = 'all'; // Default tujuan
 
 $tgl_mulai = $_GET['tgl_mulai'] ?? $default_tgl_mulai;
 $tgl_selesai = $_GET['tgl_selesai'] ?? $default_tgl_selesai;
 $kd_store = $_GET['kd_store'] ?? $default_kd_store;
-$kd_store_tujuan = $_GET['kd_store_tujuan'] ?? $default_kd_store_tujuan; // Get param tujuan
 
 require_once __DIR__ . '/../../component/menu_handler.php';
 
@@ -110,74 +108,53 @@ if (!$menuHandler->initialize()) {
                 </div>
 
                 <div class="filter-card-simple mb-4 p-4">
-                    <form id="filter-form">
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-
-                            <div class="lg:col-span-1">
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Cari No Faktur</label>
-                                <div class="relative">
-                                    <input type="text" name="search_query" id="search_query"
-                                        class="input-modern w-full h-9 pl-3 text-sm" placeholder="No Faktur / MMD..."
-                                        value="<?php echo htmlspecialchars($_GET['search_query'] ?? ''); ?>">
-                                </div>
+                    <form id="filter-form" class="flex flex-wrap items-end gap-3">
+                        <div class="flex-1 min-w-[200px]">
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Cari No Faktur</label>
+                            <div class="relative">
+                                <input type=" text" name="search_query" id="search_query"
+                                    class="input-modern w-full h-9 pl-9 text-sm" placeholder="Ketikan nomor faktur..."
+                                    value="<?php echo htmlspecialchars($_GET['search_query'] ?? ''); ?>">
                             </div>
-
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Dari Tanggal</label>
-                                <input type="date" name="tgl_mulai" id="tgl_mulai"
-                                    class="input-modern w-full h-9 text-sm"
-                                    value="<?php echo htmlspecialchars($tgl_mulai); ?>">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Sampai Tanggal</label>
-                                <input type="date" name="tgl_selesai" id="tgl_selesai"
-                                    class="input-modern w-full h-9 text-sm"
-                                    value="<?php echo htmlspecialchars($tgl_selesai); ?>">
-                            </div>
-
-                            <div class="hidden lg:block"></div>
-
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Cabang Pengirim
-                                    (Dari)</label>
-                                <select name="kd_store" id="kd_store" class="input-modern w-full h-9 text-sm">
-                                    <option value="all">Semua Pengirim</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Cabang Penerima
-                                    (Tujuan)</label>
-                                <select name="kd_store_tujuan" id="kd_store_tujuan"
-                                    class="input-modern w-full h-9 text-sm">
-                                    <option value="all">Semua Penerima</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Status Cetak</label>
-                                <select name="status_cetak" id="status_cetak" class="input-modern w-full h-9 text-sm">
-                                    <option value="all">Semua Status</option>
+                        </div>
+                        <div class="flex-1 min-w-[140px]">
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Dari Tanggal</label>
+                            <input type="date" name="tgl_mulai" id="tgl_mulai" class="input-modern w-full h-9 text-sm"
+                                value="<?php echo htmlspecialchars($tgl_mulai); ?>">
+                        </div>
+                        <div class="flex-1 min-w-[140px]">
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Sampai Tanggal</label>
+                            <input type="date" name="tgl_selesai" id="tgl_selesai"
+                                class="input-modern w-full h-9 text-sm"
+                                value="<?php echo htmlspecialchars($tgl_selesai); ?>">
+                        </div>
+                        <div class="flex-1 min-w-[160px]">
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Cabang</label>
+                            <select name="kd_store" id="kd_store" class="input-modern w-full h-9 text-sm">
+                                <option value="all">Seluruh Store</option>
+                            </select>
+                        </div>
+                        <div class="flex-1 min-w-[200px]">
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Status</label>
+                            <div class="flex gap-2">
+                                <select name="status_cetak" id="status_cetak" class="input-modern w-1/2 h-9 text-xs">
+                                    <option value="all">Semua Cetak</option>
                                     <option value="True">Sudah Cetak</option>
                                     <option value="False">Belum Cetak</option>
                                 </select>
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Status Terima</label>
-                                <select name="status_terima" id="status_terima" class="input-modern w-full h-9 text-sm">
-                                    <option value="all">Semua Status</option>
+                                <select name="status_terima" id="status_terima" class="input-modern w-1/2 h-9 text-xs">
+                                    <option value="all">Semua Terima</option>
                                     <option value="True">Sudah Terima</option>
                                     <option value="False">Belum Terima</option>
                                 </select>
                             </div>
+                        </div>
 
-                            <div class="md:col-span-2 lg:col-span-4 flex justify-end mt-2">
-                                <button type="submit" id="filter-submit-button"
-                                    class="btn-primary inline-flex items-center justify-center gap-2 h-9 px-6 text-sm">
-                                    <i class="fas fa-filter"></i> <span>Tampilkan Data</span>
-                                </button>
-                            </div>
+                        <div class="flex-none">
+                            <button type="submit" id="filter-submit-button"
+                                class="btn-primary inline-flex items-center justify-center gap-2 h-9 px-4 text-sm">
+                                <i class="fas fa-filter"></i> <span>Tampilkan</span>
+                            </button>
                         </div>
                         <input type="hidden" name="page" value="1">
                     </form>
@@ -191,6 +168,7 @@ if (!$menuHandler->initialize()) {
                         </h3>
                     </div>
 
+                    <!-- Table dengan Scroll (Max 3 baris terlihat) -->
                     <div class="table-scroll-container">
                         <table class="table-modern w-full" id="mutasi-table">
                             <thead>
@@ -198,8 +176,8 @@ if (!$menuHandler->initialize()) {
                                     <th>Tgl Mutasi</th>
                                     <th>No Faktur</th>
                                     <th>Kode Supp</th>
-                                    <th>Dari (Pengirim)</th>
-                                    <th>Tujuan (Penerima)</th>
+                                    <th>Dari</th>
+                                    <th>Tujuan</th>
                                     <th class="text-right">Total</th>
                                     <th class="text-right">PPN</th>
                                     <th class="text-right">Grand Total</th>
@@ -219,6 +197,7 @@ if (!$menuHandler->initialize()) {
                     </div>
                 </div>
 
+                <!-- Tabel Detail Faktur (Baru) -->
                 <div class="detail-faktur-section" id="detail-faktur-section">
                     <div class="detail-faktur-header" style="display: none;">
                         <div class="detail-faktur-icon">

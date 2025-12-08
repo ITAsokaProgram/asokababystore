@@ -538,6 +538,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const source = parts[3] || "CORETAX";
             const matchType = parts[4] || "VALUE";
             const supplierName = parts[5] || "";
+            const branchName = parts[6] || "";
             if (!mergedCandidatesMap.has(nsfp)) {
               mergedCandidatesMap.set(nsfp, {
                 nsfp: nsfp,
@@ -546,6 +547,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 matchType: matchType,
                 usedBy: usedBy,
                 supplierName: supplierName,
+                branchName: branchName,
               });
             } else {
               const existing = mergedCandidatesMap.get(nsfp);
@@ -560,6 +562,9 @@ document.addEventListener("DOMContentLoaded", () => {
               }
               if (!existing.supplierName && supplierName) {
                 existing.supplierName = supplierName;
+              }
+              if (!existing.branchName && branchName) {
+                existing.branchName = branchName;
               }
             }
           }
@@ -582,12 +587,28 @@ document.addEventListener("DOMContentLoaded", () => {
       let isLinkedFisik = false;
       let isLinkedCoretax = false;
       let existingNsfpBadge = "";
+      const currentBranchName = (row.Nm_Alias || row.kode_store || "")
+        .trim()
+        .toUpperCase();
       if (row.ada_di_coretax == 1) {
+        let branchInfoHtml = "";
+        if (mergedCandidatesMap.has(row.nsfp)) {
+          const linkedData = mergedCandidatesMap.get(row.nsfp);
+          const linkedBranchName = (linkedData.branchName || "")
+            .trim()
+            .toUpperCase();
+          if (linkedBranchName && linkedBranchName !== currentBranchName) {
+            branchInfoHtml = `<span class="block text-[10px] text-pink-600 font-bold mt-0.5">
+                                    <i class="fas fa-exclamation-circle"></i> ${linkedData.branchName}
+                                  </span>`;
+          }
+        }
         existingNsfpBadge = `
                   <div class="flex flex-col items-center justify-center gap-1">
                       <span class="font-mono text-xs font-semibold text-gray-800">${
                         row.nsfp || "-"
                       }</span>
+                      ${branchInfoHtml}
                   </div>`;
         const tipe = (row.tipe_nsfp || "").toLowerCase();
         if (tipe === "all") {
@@ -622,12 +643,24 @@ document.addEventListener("DOMContentLoaded", () => {
                                     (Pilih dr ${count} opsi)
                                   </span>`;
           }
+          let displayNsfp = bestCandidate.nsfp;
+          const candidateBranchName = (bestCandidate.branchName || "")
+            .trim()
+            .toUpperCase();
+          if (
+            candidateBranchName &&
+            candidateBranchName !== currentBranchName
+          ) {
+            displayNsfp += `<span class="block text-[10px] text-pink-600 font-bold mt-0.5">
+                                    <i class="fas fa-exclamation-circle"></i> ${bestCandidate.branchName}
+                                 </span>`;
+          }
           return `
                   <div class="flex flex-col items-center justify-center cursor-pointer group py-1 select-none"
                       onclick="handleConfirmCoretax(${row.id}, '${candidateString}', ${isDualMode})"
                       title="Klik untuk memilih NSFP ini">
                      <span class="font-mono text-xs ${textClass} border-b border-dashed group-hover:border-solid transition-colors duration-200">
-                         ${bestCandidate.nsfp}
+                         ${displayNsfp}
                      </span>
                      ${multiIndicator}
                   </div>`;
