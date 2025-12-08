@@ -1,52 +1,41 @@
 <?php
 header('Content-Type: application/json');
 include '../../../aa_kon_sett.php';
-// Include library auth untuk verifikasi token
 require_once __DIR__ . "/../../auth/middleware_login.php";
 
 try {
-    // --- BAGIAN BARU: CEK PERMISSION IZIN CETAK ---
-    $allow_print = false; // Default: Tidak boleh cetak
-
-    // 1. Ambil Token dari Header
+    $allow_print = false;
     $headers = getallheaders();
     $token = null;
+
     if (isset($headers['Authorization']) && preg_match('/^Bearer\s(\S+)$/', $headers['Authorization'], $matches)) {
         $token = $matches[1];
     }
 
-    // 2. Verifikasi User
     if ($token) {
-        $user = verify_token($token); // Fungsi dari middleware_login.php
+        $user = verify_token($token);
         if ($user) {
-            // Support object (stdClass) atau array result
             $user_id = $user->kode ?? $user->id ?? 0;
-
-            // 3. Cek Database Permission
-            // Mencari apakah user punya menu 'izin_cetak' dengan can_view = 1
             $checkSql = "SELECT 1 FROM user_internal_access 
                          WHERE id_user = ? AND menu_code = 'izin_cetak' AND can_view = 1 
                          LIMIT 1";
-
             $stmtPerm = $conn->prepare($checkSql);
             if ($stmtPerm) {
                 $stmtPerm->bind_param("i", $user_id);
                 $stmtPerm->execute();
                 $stmtPerm->store_result();
-
                 if ($stmtPerm->num_rows > 0) {
-                    $allow_print = true; // User punya izin
+                    $allow_print = true;
                 }
                 $stmtPerm->close();
             }
         }
     }
-    // --- END BAGIAN BARU ---
 
-    // --- LOGIKA DATA EXISTING (FILTER & SEARCH) ---
     $tgl_mulai = $_GET['tgl_mulai'] ?? date('Y-m-d');
     $tgl_selesai = $_GET['tgl_selesai'] ?? date('Y-m-d');
     $kd_store = $_GET['kd_store'] ?? 'all';
+    $kd_store_tujuan = $_GET['kd_store_tujuan'] ?? 'all'; // Baru
     $status_cetak = $_GET['status_cetak'] ?? 'all';
     $status_terima = $_GET['status_terima'] ?? 'all';
     $search_query = $_GET['search_query'] ?? '';
@@ -65,6 +54,13 @@ try {
     if ($kd_store !== 'all') {
         $where .= " AND mi.kode_dari = ?";
         $params[] = $kd_store;
+        $types .= "s";
+    }
+
+    // Filter Cabang Tujuan (Baru)
+    if ($kd_store_tujuan !== 'all') {
+        $where .= " AND mi.kode_tujuan = ?";
+        $params[] = $kd_store_tujuan;
         $types .= "s";
     }
 
@@ -88,7 +84,6 @@ try {
         $types .= "s";
     }
 
-    // Hitung Summary
     $querySummary = "
         SELECT 
             SUM(mi.qty) as total_qty,
@@ -111,7 +106,6 @@ try {
         'total_grand' => $resSummary['total_grand'] ?? 0,
     ];
 
-    // Query Data Utama
     $limitClause = "";
     $paramsData = $params;
     $typesData = $types;
@@ -134,15 +128,12 @@ try {
             mi.acc_mutasi,
             mi.receipt,
             mi.cetak,
-            
             kds.nm_alias as dari_nama,
             kds.Nm_NPWP as dari_nama_npwp, 
             kds.Alm_NPWP as dari_alm_npwp,
-            
             kdt.nm_alias as tujuan_nama,
             kdt.Nm_NPWP as tujuan_nama_npwp, 
             kdt.Alm_NPWP as tujuan_alm_npwp,
-            
             SUM(mi.qty * mi.netto) as total_netto,
             SUM(mi.qty * mi.ppn) as total_ppn,
             SUM(mi.qty * (mi.netto + mi.ppn)) as total_grand
@@ -159,13 +150,11 @@ try {
     $stmt->bind_param($typesData, ...$paramsData);
     $stmt->execute();
     $result = $stmt->get_result();
-
     $data = [];
     while ($row = $result->fetch_assoc()) {
         $data[] = $row;
     }
 
-    // Pagination Calculation
     $pagination = null;
     if (!$is_export) {
         $queryCount = "SELECT COUNT(DISTINCT mi.no_faktur) as total FROM mutasi_in mi WHERE $where";
@@ -182,16 +171,14 @@ try {
         ];
     }
 
-    // List Toko untuk Filter
     $stores = [];
     $storeRes = $conn->query("SELECT kd_store, nm_alias FROM kode_store ORDER BY kd_store");
     while ($s = $storeRes->fetch_assoc()) {
         $stores[] = $s;
     }
 
-    // Output JSON dengan status allow_print
     echo json_encode([
-        'allow_print' => $allow_print, // Variable boolean hasil cek permission
+        'allow_print' => $allow_print,
         'summary' => $summary,
         'tabel_data' => $data,
         'stores' => $stores,

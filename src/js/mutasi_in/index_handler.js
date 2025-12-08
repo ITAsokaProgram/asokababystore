@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const tableBody = document.getElementById("mutasi-table-body");
   const filterForm = document.getElementById("filter-form");
   const filterSubmitButton = document.getElementById("filter-submit-button");
-  const filterSelectStore = document.getElementById("kd_store");
+  // const filterSelectStore = document.getElementById("kd_store"); // Tidak dipakai lagi single select
   const pageSubtitle = document.getElementById("page-subtitle");
   const paginationInfo = document.getElementById("pagination-info");
   const paginationLinks = document.getElementById("pagination-links");
@@ -45,6 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tgl_mulai: params.get("tgl_mulai") || oneMonthAgoString,
       tgl_selesai: params.get("tgl_selesai") || todayString,
       kd_store: params.get("kd_store") || "all",
+      kd_store_tujuan: params.get("kd_store_tujuan") || "all", // Added
       status_cetak: params.get("status_cetak") || "all",
       status_terima: params.get("status_terima") || "all",
       search_query: params.get("search_query") || "",
@@ -60,12 +61,20 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("tgl_mulai").value = params.tgl_mulai;
     if (document.getElementById("tgl_selesai"))
       document.getElementById("tgl_selesai").value = params.tgl_selesai;
+
+    // Set value untuk store pengirim
     if (document.getElementById("kd_store"))
       document.getElementById("kd_store").value = params.kd_store;
+
+    // Set value untuk store tujuan
+    if (document.getElementById("kd_store_tujuan"))
+      document.getElementById("kd_store_tujuan").value = params.kd_store_tujuan;
+
     if (document.getElementById("status_cetak"))
       document.getElementById("status_cetak").value = params.status_cetak;
     if (document.getElementById("status_terima"))
       document.getElementById("status_terima").value = params.status_terima;
+
     const queryString = new URLSearchParams(params).toString();
     const token = getCookie("admin_token");
 
@@ -84,7 +93,17 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await response.json();
       if (data.error) throw new Error(data.error);
       userCanPrint = data.allow_print === true;
-      if (data.stores) populateStoreFilter(data.stores, params.kd_store);
+
+      // Populate kedua filter store
+      if (data.stores) {
+        populateStoreFilter("kd_store", data.stores, params.kd_store);
+        populateStoreFilter(
+          "kd_store_tujuan",
+          data.stores,
+          params.kd_store_tujuan
+        );
+      }
+
       if (data.summary) {
         if (summaryQty)
           summaryQty.textContent = formatNumber(data.summary.total_qty);
@@ -127,17 +146,19 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   }
-  function populateStoreFilter(stores, selectedStore) {
-    if (!filterSelectStore) return;
-    if (filterSelectStore.options.length <= 1) {
+  // Modified to accept element ID
+  function populateStoreFilter(elementId, stores, selectedStore) {
+    const selectEl = document.getElementById(elementId);
+    if (!selectEl) return;
+    if (selectEl.options.length <= 1) {
       stores.forEach((store) => {
         const option = document.createElement("option");
         option.value = store.kd_store;
         option.textContent = `${store.kd_store} - ${store.nm_alias}`;
-        filterSelectStore.appendChild(option);
+        selectEl.appendChild(option);
       });
     }
-    filterSelectStore.value = selectedStore;
+    selectEl.value = selectedStore;
   }
   function renderTable(data) {
     if (!data || data.length === 0) {
@@ -296,6 +317,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const tglMulai = document.getElementById("tgl_mulai").value;
       const tglSelesai = document.getElementById("tgl_selesai").value;
       const kdStore = document.getElementById("kd_store").value;
+      const kdStoreTujuan = document.getElementById("kd_store_tujuan").value; // Added
       const statusCetak = document.getElementById("status_cetak").value;
       const statusTerima = document.getElementById("status_terima").value;
       const url = new URL(window.location);
@@ -303,6 +325,7 @@ document.addEventListener("DOMContentLoaded", () => {
       url.searchParams.set("tgl_mulai", tglMulai);
       url.searchParams.set("tgl_selesai", tglSelesai);
       url.searchParams.set("kd_store", kdStore);
+      url.searchParams.set("kd_store_tujuan", kdStoreTujuan); // Added
       url.searchParams.set("status_cetak", statusCetak);
       url.searchParams.set("status_terima", statusTerima);
       url.searchParams.set("page", 1);
@@ -315,6 +338,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   loadData();
 });
+// ... rest of the file remains same ...
 window.showDetailFaktur = async function (
   rowId,
   noFaktur,
