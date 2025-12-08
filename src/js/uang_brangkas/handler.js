@@ -57,14 +57,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td class="text-sm text-gray-800">${
                   row.tanggal
                 }<br><span class="text-xs text-gray-500">${row.jam}</span></td>
-                
                 <td class="text-left text-sm font-medium text-gray-700">${
                   row.nama_user_hitung
                 }</td>
                 <td class="text-left text-sm font-medium text-gray-700">${
                   row.nama_user_cek
                 }</td>
-                
                 <td class="text-left text-sm font-bold text-pink-600 pr-4">${formatRupiah(
                   row.total_nominal
                 )}</td>
@@ -92,7 +90,8 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("pk_tanggal").value = data.tanggal;
       document.getElementById("pk_jam").value = data.jam;
       document.getElementById("pk_user_hitung").value = data.user_hitung;
-      document.getElementById("user_cek").value = data.user_cek;
+      document.getElementById("nama_user_cek").value =
+        data.nama_user_cek_inisial || "";
       document.getElementById("keterangan").value = data.keterangan;
       for (const [key] of Object.entries(NOMINAL_MAP)) {
         const el = formTransaksi.querySelector(`[name="${key}"]`);

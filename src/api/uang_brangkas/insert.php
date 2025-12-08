@@ -28,21 +28,32 @@ try {
     $input = json_decode(file_get_contents('php://input'), true);
     $tanggal = $input['tanggal'] ?? date('Y-m-d');
     $jam = $input['jam'] ?? date('H:i:s');
-    $user_cek = $input['user_cek'] ?? null;
+    $nama_user_cek_input = trim($input['nama_user_cek'] ?? '');
     $kode_otorisasi = $input['kode_otorisasi'] ?? '';
     $keterangan = $input['keterangan'] ?? '';
-    if (empty($user_cek)) {
-        throw new Exception("User Cek wajib diisi.");
+    if (empty($nama_user_cek_input)) {
+        throw new Exception("Nama User Check wajib diisi.");
     }
     if (empty($kode_otorisasi)) {
         throw new Exception("Kode Otorisasi wajib diisi.");
     }
+    $sql_cari_user = "SELECT kode FROM user_account WHERE inisial = ? LIMIT 1";
+    $stmt_cari = $conn->prepare($sql_cari_user);
+    $stmt_cari->bind_param("s", $nama_user_cek_input);
+    $stmt_cari->execute();
+    $res_cari = $stmt_cari->get_result();
+    if ($res_cari->num_rows === 0) {
+        throw new Exception("User dengan nama '$nama_user_cek_input' tidak ditemukan.");
+    }
+    $row_user = $res_cari->fetch_assoc();
+    $user_cek = $row_user['kode'];
+    $stmt_cari->close();
     $sql_auth = "SELECT kode_user FROM otorisasi_user WHERE kode_user = ? AND PASSWORD = ? AND tanggal = ?";
     $stmt_auth = $conn->prepare($sql_auth);
     $stmt_auth->bind_param("iss", $user_cek, $kode_otorisasi, $tanggal);
     $stmt_auth->execute();
     if ($stmt_auth->get_result()->num_rows === 0) {
-        throw new Exception("Otorisasi Gagal! Kode salah atau tidak berlaku untuk User Cek pada tanggal tersebut.");
+        throw new Exception("Otorisasi Gagal! Kode salah atau User '$nama_user_cek_input' belum membuat otorisasi untuk tanggal ini.");
     }
     $stmt_auth->close();
     $denominations = [

@@ -175,10 +175,11 @@ if (!$menuHandler->initialize()) {
                                     <h4 class="text-xs font-bold text-red-600 mb-2 border-b border-red-200 pb-1">
                                         Otorisasi User Check</h4>
                                     <div class="mb-2">
-                                        <label class="block text-xs font-semibold text-gray-700 mb-1">User Check
-                                            (ID)</label>
-                                        <input type="number" name="user_cek" id="user_cek" class="input-modern w-full"
-                                            placeholder="ID SPV" required>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">User Check (Nama
+                                            Pengguna)</label>
+                                        <input type="text" name="nama_user_cek" id="nama_user_cek"
+                                            class="input-modern w-full" placeholder="Ketik Nama Inisial" required
+                                            autocomplete="off">
                                     </div>
                                     <div>
                                         <label class="block text-xs font-semibold text-gray-700 mb-1">Kode

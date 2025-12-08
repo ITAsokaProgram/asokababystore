@@ -20,7 +20,9 @@ try {
         SELECT SQL_CALC_FOUND_ROWS 
             ub.*,
             u1.nama AS nama_user_hitung,
-            u2.nama AS nama_user_cek
+            u2.nama AS nama_user_cek,
+            u2.inisial AS nama_user_cek_inisial
+
         FROM uang_brangkas ub
         LEFT JOIN user_account u1 ON ub.user_hitung = u1.kode
         LEFT JOIN user_account u2 ON ub.user_cek = u2.kode
