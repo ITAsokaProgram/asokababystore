@@ -1186,7 +1186,7 @@ $isPajakOpen = $isActive('/src/fitur/coretax/');
                                 class="transition-all duration-300 group-hover:translate-x-1 font-medium flex items-center text-sm">
                                 <i
                                     class="fa-solid fa-money-bill-trend-up mr-2 text-base text-slate-500 group-hover:text-slate-600 transition-all duration-200 group-hover:scale-110"></i>
-                                Pengeluaran
+                                Penjualan
                             </span>
                             <svg class="ml-auto w-3 h-3 transform transition-transform duration-200 group-hover:translate-x-1"
                                 :class="{ 'rotate-180': nestedOpenPengeluaran }" fill="none" stroke="currentColor"

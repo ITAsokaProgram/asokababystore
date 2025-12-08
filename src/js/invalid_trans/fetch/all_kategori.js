@@ -1,5 +1,6 @@
 import { paginationDetail } from "../table/pagination.js";
 import getCookie from "./../../index/utils/cookies.js";
+
 const showLoading = () => {
   Swal.fire({
     title: "",
@@ -10,6 +11,7 @@ const showLoading = () => {
     },
   });
 };
+
 export const refreshParentTable = async () => {
   try {
     const source = sessionStorage.getItem("kategori_source");
@@ -33,6 +35,7 @@ export const refreshParentTable = async () => {
     window.location.reload();
   }
 };
+
 export const fetchAllKategori = async (useLoading = true) => {
   const token = getCookie("admin_token");
   if (useLoading) showLoading();
@@ -105,6 +108,7 @@ export const fetchAllKategori = async (useLoading = true) => {
     }).showToast();
   }
 };
+
 export const fetchDetailKategori = async (
   kategori,
   kode,
@@ -185,6 +189,7 @@ export const fetchDetailKategori = async (
     }).showToast();
   }
 };
+
 export const fetchKategoriByTgl = async (
   start,
   end,
@@ -267,6 +272,8 @@ export const fetchKategoriByTgl = async (
     }).showToast();
   }
 };
+
+// --- UPDATED: fetchCekData dengan Form Otorisasi ---
 export const fetchCekData = async (
   data,
   kategori,
@@ -275,27 +282,70 @@ export const fetchCekData = async (
   endDate
 ) => {
   const token = getCookie("admin_token");
+
+  // HTML Form Otorisasi
+  const htmlContent = `
+    <div class="flex flex-col gap-4 text-left">
+        <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">Keterangan</label>
+            <input id="swal-input-ket" class="swal2-input !m-0 !w-full" placeholder="Keterangan pengecekan">
+        </div>
+        <div class="p-3 bg-red-50 border border-red-100 rounded-lg">
+            <h4 class="text-xs font-bold text-red-600 mb-2 border-b border-red-200 pb-1">OTORISASI USER CHECK</h4>
+            <div class="mb-3">
+                <label class="block text-xs font-semibold text-gray-700 mb-1">User Check (Inisial)</label>
+                <input id="swal-input-user" class="swal2-input !m-0 !w-full !h-10 !text-sm" placeholder="Contoh: ADM" autocomplete="off">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Kode Otorisasi</label>
+                <input type="password" id="swal-input-pass" class="swal2-input !m-0 !w-full !h-10 !text-sm" placeholder="Password Otorisasi">
+            </div>
+        </div>
+    </div>
+  `;
+
   Swal.fire({
-    title: "Masukkan Keterangan",
-    input: "text",
-    inputLabel: `PLU: ${data.plu}`,
-    inputPlaceholder: "Tulis keterangan di sini...",
+    title: "Update Checking",
+    html: htmlContent,
     showCancelButton: true,
-    confirmButtonText: "Kirim",
-    confirmButtonColor: "#d33",
+    confirmButtonText: "Simpan",
+    confirmButtonColor: "#db2777",
+    cancelButtonText: "Batal",
     allowOutsideClick: false,
-    allowEscapeKey: false,
-    preConfirm: (keterangan) => {
+    focusConfirm: false,
+    preConfirm: () => {
+      const keterangan = document.getElementById("swal-input-ket").value;
+      const userCheck = document.getElementById("swal-input-user").value;
+      const passAuth = document.getElementById("swal-input-pass").value;
+
       if (!keterangan) {
         Swal.showValidationMessage("Keterangan tidak boleh kosong");
         return false;
       }
-      const payload = {
+      if (!userCheck) {
+        Swal.showValidationMessage("Nama User Check wajib diisi");
+        return false;
+      }
+      if (!passAuth) {
+        Swal.showValidationMessage("Kode Otorisasi wajib diisi");
+        return false;
+      }
+
+      // Return object lengkap
+      return {
         ...data,
         ket: keterangan,
+        nama_user_cek: userCheck,
+        kode_otorisasi: passAuth,
       };
+    },
+  }).then(async (result) => {
+    if (result.isConfirmed && result.value) {
+      const payload = result.value;
+
       Swal.showLoading();
-      return fetch("/src/api/invalid/update_checking", {
+
+      fetch("/src/api/invalid/update_checking", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -304,29 +354,27 @@ export const fetchCekData = async (
         body: JSON.stringify(payload),
       })
         .then((response) => response.json())
-        .then((res) => {
+        .then(async (res) => {
           if (res.status === "success") {
-            return res.message;
+            await Swal.fire("Berhasil!", res.message, "success");
+            await fetchDetailKategori(kategori, kode, startDate, endDate);
+            paginationDetail(1, 100, "detail_kategori");
+            await refreshParentTable();
           } else {
             throw new Error(res.message);
           }
         })
         .catch((error) => {
-          Swal.showValidationMessage(`Gagal: ${error.message}`);
+          Swal.fire("Gagal", error.message, "error");
         });
-    },
-  }).then(async (result) => {
-    if (result.isConfirmed && result.value) {
-      await Swal.fire("Tersimpan!", result.value, "success");
-      await fetchDetailKategori(kategori, kode, startDate, endDate);
-      paginationDetail(1, 100, "detail_kategori");
-      await refreshParentTable();
     }
   });
 };
+
+// --- UPDATED: fetchBulkCekData menerima object otorisasi ---
 export const fetchBulkCekData = async (
   items,
-  keterangan,
+  formValues, // Parameter diubah menerima object {keterangan, userCheck, passAuth}
   kategori,
   kode,
   startDate,
@@ -335,9 +383,12 @@ export const fetchBulkCekData = async (
   const token = getCookie("admin_token");
   const payload = {
     items: items,
-    ket: keterangan,
+    ket: formValues.keterangan,
+    nama_user_cek: formValues.userCheck,
+    kode_otorisasi: formValues.passAuth,
     nama: sessionStorage.getItem("userName"),
   };
+
   Swal.showLoading();
   try {
     const response = await fetch("/src/api/invalid/update_checking", {
@@ -362,6 +413,7 @@ export const fetchBulkCekData = async (
     return false;
   }
 };
+
 export const fetchKeterangan = async (plu, kasir, tgl, jam, store) => {
   const token = getCookie("admin_token");
   try {
@@ -422,6 +474,7 @@ export const fetchKeterangan = async (plu, kasir, tgl, jam, store) => {
     }).showToast();
   }
 };
+
 export const fetchTopInvalid = async () => {
   const token = getCookie("admin_token");
   try {
@@ -449,6 +502,7 @@ export const fetchTopInvalid = async () => {
     }).showToast();
   }
 };
+
 export const fetchTopRetur = async () => {
   const token = getCookie("admin_token");
   try {
@@ -476,6 +530,7 @@ export const fetchTopRetur = async () => {
     }).showToast();
   }
 };
+
 export const fetchExportDetails = async (cabang) => {
   const token = getCookie("admin_token");
   showLoading();
@@ -506,6 +561,7 @@ export const fetchExportDetails = async (cabang) => {
     return [];
   }
 };
+
 export default {
   fetchAllKategori,
   fetchDetailKategori,
