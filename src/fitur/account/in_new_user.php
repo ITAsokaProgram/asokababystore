@@ -205,6 +205,14 @@ $token = $menuHandler->getToken();
                         <input type="checkbox" name="menus[]" value="pajak_faktur_masukan"
                           class="menu-item-checkbox scale-110 focus:ring focus:ring-purple-300" /> Laporan Penerimaan
                       </label>
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="pajak_keluaran"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-purple-300" /> Data Keluaran
+                      </label>
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="pajak_keluaran_import"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-purple-300" /> Import Keluaran
+                      </label>
                     </div>
                   </div>
 
@@ -465,6 +473,10 @@ $token = $menuHandler->getToken();
                         <input type="checkbox" name="menus[]" value="top_sales"
                           class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Top Sales
                       </label>
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="management_member"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Kelola Member
+                      </label>
                     </div>
                   </div>
 
@@ -481,6 +493,14 @@ $token = $menuHandler->getToken();
                       <label class="flex items-center gap-2 text-sm">
                         <input type="checkbox" name="menus[]" value="laporan_log_backup"
                           class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Log Backup
+                      </label>
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="products"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Master Produk
+                      </label>
+                      <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="menus[]" value="uang_brankas"
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Uang Brankas
                       </label>
                     </div>
                   </div>

@@ -389,6 +389,18 @@ $token = $menuHandler->getToken();
                                         class="w-4 h-4 text-purple-600 rounded focus:ring-purple-500" />
                                     <span class="text-sm">Laporan Penerimaan</span>
                                 </label>
+                                <label
+                                    class="flex items-center gap-3 p-2 rounded-lg hover:bg-purple-50 transition-colors duration-200">
+                                    <input type="checkbox" name="menus[]" value="pajak_keluaran"
+                                        class="w-4 h-4 text-purple-600 rounded focus:ring-purple-500" />
+                                    <span class="text-sm">Data Keluaran</span>
+                                </label>
+                                <label
+                                    class="flex items-center gap-3 p-2 rounded-lg hover:bg-purple-50 transition-colors duration-200">
+                                    <input type="checkbox" name="menus[]" value="pajak_keluaran_import"
+                                        class="w-4 h-4 text-purple-600 rounded focus:ring-purple-500" />
+                                    <span class="text-sm">Import Keluaran</span>
+                                </label>
                             </div>
                         </div>
 
@@ -609,6 +621,7 @@ $token = $menuHandler->getToken();
                                 </label>
                             </div>
                         </div>
+
                         <div
                             class="bg-white rounded-xl p-4 shadow-sm border border-indigo-200 hover:shadow-md transition-shadow duration-200">
                             <div class="flex items-center mb-3">
@@ -792,6 +805,12 @@ $token = $menuHandler->getToken();
                                         class="w-4 h-4 text-pink-600 rounded focus:ring-pink-500" />
                                     <span class="text-sm">Top Sales</span>
                                 </label>
+                                <label
+                                    class="flex items-center gap-3 p-2 rounded-lg hover:bg-pink-50 transition-colors duration-200">
+                                    <input type="checkbox" name="menus[]" value="management_member"
+                                        class="w-4 h-4 text-pink-600 rounded focus:ring-pink-500" />
+                                    <span class="text-sm">Kelola Member</span>
+                                </label>
                             </div>
                         </div>
 
@@ -812,6 +831,18 @@ $token = $menuHandler->getToken();
                                     <input type="checkbox" name="menus[]" value="laporan_log_backup"
                                         class="w-4 h-4 text-slate-600 rounded focus:ring-slate-500" />
                                     <span class="text-sm">💾 Log Backup</span>
+                                </label>
+                                <label
+                                    class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 transition-colors duration-200">
+                                    <input type="checkbox" name="menus[]" value="products"
+                                        class="w-4 h-4 text-slate-600 rounded focus:ring-slate-500" />
+                                    <span class="text-sm">📦 Master Produk</span>
+                                </label>
+                                <label
+                                    class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 transition-colors duration-200">
+                                    <input type="checkbox" name="menus[]" value="uang_brankas"
+                                        class="w-4 h-4 text-slate-600 rounded focus:ring-slate-500" />
+                                    <span class="text-sm">💰 Uang Brankas</span>
                                 </label>
                             </div>
                         </div>

@@ -5,6 +5,8 @@ include '../../../aa_kon_sett.php';
 // Ambil data cabang/store
 $query_store = "SELECT Kd_Store, Nm_Alias, Nm_NPWP FROM kode_store WHERE display = 'on' ORDER BY nm_alias ASC";
 $result_store = $conn->query($query_store);
+require_once __DIR__ . '/../../component/menu_handler.php';
+
 
 $menuHandler = new MenuHandler('pajak_keluaran_import');
 if (!$menuHandler->initialize()) {
