@@ -6,9 +6,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnAddData = document.getElementById("btn-add-data");
   const btnCloseModal = document.getElementById("btn-close-modal");
   const btnCancel = document.getElementById("btn-cancel");
+  const btnSave = document.getElementById("btn-save");
   const formTransaksi = document.getElementById("form-transaksi");
   const displayTotal = document.getElementById("display-total-nominal");
   const inputDenoms = document.querySelectorAll(".input-denim");
+  const divPassword = document.getElementById("div-password");
   const API_BASE = "/src/api/uang_brangkas";
   const NOMINAL_MAP = {
     qty_100rb: 100000,
@@ -69,11 +71,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td class="text-sm text-gray-600 truncate max-w-xs">${
                   row.keterangan || "-"
                 }</td>
-                <td class="text-left">
-                    <button onclick="window.editBrangkas('${encodeURIComponent(
+                <td class="text-center">
+                    <button onclick="window.viewBrangkas('${encodeURIComponent(
                       JSON.stringify(row)
-                    )}')" class="text-blue-600 hover:text-blue-800">
-                        <i class="fas fa-edit"></i>
+                    )}')" 
+                        class="text-gray-500 hover:text-pink-600 transition-colors" title="Lihat Detail">
+                        <i class="fas fa-eye"></i>
                     </button>
                 </td>
             </tr>
@@ -84,19 +87,33 @@ document.addEventListener("DOMContentLoaded", () => {
   function openModal(mode, data = null) {
     formTransaksi.reset();
     document.getElementById("form_mode").value = mode;
-    document.getElementById("modal-title").textContent =
-      mode === "insert" ? "Input Uang Brangkas" : "Edit Uang Brangkas";
-    if (mode === "update" && data) {
-      document.getElementById("pk_tanggal").value = data.tanggal;
-      document.getElementById("pk_jam").value = data.jam;
-      document.getElementById("pk_user_hitung").value = data.user_hitung;
-      document.getElementById("nama_user_cek").value =
-        data.nama_user_cek_inisial || "";
-      document.getElementById("keterangan").value = data.keterangan;
-      for (const [key] of Object.entries(NOMINAL_MAP)) {
-        const el = formTransaksi.querySelector(`[name="${key}"]`);
-        if (el) el.value = data[key];
+    const allInputs = formTransaksi.querySelectorAll("input, textarea");
+    if (mode === "insert") {
+      document.getElementById("modal-title").textContent =
+        "Input Uang Brangkas";
+      allInputs.forEach((el) => (el.disabled = false));
+      divPassword.style.display = "block";
+      btnSave.style.display = "inline-flex";
+      btnSave.innerHTML = '<i class="fas fa-save mr-2 mt-1"></i> Simpan Data';
+    } else if (mode === "detail") {
+      document.getElementById("modal-title").textContent =
+        "Detail Uang Brangkas";
+      if (data) {
+        document.getElementById("pk_tanggal").value = data.tanggal;
+        document.getElementById("pk_jam").value = data.jam;
+        document.getElementById("pk_user_hitung").value = data.user_hitung;
+        document.getElementById("nama_user_cek").value =
+          data.nama_user_cek_inisial || "";
+        document.getElementById("keterangan").value = data.keterangan;
+        document.getElementById("kode_otorisasi").value = "";
+        for (const [key] of Object.entries(NOMINAL_MAP)) {
+          const el = formTransaksi.querySelector(`[name="${key}"]`);
+          if (el) el.value = data[key];
+        }
       }
+      allInputs.forEach((el) => (el.disabled = true));
+      divPassword.style.display = "none";
+      btnSave.style.display = "none";
     }
     calculateFormTotal();
     modalForm.classList.remove("hidden");
@@ -122,7 +139,8 @@ document.addEventListener("DOMContentLoaded", () => {
   formTransaksi.addEventListener("submit", async (e) => {
     e.preventDefault();
     const mode = document.getElementById("form_mode").value;
-    const endpoint = mode === "insert" ? "/insert.php" : "/update.php";
+    if (mode === "detail") return;
+    const endpoint = "/insert.php";
     const jsonData = {};
     new FormData(formTransaksi).forEach((v, k) => (jsonData[k] = v));
     try {
@@ -138,7 +156,7 @@ document.addEventListener("DOMContentLoaded", () => {
       Swal.fire("Error", error.message, "error");
     }
   });
-  window.editBrangkas = (str) =>
-    openModal("update", JSON.parse(decodeURIComponent(str)));
+  window.viewBrangkas = (str) =>
+    openModal("detail", JSON.parse(decodeURIComponent(str)));
   loadData();
 });
