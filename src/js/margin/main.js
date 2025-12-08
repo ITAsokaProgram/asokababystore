@@ -29,7 +29,7 @@ const init = async () => {
     if (urlParams.get("cabang")) selectCabang.value = urlParams.get("cabang");
 
     await fetchFilterMargin(start.value, end.value, selectCabang.value);
-    paginationMargin(1, 10, "filter_table");
+    paginationMargin(1, 50, "filter_table");
   } else {
     // Default dates (Kemarin & Hari ini)
     const today = new Date();
@@ -40,7 +40,7 @@ const init = async () => {
     end.value = formatDate(today);
 
     await fetchMargin();
-    paginationMargin(1, 10, "default_table");
+    paginationMargin(1, 50, "default_table");
   }
 
   // 2. Event Filter Click
@@ -67,10 +67,10 @@ const init = async () => {
     );
 
     await fetchFilterMargin(start.value, end.value, cabangValue);
-    paginationMargin(1, 10, "filter_table");
+    paginationMargin(1, 50, "filter_table");
   });
 
-  paginationMargin(1, 10, "default_table");
+  paginationMargin(1, 50, "default_table");
 
   // 3. Logic Single Check (Event Delegation)
   document.addEventListener("click", function (e) {
