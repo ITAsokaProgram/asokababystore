@@ -1,11 +1,18 @@
 import getCookie from "../index/utils/cookies.js";
 let currentSelectedRow = null;
 let userCanPrint = false;
+
 document.addEventListener("DOMContentLoaded", () => {
   const tableBody = document.getElementById("mutasi-table-body");
   const filterForm = document.getElementById("filter-form");
   const filterSubmitButton = document.getElementById("filter-submit-button");
+
+  // Element Filter
   const filterSelectStore = document.getElementById("kd_store");
+  const filterSelectStoreTujuan = document.getElementById("kd_store_tujuan"); // Elemen Baru
+  const filterStatusCetak = document.getElementById("status_cetak");
+  const filterStatusTerima = document.getElementById("status_terima");
+
   const pageSubtitle = document.getElementById("page-subtitle");
   const paginationInfo = document.getElementById("pagination-info");
   const paginationLinks = document.getElementById("pagination-links");
@@ -13,12 +20,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const summaryNetto = document.getElementById("summary-netto");
   const summaryPPN = document.getElementById("summary-ppn");
   const summaryTotal = document.getElementById("summary-total");
+
   window.changePage = function (page) {
     const url = new URL(window.location);
     url.searchParams.set("page", page);
     window.history.pushState({}, "", url);
     loadData();
   };
+
   function formatRupiah(number) {
     if (isNaN(number) || number === null) return "0";
     return new Intl.NumberFormat("id-ID", {
@@ -27,6 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
       maximumFractionDigits: 0,
     }).format(number);
   }
+
   function formatNumber(number) {
     if (isNaN(number) || number === null) return "0";
     return new Intl.NumberFormat("id-ID", {
@@ -34,6 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
       maximumFractionDigits: 0,
     }).format(number);
   }
+
   function getUrlParams() {
     const params = new URLSearchParams(window.location.search);
     const today = new Date();
@@ -45,46 +56,60 @@ document.addEventListener("DOMContentLoaded", () => {
       tgl_mulai: params.get("tgl_mulai") || oneMonthAgoString,
       tgl_selesai: params.get("tgl_selesai") || todayString,
       kd_store: params.get("kd_store") || "all",
+      kd_store_tujuan: params.get("kd_store_tujuan") || "all", // Parameter Baru
       status_cetak: params.get("status_cetak") || "all",
       status_terima: params.get("status_terima") || "all",
       search_query: params.get("search_query") || "",
       page: parseInt(params.get("page") || "1", 10),
     };
   }
+
   async function loadData() {
     const params = getUrlParams();
     setLoadingState(true);
+
     if (document.getElementById("search_query"))
       document.getElementById("search_query").value = params.search_query;
     if (document.getElementById("tgl_mulai"))
       document.getElementById("tgl_mulai").value = params.tgl_mulai;
     if (document.getElementById("tgl_selesai"))
       document.getElementById("tgl_selesai").value = params.tgl_selesai;
-    if (document.getElementById("kd_store"))
-      document.getElementById("kd_store").value = params.kd_store;
-    if (document.getElementById("status_cetak"))
-      document.getElementById("status_cetak").value = params.status_cetak;
-    if (document.getElementById("status_terima"))
-      document.getElementById("status_terima").value = params.status_terima;
+
+    // Set value dropdowns
+    if (filterSelectStore) filterSelectStore.value = params.kd_store;
+    if (filterSelectStoreTujuan)
+      filterSelectStoreTujuan.value = params.kd_store_tujuan;
+    if (filterStatusCetak) filterStatusCetak.value = params.status_cetak;
+    if (filterStatusTerima) filterStatusTerima.value = params.status_terima;
+
     const queryString = new URLSearchParams(params).toString();
     const token = getCookie("admin_token");
 
     try {
-      // TAMBAHKAN OPTIONS HEADERS PADA FETCH
       const response = await fetch(
         `/src/api/mutasi_in/get_data.php?${queryString}`,
         {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // INI KUNCINYA
+            Authorization: `Bearer ${token}`,
           },
         }
       );
       const data = await response.json();
       if (data.error) throw new Error(data.error);
       userCanPrint = data.allow_print === true;
-      if (data.stores) populateStoreFilter(data.stores, params.kd_store);
+
+      // Populate kedua dropdown store
+      if (data.stores) {
+        populateStoreFilter(data.stores, filterSelectStore, params.kd_store);
+        populateStoreFilter(
+          data.stores,
+          filterSelectStoreTujuan,
+          params.kd_store_tujuan
+        );
+      }
+
       if (data.summary) {
         if (summaryQty)
           summaryQty.textContent = formatNumber(data.summary.total_qty);
@@ -107,6 +132,7 @@ document.addEventListener("DOMContentLoaded", () => {
       setLoadingState(false);
     }
   }
+
   function setLoadingState(isLoading) {
     if (isLoading) {
       if (filterSubmitButton) {
@@ -122,23 +148,26 @@ document.addEventListener("DOMContentLoaded", () => {
       if (summaryTotal) summaryTotal.textContent = "-";
     } else {
       if (filterSubmitButton) {
-        filterSubmitButton.innerHTML = `<i class="fas fa-filter"></i> Tampilkan`;
+        filterSubmitButton.innerHTML = `<i class="fas fa-filter"></i> Tampilkan Data`;
         filterSubmitButton.disabled = false;
       }
     }
   }
-  function populateStoreFilter(stores, selectedStore) {
-    if (!filterSelectStore) return;
-    if (filterSelectStore.options.length <= 1) {
+
+  // Fungsi Helper Populate Dropdown
+  function populateStoreFilter(stores, selectElement, selectedValue) {
+    if (!selectElement) return;
+    if (selectElement.options.length <= 1) {
       stores.forEach((store) => {
         const option = document.createElement("option");
         option.value = store.kd_store;
         option.textContent = `${store.kd_store} - ${store.nm_alias}`;
-        filterSelectStore.appendChild(option);
+        selectElement.appendChild(option);
       });
     }
-    filterSelectStore.value = selectedStore;
+    selectElement.value = selectedValue;
   }
+
   function renderTable(data) {
     if (!data || data.length === 0) {
       tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-8 text-gray-500">Tidak ada data mutasi ditemukan.</td></tr>`;
@@ -186,12 +215,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div class="font-bold text-gray-800">${row.kode_dari} - ${
         row.dari_nama || ""
       }</div>
-                <div class="text-xs font-medium text-gray-600">${
-                  row.dari_nama_npwp || "-"
-                }</div>
-                <div class="text-[10px] text-gray-400 italic leading-tight">${
-                  row.dari_alm_npwp || "-"
-                }</div>
+                <div class="text-[10px] text-gray-400 italic leading-tight">Pengirim</div>
               </div>
           </td>
           <td class="px-4 py-3 text-sm align-top">
@@ -199,12 +223,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div class="font-bold text-gray-800">${row.kode_tujuan} - ${
         row.tujuan_nama || ""
       }</div>
-                <div class="text-xs font-medium text-gray-600">${
-                  row.tujuan_nama_npwp || "-"
-                }</div>
-                <div class="text-[10px] text-gray-400 italic leading-tight">${
-                  row.tujuan_alm_npwp || "-"
-                }</div>
+                <div class="text-[10px] text-gray-400 italic leading-tight">Penerima</div>
               </div>
           </td>
           <td class="px-4 py-3 text-sm align-top text-right">${formatRupiah(
@@ -239,6 +258,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     tableBody.innerHTML = html;
   }
+
   function renderPagination(pagination) {
     if (!paginationInfo || !paginationLinks) return;
     if (!pagination) {
@@ -289,6 +309,7 @@ document.addEventListener("DOMContentLoaded", () => {
     html += `<button ${nextDisabled} ${nextClick}><i class="fas fa-chevron-right"></i></button>`;
     paginationLinks.innerHTML = html;
   }
+
   if (filterForm) {
     filterForm.addEventListener("submit", (e) => {
       e.preventDefault();
@@ -296,13 +317,16 @@ document.addEventListener("DOMContentLoaded", () => {
       const tglMulai = document.getElementById("tgl_mulai").value;
       const tglSelesai = document.getElementById("tgl_selesai").value;
       const kdStore = document.getElementById("kd_store").value;
+      const kdStoreTujuan = document.getElementById("kd_store_tujuan").value; // Ambil nilai tujuan
       const statusCetak = document.getElementById("status_cetak").value;
       const statusTerima = document.getElementById("status_terima").value;
+
       const url = new URL(window.location);
       url.searchParams.set("search_query", searchQuery);
       url.searchParams.set("tgl_mulai", tglMulai);
       url.searchParams.set("tgl_selesai", tglSelesai);
       url.searchParams.set("kd_store", kdStore);
+      url.searchParams.set("kd_store_tujuan", kdStoreTujuan); // Set URL param tujuan
       url.searchParams.set("status_cetak", statusCetak);
       url.searchParams.set("status_terima", statusTerima);
       url.searchParams.set("page", 1);
@@ -310,11 +334,14 @@ document.addEventListener("DOMContentLoaded", () => {
       loadData();
     });
   }
+
   document.addEventListener("forceLoadData", () => {
     loadData();
   });
+
   loadData();
 });
+
 window.showDetailFaktur = async function (
   rowId,
   noFaktur,
@@ -409,6 +436,7 @@ window.showDetailFaktur = async function (
     `;
   }
 };
+
 window.handlePrint = async function (
   noFaktur,
   kodeDari,
