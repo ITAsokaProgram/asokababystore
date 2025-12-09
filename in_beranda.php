@@ -601,67 +601,11 @@ $permissionChecker = new PermissionAccess($conn);
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.3.0/dist/echarts.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
   <script src="src/js/dashboard/display.js" type="module"></script>
   <script src="src/js/dashboard/dashboardChart.js"></script>
   <script src="src/js/middleware_auth.js"></script>
   <script src="src/js/logout.js"></script>
-
-  <script>
-    // GSAP Animations for Dashboard Cards
-    document.addEventListener('DOMContentLoaded', function () {
-      // Initial state - hide all cards
-      gsap.set('.dashboard-card', {
-        opacity: 0,
-        y: 50,
-        scale: 0.9
-      });
-
-      gsap.timeline()
-        .to('.dashboard-card', { // Menargetkan semua kartu, termasuk "Review Customer"
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          duration: 0.6,
-          ease: 'back.out(1.7)',
-          stagger: 0.2 // Memberi jeda 0.2 detik antar animasi setiap kartu
-        });
-
-      // Hover animations for cards
-      const cards = document.querySelectorAll('.dashboard-card');
-      cards.forEach(card => {
-        card.addEventListener('mouseenter', () => {
-          gsap.to(card, {
-            scale: 1.05,
-            duration: 0.3,
-            ease: 'power2.out',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
-          });
-        });
-
-        card.addEventListener('mouseleave', () => {
-          gsap.to(card, {
-            scale: 1,
-            duration: 0.3,
-            ease: 'power2.out',
-            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
-          });
-        });
-      });
-
-      // Animate chart section
-      gsap.from('.glass-container', {
-        opacity: 0,
-        y: 100,
-        duration: 0.8,
-        ease: 'power2.out',
-        delay: 1.2
-      });
-    });
-  </script>
-
-
 
 </body>
 
