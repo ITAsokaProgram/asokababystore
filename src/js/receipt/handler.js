@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const filterStore = document.getElementById("kode_store_filter"); // Tambahkan ini
   const tableBody = document.getElementById("receipt-table-body");
   const filterForm = document.getElementById("filter-form");
   const paginationInfo = document.getElementById("pagination-info");
@@ -13,6 +14,21 @@ document.addEventListener("DOMContentLoaded", () => {
   function formatJustDate(dateString) {
     if (!dateString) return "-";
     return dateString.substring(0, 10);
+  }
+  async function loadStores() {
+    try {
+      const response = await fetch("/src/api/shared/get_all_store.php");
+      const result = await response.json();
+      if (result.success) {
+        let options = '<option value="">Semua Cabang</option>';
+        result.data.forEach((store) => {
+          options += `<option value="${store.Kd_Store}">${store.Nm_Alias} (${store.Kd_Store})</option>`;
+        });
+        if (filterStore) filterStore.innerHTML = options;
+      }
+    } catch (error) {
+      console.error("Gagal load store:", error);
+    }
   }
   async function loadData() {
     setLoading(true);
@@ -40,11 +56,16 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   function renderTable(rows, offset) {
     if (!rows || rows.length === 0) {
-      tableBody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-gray-500">Tidak ada data ditemukan.</td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="9" class="text-center p-8 text-gray-500">Tidak ada data ditemukan.</td></tr>`; // Ubah colspan jadi 9
       return;
     }
     let html = "";
     rows.forEach((row, index) => {
+      // Handle jika kode_store kosong
+      const storeLabel = row.kode_store
+        ? `<span class="badge-pink">${row.Nm_Alias}</span>`
+        : "-";
+
       html += `
         <tr class="hover:bg-gray-50 border-b border-gray-100">
             <td class="text-center text-gray-500 text-sm py-3">${
@@ -53,13 +74,13 @@ document.addEventListener("DOMContentLoaded", () => {
             <td class="text-sm text-gray-700">${formatJustDate(
               row.tgl_receipt
             )}</td>
+            
+            <td class="text-sm font-semibold text-gray-600">${storeLabel}</td>
+
             <td class="font-medium text-pink-600">${row.kode_supp}</td>
             <td class="text-sm text-gray-700">${row.nama_supplier || "-"}</td>
-            
             <td class="text-sm font-bold text-gray-800">${row.no_faktur}</td>
-            
             <td class="text-sm text-gray-600">${row.no_invoice || "-"}</td>
-
             <td class="text-right font-mono text-gray-700">${formatRupiah(
               row.total_penerimaan
             )}</td>
@@ -148,6 +169,7 @@ document.addEventListener("DOMContentLoaded", () => {
       loadData();
     });
   }
+  loadStores();
   loadData();
 });
 

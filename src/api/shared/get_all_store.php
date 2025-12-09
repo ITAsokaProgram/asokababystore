@@ -6,7 +6,7 @@ require_once __DIR__ . '/../../../aa_kon_sett.php';
 
 try {
 
-    $query = "SELECT Kd_Store, Nm_Store, Nm_Alias FROM kode_store ORDER BY nm_alias ASC";
+    $query = "SELECT Kd_Store, Nm_Store, Nm_Alias, display FROM kode_store WHERE display = 'on' ORDER BY nm_alias ASC";
     $result = $conn->query($query);
 
     $data = [];

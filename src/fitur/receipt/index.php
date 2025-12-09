@@ -61,6 +61,12 @@ if (!$menuHandler->initialize()) {
                 <div class="filter-card-simple mb-4">
                     <form id="filter-form" class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
                         <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-2">Pilih Cabang</label>
+                            <select name="kode_store" id="kode_store_filter" class="input-modern w-full cursor-pointer">
+                                <option value="">Semua Cabang</option>
+                            </select>
+                        </div>
+                        <div>
                             <label class="block text-xs font-semibold text-gray-700 mb-2">Dari Tanggal</label>
                             <input type="date" name="tgl_mulai" id="tgl_mulai" class="input-modern w-full"
                                 value="<?= $tgl_mulai ?>">
@@ -93,6 +99,7 @@ if (!$menuHandler->initialize()) {
                                 <tr>
                                     <th>No</th>
                                     <th>Tanggal</th>
+                                    <th>Store</th>
                                     <th>Kode Supplier</th>
                                     <th>Nama Supplier</th>
                                     <th>No Faktur</th>

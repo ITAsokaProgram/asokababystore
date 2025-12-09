@@ -17,6 +17,7 @@ try {
     $tgl_mulai = $_GET['tgl_mulai'] ?? date('Y-m-d', strtotime('-1 month'));
     $tgl_selesai = $_GET['tgl_selesai'] ?? date('Y-m-d');
     $search_faktur = $_GET['search'] ?? '';
+    $kode_store = $_GET['kode_store'] ?? '';
     $page = (int) ($_GET['page'] ?? 1);
     if ($page < 1)
         $page = 1;
@@ -28,6 +29,12 @@ try {
     $where_clauses = ["tgl_receipt BETWEEN ? AND ?"];
     $params = [$tgl_mulai, $tgl_selesai];
     $types = "ss";
+
+    if (!empty($kode_store)) {
+        $where_clauses[] = "kode_store = ?";
+        $params[] = $kode_store;
+        $types .= "s";
+    }
     if (!empty($search_faktur)) {
         $where_clauses[] = "(no_faktur LIKE ? OR no_invoice LIKE ?)";
         $searchTerm = "%" . $search_faktur . "%";
@@ -46,7 +53,8 @@ try {
     $params[] = $limit;
     $params[] = $offset;
     $types .= "ii";
-    $sql_data = "SELECT * FROM c_receipt 
+    $sql_data = "SELECT * FROM c_receipt
+                 LEFT JOIN kode_store ks ON c_receipt.kode_store = ks.kd_store 
                  WHERE $where_sql 
                  ORDER BY tgl_receipt DESC, kode_supp ASC 
                  LIMIT ? OFFSET ?";
