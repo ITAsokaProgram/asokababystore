@@ -1,19 +1,68 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const filterStore = document.getElementById("kode_store_filter"); // Tambahkan ini
+  const filterStore = document.getElementById("kode_store_filter");
   const tableBody = document.getElementById("receipt-table-body");
   const filterForm = document.getElementById("filter-form");
   const paginationInfo = document.getElementById("pagination-info");
   const paginationLinks = document.getElementById("pagination-links");
+  const elTotalSelisih = document.getElementById("summary-total-selisih");
+  const elTotalMissing = document.getElementById("summary-total-missing");
+  const btnShowSelisih = document.getElementById("btn-show-selisih");
+  const btnShowMissing = document.getElementById("btn-show-missing");
+  let summaryData = {
+    list_selisih: [],
+    list_belum_ada: [],
+  };
+  let currentTableData = [];
   function formatRupiah(number) {
     if (isNaN(number) || number === null) return "0";
     return new Intl.NumberFormat("id-ID", {
       style: "decimal",
       minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(number);
   }
   function formatJustDate(dateString) {
     if (!dateString) return "-";
     return dateString.substring(0, 10);
+  }
+  function showModal(title, dataList) {
+    window.dispatchEvent(
+      new CustomEvent("open-summary-modal", {
+        detail: { title: title, list: dataList },
+      })
+    );
+  }
+  window.openDetailRow = function (index) {
+    const rowData = currentTableData[index];
+    if (rowData) {
+      window.dispatchEvent(
+        new CustomEvent("open-detail-modal", { detail: rowData })
+      );
+    }
+  };
+  if (btnShowSelisih) {
+    btnShowSelisih.addEventListener("click", () => {
+      window.dispatchEvent(
+        new CustomEvent("open-summary-modal", {
+          detail: {
+            title: "Detail Selisih (Tgl & Faktur)",
+            list: summaryData.list_selisih,
+          },
+        })
+      );
+    });
+  }
+  if (btnShowMissing) {
+    btnShowMissing.addEventListener("click", () => {
+      window.dispatchEvent(
+        new CustomEvent("open-summary-modal", {
+          detail: {
+            title: "Detail Belum Ada di Checking",
+            list: summaryData.list_belum_ada,
+          },
+        })
+      );
+    });
   }
   async function loadStores() {
     try {
@@ -40,50 +89,73 @@ document.addEventListener("DOMContentLoaded", () => {
       );
       const data = await response.json();
       if (data.error) throw new Error(data.error);
+      if (data.summary) {
+        elTotalSelisih.textContent = formatRupiah(data.summary.total_selisih);
+        elTotalMissing.textContent = formatRupiah(data.summary.total_belum_ada);
+        summaryData.list_selisih = data.summary.list_selisih;
+        summaryData.list_belum_ada = data.summary.list_belum_ada;
+      }
+      currentTableData = data.tabel_data || [];
       renderTable(data.tabel_data, data.pagination.offset);
       renderPagination(data.pagination);
     } catch (error) {
       console.error(error);
-      tableBody.innerHTML = `<tr><td colspan="7" class="text-center text-red-500 p-4">Error: ${error.message}</td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="10" class="text-center text-red-500 p-4">Error: ${error.message}</td></tr>`;
     } finally {
       setLoading(false);
     }
   }
   function setLoading(isLoading) {
     if (isLoading) {
-      tableBody.innerHTML = `<tr><td colspan="7" class="text-center p-8"><div class="spinner-simple"></div></td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="10" class="text-center p-8"><div class="spinner-simple"></div></td></tr>`;
     }
   }
   function renderTable(rows, offset) {
     if (!rows || rows.length === 0) {
-      tableBody.innerHTML = `<tr><td colspan="9" class="text-center p-8 text-gray-500">Tidak ada data ditemukan.</td></tr>`; // Ubah colspan jadi 9
+      tableBody.innerHTML = `<tr><td colspan="10" class="text-center p-8 text-gray-500">Tidak ada data ditemukan.</td></tr>`;
       return;
     }
     let html = "";
     rows.forEach((row, index) => {
-      // Handle jika kode_store kosong
-      const storeLabel = row.kode_store
-        ? `<span class="badge-pink">${row.Nm_Alias}</span>`
+      const storeLabel = row.kd_store
+        ? `<span class="badge-pink">${row.Nm_Alias || row.kd_store}</span>`
         : "-";
-
+      let statusBadge = "";
+      let rowClass = "hover:bg-gray-50";
+      if (row.status_cek === "Sesuai") {
+        statusBadge = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Sesuai</span>`;
+      } else if (row.status_cek === "Belum Ada") {
+        statusBadge = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">Belum</span>`;
+        rowClass = "bg-orange-50 hover:bg-orange-100";
+      } else {
+        statusBadge = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Selisih</span>`;
+        rowClass = "bg-red-50 hover:bg-red-100";
+      }
+      const selisihClass =
+        row.selisih !== 0 ? "text-red-600 font-bold" : "text-gray-400";
       html += `
-        <tr class="hover:bg-gray-50 border-b border-gray-100">
+        <tr class="${rowClass} border-b border-gray-100 transition cursor-pointer" onclick="openDetailRow(${index})">
             <td class="text-center text-gray-500 text-sm py-3">${
               offset + index + 1
             }</td>
             <td class="text-sm text-gray-700">${formatJustDate(
-              row.tgl_receipt
+              row.tgl_tiba
             )}</td>
-            
             <td class="text-sm font-semibold text-gray-600">${storeLabel}</td>
-
-            <td class="font-medium text-pink-600">${row.kode_supp}</td>
-            <td class="text-sm text-gray-700">${row.nama_supplier || "-"}</td>
+            <td class="text-sm text-gray-600">
+                <div class="font-medium text-pink-600">${row.kode_supp}</div>
+            </td>
             <td class="text-sm font-bold text-gray-800">${row.no_faktur}</td>
-            <td class="text-sm text-gray-600">${row.no_invoice || "-"}</td>
             <td class="text-right font-mono text-gray-700">${formatRupiah(
-              row.total_penerimaan
+              row.total_head
             )}</td>
+            <td class="text-right font-mono text-blue-600">${formatRupiah(
+              row.total_check
+            )}</td>
+            <td class="text-right font-mono ${selisihClass}">${formatRupiah(
+        row.selisih
+      )}</td>
+            <td class="text-center">${statusBadge}</td>
             <td class="text-sm text-gray-500 italic truncate max-w-xs">${
               row.keterangan || "-"
             }</td>
@@ -172,7 +244,6 @@ document.addEventListener("DOMContentLoaded", () => {
   loadStores();
   loadData();
 });
-
 function build_pagination_url(newPage) {
   const params = new URLSearchParams(window.location.search);
   params.set("page", newPage);
