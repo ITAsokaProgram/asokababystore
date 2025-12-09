@@ -1,8 +1,7 @@
-//ATUR AGAR TIDAK MUAT HALAMAN----------------------------------------------------------------START
 let tableDataCache = [];
 let dataCharBar = [];
-let chartInstance; // Global chart instance
-let chartDataGlobal = []; // ← simpan newData terbaru
+let chartInstance;
+let chartDataGlobal = [];
 let currentPage = 1;
 let isSubdeptActive = false;
 let isPromo = false;
@@ -13,38 +12,30 @@ window.addEventListener("resize", function () {
   pieChart.resize();
   barChart.resize();
 });
-
-let activeQueryType = sessionStorage.getItem("activeQueryType") || "query1"; // Default query type
-
-// Tangkap tombol yang diklik dan simpan query_type
+let activeQueryType = sessionStorage.getItem("activeQueryType") || "query1";
 document.querySelectorAll("button[name='query_type']").forEach((button) => {
   button.addEventListener("click", function () {
     activeQueryType = this.value;
     sessionStorage.setItem("activeQueryType", activeQueryType);
   });
 });
-
 document.getElementById("bar").style.display = "none";
 document.getElementById("pie").style.display = "none";
 document.getElementById("btn-back").style.display = "none";
 document.getElementById("container-table").style.display = "none";
-
 document.addEventListener("DOMContentLoaded", function () {
   const sidebar = document.getElementById("sidebar");
   const closeBtn = document.getElementById("closeSidebar");
-
   closeBtn.addEventListener("click", function () {
-    sidebar.classList.remove("open"); // Hilangkan class .open agar sidebar tertutup
+    sidebar.classList.remove("open");
   });
 });
-
 document.getElementById("btn-submit").addEventListener("click", function (e) {
   const filter = $("#sort-by").val();
   e.preventDefault();
   currentPage = 1;
   loadPage(currentPage, filter);
 });
-
 document.getElementById("btn-sub").addEventListener("click", function (e) {
   e.preventDefault();
   const filter = $("#sort-by").val();
@@ -52,7 +43,6 @@ document.getElementById("btn-sub").addEventListener("click", function (e) {
   btnSubSend(currentPage, filter);
   document.getElementById("btn-back").style.display = "block";
 });
-
 document.getElementById("btn-see-penjualan").addEventListener("click", (e) => {
   e.preventDefault();
   document.querySelector("#btn-promo").click();
@@ -65,7 +55,7 @@ document
       document.getElementById("cabang").options[
         document.getElementById("cabang").selectedIndex
       ].text;
-    var startDate = $("#date").val(); // Ambil nilai langsung dari datepicker
+    var startDate = $("#date").val();
     var endDate = $("#date1").val();
     var reportHeader = document.getElementById("reportHeaderPromo");
     reportHeader.innerHTML = `Data Promo<br><p> Cabang :  ${cabangText} (${startDate} s/d ${endDate})</p>`;
@@ -82,20 +72,17 @@ document
         Swal.showLoading();
       },
     });
-
     formData.append("ajax", true);
     formData.append("kd_store", document.querySelector("#kd_store")?.value);
     formData.append("start_date", document.querySelector("#date")?.value);
     formData.append("end_date", document.querySelector("#date1")?.value);
     formData.append("subdept", document.querySelector("#subdept")?.value || "");
-    // formData.append("limit", document.querySelector("#limitData").value);
     formData.append(
       "kode_supp",
       document.querySelector("#kode_supp")?.value || ""
     );
     formData.append("page", currentPage);
     formData.append("query_type", "query3");
-
     $.ajax({
       url: `../../api/subdepartemen/post_data_sub_dept.php?filter=${filter}`,
       method: "POST",
@@ -119,10 +106,8 @@ document
               "salesTableOriginal",
               JSON.stringify(tableDataCache)
             );
-
             updateTable(tableDataCache, "salesTablePromo");
             updateThead("thHeadPromo");
-            // updatePagination(); // 🔄 UPDATE PAGINATION
           } else {
             console.warn(
               "⚠️ Table Data Tidak Ditemukan di Response:",
@@ -168,7 +153,6 @@ document.body.addEventListener("click", function (e) {
   }
   sessionStorage.setItem("activeQueryType", activeQueryType);
 });
-
 function resetPieChart() {
   var pieChart = echarts.init(document.getElementById("chartDiagram"));
   pieChart.clear();
@@ -178,9 +162,7 @@ document.getElementById("sort-by").addEventListener("change", function () {
   const sortBy = this.value;
   const tableData = JSON.parse(localStorage.getItem("salesTableOriginal"));
   if (!tableData) return;
-
   let sortedTable = [...tableData];
-
   if (sortBy === "Qty") {
     sortedTable.sort((a, b) => b.Qty - a.Qty);
   } else {
@@ -190,18 +172,15 @@ document.getElementById("sort-by").addEventListener("change", function () {
       return numB - numA;
     });
   }
-
   const labels = sortedTable.map(
     (item) => item.nama_subdept || item.nama_barang || item.kode
   );
-
   const data = sortedTable.map((item) => {
     const kode = item.kode || item.kode_subdept || "";
     const nama = item.nama_subdept || item.nama_barang || "";
     const value = sortBy === "Qty" ? item.Qty : item.Total || 0;
     return `${kode},${nama},${value}`;
   });
-
   updateChart(labels, data, sortedTable);
   updatePieChart(labels, data, sortedTable);
   updateTable(sortedTable, "salesTable");
@@ -211,11 +190,8 @@ document.getElementById("sort-by1").addEventListener("change", function () {
   const selected = this.value;
   const tableData = JSON.parse(localStorage.getItem("chartBart"));
   if (!tableData) return;
-
   const tableDataOri = JSON.parse(localStorage.getItem("salesTableOriginal"));
-
   let sortedTable = [...tableDataOri];
-
   if (selected === "Qty") {
     sortedTable.sort((a, b) => b.Qty - a.Qty);
   } else {
@@ -225,8 +201,6 @@ document.getElementById("sort-by1").addEventListener("change", function () {
       return numB - numA;
     });
   }
-
-  // Tidak melakukan sort
   const updatedLabels = tableData.map((item) => {
     const persen =
       selected === "Total"
@@ -235,31 +209,25 @@ document.getElementById("sort-by1").addEventListener("change", function () {
     const persenFix = isNaN(persen) ? "0.00" : persen.toFixed(2);
     return `${item.promo} (${persenFix}%)`;
   });
-
   const chartData = tableData.map((item) =>
     selected === "Qty" ? parseFloat(item.Qty) : parseFloat(item.Total)
   );
-
   updateBarChart(updatedLabels, chartData, tableData);
   updateTable(sortedTable, "salesTablePromo");
   updateTable(sortedTable, "salesTablePenjualan");
 });
-
 function loadPage(page, filter) {
   showLoading();
   prepareUI();
-
   const formData = new FormData(document.getElementById("laporanForm"));
   const startDate = $("#date").val();
   const endDate = $("#date1").val();
   const cabang = getSelectedText("cabang");
-
   formData.append("query_type", "query1");
   formData.append("page", page);
   formData.append("ajax", "true");
   formData.append("filter", filter);
   setReportHeaders(cabang, startDate, endDate);
-
   fetch(`../../api/subdepartemen/post_data_sub_dept.php?filter=${filter}`, {
     method: "POST",
     headers: { "X-Requested-With": "XMLHttpRequest" },
@@ -278,7 +246,6 @@ function loadPage(page, filter) {
         updateChart(labels, chartData, tableData);
         localStorage.setItem("salesTableOriginal", JSON.stringify(tableData));
         updateTable(tableData, "salesTable");
-        // updatePagination();
         Swal.close();
       } else {
         Swal.fire("Error", response.message, "error");
@@ -321,56 +288,38 @@ function getSelectedText(selectId) {
   const select = document.getElementById(selectId);
   return select.options[select.selectedIndex].text;
 }
-//ATUR AGAR TIDAK MUAT HALAMAN----------------------------------------------------------------END
-
 function formatDate(date) {
-  if (!date) return ""; // Jika tanggal kosong, kembalikan string kosong
-
+  if (!date) return "";
   var d = new Date(date);
   if (isNaN(d.getTime())) {
     console.error("❌ Format tanggal tidak valid:", date);
-    return date; // Jika tidak valid, kembalikan nilai asli untuk debugging
+    return date;
   }
-
   var day = d.getDate().toString().padStart(2, "0");
   var month = (d.getMonth() + 1).toString().padStart(2, "0");
   var year = d.getFullYear();
-
-  return `${day}-${month}-${year}`; // Format yang benar untuk laporan
+  return `${day}-${month}-${year}`;
 }
-
-// Mengatur Kondisi Input Dalam Kondisi Rentang 1 Bulan
 var startDateInput = document.getElementById("date");
 var endDateInput = document.getElementById("date1");
-// Get today's date
 if (startDateInput && endDateInput) {
   var today = new Date();
-  // Set tanggal awal ke 30 hari sebelumnya
   var startDate = new Date();
   startDate.setDate(today.getDate() - 30);
-
-  // Set tanggal akhir ke 1 hari sebelumnya
   var endDate = new Date();
   endDate.setDate(today.getDate() - 1);
-
-  // Atur nilai input
   startDateInput.value = formatDate(startDate);
   endDateInput.value = formatDate(endDate);
 } else {
   console.error("Elemen input tanggal tidak ditemukan di DOM!");
 }
-//ATUR TANGGAL----------------------------------------------------------------END
-
-// echart js
 function updateTable(data, tableId) {
   var tableBody = document.querySelector(`#${tableId} tbody`);
   if (!tableBody) {
     console.error("❌ Table body tidak ditemukan!");
     return;
   }
-
   tableBody.innerHTML = "";
-
   if (!Array.isArray(data) || data.length === 0) {
     console.warn("⚠️ Data tabel kosong atau bukan array!", data);
     var newRow = tableBody.insertRow();
@@ -380,36 +329,32 @@ function updateTable(data, tableId) {
     cell.style.textAlign = "center";
     return;
   }
-
   data.forEach((row, index) => {
     var newRow = tableBody.insertRow();
-    newRow.className = "hover:bg-blue-50 transition-all duration-200 shadow-sm"; // Tailwind untuk tampilan lebih rapi
+    newRow.className = "hover:bg-blue-50 transition-all duration-200 shadow-sm";
     let cell0 = newRow.insertCell(0);
     let cell1 = newRow.insertCell(1);
     let cell2 = newRow.insertCell(2);
     let cell3 = newRow.insertCell(3);
     if (row.barcode) {
       let cell4 = newRow.insertCell(4);
-      cell0.textContent = index + 1; // 🔹 Nomor urut berlanjut
+      cell0.textContent = index + 1;
       cell1.textContent = row.barcode;
       cell2.textContent = row.nama_subdept || row.kode_supp || row.promo;
       cell3.textContent = row.Qty;
       cell4.textContent = new Intl.NumberFormat("id-ID", {
         style: "decimal",
       }).format(row.Total);
-      // 🔹 Atur posisi teks di tengah untuk TOP dan QTY
       cell0.classList.add("text-center");
       cell1.classList.add("text-center");
       cell2.classList.add("text-left");
       cell3.classList.add("text-center");
       cell4.classList.add("text-center");
     } else {
-      cell0.textContent = index + 1; // 🔹 Nomor urut berlanjut
+      cell0.textContent = index + 1;
       cell1.textContent = row.nama_subdept || row.kode_supp || row.promo;
       cell2.textContent = row.Qty;
       cell3.textContent = row.Total.toLocaleString();
-
-      // 🔹 Atur posisi teks di tengah untuk TOP dan QTY
       cell0.classList.add("text-center");
       cell1.classList.add("text-left");
       cell2.classList.add("text-center");
@@ -417,11 +362,7 @@ function updateTable(data, tableId) {
     }
   });
 }
-
-// Fungsi untuk memperbarui chart
-// Inisialisasi ECharts
-var echartDiagram = echarts.init(document.getElementById("chartDiagram")); // Pie Chart
-// Opsi default
+var echartDiagram = echarts.init(document.getElementById("chartDiagram"));
 var optionsChart = {
   series: [
     {
@@ -439,20 +380,15 @@ var optionsChart = {
     },
   ],
   formatter: function (params) {
-    return params.name; // ❌ Hanya tampilkan label, tanpa value
+    return params.name;
   },
 };
-// Set opsi awal ke dalam chart
 echartDiagram.setOption(optionsChart);
-
-// Event handler saat pie chart diklik
 echartDiagram.on("click", function (params) {
   let subdept = params.data.subdept || "";
   let kodeSupp = params.data.kode || "";
-
   document.querySelector("#subdept").value = subdept;
   document.querySelector("#kode_supp").value = kodeSupp;
-
   if (subdept.trim() !== "" && kodeSupp.trim() !== "") {
     document.querySelector("#btn-bar").click();
   } else if (subdept.trim() !== "") {
@@ -479,8 +415,6 @@ echartDiagram.on("click", function (params) {
     document.querySelector("#btn-sub").click();
   }
 });
-
-// Button Click Dari Pie Chart untuk mengirimkan data subdept dari ajax ke php
 function btnSubSend(page, filter) {
   document.getElementById("btn-see-supplier").style.display = "block";
   document.getElementById("btn-see-data").style.display = "none";
@@ -488,7 +422,7 @@ function btnSubSend(page, filter) {
     document.getElementById("cabang").options[
       document.getElementById("cabang").selectedIndex
     ].text;
-  var startDate = $("#date").val(); // Ambil nilai langsung dari datepicker
+  var startDate = $("#date").val();
   var endDate = $("#date1").val();
   var reportHeader = document.getElementById("reportHeaderSupplier");
   reportHeader.innerHTML = `Data Supplier<br><p> Cabang :  ${cabangText} (${startDate} s/d ${endDate})</p>`;
@@ -502,17 +436,14 @@ function btnSubSend(page, filter) {
     },
   });
   var pieChart = echarts.init(document.getElementById("chartDiagram"));
-
   setTimeout(() => {
     pieChart.resize();
   }, 300);
-
   document.getElementById("bar").style.display = "none";
   document.getElementById("btn-back").style.display = "block";
   document.getElementById("pie").style.display = "block";
   document.getElementById("container-table").style.display = "block";
-
-  isSubdeptActive = true; // 🔹 Aktifkan mode subdept
+  isSubdeptActive = true;
   let formData = new FormData();
   var queryType = document.getElementById("btn-sub").value;
   formData.append("ajax", true);
@@ -522,9 +453,7 @@ function btnSubSend(page, filter) {
   formData.append("end_date", document.querySelector("#date1")?.value);
   formData.append("subdept", document.querySelector("#subdept").value);
   formData.append("filter", filter);
-  // formData.append("limit", document.querySelector("#limitData").value);
   formData.append("page", page);
-
   fetch(`../../api/subdepartemen/post_data_sub_dept.php?filter=${filter}`, {
     method: "POST",
     body: formData,
@@ -539,7 +468,6 @@ function btnSubSend(page, filter) {
             "salesTableOriginal",
             JSON.stringify(tableDataCache)
           );
-
           updateTable(tableDataCache, "salesTableSupplier");
           document.getElementById("btn-sub").disabled = true;
         } else {
@@ -548,7 +476,6 @@ function btnSubSend(page, filter) {
             jsonResponse
           );
         }
-
         if (jsonResponse.data && jsonResponse.labels) {
           updatePieChart(
             jsonResponse.labels,
@@ -567,7 +494,6 @@ function btnSubSend(page, filter) {
       Swal.close();
     });
 }
-
 function formatCurrency(value) {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -575,7 +501,6 @@ function formatCurrency(value) {
     minimumFractionDigits: 0,
   }).format(value);
 }
-// Update Chart Diagram
 function updateChart(labels, data, table) {
   const newData = labels.map((label, index) => {
     const row = table[index] || {};
@@ -583,18 +508,16 @@ function updateChart(labels, data, table) {
     const totalValue = row.Total || "Rp 0";
     const persentaseQty = row.Percentage || "0%";
     const persentaseRp = row.persentase_rp ? `${row.persentase_rp}%` : "0%";
-
     return {
       name: row.nama_subdept || row.nama_supp || `Item ${index + 1}`,
-      precentage: persentaseQty, // persen dari Qty
+      precentage: persentaseQty,
       subdept: row.subdept?.toString() || "0",
       kode: row.kode_supp,
       value: qtyValue,
       uang: formatCurrency(totalValue),
-      rp_percent: persentaseRp, // tambahan
+      rp_percent: persentaseRp,
     };
   });
-
   echartDiagram.setOption({
     tooltip: {
       trigger: "item",
@@ -603,7 +526,7 @@ function updateChart(labels, data, table) {
         const percent =
           sortBy === "Qty"
             ? params.data.precentage
-            : parseFloat(params.data.rp_percent).toFixed(2) + "%"; // Membatasi 2 angka di belakang koma
+            : parseFloat(params.data.rp_percent).toFixed(2) + "%";
         return `Sub Departemen<br/>
           ${params.name} : ${params.value.toLocaleString()} (${percent})<br/>
           Total : ${params.data.uang}`;
@@ -642,21 +565,18 @@ function updateChart(labels, data, table) {
       },
     ],
   });
-
   window.addEventListener("resize", () => {
     echartDiagram.resize();
   });
 }
-
 function updatePieChart(labels, data, table) {
   var newData = labels.map((label, index) => {
     const parts = table[index] || {};
-
     return {
       name: parts.nama_subdept || parts.nama_supp || `Item ${index + 1}`,
       subdept: parts.subdept.toString() || "",
       value: parts.Qty || "",
-      uang: formatCurrency(parts.Total) || "", // Gabung sisa jadi string uang
+      uang: formatCurrency(parts.Total) || "",
       kode: parts.kode_supp || "",
       precentage: parts.Percentage || "0%",
       rp_percent: parts.persentase_rp || "0%",
@@ -672,7 +592,7 @@ function updatePieChart(labels, data, table) {
             const percent =
               sortBy === "Qty"
                 ? params.data.precentage
-                : parseFloat(params.data.rp_percent).toFixed(2) + "%"; // Membatasi 2 angka di belakang koma
+                : parseFloat(params.data.rp_percent).toFixed(2) + "%";
             return ` ${
               params.name
             } : ${params.value.toLocaleString()} (${percent})<br/> Total : ${
@@ -682,8 +602,8 @@ function updatePieChart(labels, data, table) {
         },
         label: {
           fontSize: function () {
-            let chartWidth = echartDiagram.getWidth(); // Ambil lebar chart
-            return chartWidth < 400 ? 10 : chartWidth < 800 ? 12 : 14; // Ukuran font responsif
+            let chartWidth = echartDiagram.getWidth();
+            return chartWidth < 400 ? 10 : chartWidth < 800 ? 12 : 14;
           },
           formatter: (params) => {
             const sortBy = document.getElementById("sort-by").value;
@@ -716,8 +636,6 @@ function updatePieChart(labels, data, table) {
   });
   document.getElementById("chartDiagram").style.display = "block";
 }
-// END CODE PIE Echart JS
-
 document.getElementById("btn-bar").addEventListener("click", function (e) {
   e.preventDefault();
   Swal.fire({
@@ -754,11 +672,9 @@ document.getElementById("btn-bar").addEventListener("click", function (e) {
   formData.append("end_date", document.querySelector("#date1")?.value);
   formData.append("subdept", document.querySelector("#subdept").value);
   formData.append("kode_supp", document.querySelector("#kode_supp").value);
-  // formData.append("limit", document.querySelector("#limitData").value);
   formData.append("page", currentPage);
   formData.append("query_type", this.value);
   formData.append("filter", filter);
-
   $.ajax({
     url: `../../api/subdepartemen/post_data_sub_dept?filter=${filter}`,
     method: "POST",
@@ -775,7 +691,6 @@ document.getElementById("btn-bar").addEventListener("click", function (e) {
         console.error("❌ Gagal parsing JSON:", error, response);
         return;
       }
-
       if (jsonResponse && jsonResponse.status === "success") {
         if (jsonResponse.tableData) {
           dataCharBar = localStorage.setItem(
@@ -805,7 +720,6 @@ document.getElementById("btn-bar").addEventListener("click", function (e) {
     },
   });
 });
-
 document.getElementById("btn-promo").addEventListener("click", function (e) {
   e.preventDefault();
   document.getElementById("container-table").style.display = "show";
@@ -815,7 +729,7 @@ document.getElementById("btn-promo").addEventListener("click", function (e) {
     document.getElementById("cabang").options[
       document.getElementById("cabang").selectedIndex
     ].text;
-  var startDate = $("#date").val(); // Ambil nilai langsung dari datepicker
+  var startDate = $("#date").val();
   var endDate = $("#date1").val();
   var reportHeader = document.getElementById("reportHeaderPenjualan");
   reportHeader.innerHTML = `Data Barang<br><p> Cabang :  ${cabangText} (${startDate} s/d ${endDate})</p>`;
@@ -833,7 +747,6 @@ document.getElementById("btn-promo").addEventListener("click", function (e) {
   formData.append("page", currentPage);
   formData.append("query_type", this.value);
   formData.append("filter", filter);
-
   $.ajax({
     url: `../../api/subdepartemen/post_data_sub_dept?filter=${filter}`,
     method: "POST",
@@ -857,10 +770,8 @@ document.getElementById("btn-promo").addEventListener("click", function (e) {
             "salesTableOriginal",
             JSON.stringify(tableDataCache)
           );
-
           updateTable(tableDataCache, "salesTablePenjualan");
           updateThead("thHeadPenjualan");
-          // updatePagination(); // 🔄 UPDATE PAGINATION
         } else {
           console.warn(
             "⚠️ Table Data Tidak Ditemukan di Response:",
@@ -873,10 +784,8 @@ document.getElementById("btn-promo").addEventListener("click", function (e) {
     },
   });
 });
-
 function updateBarChart(labels, data, table) {
   const currentSortBy = document.getElementById("sort-by1")?.value;
-
   var newData = labels.map((label, index) => ({
     promo: label,
     Qty: Number(data[index]),
@@ -885,10 +794,8 @@ function updateBarChart(labels, data, table) {
     precentage: table[index]?.Percentage,
     rp_percent: table[index]?.persentase_rp,
   }));
-  // Ambil daftar unik tanggal dan promo
   var tanggal = newData.map((item) => item.tanggal);
   var promos = [...new Set(newData.map((item) => item.promo))];
-  // Buat struktur data Qty berdasarkan promo
   var promoQtyMap = {};
   promos.forEach((promo) => {
     promoQtyMap[promo] = tanggal.map((tgl) => {
@@ -984,36 +891,28 @@ function updateBarChart(labels, data, table) {
       formatter: function (params) {
         let dateLabel = params[0].axisValue;
         const currentSortBy = document.getElementById("sort-by1").value;
-
         let promoDetails = promos
           .map((promo) => {
             let index = tanggal.indexOf(dateLabel);
             if (index === -1) return "";
-
             let qty = promoQtyMap[promo][index] || 0;
-
             let dataItem = newData.find(
               (item) =>
                 item.promo === promo &&
                 String(item.tanggal) === String(dateLabel)
             );
-
-            // Ambil nilai sesuai filter
-            let totalPenjualan = dataItem ? dataItem.Total || 0 : "N/A"; // Mengambil total penjualan
+            let totalPenjualan = dataItem ? dataItem.Total || 0 : "N/A";
             let percentQty = dataItem ? dataItem.precentage || "0%" : "0%";
             let percentRp = dataItem
               ? dataItem.rp_percent?.toFixed(2) + "%"
               : "0%";
-            // Ubah label sesuai mode tampilan berdasarkan sort-by1
             let labelInfo =
               currentSortBy === "Qty"
                 ? `Terjual: <b>${qty} Qty</b> (${percentQty})`
                 : `Penjualan: <b>Rp ${totalPenjualan}</b> (${percentRp})`;
-
             return qty > 0 ? `<br>Promo: <b>${promo}</b><br>${labelInfo}` : "";
           })
           .join("");
-
         return `Tanggal: <b>${dateLabel}</b>${promoDetails}`;
       },
     },
@@ -1035,10 +934,10 @@ function updateBarChart(labels, data, table) {
       {
         type: "category",
         name: "Periode",
-        data: tanggal, // Data tanggal
+        data: tanggal,
         axisLabel: {
           formatter: function (value) {
-            return "{custom|" + value.split("sd").join("sd\n") + "}"; // Format label
+            return "{custom|" + value.split("sd").join("sd\n") + "}";
           },
           rich: {
             custom: {
@@ -1069,7 +968,7 @@ function updateBarChart(labels, data, table) {
     series: [
       {
         connectNulls: true,
-        name: "Promo", // Tetap satu kategori
+        name: "Promo",
         type: "bar",
         stack: "total",
         data: tanggal.map((tgl) => {
@@ -1099,7 +998,6 @@ function updateBarChart(labels, data, table) {
           distance: 0,
           formatter: function (params) {
             const data = params?.data || {};
-
             if (currentSortBy === "Qty") {
               return data.percentage ? data.percentage : "";
             } else if (currentSortBy === "Total") {
@@ -1112,14 +1010,13 @@ function updateBarChart(labels, data, table) {
             return "";
           },
           fontSize: 12,
-          color: "#000000", // Warna hitam
+          color: "#000000",
         },
       },
     ],
   };
-  // **Tambahkan event listener untuk menangani perubahan magicType**
   barChart.on("magictypechanged", function (event) {
-    let newType = event.currentType; // Dapatkan jenis chart yang dipilih
+    let newType = event.currentType;
     barChart.setOption({
       series: [
         {
@@ -1133,23 +1030,16 @@ function updateBarChart(labels, data, table) {
     barChart.resize();
   });
 }
-
-// END CODE Bar Echart JS
-
 function resetBarChart() {
   var barChart = echarts.init(document.getElementById("barDiagram"));
   barChart.clear();
   barChart.resize();
 }
-
 $(document).ready(async function () {
   const $select = $("#cabang");
   const $kdStore = $("#kd_store");
-
-  // Map nama_cabang -> kode store
   let nameToCode = {};
   let allCodes = [];
-
   async function loadCabang() {
     try {
       const token = localStorage.getItem("token");
@@ -1160,21 +1050,14 @@ $(document).ready(async function () {
         },
       });
       if (!res.ok) throw new Error("HTTP " + res.status);
-
       const json = await res.json();
       const rows = (json?.data || []).filter(
         (r) => r && r.nama_cabang && r.store
       );
-
-      // reset
       nameToCode = {};
       allCodes = [];
       $select.empty();
-
-      // opsi default + semua cabang
       $select.append('<option value="ALL">Semua Cabang</option>');
-
-      // isi select: value = nama_cabang, text = nama_cabang
       rows.forEach(({ nama_cabang, store }) => {
         const code = String(store).trim();
         const name = String(nama_cabang).trim();
@@ -1184,13 +1067,10 @@ $(document).ready(async function () {
       });
     } catch (err) {
       console.error("Gagal memuat cabang:", err);
-      // Optional: tampilkan toast/alert di UI-mu
     }
   }
-
-  // ketika cabang berubah -> isi kd_store
   $select.on("change", function () {
-    const val = this.value; // nama_cabang atau 'ALL' atau ''
+    const val = this.value;
     if (val === "ALL") {
       $kdStore.val(allCodes.join(","));
     } else if (val) {
@@ -1199,37 +1079,29 @@ $(document).ready(async function () {
       $kdStore.val("");
     }
   });
-
-  // muat data + set nilai awal
   await loadCabang();
   $select.trigger("change");
 });
-
 document.addEventListener("DOMContentLoaded", function () {
   flatpickr("#date", {
     dateFormat: "d-m-Y",
     allowInput: true,
   });
-
   flatpickr("#date1", {
     dateFormat: "d-m-Y",
     allowInput: true,
   });
 });
-
 function updateThead(trId) {
   const tableHead = document.querySelector(`#${trId}`);
   const subdeptElement = document.querySelector("#subdept");
   const kodeSupElement = document.querySelector("#kode_supp");
-
   if (!subdeptElement || !kodeSupElement || !tableHead) {
     console.error("Elemen tidak ditemukan!");
     return;
   }
-
   const subdeptHead = subdeptElement.value.trim();
   const kodeSupHead = kodeSupElement.value.trim();
-
   if (isSubdeptActive && isPromo) {
     tableHead.textContent = "NAMA BARANG";
   } else if (isSubdeptActive) {
@@ -1238,7 +1110,6 @@ function updateThead(trId) {
     tableHead.textContent = "SUBDEPT";
   }
 }
-
 async function exportExcel(query) {
   const table = document.getElementById("salesTable");
   const cabSel = document.getElementById("cabang");
@@ -1250,21 +1121,16 @@ async function exportExcel(query) {
       .trim()
       .replace(/[^\d.,-]/g, "");
     if (s.includes(",") && s.includes(".")) {
-      // format Eropa: 1.234,56
       s = s.replace(/\./g, "").replace(/,/g, ".");
     } else {
-      // hapus pemisah ribuan 1,234 / 1.234
       s = s.replace(/[.,](?=\d{3}\b)/g, "");
     }
     const n = parseFloat(s);
     return Number.isFinite(n) ? n : 0;
   };
-  // ==== Sumber data ====
   let labelHeader = "SUB DEPT";
-  let rowsData = []; // {no, label, qty, total}
-
+  let rowsData = [];
   if (query === "query2") {
-    // ---- Ambil dari localStorage khusus SUPPLIER ----
     labelHeader = "SUPPLIER";
     const raw = localStorage.getItem("salesTableOriginal");
     if (!raw) {
@@ -1283,7 +1149,6 @@ async function exportExcel(query) {
       alert("Format salesTableOriginal tidak valid.");
       return;
     }
-
     rowsData = arr
       .map((it, i) => ({
         no: i + 1,
@@ -1293,22 +1158,17 @@ async function exportExcel(query) {
       }))
       .filter((r) => r.label || r.qty || r.total);
   } else {
-    // ---- Default: ambil dari DOM tabel aktif ----
     const tbody = table?.querySelector("tbody");
     if (!tbody) {
       alert("Tidak ada data untuk diekspor!");
       return;
     }
-
-    // header dinamis
     if (query === "query1") labelHeader = "SUBDEPT";
     else if (query === "query4") labelHeader = "NAMA BARANG";
-
     const trs = Array.from(tbody.querySelectorAll("tr"));
     rowsData = trs
       .map((tr, i) => {
         const tds = tr.querySelectorAll("td");
-        // Asumsi layout DOM: [No, Label, Qty, Total]
         return {
           no: i + 1,
           label: tds[1]?.textContent?.trim() ?? "",
@@ -1318,8 +1178,6 @@ async function exportExcel(query) {
       })
       .filter((r) => r.label || r.qty || r.total);
   }
-
-  // ==== Build Excel (A..D) ====
   const wb = new ExcelJS.Workbook();
   const ws = wb.addWorksheet("Data Penjualan", {
     views: [{ state: "frozen", ySplit: 4 }],
@@ -1330,28 +1188,20 @@ async function exportExcel(query) {
       fitToHeight: 0,
     },
   });
-
-  // Kolom
-  ws.getColumn(1).width = 6; // No
-  ws.getColumn(2).width = 42; // Label
-  ws.getColumn(3).width = 10; // Qty
-  ws.getColumn(4).width = 18; // Total
-
-  // Judul & subjudul
+  ws.getColumn(1).width = 6;
+  ws.getColumn(2).width = 42;
+  ws.getColumn(3).width = 10;
+  ws.getColumn(4).width = 18;
   ws.mergeCells("A1:D1");
   ws.getCell("A1").value = "REKAP PENJUALAN";
   ws.getCell("A1").font = { bold: true, size: 16 };
   ws.getCell("A1").alignment = { horizontal: "center", vertical: "middle" };
-
   ws.mergeCells("A2:D2");
   ws.getCell(
     "A2"
   ).value = `Cabang: ${cabangText} • Subdept: ${kodeSupDept} • Dibuat: ${new Date().toLocaleString()}`;
   ws.getCell("A2").alignment = { horizontal: "center", vertical: "middle" };
-
-  ws.addRow([]); // baris 3 kosong
-
-  // Header (A4:D4)
+  ws.addRow([]);
   const headerRowIdx = 4;
   const hdr = ws.getRow(headerRowIdx);
   ["No", labelHeader, "QTY", "TOTAL"].forEach((text, i) => {
@@ -1372,20 +1222,16 @@ async function exportExcel(query) {
     };
   });
   hdr.height = 22;
-
   ws.autoFilter = {
     from: { row: headerRowIdx, column: 1 },
     to: { row: headerRowIdx, column: 4 },
   };
-
-  // Body
   let r = headerRowIdx + 1;
   rowsData.forEach((it, idx) => {
     ws.getCell(r, 1).value = it.no;
     ws.getCell(r, 2).value = it.label;
     ws.getCell(r, 3).value = it.qty;
     ws.getCell(r, 4).value = it.total;
-
     ws.getCell(r, 1).alignment = { horizontal: "center", vertical: "middle" };
     ws.getCell(r, 2).alignment = {
       horizontal: "left",
@@ -1395,7 +1241,6 @@ async function exportExcel(query) {
     ws.getCell(r, 3).alignment = { horizontal: "center", vertical: "middle" };
     ws.getCell(r, 4).alignment = { horizontal: "right", vertical: "middle" };
     ws.getCell(r, 4).numFmt = '"Rp" #,##0;-"Rp" #,##0;""';
-
     for (let c = 1; c <= 4; c++) {
       ws.getCell(r, c).border = {
         top: { style: "hair" },
@@ -1413,20 +1258,16 @@ async function exportExcel(query) {
     ws.getRow(r).height = 20;
     r++;
   });
-
-  // Total
   const hasData = rowsData.length > 0;
-  const firstDataRow = headerRowIdx + 1; // 5
+  const firstDataRow = headerRowIdx + 1;
   const lastDataRow = hasData ? r - 1 : firstDataRow;
   const totalRowIdx = lastDataRow + 1;
-
   ws.getCell(totalRowIdx, 2).value = "TOTAL";
   ws.getCell(totalRowIdx, 2).font = { bold: true };
   ws.getCell(totalRowIdx, 2).alignment = {
     horizontal: "right",
     vertical: "middle",
   };
-
   ws.getCell(totalRowIdx, 3).value = hasData
     ? { formula: `SUBTOTAL(9,C${firstDataRow}:C${lastDataRow})` }
     : 0;
@@ -1434,7 +1275,6 @@ async function exportExcel(query) {
     ? { formula: `SUBTOTAL(9,D${firstDataRow}:D${lastDataRow})` }
     : 0;
   ws.getCell(totalRowIdx, 4).numFmt = '"Rp" #,##0;-"Rp" #,##0;""';
-
   for (let c = 2; c <= 4; c++) {
     const cell = ws.getCell(totalRowIdx, c);
     cell.font = { ...(cell.font || {}), bold: true };
@@ -1446,8 +1286,6 @@ async function exportExcel(query) {
     cell.border = { top: "thin", left: "thin", bottom: "thin", right: "thin" };
     cell.alignment = { horizontal: "right", vertical: "middle" };
   }
-
-  // Simpan
   const buf = await wb.xlsx.writeBuffer();
   const blob = new Blob([buf], {
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -1461,17 +1299,13 @@ async function exportExcel(query) {
   )}_${cabangText}_${tag}.xlsx`;
   a.click();
 }
-
 async function exportQuery(query) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF("p", "mm", "a4");
-
   const cabSel = document.getElementById("cabang");
   const cabangText = cabSel?.options[cabSel.selectedIndex]?.text || "-";
   const kodeSupDept = document.querySelector("#subdept")?.value || "-";
   const table = document.getElementById("salesTable");
-
-  // ---------- helpers ----------
   const toNumber = (v) => {
     if (v == null) return 0;
     let s = String(v)
@@ -1487,7 +1321,6 @@ async function exportQuery(query) {
   };
   const fmtInt = (n) => new Intl.NumberFormat("id-ID").format(+n || 0);
   const fmtRp = (n) => "Rp " + new Intl.NumberFormat("id-ID").format(+n || 0);
-
   async function urlToDataURL(url) {
     try {
       const res = await fetch(url, { mode: "cors" });
@@ -1501,15 +1334,11 @@ async function exportQuery(query) {
       return null;
     }
   }
-
-  // ---------- siapkan data ----------
   let labelHeader = "SUBDEPT";
-  let rows = []; // array of [No, Label, QTY, TOTAL] (formatted for PDF)
+  let rows = [];
   let sumQty = 0,
     sumTotal = 0;
-
   if (query === "query2") {
-    // Supplier dari localStorage
     labelHeader = "SUPPLIER";
     const raw = localStorage.getItem("salesTableOriginal");
     if (!raw) {
@@ -1535,14 +1364,12 @@ async function exportQuery(query) {
       rows.push([idx + 1, label, fmtInt(qty), fmtRp(total)]);
     });
   } else {
-    // Ambil dari DOM tabel aktif
     if (!table) {
       alert("Tabel tidak ditemukan.");
       return;
     }
     if (query === "query1") labelHeader = "SUBDEPT";
     else if (query === "query4") labelHeader = "NAMA BARANG";
-
     const trs = table.querySelectorAll("tbody tr");
     trs.forEach((tr, i) => {
       const tds = tr.querySelectorAll("td");
@@ -1554,14 +1381,9 @@ async function exportQuery(query) {
       rows.push([i + 1, label, fmtInt(qty), fmtRp(total)]);
     });
   }
-
-  // ---------- header info ----------
   const headers = ["No", labelHeader, "QTY", "TOTAL"];
-
   const logoDataUrl = await urlToDataURL("/images/logo.png");
   const nowStr = new Date().toLocaleString("id-ID");
-
-  // ---------- render table ----------
   doc.autoTable({
     head: [headers],
     body: rows,
@@ -1576,7 +1398,7 @@ async function exportQuery(query) {
       lineWidth: 0.1,
     },
     headStyles: {
-      fillColor: [29, 78, 216], // #1D4ED8
+      fillColor: [29, 78, 216],
       textColor: [255, 255, 255],
       fontSize: 9,
       fontStyle: "bold",
@@ -1586,10 +1408,10 @@ async function exportQuery(query) {
     bodyStyles: { textColor: [10, 10, 10] },
     alternateRowStyles: { fillColor: [245, 247, 250] },
     columnStyles: {
-      0: { halign: "center", cellWidth: 12 }, // No
-      1: { halign: "left", cellWidth: 98 }, // Label
-      2: { halign: "center", cellWidth: 25 }, // Qty
-      3: { halign: "right", cellWidth: 35 }, // Total (kanan)
+      0: { halign: "center", cellWidth: 12 },
+      1: { halign: "left", cellWidth: 98 },
+      2: { halign: "center", cellWidth: 25 },
+      3: { halign: "right", cellWidth: 35 },
     },
     margin: { top: 50, left: 10, right: 10 },
     showFoot: "lastPage",
@@ -1603,7 +1425,6 @@ async function exportQuery(query) {
       fontStyle: "bold",
     },
     didDrawPage: function (data) {
-      // Header per page
       if (logoDataUrl) {
         doc.addImage(logoDataUrl, "PNG", 13, 10, 25, 10);
       }
@@ -1619,9 +1440,7 @@ async function exportQuery(query) {
       );
       doc.text("Telp: 0817-1712-1250", 45, 25);
       doc.setLineWidth(0.5);
-      doc.line(10, 30, 200, 30); // garis
-
-      // Judul laporan + info
+      doc.line(10, 30, 200, 30);
       doc.setFont("helvetica", "bold");
       doc.setFontSize(12);
       doc.text("Laporan Data Penjualan", 15, 42);
@@ -1630,16 +1449,12 @@ async function exportQuery(query) {
       doc.text(`Cabang: ${cabangText}`, 150, 38);
       doc.text(`Subdept: ${kodeSupDept}`, 150, 42);
       doc.text(`Dibuat: ${nowStr}`, 150, 46);
-
-      // Footer nomor halaman
       const pageCount = doc.internal.getNumberOfPages();
       const str = `Halaman ${data.pageNumber} dari ${pageCount}`;
       doc.setFontSize(8);
-      doc.text(str, 200 - doc.getTextWidth(str), 290); // kanan bawah
+      doc.text(str, 200 - doc.getTextWidth(str), 290);
     },
   });
-
-  // ---------- simpan ----------
   const labelSafe = labelHeader.replace(/\s+/g, "_");
   doc.save(
     `Laporan_${labelSafe}_${cabangText}_${new Date()
@@ -1648,7 +1463,6 @@ async function exportQuery(query) {
       .replace(/[:T]/g, "-")}.pdf`
   );
 }
-
 function exportToExcel() {
   if (activeQueryType === "query1") {
     exportExcel(activeQueryType);
@@ -1658,7 +1472,6 @@ function exportToExcel() {
     exportExcel(activeQueryType);
   }
 }
-
 function exportToPDF() {
   if (activeQueryType === "query1") {
     exportQuery(activeQueryType);
@@ -1668,11 +1481,9 @@ function exportToPDF() {
     exportQuery(activeQueryType);
   }
 }
-
 async function exportToPDFModal() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF("p", "mm", "a4");
-
   const cabSel = document.getElementById("cabang");
   const cabangText = cabSel?.options[cabSel.selectedIndex]?.text || "-";
   const kodeSupDept = document.querySelector("#subdept")?.value || "-";
@@ -1681,8 +1492,6 @@ async function exportToPDFModal() {
     alert("Tabel promo tidak ditemukan.");
     return;
   }
-
-  // --- helper angka ---
   const toNumber = (v) => {
     if (v == null) return 0;
     let s = String(v)
@@ -1696,8 +1505,6 @@ async function exportToPDFModal() {
   };
   const fmtInt = (n) => new Intl.NumberFormat("id-ID").format(+n || 0);
   const fmtRp = (n) => "Rp " + new Intl.NumberFormat("id-ID").format(+n || 0);
-
-  // (opsional) load logo sebagai dataURL; kalau gagal biarkan null
   async function urlToDataURL(url) {
     try {
       const res = await fetch(url, { mode: "cors" });
@@ -1712,8 +1519,6 @@ async function exportToPDFModal() {
     }
   }
   const logoDataUrl = await urlToDataURL("/images/logo.png");
-
-  // --- kumpulkan data dari DOM ---
   const rows = [];
   let sumQty = 0,
     sumTotal = 0;
@@ -1725,17 +1530,14 @@ async function exportToPDFModal() {
     sumTotal += total;
     rows.push([i + 1, promo, fmtInt(qty), fmtRp(total)]);
   });
-
-  // --- konstanta header/layout ---
-  const TITLE_Y = 42; // posisi judul
-  const START_Y = 50; // awal tabel (juga margin top halaman)
+  const TITLE_Y = 42;
+  const START_Y = 50;
   const nowStr = new Date().toLocaleString("id-ID");
-
   doc.autoTable({
     head: [["No", "PROMO", "QTY", "TOTAL"]],
     body: rows,
     startY: START_Y,
-    margin: { top: START_Y, left: 10, right: 10 }, // konsisten di semua halaman
+    margin: { top: START_Y, left: 10, right: 10 },
     theme: "grid",
     styles: {
       fontSize: 8,
@@ -1753,10 +1555,10 @@ async function exportToPDFModal() {
     bodyStyles: { textColor: [10, 10, 10] },
     alternateRowStyles: { fillColor: [245, 247, 250] },
     columnStyles: {
-      0: { halign: "center", cellWidth: 12 }, // No
-      1: { halign: "left", cellWidth: 98 }, // PROMO
-      2: { halign: "center", cellWidth: 25 }, // QTY
-      3: { halign: "right", cellWidth: 35 }, // TOTAL
+      0: { halign: "center", cellWidth: 12 },
+      1: { halign: "left", cellWidth: 98 },
+      2: { halign: "center", cellWidth: 25 },
+      3: { halign: "right", cellWidth: 35 },
     },
     showFoot: "lastPage",
     foot: rows.length
@@ -1768,12 +1570,8 @@ async function exportToPDFModal() {
       fontStyle: "bold",
       halign: "right",
     },
-
     didDrawPage(data) {
-      // Logo (ukuran FIX sesuai permintaan)
       if (logoDataUrl) doc.addImage(logoDataUrl, "PNG", 13, 10, 25, 10);
-
-      // Identitas perusahaan
       doc.setFont("helvetica", "bold");
       doc.setFontSize(14);
       doc.text("Asoka Baby Store", 45, 15);
@@ -1785,12 +1583,8 @@ async function exportToPDFModal() {
         20
       );
       doc.text("Telp: 0817-1712-1250", 45, 25);
-
-      // Garis pemisah
       doc.setLineWidth(0.5);
       doc.line(10, 30, 200, 30);
-
-      // Judul & info kanan
       doc.setFont("helvetica", "bold");
       doc.setFontSize(12);
       doc.text("Laporan Data Penjualan", 15, TITLE_Y);
@@ -1799,19 +1593,15 @@ async function exportToPDFModal() {
       doc.text(`Cabang: ${cabangText}`, 150, 38);
       doc.text(`Subdept: ${kodeSupDept}`, 150, 42);
       doc.text(`Dibuat: ${nowStr}`, 150, 46);
-
-      // Footer nomor halaman
       const pageCount = doc.internal.getNumberOfPages();
       const str = `Halaman ${data.pageNumber} dari ${pageCount}`;
       doc.setFontSize(8);
       doc.text(str, 200 - doc.getTextWidth(str), 290);
     },
   });
-
   const tag = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
   doc.save(`Laporan_Promo_${cabangText}_${tag}.pdf`);
 }
-
 async function exportToExcelModal() {
   const cabSel = document.getElementById("cabang");
   const cabangText = cabSel?.options[cabSel.selectedIndex]?.text || "-";
@@ -1819,7 +1609,6 @@ async function exportToExcelModal() {
   const domRows = Array.from(
     document.querySelectorAll("#salesTablePromo tbody tr")
   );
-
   const wb = new ExcelJS.Workbook();
   const ws = wb.addWorksheet("Data Penjualan", {
     views: [{ state: "frozen", ySplit: 4 }],
@@ -1830,28 +1619,20 @@ async function exportToExcelModal() {
       fitToHeight: 0,
     },
   });
-
-  // Lebar kolom A..D
-  ws.getColumn(1).width = 6; // A No
-  ws.getColumn(2).width = 42; // B PROMO
-  ws.getColumn(3).width = 10; // C QTY
-  ws.getColumn(4).width = 18; // D TOTAL
-
-  // Judul & subjudul (merge dulu, isi via getCell)
+  ws.getColumn(1).width = 6;
+  ws.getColumn(2).width = 42;
+  ws.getColumn(3).width = 10;
+  ws.getColumn(4).width = 18;
   ws.mergeCells("A1:D1");
   ws.getCell("A1").value = "REKAP PENJUALAN PROMO";
   ws.getCell("A1").font = { bold: true, size: 16 };
   ws.getCell("A1").alignment = { horizontal: "center", vertical: "middle" };
-
   ws.mergeCells("A2:D2");
   ws.getCell(
     "A2"
   ).value = `Cabang: ${cabangText} • Subdept: ${kodeSupDept} • Dibuat: ${new Date().toLocaleString()}`;
   ws.getCell("A2").alignment = { horizontal: "center", vertical: "middle" };
-
-  ws.addRow([]); // baris 3 kosong
-
-  // Header tabel di baris 4 (A4:D4)
+  ws.addRow([]);
   const headerRowIdx = 4;
   const hdr = ws.getRow(headerRowIdx);
   ["No", "PROMO", "QTY", "TOTAL"].forEach((text, i) => {
@@ -1872,26 +1653,19 @@ async function exportToExcelModal() {
     };
   });
   hdr.height = 22;
-
-  // Autofilter tepat pada header
   ws.autoFilter = {
     from: { row: headerRowIdx, column: 1 },
     to: { row: headerRowIdx, column: 4 },
   };
-
-  // Data mulai baris 5
   let r = headerRowIdx + 1;
   domRows.forEach((tr, idx) => {
     const promo = tr.cells[1]?.innerText?.trim() ?? "";
     const qty = toNumber(tr.cells[2]?.innerText);
     const total = toNumber(tr.cells[3]?.innerText);
-
-    ws.getCell(r, 1).value = idx + 1; // No
-    ws.getCell(r, 2).value = promo; // PROMO
-    ws.getCell(r, 3).value = qty; // QTY
-    ws.getCell(r, 4).value = total; // TOTAL
-
-    // Alignment & format
+    ws.getCell(r, 1).value = idx + 1;
+    ws.getCell(r, 2).value = promo;
+    ws.getCell(r, 3).value = qty;
+    ws.getCell(r, 4).value = total;
     ws.getCell(r, 1).alignment = { horizontal: "center", vertical: "middle" };
     ws.getCell(r, 2).alignment = {
       horizontal: "left",
@@ -1901,8 +1675,6 @@ async function exportToExcelModal() {
     ws.getCell(r, 3).alignment = { horizontal: "center", vertical: "middle" };
     ws.getCell(r, 4).numFmt = '"Rp" #,##0;-"Rp" #,##0;""';
     ws.getCell(r, 4).alignment = { horizontal: "right", vertical: "middle" };
-
-    // Border + zebra
     for (let c = 1; c <= 4; c++) {
       ws.getCell(r, c).border = {
         top: { style: "hair" },
@@ -1920,12 +1692,9 @@ async function exportToExcelModal() {
     ws.getRow(r).height = 20;
     r++;
   });
-
   const hasData = domRows.length > 0;
-  const firstDataRow = headerRowIdx + 1; // 5
+  const firstDataRow = headerRowIdx + 1;
   const lastDataRow = hasData ? r - 1 : firstDataRow;
-
-  // Total (SUBTOTAL agar tetap benar saat difilter)
   const totalRowIdx = lastDataRow + 1;
   ws.getCell(totalRowIdx, 2).value = "TOTAL";
   ws.getCell(totalRowIdx, 2).font = { bold: true };
@@ -1933,15 +1702,13 @@ async function exportToExcelModal() {
     horizontal: "right",
     vertical: "middle",
   };
-
   ws.getCell(totalRowIdx, 3).value = hasData
     ? { formula: `SUBTOTAL(9,C${firstDataRow}:C${lastDataRow})` }
-    : 0; // Qty
+    : 0;
   ws.getCell(totalRowIdx, 4).value = hasData
     ? { formula: `SUBTOTAL(9,D${firstDataRow}:D${lastDataRow})` }
-    : 0; // Total
+    : 0;
   ws.getCell(totalRowIdx, 4).numFmt = '"Rp" #,##0;-"Rp" #,##0;""';
-
   for (let c = 2; c <= 4; c++) {
     const cell = ws.getCell(totalRowIdx, c);
     cell.font = { ...(cell.font || {}), bold: true };
@@ -1956,8 +1723,6 @@ async function exportToExcelModal() {
       vertical: "middle",
     };
   }
-
-  // Simpan
   const buf = await wb.xlsx.writeBuffer();
   const blob = new Blob([buf], {
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -1970,7 +1735,6 @@ async function exportToExcelModal() {
     .replace(/[:T]/g, "-")}.xlsx`;
   a.click();
 }
-
 async function exportToExcelModalPenjualan() {
   const cabangEl = document.getElementById("cabang");
   const cabangText = cabangEl?.options[cabangEl.selectedIndex]?.text || "-";
@@ -1978,7 +1742,6 @@ async function exportToExcelModalPenjualan() {
   const rows = Array.from(
     document.querySelectorAll("#salesTablePenjualan tbody tr")
   );
-
   const toNumber = (v) => {
     if (v == null) return 0;
     const s = String(v)
@@ -1988,7 +1751,6 @@ async function exportToExcelModalPenjualan() {
     const n = parseFloat(s);
     return Number.isFinite(n) ? n : 0;
   };
-
   const wb = new ExcelJS.Workbook();
   const ws = wb.addWorksheet("Data Penjualan", {
     views: [{ state: "frozen", ySplit: 4 }],
@@ -1999,33 +1761,26 @@ async function exportToExcelModalPenjualan() {
       fitToHeight: 0,
     },
   });
-
-  // Lebar kolom (A untuk margin)
-  ws.getColumn(1).width = 2; // A (margin)
-  ws.getColumn(2).width = 6; // B No
-  ws.getColumn(3).width = 20; // C Barcode
-  ws.getColumn(4).width = 45; // D Nama
-  ws.getColumn(5).width = 10; // E Qty
-  ws.getColumn(6).width = 18; // F Total
-
-  // Judul & subjudul (merge aman, isi via getCell)
+  ws.getColumn(1).width = 2;
+  ws.getColumn(2).width = 6;
+  ws.getColumn(3).width = 20;
+  ws.getColumn(4).width = 45;
+  ws.getColumn(5).width = 10;
+  ws.getColumn(6).width = 18;
   ws.mergeCells("A1:F1");
   ws.getCell("A1").value = "REKAP PENJUALAN";
   ws.getCell("A1").font = { bold: true, size: 16 };
   ws.getCell("A1").alignment = { horizontal: "center", vertical: "middle" };
-
   ws.mergeCells("A2:F2");
   ws.getCell(
     "A2"
   ).value = `Cabang: ${cabangText} • Subdept: ${kodeSupDept} • Dibuat: ${new Date().toLocaleString()}`;
   ws.getCell("A2").alignment = { horizontal: "center", vertical: "middle" };
-  ws.addRow([]); // row 3 kosong
-
-  // Header di baris 4, mulai kolom B
+  ws.addRow([]);
   const headerRowIdx = 4;
   const hdr = ws.getRow(headerRowIdx);
   ["No", "BARCODE", "NAMA BARANG", "QTY", "TOTAL"].forEach((v, i) => {
-    const cell = hdr.getCell(2 + i); // 2 = kolom B
+    const cell = hdr.getCell(2 + i);
     cell.value = v;
     cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
     cell.alignment = { horizontal: "center", vertical: "middle" };
@@ -2042,28 +1797,21 @@ async function exportToExcelModalPenjualan() {
     };
   });
   hdr.height = 22;
-
-  // Autofilter tepat di header range
   ws.autoFilter = {
     from: { row: headerRowIdx, column: 2 },
     to: { row: headerRowIdx, column: 6 },
-  }; // B4:F4
-
-  // Data mulai baris 5
+  };
   let r = headerRowIdx + 1;
   rows.forEach((tr, idx) => {
     const barcode = tr.cells[1]?.innerText?.trim() ?? "";
     const nama = tr.cells[2]?.innerText?.trim() ?? "";
     const qty = toNumber(tr.cells[3]?.innerText);
     const total = toNumber(tr.cells[4]?.innerText);
-
-    ws.getCell(r, 2).value = idx + 1; // B
-    ws.getCell(r, 3).value = barcode; // C
-    ws.getCell(r, 4).value = nama; // D
-    ws.getCell(r, 5).value = qty; // E
-    ws.getCell(r, 6).value = total; // F
-
-    // Alignment & format
+    ws.getCell(r, 2).value = idx + 1;
+    ws.getCell(r, 3).value = barcode;
+    ws.getCell(r, 4).value = nama;
+    ws.getCell(r, 5).value = qty;
+    ws.getCell(r, 6).value = total;
     ws.getCell(r, 2).alignment = { horizontal: "center", vertical: "middle" };
     ws.getCell(r, 3).alignment = { horizontal: "center", vertical: "middle" };
     ws.getCell(r, 4).alignment = {
@@ -2074,8 +1822,6 @@ async function exportToExcelModalPenjualan() {
     ws.getCell(r, 5).alignment = { horizontal: "center", vertical: "middle" };
     ws.getCell(r, 6).numFmt = '"Rp" #,##0;-"Rp" #,##0;""';
     ws.getCell(r, 6).alignment = { horizontal: "right", vertical: "middle" };
-
-    // Border & zebra
     for (let c = 2; c <= 6; c++) {
       ws.getCell(r, c).border = {
         top: { style: "hair" },
@@ -2094,20 +1840,16 @@ async function exportToExcelModalPenjualan() {
     ws.getRow(r).height = 20;
     r++;
   });
-
   const hasData = rows.length > 0;
   const firstDataRow = headerRowIdx + 1;
   const lastDataRow = hasData ? r - 1 : firstDataRow;
-
-  // Row total (aman jika data kosong)
   const totalRow = ws.getRow(lastDataRow + 1);
-  ws.getCell(totalRow.number, 4).value = "TOTAL"; // D
+  ws.getCell(totalRow.number, 4).value = "TOTAL";
   ws.getCell(totalRow.number, 4).font = { bold: true };
   ws.getCell(totalRow.number, 4).alignment = {
     horizontal: "right",
     vertical: "middle",
   };
-
   ws.getCell(totalRow.number, 5).value = hasData
     ? { formula: `SUBTOTAL(9,E${firstDataRow}:E${lastDataRow})` }
     : 0;
@@ -2115,7 +1857,6 @@ async function exportToExcelModalPenjualan() {
     ? { formula: `SUBTOTAL(9,F${firstDataRow}:F${lastDataRow})` }
     : 0;
   ws.getCell(totalRow.number, 6).numFmt = '"Rp" #,##0;-"Rp" #,##0;""';
-
   for (let c = 4; c <= 6; c++) {
     const cell = ws.getCell(totalRow.number, c);
     cell.font = { ...(cell.font || {}), bold: true };
@@ -2135,8 +1876,6 @@ async function exportToExcelModalPenjualan() {
       vertical: "middle",
     };
   }
-
-  // Simpan
   const buf = await wb.xlsx.writeBuffer();
   const blob = new Blob([buf], {
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -2149,11 +1888,9 @@ async function exportToExcelModalPenjualan() {
     .replace(/[:T]/g, "-")}.xlsx`;
   a.click();
 }
-
 async function exportPDFModalPenjualan() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF("p", "mm", "a4");
-
   const cabSel = document.getElementById("cabang");
   const cabangText = cabSel?.options[cabSel.selectedIndex]?.text || "-";
   const kodeSupDept = document.querySelector("#subdept")?.value || "-";
@@ -2162,8 +1899,6 @@ async function exportPDFModalPenjualan() {
     alert("Tabel penjualan tidak ditemukan.");
     return;
   }
-
-  // --- helpers angka & format ---
   const toNumber = (v) => {
     if (v == null) return 0;
     let s = String(v)
@@ -2179,8 +1914,6 @@ async function exportPDFModalPenjualan() {
   };
   const fmtInt = (n) => new Intl.NumberFormat("id-ID").format(+n || 0);
   const fmtRp = (n) => "Rp " + new Intl.NumberFormat("id-ID").format(+n || 0);
-
-  // --- kumpulkan data DOM ---
   const rows = [];
   let sumQty = 0,
     sumTotal = 0;
@@ -2193,17 +1926,14 @@ async function exportPDFModalPenjualan() {
     sumTotal += totN;
     rows.push([i + 1, barcode, nama, fmtInt(qtyN), fmtRp(totN)]);
   });
-
-  // --- layout konstanta ---
-  const TITLE_Y = 42; // posisi judul
-  const START_Y = 50; // awal tabel (dan margin top tiap halaman)
+  const TITLE_Y = 42;
+  const START_Y = 50;
   const nowStr = new Date().toLocaleString("id-ID");
-
   doc.autoTable({
     head: [["No", "BARCODE", "NAMA BARANG", "QTY", "TOTAL"]],
     body: rows,
     startY: START_Y,
-    margin: { top: START_Y, left: 10, right: 10, bottom: 18 }, // + bottom margin
+    margin: { top: START_Y, left: 10, right: 10, bottom: 18 },
     theme: "grid",
     styles: {
       fontSize: 8,
@@ -2227,8 +1957,6 @@ async function exportPDFModalPenjualan() {
       3: { halign: "center", cellWidth: 25 },
       4: { halign: "right", cellWidth: 35 },
     },
-
-    // ⬇️ FOOT hanya di halaman terakhir
     showFoot: "lastPage",
     foot: rows.length
       ? [["", "", "TOTAL", fmtInt(sumQty), fmtRp(sumTotal)]]
@@ -2239,13 +1967,9 @@ async function exportPDFModalPenjualan() {
       fontStyle: "bold",
       halign: "right",
     },
-
     didDrawPage(data) {
-      // logo fix
-      const logoSrc = "/images/logo.png"; // base64 lebih cepat jika tersedia
+      const logoSrc = "/images/logo.png";
       doc.addImage(logoSrc, "PNG", 13, 10, 25, 10);
-
-      // header kiri
       doc.setFont("helvetica", "bold");
       doc.setFontSize(14);
       doc.text("Asoka Baby Store", 45, 15);
@@ -2257,17 +1981,11 @@ async function exportPDFModalPenjualan() {
         20
       );
       doc.text("Telp: 0817-1712-1250", 45, 25);
-
-      // garis separator
       doc.setLineWidth(0.5);
       doc.line(10, 30, 200, 30);
-
-      // judul
       doc.setFont("helvetica", "bold");
       doc.setFontSize(12);
       doc.text("Laporan Data Penjualan", 15, TITLE_Y);
-
-      // info kanan (rapi, tidak tabrakan garis)
       doc.setFont("helvetica", "normal");
       doc.setFontSize(9);
       const pageW = doc.internal.pageSize.getWidth();
@@ -2276,8 +1994,7 @@ async function exportPDFModalPenjualan() {
         boxW = 62,
         lineH = 4.6;
       const infoLeftX = rightEdge - boxW;
-      let infoY = 36; // di atas judul, di bawah garis
-
+      let infoY = 36;
       function putInfoRow(label, value) {
         doc.setFont("helvetica", "bold");
         doc.text(label, rightEdge - valueW - 2, infoY, { align: "right" });
@@ -2291,29 +2008,23 @@ async function exportPDFModalPenjualan() {
       putInfoRow("Cabang", cabangText);
       putInfoRow("Subdept", kodeSupDept);
       putInfoRow("Dibuat", nowStr);
-
-      // footer page number
       const pageCount = doc.internal.getNumberOfPages();
       const str = `Halaman ${data.pageNumber} dari ${pageCount}`;
       doc.setFontSize(8);
       doc.text(str, 200 - doc.getTextWidth(str), 290);
     },
   });
-
   const tag = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
   doc.save(`Laporan_Penjualan_${cabangText}_${tag}.pdf`);
 }
-
 function searchTable(tableId) {
   let input = document.getElementById("searchInput").value.toLowerCase();
   let originalData =
     JSON.parse(localStorage.getItem("salesTableOriginal")) || [];
-  // Jika input kosong, reset ke data awal
   if (input === "") {
     updateTable(originalData, tableId);
     return;
   }
-
   let filteredData = originalData.filter(
     (row) =>
       (row.nama_subdept && row.nama_subdept.toLowerCase().includes(input)) ||
@@ -2322,7 +2033,6 @@ function searchTable(tableId) {
       (row.Qty && row.Qty.toString().includes(input)) ||
       (row.Total && row.Total.toString().includes(input))
   );
-
   if (filteredData.length === 0) {
     document.querySelector(`#salesTable tbody`).innerHTML = `
       <tr>
@@ -2332,25 +2042,20 @@ function searchTable(tableId) {
     return;
   }
   currentPage = 1;
-  updateTable(filteredData, tableId); // Update tabel dengan hasil pencarian
+  updateTable(filteredData, tableId);
 }
 function searchTablePromo(tableId) {
   let input = document.getElementById("searchInputPromo").value.toLowerCase();
-
   let originalData =
     JSON.parse(localStorage.getItem("salesTableOriginal")) || [];
-  // Jika input kosong, reset ke data awal
   if (input === "") {
     updateTable(originalData, tableId);
     return;
   }
-
-  // Jika input kosong, reset ke data awal
   if (input === "") {
     updateTable(originalData, tableId);
     return;
   }
-
   let filteredData = originalData.filter(
     (row) =>
       (row.nama_subdept && row.nama_subdept.toLowerCase().includes(input)) ||
@@ -2359,7 +2064,6 @@ function searchTablePromo(tableId) {
       (row.Qty && row.Qty.toString().includes(input)) ||
       (row.Total && row.Total.toString().includes(input))
   );
-
   if (filteredData.length === 0) {
     document.querySelector(`#salesTablePromo tbody`).innerHTML = `
       <tr>
@@ -2369,27 +2073,22 @@ function searchTablePromo(tableId) {
     return;
   }
   currentPage = 1;
-  updateTable(filteredData, tableId); // Update tabel dengan hasil pencarian
+  updateTable(filteredData, tableId);
 }
 function searchTablePenjualan(tableId) {
   let input = document
     .getElementById("searchInputPenjualan")
     .value.toLowerCase();
-
   let originalData =
     JSON.parse(localStorage.getItem("salesTableOriginal")) || [];
-  // Jika input kosong, reset ke data awal
   if (input === "") {
     updateTable(originalData, tableId);
     return;
   }
-
-  // Jika input kosong, reset ke data awal
   if (input === "") {
     updateTable(originalData, tableId);
     return;
   }
-
   let filteredData = originalData.filter(
     (row) =>
       (row.nama_subdept && row.nama_subdept.toLowerCase().includes(input)) ||
@@ -2398,7 +2097,6 @@ function searchTablePenjualan(tableId) {
       (row.Qty && row.Qty.toString().includes(input)) ||
       (row.Total && row.Total.toString().includes(input))
   );
-
   if (filteredData.length === 0) {
     document.querySelector(`#salesTablePenjualan tbody`).innerHTML = `
       <tr>
@@ -2408,27 +2106,22 @@ function searchTablePenjualan(tableId) {
     return;
   }
   currentPage = 1;
-  updateTable(filteredData, tableId); // Update tabel dengan hasil pencarian
+  updateTable(filteredData, tableId);
 }
 function searchTableSupplier(tableId) {
   let input = document
     .getElementById("searchInputSupplier")
     .value.toLowerCase();
-
   let originalData =
     JSON.parse(localStorage.getItem("salesTableOriginal")) || [];
-  // Jika input kosong, reset ke data awal
   if (input === "") {
     updateTable(originalData, tableId);
     return;
   }
-
-  // Jika input kosong, reset ke data awal
   if (input === "") {
     updateTable(originalData, tableId);
     return;
   }
-
   let filteredData = originalData.filter(
     (row) =>
       (row.nama_subdept && row.nama_subdept.toLowerCase().includes(input)) ||
@@ -2437,7 +2130,6 @@ function searchTableSupplier(tableId) {
       (row.Qty && row.Qty.toString().includes(input)) ||
       (row.Total && row.Total.toString().includes(input))
   );
-
   if (filteredData.length === 0) {
     document.querySelector(`#salesTableSupplier tbody`).innerHTML = `
       <tr>
@@ -2447,5 +2139,27 @@ function searchTableSupplier(tableId) {
     return;
   }
   currentPage = 1;
-  updateTable(filteredData, tableId); // Update tabel dengan hasil pencarian
+  updateTable(filteredData, tableId);
 }
+document.getElementById("btn-see-data").addEventListener("click", function (e) {
+  e.preventDefault();
+  const modal = document.getElementById("table-modal");
+  modal.classList.remove("hidden");
+  setTimeout(() => {
+    modal.classList.remove("opacity-0", "scale-95");
+    modal.classList.add("opacity-100", "scale-100");
+  }, 10);
+});
+document.getElementById("close-modal").addEventListener("click", function () {
+  const modal = document.getElementById("table-modal");
+  modal.classList.remove("opacity-100", "scale-100");
+  modal.classList.add("opacity-0", "scale-95");
+  setTimeout(() => {
+    modal.classList.add("hidden");
+  }, 500);
+});
+document.getElementById("table-modal").addEventListener("click", function (e) {
+  if (e.target === this) {
+    document.getElementById("close-modal").click();
+  }
+});
