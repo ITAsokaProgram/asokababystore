@@ -4,18 +4,13 @@ let currentPage = 1;
 let tableDataOriginal = [];
 document.getElementById("lihatTable").style.display = "none";
 document.getElementById("sendTable").style.display = "none";
-// document.getElementById("hideTable").style.display = "none";
 document.getElementById("bar").style.display = "none";
-
 let storeCode = "";
-
 $(document).ready(async function () {
   const $select = $("#cabang");
   const $kdStore = $("#kd_store");
-
   let nameToCode = {};
   let allCodes = [];
-
   async function loadCabang() {
     try {
       const token = localStorage.getItem("token");
@@ -26,19 +21,14 @@ $(document).ready(async function () {
         },
       });
       if (!res.ok) throw new Error("HTTP " + res.status);
-
       const json = await res.json();
       const rows = (json?.data || []).filter(
         (r) => r && r.nama_cabang && r.store
       );
-
       nameToCode = {};
       allCodes = [];
       $select.empty();
-
-      // Opsi default
       $select.append('<option value="ALL">Semua Cabang</option>');
-
       rows.forEach(({ nama_cabang, store }) => {
         const code = String(store).trim();
         const name = String(nama_cabang).trim();
@@ -50,45 +40,31 @@ $(document).ready(async function () {
       console.error("Gagal memuat cabang:", err);
     }
   }
-
-  // hitung kode dari pilihan lalu set ke hidden + variabel
   function applyStoreCodeFromSelection(val) {
     const code =
-      val === "ALL"
-        ? allCodes.join(",") // semua kode cabang
-        : val
-        ? nameToCode[val] || ""
-        : "";
-
-    $kdStore.val(code); // setter ke input hidden
-    storeCode = code; // simpan ke variabel string
+      val === "ALL" ? allCodes.join(",") : val ? nameToCode[val] || "" : "";
+    $kdStore.val(code);
+    storeCode = code;
   }
-
   $select.on("change", function () {
     applyStoreCodeFromSelection(this.value);
   });
-
   await loadCabang();
-
-  // Set default ke ALL (optional) lalu trigger
   if ($select.find('option[value="ALL"]').length) {
     $select.val("ALL");
   }
   $select.trigger("change");
 });
-
 document.addEventListener("DOMContentLoaded", function () {
   flatpickr("#date", {
     dateFormat: "d-m-Y",
     allowInput: true,
   });
-
   flatpickr("#date1", {
     dateFormat: "d-m-Y",
     allowInput: true,
   });
 });
-// POST Data Dari Form
 document.getElementById("laporanForm").addEventListener("submit", function (e) {
   e.preventDefault();
   const filter = $("#sort-by").val();
@@ -101,25 +77,18 @@ document.getElementById("laporanForm").addEventListener("submit", function (e) {
   document.getElementById("lihatTable").style.display = "block";
   document.getElementById("sendTable").style.display = "block";
 });
-// Select Ratio Tampilkan Input
 $(document).ready(function () {
   $("#ratio_number").on("change", function () {
     let selectedValue = parseInt($(this).val());
-
     $("[id^='kode_supp']").hide();
-    // Sembunyikan semua input dulu
     if (isNaN(selectedValue)) {
       $(".supplier-input").hide();
     }
-
-    // Tampilkan input sesuai jumlah yang dipilih
     for (let i = 1; i <= selectedValue; i++) {
       $("#kode_supp" + i).show();
     }
   });
 });
-
-// Menampilkan Data Pada Klik Input
 $(document).on("click", ".supplier-input", function () {
   let inputField = $(this);
   if (!inputField.data("loaded")) {
@@ -127,12 +96,9 @@ $(document).on("click", ".supplier-input", function () {
       url: `/src/api/get_kode_supp?kode=${storeCode}`,
       type: "GET",
       success: function (response) {
-        // Ubah format jadi array hanya berisi kode_supp
         let dataSuplier = response.map((item) => item.kode_supp.trim());
-
         inputField.data("loaded", true);
         inputField.data("suppliers", dataSuplier);
-
         showSuggestions(inputField, dataSuplier);
       },
       error: function () {
@@ -143,28 +109,20 @@ $(document).on("click", ".supplier-input", function () {
     showSuggestions(inputField, inputField.data("suppliers"));
   }
 });
-
-// Pencarian Data Lewat Input Ketik
 $(document).on("input", ".supplier-input", function () {
   let inputField = $(this);
   let keyword = inputField.val().toLowerCase();
   let allSuppliers = inputField.data("suppliers") || [];
-
   let filteredSuppliers = allSuppliers.filter((supplier) =>
     supplier.toLowerCase().includes(keyword)
   );
-
   showSuggestions(inputField, filteredSuppliers);
 });
-
-// Memunculkan Data Pada Input Untuk Di Pilih
 function showSuggestions(inputField, suppliers) {
-  $(".suggestion-box").remove(); // Hapus dropdown lama
-
+  $(".suggestion-box").remove();
   let suggestionBox = $("<div>").addClass(
     "absolute bg-white border border-gray-300 w-full max-h-40 overflow-y-auto z-50 shadow-md rounded-md suggestion-box"
   );
-
   if (!Array.isArray(suppliers) || suppliers.length === 0) {
     $("<div>")
       .addClass("px-4 py-2 text-gray-500 text-center italic")
@@ -184,8 +142,6 @@ function showSuggestions(inputField, suppliers) {
         .appendTo(suggestionBox);
     });
   }
-
-  // 🔥 Posisikan dropdown di bawah input tanpa mengubah layout asli
   let inputOffset = inputField.offset();
   suggestionBox.css({
     position: "absolute",
@@ -197,26 +153,19 @@ function showSuggestions(inputField, suppliers) {
     border: "1px solid #ddd",
     boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
   });
-
   $("body").append(suggestionBox);
 }
-
 $(document).on("click", function (e) {
   if (!$(e.target).closest(".supplier-input, .suggestion-box").length) {
-    $(".suggestion-box").remove(); // Tutup dropdown jika klik di luar
+    $(".suggestion-box").remove();
   }
 });
-
-//  Saat klik tombol "Cek Data", simpan input ke dalam select
 $("#btn-submit").on("click", function () {
   $("#supplierDropdown").empty();
   updateSupplierDropdown();
 });
-
-//  Fungsi untuk update dropdown supplier
 function updateSupplierDropdown() {
   let supplierDropdown = $("#supplierDropdown");
-
   $(".supplier-input").each(function () {
     let value = $(this).val().trim();
     if (value !== "" && !isOptionExists(value)) {
@@ -224,8 +173,6 @@ function updateSupplierDropdown() {
     }
   });
 }
-
-// Cek apakah opsi sudah ada di dropdown
 function isOptionExists(value) {
   return (
     $("#supplierDropdown option").filter(function () {
@@ -233,14 +180,12 @@ function isOptionExists(value) {
     }).length > 0
   );
 }
-
 document.getElementById("sendTable").addEventListener("click", function (e) {
   e.preventDefault();
   const filter = $("#sort-by").val();
   currentPage = 1;
   sendKodeSupp1(currentPage, filter);
 });
-
 function sendKodeSupp1(page, filter) {
   const Toast = Swal.mixin({
     toast: true,
@@ -252,7 +197,6 @@ function sendKodeSupp1(page, filter) {
       toast.onmouseleave = Swal.resumeTimer;
     },
   });
-  // document.getElementById("hideTable").style.display = "block";
   var barChart = echarts.init(document.getElementById("barDiagram"));
   setTimeout(() => {
     barChart.resize();
@@ -261,7 +205,7 @@ function sendKodeSupp1(page, filter) {
     document.getElementById("cabang").options[
       document.getElementById("cabang").selectedIndex
     ].text;
-  var startDate = $("#date").val(); // Ambil nilai langsung dari datepicker
+  var startDate = $("#date").val();
   var endDate = $("#date1").val();
   var reportHeader = document.getElementById("reportHeader1");
   var kodeSupp = $("#supplierDropdown").val();
@@ -281,8 +225,6 @@ function sendKodeSupp1(page, filter) {
   formDataToTable.append("end_date", document.querySelector("#date1")?.value);
   formDataToTable.append("page", page);
   formDataToTable.append("filter", filter);
-  // for (var pair of formDataToTable.entries()) {
-  // }
   $.ajax({
     url: `/src/api/ratio/in_sales_ratio_proses_table?filter=${filter}`,
     method: "POST",
@@ -298,6 +240,11 @@ function sendKodeSupp1(page, filter) {
           JSON.stringify(response.tableData)
         );
         updateTable1(response.tableData, "tableKode1");
+        const modal = $("#table-modal");
+        modal.removeClass("hidden").addClass("flex");
+        setTimeout(() => {
+          modal.removeClass("opacity-0 scale-95");
+        }, 50);
         Toast.fire({
           icon: "success",
           title: "Berhasil, Tabel Sudah Muncul",
@@ -326,8 +273,6 @@ function sendKodeSupp1(page, filter) {
 }
 function sendDataToBar(filter) {
   var selectRatio = document.querySelector("#ratio_number").value;
-
-  // Validasi client-side sudah benar
   if (selectRatio === "none") {
     Swal.fire({
       icon: "warning",
@@ -348,24 +293,18 @@ function sendDataToBar(filter) {
     });
     document.getElementById("barDiagram").style.display = "block";
   }
-
   let formData = new FormData();
   var barChart = echarts.init(document.getElementById("barDiagram"));
   setTimeout(() => {
     barChart.resize();
   }, 300);
   resetBarChart();
-
   formData.append("ajax", true);
   formData.append(
     "csrf_token",
     document.querySelector("[name='csrf_token']").value
   );
-
-  // --- TAMBAHKAN BARIS INI ---
   formData.append("ratio", selectRatio);
-  // ---------------------------
-
   formData.append("kode_supp1", document.querySelector("#kode_supp1")?.value);
   formData.append("kode_supp2", document.querySelector("#kode_supp2")?.value);
   formData.append("kode_supp3", document.querySelector("#kode_supp3")?.value);
@@ -375,7 +314,6 @@ function sendDataToBar(filter) {
   formData.append("start_date", document.querySelector("#date")?.value);
   formData.append("end_date", document.querySelector("#date1")?.value);
   formData.append("filter", filter);
-
   $.ajax({
     url: `/src/api/ratio/in_sales_ratio_proses_bar?filter=${filter}`,
     method: "POST",
@@ -418,11 +356,8 @@ function shadeColor(color, percent) {
       .slice(1)
   );
 }
-// Update Tampilan Bar Chart Sesuai Data
 function updateBarChart(table, sortBy) {
   if (!table) return;
-
-  // Sort berdasarkan Qty atau Total
   let sortedTable = [...table];
   if (sortBy === "Qty") {
     sortedTable.sort((a, b) => b.Qty - a.Qty);
@@ -433,14 +368,10 @@ function updateBarChart(table, sortBy) {
       return numB - numA;
     });
   }
-
-  // Ambil label dan data hasil sort
   const labels = sortedTable.map((item) => item.kode_supp);
   const data = sortedTable.map((item) =>
     sortBy === "Qty" ? item.Qty : item.Total || 0
   );
-
-  // Persiapkan data untuk chart
   const newData = sortedTable.map((item, index) => ({
     kode_supp: labels[index],
     Qty: Number(data[index]),
@@ -449,17 +380,13 @@ function updateBarChart(table, sortBy) {
     percent: item.persentase_rp,
     precentage: item.Percentage,
   }));
-
-  // Sort berdasarkan tanggal
   newData.sort((a, b) => {
     let [dayA, monthA] = a.tanggal.split("-").map(Number);
     let [dayB, monthB] = b.tanggal.split("-").map(Number);
     return monthA !== monthB ? monthA - monthB : dayA - dayB;
   });
-
   const tanggal = [...new Set(newData.map((item) => item.tanggal))];
   const kods = [...new Set(newData.map((item) => item.kode_supp))];
-
   const colorPalette = [
     "#ff5733",
     "#33ff57",
@@ -476,7 +403,6 @@ function updateBarChart(table, sortBy) {
   kods.forEach(
     (kd, i) => (colorMap[kd] = colorPalette[i % colorPalette.length])
   );
-
   const seriesData = kods.map((kd, index) => ({
     name: kd,
     type: "bar",
@@ -496,8 +422,8 @@ function updateBarChart(table, sortBy) {
         {
           offset: 0,
           color: shadeColor(colorPalette[index % colorPalette.length], 0.2),
-        }, // Top (lighter)
-        { offset: 1, color: colorPalette[index % colorPalette.length] }, // Bottom (base color)
+        },
+        { offset: 1, color: colorPalette[index % colorPalette.length] },
       ]),
     },
     label: {
@@ -509,12 +435,11 @@ function updateBarChart(table, sortBy) {
       color: "#f2eded",
       fontSize: 14,
       formatter: function (params) {
-        const persen = params.data.persen; // Access persen value
-        return `${persen}%`; // Display persen as a percentage
+        const persen = params.data.persen;
+        return `${persen}%`;
       },
     },
   }));
-
   const barChart = echarts.init(document.getElementById("barDiagram"));
   const optionBarCharts = {
     grid: {
@@ -573,68 +498,50 @@ function updateBarChart(table, sortBy) {
     series: seriesData,
     barCategoryGap: "10%",
   };
-
   barChart.setOption(optionBarCharts, true);
   window.addEventListener("resize", () => barChart.resize());
 }
-
 document.getElementById("sort-by").addEventListener("change", function () {
   const sortBy = this.value;
   const tableData = JSON.parse(localStorage.getItem("ratioChart"));
   if (!tableData) return;
   updateBarChart(tableData, sortBy);
 });
-// Clear Tampilan Bar Chart
 function resetBarChart() {
   var barChart = echarts.init(document.getElementById("barDiagram"));
   barChart.clear();
   barChart.resize();
 }
-
-// Format Tanggal Rentang 1 Bulan
 function formatDate(date) {
-  if (!date) return ""; // Jika tanggal kosong, kembalikan string kosong
-
+  if (!date) return "";
   var d = new Date(date);
   if (isNaN(d.getTime())) {
-    return date; // Jika tidak valid, kembalikan nilai asli untuk debugging
+    return date;
   }
-
   var day = d.getDate().toString().padStart(2, "0");
   var month = (d.getMonth() + 1).toString().padStart(2, "0");
   var year = d.getFullYear();
-
-  return `${day}-${month}-${year}`; // Format yang benar untuk laporan
+  return `${day}-${month}-${year}`;
 }
-// Mengatur Kondisi Input Dalam Kondisi Rentang 1 Bulan
 var startDateInput = document.getElementById("date");
 var endDateInput = document.getElementById("date1");
-// Get today's date
 if (startDateInput && endDateInput) {
   var today = new Date();
-  // Set tanggal awal ke 30 hari sebelumnya
   var startDate = new Date();
   startDate.setDate(today.getDate() - 30);
-
-  // Set tanggal akhir ke 1 hari sebelumnya
   var endDate = new Date();
   endDate.setDate(today.getDate() - 1);
-
-  // Atur nilai input
   startDateInput.value = formatDate(startDate);
   endDateInput.value = formatDate(endDate);
 } else {
   console.error("Elemen input tanggal tidak ditemukan di DOM!");
 }
-
 function updateTable1(data, tableID) {
   if (tableDataOriginal.length === 0) {
-    tableDataOriginal = [...data]; // Simpan salinan data asli
+    tableDataOriginal = [...data];
   }
   var tableBody = document.querySelector(`#${tableID} tbody`);
-
-  tableBody.innerHTML = ""; // 🔄 Reset tabel sebelum update
-
+  tableBody.innerHTML = "";
   if (!Array.isArray(data) || data.length === 0) {
     var newRow = tableBody.insertRow();
     var cell = newRow.insertCell(0);
@@ -643,16 +550,14 @@ function updateTable1(data, tableID) {
     cell.style.textAlign = "center";
     return;
   }
-
   data.forEach((row, index) => {
     var newRow = tableBody.insertRow();
     var cell0 = newRow.insertCell(0);
     var cell1 = newRow.insertCell(1);
     var cell2 = newRow.insertCell(2);
     var cell3 = newRow.insertCell(3);
-    newRow.className = "hover:bg-blue-50 transition-all duration-200 shadow-sm"; // Tailwind untuk tampilan lebih rapi
-
-    cell0.textContent = index + 1; // 🔹 Nomor urut berlanjut
+    newRow.className = "hover:bg-blue-50 transition-all duration-200 shadow-sm";
+    cell0.textContent = index + 1;
     cell1.textContent = row.promo;
     cell2.textContent = parseInt(row.Qty) || 0;
     cell3.textContent = new Intl.NumberFormat("id-ID", {
@@ -662,22 +567,18 @@ function updateTable1(data, tableID) {
     cell2.classList.add("text-center");
   });
 }
-
 async function exportToExcel() {
   const table = document.getElementById("tableKode1");
   const cabangEl = document.getElementById("cabang");
   const cabangText = cabangEl
     ? cabangEl.options[cabangEl.selectedIndex]?.text || "-"
     : "-";
-
-  // --- Supplier: ambil TEXT dari option yang terseleksi ---
   const supplierEl = document.getElementById("supplierDropdown");
   const supplierText = supplierEl
     ? supplierEl.options?.[supplierEl.selectedIndex]?.text ??
       String(supplierEl.value ?? "-")
     : "-";
-  const supplierValue = supplierEl ? supplierEl.value ?? "-" : "-"; // kalau butuh juga valuenya
-
+  const supplierValue = supplierEl ? supplierEl.value ?? "-" : "-";
   if (!table) {
     alert("Tabel tidak ditemukan.");
     return;
@@ -687,7 +588,6 @@ async function exportToExcel() {
     alert("Tidak ada data dalam tabel untuk diekspor!");
     return;
   }
-
   const toNumber = (val) => {
     if (val == null) return 0;
     const raw = String(val)
@@ -697,8 +597,6 @@ async function exportToExcel() {
     const n = Number(raw);
     return Number.isFinite(n) ? n : 0;
   };
-
-  // Ambil data tabel
   const rows = [];
   let no = 1;
   tbody.querySelectorAll("tr").forEach((tr) => {
@@ -714,14 +612,11 @@ async function exportToExcel() {
     alert("Tidak ada baris data valid untuk diekspor.");
     return;
   }
-
-  // Workbook
   const wb = new ExcelJS.Workbook();
   wb.creator = "Asoka Baby Store";
   wb.lastModifiedBy = "Asoka Baby Store";
   wb.created = new Date();
   wb.modified = new Date();
-
   const ws = wb.addWorksheet("Data Penjualan", {
     properties: { tabColor: { argb: "FF1D4ED8" } },
     pageSetup: {
@@ -741,12 +636,9 @@ async function exportToExcel() {
     },
     headerFooter: {
       oddHeader: `&LAsoka Baby Store&CRekap Penjualan&R&F`,
-      // --- ganti Subdept -> Supplier ---
       oddFooter: `&L${new Date().toLocaleString()}&C&P / &N&R${cabangText} | Supplier ${supplierText}`,
     },
   });
-
-  // Title & meta
   ws.mergeCells("A1:D1");
   ws.mergeCells("A2:D2");
   ws.getCell("A1").value = "ASOKA BABY STORE";
@@ -756,14 +648,12 @@ async function exportToExcel() {
   ws.getCell("A2").font = { bold: true, size: 13 };
   ws.getCell("A2").alignment = { horizontal: "center" };
   ws.getCell("A3").value = `Cabang: ${cabangText}`;
-  // --- ganti baris informasi Supplier ---
   ws.getCell("A4").value = `Supplier: ${supplierText}${
     supplierValue && supplierValue !== supplierText
       ? " (" + supplierValue + ")"
       : ""
   }`;
   ws.getCell("C3").value = `Tanggal Export: ${new Date().toLocaleString()}`;
-
   const tableStartRow = 6;
   ws.addTable({
     name: "TabelPenjualan",
@@ -779,24 +669,19 @@ async function exportToExcel() {
     ],
     rows,
   });
-
   ws.columns = [
     { key: "no", width: 6 },
     { key: "nama", width: 44 },
     { key: "qty", width: 12 },
     { key: "total", width: 18 },
   ];
-
   ["A3", "A4", "C3"].forEach((addr) => {
     const cell = ws.getCell(addr);
     cell.font = { size: 10, color: { argb: "FF111827" } };
   });
-
   ws.views = [{ state: "frozen", xSplit: 0, ySplit: tableStartRow }];
-
   const lastDataRow = tableStartRow + rows.length;
   const lastRowWithTotals = lastDataRow + 1;
-
   for (let r = tableStartRow; r <= lastRowWithTotals; r++) {
     for (let c = 1; c <= 4; c++) {
       const cell = ws.getCell(r, c);
@@ -814,14 +699,12 @@ async function exportToExcel() {
       };
     }
   }
-
   for (let r = tableStartRow + 1; r <= lastDataRow; r++) {
     ws.getCell(r, 3).numFmt = "#,##0";
     ws.getCell(r, 4).numFmt = '"Rp" #,##0';
   }
   ws.getCell(lastRowWithTotals, 3).numFmt = "#,##0";
   ws.getCell(lastRowWithTotals, 4).numFmt = '"Rp" #,##0';
-
   for (let c = 1; c <= 4; c++) {
     const headerCell = ws.getCell(tableStartRow, c);
     headerCell.font = { bold: true, color: { argb: "FFFFFFFF" } };
@@ -833,50 +716,38 @@ async function exportToExcel() {
     headerCell.alignment = { horizontal: "center", vertical: "middle" };
   }
   ws.getRow(lastRowWithTotals).font = { bold: true };
-
   const buffer = await wb.xlsx.writeBuffer();
   const blob = new Blob([buffer], {
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   });
-
-  // --- nama file pakai Supplier (text) ---
   const fileName = `Rekap_Penjualan_${cabangText}_Supplier_${supplierText}_${new Date()
     .toISOString()
     .slice(0, 10)}.xlsx`;
-
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
   link.download = fileName;
   link.click();
   URL.revokeObjectURL(link.href);
 }
-
 async function exportToPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF("p", "mm", "a4");
-
-  // --- Ambil cabang & supplier (pakai TEXT yang terlihat user) ---
   const cabangEl = document.getElementById("cabang");
   const cabangText = cabangEl
     ? cabangEl.options[cabangEl.selectedIndex]?.text || "-"
     : "-";
-
   const supplierEl = document.getElementById("supplierDropdown");
   const supplierText = supplierEl
     ? supplierEl.options?.[supplierEl.selectedIndex]?.text ??
       String(supplierEl.value ?? "-")
     : "-";
-
-  // --- Ambil data tabel ---
   const table = document.getElementById("tableKode1");
   if (!table) {
     alert("Tabel tidak ditemukan.");
     return;
   }
-
   const toNumber = (s) => {
     if (!s) return 0;
-    // buang semua selain digit, tanda minus, titik/koma
     const raw = String(s)
       .replace(/[^\d,.-]/g, "")
       .replace(/\./g, "")
@@ -885,7 +756,6 @@ async function exportToPDF() {
     return Number.isFinite(n) ? n : 0;
   };
   const rp = (n) => "Rp " + Math.round(n).toLocaleString("id-ID");
-
   const body = [];
   let grandTotal = 0;
   const rows = table.querySelectorAll("tbody tr");
@@ -893,7 +763,6 @@ async function exportToPDF() {
     alert("Tidak ada data dalam tabel untuk diekspor!");
     return;
   }
-
   rows.forEach((tr, i) => {
     const tds = tr.querySelectorAll("td");
     if (tds.length < 4) return;
@@ -902,20 +771,12 @@ async function exportToPDF() {
     const totalStr = (tds[3].textContent || "").trim();
     const totalNum = toNumber(totalStr);
     grandTotal += totalNum;
-
-    body.push([
-      i + 1,
-      nama,
-      qty,
-      rp(totalNum), // pastikan format konsisten
-    ]);
+    body.push([i + 1, nama, qty, rp(totalNum)]);
   });
   if (!body.length) {
     alert("Tidak ada baris data valid untuk diekspor.");
     return;
   }
-
-  // --- Header/Footer per halaman ---
   const totalPagesExp = "{total_pages_count_string}";
   const marginLeft = 15,
     marginRight = 12,
@@ -934,7 +795,6 @@ async function exportToPDF() {
     }
   }
   const logoDataUrl = await urlToDataURL("/images/logo.png");
-
   doc.autoTable({
     head: [["No", "NAMA BARANG", "QTY", "TOTAL"]],
     body,
@@ -951,7 +811,7 @@ async function exportToPDF() {
       valign: "middle",
     },
     headStyles: {
-      fillColor: [29, 78, 216], // #1D4ED8
+      fillColor: [29, 78, 216],
       textColor: [255, 255, 255],
       fontStyle: "bold",
       halign: "center",
@@ -959,13 +819,12 @@ async function exportToPDF() {
     alternateRowStyles: { fillColor: [245, 247, 250] },
     bodyStyles: { textColor: [10, 10, 10] },
     columnStyles: {
-      0: { cellWidth: 10, halign: "center" }, // No
-      1: { cellWidth: 110, halign: "left" }, // Nama
-      2: { cellWidth: 20, halign: "center" }, // QTY
-      3: { cellWidth: 46, halign: "right" }, // TOTAL
+      0: { cellWidth: 10, halign: "center" },
+      1: { cellWidth: 110, halign: "left" },
+      2: { cellWidth: 20, halign: "center" },
+      3: { cellWidth: 46, halign: "right" },
     },
     margin: { top: 55, left: marginLeft, right: marginRight, bottom: 18 },
-    // Foot (grand total)
     foot: [
       [
         {
@@ -980,18 +839,16 @@ async function exportToPDF() {
       ],
     ],
     footStyles: {
-      fillColor: [229, 231, 235], // abu-abu muda
+      fillColor: [229, 231, 235],
       textColor: [0, 0, 0],
       lineColor: [220, 223, 230],
       lineWidth: 0.1,
     },
     didDrawPage: (data) => {
-      // Header
       doc.addImage(logoDataUrl, "PNG", 13, 10, 25, 10);
       doc.setFont("helvetica", "bold");
       doc.setFontSize(12);
       doc.text("Asoka Baby Store", marginLeft + 26, 15);
-
       doc.setFont("helvetica", "normal");
       doc.setFontSize(9);
       doc.text(
@@ -1000,17 +857,12 @@ async function exportToPDF() {
         20
       );
       doc.text("Telp: 0819-4943-1969", marginLeft + 26, 25);
-
-      // Garis pemisah header
       doc.setLineWidth(0.5);
       doc.setDrawColor(180, 188, 196);
       doc.line(marginLeft, 30, 210 - marginRight, 30);
-
-      // Judul + meta
       doc.setFont("helvetica", "bold");
       doc.setFontSize(13);
       doc.text("LAPORAN DATA PENJUALAN", marginLeft, 40);
-
       doc.setFont("helvetica", "normal");
       doc.setFontSize(9);
       doc.text(`Cabang : ${cabangText}`, marginLeft, 48);
@@ -1021,33 +873,25 @@ async function exportToPDF() {
         48,
         { align: "right" }
       );
-
-      // Footer (page X / Y)
       const pageStr = `Halaman ${data.pageNumber} / ${totalPagesExp}`;
       doc.setFontSize(8);
       doc.setTextColor(100);
       doc.text(pageStr, 210 - marginRight, 297 - 8, { align: "right" });
     },
   });
-
-  // replace token total pages
   if (typeof doc.putTotalPages === "function") {
     doc.putTotalPages(totalPagesExp);
   }
-
-  // Nama file rapi
   const ymd = new Date().toISOString().slice(0, 10);
   const filename = `Rekap_Penjualan_${cabangText}_Supplier_${supplierText}_${ymd}.pdf`;
   doc.save(filename);
 }
-
 function searchTable() {
   let input = document.getElementById("searchInput").value.toLowerCase();
   let dataTemp = JSON.parse(localStorage.getItem("dataTemporary"));
-  // Jika input kosong, tampilkan kembali data awal
   if (input.trim() === "") {
     currentPage = 1;
-    updateTable1(dataTemp, "tableKode1"); // Kembali ke data awal
+    updateTable1(dataTemp, "tableKode1");
     return;
   }
   let filteredData = dataTemp.filter(
@@ -1058,7 +902,6 @@ function searchTable() {
       (row.Qty && row.Qty.toString().includes(input)) ||
       (row.Total && row.Total.toString().includes(input))
   );
-
   if (filteredData.length === 0) {
     document.querySelector(`#tableKode1 tbody`).innerHTML = `
       <tr>
@@ -1068,5 +911,17 @@ function searchTable() {
     return;
   }
   currentPage = 1;
-  updateTable1(filteredData, "tableKode1"); // Update tabel dengan hasil pencarian
+  updateTable1(filteredData, "tableKode1");
 }
+$("#close-modal").on("click", function () {
+  const modal = $("#table-modal");
+  modal.addClass("opacity-0 scale-95");
+  setTimeout(() => {
+    modal.addClass("hidden").removeClass("flex");
+  }, 500);
+});
+$("#table-modal").on("click", function (e) {
+  if (e.target === this) {
+    $("#close-modal").click();
+  }
+});

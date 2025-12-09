@@ -229,7 +229,7 @@ if (!$menuHandler->initialize()) {
         </form>
         <!-- Modal -->
         <div id="table-modal" tabindex="-1"
-            class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center transition-all ease-in duration-500 opacity-0 scale-95 mt-10">
+            class="fixed inset-y-0 right-0 left-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center transition-all ease-in duration-500 opacity-0 scale-95 z-50">
             <div class="relative p-4 w-full max-w-7xl h-[88vh] transform transition-all ease-in duration-1000 scale-95">
                 <!-- Modal content -->
                 <div class="modal-glass overflow-hidden">
