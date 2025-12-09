@@ -3,7 +3,7 @@ session_start();
 include '../../../aa_kon_sett.php';
 
 $tgl_selesai = date('Y-m-d');
-$tgl_mulai = date('Y-m-d', strtotime('-1 month'));
+$tgl_mulai = date('Y-m-d', strtotime('-1 day'));
 $page = (int) ($_GET['page'] ?? 1);
 
 require_once __DIR__ . '/../../component/menu_handler.php';

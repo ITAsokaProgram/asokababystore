@@ -16,7 +16,7 @@ $response = [
 ];
 
 try {
-    $tgl_mulai = $_GET['tgl_mulai'] ?? date('Y-m-d', strtotime('-1 month'));
+    $tgl_mulai = $_GET['tgl_mulai'] ?? date('Y-m-d', strtotime('-1 day'));
     $tgl_selesai = $_GET['tgl_selesai'] ?? date('Y-m-d');
     $search_faktur = $_GET['search'] ?? '';
     // Tambahan filter store
