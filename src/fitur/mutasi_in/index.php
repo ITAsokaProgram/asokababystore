@@ -238,7 +238,6 @@ if (!$menuHandler->initialize()) {
     <script src="../../js/mutasi_in/index_handler.js" type="module"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
-    <script src="../../js/shared/internal/sidebar-profile.js" defer></script>
 </body>
 
 </html>

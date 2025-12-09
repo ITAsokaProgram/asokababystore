@@ -67,7 +67,7 @@ $isPajakOpen = $isActive('/src/fitur/coretax/');
         class="absolute top-2 right-4 text-gray-600 hover:text-gray-800 text-2xl font-bold transition-colors duration-200 hover:scale-110">&times;</button>
     <nav class="text-sm mt-20 space-y-2 flex-1 overflow-y-auto">
 
-        <a href="/in_beranda" id="berandaLink" data-menu="dashboard"
+        <a href="/in_beranda" id="berandaLink" data-menu="dashboard" data-title="Beranda"
             class="group flex items-center py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-blue-100 hover:to-blue-200 hover:text-blue-700 hover:shadow-lg transition-all duration-300  border border-transparent hover:border-blue-300">
             <div class="w-8 flex justify-center">
                 <i
@@ -86,8 +86,8 @@ $isPajakOpen = $isActive('/src/fitur/coretax/');
             <span class="sidebar-text ml-3 font-medium transition-all duration-300 group-hover:translate-x-1">WhatsApp
                 CS</span>
         </a>
-        <div x-data="{ open: false }" class="relative ">
-            <button @click="open = !open" id="shopeeLink"
+        <div x-data="{ open: false }" class="relative " @reset-menu.window="open = false">
+            <button @click="open = !open" id="shopeeLink" data-title="Shopee"
                 class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-orange-100 hover:to-red-200 hover:text-orange-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-orange-300">
                 <div class="w-8 flex justify-center">
                     <i
@@ -164,8 +164,9 @@ $isPajakOpen = $isActive('/src/fitur/coretax/');
                 nestedOpenTransaksi: <?= $isTransaksiOpen ? 'true' : 'false' ?>, 
                 nestedOpenKoreksi: <?= $isKoreksiOpen ? 'true' : 'false' ?>, 
                 nestedOpenKoreksiSO: false 
-            }" class="relative ">
-            <button @click="open = !open" id="laporan"
+            }" class="relative "
+            @reset-menu.window="open = false; nestedOpenPenjualan = false; nestedOpenPelanggan = false; nestedOpenReceipt = false; nestedOpenReturn = false; nestedOpenMutasi = false; nestedOpenTransaksi = false; nestedOpenKoreksi = false; nestedOpenKoreksiSO = false">
+            <button @click="open = !open" id="laporan" data-title="Laporan"
                 class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-purple-100 hover:to-purple-200 hover:text-purple-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-purple-300">
                 <div class="w-8 flex justify-center">
                     <i
@@ -657,7 +658,7 @@ $isPajakOpen = $isActive('/src/fitur/coretax/');
         </div>
 
         <div x-data="{ open: false, nestedOpenMember: false, nestedOpenMember: false }" class="relative ">
-            <button @click="open = !open" id="member"
+            <button @click="open = !open" id="member" data-title="Member"
                 class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-teal-100 hover:to-teal-200 hover:text-teal-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-teal-300">
                 <div class="w-8 flex justify-center">
                     <i
@@ -719,7 +720,7 @@ $isPajakOpen = $isActive('/src/fitur/coretax/');
 
         <?php if ($isSuperAdmin): // HANYA TAMPIL JIKA SUPERADMIN ?>
             <div x-data="{ open: false, nestedOpenAccount: false }" class="relative ">
-                <button @click="open = !open" id="account"
+                <button @click="open = !open" id="account" data-title="Akun"
                     class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-indigo-100 hover:to-indigo-200 hover:text-indigo-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-indigo-300">
                     <div class="w-8 flex justify-center">
                         <i
@@ -765,7 +766,7 @@ $isPajakOpen = $isActive('/src/fitur/coretax/');
         <?php endif; ?>
 
         <div class="relative ">
-            <a href="/src/fitur/products/product" id="productLink" data-menu="products"
+            <a href="/src/fitur/products/product" id="productLink" data-menu="products" data-title="Produk"
                 class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-cyan-100 hover:to-cyan-200 hover:text-cyan-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-cyan-300">
                 <div class="w-8 flex justify-center">
                     <i
@@ -777,7 +778,7 @@ $isPajakOpen = $isActive('/src/fitur/coretax/');
         </div>
 
         <div class="relative ">
-            <a href="/src/fitur/aset/history_aset" id="productLink" data-menu="history_aset"
+            <a href="/src/fitur/aset/history_aset" id="productLink" data-menu="history_aset" data-title="Aset"
                 class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-cyan-100 hover:to-cyan-200 hover:text-cyan-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-cyan-300">
                 <div class="w-8 flex justify-center">
                     <i
@@ -790,7 +791,7 @@ $isPajakOpen = $isActive('/src/fitur/coretax/');
         </div>
 
         <div x-data="{ open: false }" class="relative ">
-            <button @click="open = !open" id="upload-menu" data-menu="upload_banner"
+            <button @click="open = !open" id="upload-menu" data-menu="upload_banner" data-title="Upload"
                 class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-cyan-100 hover:to-cyan-200 hover:text-cyan-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-cyan-300">
                 <div class="w-8 flex justify-center">
                     <i
@@ -829,8 +830,9 @@ $isPajakOpen = $isActive('/src/fitur/coretax/');
                 nestedOpenReceipt: <?= $isReceiptToolOpen ? 'true' : 'false' ?>,
                 nestedOpenReturn: <?= $isReturnToolOpen ? 'true' : 'false' ?>,
                 nestedOpenKoreksi: <?= $isKoreksiToolOpen ? 'true' : 'false' ?>
-            }" class="relative ">
-            <button @click="open = !open" id="tools"
+            }" class="relative "
+            @reset-menu.window="open = false; nestedOpenJadwalSO = false; nestedOpenVoucher = false; nestedOpenReceipt = false; nestedOpenReturn = false; nestedOpenKoreksi = false">
+            <button @click="open = !open" id="tools" data-title="Alat"
                 class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-cyan-100 hover:to-cyan-200 hover:text-cyan-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-cyan-300">
                 <div class="w-8 flex justify-center">
                     <i
@@ -1114,8 +1116,9 @@ $isPajakOpen = $isActive('/src/fitur/coretax/');
                 nestedOpenMasukan: <?= $isMasukanOpen ? 'true' : 'false' ?>, 
                 nestedOpenFaktur: <?= $isFakturOpen ? 'true' : 'false' ?>,
                 nestedOpenLainnya: <?= $isLainnyaOpen ? 'true' : 'false' ?>
-            }" class="relative">
-            <button @click="open = !open" id="pajakLink"
+            }" class="relative"
+            @reset-menu.window="open = false; nestedOpenPembelian = false; nestedOpenPengeluaran = false; nestedOpenMasukan = false; nestedOpenFaktur = false; nestedOpenLainnya = false">
+            <button @click="open = !open" id="pajakLink" data-title="Pajak"
                 class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-slate-100 hover:to-slate-200 hover:text-slate-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-slate-300">
                 <div class="w-8 flex justify-center">
                     <i
@@ -1351,174 +1354,398 @@ $isPajakOpen = $isActive('/src/fitur/coretax/');
         </div>
     </nav>
 </div>
+
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        const currentPath = window.location.pathname;
-        let activeId = null;
+        // === ELEMENT REFERENCES ===
+        const profileImg = document.getElementById("profile-img");
+        const profileCard = document.getElementById("profile-card");
+        const sidebarTexts = document.querySelectorAll(".sidebar-text");
+        const mainContent = document.getElementById("main-content");
+        const sidebar = document.getElementById("sidebar");
+        const toggleButton = document.getElementById("toggle-hide");
+        const toggleSidebarBtn = document.getElementById("toggle-sidebar"); // Tombol Hamburger Mobile
+        const closeBtn = document.getElementById("closeSidebar"); // Tombol X Mobile
 
-        // --- 1. LOGIKA UNTUK MENU UTAMA (PARENT) ---
-        // Ini menentukan mana menu besar yang terbuka (Pajak, Laporan, Tools, dll)
-        if (currentPath.includes('/in_beranda')) {
-            activeId = 'berandaLink';
-        } else if (
-            currentPath.includes('/src/fitur/laporan/') ||
-            currentPath.includes('/src/fitur/top_sales/') ||
-            currentPath.includes('/src/fitur/penerimaan_receipt/') ||
-            currentPath.includes('/src/fitur/return_out/') ||
-            currentPath.includes('/src/fitur/mutasi_in/') ||
-            currentPath.includes('/src/fitur/log_backup/') ||
-            currentPath.includes('/src/fitur/transaction/') ||
-            currentPath.includes('/src/fitur/koreksi_stok/') ||
-            currentPath.includes('/src/fitur/koreksi_so/')
-        ) {
-            activeId = 'laporan';
-            if (currentPath.includes('/src/fitur/transaction/')) activeId = 'transaction';
-        } else if (currentPath.includes('/src/fitur/account/')) {
-            activeId = 'account';
-        } else if (currentPath.includes('/src/fitur/member/')) {
-            activeId = 'member';
-        } else if (currentPath.includes('/src/fitur/banner/')) {
-            activeId = 'upload-menu';
-        } else if (currentPath.includes('/src/fitur/shopee/')) {
-            activeId = 'shopeeLink';
-        } else if (currentPath.includes('/src/fitur/whatsapp_cs/')) {
-            activeId = 'whatsappLink';
-        } else if (
-            currentPath.includes('/src/fitur/approval/izin') ||
-            currentPath.includes('/src/fitur/laporan/jadwal_so/') ||
-            currentPath.includes('/src/fitur/voucher/') ||
-            currentPath.includes('/src/fitur/receipt/') ||
-            currentPath.includes('/src/fitur/return/') ||
-            currentPath.includes('/src/fitur/koreksi/') ||
-            currentPath.includes('/src/fitur/uang_brangkas/') // Include Uang Brankas di script juga
-        ) {
-            activeId = 'tools';
-        } else if (currentPath.includes('/src/fitur/coretax/')) {
-            activeId = 'pajakLink';
-        }
+        // === STATE VARIABLES ===
+        let isAnimating = false;
+        let hoverTimeout = null;
 
-        // Terapkan style ke Menu Utama
-        if (activeId) {
-            const element = document.getElementById(activeId);
-            if (element) {
-                element.classList.add('btn', 'active');
+        // === HELPER FUNCTIONS ===
 
-                // Scroll menu utama agar terlihat jika layar kecil
-                setTimeout(() => {
-                    element.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'center',
-                        inline: 'nearest'
-                    });
-                }, 300);
+        // Cek apakah mode mobile aktif
+        const isMobile = () => window.innerWidth <= 768;
+
+        // Reset semua floating menu (Hanya untuk Desktop)
+        function closeAllFloatingMenus() {
+            document.querySelectorAll('.floating-submenu').forEach(submenu => {
+                submenu.style.display = '';
+                submenu.style.position = '';
+                submenu.classList.remove('floating-submenu');
+            });
+            if (hoverTimeout) {
+                clearTimeout(hoverTimeout);
+                hoverTimeout = null;
             }
         }
 
-        // --- 2. LOGIKA UNTUK CHILD LINK & SUB MENU (Spesifik) ---
-        // Mencari link <a> yang href-nya SAMA PERSIS dengan URL saat ini
+        function expandSidebar() {
+            if (isAnimating) return;
+            isAnimating = true;
+            closeAllFloatingMenus();
+
+            sidebar.classList.remove("w-16", "px-2", "collapsed");
+            sidebar.classList.add("w-64", "px-5");
+
+            setTimeout(() => {
+                sidebarTexts.forEach((text) => text.classList.remove("hidden"));
+            }, 100);
+
+            if (mainContent) {
+                mainContent.classList.remove("ml-16");
+                mainContent.classList.add("ml-64");
+            }
+
+            if (toggleButton) {
+                toggleButton.classList.add("left-64");
+                toggleButton.classList.remove("left-20");
+                const icon = toggleButton.querySelector("i");
+                if (icon) {
+                    icon.classList.remove("fa-angle-right");
+                    icon.classList.add("fa-angle-left");
+                }
+            }
+
+            setTimeout(() => { isAnimating = false; }, 300);
+        }
+
+        function collapseSidebar() {
+            if (isMobile()) return; // Jangan pernah collapse style desktop di HP
+
+            if (isAnimating) return;
+            isAnimating = true;
+
+            // Reset Alpine Data hanya di Desktop
+            window.dispatchEvent(new CustomEvent('reset-menu'));
+            closeAllFloatingMenus();
+
+            sidebar.classList.remove("w-64", "px-5");
+            sidebar.classList.add("w-16", "px-2", "collapsed");
+            sidebarTexts.forEach((text) => text.classList.add("hidden"));
+
+            if (mainContent) {
+                mainContent.classList.remove("ml-64");
+                mainContent.classList.add("ml-16");
+            }
+
+            if (toggleButton) {
+                toggleButton.classList.add("left-20");
+                toggleButton.classList.remove("left-64");
+                const icon = toggleButton.querySelector("i");
+                if (icon) {
+                    icon.classList.remove("fa-angle-left");
+                    icon.classList.add("fa-angle-right");
+                }
+            }
+
+            setTimeout(() => { isAnimating = false; }, 300);
+        }
+
+        // === EVENT LISTENERS ===
+
+        // 1. Tombol Toggle Desktop (Panah Kecil)
+        if (toggleButton) {
+            toggleButton.addEventListener("click", function (e) {
+                e.preventDefault();
+                // e.stopPropagation();
+                if (sidebar.classList.contains("w-64")) {
+                    collapseSidebar();
+                } else {
+                    expandSidebar();
+                }
+            });
+        }
+
+        // 2. Tombol Hamburger Mobile
+        if (toggleSidebarBtn) {
+            toggleSidebarBtn.addEventListener("click", function (e) {
+                e.stopPropagation(); // Cegah event bubbling
+                sidebar.classList.toggle("open");
+                // Pastikan sidebar dalam mode 'expand' secara internal (teks muncul)
+                expandSidebar();
+            });
+        }
+
+        // 3. Tombol Close Mobile (X)
+        if (closeBtn) {
+            closeBtn.addEventListener("click", function () {
+                sidebar.classList.remove("open");
+            });
+        }
+
+        // 4. Profile Card
+        if (profileImg) {
+            profileImg.addEventListener("click", function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                profileCard.classList.toggle("show");
+            });
+        }
+        document.addEventListener("click", function (e) {
+            if (profileCard && !profileCard.contains(e.target) && !profileImg.contains(e.target)) {
+                profileCard.classList.remove("show");
+            }
+        });
+
+        // === LOGIKA MENU ITEM (INTI PERBAIKAN) ===
+        const menuButtons = document.querySelectorAll('#sidebar button[\\@click*="open"]');
+
+        menuButtons.forEach((button) => {
+            const parentContainer = button.closest('.relative');
+            const submenu = button.nextElementSibling;
+
+            // A. LOGIKA KLIK
+            button.addEventListener("click", function (e) {
+                if (isMobile()) {
+                    // DI HP: Biarkan Alpine.js bekerja natural.
+                    // Jangan panggil preventDefault() kecuali diperlukan.
+                    // Pastikan tidak ada event luar yang menutupnya.
+                    e.stopPropagation();
+                    return;
+                }
+
+                // DI DESKTOP (COLLAPSED): Expand dulu baru buka menu
+                if (sidebar.classList.contains("collapsed")) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    expandSidebar();
+                    setTimeout(() => {
+                        if (parentContainer && typeof Alpine !== 'undefined') {
+                            Alpine.$data(parentContainer).open = true;
+                        }
+                    }, 300);
+                }
+            });
+
+            // B. LOGIKA HOVER (HANYA DESKTOP)
+            button.addEventListener("mouseenter", function () {
+                if (isMobile() || isAnimating || !sidebar.classList.contains("collapsed")) return;
+
+                if (hoverTimeout) clearTimeout(hoverTimeout);
+
+                hoverTimeout = setTimeout(() => {
+                    if (!submenu) return;
+                    if (!sidebar.classList.contains("collapsed")) return;
+
+                    submenu.classList.add("floating-submenu");
+                    const rect = button.getBoundingClientRect();
+                    submenu.style.position = "fixed";
+                    submenu.style.left = (rect.right + 10) + "px";
+                    submenu.style.top = rect.top + "px";
+                    submenu.style.display = "block";
+                    submenu.style.zIndex = "9999";
+                }, 150);
+            });
+
+            // C. LOGIKA MOUSE LEAVE (HANYA DESKTOP & HANYA JIKA FLOATING)
+            const handleMouseLeave = function (e) {
+                if (isMobile()) return; // PROTEKSI UTAMA: Jangan jalankan di HP
+
+                // Jika user pindah ke submenu-nya sendiri, biarkan
+                if (e.relatedTarget && submenu && submenu.contains(e.relatedTarget)) return;
+
+                // Batalkan timer jika belum muncul
+                if (hoverTimeout) {
+                    clearTimeout(hoverTimeout);
+                    hoverTimeout = null;
+                }
+
+                // Hanya tutup jika itu adalah 'floating submenu' (bukan accordion biasa)
+                if (submenu && submenu.classList.contains('floating-submenu')) {
+                    setTimeout(() => {
+                        if (!submenu.matches(':hover')) {
+                            submenu.style.display = "none";
+                            submenu.classList.remove("floating-submenu");
+                        }
+                    }, 100);
+                }
+            };
+
+            button.addEventListener("mouseleave", handleMouseLeave);
+            if (submenu) {
+                submenu.addEventListener("mouseleave", handleMouseLeave);
+            }
+        });
+
+        // === INITIALIZATION ===
+        function initSidebar() {
+            if (isMobile()) {
+                // Mode HP: Pastikan struktur kelas siap untuk accordion
+                sidebar.classList.remove("w-16", "px-2", "collapsed");
+                sidebar.classList.add("w-64", "px-5");
+                sidebarTexts.forEach(text => text.classList.remove("hidden"));
+
+                // Pastikan sidebar tertutup saat load
+                sidebar.classList.remove("open");
+            } else {
+                // Mode Desktop: Default Collapsed
+                expandSidebar();
+            }
+        }
+
+        initSidebar();
+
+        // Handle Resize Window
+        window.addEventListener('resize', function () {
+            // Reset logika jika berpindah dari desktop ke mobile atau sebaliknya
+            closeAllFloatingMenus();
+            if (isMobile()) {
+                sidebar.classList.remove("collapsed");
+                sidebar.classList.add("w-64");
+                sidebarTexts.forEach(text => text.classList.remove("hidden"));
+            }
+        });
+
+        // Active Menu Highlighting
+        const currentPath = window.location.pathname;
         const allLinks = document.querySelectorAll('#sidebar nav a');
-
         allLinks.forEach(link => {
-            // Ambil href dari link
             const linkHref = link.getAttribute('href');
-
-            // Cek apakah URL browser mengandung href link ini (untuk handle query string) 
-            // atau sama persis
             if (linkHref && currentPath.includes(linkHref) && linkHref !== '#') {
-
-                // A. Indikasi Menu Child (misal: Laporan Faktur)
-                // Tambahkan class .btn.active agar jadi Pink + Border
                 link.classList.add('btn', 'active');
-
-                // B. Indikasi Sub-Menu Parent (misal: tombol Faktur Pajak)
-                // Kita mencari elemen tombol pembungkus (Accordion button) di atasnya
-                // Struktur: Button -> Div (x-show) -> Ul -> Li -> A (link ini)
-
-                // Cari Div pembungkus terdekat
                 const parentDiv = link.closest('div[x-show]');
                 if (parentDiv) {
-                    // Elemen sebelum div pembungkus biasanya adalah Tombol Sub-Menu
                     const subMenuButton = parentDiv.previousElementSibling;
-
                     if (subMenuButton && subMenuButton.tagName === 'BUTTON') {
-                        // Beri warna pink pada teks tombol Sub-Menu
                         subMenuButton.classList.add('submenu-active');
-
-                        // Opsional: Ganti icon di dalam tombol jadi solid/pink juga
-                        const icon = subMenuButton.querySelector('i');
-                        if (icon) {
-                            icon.classList.remove('text-slate-500', 'text-gray-700');
-                            icon.classList.add('text-pink-600');
-                        }
                     }
                 }
             }
         });
     });
 </script>
+
 <style>
+    /* Sidebar Transitions */
+    .sidebar {
+        transition: width 0.3s ease-in-out, padding 0.3s ease-in-out, transform 0.3s ease-in-out;
+    }
+
+    /* Scrollbar Customization */
     #sidebar nav::-webkit-scrollbar {
-        width: 8px;
+        width: 6px;
     }
 
     #sidebar nav::-webkit-scrollbar-track {
-        background-color: #f8fafc;
-        border-radius: 8px;
+        background-color: #f1f5f9;
     }
 
     #sidebar nav::-webkit-scrollbar-thumb {
-        background-image: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);
-        border-radius: 8px;
-        transition: all 0.2s ease-in-out;
+        background-color: #cbd5e1;
+        border-radius: 10px;
     }
 
-    #sidebar nav::-webkit-scrollbar-thumb:hover {
-        filter: brightness(115%);
-        box-shadow: 0 0 10px rgba(236, 72, 153, 0.5);
+    /* Floating Submenu (Desktop Only) */
+    .floating-submenu {
+        position: fixed !important;
+        display: block !important;
+        min-width: 200px;
+        background-color: white;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        border-radius: 0.5rem;
+        border: 1px solid #e2e8f0;
+        padding: 0.5rem;
+        z-index: 9999 !important;
+        animation: fadeInMenu 0.15s ease-out;
     }
 
-    .group:hover i {
-        animation: iconBounce 0.6s ease-in-out;
-    }
-
-    @keyframes iconBounce {
-
-        0%,
-        20%,
-        50%,
-        80%,
-        100% {
-            transform: translateY(0) scale(1);
-        }
-
-        40% {
-            transform: translateY(-3px) scale(1.1);
-        }
-
-        60% {
-            transform: translateY(-1px) scale(1.05);
-        }
-    }
-
-    /* Active state for icons */
-    .group.active i {
-        color: #ec4899 !important;
-        text-shadow: 0 0 8px rgba(236, 72, 153, 0.3);
-        animation: iconGlow 2s ease-in-out infinite alternate;
-    }
-
-    @keyframes iconGlow {
+    @keyframes fadeInMenu {
         from {
-            text-shadow: 0 0 8px rgba(236, 72, 153, 0.3);
+            opacity: 0;
+            transform: translateX(-5px);
         }
 
         to {
-            text-shadow: 0 0 12px rgba(236, 72, 153, 0.6);
+            opacity: 1;
+            transform: translateX(0);
         }
     }
 
-    /* Hover effects for submenu icons */
-    .group:hover i[class*="fa-"] {
-        filter: drop-shadow(0 2px 4px rgba(236, 72, 153, 0.2));
+    /* Sembunyikan item saat collapsed (Desktop) */
+    #sidebar.collapsed [x-show] {
+        display: none !important;
+    }
+
+    #sidebar.collapsed .sidebar-text {
+        display: none !important;
+    }
+
+    #sidebar.collapsed svg.ml-auto {
+        display: none !important;
+    }
+
+    #sidebar.collapsed .group {
+        justify-content: center;
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    #sidebar.collapsed .w-8 {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
+    /* === MOBILE FIXES (Viewport HP) === */
+    @media (max-width: 768px) {
+        #sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            z-index: 50;
+            /* Default state di HP: Tersembunyi ke kiri & Lebar Penuh */
+            width: 16rem !important;
+            /* w-64 equivalent */
+            transform: translateX(-100%);
+            box-shadow: none;
+        }
+
+        /* Kelas untuk membuka sidebar di HP */
+        #sidebar.open {
+            transform: translateX(0);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Paksa teks selalu muncul di HP (override collapsed class logic) */
+        .sidebar-text {
+            display: block !important;
+        }
+
+        #sidebar svg.ml-auto {
+            display: block !important;
+        }
+
+        /* Reset alignment icon di HP */
+        #sidebar .group {
+            justify-content: flex-start !important;
+            padding-left: 1rem !important;
+        }
+
+        #sidebar .w-8 {
+            width: 2rem !important;
+            justify-content: center !important;
+        }
+
+        /* Matikan Floating Submenu di HP (PENTING) */
+        .floating-submenu {
+            position: static !important;
+            box-shadow: none !important;
+            border: none !important;
+            padding: 0 !important;
+            display: none;
+            /* Biarkan Alpine yang handle display block/none */
+        }
+
     }
 </style>

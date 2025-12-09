@@ -270,7 +270,6 @@ $token = $menuHandler->getToken();
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="../../js/middleware_auth.js"></script>
-    <script src="../../js/ui/navbar_toogle.js" type="module"></script>
     <script>
         // Enhanced Drag & Drop Upload Multiple
         const dropArea = document.getElementById('drop-area');

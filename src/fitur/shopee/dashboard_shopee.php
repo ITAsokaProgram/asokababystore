@@ -1,7 +1,7 @@
 <?php
 session_start();
 include '../../../aa_kon_sett.php';
-require_once __DIR__ . '/lib/ShopeeApiService.php'; 
+require_once __DIR__ . '/lib/ShopeeApiService.php';
 
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
@@ -11,21 +11,21 @@ $shopeeService = new ShopeeApiService();
 $redirect_uri = "https://" . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'];
 
 if (isset($_GET['code']) && isset($_GET['shop_id'])) {
-    $shopeeService->handleOAuthCallback($_GET['code'], (int)$_GET['shop_id']);
-    header('Location: ' . strtok($redirect_uri, '?'));
-    exit();
+  $shopeeService->handleOAuthCallback($_GET['code'], (int) $_GET['shop_id']);
+  header('Location: ' . strtok($redirect_uri, '?'));
+  exit();
 }
 
 if (isset($_GET['action']) && $_GET['action'] == 'disconnect') {
-    $shopeeService->disconnect();
-    header('Location: ' . strtok($redirect_uri, '?'));
-    exit();
+  $shopeeService->disconnect();
+  header('Location: ' . strtok($redirect_uri, '?'));
+  exit();
 }
 
 require_once __DIR__ . '/../../component/menu_handler.php';
 $menuHandler = new MenuHandler('shopee_dashboard');
 if (!$menuHandler->initialize()) {
-    exit();
+  exit();
 }
 
 $detailed_products = [];
@@ -34,40 +34,46 @@ $auth_url = null;
 
 if ($shopeeService->isConnected()) {
   $product_list_response = $shopeeService->getProductList(['offset' => 0, 'page_size' => 20, 'item_status' => 'NORMAL']);
-    
-    if (isset($product_list_response['error']) && 
-        ($product_list_response['error'] === 'invalid_acceess_token' || $product_list_response['error'] === 'invalid_access_token')) {
-        
-        $shopeeService->disconnect();
-        
-        $_SESSION['shopee_flash_message'] = 'Sesi Shopee Anda telah habis (expired). Silakan hubungkan kembali.';
-        
-        header('Location: ' . strtok($redirect_uri, '?'));
-        exit();
-    }
+
+  if (
+    isset($product_list_response['error']) &&
+    ($product_list_response['error'] === 'invalid_acceess_token' || $product_list_response['error'] === 'invalid_access_token')
+  ) {
+
+    $shopeeService->disconnect();
+
+    $_SESSION['shopee_flash_message'] = 'Sesi Shopee Anda telah habis (expired). Silakan hubungkan kembali.';
+
+    header('Location: ' . strtok($redirect_uri, '?'));
+    exit();
+  }
 
   $detailed_products = $shopeeService->getDetailedProductInfo($product_list_response);
 } else {
   $auth_url = $shopeeService->getAuthUrl($redirect_uri);
 }
 
-function getPriceRange($models) {
-    if (empty($models)) return null;
-    $prices = array_column(array_column($models, 'price_info'), 0);
-    $original_prices = array_column($prices, 'original_price');
-    if (empty($original_prices)) return null;
-    
-    $minPrice = min($original_prices);
-    $maxPrice = max($original_prices);
-    
-    return ($minPrice == $maxPrice)
-        ? number_format($minPrice, 0, ',', '.')
-        : number_format($minPrice, 0, ',', '.') . ' - ' . number_format($maxPrice, 0, ',', '.');
+function getPriceRange($models)
+{
+  if (empty($models))
+    return null;
+  $prices = array_column(array_column($models, 'price_info'), 0);
+  $original_prices = array_column($prices, 'original_price');
+  if (empty($original_prices))
+    return null;
+
+  $minPrice = min($original_prices);
+  $maxPrice = max($original_prices);
+
+  return ($minPrice == $maxPrice)
+    ? number_format($minPrice, 0, ',', '.')
+    : number_format($minPrice, 0, ',', '.') . ' - ' . number_format($maxPrice, 0, ',', '.');
 }
 ?>
 
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -83,7 +89,7 @@ function getPriceRange($models) {
   <link rel="stylesheet" href="../../style/shopee/shopee.css">
   <link rel="icon" type="image/png" href="../../../public/images/logo1.png">
   <style>
-   
+
   </style>
 </head>
 
@@ -91,11 +97,11 @@ function getPriceRange($models) {
 
   <?php include '../../component/navigation_report.php' ?>
   <?php include '../../component/sidebar_report.php' ?>
-  
+
   <main id="main-content" class="flex-1 p-6 ml-64">
     <section class="min-h-[85vh] px-2 md:px-6">
       <div class="w-full max-w-7xl mx-auto">
-        
+
         <div class="header-card p-6 rounded-2xl mb-6">
           <div class="flex items-center justify-between flex-wrap gap-4">
             <div class="flex items-center gap-4">
@@ -107,9 +113,10 @@ function getPriceRange($models) {
                 <p class="text-sm text-gray-600">Dashboard</p>
               </div>
             </div>
-            
+
             <?php if ($shopeeService->isConnected()): ?>
-              <a href="?action=disconnect" class="inline-flex items-center gap-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold py-3 px-6 rounded-xl transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+              <a href="?action=disconnect"
+                class="inline-flex items-center gap-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold py-3 px-6 rounded-xl transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
                 <i class="fas fa-unlink"></i>
                 <span>Disconnect</span>
               </a>
@@ -123,24 +130,7 @@ function getPriceRange($models) {
 
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-  <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const profileImg = document.getElementById("profile-img");
-        const profileCard = document.getElementById("profile-card");
 
-        if (profileImg && profileCard) {
-          profileImg.addEventListener("click", function (event) {
-            event.preventDefault();
-            profileCard.classList.toggle("show");
-          });
-
-          document.addEventListener("click", function (event) {
-            if (!profileCard.contains(event.target) && !profileImg.contains(event.target)) {
-              profileCard.classList.remove("show");
-            }
-          });
-        }
-    });
-  </script>
 </body>
+
 </html>

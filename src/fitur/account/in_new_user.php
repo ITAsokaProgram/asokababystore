@@ -535,7 +535,6 @@ $token = $menuHandler->getToken();
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="../../js/middleware_auth.js"></script>
   <script src="../../js/account/internal/insert.js" type="module"></script>
-  <script src="../../js/ui/navbar_toogle.js" type="module"></script>
   <script type="module">
     import {
       kodeCabang

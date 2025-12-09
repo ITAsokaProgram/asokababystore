@@ -552,99 +552,19 @@ class EventHandlers {
    */
   _bindSidebarHandlers() {
     // Toggle sidebar
-    const toggleSidebar = document.getElementById("toggle-sidebar");
-    if (toggleSidebar) {
-      toggleSidebar.addEventListener("click", () => {
-        const sidebar = document.getElementById("sidebar");
-        if (sidebar) {
-          sidebar.classList.toggle("open");
-        }
-      });
-    }
-
-    // Close sidebar
-    const closeSidebar = document.getElementById("closeSidebar");
-    if (closeSidebar) {
-      closeSidebar.addEventListener("click", () => {
-        const sidebar = document.getElementById("sidebar");
-        if (sidebar) {
-          sidebar.classList.remove("open");
-        }
-      });
-    }
-
-    // Toggle hide sidebar
-    const toggleHide = document.getElementById("toggle-hide");
-    if (toggleHide) {
-      toggleHide.addEventListener("click", () => {
-        this._handleSidebarToggle();
-      });
-    }
   }
 
   /**
    * Handle sidebar toggle
    * @private
    */
-  _handleSidebarToggle() {
-    const sidebarTexts = document.querySelectorAll(".sidebar-text");
-    const mainContent = document.getElementById("main-content");
-    const sidebar = document.getElementById("sidebar");
-    const toggleButton = document.getElementById("toggle-hide");
-    const icon = toggleButton?.querySelector("i");
-
-    if (!sidebar || !mainContent || !toggleButton || !icon) return;
-
-    if (sidebar.classList.contains("w-64")) {
-      // Sidebar mengecil
-      sidebar.classList.remove("w-64", "px-5");
-      sidebar.classList.add("w-16", "px-2");
-      sidebarTexts.forEach((text) => text.classList.add("hidden"));
-      mainContent.classList.remove("ml-64");
-      mainContent.classList.add("ml-16");
-      toggleButton.classList.add("left-20");
-      toggleButton.classList.remove("left-64");
-      icon.classList.remove("fa-angle-left");
-      icon.classList.add("fa-angle-right");
-    } else {
-      // Sidebar membesar
-      sidebar.classList.remove("w-16", "px-2");
-      sidebar.classList.add("w-64", "px-5");
-      sidebarTexts.forEach((text) => text.classList.remove("hidden"));
-      mainContent.classList.remove("ml-16");
-      mainContent.classList.add("ml-64");
-      toggleButton.classList.add("left-64");
-      toggleButton.classList.remove("left-20");
-      icon.classList.remove("fa-angle-right");
-      icon.classList.add("fa-angle-left");
-    }
-  }
+  _handleSidebarToggle() {}
 
   /**
    * Bind profile handlers (existing functionality)
    * @private
    */
-  _bindProfileHandlers() {
-    const profileImg = document.getElementById("profile-img");
-    const profileCard = document.getElementById("profile-card");
-
-    if (profileImg && profileCard) {
-      profileImg.addEventListener("click", (event) => {
-        event.preventDefault();
-        profileCard.classList.toggle("show");
-      });
-
-      // Close profile card when clicking outside
-      document.addEventListener("click", (event) => {
-        if (
-          !profileCard.contains(event.target) &&
-          !profileImg.contains(event.target)
-        ) {
-          profileCard.classList.remove("show");
-        }
-      });
-    }
-  }
+  _bindProfileHandlers() {}
 }
 
 // Create singleton instance

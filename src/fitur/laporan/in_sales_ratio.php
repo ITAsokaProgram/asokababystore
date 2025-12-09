@@ -297,25 +297,7 @@ if (!$menuHandler->initialize()) {
     <!-- <script src="../../js/report/sales_ratio/main.js" type="module"></script> -->
     <script src="../../js/middleware_auth.js"></script>
 
-    <script>
-        document.getElementById("sendTable").addEventListener("click", function () {
-            const modal = document.getElementById("table-modal");
-            modal.classList.remove("hidden");
-            setTimeout(() => {
-                modal.classList.remove("opacity-0", "scale-95");
-                modal.classList.add("opacity-100", "scale-100");
-            }, 10); // Tambahkan sedikit delay agar animasi berjalan
-        });
 
-        document.getElementById("close-modal").addEventListener("click", function () {
-            const modal = document.getElementById("table-modal");
-            modal.classList.remove("opacity-100", "scale-100");
-            modal.classList.add("opacity-0", "scale-95");
-            setTimeout(() => {
-                modal.classList.add("hidden");
-            }, 500);
-        });
-    </script>
 </body>
 
 </html>

@@ -1,47 +1,123 @@
+/* Existing styles */
 .sidebar a {
-   transition: all 0.3s ease-in-out;
+  transition: all 0.3s ease-in-out;
 }
 
 .sidebar a:hover {
-   background-color: rgba(255, 255, 255, 0.1);
-   padding-left: 1rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  padding-left: 1rem;
 }
 
 .sidebar {
-   transition: transform 0.3s ease-in-out;
-   width: 15.5rem;
-   position: fixed;
-   height: 100vh;
-   left: 0;
-   top: 0;
-   padding: 0.8rem;
-   border-radius: 2rem;
+  transition: transform 0.3s ease-in-out;
+  width: 15.5rem;
+  position: fixed;
+  height: 100vh;
+  left: 0;
+  top: 0;
+  padding: 0.8rem;
+  border-radius: 2rem;
 }
 
+/* ===== FLOATING SUBMENU SAAT COLLAPSED ===== */
+@media (min-width: 769px) {
+  #sidebar.collapsed [x-show] {
+    display: none !important;
+  }
+}
+/* Floating submenu styling */
+.floating-submenu {
+  position: fixed !important;
+  display: block !important;
+  min-width: 200px !important;
+  max-width: 280px !important;
+  margin-left: 0 !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+  animation: slideInFromLeft 0.2s ease-out;
+}
 
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Tooltip untuk menu collapsed */
+#sidebar.collapsed nav a,
+#sidebar.collapsed nav button {
+  position: relative;
+}
+
+#sidebar.collapsed nav a:hover::after,
+#sidebar.collapsed nav button:hover::after {
+  content: attr(data-title);
+  position: fixed;
+  left: 80px;
+  background: linear-gradient(90deg, #ec4899 0%, #f43f5e 100%);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 8px;
+  white-space: nowrap;
+  z-index: 9999;
+  font-size: 0.875rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Sembunyikan text dan arrow saat collapsed (Hanya di Desktop) */
+#sidebar.collapsed .sidebar-text,
+#sidebar.collapsed svg {
+  display: none !important;
+}
+
+/* Icon harus tetap centered saat collapsed */
+#sidebar.collapsed .w-8 {
+  width: 100%;
+  justify-content: center;
+}
+
+/* ===== PERBAIKAN DI BAGIAN MOBILE ===== */
 @media (max-width: 768px) {
   #sidebar {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%; /* Lebar penuh */
-    height: auto; /* Tinggi menyesuaikan */
-    background-color: white; /* Sesuaikan warna */
-    z-index: 50; /* Pastikan di atas elemen lain */
+    width: 100%;
+    height: 100vh;
+    background-color: white;
+    z-index: 50;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transform: translateY(-100%);
+    transform: translateX(-100%);
     transition: transform 0.3s ease;
-  }
-   /* Saat sidebar ditambahkan class .open, tampilkan kembali */
-   #sidebar.open {
-     transform: translateX(0);
-   }
-   #main-content {
-     margin-left: 0; /* saat sidebar tertutup, main memenuhi layar */
-     transition: margin-left 0.3s ease;
-   }
 
-   /* Styling tombol close (X) */
+    /* PENTING: Tambahkan ini agar sidebar bisa discroll jika menu panjang */
+    overflow-y: auto !important;
+    scrollbar-width: none; /* Opsional: sembunyikan scrollbar */
+  }
+
+  #sidebar.open {
+    transform: translateX(0);
+  }
+
+  #main-content {
+    margin-left: 0;
+    transition: margin-left 0.3s ease;
+  }
+
   #closeSidebar {
     background: none;
     border: none;
@@ -53,4 +129,54 @@
   #closeSidebar:hover {
     color: red;
   }
- }
+
+  /* Pada mobile, floating submenu tidak perlu */
+  .floating-submenu {
+    /* 1. Kembalikan ke aliran dokumen biasa (bukan mengambang) */
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+
+    /* 2. Reset Ukuran: Hapus batasan lebar desktop */
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: none !important; /* Ini yg sering bikin masalah (280px desktop) */
+
+    /* 3. Matikan efek visual desktop */
+    box-shadow: none !important;
+    animation: none !important; /* Matikan animasi slideIn karena bikin glitch di HP */
+    transform: none !important;
+
+    /* 4. Styling agar rapi menjorok ke dalam */
+    margin-left: 0 !important;
+    padding-left: 1.5rem !important; /* Indentasi submenu */
+    background-color: transparent !important; /* Sesuaikan dgn bg sidebar mobile */
+  }
+
+  /* --- FIX START: Paksa Text Muncul di Mobile --- */
+
+  /* Meskipun ada class .collapsed, paksa text dan panah tetap muncul di mobile */
+  #sidebar.collapsed .sidebar-text,
+  #sidebar.collapsed svg {
+    display: inline-block !important;
+  }
+
+  /* Reset icon alignment */
+  #sidebar.collapsed .w-8 {
+    width: 2rem !important;
+    justify-content: flex-start !important;
+  }
+
+  /* Reset lebar sidebar mobile */
+  #sidebar.collapsed {
+    width: 100% !important;
+    padding: 0.8rem !important; /* Samakan paddingnya */
+  }
+
+  /* Matikan tooltip desktop di mobile */
+  #sidebar.collapsed nav a:hover::after,
+  #sidebar.collapsed nav button:hover::after {
+    display: none !important;
+  }
+  /* --- FIX END --- */
+}

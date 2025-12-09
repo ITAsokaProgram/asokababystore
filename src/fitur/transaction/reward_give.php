@@ -566,7 +566,6 @@ $token = $menuHandler->getToken();
 
     </main>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <script src="../../js/ui/navbar_toogle.js" type="module"></script>
     <script src="../../js/rewards/init.js" type="module"></script>
     <script>
         // Initialize GSAP animations

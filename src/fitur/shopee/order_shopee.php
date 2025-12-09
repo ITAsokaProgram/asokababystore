@@ -381,25 +381,7 @@ if ($shopeeService->isConnected()) {
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const profileImg = document.getElementById("profile-img");
-            const profileCard = document.getElementById("profile-card");
-
-            if (profileImg && profileCard) {
-                profileImg.addEventListener("click", function (event) {
-                    event.preventDefault();
-                    profileCard.classList.toggle("show");
-                });
-
-                document.addEventListener("click", function (event) {
-                    if (!profileCard.contains(event.target) && !profileImg.contains(event.target)) {
-                        profileCard.classList.remove("show");
-                    }
-                });
-            }
-        });
-    </script>
+    
     <script>
         const allOrdersData = <?php echo json_encode($order_details_list ?? []); ?>;
 

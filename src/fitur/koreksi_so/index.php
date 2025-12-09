@@ -246,7 +246,6 @@ if (!$menuHandler->initialize()) {
 
     <script src="/src/js/middleware_auth.js"></script>
     <script src="../../js/koreksi_so/handler.js" type="module"></script>
-    <script src="../../js/shared/internal/sidebar-profile.js" defer></script>
 </body>
 
 </html>

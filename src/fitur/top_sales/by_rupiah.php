@@ -220,7 +220,6 @@ if (!$menuHandler->initialize()) {
 
     <script src="/src/js/middleware_auth.js"></script>
     <script src="../../js/top_sales/by_rupiah_handler.js" type="module"></script>
-    <script src="../../js/shared/internal/sidebar-profile.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

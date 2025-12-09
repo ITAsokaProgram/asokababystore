@@ -1,4 +1,3 @@
-in transaction
 <?php
 include '../../../aa_kon_sett.php';
 

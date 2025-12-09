@@ -190,7 +190,6 @@ if ($is_filter_applied) {
             <?php endif; ?>
         </div>
     </main>
-    <script src="../../js/ui/navbar_toogle.js" type="module"></script>
     <script src="../../js/member/manage_handler.js" type="module"></script>
 </body>
 
