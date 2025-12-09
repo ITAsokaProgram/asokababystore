@@ -94,6 +94,13 @@ if (!$menuHandler->initialize()) {
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                         <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Pilih Cabang <span
+                                    class="text-red-500">*</span></label>
+                            <select name="kode_store" id="kode_store_input" class="input-modern w-full" required>
+                                <option value="">-- Pilih Cabang --</option>
+                            </select>
+                        </div>
+                        <div>
                             <label class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Return <span
                                     class="text-red-500">*</span></label>
                             <input type="date" name="tgl_return" id="tgl_return" class="input-modern w-full" required

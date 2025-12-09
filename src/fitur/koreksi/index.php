@@ -61,6 +61,12 @@ if (!$menuHandler->initialize()) {
                 <div class="filter-card-simple mb-4">
                     <form id="filter-form" class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
                         <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-2">Pilih Cabang</label>
+                            <select name="kode_store" id="kode_store_filter" class="input-modern w-full cursor-pointer">
+                                <option value="">Semua Cabang</option>
+                            </select>
+                        </div>
+                        <div>
                             <label class="block text-xs font-semibold text-gray-700 mb-2">Dari Tanggal</label>
                             <input type="date" name="tgl_mulai" id="tgl_mulai" class="input-modern w-full"
                                 value="<?= $tgl_mulai ?>">
@@ -75,9 +81,9 @@ if (!$menuHandler->initialize()) {
                             <input type="text" name="search" id="search" class="input-modern w-full"
                                 placeholder="Ketik nomor faktur...">
                         </div>
-                        <div>
+                        <div class="md:col-span-4 flex justify-end">
                             <button type="submit" id="filter-submit-button"
-                                class="btn-primary w-full inline-flex items-center justify-center gap-2">
+                                class="btn-primary w-full md:w-auto inline-flex items-center justify-center gap-2 px-6">
                                 <i class="fas fa-filter"></i>
                                 <span>Tampilkan</span>
                             </button>
@@ -93,6 +99,7 @@ if (!$menuHandler->initialize()) {
                                 <tr>
                                     <th>No</th>
                                     <th>Tanggal Koreksi</th>
+                                    <th>Store</th>
                                     <th>Kode Supplier</th>
                                     <th>Nama Supplier</th>
                                     <th>No Faktur</th>
@@ -102,7 +109,7 @@ if (!$menuHandler->initialize()) {
                             </thead>
                             <tbody id="koreksi-table-body">
                                 <tr>
-                                    <td colspan="7" class="text-center p-8">
+                                    <td colspan="8" class="text-center p-8">
                                         <div class="spinner-simple"></div>
                                         <p class="mt-3 text-gray-500 font-medium">Memuat data...</p>
                                     </td>

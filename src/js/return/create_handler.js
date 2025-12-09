@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const inpStore = document.getElementById("kode_store_input"); // Tambahan
   const inpKode = document.getElementById("kode_supp");
   const listContainer = document.getElementById("kode_supp_list");
   const inpNama = document.getElementById("nama_supplier");
@@ -16,6 +17,24 @@ document.addEventListener("DOMContentLoaded", () => {
       fetchSuggestions(val);
     }, 300);
   });
+
+  // TAMBAHAN: Load Stores
+  async function loadStoresForCreate() {
+    try {
+      const response = await fetch("/src/api/shared/get_all_store.php");
+      const result = await response.json();
+      if (result.success) {
+        let options = '<option value="">-- Pilih Cabang --</option>';
+        result.data.forEach((store) => {
+          options += `<option value="${store.Kd_Store}">${store.Nm_Alias}</option>`;
+        });
+        if (inpStore) inpStore.innerHTML = options;
+      }
+    } catch (error) {
+      console.error("Gagal load store:", error);
+      Swal.fire("Error", "Gagal mengambil data cabang", "error");
+    }
+  }
 
   async function fetchSuggestions(term) {
     try {
@@ -95,4 +114,7 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.innerHTML = originalText;
     }
   });
+
+  // Jalankan load stores
+  loadStoresForCreate();
 });

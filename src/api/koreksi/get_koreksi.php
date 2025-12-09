@@ -19,6 +19,8 @@ try {
     $tgl_mulai = $_GET['tgl_mulai'] ?? date('Y-m-d', strtotime('-1 month'));
     $tgl_selesai = $_GET['tgl_selesai'] ?? date('Y-m-d');
     $search_faktur = $_GET['search'] ?? '';
+    // Tambahan filter store
+    $kode_store = $_GET['kode_store'] ?? '';
     $page = (int) ($_GET['page'] ?? 1);
 
     if ($page < 1)
@@ -34,6 +36,13 @@ try {
     $where_clauses = ["tgl_koreksi BETWEEN ? AND ?"];
     $params = [$tgl_mulai, $tgl_selesai];
     $types = "ss";
+
+    // Filter Store Logic
+    if (!empty($kode_store)) {
+        $where_clauses[] = "c_koreksi.kode_store = ?"; // Pastikan pakai alias tabel jika perlu, atau nama kolom saja
+        $params[] = $kode_store;
+        $types .= "s";
+    }
 
     if (!empty($search_faktur)) {
         $where_clauses[] = "no_faktur LIKE ?";
@@ -56,8 +65,10 @@ try {
     $params[] = $offset;
     $types .= "ii";
 
-    // Query Data
-    $sql_data = "SELECT * FROM c_koreksi 
+    // Query Data dengan JOIN ke kode_store
+    $sql_data = "SELECT c_koreksi.*, ks.Nm_Alias 
+                 FROM c_koreksi 
+                 LEFT JOIN kode_store ks ON c_koreksi.kode_store = ks.kd_store 
                  WHERE $where_sql 
                  ORDER BY tgl_koreksi DESC, kode_supp ASC 
                  LIMIT ? OFFSET ?";

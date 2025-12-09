@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const filterStore = document.getElementById("kode_store_filter"); // Tambahan
   const tableBody = document.getElementById("return-table-body");
   const filterForm = document.getElementById("filter-form");
   const paginationInfo = document.getElementById("pagination-info");
@@ -17,13 +18,29 @@ document.addEventListener("DOMContentLoaded", () => {
     return dateString.substring(0, 10);
   }
 
+  // TAMBAHAN: Load Stores
+  async function loadStores() {
+    try {
+      const response = await fetch("/src/api/shared/get_all_store.php");
+      const result = await response.json();
+      if (result.success) {
+        let options = '<option value="">Semua Cabang</option>';
+        result.data.forEach((store) => {
+          options += `<option value="${store.Kd_Store}">${store.Nm_Alias} (${store.Kd_Store})</option>`;
+        });
+        if (filterStore) filterStore.innerHTML = options;
+      }
+    } catch (error) {
+      console.error("Gagal load store:", error);
+    }
+  }
+
   async function loadData() {
     setLoading(true);
     const formData = new FormData(filterForm);
     const params = new URLSearchParams(formData);
 
     try {
-      // Pointing ke API Return
       const response = await fetch(
         `/src/api/return/get_returns.php?${params.toString()}`
       );
@@ -35,7 +52,8 @@ document.addEventListener("DOMContentLoaded", () => {
       renderPagination(data.pagination);
     } catch (error) {
       console.error(error);
-      tableBody.innerHTML = `<tr><td colspan="7" class="text-center text-red-500 p-4">Error: ${error.message}</td></tr>`;
+      // Update colspan jadi 8
+      tableBody.innerHTML = `<tr><td colspan="8" class="text-center text-red-500 p-4">Error: ${error.message}</td></tr>`;
     } finally {
       setLoading(false);
     }
@@ -43,18 +61,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function setLoading(isLoading) {
     if (isLoading) {
-      tableBody.innerHTML = `<tr><td colspan="7" class="text-center p-8"><div class="spinner-simple"></div></td></tr>`;
+      // Update colspan jadi 8
+      tableBody.innerHTML = `<tr><td colspan="8" class="text-center p-8"><div class="spinner-simple"></div></td></tr>`;
     }
   }
 
   function renderTable(rows, offset) {
     if (!rows || rows.length === 0) {
-      tableBody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-gray-500">Tidak ada data ditemukan.</td></tr>`;
+      // Update colspan jadi 8
+      tableBody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-gray-500">Tidak ada data ditemukan.</td></tr>`;
       return;
     }
 
     let html = "";
     rows.forEach((row, index) => {
+      // TAMBAHAN: Handle Label Store
+      const storeLabel = row.kode_store
+        ? `<span class="badge-pink">${row.Nm_Alias}</span>`
+        : "-";
+
       html += `
         <tr class="hover:bg-gray-50 border-b border-gray-100">
             <td class="text-center text-gray-500 text-sm py-3">${
@@ -63,6 +88,9 @@ document.addEventListener("DOMContentLoaded", () => {
             <td class="text-sm text-gray-700">${formatJustDate(
               row.tgl_return
             )}</td>
+            
+            <td class="text-sm font-semibold text-gray-600">${storeLabel}</td>
+
             <td class="font-medium text-pink-600">${row.kode_supp}</td>
             <td class="text-sm text-gray-700">${row.nama_supplier || "-"}</td>
             <td class="text-sm font-bold text-gray-800">${row.no_faktur}</td>
@@ -171,6 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Initial Load
+  loadStores(); // Panggil fungsi load stores
   loadData();
 });
 

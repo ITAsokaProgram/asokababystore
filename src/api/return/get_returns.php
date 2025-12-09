@@ -19,6 +19,7 @@ try {
     $tgl_mulai = $_GET['tgl_mulai'] ?? date('Y-m-d', strtotime('-1 month'));
     $tgl_selesai = $_GET['tgl_selesai'] ?? date('Y-m-d');
     $search_faktur = $_GET['search'] ?? '';
+    $kode_store = $_GET['kode_store'] ?? ''; // TAMBAHAN
     $page = (int) ($_GET['page'] ?? 1);
 
     if ($page < 1)
@@ -34,6 +35,13 @@ try {
     $where_clauses = ["tgl_return BETWEEN ? AND ?"];
     $params = [$tgl_mulai, $tgl_selesai];
     $types = "ss";
+
+    // TAMBAHAN: Filter Cabang
+    if (!empty($kode_store)) {
+        $where_clauses[] = "kode_store = ?";
+        $params[] = $kode_store;
+        $types .= "s";
+    }
 
     if (!empty($search_faktur)) {
         $where_clauses[] = "no_faktur LIKE ?";
@@ -58,7 +66,9 @@ try {
     $params[] = $offset;
     $types .= "ii";
 
+    // TAMBAHAN: JOIN dengan kode_store
     $sql_data = "SELECT * FROM c_return 
+                 LEFT JOIN kode_store ks ON c_return.kode_store = ks.kd_store 
                  WHERE $where_sql 
                  ORDER BY tgl_return DESC, kode_supp ASC 
                  LIMIT ? OFFSET ?";

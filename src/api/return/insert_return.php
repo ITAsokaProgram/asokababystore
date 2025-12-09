@@ -11,6 +11,7 @@ try {
 
     $input = json_decode(file_get_contents('php://input'), true);
 
+    $kode_store = trim($input['kode_store'] ?? ''); // TAMBAHAN
     $tgl_return = $input['tgl_return'] ?? '';
     $kode_supp = trim($input['kode_supp'] ?? '');
     $nama_supplier = trim($input['nama_supplier'] ?? '');
@@ -18,8 +19,9 @@ try {
     $total_return = (float) ($input['total_return'] ?? 0);
     $keterangan = $input['keterangan'] ?? '';
 
-    if (empty($tgl_return) || empty($kode_supp) || empty($no_faktur)) {
-        throw new Exception("Tanggal, Kode Supplier, dan No Faktur wajib diisi.");
+    // TAMBAHAN: Validasi kode_store
+    if (empty($kode_store) || empty($tgl_return) || empty($kode_supp) || empty($no_faktur)) {
+        throw new Exception("Cabang, Tanggal, Kode Supplier, dan No Faktur wajib diisi.");
     }
 
     // Cek Duplikat (Primary Key: kode_supp + no_faktur)
@@ -33,16 +35,18 @@ try {
         throw new Exception("Data duplikat! Kombinasi Kode Supplier '$kode_supp' dan No Faktur '$no_faktur' sudah ada di data Retur.");
     }
 
+    // TAMBAHAN: Insert kode_store
     $sql_insert = "INSERT INTO c_return 
-                   (tgl_return, kode_supp, nama_supplier, no_faktur, total_return, keterangan) 
-                   VALUES (?, ?, ?, ?, ?, ?)";
+                   (kode_store, tgl_return, kode_supp, nama_supplier, no_faktur, total_return, keterangan) 
+                   VALUES (?, ?, ?, ?, ?, ?, ?)";
 
     $stmt = $conn->prepare($sql_insert);
     if (!$stmt)
         throw new Exception("Prepare failed: " . $conn->error);
 
     $stmt->bind_param(
-        "ssssds",
+        "sssssds",
+        $kode_store, // TAMBAHAN
         $tgl_return,
         $kode_supp,
         $nama_supplier,
