@@ -205,7 +205,7 @@ $token = $menuHandler->getToken();
 
 
         <div id="bar"
-            class="w-full bg-white/90 backdrop-blur rounded-2xl shadow-xl border border-blue-100 mt-10 animate-fade-in-up">
+            class="w-full bg-white/90 backdrop-blur rounded-2xl shadow-xl border border-blue-100  animate-fade-in-up">
             <div class="bg-white/90 backdrop-blur rounded-2xl shadow-xl p-8 overflow-x-auto">
                 <div class="flex flex-row justify-between items-center p-5">
                     <h1 id="label-chart1" class="text-xl font-bold text-blue-700 flex items-center gap-2"><i
@@ -251,7 +251,7 @@ $token = $menuHandler->getToken();
         </div>
         <!-- Modal -->
         <div id="table-modal" tabindex="-1"
-            class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center transition-all ease-in duration-500 opacity-0 scale-95 mt-10">
+            class="fixed top-0 bottom-0 right-0 left-0 md:left-64 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center transition-all ease-in duration-500 opacity-0 scale-95  z-50">
             <div
                 class="relative p-4 w-full max-w-7xl max-h-full transform transition-all ease-in duration-1000 scale-95">
                 <!-- Modal content -->
@@ -303,7 +303,7 @@ $token = $menuHandler->getToken();
         </div>
         <!-- Modal -->
         <div id="table-modal-supplier" tabindex="-1"
-            class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center transition-all ease-in duration-500 opacity-0 scale-95 mt-10">
+            class="fixed top-0 bottom-0 right-0 left-0 md:left-64 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center transition-all ease-in duration-500 opacity-0 scale-95  z-50">
             <div
                 class="relative p-4 w-full max-w-7xl max-h-full transform transition-all ease-in duration-1000 scale-95">
                 <!-- Modal content -->
@@ -355,7 +355,7 @@ $token = $menuHandler->getToken();
         </div>
         <!-- Modal -->
         <div id="promo-modal" tabindex="-1"
-            class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center transition-all ease-in duration-500 opacity-0 scale-95 mt-10">
+            class="fixed top-0 bottom-0 right-0 left-0 md:left-64 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center transition-all ease-in duration-500 opacity-0 scale-95  z-50">
             <div
                 class="relative p-4 w-full max-w-7xl max-h-full transform transition-all ease-in duration-1000 scale-95">
                 <!-- Modal content -->
@@ -407,7 +407,7 @@ $token = $menuHandler->getToken();
         </div>
         <!-- Modal -->
         <div id="penjualan-terbaik" tabindex="-1"
-            class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center transition-all ease-in duration-500 opacity-0 scale-95 mt-10">
+            class="fixed top-0 bottom-0 right-0 left-0 md:left-64 bg-black/50 backdrop-blur-sm hidden flex items-center justify-center transition-all ease-in duration-500 opacity-0 scale-95  z-50">
             <div
                 class="relative p-4 w-full max-w-7xl max-h-full transform transition-all ease-in duration-1000 scale-95">
                 <!-- Modal content -->
