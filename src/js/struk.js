@@ -1,38 +1,34 @@
 window.onload = function () {
-  
   const token = getCookie("customer_token");
   if (!token) {
     Swal.fire({
-      icon: 'error',
-      title: 'Oops...',
-      text: 'Anda belum login. Silakan login terlebih dahulu.',
+      icon: "error",
+      title: "Oops...",
+      text: "Anda belum login. Silakan login terlebih dahulu.",
       showConfirmButton: true,
-      confirmButtonText: 'Login'
-    }).then(() => {
-      window.location.href = "/log_in"; 
-    });
-    return;
-  }
-
-  
-  const params = new URLSearchParams(window.location.search);
-  const kd_tr = params.get("kode");
-  const kd_cust = params.get("member");
-
-  
-  if (!kd_tr || !kd_cust) {
-    Swal.fire({
-      icon: 'error',
-      title: 'Oops...',
-      text: 'Kode transaksi dan member tidak ditemukan.',
-      confirmButtonText: 'Login'
+      confirmButtonText: "Login",
     }).then(() => {
       window.location.href = "/log_in";
     });
     return;
   }
 
-  
+  const params = new URLSearchParams(window.location.search);
+  const kd_tr = params.get("kode");
+  const kd_cust = params.get("member");
+
+  if (!kd_tr || !kd_cust) {
+    Swal.fire({
+      icon: "error",
+      title: "Oops...",
+      text: "Kode transaksi dan member tidak ditemukan.",
+      confirmButtonText: "Login",
+    }).then(() => {
+      window.location.href = "/log_in";
+    });
+    return;
+  }
+
   fetch(
     `src/api/customer/get_struk_belanja_customer_pubs?kode=${kd_tr}&member=${kd_cust}`
   )
@@ -50,10 +46,10 @@ window.onload = function () {
     .catch((error) => {
       console.error("Error:", error);
       Swal.fire({
-        icon: 'error',
-        title: 'Oops...',
-        text: 'Terjadi kesalahan saat mengambil data.',
-        confirmButtonText: 'Login'
+        icon: "error",
+        title: "Oops...",
+        text: "Terjadi kesalahan saat mengambil data.",
+        confirmButtonText: "Login",
       }).then(() => {
         window.location.href = "/log_in";
       });
@@ -66,10 +62,10 @@ btnPrint.addEventListener("click", (e) => {
   downloadStrukAsPDF();
 });
 
-function getCookie (name) {
+function getCookie(name) {
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop().split(';').shift();
+  if (parts.length === 2) return parts.pop().split(";").shift();
 }
 
 function hitungHemat(harga, hrg_promo) {
@@ -82,9 +78,9 @@ function hitungDiskon(harga, diskon) {
 
 function akumulasiPoin(totalItem) {
   if (totalItem >= 100000) {
-    return Math.min(Math.floor(totalItem / 100000)); 
+    return Math.min(Math.floor(totalItem / 100000));
   }
-  return 0; 
+  return 0;
 }
 function renderItem(d, i) {
   const harga = Number(d.harga);
@@ -92,21 +88,20 @@ function renderItem(d, i) {
   const diskon = Number(d.diskon || 0);
   const hrgPromo = Number(d.hrg_promo || 0);
   const nilaiDiskon = hitungDiskon(harga, diskon);
-  
-  const adaPromo = hrgPromo > 0; 
-  const selisihHemat = harga - hrgPromo; 
+
+  const adaPromo = hrgPromo > 0;
+  const selisihHemat = harga - hrgPromo;
 
   let hargaSetelahDiskon = harga;
 
   if (diskon > 0) {
     hargaSetelahDiskon = harga - nilaiDiskon;
-  } else if (adaPromo) { 
+  } else if (adaPromo) {
     hargaSetelahDiskon = hrgPromo;
   }
 
   const totalItem = hargaSetelahDiskon * qty;
- 
-  
+
   const keteranganPromo =
     diskon > 0
       ? `<div class="flex justify-between text-xs">
@@ -114,22 +109,17 @@ function renderItem(d, i) {
             <span>(${diskon.toFixed(0)}%)</span>
             <span>${totalItem.toLocaleString("id-ID")}</span>
         </div>`
-      
-      
-      : (adaPromo && selisihHemat !== 0) 
+      : adaPromo && selisihHemat !== 0
       ? `<div class="flex justify-between text-xs">
                 <span>Hemat ==></span>
                 <span>${
-                    selisihHemat > 0 
-                      ? '-' + selisihHemat.toLocaleString("id-ID") 
-                      
-                      : Math.abs(selisihHemat).toLocaleString("id-ID") 
-                  }</span>
+                  selisihHemat > 0
+                    ? "-" + selisihHemat.toLocaleString("id-ID")
+                    : Math.abs(selisihHemat).toLocaleString("id-ID")
+                }</span>
                 <span>${totalItem.toLocaleString("id-ID")}</span>
             </div>`
-      : ""; 
-  
-
+      : "";
 
   return `
 <div class="mb-1 leading-tight">
@@ -144,7 +134,7 @@ function renderItem(d, i) {
 
 function hideNumber(v) {
   const s = String(v ?? "");
-  if(s.length > 4) {
+  if (s.length > 4) {
     return s.slice(0, 4) + "****" + s.slice(-4);
   }
   return s;
@@ -168,40 +158,39 @@ function renderStruk(transactions, poin) {
     no_kredit1,
   } = transactions[0];
 
-
   let total = 0;
   let totalQty = 0;
   let totalDiskon = 0;
   let totalPromo = 0;
-    const rows = transactions
-    .map((d, i) => {
-      const harga = Number(d.harga);
-      const qty = Number(d.qty);
-      const diskon = Number(d.diskon || 0);
-      const hrgPromo = Number(d.hrg_promo || 0);
-      const nilaiDiskon = hitungDiskon(harga, diskon);
+  console.log("transactions:", transactions);
+  const rows = transactions
+    .map((d, i) => {
+      const harga = Number(d.harga);
+      const qty = Number(d.qty);
+      const diskon = Number(d.diskon || 0);
+      const hrgPromo = Number(d.hrg_promo || 0);
+      const nilaiDiskon = hitungDiskon(harga, diskon);
 
-      const adaPromo = hrgPromo > 0;
+      const adaPromo = hrgPromo > 0;
       const selisihHemat = harga - hrgPromo; // <-- Hitung selisihnya
-      
       let hargaAkhir = harga;
 
-      if (diskon > 0) {
-        hargaAkhir = harga - nilaiDiskon;
-        totalDiskon += nilaiDiskon * qty;
-      } else if (adaPromo) { 
-        hargaAkhir = hrgPromo; 
-        if (selisihHemat !== 0) { // <-- PERBAIKAN
-        	totalPromo += selisihHemat * qty; // <-- Gunakan selisihHemat (bisa positif/negatif)
+      if (diskon > 0) {
+        hargaAkhir = harga - nilaiDiskon;
+        totalDiskon += nilaiDiskon * qty;
+      } else if (adaPromo) {
+        hargaAkhir = hrgPromo;
+        if (selisihHemat !== 0) {
+          // <-- PERBAIKAN
+          totalPromo += selisihHemat * qty; // <-- Gunakan selisihHemat (bisa positif/negatif)
         }
-      }
+      }
 
-      total += hargaAkhir * qty;
-      totalQty += qty;
-      return renderItem(d, i);
-    })
-    .join("");
-
+      total += hargaAkhir * qty;
+      totalQty += qty;
+      return renderItem(d, i);
+    })
+    .join("");
 
   const totalBelanja = total + totalDiskon + totalPromo;
 
@@ -240,7 +229,9 @@ function renderStruk(transactions, poin) {
 
   <div>Total Belanja</div>
   <div class="text-right">Rp.</div>
-  <div class="text-right">${transactions[0].belanja.toLocaleString("id-ID")}</div>
+  <div class="text-right">${transactions[0].belanja.toLocaleString(
+    "id-ID"
+  )}</div>
 
   <div>Nilai Hemat</div>
   <div class="text-right">Rp.</div>
@@ -389,7 +380,6 @@ const pembayaran = ({
     `;
   }
 
-
   html += `
     <div></div>
     <div class="col-span-2 text-right"></div>
@@ -401,7 +391,6 @@ const pembayaran = ({
 
   return html;
 };
-
 
 function downloadStrukAsPDF() {
   const { jsPDF } = window.jspdf;
@@ -421,10 +410,9 @@ function downloadStrukAsPDF() {
       .then((canvas) => {
         const imgData = canvas.toDataURL("image/png");
 
-        const imgWidth = 95; 
+        const imgWidth = 95;
         const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-        
         const doc = new jsPDF({
           orientation: "portrait",
           unit: "mm",

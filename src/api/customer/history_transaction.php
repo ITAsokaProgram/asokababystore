@@ -23,12 +23,15 @@ if (!$verify) {
 }
 
 $kode = $data['kode'];
+
+// PERUBAHAN DISINI: Menambahkan penjumlahan (cash + credit1 + voucher1) sebagai total_bayar
 $sql = "SELECT 
     p.no_faktur,
     p.tanggal,
     p.jam,
     ks.Nm_Store,
     p.belanja,
+    (p.cash + p.credit1 + p.voucher1) as total_bayar, 
     p.nama_kasir, 
     r.rating AS rating,
     r.id AS review_id,
@@ -51,15 +54,15 @@ $sql = "SELECT
     ORDER BY p.tanggal DESC , p.jam DESC
 ";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("s",$kode);
+$stmt->bind_param("s", $kode);
 $stmt->execute();
 $result = $stmt->get_result();
 $data = $result->fetch_all(MYSQLI_ASSOC);
-$formattedData = array_map(function($item) {
-    $item['conversation_started'] = (bool)$item['conversation_started'];
+$formattedData = array_map(function ($item) {
+    $item['conversation_started'] = (bool) $item['conversation_started'];
     return $item;
 }, $data);
 http_response_code(200);
-echo json_encode(['status'=>'success','message'=>'Data berhasil fetch','data'=>$formattedData]);
+echo json_encode(['status' => 'success', 'message' => 'Data berhasil fetch', 'data' => $formattedData]);
 $stmt->close();
 $conn->close();

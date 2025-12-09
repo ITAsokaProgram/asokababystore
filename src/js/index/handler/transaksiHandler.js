@@ -21,8 +21,6 @@ const formatTanggal = (tgl) => {
   return new Date(tgl).toLocaleDateString("id-ID", options);
 };
 const token = getCookie("customer_token");
-
-/* Render kecil (preview) - light mode only */
 export const renderTransaksi = (data) => {
   const container = document.getElementById("transaksi-container");
   if (!container) return;
@@ -44,6 +42,7 @@ export const renderTransaksi = (data) => {
           ? `<span class="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">${item.unread_count}</span>`
           : "";
 
+      // UPDATE DISINI: Menggunakan item.total_bayar
       return `
         <h3 class="text-sm font-semibold text-gray-600 mb-0">
             ${formatTanggal(item.tanggal)}
@@ -59,7 +58,7 @@ export const renderTransaksi = (data) => {
                     }</p>
                 </div>
                 <span class="text-pink-600 font-bold text-sm">
-                    ${rupiah(item.belanja)}
+                    ${rupiah(item.total_bayar)}
                 </span>
             </div>
             <div class="flex justify-between items-center text-sm">
@@ -142,7 +141,7 @@ export const displayTransaksi = async () => {
                   </svg>
                   <p class="text-sm text-gray-700 italic">
                       ${item.komentar}
-                      
+                       
                   </p>
                   </div>
               </div>`
@@ -169,6 +168,7 @@ export const displayTransaksi = async () => {
             `
           : "";
 
+      // UPDATE DISINI: Menggunakan item.total_bayar
       return `
     <div class="mb-6 group">
         <div class="flex items-center gap-3 mb-3">
@@ -203,7 +203,7 @@ export const displayTransaksi = async () => {
                     <div class="flex items-end">
                     <div class="bg-gradient-to-r from-blue-500 to-emerald-600 text-white px-3 py-1.5 rounded-lg shadow-sm">
                         <span class="font-bold text-sm">
-                            ${rupiah(item.belanja)}
+                            ${rupiah(item.total_bayar)}
                         </span>
                     </div>
                 </div>
@@ -215,7 +215,8 @@ export const displayTransaksi = async () => {
             <div class="mb-4">
                 ${stars}
                 ${commentSection}
-                ${saranButton} </div>
+                ${saranButton} 
+            </div>
 
             
             <div class="flex justify-between items-center pt-3 border-t border-pink-100">
