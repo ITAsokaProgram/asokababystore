@@ -83,7 +83,7 @@ if (!$menuHandler->initialize()) {
                         </div>
                         <div class="md:col-span-4 flex justify-end">
                             <button type="submit" id="filter-submit-button"
-                                class="btn-primary w-full md:w-auto px-6 inline-flex items-center justify-center gap-2">
+                                class="btn-primary w-full px-6 inline-flex items-center justify-center gap-2">
                                 <i class="fas fa-filter"></i>
                                 <span>Tampilkan</span>
                             </button>
