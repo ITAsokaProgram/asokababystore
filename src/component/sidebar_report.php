@@ -1609,15 +1609,42 @@ $isPajakOpen = $isActive('/src/fitur/coretax/');
         // Active Menu Highlighting
         const currentPath = window.location.pathname;
         const allLinks = document.querySelectorAll('#sidebar nav a');
+
         allLinks.forEach(link => {
             const linkHref = link.getAttribute('href');
+
+            // Cek apakah URL cocok
             if (linkHref && currentPath.includes(linkHref) && linkHref !== '#') {
+
+                // 1. Highlight Menu Anak Terakhir (Misal: Sub Dept)
                 link.classList.add('btn', 'active');
-                const parentDiv = link.closest('div[x-show]');
-                if (parentDiv) {
-                    const subMenuButton = parentDiv.previousElementSibling;
-                    if (subMenuButton && subMenuButton.tagName === 'BUTTON') {
-                        subMenuButton.classList.add('submenu-active');
+
+                // 2. Loop ke atas untuk highlight SEMUA parent (Penjualan DAN Laporan)
+                let currentElement = link;
+
+                // Terus cari ke atas selama masih ada parent div[x-show]
+                while (currentElement) {
+                    const parentDiv = currentElement.closest('div[x-show]');
+
+                    if (parentDiv) {
+                        // Ambil tombol trigger menu (element sebelum div x-show)
+                        const subMenuButton = parentDiv.previousElementSibling;
+
+                        if (subMenuButton && subMenuButton.tagName === 'BUTTON') {
+                            // Tambahkan class pink
+                            subMenuButton.classList.add('submenu-active');
+
+                            // Tambahkan indikator visual open state (opsional, untuk memastikan panah bawah/atas benar)
+                            if (typeof Alpine !== 'undefined') {
+                                // Opsional: Memastikan Alpine data state terbuka (biasanya sudah dihandle PHP)
+                            }
+                        }
+
+                        // Geser currentElement ke atas parentDiv agar loop selanjutnya mencari kakek-nya
+                        currentElement = parentDiv.parentElement;
+                    } else {
+                        // Stop jika sudah tidak ada parent dropdown lagi
+                        break;
                     }
                 }
             }
