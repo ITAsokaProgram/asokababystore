@@ -23,15 +23,12 @@ if (!$verify) {
 }
 
 $kode = $data['kode'];
-
-// PERUBAHAN DISINI: Menambahkan penjumlahan (cash + credit1 + voucher1) sebagai total_bayar
 $sql = "SELECT 
     p.no_faktur,
     p.tanggal,
     p.jam,
     ks.Nm_Store,
     p.belanja,
-    (p.cash + p.credit1 + p.voucher1) as total_bayar, 
     p.nama_kasir, 
     r.rating AS rating,
     r.id AS review_id,
