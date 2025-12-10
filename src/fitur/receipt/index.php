@@ -2,6 +2,7 @@
 session_start();
 include '../../../aa_kon_sett.php';
 
+// Default tanggal tetap ada untuk value input, tapi data tidak diload otomatis (via JS)
 $tgl_selesai = date('Y-m-d');
 $tgl_mulai = date('Y-m-d', strtotime('-1 day'));
 $page = (int) ($_GET['page'] ?? 1);
@@ -76,7 +77,7 @@ if (!$menuHandler->initialize()) {
                         </a>
                     </div>
 
-                    <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div class="mt-4 grid grid-cols-1 md:grid-cols-4 gap-3">
 
                         <div id="btn-show-selisih"
                             class="summary-card flex gap-4 items-center bg-red-50 border border-red-100 p-3 rounded-xl cursor-pointer hover:bg-red-100 transition">
@@ -84,22 +85,22 @@ if (!$menuHandler->initialize()) {
                                 <i class="fas fa-exclamation-triangle fa-lg"></i>
                             </div>
                             <div>
-                                <h3 class="text-xs font-semibold text-gray-600 mb-1">Jml Data Selisih</h3>
-                                <p id="summary-total-selisih" class="text-2xl font-bold truncate text-red-600">0</p>
-                                <p class="text-[10px] text-gray-500">Klik untuk lihat detail</p>
+                                <h3 class="text-xs font-semibold text-gray-600 mb-1">Jumlah data selisih</h3>
+                                <p id="summary-total-selisih" class="text-xl font-bold truncate text-red-600">0</p>
+                                <p class="text-[10px] text-gray-500">Klik untuk detail</p>
                             </div>
                         </div>
 
-                        <div
-                            class="summary-card flex gap-4 items-center bg-pink-50 border border-pink-100 p-3 rounded-xl">
+                        <div id="btn-show-rupiah-selisih"
+                            class="summary-card flex gap-4 items-center bg-pink-50 border border-pink-100 p-3 rounded-xl cursor-pointer hover:bg-pink-100 transition">
                             <div class="summary-icon bg-pink-100 text-pink-600 p-3 rounded-lg">
                                 <i class="fas fa-money-bill-wave fa-lg"></i>
                             </div>
                             <div>
                                 <h3 class="text-xs font-semibold text-gray-600 mb-1">Total Nominal Selisih</h3>
-                                <p id="summary-total-rupiah-selisih" class="text-2xl font-bold truncate text-pink-600">
+                                <p id="summary-total-rupiah-selisih" class="text-xl font-bold truncate text-pink-600">
                                     Rp 0</p>
-                                <p class="text-[10px] text-gray-500">Akumulasi nilai selisih</p>
+                                <p class="text-[10px] text-gray-500">Klik untuk detail</p>
                             </div>
                         </div>
 
@@ -109,11 +110,25 @@ if (!$menuHandler->initialize()) {
                                 <i class="fas fa-search-minus fa-lg"></i>
                             </div>
                             <div>
-                                <h3 class="text-xs font-semibold text-gray-600 mb-1">Blm Ada (Checking)</h3>
-                                <p id="summary-total-missing" class="text-2xl font-bold truncate text-orange-600">0</p>
-                                <p class="text-[10px] text-gray-500">Klik untuk lihat detail</p>
+                                <h3 class="text-xs font-semibold text-gray-600 mb-1">Nominal Belum Check</h3>
+                                <p id="summary-total-missing" class="text-xl font-bold truncate text-orange-600">Rp 0
+                                </p>
+                                <p class="text-[10px] text-gray-500">Klik untuk detail</p>
                             </div>
                         </div>
+
+                        <div id="btn-show-notfound"
+                            class="summary-card flex gap-4 items-center bg-gray-50 border border-gray-200 p-3 rounded-xl cursor-pointer hover:bg-gray-100 transition">
+                            <div class="summary-icon bg-gray-200 text-gray-600 p-3 rounded-lg">
+                                <i class="fas fa-question fa-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xs font-semibold text-gray-600 mb-1">Data Tidak Ditemukan</h3>
+                                <p id="summary-total-notfound" class="text-xl font-bold truncate text-gray-700">0</p>
+                                <p class="text-[10px] text-gray-500">Klik untuk detail</p>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
@@ -122,7 +137,7 @@ if (!$menuHandler->initialize()) {
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 mb-2">Pilih Cabang</label>
                             <select name="kode_store" id="kode_store_filter" class="input-modern w-full cursor-pointer">
-                                <option value="">Semua Cabang</option>
+                                <option value="" disabled selected>Memuat...</option>
                             </select>
                         </div>
                         <div>
@@ -142,7 +157,7 @@ if (!$menuHandler->initialize()) {
                         </div>
                         <div class="md:col-span-4 flex justify-end">
                             <button type="submit" id="filter-submit-button"
-                                class="btn-primary inline-flex items-center justify-center gap-2 px-6">
+                                class="btn-primary w-full inline-flex items-center justify-center gap-2 px-6">
                                 <i class="fas fa-filter"></i>
                                 <span>Tampilkan Data</span>
                             </button>
@@ -157,10 +172,10 @@ if (!$menuHandler->initialize()) {
                             <thead>
                                 <tr>
                                     <th>No</th>
-                                    <th>Status</th>
+                                    <th style="max-width: 140px;">Status</th>
                                     <th>Tgl Tiba</th>
-                                    <th>Store</th>
-                                    <th>Supplier</th>
+                                    <th>Cabang</th>
+                                    <th>Kd Supplier</th>
                                     <th>No Faktur</th>
                                     <th class="text-right">Total</th>
                                     <th>Keterangan</th>
@@ -169,8 +184,12 @@ if (!$menuHandler->initialize()) {
                             <tbody id="receipt-table-body">
                                 <tr>
                                     <td colspan="8" class="text-center p-8">
-                                        <div class="spinner-simple"></div>
-                                        <p class="mt-3 text-gray-500 font-medium">Memuat data...</p>
+                                        <div
+                                            class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 mb-3">
+                                            <i class="fas fa-search text-gray-400 text-xl"></i>
+                                        </div>
+                                        <p class="text-gray-500 font-medium">Silahkan pilih cabang dan klik "Tampilkan
+                                            Data"</p>
                                     </td>
                                 </tr>
                             </tbody>
@@ -279,21 +298,25 @@ if (!$menuHandler->initialize()) {
                                     <div class="flex justify-between items-center">
                                         <div class="flex flex-col">
                                             <span
-                                                class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-0.5">Tanggal
-                                                Tiba</span>
+                                                class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-0.5">
+                                                Tanggal
+                                            </span>
                                             <span class="text-sm font-medium text-gray-700"
                                                 x-text="formatDate(item.tgl_tiba)"></span>
                                         </div>
+
                                         <div class="flex flex-col items-end">
                                             <span
-                                                class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-0.5">No
-                                                Faktur</span>
+                                                class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-0.5">
+                                                Nilai
+                                            </span>
                                             <span class="text-sm font-bold font-mono text-pink-600"
-                                                x-text="item.no_faktur"></span>
+                                                x-text="'Rp ' + formatRupiah(item.total)"></span>
                                         </div>
                                     </div>
                                 </li>
                             </template>
+
                             <li x-show="summaryList.length === 0" class="py-12 text-center">
                                 <div
                                     class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 mb-3">

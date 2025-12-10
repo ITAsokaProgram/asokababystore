@@ -6,11 +6,17 @@ header('Content-Type: application/json');
 $response = [
     'tabel_data' => [],
     'summary' => [
-        'total_selisih' => 0, // Jumlah bon yang selisih
-        'total_selisih_rupiah' => 0, // Total nominal selisih (New)
+        'total_selisih' => 0,
+        'total_selisih_rupiah' => 0,
         'list_selisih' => [],
+
+        // Diubah jadi akumulasi rupiah
         'total_belum_ada' => 0,
-        'list_belum_ada' => []
+        'list_belum_ada' => [],
+
+        // Ditambahkan baru
+        'total_tidak_ditemukan' => 0,
+        'list_tidak_ditemukan' => []
     ],
     'pagination' => [
         'current_page' => 1,
@@ -34,15 +40,14 @@ try {
     $limit = 100;
     $offset = ($page - 1) * $limit;
 
-    // --- BASE WHERE CLAUSE ---
-    // Logika filter dasar (berdasarkan rh untuk summary checking, berdasarkan cr untuk tabel)
-
-    // 1. Logic untuk Summary Existing (Data di RH tapi tidak ada di CR atau Selisih)
-    // Ini tetap dipertahankan sesuai logic lama Anda untuk box atas "Total Selisih Data" & "Total Belum Ada"
+    // --- 1. SUMMARY: SELISIH & MISSING (BELUM CHECK) ---
+    // Menggunakan Receipt Head sebagai acuan
     $startDateSubquery = "SELECT MIN(tgl_receipt) FROM c_receipt cr WHERE cr.kode_store = rh.kd_store";
+
     $where_clauses_rh = ["rh.tgl_tiba BETWEEN ? AND ?"];
     $params_rh = [$tgl_mulai, $tgl_selesai];
     $types_rh = "ss";
+
     $where_clauses_rh[] = "rh.tgl_tiba >= COALESCE(($startDateSubquery), '2099-12-31')";
 
     if (!empty($kode_store)) {
@@ -50,6 +55,7 @@ try {
         $params_rh[] = $kode_store;
         $types_rh .= "s";
     }
+
     if (!empty($search_faktur)) {
         $where_clauses_rh[] = "(rh.no_faktur LIKE ? OR rh.no_ord LIKE ?)";
         $searchTerm = "%" . $search_faktur . "%";
@@ -60,10 +66,10 @@ try {
 
     $where_sql_rh = implode(" AND ", $where_clauses_rh);
 
-    // --- QUERY SUMMARY 1: Count Missing & Diff (Existing Logic) ---
     $sql_summary = "SELECT 
                         rh.tgl_tiba, 
                         rh.no_faktur,
+                        (IFNULL(rh.gtot, 0) + IFNULL(rh.gppn, 0) + IFNULL(rh.gppn_bm, 0)) as total_erp,
                         ((IFNULL(rh.gtot, 0) + IFNULL(rh.gppn, 0) + IFNULL(rh.gppn_bm, 0)) - IFNULL(cr.total_penerimaan, 0)) as nilai_selisih,
                         CASE 
                             WHEN cr.no_faktur IS NULL THEN 'MISSING'
@@ -81,43 +87,100 @@ try {
 
     while ($row = $res_sum->fetch_assoc()) {
         if ($row['status_cek'] == 'MISSING') {
-            $response['summary']['total_belum_ada']++;
+            // Requirement: Total Rupiahnya, bukan jumlah data
+            $response['summary']['total_belum_ada'] += $row['total_erp'];
+
             if (count($response['summary']['list_belum_ada']) < 50) {
                 $response['summary']['list_belum_ada'][] = [
                     'tgl_tiba' => $row['tgl_tiba'],
-                    'no_faktur' => $row['no_faktur']
+                    'no_faktur' => $row['no_faktur'],
+                    'total' => $row['total_erp'] // Kirim total untuk ditampilkan di modal
                 ];
             }
         } elseif ($row['status_cek'] == 'DIFF') {
             $response['summary']['total_selisih']++;
-            // Menambahkan akumulasi rupiah selisih
             $response['summary']['total_selisih_rupiah'] += abs($row['nilai_selisih']);
 
             if (count($response['summary']['list_selisih']) < 50) {
                 $response['summary']['list_selisih'][] = [
                     'tgl_tiba' => $row['tgl_tiba'],
-                    'no_faktur' => $row['no_faktur']
+                    'no_faktur' => $row['no_faktur'],
+                    'total' => abs($row['nilai_selisih']) // Kirim selisih untuk modal
                 ];
             }
         }
     }
 
-    // --- QUERY TABEL DATA (c_receipt base) ---
-    // Kita perlu WHERE clause yang sedikit berbeda karena base table-nya c_receipt
-    $where_clauses_cr = ["rh.tgl_tiba BETWEEN ? AND ?"]; // Menggunakan tanggal dari RH (yang di-join)
-    // Note: Jika data tidak ada di RH, tgl_tiba akan NULL, jadi perlu handle tgl_receipt dr c_receipt jika mau lebih robust, 
-    // tapi asumsi query lama Anda menggunakan filter via join RH.
+    // --- 2. SUMMARY: TIDAK DITEMUKAN (Ada di Check, Tidak ada di ERP) ---
+    // Menggunakan C_Receipt sebagai acuan
+    $where_clauses_nf = ["cr.tgl_receipt BETWEEN ? AND ?"];
+    $params_nf = [$tgl_mulai, $tgl_selesai];
+    $types_nf = "ss";
 
-    // Agar aman dan Status kolom bekerja (cek ada di RH atau ngga), kita filter c_receipt lalu join RH.
-    // Tapi karena Anda menggunakan filter `tgl_tiba` (kolom RH), maka logic query di bawah sudah benar (LEFT JOIN).
+    if (!empty($kode_store)) {
+        $where_clauses_nf[] = "cr.kode_store = ?";
+        $params_nf[] = $kode_store;
+        $types_nf .= "s";
+    }
+
+    // Filter khusus not found: Join ke RH null
+    $where_clauses_nf[] = "rh.no_faktur IS NULL";
+
+    $where_sql_nf = implode(" AND ", $where_clauses_nf);
+
+    $sql_not_found = "SELECT 
+                        cr.tgl_receipt as tgl_tiba,
+                        cr.no_faktur,
+                        cr.total_penerimaan
+                      FROM c_receipt cr
+                      LEFT JOIN receipt_head rh ON cr.no_faktur = rh.no_faktur AND cr.kode_supp = rh.kode_supp
+                      WHERE $where_sql_nf";
+
+    $stmt_nf = $conn->prepare($sql_not_found);
+    $stmt_nf->bind_param($types_nf, ...$params_nf);
+    $stmt_nf->execute();
+    $res_nf = $stmt_nf->get_result();
+
+    while ($row = $res_nf->fetch_assoc()) {
+        $response['summary']['total_tidak_ditemukan']++;
+        if (count($response['summary']['list_tidak_ditemukan']) < 50) {
+            $response['summary']['list_tidak_ditemukan'][] = [
+                'tgl_tiba' => $row['tgl_tiba'],
+                'no_faktur' => $row['no_faktur'],
+                'total' => $row['total_penerimaan']
+            ];
+        }
+    }
+
+
+    // --- 3. TABEL UTAMA & PAGINATION ---
+    $where_clauses_cr = ["COALESCE(rh.tgl_tiba, cr.tgl_receipt) BETWEEN ? AND ?"];
+    $params_cr = [$tgl_mulai, $tgl_selesai];
+    $types_cr = "ss";
+
+    if (!empty($kode_store)) {
+        $where_clauses_cr[] = "cr.kode_store = ?";
+        $params_cr[] = $kode_store;
+        $types_cr .= "s";
+    }
+
+    if (!empty($search_faktur)) {
+        $where_clauses_cr[] = "(cr.no_faktur LIKE ? OR rh.no_ord LIKE ?)";
+        $searchTerm = "%" . $search_faktur . "%";
+        $params_cr[] = $searchTerm;
+        $params_cr[] = $searchTerm;
+        $types_cr .= "ss";
+    }
+
+    $where_sql_cr = implode(" AND ", $where_clauses_cr);
 
     $sql_count = "SELECT COUNT(*) as total 
                   FROM c_receipt cr 
                   LEFT JOIN receipt_head rh ON cr.no_faktur = rh.no_faktur AND cr.kode_supp = rh.kode_supp
-                  WHERE $where_sql_rh"; // Menggunakan filter yang sama dengan summary agar sinkron
+                  WHERE $where_sql_cr";
 
     $stmt_count = $conn->prepare($sql_count);
-    $stmt_count->bind_param($types_rh, ...$params_rh);
+    $stmt_count->bind_param($types_cr, ...$params_cr);
     $stmt_count->execute();
     $total_rows = $stmt_count->get_result()->fetch_assoc()['total'] ?? 0;
 
@@ -127,21 +190,18 @@ try {
     $response['pagination']['limit'] = $limit;
     $response['pagination']['offset'] = $offset;
 
-    // --- MAIN DATA QUERY ---
-    // Menambahkan Logic Status & Selisih
-    $params_rh[] = $limit;
-    $params_rh[] = $offset;
-    $types_rh .= "ii";
+    $params_cr[] = $limit;
+    $params_cr[] = $offset;
+    $types_cr .= "ii";
 
     $sql_data = "SELECT 
-                    rh.tgl_tiba, 
+                    COALESCE(rh.tgl_tiba, cr.tgl_receipt) as tgl_tiba, 
                     cr.no_faktur, 
                     cr.kode_store, 
                     cr.kode_supp, 
                     cr.keterangan,
                     ks.Nm_Alias,
                     IFNULL(cr.total_penerimaan, 0) as total_check,
-                    -- Kolom Perbandingan untuk Status
                     (IFNULL(rh.gtot, 0) + IFNULL(rh.gppn, 0) + IFNULL(rh.gppn_bm, 0)) as total_erp,
                     CASE 
                         WHEN rh.no_faktur IS NULL THEN 'NOT_FOUND_IN_ERP'
@@ -152,12 +212,12 @@ try {
                  FROM c_receipt cr
                  LEFT JOIN receipt_head rh ON cr.no_faktur = rh.no_faktur AND cr.kode_supp = rh.kode_supp
                  LEFT JOIN kode_store ks ON cr.kode_store = ks.kd_store 
-                 WHERE $where_sql_rh 
-                 ORDER BY rh.tgl_tiba DESC, cr.kode_store ASC 
+                 WHERE $where_sql_cr 
+                 ORDER BY COALESCE(rh.tgl_tiba, cr.tgl_receipt) DESC, cr.kode_store ASC 
                  LIMIT ? OFFSET ?";
 
     $stmt = $conn->prepare($sql_data);
-    $stmt->bind_param($types_rh, ...$params_rh);
+    $stmt->bind_param($types_cr, ...$params_cr);
     $stmt->execute();
     $result = $stmt->get_result();
 
