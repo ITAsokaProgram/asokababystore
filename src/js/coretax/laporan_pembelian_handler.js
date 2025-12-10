@@ -221,6 +221,7 @@ document.addEventListener("DOMContentLoaded", () => {
         { key: "status", width: 10 },
         { key: "cabang", width: 15 },
         { key: "supplier", width: 35 },
+        { key: "catatan", width: 25 },
         { key: "dpp", width: 15 },
         { key: "dpp_lain", width: 15 },
         { key: "ppn", width: 15 },
@@ -240,6 +241,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "Status",
         "Cabang",
         "Nama Supplier",
+        "Catatan", // TAMBAHAN
         "DPP",
         "DPP Nilai Lain",
         "PPN",
@@ -281,6 +283,7 @@ document.addEventListener("DOMContentLoaded", () => {
           item.status,
           item.Nm_Alias || item.kode_store,
           item.nama_supplier,
+          item.catatan || "", // TAMBAHAN VALUE
           parseFloat(item.dpp) || 0,
           parseFloat(item.dpp_nilai_lain) || 0,
           parseFloat(item.ppn) || 0,
@@ -288,17 +291,13 @@ document.addEventListener("DOMContentLoaded", () => {
           statusFisik,
           statusCoretax,
         ];
-        r.getCell(1).alignment = { horizontal: "center" };
-        r.getCell(2).alignment = { horizontal: "center" };
-        r.getCell(4).alignment = { horizontal: "center" };
-        r.getCell(5).alignment = { horizontal: "center" };
-        const currencyFmt = "#,##0";
-        r.getCell(7).numFmt = currencyFmt;
-        r.getCell(8).numFmt = currencyFmt;
+        // Sesuaikan formatting currency karena index geser
+        r.getCell(8).numFmt = currencyFmt; // Dulu 7, sekarang 8 karena ada catatan
         r.getCell(9).numFmt = currencyFmt;
         r.getCell(10).numFmt = currencyFmt;
-        r.getCell(11).alignment = { horizontal: "center" };
+        r.getCell(11).numFmt = currencyFmt;
         r.getCell(12).alignment = { horizontal: "center" };
+        r.getCell(13).alignment = { horizontal: "center" };
         r.eachCell((cell) => {
           cell.border = {
             top: { style: "thin" },
@@ -713,6 +712,9 @@ document.addEventListener("DOMContentLoaded", () => {
                       </td>
                       <td class="text-sm font-medium text-gray-800">${
                         row.nama_supplier || "-"
+                      }</td>
+                      <td class="text-sm text-gray-600 italic">${
+                        row.catatan || "-"
                       }</td>
                       <td class="text-right font-mono text-gray-700">${formatRupiah(
                         dpp

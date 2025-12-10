@@ -238,6 +238,7 @@ if (!$menuHandler->initialize()) {
                                     <th>Status</th>
                                     <th class="text-center">Cabang</th>
                                     <th>Nama Supplier</th>
+                                    <th>Catatan</th>
                                     <th class="text-right">DPP</th>
                                     <th class="text-right">DPP Nilai Lain</th>
                                     <th class="text-right">PPN</th>

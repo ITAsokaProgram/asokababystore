@@ -18,6 +18,7 @@ const errNoInvoice = document.getElementById("err_no_invoice");
 const inpKodeStore = document.getElementById("inp_kode_store");
 const inpStatus = document.getElementById("inp_status");
 const inpNamaSupp = document.getElementById("inp_nama_supplier");
+const inpCatatan = document.getElementById("inp_catatan"); // TAMBAHAN
 const listSupplier = document.getElementById("supplier_list");
 const inpTgl = document.getElementById("inp_tgl_nota");
 const inpDpp = document.getElementById("inp_dpp");
@@ -158,6 +159,7 @@ function renderTableRows(data) {
     const dppLain = parseFloat(row.dpp_nilai_lain || 0);
     const ppn = parseFloat(row.ppn);
     const total = parseFloat(row.total_terima_fp);
+    const catatanShow = row.catatan ? row.catatan : "-";
     let badgeStatus = "";
     if (row.status === "BTKP") {
       badgeStatus =
@@ -182,6 +184,7 @@ function renderTableRows(data) {
         <td class="text-sm truncate max-w-[150px]" title="${
           row.nama_supplier
         }">${row.nama_supplier}</td>
+        <td class="text-sm text-gray-600 truncate max-w-[150px]" title="${catatanShow}">${catatanShow}</td>
         <td class="text-right font-mono text-sm">${formatNumber(dpp)}</td>
         <td class="text-right font-mono text-gray-500 text-sm">${formatNumber(
           dppLain
@@ -383,6 +386,7 @@ function startEditMode(data) {
   inpKodeStore.value = data.kode_store || "";
   inpStatus.value = data.status || "PKP";
   inpNamaSupp.value = data.nama_supplier;
+  inpCatatan.value = data.catatan || ""; // TAMBAHAN
   inpTgl.value = data.tgl_nota;
   inpDpp.value = formatNumber(data.dpp);
   inpDppLain.value = formatNumber(data.dpp_nilai_lain || 0);
@@ -407,6 +411,7 @@ function cancelEditMode() {
   inpTotal.value = "0";
   inpKodeStore.value = "";
   inpStatus.value = "";
+  inpCatatan.value = ""; // TAMBAHAN
   detectedNoFaktur = null;
   document
     .querySelector(".input-row-container")
@@ -484,6 +489,7 @@ async function handleSave() {
     kode_store: inpKodeStore.value,
     kode_supplier: inpKodeSupplier.value,
     status: inpStatus.value,
+    catatan: inpCatatan.value.trim(), // TAMBAHAN
     nama_supplier: namaSupp,
     tgl_nota: inpTgl.value,
     dpp: parseNumber(inpDpp.value),

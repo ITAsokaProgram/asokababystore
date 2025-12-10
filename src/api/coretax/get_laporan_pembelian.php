@@ -112,6 +112,7 @@ try {
         $where_conditions .= " AND (
             p.nama_supplier LIKE ? 
             OR p.kode_supplier LIKE ? 
+            OR p.catatan LIKE ? /* TAMBAHAN SEARCH */
             OR p.nsfp LIKE ? 
             OR p.no_invoice LIKE ?  
             OR CAST(p.dpp AS CHAR) LIKE ? 
@@ -119,13 +120,14 @@ try {
             OR CAST(p.ppn AS CHAR) LIKE ?
             OR CAST(p.total_terima_fp AS CHAR) LIKE ?
         )";
-        $bind_types .= 'ssssssss';
+        $bind_types .= 'sssssssss'; // Tambah satu 's'
         $termRaw = '%' . $search_raw . '%';
         $termNumeric = '%' . $search_numeric . '%';
         $bind_params[] = $termRaw;
         $bind_params[] = $termRaw;
         $bind_params[] = $termRaw;
         $bind_params[] = $termRaw;
+        $bind_params[] = $termRaw; // TAMBAHAN BIND
         $bind_params[] = $termNumeric;
         $bind_params[] = $termNumeric;
         $bind_params[] = $termNumeric;
@@ -168,6 +170,7 @@ try {
             p.id,
             p.nama_supplier, 
             p.tgl_nota, 
+            p.catatan,
             p.no_invoice, 
             p.no_faktur,  
             p.dpp_nilai_lain,

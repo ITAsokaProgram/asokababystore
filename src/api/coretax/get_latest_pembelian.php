@@ -41,11 +41,13 @@ try {
         $textClause = "(
             fp.no_invoice LIKE ? OR 
             fp.nama_supplier LIKE ? OR 
+            fp.catatan LIKE ? OR 
             ks.nm_alias LIKE ? OR
             fp.status LIKE ?
         )";
         $params[] = $searchLike;
         $params[] = $searchLike;
+        $params[] = $searchLike; // TAMBAHAN PARAM
         $params[] = $searchLike;
         $params[] = $searchLike;
         $types .= "ssss";
@@ -73,6 +75,7 @@ try {
                 fp.tgl_nota, 
                 fp.no_invoice, 
                 fp.no_faktur, 
+                fp.catatan,
                 fp.dpp, 
                 fp.dpp_nilai_lain, 
                 fp.ppn, 

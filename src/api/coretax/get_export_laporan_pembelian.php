@@ -36,16 +36,18 @@ try {
         $searchLike = "%" . $search . "%";
 
         $textClause = "(
-            fp.no_invoice LIKE ? OR 
-            fp.nama_supplier LIKE ? OR 
-            ks.nm_alias LIKE ? OR
-            fp.status LIKE ?
-        )";
+        fp.no_invoice LIKE ? OR 
+        fp.nama_supplier LIKE ? OR 
+        fp.catatan LIKE ? OR /* TAMBAHAN */
+        ks.nm_alias LIKE ? OR
+        fp.status LIKE ?
+    )";
         $params[] = $searchLike;
         $params[] = $searchLike;
+        $params[] = $searchLike; // TAMBAHAN
         $params[] = $searchLike;
         $params[] = $searchLike;
-        $types .= "ssss";
+        $types .= "sssss"; // TAMBAHAN s
 
         if ($isNumeric && $cleanNumber != '') {
             $whereClauses[] = "(" . $textClause . " OR fp.dpp = ? OR fp.dpp_nilai_lain = ? OR fp.ppn = ? OR fp.total_terima_fp = ? )";
@@ -66,6 +68,7 @@ try {
                 fp.tgl_nota, 
                 fp.no_invoice, 
                 fp.nama_supplier, 
+                fp.catatan, /* TAMBAHAN */
                 fp.kode_store, 
                 fp.status, 
                 fp.dpp, 

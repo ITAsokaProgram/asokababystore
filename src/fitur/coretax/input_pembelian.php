@@ -207,6 +207,11 @@ if (!$menuHandler->initialize()) {
                                     list="supplier_list" placeholder="">
                                 <datalist id="supplier_list"></datalist>
                             </div>
+                            <div class="md:col-span-2 lg:col-span-1">
+                                <label class="form-label">Catatan</label>
+                                <input type="text" id="inp_catatan" name="catatan" class="input-compact"
+                                    placeholder="Catatan tambahan (Opsional)...">
+                            </div>
 
                             <div>
                                 <label class="form-label">Tgl Nota</label>
@@ -289,6 +294,7 @@ if (!$menuHandler->initialize()) {
                                     <th>Cabang</th>
                                     <th>Status</th>
                                     <th>Supplier</th>
+                                    <th>Catatan</th>
                                     <th class="text-right">DPP</th>
                                     <th class="text-right">DPP Lain</th>
                                     <th class="text-right">PPN</th>

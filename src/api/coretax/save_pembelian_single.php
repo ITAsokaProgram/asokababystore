@@ -30,6 +30,7 @@ try {
     $kode_store = $input['kode_store'] ?? '';
     $status = $input['status'] ?? '';
     $nama_supplier = $input['nama_supplier'] ?? '';
+    $catatan = $input['catatan'] ?? null; // TAMBAHAN AMBIL DATA
     $no_faktur = $input['no_faktur'] ?? '';
     $tgl_nota = $input['tgl_nota'] ?? date('Y-m-d');
     $d = DateTime::createFromFormat('Y-m-d', $tgl_nota);
@@ -59,6 +60,7 @@ try {
                     tgl_nota=?, 
                     no_invoice=?, 
                     no_faktur=?, 
+                    catatan=?, /* TAMBAHAN */
                     dpp=?, 
                     dpp_nilai_lain=?, 
                     ppn=?, 
@@ -70,14 +72,18 @@ try {
         $stmt = $conn->prepare($query);
         if (!$stmt)
             throw new Exception("Prepare Update Error: " . $conn->error);
+
+        // Perhatikan urutan tipe data bind_param (s = string, d = double, i = integer)
+        // Ditambah satu 's' untuk catatan setelah no_faktur
         $stmt->bind_param(
-            "ssssssddddisi",
+            "sssssssddddisi", // Tambah 's'
             $nama_supplier,
             $kode_supplier,
             $kode_store,
             $tgl_nota,
             $no_invoice,
             $no_faktur,
+            $catatan, // TAMBAHAN VARIABLE
             $dpp,
             $dpp_nilai_lain,
             $ppn,
@@ -92,19 +98,22 @@ try {
         $message = "Data berhasil diperbarui.";
     } else {
         $query = "INSERT INTO ff_pembelian 
-                  (nama_supplier, kode_supplier, kode_store, tgl_nota, no_invoice, no_faktur, dpp, dpp_nilai_lain, ppn, total_terima_fp, status, kd_user) 
-                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                  (nama_supplier, kode_supplier, kode_store, tgl_nota, no_invoice, no_faktur, catatan, dpp, dpp_nilai_lain, ppn, total_terima_fp, status, kd_user) 
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"; // Tambah ? satu lagi
         $stmt = $conn->prepare($query);
         if (!$stmt)
             throw new Exception("Prepare Insert Error: " . $conn->error);
+
+        // Tambah 's' pada tipe data
         $stmt->bind_param(
-            "ssssssddddsi",
+            "sssssssddddsi", // Tambah 's'
             $nama_supplier,
             $kode_supplier,
             $kode_store,
             $tgl_nota,
             $no_invoice,
             $no_faktur,
+            $catatan, // TAMBAHAN VARIABLE
             $dpp,
             $dpp_nilai_lain,
             $ppn,
