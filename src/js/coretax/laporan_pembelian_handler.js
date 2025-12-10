@@ -65,13 +65,23 @@ document.addEventListener("DOMContentLoaded", () => {
     const candidatesRaw = candidateString.split(",");
     let selectedNsfp = candidatesRaw[0].split("###")[0];
     let selectedName = candidatesRaw[0].split("###")[1] || "";
+    let defaultSource = candidatesRaw[0].split("###")[2] || "";
     if (candidatesRaw.length > 1) {
       const inputOptions = {};
       candidatesRaw.forEach((rawItem) => {
         const parts = rawItem.split("###");
         const nsfpVal = parts[0];
         const supplierName = parts[1] || "Tanpa Nama";
-        inputOptions[nsfpVal] = `${nsfpVal} - ${supplierName}`;
+        const sourcesVal = parts[2] || "";
+        let labelSource = "";
+        if (sourcesVal.includes("CORETAX") && sourcesVal.includes("FISIK")) {
+          labelSource = " [Coretax & Fisik]";
+        } else if (sourcesVal.includes("CORETAX")) {
+          labelSource = " [Coretax]";
+        } else if (sourcesVal.includes("FISIK")) {
+          labelSource = " [Manual / Fisik]";
+        }
+        inputOptions[nsfpVal] = `${nsfpVal} - ${supplierName}${labelSource}`;
       });
       const { value: userSelection } = await Swal.fire({
         title: "Pilih NSFP",
@@ -80,7 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
         inputOptions: inputOptions,
         inputValue: selectedNsfp,
         inputPlaceholder: "Pilih NSFP...",
-        width: "600px",
+        width: "650px",
         showCancelButton: true,
         confirmButtonText: "Pilih & Konfirmasi",
         cancelButtonText: "Batal",
@@ -101,13 +111,19 @@ document.addEventListener("DOMContentLoaded", () => {
       const nameDisplay = selectedName
         ? `<br><span class="text-sm text-gray-600 font-medium">(${selectedName})</span>`
         : "";
-      if (isDualMatch) {
-        htmlContent = `Data pembelian ini cocok dengan data <b>Coretax</b> dan <b>Fisik</b>.<br>
+      if (
+        isDualMatch ||
+        (defaultSource.includes("CORETAX") && defaultSource.includes("FISIK"))
+      ) {
+        htmlContent = `Data pembelian ini cocok dengan data <b>Coretax</b> dan <b>Faktur Pajak</b>.<br>
                         NSFP: <b class="text-lg">${selectedNsfp}</b>
                         ${nameDisplay}<br><br>
                         Hubungkan data ini?`;
       } else {
-        htmlContent = `Data pembelian ini cocok dengan data Coretax.<br>
+        let sourceText = defaultSource.includes("FISIK")
+          ? "Faktur Pajak Fisik"
+          : "Coretax";
+        htmlContent = `Data pembelian ini cocok dengan data <b>${sourceText}</b>.<br>
                         NSFP: <b class="text-lg">${selectedNsfp}</b>
                         ${nameDisplay}<br><br>
                         Hubungkan data ini?`;
@@ -242,7 +258,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "Status",
         "Cabang",
         "Nama Supplier",
-        "Catatan", // TAMBAHAN
+        "Catatan",
         "DPP",
         "DPP Nilai Lain",
         "PPN",
@@ -284,7 +300,7 @@ document.addEventListener("DOMContentLoaded", () => {
           item.status,
           item.Nm_Alias || item.kode_store,
           item.nama_supplier,
-          item.catatan || "", // TAMBAHAN VALUE
+          item.catatan || "",
           parseFloat(item.dpp) || 0,
           parseFloat(item.dpp_nilai_lain) || 0,
           parseFloat(item.ppn) || 0,
@@ -292,8 +308,7 @@ document.addEventListener("DOMContentLoaded", () => {
           statusFisik,
           statusCoretax,
         ];
-        // Sesuaikan formatting currency karena index geser
-        r.getCell(8).numFmt = currencyFmt; // Dulu 7, sekarang 8 karena ada catatan
+        r.getCell(8).numFmt = currencyFmt;
         r.getCell(9).numFmt = currencyFmt;
         r.getCell(10).numFmt = currencyFmt;
         r.getCell(11).numFmt = currencyFmt;
@@ -632,7 +647,9 @@ document.addEventListener("DOMContentLoaded", () => {
           if (candidateList.length === 0) return null;
           const bestCandidate = candidateList[0];
           const candidateString = availableCandidates
-            .map((c) => `${c.nsfp}###${c.supplierName}`)
+            .map(
+              (c) => `${c.nsfp}###${c.supplierName}###${c.sources.join("&")}`
+            )
             .join(",");
           const count = availableCandidates.length;
           const textClass =
@@ -656,7 +673,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                  </span>`;
           }
           return `
-                  <div class="flex flex-col items-center justify-center cursor-pointer group py-1 select-none"
+                  <div class="flex flex-col items-center justify-center cursor-pointer group py-1"
                       onclick="handleConfirmCoretax(${row.id}, '${candidateString}', ${isDualMode})"
                       title="Klik untuk memilih NSFP ini">
                      <span class="font-mono text-xs ${textClass} border-b border-dashed group-hover:border-solid transition-colors duration-200">
