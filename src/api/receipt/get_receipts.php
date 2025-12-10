@@ -50,15 +50,16 @@ try {
     $sql_summary = "SELECT 
                         rh.tgl_tiba, 
                         rh.no_faktur,
-                        (IFNULL(rh.gtot, 0) - IFNULL(cr.total_penerimaan, 0)) as nilai_selisih,
+                        ((IFNULL(rh.gtot, 0) + IFNULL(rh.gppn, 0) + IFNULL(rh.gppn_bm, 0)) - IFNULL(cr.total_penerimaan, 0)) as nilai_selisih,
                         CASE 
                             WHEN cr.no_faktur IS NULL THEN 'MISSING'
-                            WHEN ABS(IFNULL(rh.gtot, 0) - IFNULL(cr.total_penerimaan, 0)) > 100 THEN 'DIFF'
+                            WHEN ABS((IFNULL(rh.gtot, 0) + IFNULL(rh.gppn, 0) + IFNULL(rh.gppn_bm, 0)) - IFNULL(cr.total_penerimaan, 0)) > 100 THEN 'DIFF'
                             ELSE 'OK'
                         END as status_cek
                     FROM receipt_head rh
                     LEFT JOIN c_receipt cr ON rh.no_faktur = cr.no_faktur AND rh.kode_supp = cr.kode_supp
                     WHERE $where_sql";
+
     $stmt_sum = $conn->prepare($sql_summary);
     $stmt_sum->bind_param($types, ...$params);
     $stmt_sum->execute();

@@ -147,7 +147,7 @@ if (!$menuHandler->initialize()) {
                                     <th>Store</th>
                                     <th>Supplier</th>
                                     <th>No Faktur</th>
-                                    <th class="text-right">Total Checking</th>
+                                    <th class="text-right">Total</th>
                                     <th>Keterangan</th>
                                 </tr>
                             </thead>
