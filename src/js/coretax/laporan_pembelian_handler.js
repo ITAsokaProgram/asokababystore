@@ -160,6 +160,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   async function handleExportExcel() {
     const params = getUrlParams();
+    const currencyFmt = "#,##0";
     let periodeText = "";
     if (params.filter_type === "month") {
       const monthNames = [
