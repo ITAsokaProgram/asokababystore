@@ -1,62 +1,47 @@
 import getCookie from "../../index/utils/cookies.js";
-export const getUser = async () => {
+export const getUser = async (page = 1, search = "", limit = 10) => {
   const token = getCookie("admin_token");
   try {
-    const response = await fetch("/src/api/user/get_user_in", {
+    // Buat URL Query String
+    const url = new URL(
+      "/src/api/user/get_user_in.php",
+      window.location.origin
+    );
+    url.searchParams.append("page", page);
+    url.searchParams.append("limit", limit);
+    if (search) url.searchParams.append("search", search);
+
+    const response = await fetch(url, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
     });
+
     if (response.status === 200) {
-      const data = await response.json();
-      return data;
-    } else if (response.status === 204) {
-      Toastify({
-        text: "Data tidak ditemukan",
-        duration: 1000,
-        gravity: "top",
-        position: "right",
-        style: {
-          background: "#f87171",
-          color: "$fff",
-        },
-      }).showToast();
+      const result = await response.json();
+      return result; // Mengembalikan object {data, pagination}
     } else if (response.status === 401) {
       Swal.fire({
         icon: "error",
         title: "Sesi Berakhir",
-        text: "Silahkan Login Kembali",
         confirmButtonText: "Login",
       }).then(() => {
         window.location.href = "/in_login";
       });
-    } else if (response.status === 500) {
-      Toastify({
-        text: "Server Error",
-        duration: 1000,
-        gravity: "top",
-        position: "right",
-        style: {
-          background: "#f87171",
-          color: "$fff",
-        },
-      }).showToast();
+      return null;
+    } else {
+      // Handle error lain
+      console.error("Server Error");
+      return { data: [], pagination: { total_pages: 0, total_records: 0 } };
     }
   } catch (error) {
-    Toastify({
-      text: "Terjadi kesalahan saat mengambil data",
-      duration: 1000,
-      gravity: "top",
-      position: "right",
-      style: {
-        background: "#f87171",
-        color: "$fff",
-      },
-    }).showToast();
+    console.error(error);
+    return { data: [], pagination: { total_pages: 0, total_records: 0 } };
   }
 };
+
 export const insertUser = async (data) => {
   const token = getCookie("admin_token");
   try {

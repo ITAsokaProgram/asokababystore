@@ -1,58 +1,71 @@
+// src/js/account/internal/pagination.js
 
-export const paginationUserInternal = (page = 1, limit = 10, data, callbackRender) => {
+export const paginationUserInternal = (paginationMeta, onPageChange) => {
   const paginationContainer = document.getElementById("paginationContainer");
   const viewData = document.getElementById("viewData");
 
-  const totalPages = Math.ceil(data.length / limit);
-  const offset = (page - 1) * limit;
-  const paginated = data.slice(offset, offset + limit);
+  const { current_page, total_pages, total_records, limit } = paginationMeta;
 
-  callbackRender(paginated, offset);
-  // update info halaman
+  // Update info teks
   if (viewData) {
-    viewData.textContent = `Menampilkan halaman ${page} dari ${totalPages}`;
+    const start = (current_page - 1) * limit + 1;
+    const end = Math.min(start + limit - 1, total_records);
+
+    if (total_records === 0) {
+      viewData.textContent = "Tidak ada data";
+    } else {
+      viewData.textContent = `Menampilkan ${start} - ${end} dari ${total_records} pengguna`;
+    }
   }
 
-  // render pagination
+  // Render Tombol Pagination
   if (paginationContainer) {
     paginationContainer.innerHTML = "";
 
+    // Fungsi helper buat tombol
     const createBtn = (label, targetPage, disabled = false, active = false) => {
       const btn = document.createElement("button");
       btn.textContent = label;
       btn.disabled = disabled;
       btn.className = `
         px-3 py-1 mx-1 rounded-md border text-sm
-        ${active ? "bg-blue-500 text-white" : "bg-white text-gray-700"}
-        ${disabled ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-100"}
+        ${
+          active
+            ? "bg-blue-500 text-white border-blue-500"
+            : "bg-white text-gray-700 hover:bg-gray-100"
+        }
+        ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
       `;
       if (!disabled) {
-        btn.addEventListener("click", () => paginationUserInternal(targetPage, limit, data, callbackRender));
+        btn.addEventListener("click", () => onPageChange(targetPage));
       }
       return btn;
     };
 
-    // Prev
-    paginationContainer.appendChild(createBtn("‹", page - 1, page === 1));
+    // Tombol Previous
+    paginationContainer.appendChild(
+      createBtn("‹", current_page - 1, current_page <= 1)
+    );
 
-    // Halaman numerik
-    const maxButtons = 10;
-    let startPage = Math.max(1, page - Math.floor(maxButtons / 2));
+    // Logika menampilkan nomor halaman (agar tidak terlalu panjang jika halaman ribuan)
+    const maxButtons = 5;
+    let startPage = Math.max(1, current_page - Math.floor(maxButtons / 2));
     let endPage = startPage + maxButtons - 1;
-    if (endPage > totalPages) {
-      endPage = totalPages;
+
+    if (endPage > total_pages) {
+      endPage = total_pages;
       startPage = Math.max(1, endPage - maxButtons + 1);
     }
 
     for (let i = startPage; i <= endPage; i++) {
-      paginationContainer.appendChild(createBtn(i, i, false, i === page));
+      paginationContainer.appendChild(
+        createBtn(i, i, false, i === current_page)
+      );
     }
 
-    // Next
+    // Tombol Next
     paginationContainer.appendChild(
-      createBtn("›", page + 1, page === totalPages)
+      createBtn("›", current_page + 1, current_page >= total_pages)
     );
   }
 };
-
-export default { paginationUserInternal };

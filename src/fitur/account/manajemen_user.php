@@ -94,16 +94,7 @@ $token = $menuHandler->getToken();
                                 <div class="text-lg sm:text-xl font-bold" id="totalUsers"></div>
                                 <div class="text-xs opacity-90">Total Users</div>
                             </div>
-                            <div
-                                class="bg-gradient-to-r from-green-500 to-green-600 text-white px-2 sm:px-4 py-3 rounded-lg text-center hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
-                                <div class="text-lg sm:text-xl font-bold" id="activeUsers"></div>
-                                <div class="text-xs opacity-90">Active</div>
-                            </div>
-                            <div
-                                class="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-2 sm:px-4 py-3 rounded-lg text-center hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
-                                <div class="text-lg sm:text-xl font-bold" id="managers"></div>
-                                <div class="text-xs opacity-90">Managers</div>
-                            </div>
+
                         </div>
 
                         <div class="flex flex-col sm:flex-row gap-3">
