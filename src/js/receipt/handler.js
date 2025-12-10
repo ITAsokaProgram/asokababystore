@@ -4,7 +4,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const filterForm = document.getElementById("filter-form");
   const paginationInfo = document.getElementById("pagination-info");
   const paginationLinks = document.getElementById("pagination-links");
+
+  // Elements Summary
   const elTotalSelisih = document.getElementById("summary-total-selisih");
+  const elTotalRupiahSelisih = document.getElementById(
+    "summary-total-rupiah-selisih"
+  ); // New Element
   const elTotalMissing = document.getElementById("summary-total-missing");
   const btnShowSelisih = document.getElementById("btn-show-selisih");
   const btnShowMissing = document.getElementById("btn-show-missing");
@@ -39,6 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  // ... (Event Listeners Modal Summary tetap sama) ...
   if (btnShowSelisih) {
     btnShowSelisih.addEventListener("click", () => {
       window.dispatchEvent(
@@ -65,6 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // ... (loadStores tetap sama) ...
   async function loadStores() {
     try {
       const response = await fetch("/src/api/shared/get_all_store.php");
@@ -97,6 +104,12 @@ document.addEventListener("DOMContentLoaded", () => {
       if (data.summary) {
         elTotalSelisih.textContent = formatRupiah(data.summary.total_selisih);
         elTotalMissing.textContent = formatRupiah(data.summary.total_belum_ada);
+        // Update Total Nominal Selisih
+        if (elTotalRupiahSelisih) {
+          elTotalRupiahSelisih.textContent =
+            "Rp " + formatRupiah(data.summary.total_selisih_rupiah);
+        }
+
         summaryData.list_selisih = data.summary.list_selisih;
         summaryData.list_belum_ada = data.summary.list_belum_ada;
       }
@@ -106,7 +119,7 @@ document.addEventListener("DOMContentLoaded", () => {
       renderPagination(data.pagination);
     } catch (error) {
       console.error(error);
-      tableBody.innerHTML = `<tr><td colspan="7" class="text-center text-red-500 p-4">Error: ${error.message}</td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="8" class="text-center text-red-500 p-4">Error: ${error.message}</td></tr>`;
     } finally {
       setLoading(false);
     }
@@ -114,13 +127,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function setLoading(isLoading) {
     if (isLoading) {
-      tableBody.innerHTML = `<tr><td colspan="7" class="text-center p-8"><div class="spinner-simple"></div></td></tr>`;
+      // Colspan jadi 8 karena ada tambahan kolom Status
+      tableBody.innerHTML = `<tr><td colspan="8" class="text-center p-8"><div class="spinner-simple"></div></td></tr>`;
     }
   }
 
   function renderTable(rows, offset) {
     if (!rows || rows.length === 0) {
-      tableBody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-gray-500">Tidak ada data ditemukan.</td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-gray-500">Tidak ada data ditemukan.</td></tr>`;
       return;
     }
 
@@ -130,7 +144,22 @@ document.addEventListener("DOMContentLoaded", () => {
         ? `<span class="badge-pink">${row.Nm_Alias || row.kode_store}</span>`
         : "-";
 
-      // Hapus logika statusBadge dan rowClass warna-warni karena tidak ada selisih lagi
+      // LOGIC STATUS BADGE
+      let statusBadge = "";
+      if (row.status_data === "MATCH") {
+        statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                           <i class="fas fa-check-circle mr-1"></i> Sesuai
+                         </span>`;
+      } else if (row.status_data === "DIFF") {
+        statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 border border-red-200">
+                           <i class="fas fa-times-circle mr-1"></i> Selisih
+                         </span>`;
+      } else if (row.status_data === "NOT_FOUND_IN_ERP") {
+        statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
+                           <i class="fas fa-question-circle mr-1"></i> Tdk Ada di Pusat
+                         </span>`;
+      }
+
       let rowClass = "hover:bg-gray-50";
 
       html += `
@@ -138,9 +167,9 @@ document.addEventListener("DOMContentLoaded", () => {
             <td class="text-center text-gray-500 text-sm py-3">${
               offset + index + 1
             }</td>
-            <td class="text-sm text-gray-700">${formatJustDate(
-              row.tgl_tiba
-            )}</td>
+            <td class="text-sm">${statusBadge}</td> <td class="text-sm text-gray-700">${formatJustDate(
+        row.tgl_tiba
+      )}</td>
             <td class="text-sm font-semibold text-gray-600">${storeLabel}</td>
             <td class="text-sm text-gray-600">
                 <div class="font-medium text-pink-600">${row.kode_supp}</div>
@@ -160,7 +189,10 @@ document.addEventListener("DOMContentLoaded", () => {
     tableBody.innerHTML = html;
   }
 
+  // ... (renderPagination dan Logic lainnya tetap sama) ...
   function renderPagination(pagination) {
+    // Copy paste logika pagination sebelumnya disini, tidak ada perubahan logic
+    // ...
     if (!pagination) {
       paginationInfo.textContent = "";
       paginationLinks.innerHTML = "";

@@ -76,16 +76,30 @@ if (!$menuHandler->initialize()) {
                         </a>
                     </div>
 
-                    <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+
                         <div id="btn-show-selisih"
                             class="summary-card flex gap-4 items-center bg-red-50 border border-red-100 p-3 rounded-xl cursor-pointer hover:bg-red-100 transition">
                             <div class="summary-icon bg-red-100 text-red-600 p-3 rounded-lg">
                                 <i class="fas fa-exclamation-triangle fa-lg"></i>
                             </div>
                             <div>
-                                <h3 class="text-xs font-semibold text-gray-600 mb-1">Total Selisih Data</h3>
+                                <h3 class="text-xs font-semibold text-gray-600 mb-1">Jml Data Selisih</h3>
                                 <p id="summary-total-selisih" class="text-2xl font-bold truncate text-red-600">0</p>
                                 <p class="text-[10px] text-gray-500">Klik untuk lihat detail</p>
+                            </div>
+                        </div>
+
+                        <div
+                            class="summary-card flex gap-4 items-center bg-pink-50 border border-pink-100 p-3 rounded-xl">
+                            <div class="summary-icon bg-pink-100 text-pink-600 p-3 rounded-lg">
+                                <i class="fas fa-money-bill-wave fa-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xs font-semibold text-gray-600 mb-1">Total Nominal Selisih</h3>
+                                <p id="summary-total-rupiah-selisih" class="text-2xl font-bold truncate text-pink-600">
+                                    Rp 0</p>
+                                <p class="text-[10px] text-gray-500">Akumulasi nilai selisih</p>
                             </div>
                         </div>
 
@@ -95,7 +109,7 @@ if (!$menuHandler->initialize()) {
                                 <i class="fas fa-search-minus fa-lg"></i>
                             </div>
                             <div>
-                                <h3 class="text-xs font-semibold text-gray-600 mb-1">Total Belum Ada (Checking)</h3>
+                                <h3 class="text-xs font-semibold text-gray-600 mb-1">Blm Ada (Checking)</h3>
                                 <p id="summary-total-missing" class="text-2xl font-bold truncate text-orange-600">0</p>
                                 <p class="text-[10px] text-gray-500">Klik untuk lihat detail</p>
                             </div>
@@ -143,6 +157,7 @@ if (!$menuHandler->initialize()) {
                             <thead>
                                 <tr>
                                     <th>No</th>
+                                    <th>Status</th>
                                     <th>Tgl Tiba</th>
                                     <th>Store</th>
                                     <th>Supplier</th>
@@ -153,7 +168,7 @@ if (!$menuHandler->initialize()) {
                             </thead>
                             <tbody id="receipt-table-body">
                                 <tr>
-                                    <td colspan="7" class="text-center p-8">
+                                    <td colspan="8" class="text-center p-8">
                                         <div class="spinner-simple"></div>
                                         <p class="mt-3 text-gray-500 font-medium">Memuat data...</p>
                                     </td>
