@@ -66,7 +66,7 @@ if (!$menuHandler->initialize()) {
                             </div>
                             <div>
                                 <h1 class="text-xl font-bold text-gray-800 mb-1">Checking Receipt</h1>
-                                <p class="text-xs text-gray-600">Komparasi Receipt Head vs Checking Data.</p>
+                                <p class="text-xs text-gray-600">Data Checking Receipt (c_receipt).</p>
                             </div>
                         </div>
                         <a href="create.php"
@@ -147,16 +147,13 @@ if (!$menuHandler->initialize()) {
                                     <th>Store</th>
                                     <th>Supplier</th>
                                     <th>No Faktur</th>
-                                    <th class="text-right">Total Head </th>
                                     <th class="text-right">Total Checking</th>
-                                    <th class="text-right">Selisih</th>
-                                    <th class="text-center">Status</th>
                                     <th>Keterangan</th>
                                 </tr>
                             </thead>
                             <tbody id="receipt-table-body">
                                 <tr>
-                                    <td colspan="10" class="text-center p-8">
+                                    <td colspan="7" class="text-center p-8">
                                         <div class="spinner-simple"></div>
                                         <p class="mt-3 text-gray-500 font-medium">Memuat data...</p>
                                     </td>
@@ -191,7 +188,7 @@ if (!$menuHandler->initialize()) {
                     class="relative transform overflow-hidden rounded-xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
 
                     <div class="bg-pink-50 px-4 py-3 sm:px-6 flex justify-between items-center">
-                        <h3 class="text-lg font-bold leading-6 text-pink-700">Detail Komparasi</h3>
+                        <h3 class="text-lg font-bold leading-6 text-pink-700">Detail Receipt</h3>
                         <button @click="detailModalOpen = false"
                             class="text-pink-400 hover:text-pink-600 focus:outline-none">
                             <i class="fas fa-times"></i>
@@ -200,63 +197,28 @@ if (!$menuHandler->initialize()) {
 
                     <div class="px-4 py-5 sm:p-6">
                         <div class="text-center pb-4 border-b border-gray-100">
-                            <p class="text-sm text-gray-500">No Faktur / Order</p>
+                            <p class="text-sm text-gray-500">No Faktur</p>
                             <p class="text-xl font-mono font-bold text-gray-800" x-text="detailData.no_faktur"></p>
                             <div class="flex justify-center gap-2 mt-1">
                                 <span class="text-xs px-2 py-1 bg-gray-100 rounded text-gray-600"
                                     x-text="detailData.kode_supp"></span>
                                 <span class="text-xs px-2 py-1 bg-pink-100 text-pink-700 rounded"
-                                    x-text="detailData.Nm_Alias || detailData.kd_store"></span>
+                                    x-text="detailData.Nm_Alias || detailData.kode_store"></span>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg mt-4">
-                            <div class="border-r border-gray-200 pr-4">
-                                <p class="text-[10px] font-bold tracking-wider text-gray-400 uppercase mb-2">System
-                                    (Head)</p>
-                                <div class="flex flex-col h-full justify-between">
-                                    <div>
-                                        <p class="text-xs text-gray-500 mb-1">Total Nilai</p>
-                                        <p class="text-lg font-bold text-gray-800"
-                                            x-text="formatRupiah(detailData.total_head)"></p>
-                                    </div>
-                                    <div class="mt-2 text-xs text-gray-400 italic">
-                                        Data dari Receipt Head
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="pl-2">
-                                <p class="text-[10px] font-bold tracking-wider text-gray-400 uppercase mb-2">Checking
-                                </p>
-                                <div class="flex flex-col h-full justify-between">
-                                    <div>
-                                        <p class="text-xs text-gray-500 mb-1">Total Diterima</p>
-                                        <p class="text-lg font-bold text-blue-600"
-                                            x-text="formatRupiah(detailData.total_check)"></p>
-                                    </div>
-                                    <div class="mt-2">
-                                        <span x-show="!detailData.total_check || detailData.total_check == 0"
-                                            class="text-xs text-orange-500 bg-orange-50 px-2 py-0.5 rounded">Belum ada
-                                            data</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="text-center p-4 rounded-lg mt-4 transition-colors duration-300"
-                            :class="detailData.selisih == 0 ? 'bg-green-50 border border-green-100' : 'bg-red-50 border border-red-100'">
-                            <p class="text-xs font-semibold uppercase tracking-wide"
-                                :class="detailData.selisih == 0 ? 'text-green-600' : 'text-red-600'">
-                                Nilai Selisih
+                        <div class="mt-4">
+                            <p class="text-[10px] font-bold tracking-wider text-gray-400 uppercase mb-2">Info Checking
                             </p>
-                            <p class="text-2xl font-bold mt-1"
-                                :class="detailData.selisih == 0 ? 'text-green-700' : 'text-red-700'"
-                                x-text="formatRupiah(detailData.selisih)"></p>
-
-                            <p class="text-xs mt-2 italic text-gray-500" x-show="detailData.keterangan">
-                                Note: <span x-text="detailData.keterangan"></span>
-                            </p>
+                            <div class="flex justify-between items-center bg-gray-50 p-4 rounded-lg">
+                                <span class="text-gray-600 text-sm">Total Diterima</span>
+                                <span class="text-lg font-bold text-blue-600"
+                                    x-text="formatRupiah(detailData.total_check)"></span>
+                            </div>
+                            <div class="mt-3">
+                                <p class="text-xs text-gray-500 mb-1">Keterangan:</p>
+                                <p class="text-sm text-gray-700 italic" x-text="detailData.keterangan || '-'"></p>
+                            </div>
                         </div>
                     </div>
 
@@ -272,25 +234,68 @@ if (!$menuHandler->initialize()) {
     </div>
 
     <div x-show="summaryModalOpen" style="display: none;" class="relative z-50" role="dialog" aria-modal="true">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75" @click="summaryModalOpen = false"></div>
+        <div class="fixed inset-0 bg-gray-900 bg-opacity-60 backdrop-blur-sm transition-opacity"
+            x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100" @click="summaryModalOpen = false"></div>
+
         <div class="fixed inset-0 z-10 overflow-y-auto">
-            <div class="flex min-h-screen items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                <div
-                    class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl sm:w-full sm:max-w-lg p-6">
-                    <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4" x-text="summaryTitle"></h3>
-                    <ul class="divide-y divide-gray-200 max-h-60 overflow-y-auto">
-                        <template x-for="item in summaryList" :key="item.no_faktur">
-                            <li class="py-2 flex justify-between text-sm">
-                                <span x-text="formatDate(item.tgl_tiba)"></span>
-                                <span class="font-mono"
-                                    x-text="item.no_faktur + (item.nilai_selisih ? ' (' + formatRupiah(item.nilai_selisih) + ')' : '')"></span>
+            <div class="flex min-h-screen items-center justify-center p-4 text-center">
+                <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:w-full sm:max-w-md"
+                    x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+                    x-transition:enter-end="opacity-100 translate-y-0 scale-100">
+
+                    <div
+                        class="bg-white px-6 py-4 border-b border-gray-100 flex justify-between items-center sticky top-0 z-10">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900" x-text="summaryTitle"></h3>
+                            <p class="text-xs text-gray-500 mt-0.5">Daftar item berdasarkan filter tanggal.</p>
+                        </div>
+                        <button @click="summaryModalOpen = false"
+                            class="text-gray-400 hover:text-gray-600 transition p-1">
+                            <i class="fas fa-times text-lg"></i>
+                        </button>
+                    </div>
+
+                    <div class="max-h-[60vh] overflow-y-auto px-2">
+                        <ul class="divide-y divide-gray-50">
+                            <template x-for="item in summaryList" :key="item.no_faktur">
+                                <li class="p-3 hover:bg-gray-50 rounded-lg transition-colors duration-150">
+                                    <div class="flex justify-between items-center">
+                                        <div class="flex flex-col">
+                                            <span
+                                                class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-0.5">Tanggal
+                                                Tiba</span>
+                                            <span class="text-sm font-medium text-gray-700"
+                                                x-text="formatDate(item.tgl_tiba)"></span>
+                                        </div>
+                                        <div class="flex flex-col items-end">
+                                            <span
+                                                class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-0.5">No
+                                                Faktur</span>
+                                            <span class="text-sm font-bold font-mono text-pink-600"
+                                                x-text="item.no_faktur"></span>
+                                        </div>
+                                    </div>
+                                </li>
+                            </template>
+                            <li x-show="summaryList.length === 0" class="py-12 text-center">
+                                <div
+                                    class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 mb-3">
+                                    <i class="fas fa-inbox text-gray-400 text-xl"></i>
+                                </div>
+                                <p class="text-sm text-gray-500">Tidak ada data untuk ditampilkan.</p>
                             </li>
-                        </template>
-                        <li x-show="summaryList.length === 0" class="py-2 text-center text-gray-500">Tidak ada data.
-                        </li>
-                    </ul>
-                    <button @click="summaryModalOpen = false"
-                        class="mt-4 w-full btn-primary justify-center">Tutup</button>
+                        </ul>
+                    </div>
+
+                    <div class="bg-gray-50 px-6 py-3 border-t border-gray-100">
+                        <button @click="summaryModalOpen = false"
+                            class="w-full btn-primary justify-center py-2.5 rounded-xl shadow-sm">
+                            Tutup
+                        </button>
+                    </div>
+
                 </div>
             </div>
         </div>

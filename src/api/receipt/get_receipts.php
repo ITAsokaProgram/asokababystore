@@ -67,16 +67,25 @@ try {
         if ($row['status_cek'] == 'MISSING') {
             $response['summary']['total_belum_ada']++;
             if (count($response['summary']['list_belum_ada']) < 50) {
-                $response['summary']['list_belum_ada'][] = $row;
+                $response['summary']['list_belum_ada'][] = [
+                    'tgl_tiba' => $row['tgl_tiba'],
+                    'no_faktur' => $row['no_faktur']
+                ];
             }
         } elseif ($row['status_cek'] == 'DIFF') {
             $response['summary']['total_selisih']++;
             if (count($response['summary']['list_selisih']) < 50) {
-                $response['summary']['list_selisih'][] = $row;
+                $response['summary']['list_selisih'][] = [
+                    'tgl_tiba' => $row['tgl_tiba'],
+                    'no_faktur' => $row['no_faktur']
+                ];
             }
         }
     }
-    $sql_count = "SELECT COUNT(*) as total FROM receipt_head rh WHERE $where_sql";
+    $sql_count = "SELECT COUNT(*) as total 
+                  FROM c_receipt cr 
+                  LEFT JOIN receipt_head rh ON cr.no_faktur = rh.no_faktur AND cr.kode_supp = rh.kode_supp
+                  WHERE $where_sql";
     $stmt_count = $conn->prepare($sql_count);
     $stmt_count->bind_param($types, ...$params);
     $stmt_count->execute();
@@ -90,22 +99,18 @@ try {
     $params[] = $offset;
     $types .= "ii";
     $sql_data = "SELECT 
-                    rh.tgl_tiba, rh.no_faktur, rh.no_ord, rh.kd_store, rh.kode_supp, rh.nama_kasir,
-                    (rh.gtot + rh.gppn) as total_head,
+                    rh.tgl_tiba, 
+                    cr.no_faktur, 
+                    cr.kode_store, 
+                    cr.kode_supp, 
                     cr.keterangan,
                     ks.Nm_Alias,
-                    IFNULL(cr.total_penerimaan, 0) as total_check,
-                    (IFNULL(rh.gtot, 0) - IFNULL(cr.total_penerimaan, 0)) as selisih,
-                    CASE 
-                        WHEN cr.no_faktur IS NULL THEN 'Belum Ada'
-                        WHEN ABS(IFNULL(rh.gtot + rh.gppn, 0) - IFNULL(cr.total_penerimaan, 0)) > 100 THEN 'Selisih'
-                        ELSE 'Sesuai'
-                    END as status_cek
-                 FROM receipt_head rh
-                 LEFT JOIN c_receipt cr ON rh.no_faktur = cr.no_faktur AND rh.kode_supp = cr.kode_supp
-                 LEFT JOIN kode_store ks ON rh.kd_store = ks.kd_store 
+                    IFNULL(cr.total_penerimaan, 0) as total_check
+                 FROM c_receipt cr
+                 LEFT JOIN receipt_head rh ON cr.no_faktur = rh.no_faktur AND cr.kode_supp = rh.kode_supp
+                 LEFT JOIN kode_store ks ON cr.kode_store = ks.kd_store 
                  WHERE $where_sql 
-                 ORDER BY rh.tgl_tiba DESC, rh.kd_store ASC 
+                 ORDER BY rh.tgl_tiba DESC, cr.kode_store ASC 
                  LIMIT ? OFFSET ?";
     $stmt = $conn->prepare($sql_data);
     $stmt->bind_param($types, ...$params);
