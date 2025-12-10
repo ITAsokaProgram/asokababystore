@@ -675,7 +675,7 @@ document.addEventListener("DOMContentLoaded", () => {
         font: { bold: true },
         fill: { fgColor: { rgb: "E0E0E0" } },
       };
-      ["B4", "B5", "B6"].forEach((cell) => {
+      ["B6", "B7", "B8"].forEach((cell) => {
         if (ws[cell]) {
           ws[cell].t = "n";
           ws[cell].s = { numFmt: numFormat };
