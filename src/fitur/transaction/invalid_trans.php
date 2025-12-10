@@ -264,7 +264,7 @@ $token = $menuHandler->getToken();
                 </ul>
 
                 <div class="mt-6 text-right">
-                    <button onclick="closeModal()"
+                    <button id="btnCloseInformasi"
                         class="px-6 py-3 bg-gradient-to-r from-blue-500 to-pink-500 hover:from-blue-600 hover:to-pink-600 text-white rounded-xl shadow-md transition-all duration-200 hover:scale-105">
                         Tutup
                     </button>

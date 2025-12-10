@@ -3,47 +3,34 @@ import { paginationMargin } from "./table/pagination.js";
 import { fetchFilterMargin, fetchMargin } from "./fetch/get_margin.js";
 import { fetchUpdateMargin, fetchBulkUpdateMargin } from "./fetch/post_cek.js";
 import { getKeterangan } from "./fetch/get_keterangan.js";
-
 const formatDate = (date) => {
   return date.toISOString().split("T")[0];
 };
-
 const init = async () => {
   sessionStorage.removeItem("default_table");
   sessionStorage.removeItem("filter_table");
-
   await kodeCabang("cabangFilter");
-
   const selectCabang = document.getElementById("cabangFilter");
   const start = document.getElementById("startDate");
   const end = document.getElementById("endDate");
   const btnFilter = document.getElementById("filter");
-
-  // 1. Cek URL Params untuk State Management
   const urlParams = new URLSearchParams(window.location.search);
   const hasFilter = urlParams.has("start") && urlParams.has("end");
-
   if (hasFilter) {
     start.value = urlParams.get("start");
     end.value = urlParams.get("end");
     if (urlParams.get("cabang")) selectCabang.value = urlParams.get("cabang");
-
     await fetchFilterMargin(start.value, end.value, selectCabang.value);
     paginationMargin(1, 50, "filter_table");
   } else {
-    // Default dates (Kemarin & Hari ini)
     const today = new Date();
     const yesterday = new Date();
     yesterday.setDate(today.getDate() - 1);
-
     start.value = formatDate(yesterday);
     end.value = formatDate(today);
-
     await fetchMargin();
     paginationMargin(1, 50, "default_table");
   }
-
-  // 2. Event Filter Click
   btnFilter.addEventListener("click", async (e) => {
     const cabangValue = selectCabang.value;
     if (!cabangValue) {
@@ -54,8 +41,6 @@ const init = async () => {
       }).showToast();
       return;
     }
-
-    // Update URL
     const params = new URLSearchParams();
     params.set("start", start.value);
     params.set("end", end.value);
@@ -65,14 +50,10 @@ const init = async () => {
       "",
       `${window.location.pathname}?${params.toString()}`
     );
-
     await fetchFilterMargin(start.value, end.value, cabangValue);
     paginationMargin(1, 50, "filter_table");
   });
-
   paginationMargin(1, 50, "default_table");
-
-  // 3. Logic Single Check (Event Delegation)
   document.addEventListener("click", function (e) {
     const button = e.target.closest(".checking");
     if (!button) return;
@@ -92,30 +73,21 @@ const init = async () => {
       nama: sessionStorage.getItem("userName"),
       kd: button.getAttribute("data-store"),
     };
-    // Fungsi ini sekarang akan memunculkan popup otorisasi
     fetchUpdateMargin(data, start.value, end.value, currentCabang);
   });
-
-  // 4. Logic Lihat Keterangan
   document.addEventListener("click", async function (e) {
     const button = e.target.closest(".lihat-keterangan");
     if (!button) return;
-
     const plu = button.getAttribute("data-plu");
     const bon = button.getAttribute("data-bon");
     const kodeCabangAttr = button.getAttribute("data-cabang");
-
     const ket = document.getElementById("keterangan");
     const namaPIC = document.getElementById("nama_pic");
     const tanggalCek = document.getElementById("tanggal_cek");
     const showInformation = document.getElementById("informasi");
-
-    // Tampilkan loading di modal
     ket.textContent = "Loading...";
     showInformation.classList.remove("hidden");
-
     const keterangan = await getKeterangan(plu, bon, kodeCabangAttr);
-
     ket.textContent = keterangan?.data?.[0]?.ket_cek || "-";
     namaPIC.textContent = keterangan?.data?.[0]?.nama_cek || "-";
     tanggalCek.textContent = keterangan?.data?.[0]?.tanggal_cek
@@ -126,12 +98,9 @@ const init = async () => {
         })
       : "-";
   });
-
-  // 5. Logic Bulk Update (Checkbox)
   const checkAll = document.getElementById("checkAll");
   const btnBulk = document.getElementById("btnBulkUpdate");
   const tableBody = document.getElementById("kategoriTable");
-
   const toggleBulkButton = () => {
     const checkedBoxes = tableBody.querySelectorAll(".check-item:checked");
     if (checkedBoxes.length > 0) {
@@ -141,7 +110,6 @@ const init = async () => {
       btnBulk.classList.add("hidden");
     }
   };
-
   if (checkAll) {
     checkAll.addEventListener("change", function () {
       const checkboxes = tableBody.querySelectorAll(".check-item");
@@ -149,7 +117,6 @@ const init = async () => {
       toggleBulkButton();
     });
   }
-
   tableBody.addEventListener("change", function (e) {
     if (e.target.classList.contains("check-item")) {
       const allCheckboxes = tableBody.querySelectorAll(".check-item");
@@ -158,20 +125,15 @@ const init = async () => {
       toggleBulkButton();
     }
   });
-
   btnBulk.addEventListener("click", function () {
     const checkedBoxes = tableBody.querySelectorAll(".check-item:checked");
     if (checkedBoxes.length === 0) return;
-
     const itemsToUpdate = [];
     checkedBoxes.forEach((cb) => {
-      // Value checkbox adalah JSON string dari data item
       const data = JSON.parse(cb.value);
       data.nama = sessionStorage.getItem("userName");
       itemsToUpdate.push(data);
     });
-
-    // Form HTML untuk Bulk Update (sama dengan Single Update)
     const htmlContent = `
         <div class="flex flex-col gap-4 text-left">
             <div class="bg-blue-50 p-3 rounded text-sm text-blue-700 mb-2">
@@ -194,7 +156,6 @@ const init = async () => {
             </div>
         </div>
     `;
-
     Swal.fire({
       title: "Bulk Update Checking",
       html: htmlContent,
@@ -207,7 +168,6 @@ const init = async () => {
         const keterangan = document.getElementById("swal-bulk-ket").value;
         const userCheck = document.getElementById("swal-bulk-user").value;
         const passAuth = document.getElementById("swal-bulk-pass").value;
-
         if (!keterangan) {
           Swal.showValidationMessage("Keterangan tidak boleh kosong");
           return false;
@@ -220,14 +180,13 @@ const init = async () => {
           Swal.showValidationMessage("Kode Otorisasi wajib diisi");
           return false;
         }
-
         return { keterangan, userCheck, passAuth };
       },
     }).then(async (result) => {
       if (result.isConfirmed) {
         const success = await fetchBulkUpdateMargin(
           itemsToUpdate,
-          result.value, // Mengirim object otorisasi
+          result.value,
           start.value,
           end.value,
           selectCabang.value
@@ -239,6 +198,18 @@ const init = async () => {
       }
     });
   });
+  window.closeModal = () => {
+    const modalInfo = document.getElementById("informasi");
+    if (modalInfo) {
+      modalInfo.classList.add("hidden");
+    }
+  };
+  const btnCloseDetail = document.getElementById("btnCloseDetail");
+  const modalDetail = document.getElementById("detailInvalid");
+  if (btnCloseDetail && modalDetail) {
+    btnCloseDetail.addEventListener("click", () => {
+      modalDetail.classList.add("hidden");
+    });
+  }
 };
-
 init();

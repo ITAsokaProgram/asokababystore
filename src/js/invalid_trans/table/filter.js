@@ -7,12 +7,10 @@ import {
 } from "../fetch/all_kategori.js";
 import { openDetailModal } from "./all_kategori.js";
 import { paginationKat, paginationDetail } from "./pagination.js";
-
 let start = "",
   end = "";
 let selectValuePeriode = "";
 let selectValueCabang = "";
-
 const formatDate = (date) => {
   const d = new Date(date);
   const dd = String(d.getDate()).padStart(2, "0");
@@ -20,14 +18,12 @@ const formatDate = (date) => {
   const yyyy = d.getFullYear();
   return `${yyyy}-${mm}-${dd}`;
 };
-
 export const filterByTanggal = () => {
   const periodeSelect = document.getElementById("periodeFilter");
   const startDateInput = document.getElementById("startDate");
   const endDateInput = document.getElementById("endDate");
   const kategoriSelect = document.getElementById("kategori");
   const cabangSelect = document.getElementById("cabangFilter");
-
   if (!startDateInput.value) {
     const today = new Date();
     const yesterday = new Date(today);
@@ -35,7 +31,6 @@ export const filterByTanggal = () => {
     startDateInput.value = formatDate(yesterday);
     endDateInput.value = formatDate(today);
   }
-
   periodeSelect.addEventListener("change", () => {
     const today = new Date();
     const value = periodeSelect.value;
@@ -74,7 +69,6 @@ export const filterByTanggal = () => {
       endDateInput.value = end;
     }
   });
-
   const btn = document.getElementById("filterTanggalBtn");
   btn.addEventListener("click", async (e) => {
     e.preventDefault();
@@ -104,7 +98,6 @@ export const filterByTanggal = () => {
     paginationKat(1, 10, "kategori_by_tanggal");
     initSearchFilter("kategori_by_tanggal", "kategori_search_tanggal");
   });
-
   document
     .getElementById("allTable")
     .addEventListener("click", async function (e) {
@@ -114,22 +107,22 @@ export const filterByTanggal = () => {
       const kategori = btn.getAttribute("data-kat");
       const split = kategori.split(" ")[0];
       const likeKategori = `%${split}%`;
+      const cabangVal = document.getElementById("cabangFilter").value;
       if (kode && kategori) {
         openDetailModal();
         await fetchDetailKategori(
           likeKategori,
           kode,
           startDateInput.value,
-          endDateInput.value
+          endDateInput.value,
+          cabangVal
         );
         paginationDetail(1, 100, "detail_kategori");
       }
     });
-
   const modalDetail = document.getElementById("detailInvalid");
   const checkAll = document.getElementById("checkAllDetail");
   const btnBulk = document.getElementById("btnBulkUpdate");
-
   function toggleBulkButton() {
     const checkedBoxes = modalDetail.querySelectorAll(
       ".check-detail-item:checked"
@@ -141,7 +134,6 @@ export const filterByTanggal = () => {
       btnBulk.classList.add("hidden");
     }
   }
-
   if (checkAll) {
     checkAll.addEventListener("change", function () {
       const checkboxes = modalDetail.querySelectorAll(".check-detail-item");
@@ -149,7 +141,6 @@ export const filterByTanggal = () => {
       toggleBulkButton();
     });
   }
-
   modalDetail.addEventListener("change", function (e) {
     if (e.target.classList.contains("check-detail-item")) {
       const allCheckboxes = modalDetail.querySelectorAll(".check-detail-item");
@@ -158,14 +149,12 @@ export const filterByTanggal = () => {
       toggleBulkButton();
     }
   });
-
   if (btnBulk) {
     btnBulk.addEventListener("click", function () {
       const checkedBoxes = modalDetail.querySelectorAll(
         ".check-detail-item:checked"
       );
       if (checkedBoxes.length === 0) return;
-
       const itemsToUpdate = [];
       let kodeSample = "";
       checkedBoxes.forEach((cb) => {
@@ -173,7 +162,6 @@ export const filterByTanggal = () => {
         itemsToUpdate.push(data);
         kodeSample = data.kasir;
       });
-
       let kategoriSample = "";
       const sessionDetail = JSON.parse(
         sessionStorage.getItem("detail_kategori") || "{}"
@@ -183,8 +171,6 @@ export const filterByTanggal = () => {
         const rawKat = dataRaw[0].kategori.split(" ")[0];
         kategoriSample = `%${rawKat}%`;
       }
-
-      // --- MODIFIED: SweetAlert with Authorization Form ---
       const htmlContent = `
         <div class="flex flex-col gap-4 text-left">
             <div class="bg-blue-50 p-3 rounded text-sm text-blue-700 mb-2">
@@ -207,7 +193,6 @@ export const filterByTanggal = () => {
             </div>
         </div>
       `;
-
       Swal.fire({
         title: "Bulk Update Checking",
         html: htmlContent,
@@ -220,7 +205,6 @@ export const filterByTanggal = () => {
           const keterangan = document.getElementById("swal-bulk-ket").value;
           const userCheck = document.getElementById("swal-bulk-user").value;
           const passAuth = document.getElementById("swal-bulk-pass").value;
-
           if (!keterangan) {
             Swal.showValidationMessage("Keterangan tidak boleh kosong");
             return false;
@@ -233,14 +217,13 @@ export const filterByTanggal = () => {
             Swal.showValidationMessage("Kode Otorisasi wajib diisi");
             return false;
           }
-
           return { keterangan, userCheck, passAuth };
         },
       }).then(async (result) => {
         if (result.isConfirmed) {
           const success = await fetchBulkCekData(
             itemsToUpdate,
-            result.value, // Pass authorization object
+            result.value,
             kategoriSample,
             kodeSample,
             startDateInput.value,
@@ -255,7 +238,6 @@ export const filterByTanggal = () => {
       });
     });
   }
-
   document.addEventListener("click", async function (e) {
     const button = e.target.closest(".periksa");
     if (!button) return;
@@ -277,7 +259,6 @@ export const filterByTanggal = () => {
       endDateInput.value
     );
   });
-
   document.addEventListener("click", async function (e) {
     const button = e.target.closest(".lihat-keterangan");
     const showInformation = document.getElementById("informasi");
@@ -303,7 +284,12 @@ export const filterByTanggal = () => {
     keterangan.textContent = ket.data[0].ket_cek;
   });
 };
-
+const btnCloseInfo = document.getElementById("btnCloseInformasi");
+if (btnCloseInfo) {
+  btnCloseInfo.addEventListener("click", () => {
+    document.getElementById("informasi").classList.add("hidden");
+  });
+}
 const searchFilter = (options) => {
   const {
     inputId = "search",
@@ -332,7 +318,6 @@ const searchFilter = (options) => {
     }
   });
 };
-
 export const initSearchFilter = (mode = "kategori_invalid", output) => {
   const sessionKey = mode;
   const outputKey = output;
@@ -344,5 +329,4 @@ export const initSearchFilter = (mode = "kategori_invalid", output) => {
     renderFunction: paginationKat,
   });
 };
-
 export default { initSearchFilter, filterByTanggal };

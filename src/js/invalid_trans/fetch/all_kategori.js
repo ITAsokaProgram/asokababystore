@@ -1,6 +1,5 @@
 import { paginationDetail } from "../table/pagination.js";
 import getCookie from "./../../index/utils/cookies.js";
-
 const showLoading = () => {
   Swal.fire({
     title: "",
@@ -11,7 +10,6 @@ const showLoading = () => {
     },
   });
 };
-
 export const refreshParentTable = async () => {
   try {
     const source = sessionStorage.getItem("kategori_source");
@@ -35,7 +33,6 @@ export const refreshParentTable = async () => {
     window.location.reload();
   }
 };
-
 export const fetchAllKategori = async (useLoading = true) => {
   const token = getCookie("admin_token");
   if (useLoading) showLoading();
@@ -108,18 +105,18 @@ export const fetchAllKategori = async (useLoading = true) => {
     }).showToast();
   }
 };
-
 export const fetchDetailKategori = async (
   kategori,
   kode,
   start = null,
-  end = null
+  end = null,
+  cabang = ""
 ) => {
   const token = getCookie("admin_token");
   showLoading();
   try {
     const response = await fetch(
-      `/src/api/invalid/detail_kategori?kategori=${kategori}&kode=${kode}&start=${start}&end=${end}`,
+      `/src/api/invalid/detail_kategori?kategori=${kategori}&kode=${kode}&start=${start}&end=${end}&cabang=${cabang}`,
       {
         method: "GET",
         headers: {
@@ -189,7 +186,6 @@ export const fetchDetailKategori = async (
     }).showToast();
   }
 };
-
 export const fetchKategoriByTgl = async (
   start,
   end,
@@ -272,8 +268,6 @@ export const fetchKategoriByTgl = async (
     }).showToast();
   }
 };
-
-// --- UPDATED: fetchCekData dengan Form Otorisasi ---
 export const fetchCekData = async (
   data,
   kategori,
@@ -282,8 +276,6 @@ export const fetchCekData = async (
   endDate
 ) => {
   const token = getCookie("admin_token");
-
-  // HTML Form Otorisasi
   const htmlContent = `
     <div class="flex flex-col gap-4 text-left">
         <div>
@@ -303,7 +295,6 @@ export const fetchCekData = async (
         </div>
     </div>
   `;
-
   Swal.fire({
     title: "Update Checking",
     html: htmlContent,
@@ -317,7 +308,6 @@ export const fetchCekData = async (
       const keterangan = document.getElementById("swal-input-ket").value;
       const userCheck = document.getElementById("swal-input-user").value;
       const passAuth = document.getElementById("swal-input-pass").value;
-
       if (!keterangan) {
         Swal.showValidationMessage("Keterangan tidak boleh kosong");
         return false;
@@ -330,8 +320,6 @@ export const fetchCekData = async (
         Swal.showValidationMessage("Kode Otorisasi wajib diisi");
         return false;
       }
-
-      // Return object lengkap
       return {
         ...data,
         ket: keterangan,
@@ -342,9 +330,7 @@ export const fetchCekData = async (
   }).then(async (result) => {
     if (result.isConfirmed && result.value) {
       const payload = result.value;
-
       Swal.showLoading();
-
       fetch("/src/api/invalid/update_checking", {
         method: "POST",
         headers: {
@@ -370,11 +356,9 @@ export const fetchCekData = async (
     }
   });
 };
-
-// --- UPDATED: fetchBulkCekData menerima object otorisasi ---
 export const fetchBulkCekData = async (
   items,
-  formValues, // Parameter diubah menerima object {keterangan, userCheck, passAuth}
+  formValues,
   kategori,
   kode,
   startDate,
@@ -388,7 +372,6 @@ export const fetchBulkCekData = async (
     kode_otorisasi: formValues.passAuth,
     nama: sessionStorage.getItem("userName"),
   };
-
   Swal.showLoading();
   try {
     const response = await fetch("/src/api/invalid/update_checking", {
@@ -413,7 +396,6 @@ export const fetchBulkCekData = async (
     return false;
   }
 };
-
 export const fetchKeterangan = async (plu, kasir, tgl, jam, store) => {
   const token = getCookie("admin_token");
   try {
@@ -474,7 +456,6 @@ export const fetchKeterangan = async (plu, kasir, tgl, jam, store) => {
     }).showToast();
   }
 };
-
 export const fetchTopInvalid = async () => {
   const token = getCookie("admin_token");
   try {
@@ -502,7 +483,6 @@ export const fetchTopInvalid = async () => {
     }).showToast();
   }
 };
-
 export const fetchTopRetur = async () => {
   const token = getCookie("admin_token");
   try {
@@ -530,7 +510,6 @@ export const fetchTopRetur = async () => {
     }).showToast();
   }
 };
-
 export const fetchExportDetails = async (cabang) => {
   const token = getCookie("admin_token");
   showLoading();
@@ -561,7 +540,6 @@ export const fetchExportDetails = async (cabang) => {
     return [];
   }
 };
-
 export default {
   fetchAllKategori,
   fetchDetailKategori,

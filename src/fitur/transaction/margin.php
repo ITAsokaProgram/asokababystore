@@ -148,7 +148,7 @@ $token = $menuHandler->getToken();
         <div
             class="bg-white/95 backdrop-blur-md w-full max-w-3xl rounded-2xl shadow-2xl p-8 relative border border-white/30">
 
-            <button type="button" id="closeModal"
+            <button type="button" id="btnCloseDetail"
                 class="absolute top-4 right-4 text-gray-500 hover:text-red-500 text-2xl bg-white/80 rounded-full p-2 shadow-md transition-all duration-200">
                 <i class="fas fa-times"></i>
             </button>
