@@ -7,7 +7,6 @@ header("Access-Control-Allow-Methods: POST");
 date_default_timezone_set('Asia/Jakarta');
 
 try {
-    // 1. Validasi Token Login (Bearer Token)
     $headers = getallheaders();
     $authHeader = $headers['Authorization'] ?? '';
     $token = null;
@@ -19,13 +18,10 @@ try {
     }
     $verif = verify_token($token);
 
-    // 2. Ambil Input JSON
     $input = json_decode(file_get_contents("php://input"), true);
 
-    // --- START LOGIKA OTORISASI ---
     $nama_user_cek_input = trim($input['nama_user_cek'] ?? '');
     $kode_otorisasi = $input['kode_otorisasi'] ?? '';
-    $tanggal_hari_ini = date('Y-m-d');
 
     if (empty($nama_user_cek_input)) {
         throw new Exception("Nama User Check (Inisial) wajib diisi.");
@@ -34,7 +30,6 @@ try {
         throw new Exception("Kode Otorisasi wajib diisi.");
     }
 
-    // A. Cari User berdasarkan Inisial di table user_account
     $sql_cari_user = "SELECT kode FROM user_account WHERE inisial = ? LIMIT 1";
     $stmt_cari = $conn->prepare($sql_cari_user);
     if (!$stmt_cari)
@@ -52,37 +47,33 @@ try {
     $user_cek_kode = $row_user['kode'];
     $stmt_cari->close();
 
-    // B. Cek Password Otorisasi Hari Ini di table otorisasi_user
-    $sql_auth = "SELECT kode_user FROM otorisasi_user WHERE kode_user = ? AND PASSWORD = ? AND tanggal = ?";
+    // --- UBAH DISINI: HAPUS TANGGAL DARI CEK OTORISASI ---
+    $sql_auth = "SELECT kode_user FROM otorisasi_user WHERE kode_user = ? AND PASSWORD = ?";
     $stmt_auth = $conn->prepare($sql_auth);
     if (!$stmt_auth)
         throw new Exception("DB Error: " . $conn->error);
 
-    $stmt_auth->bind_param("iss", $user_cek_kode, $kode_otorisasi, $tanggal_hari_ini);
+    $stmt_auth->bind_param("is", $user_cek_kode, $kode_otorisasi);
     $stmt_auth->execute();
 
     if ($stmt_auth->get_result()->num_rows === 0) {
-        throw new Exception("Otorisasi Gagal! Password salah atau User belum membuat otorisasi untuk tanggal ini.");
+        throw new Exception("Otorisasi Gagal! Password salah atau User belum set otorisasi.");
     }
     $stmt_auth->close();
-    // --- END LOGIKA OTORISASI ---
 
-    // 3. Proses Data Item
     $items = isset($input['items']) ? $input['items'] : [];
     if (empty($items) && isset($input['plu'])) {
         $items[] = $input;
     }
 
     $ket_global = $input['keterangan'] ?? ($input['ket'] ?? '-');
-    $nama_user = $input['nama'] ?? 'User'; // User yang login (admin)
+    $nama_user = $input['nama'] ?? 'User';
     $tanggal_timestamp = date('Y-m-d H:i:s');
 
     if (empty($items)) {
         throw new Exception('Tidak ada data yang dikirim', 400);
     }
 
-    // Query Insert/Update
-    // Kolom 'nama_cek' kita isi dengan Inisial User yang memberikan otorisasi
     $sql = "INSERT INTO margin
     (plu, no_bon, descp, qty, gross, net, avg_cost, ppn, margin_min, tanggal, kd_store, cabang, ket_cek, nama_cek, status_cek, tanggal_cek)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
@@ -112,10 +103,7 @@ try {
         $kd_store = $item['kd'] ?? $item['kd_store'];
         $cabang = $item['cabang'];
 
-        // Gunakan keterangan per item jika ada, jika tidak gunakan global
         $ket = !empty($item['keterangan']) ? $item['keterangan'] : $ket_global;
-
-        // Gunakan nama user cek dari input otorisasi
         $nama_cek_final = $nama_user_cek_input;
 
         $stmt->bind_param(
@@ -155,12 +143,10 @@ try {
     }
 
 } catch (Exception $e) {
-    // Pastikan koneksi ditutup jika terjadi error di tengah
     if (isset($conn))
         $conn->close();
 
     $code = $e->getCode() ?: 500;
-    // Hindari code 0 (default Exception) masuk ke http_response_code
     if ($code < 100 || $code > 599)
         $code = 500;
 

@@ -4,6 +4,7 @@ ini_set('display_errors', 0);
 require_once __DIR__ . '/../../../aa_kon_sett.php';
 require_once __DIR__ . '/../../auth/middleware_login.php';
 header('Content-Type: application/json');
+
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         throw new Exception('Method Not Allowed');
@@ -48,14 +49,18 @@ try {
     $row_user = $res_cari->fetch_assoc();
     $user_cek = $row_user['kode'];
     $stmt_cari->close();
-    $sql_auth = "SELECT kode_user FROM otorisasi_user WHERE kode_user = ? AND PASSWORD = ? AND tanggal = ?";
+
+    // --- UBAH DISINI: HAPUS TANGGAL DARI CEK OTORISASI ---
+    $sql_auth = "SELECT kode_user FROM otorisasi_user WHERE kode_user = ? AND PASSWORD = ?";
     $stmt_auth = $conn->prepare($sql_auth);
-    $stmt_auth->bind_param("iss", $user_cek, $kode_otorisasi, $tanggal);
+    $stmt_auth->bind_param("is", $user_cek, $kode_otorisasi);
     $stmt_auth->execute();
+
     if ($stmt_auth->get_result()->num_rows === 0) {
-        throw new Exception("Otorisasi Gagal! Kode salah atau User '$nama_user_cek_input' belum membuat otorisasi untuk tanggal ini.");
+        throw new Exception("Otorisasi Gagal! Kode salah atau User '$nama_user_cek_input' belum set otorisasi.");
     }
     $stmt_auth->close();
+
     $denominations = [
         'qty_100rb' => 100000,
         'qty_50rb' => 50000,

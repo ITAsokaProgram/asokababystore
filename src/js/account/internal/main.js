@@ -9,6 +9,7 @@ import { paginationUserInternal } from "./pagination.js";
 import { renderTableUserInternal } from "./table.js";
 import { areaCabang } from "./../../kode_cabang/cabang_area.js";
 import getCookie from "../../index/utils/cookies.js";
+
 const getInitialState = () => {
   const params = new URLSearchParams(window.location.search);
   return {
@@ -259,14 +260,18 @@ const setupGlobalEventListeners = () => {
   document.getElementById("close-reset").addEventListener("click", () => {
     document.getElementById("resetPassword").classList.add("hidden");
   });
+
+  // LOGIC OTORISASI (YANG DIUBAH)
   const modalOto = document.getElementById("modalOtorisasi");
   const formOto = document.getElementById("formOtorisasi");
   const closeOtoBtn = document.getElementById("close-otorisasi");
   const cancelOtoBtn = document.getElementById("btn-cancel-otorisasi");
+
   const closeModalOto = () => {
     if (modalOto) modalOto.classList.add("hidden");
     if (formOto) formOto.reset();
   };
+
   document.addEventListener("click", (e) => {
     const button = e.target.closest(".otorisasi");
     if (!button) return;
@@ -274,16 +279,17 @@ const setupGlobalEventListeners = () => {
     const nama = button.getAttribute("data-nama");
     document.getElementById("oto_kode_user").value = kode;
     document.getElementById("oto_nama_user").textContent = nama;
-    const today = new Date().toISOString().split("T")[0];
-    document.getElementById("oto_tanggal").value = today;
+
+    // TIDAK LAGI MENGISI TANGGAL OTOMATIS
     if (modalOto) modalOto.classList.remove("hidden");
   });
+
   if (formOto) {
     formOto.addEventListener("submit", async (e) => {
       e.preventDefault();
       const data = {
         kode_user: document.getElementById("oto_kode_user").value,
-        tanggal: document.getElementById("oto_tanggal").value,
+        // TANGGAL TIDAK DIKIRIM LAGI
         password: document.getElementById("oto_password").value,
       };
       const success = await setOtorisasiUser(data);
@@ -292,8 +298,10 @@ const setupGlobalEventListeners = () => {
       }
     });
   }
+
   if (closeOtoBtn) closeOtoBtn.addEventListener("click", closeModalOto);
   if (cancelOtoBtn) cancelOtoBtn.addEventListener("click", closeModalOto);
+
   document
     .getElementById("closeEditModal")
     .addEventListener("click", closeModal);

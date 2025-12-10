@@ -917,7 +917,7 @@ $token = $menuHandler->getToken();
                         </p>
                     </div>
 
-                    <div>
+                    <div class="hidden">
                         <label for="oto_tanggal" class="block text-sm font-medium text-gray-700 mb-1">Berlaku
                             Tanggal</label>
                         <input type="date" id="oto_tanggal" required
