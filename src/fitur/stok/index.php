@@ -182,124 +182,100 @@ require_once __DIR__ . '/../../component/menu_handler.php';
     <?php include '../../component/navigation_report.php' ?>
     <?php include '../../component/sidebar_report.php' ?>
 
-    <main id="main-content" class="flex-1 p-4 ml-64">
+    <main id="main-content" class="flex-1 p-3 ml-64">
         <section class="">
             <div class="max-w-7xl mx-auto">
 
-                <div class="header-card p-4 rounded-2xl mb-4">
-                    <div class="flex items-center justify-between flex-wrap gap-3">
-                        <div class="flex items-center gap-3">
+                <div class="header-card p-3 rounded-xl mb-3">
+                    <div class="flex items-center justify-between flex-wrap gap-2">
+                        <div class="flex items-center gap-2">
                             <div
-                                class="p-4 bg-gradient-to-br from-pink-500 to-pink-600 rounded-2xl text-white shadow-xl shadow-pink-200 icon-rotate">
-                                <i class="fa-solid fa-boxes-stacked fa-xl"></i>
+                                class="p-2.5 bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl text-white shadow-lg shadow-pink-200 icon-rotate">
+                                <i class="fa-solid fa-boxes-stacked fa-lg"></i>
                             </div>
                             <div>
-                                <h1 id="page-title" class="text-xl font-bold text-gray-800 mb-1">Stok Harian
+                                <h1 id="page-title" class="text-lg font-bold text-gray-800 leading-tight">Stok Harian
                                 </h1>
-                                <p id="page-subtitle" class="text-xs text-gray-600">Master Backup</p>
+                                <p id="page-subtitle" class="text-[10px] text-gray-600">Master Backup</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Enhanced Header -->
+                <div class="gradient-box p-4 rounded-2xl shadow-md border border-pink-100 mb-4 section-card">
+                    <form id="filter-form" class="flex flex-col gap-4">
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
 
-
-                <!-- Enhanced Filter Form -->
-                <div class="gradient-box p-6 rounded-3xl shadow-lg border border-pink-100 mb-6 section-card">
-                    <form id="filter-form" class="flex flex-col gap-6">
-                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-
-                            <!-- Branch Selection - Enhanced -->
-                            <div class="lg:col-span-7 bg-white rounded-2xl border-2 border-pink-100 p-5 transition-all section-card"
+                            <div class="lg:col-span-7 bg-white rounded-xl border border-pink-100 p-3 transition-all section-card"
                                 id="branch-section">
                                 <div
-                                    class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
-                                    <label class="flex items-center gap-2 text-sm font-bold text-gray-800">
+                                    class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 gap-2">
+                                    <label class="flex items-center gap-2 text-xs font-bold text-gray-800">
                                         <span
-                                            class="number-badge text-white w-6 h-6 flex items-center justify-center rounded-full text-xs">1</span>
+                                            class="number-badge text-white w-5 h-5 flex items-center justify-center rounded-full text-[10px]">1</span>
                                         Pilih Cabang
-                                        <span class="text-[10px] font-normal text-gray-400">(Klik untuk memilih)</span>
                                     </label>
 
-                                    <div class="flex gap-2 w-full sm:w-auto">
+                                    <div class="flex gap-1 w-full sm:w-auto">
                                         <div class="relative flex-1 sm:flex-initial">
                                             <i
-                                                class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
-                                            <input type="text" id="branch-search" placeholder="Cari cabang..."
-                                                class="pl-10 pr-4 py-4 text-xs border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 w-full sm:w-40 transition-all focus:outline-none">
+                                                class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[10px]"></i>
+                                            <input type="text" id="branch-search" placeholder="Cari..."
+                                                class="pl-8 pr-3 py-1.5 text-[11px] border border-gray-200 rounded-lg focus:ring-1 focus:ring-pink-500 w-full sm:w-32 transition-all focus:outline-none">
                                         </div>
                                         <button type="button" id="btn-select-all"
-                                            class="text-xs bg-gradient-to-r from-pink-50 to-pink-100 hover:from-pink-100 hover:to-pink-200 text-pink-700 font-medium px-4 py-2.5 rounded-xl transition-all border border-pink-200 whitespace-nowrap">
-                                            <i class="fas fa-check-double mr-1"></i> Semua
+                                            class="text-[10px] bg-pink-50 text-pink-700 font-medium px-3 py-1.5 rounded-lg border border-pink-200">
+                                            Semua
                                         </button>
                                         <button type="button" id="btn-deselect-all"
-                                            class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium px-4 py-2.5 rounded-xl transition-all whitespace-nowrap">
-                                            <i class="fas fa-times mr-1"></i> Reset
+                                            class="text-[10px] bg-gray-100 text-gray-700 font-medium px-3 py-1.5 rounded-lg border border-gray-200">
+                                            Reset
                                         </button>
                                     </div>
                                 </div>
 
-                                <div class="relative border-2 border-gray-200 rounded-xl bg-gradient-to-br from-gray-50 to-white overflow-y-auto scrollbar-pink p-3"
-                                    style="max-height: 240px;">
+                                <div class="relative border border-gray-200 rounded-lg bg-gray-50 overflow-y-auto scrollbar-pink p-2"
+                                    style="max-height: 180px;">
                                     <div id="branch-container"
-                                        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                                        <div class="col-span-full text-center py-12">
-                                            <div class="inline-block shimmer rounded-lg px-8 py-4">
-                                                <i class="fas fa-spinner fa-spin mr-2 text-pink-500"></i>
-                                                <span class="text-gray-500 text-sm font-medium">Memuat Cabang...</span>
-                                            </div>
-                                        </div>
+                                        class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
                                     </div>
                                 </div>
-                                <div class="flex justify-between items-center mt-3">
-                                    <p class="text-[10px] text-pink-600 italic flex items-center gap-1">
-                                        <i class="fas fa-info-circle"></i> Wajib dipilih minimal 1 cabang
-                                    </p>
+                                <div class="flex justify-between items-center mt-2">
                                     <span id="selected-count"
-                                        class="text-xs font-bold text-pink-600 bg-pink-50 px-3 py-1 rounded-full border border-pink-200 badge-animate">
-                                        0 Dipilih
-                                    </span>
+                                        class="text-[10px] font-bold text-pink-600 bg-pink-50 px-2 py-0.5 rounded-full border border-pink-200">0
+                                        Dipilih</span>
                                 </div>
                             </div>
 
-                            <!-- Right Side Actions -->
-                            <div class="lg:col-span-5 flex flex-col gap-4 h-full">
-                                <!-- Supplier Filter - Enhanced -->
-                                <div class="bg-white rounded-2xl border-2 border-pink-100 p-5 flex-1 transition-all section-card"
+                            <div class="lg:col-span-5 flex flex-col gap-3 h-full">
+                                <div class="bg-white rounded-xl border border-pink-100 p-3 flex-1 section-card"
                                     id="supplier-section">
-                                    <label class="flex items-center gap-2 text-sm font-bold text-gray-800 mb-3">
+                                    <label class="flex items-center gap-2 text-xs font-bold text-gray-800 mb-2">
                                         <span
-                                            class="number-badge text-white w-6 h-6 flex items-center justify-center rounded-full text-xs">2</span>
+                                            class="number-badge text-white w-5 h-5 flex items-center justify-center rounded-full text-[10px]">2</span>
                                         Filter Supplier
                                     </label>
                                     <div class="relative">
-
                                         <select name="kode_supp" id="kode_supp" disabled
-                                            class="w-full px-4 py-3 text-sm border-2 border-gray-200 rounded-xl bg-gray-50 cursor-not-allowed transition-all focus:ring-2 focus:ring-pink-500 focus:border-pink-500 focus:outline-none">
+                                            class="w-full px-3 py-2 text-xs border border-gray-200 rounded-lg bg-gray-50 cursor-not-allowed focus:ring-1 focus:ring-pink-500 focus:outline-none">
                                             <option value="">-- Pilih Cabang Dulu --</option>
                                         </select>
                                     </div>
-                                    <p class="text-[11px] text-gray-500 mt-3 flex items-center gap-2"
+                                    <p class="text-[10px] text-gray-500 mt-1 flex items-center gap-1"
                                         id="supp-loading-text">
-                                        <i class="fas fa-arrow-up text-pink-400"></i>
-                                        Pilih cabang untuk memuat supplier
+                                        <i class="fas fa-arrow-up text-pink-400"></i> Pilih cabang
                                     </p>
                                 </div>
 
-                                <!-- Action Buttons - Enhanced -->
-                                <div class="bg-white rounded-2xl border-2 border-pink-100 p-5 section-card">
-                                    <div class="flex flex-col gap-3">
-                                        <button type="submit" id="filter-submit-button" disabled
-                                            class="w-full btn-pink-gradient text-white font-bold rounded-xl text-sm px-6 py-4 text-center inline-flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
-                                            <i class="fas fa-search"></i>
-                                            <span>Cari Stock</span>
+                                <div class="bg-white rounded-xl border border-pink-100 p-3 section-card">
+                                    <div class="flex gap-2"> <button type="submit" id="filter-submit-button" disabled
+                                            class="flex-1 btn-pink-gradient text-white font-bold rounded-lg text-xs px-4 py-2.5 shadow-md disabled:opacity-50">
+                                            <i class="fas fa-search mr-1"></i> Cari
                                         </button>
 
                                         <button type="button" id="reset-button"
-                                            class="w-full bg-white text-gray-600 border-2 border-gray-200 hover:bg-gray-50 hover:text-pink-600 hover:border-pink-200 font-medium rounded-xl text-sm px-6 py-3 text-center inline-flex items-center justify-center gap-2 transition-all">
-                                            <i class="fas fa-undo-alt"></i>
-                                            <span>Reset Filter</span>
+                                            class="flex-1 bg-white text-gray-600 border border-gray-200 hover:bg-gray-50 font-medium rounded-lg text-xs px-4 py-2.5 transition-all">
+                                            <i class="fas fa-undo-alt mr-1"></i> Reset
                                         </button>
                                     </div>
                                 </div>
@@ -309,37 +285,32 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                     </form>
                 </div>
 
-                <!-- Enhanced Results Table -->
-                <div class="bg-white rounded-3xl shadow-lg border-2 border-pink-100 hidden section-card"
+                <div class="bg-white rounded-2xl shadow-md border border-pink-100 hidden section-card"
                     id="result-container">
-
                     <div
-                        class="p-5 border-b-2 border-pink-100 flex justify-between items-center bg-gradient-to-r from-pink-50 to-white">
-                        <div class="flex items-center gap-3">
-                            <div class="p-2 bg-pink-100 rounded-lg">
-                                <i class="fas fa-list text-pink-600"></i>
+                        class="p-3 border-b border-pink-100 flex justify-between items-center bg-gradient-to-r from-pink-50 to-white">
+                        <div class="flex items-center gap-2">
+                            <div class="p-1.5 bg-pink-100 rounded-md">
+                                <i class="fas fa-list text-pink-600 text-xs"></i>
                             </div>
-                            <h3 class="text-sm font-bold text-gray-800">Hasil Pencarian</h3>
+                            <h3 class="text-xs font-bold text-gray-800">Hasil</h3>
                             <span id="total-records-badge"
-                                class="hidden px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-pink-100 to-pink-200 text-pink-800 border-2 border-pink-300 badge-animate">
-                                0 Item
-                            </span>
+                                class="hidden px-2 py-0.5 rounded-full text-[10px] font-bold bg-pink-100 text-pink-800 border border-pink-300">0
+                                Item</span>
                         </div>
                         <button onclick="exportToExcel()"
-                            class="text-xs bg-gradient-to-r from-green-500 to-green-600 text-white font-bold px-4 py-2 rounded-xl hover:from-green-600 hover:to-green-700 transition-all shadow-md hover:shadow-lg">
-                            <i class="fas fa-file-excel mr-1.5"></i> Export Excel
+                            class="text-[10px] bg-green-500 text-white font-bold px-3 py-1.5 rounded-lg shadow-sm hover:bg-green-600">
+                            <i class="fas fa-file-excel mr-1"></i> Excel
                         </button>
                     </div>
 
                     <div id="table-scroll-area" class="overflow-x-auto relative overflow-y-auto scrollbar-pink"
-                        style="max-height:500px;">
-                        <table class="w-full text-sm text-left text-gray-500" id="stock-table">
-                            <thead class="text-xs text-gray-700 uppercase sticky top-0 z-20">
-                                <tr id="table-headers">
-                                </tr>
+                        style="max-height:450px;">
+                        <table class="w-full text-xs text-left text-gray-500" id="stock-table">
+                            <thead class="text-[10px] text-gray-700 uppercase sticky top-0 z-20">
+                                <tr id="table-headers"></tr>
                             </thead>
-                            <tbody id="table-body">
-                            </tbody>
+                            <tbody id="table-body"></tbody>
                         </table>
                     </div>
                 </div>
@@ -347,7 +318,6 @@ require_once __DIR__ . '/../../component/menu_handler.php';
             </div>
         </section>
     </main>
-
     <script src="/src/js/middleware_auth.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 

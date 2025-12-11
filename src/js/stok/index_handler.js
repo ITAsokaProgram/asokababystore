@@ -54,9 +54,9 @@ document.addEventListener("DOMContentLoaded", () => {
     branchContainer.innerHTML = "";
     if (data.length === 0) {
       branchContainer.innerHTML = `
-        <div class="col-span-full text-center py-8">
-          <i class="fas fa-search text-gray-300 text-2xl mb-2"></i>
-          <p class="text-gray-400 text-sm">Tidak ada cabang ditemukan</p>
+        <div class="col-span-full text-center py-4">
+          <i class="fas fa-search text-gray-300 text-lg mb-1"></i>
+          <p class="text-gray-400 text-xs">Tidak ada cabang</p>
         </div>`;
       return;
     }
@@ -67,19 +67,19 @@ document.addEventListener("DOMContentLoaded", () => {
         <label class="cursor-pointer group block h-full">
           <input type="checkbox" name="kd_store[]" value="${store.Kd_Store}" 
             class="branch-checkbox peer sr-only">
-          <div class="branch-card border-2 border-gray-200 rounded-xl p-3 h-full flex items-center gap-3 bg-white hover:bg-pink-50">
-            <div class="branch-icon w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center transition-all flex-shrink-0">
-              <i class="fas fa-store text-gray-200 text-sm"></i>
+          <div class="branch-card border border-gray-200 rounded-lg p-2 h-full flex items-center gap-2 bg-white hover:bg-pink-50">
+            <div class="branch-icon w-6 h-6 bg-gray-100 rounded-md flex items-center justify-center transition-all flex-shrink-0">
+              <i class="fas fa-store text-gray-400 text-xs"></i>
             </div>
             <div class="flex flex-col min-w-0 flex-1">
-              <span class="text-xs font-bold text-gray-800 group-hover:text-pink-600 transition-colors truncate">${
+              <span class="text-[11px] font-bold text-gray-800 group-hover:text-pink-600 transition-colors truncate leading-tight">${
                 store.Kd_Store
               }</span>
-              <span class="text-[10px] text-gray-500 truncate">${
+              <span class="text-[10px] text-gray-500 truncate leading-tight">${
                 store.Nm_Alias || store.Nm_Store
               }</span>
             </div>
-            <i class="fas fa-check-circle text-pink-500 opacity-0 peer-checked:opacity-100 transition-opacity"></i>
+            <i class="fas fa-check-circle text-pink-500 text-xs opacity-0 peer-checked:opacity-100 transition-opacity"></i>
           </div>
         </label>
       `;
@@ -231,6 +231,10 @@ document.addEventListener("DOMContentLoaded", () => {
     btnSubmit.disabled = !selectSupp.value;
     if (selectSupp.value) {
       resetAndFetchData();
+    } else {
+      resultContainer.classList.add("hidden");
+      tableBody.innerHTML = "";
+      if (totalBadge) totalBadge.classList.add("hidden");
     }
   });
   form.addEventListener("submit", (e) => {
@@ -294,10 +298,17 @@ document.addEventListener("DOMContentLoaded", () => {
   function loadMoreData() {
     const stores = getSelectedStores();
     const supp = selectSupp.value;
+    if (!supp || stores.length === 0) {
+      console.warn("Mencegah request: Parameter tidak lengkap saat scroll");
+      return;
+    }
     currentPage++;
     fetchStockData(stores, supp, currentPage);
   }
   async function fetchStockData(stores, supplier, page) {
+    if (!supplier || stores.length === 0) {
+      return;
+    }
     isLoadingMore = true;
     if (page === 1) {
       btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mencari...';
@@ -390,26 +401,26 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   function renderTableHeader(storeHeaders) {
     tableHeadersRow.innerHTML = `
-      <th class="px-3 py-4 border-b-2 border-pink-200 text-center w-16 font-bold text-pink-700">
+      <th class="px-2 py-2 border-b-2 border-pink-200 text-center w-10 font-bold text-pink-700 text-xs">
         <i class="fas fa-hashtag"></i>
       </th>
-      <th class="px-4 py-4 border-b-2 border-pink-200 sticky left-0 z-30 shadow-[2px_0_8px_-2px_rgba(236,72,153,0.2)] font-bold">
+      <th class="px-2 py-2 border-b-2 border-pink-200 sticky left-0 z-30 shadow-[2px_0_8px_-2px_rgba(236,72,153,0.2)] font-bold text-xs">
         PLU
       </th>
-      <th class="px-4 py-4 border-b-2 border-pink-200 font-bold">Barcode</th>
-      <th class="px-4 py-4 border-b-2 border-pink-200 min-w-[200px] font-bold">Nama Barang</th>
-      <th class="px-4 py-4 border-b-2 border-pink-200 text-center font-bold text-pink-700">
-        <i class="fas fa-calculator mr-1"></i>Total
+      <th class="px-2 py-2 border-b-2 border-pink-200 font-bold text-xs">Barcode</th>
+      <th class="px-2 py-2 border-b-2 border-pink-200 min-w-[150px] font-bold text-xs">Nama Barang</th>
+      <th class="px-2 py-2 border-b-2 border-pink-200 text-center font-bold text-pink-700 text-xs">
+        Total
       </th>
     `;
     storeHeaders.forEach((store) => {
       const th = document.createElement("th");
       th.className =
-        "px-4 py-4 border-b-2 border-l-2 border-pink-200 text-center bg-gradient-to-br from-pink-50 to-pink-100 text-pink-800 whitespace-nowrap sticky top-0 z-20 font-bold";
+        "px-2 py-2 border-b-2 border-l border-pink-200 text-center bg-gradient-to-br from-pink-50 to-pink-100 text-pink-800 whitespace-nowrap sticky top-0 z-20 font-bold text-xs";
       th.innerHTML = `
-        <div class="flex flex-col items-center gap-1">
-          <i class="fas fa-store text-xs text-pink-500"></i>
-          <span class="text-xs">${store.name}</span>
+        <div class="flex flex-col items-center gap-0.5">
+          <i class="fas fa-store text-[10px] text-pink-500"></i>
+          <span class="text-[10px]">${store.name}</span>
         </div>`;
       tableHeadersRow.appendChild(th);
     });
@@ -429,19 +440,19 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       const currentNumber = startNumber + index;
       let html = `
-        <td class="px-3 py-3 text-center text-xs text-gray-400 font-bold border-r border-gray-100">
+        <td class="px-2 py-1.5 text-center text-[11px] text-gray-400 font-bold border-r border-gray-100">
           ${currentNumber}
         </td>
-        <td class="px-4 py-3 font-mono text-xs font-bold text-pink-700 sticky left-0 bg-white group-hover:bg-pink-50 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] border-r border-gray-100">
+        <td class="px-2 py-1.5 font-mono text-[11px] font-bold text-pink-700 sticky left-0 bg-white group-hover:bg-pink-50 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] border-r border-gray-100">
           ${item.plu}
         </td>
-        <td class="px-4 py-3 font-mono text-xs text-gray-600">${
+        <td class="px-2 py-1.5 font-mono text-[11px] text-gray-600">${
           item.barcode || "-"
         }</td>
-        <td class="px-4 py-3 text-xs font-medium text-gray-800">${
+        <td class="px-2 py-1.5 text-[11px] font-medium text-gray-800 leading-tight">${
           item.nama_barang
         }</td>
-        <td class="px-4 py-3 text-center text-xs font-bold bg-gradient-to-r from-pink-50 to-pink-100 text-pink-700 border-x-2 border-pink-200">
+        <td class="px-2 py-1.5 text-center text-[11px] font-bold bg-gradient-to-r from-pink-50 to-pink-100 text-pink-700 border-x border-pink-200">
           ${formatNumber(totalRowQty)}
         </td>
       `;
@@ -459,7 +470,7 @@ document.addEventListener("DOMContentLoaded", () => {
           colorClass = "text-green-600 font-bold";
           bgClass = "bg-green-50";
         }
-        html += `<td class="px-4 py-3 text-center text-xs ${colorClass} ${bgClass} border-l border-gray-100">${formatNumber(
+        html += `<td class="px-2 py-1.5 text-center text-[11px] ${colorClass} ${bgClass} border-l border-gray-100">${formatNumber(
           qty
         )}</td>`;
       });
