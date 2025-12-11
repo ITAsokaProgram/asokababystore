@@ -91,7 +91,7 @@ $isWhatsappOpen = $isActive('/src/fitur/whatsapp_cs/');
         style="display: none;">
         <ul class="py-2 space-y-1">
             <li>
-                <a href="/src/fitur/whatsapp_cs/dashboard_whatsapp" data-menu="whatsapp_dashboard"
+                <a href="/src/fitur/whatsapp/dashboard_whatsapp" data-menu="whatsapp_dashboard"
                     class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-green-100 hover:text-green-700 transition-all duration-200 group rounded-lg">
                     <span class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
                         <i class="fa-solid fa-gauge-high mr-2 text-base text-green-400 group-hover:text-green-600 group-hover:scale-110 transition-all duration-200"></i>
@@ -100,7 +100,7 @@ $isWhatsappOpen = $isActive('/src/fitur/whatsapp_cs/');
                 </a>
             </li>
             <li>
-                <a href="/src/fitur/whatsapp_cs/kelola_balasan_otomatis.php" data-menu="whatsapp_autoreply"
+                <a href="/src/fitur/whatsapp/kelola_balasan_otomatis.php" data-menu="whatsapp_autoreply"
                     class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-green-100 hover:text-green-700 transition-all duration-200 group rounded-lg">
                     <span class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
                         <i class="fa-solid fa-robot mr-2 text-base text-green-400 group-hover:text-green-600 group-hover:scale-110 transition-all duration-200"></i>

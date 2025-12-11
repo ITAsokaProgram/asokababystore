@@ -910,10 +910,10 @@ if (!$menuHandler->initialize()) {
   </main>
 
   <script src="/src/js/middleware_auth.js"></script>
-  <script src="/src/js/whatsapp/cs_utils.js"></script>
-  <script src="/src/js/whatsapp/cs_ui.js"></script>
-  <script src="/src/js/whatsapp/cs_comms.js"></script>
-  <script src="/src/js/whatsapp/cs_whatsapp.js"></script>
+  <script src="/src/js/whatsapp/dashboard/cs_utils.js"></script>
+  <script src="/src/js/whatsapp/dashboard/cs_ui.js"></script>
+  <script src="/src/js/whatsapp/dashboard/cs_comms.js"></script>
+  <script src="/src/js/whatsapp/dashboard/cs_whatsapp.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
