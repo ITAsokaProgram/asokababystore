@@ -529,7 +529,7 @@ if ($stmt->num_rows === 0) {
 
         <section id="faq-section" class="py-20 bg-gradient-to-br from-purple-50 via-white to-pink-50">
             <div class="max-w-6xl mx-auto px-4">
-                <div class="text-center mb-12" data-aos="fade-down" data-aos-duration="800">
+                <div class="text-center mb-12" >
                     <h2 class="text-3xl md:text-4xl font-bold mb-4 gradient-text">Pertanyaan yang Sering Diajukan</h2>
                     <p class="text-lg text-gray-600 max-w-2xl mx-auto">Temukan jawaban untuk pertanyaan Anda seputar
                         Asoka Baby Store</p>
@@ -538,7 +538,7 @@ if ($stmt->num_rows === 0) {
                 <div class="space-y-4 max-w-4xl mx-auto">
                     <!-- FAQ 1 -->
                     <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300"
-                        data-aos="fade-up" data-aos-duration="600" data-aos-delay="50">
+                        >
                         <button
                             class="faq-button w-full text-left px-6 py-5 flex items-center justify-between hover:bg-pink-50 transition-colors duration-300">
                             <span class="font-semibold text-gray-800 pr-4">Apa saja produk yang tersedia di Asoka Baby
@@ -557,7 +557,7 @@ if ($stmt->num_rows === 0) {
 
                     <!-- FAQ 2 -->
                     <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300"
-                        data-aos="fade-up" data-aos-duration="600" data-aos-delay="100">
+                        >
                         <button
                             class="faq-button w-full text-left px-6 py-5 flex items-center justify-between hover:bg-pink-50 transition-colors duration-300">
                             <span class="font-semibold text-gray-800 pr-4">Apakah produk yang dijual di Asoka Baby Store
@@ -575,7 +575,7 @@ if ($stmt->num_rows === 0) {
 
                     <!-- FAQ 3 -->
                     <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300"
-                        data-aos="fade-up" data-aos-duration="600" data-aos-delay="150">
+                        >
                         <button
                             class="faq-button w-full text-left px-6 py-5 flex items-center justify-between hover:bg-pink-50 transition-colors duration-300">
                             <span class="font-semibold text-gray-800 pr-4">Apakah Asoka Baby Store melayani pembelian
@@ -596,7 +596,7 @@ if ($stmt->num_rows === 0) {
 
                     <!-- FAQ 4 -->
                     <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300"
-                        data-aos="fade-up" data-aos-duration="600" data-aos-delay="200">
+                        >
                         <button
                             class="faq-button w-full text-left px-6 py-5 flex items-center justify-between hover:bg-pink-50 transition-colors duration-300">
                             <span class="font-semibold text-gray-800 pr-4">Apakah Asoka Baby Store memiliki promo atau
@@ -614,7 +614,7 @@ if ($stmt->num_rows === 0) {
 
                     <!-- FAQ 5 -->
                     <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300"
-                        data-aos="fade-up" data-aos-duration="600" data-aos-delay="250">
+                        >
                         <button
                             class="faq-button w-full text-left px-6 py-5 flex items-center justify-between hover:bg-pink-50 transition-colors duration-300">
                             <span class="font-semibold text-gray-800 pr-4">Bagaimana kebijakan penukaran barang di Asoka
@@ -635,7 +635,7 @@ if ($stmt->num_rows === 0) {
 
                     <!-- FAQ 6 -->
                     <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300"
-                        data-aos="fade-up" data-aos-duration="600" data-aos-delay="300">
+                        >
                         <button
                             class="faq-button w-full text-left px-6 py-5 flex items-center justify-between hover:bg-pink-50 transition-colors duration-300">
                             <span class="font-semibold text-gray-800 pr-4">Apakah Asoka Baby Store menerima pembelian
@@ -651,7 +651,7 @@ if ($stmt->num_rows === 0) {
 
                     <!-- FAQ 7 -->
                     <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300"
-                        data-aos="fade-up" data-aos-duration="600" data-aos-delay="350">
+                        >
                         <button
                             class="faq-button w-full text-left px-6 py-5 flex items-center justify-between hover:bg-pink-50 transition-colors duration-300">
                             <span class="font-semibold text-gray-800 pr-4">Bagaimana cara memastikan ketersediaan stok
@@ -668,7 +668,7 @@ if ($stmt->num_rows === 0) {
 
                     <!-- FAQ 8 -->
                     <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300"
-                        data-aos="fade-up" data-aos-duration="600" data-aos-delay="400">
+                        >
                         <button
                             class="faq-button w-full text-left px-6 py-5 flex items-center justify-between hover:bg-pink-50 transition-colors duration-300">
                             <span class="font-semibold text-gray-800 pr-4">Bagaimana sistem pembayaran di Asoka Baby
@@ -690,7 +690,7 @@ if ($stmt->num_rows === 0) {
 
                     <!-- FAQ 9 -->
                     <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300"
-                        data-aos="fade-up" data-aos-duration="600" data-aos-delay="450">
+                        >
                         <button
                             class="faq-button w-full text-left px-6 py-5 flex items-center justify-between hover:bg-pink-50 transition-colors duration-300">
                             <span class="font-semibold text-gray-800 pr-4">Apakah Asoka Baby Store memiliki program
@@ -709,7 +709,7 @@ if ($stmt->num_rows === 0) {
 
                     <!-- FAQ 10 -->
                     <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300"
-                        data-aos="fade-up" data-aos-duration="600" data-aos-delay="500">
+                        >
                         <button
                             class="faq-button w-full text-left px-6 py-5 flex items-center justify-between hover:bg-pink-50 transition-colors duration-300">
                             <span class="font-semibold text-gray-800 pr-4">Apakah Asoka Baby Store Memiliki Cabang
@@ -725,7 +725,7 @@ if ($stmt->num_rows === 0) {
 
                     <!-- FAQ 11 -->
                     <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300"
-                        data-aos="fade-up" data-aos-duration="600" data-aos-delay="550">
+                        >
                         <button
                             class="faq-button w-full text-left px-6 py-5 flex items-center justify-between hover:bg-pink-50 transition-colors duration-300">
                             <span class="font-semibold text-gray-800 pr-4">Bagaimana cara menghubungi layanan pelanggan
