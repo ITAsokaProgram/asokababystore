@@ -3,9 +3,7 @@ function getCookie(name) {
   if (match) return match[2];
   return null;
 }
-
 const token = getCookie("admin_token") || localStorage.getItem("token");
-
 if (token) {
   fetch("/src/auth/decode_token", {
     method: "GET",
@@ -18,27 +16,19 @@ if (token) {
       if (data.status === "success") {
         const userNama = data.data.nama;
         const userRole = data.data.role;
-
         document.getElementById("user-nama").textContent = userNama;
         document.getElementById("user-role").textContent = userRole;
         document.getElementById("user-nama-dropdown").textContent = userNama;
         document.getElementById("user-role-dropdown").textContent = userRole;
-
-        const whatsappLink = document.getElementById("whatsappLink");
+        const whatsappContainer = document.getElementById("whatsappMenuContainer"); 
         const pajakLink = document.getElementById("pajakLink");
-
         if (
-          whatsappLink &&
+          whatsappContainer &&
           (userNama === "Asfahan Rosyid" || userNama === "Muhammad Ridho")
         ) {
-          whatsappLink.style.display = "flex";
+          whatsappContainer.style.display = "block"; 
         }
-        if (
-          whatsappLink &&
-          (userNama === "Asfahan Rosyid" || userNama === "Muhammad Ridho")
-        ) {
-          pajakLink.style.display = "flex";
-        }
+        
       } else {
         console.error("Gagal mengambil user:", data.message);
       }

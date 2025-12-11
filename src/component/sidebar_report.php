@@ -19,28 +19,25 @@ if (isset($_COOKIE['admin_token'])) {
     }
 }
 
-// --- LOGIKA DETEKSI URL OTOMATIS (AGAR MENU TERBUKA 1 KLIK) ---
 $uri = $_SERVER['REQUEST_URI'];
 $isActive = function ($path) use ($uri) {
     return strpos($uri, $path) !== false;
 };
 
-// 1. Logika Menu TOOLS (Voucher, Jadwal SO, Approval, Uang Brankas)
 $isVoucherOpen = $isActive('/src/fitur/voucher/');
 $isJadwalSoOpen = $isActive('/src/fitur/laporan/jadwal_so/');
 $isReceiptToolOpen = $isActive('/src/fitur/receipt/');
 $isReturnToolOpen = $isActive('/src/fitur/return/');
 $isKoreksiToolOpen = $isActive('/src/fitur/koreksi/');
-$isUangBrankasOpen = $isActive('/src/fitur/uang_brangkas/'); // Tambahan Baru
+$isUangBrankasOpen = $isActive('/src/fitur/uang_brangkas/'); 
 
 $isToolsOpen = $isVoucherOpen || $isJadwalSoOpen || $isActive('/src/fitur/approval/izin') || $isReceiptToolOpen || $isReturnToolOpen || $isKoreksiToolOpen || $isUangBrankasOpen;
 
-// 2. Logika Menu LAPORAN (Penjualan, Sales Per Kasir, dll)
 $isPenjualanOpen = $isActive('/src/fitur/laporan/in_laporan_sub_dept') ||
     $isActive('/src/fitur/laporan/in_sales_ratio') ||
     $isActive('/src/fitur/laporan/in_sales_category') ||
     $isActive('/src/fitur/laporan/in_transaction') ||
-    $isActive('/src/fitur/top_sales/'); // Termasuk sales_per_kasir_bon
+    $isActive('/src/fitur/top_sales/'); 
 
 $isPelangganOpen = $isActive('/src/fitur/laporan/in_customer') || $isActive('/src/fitur/laporan/layanan') || $isActive('/src/fitur/laporan/in_review_cust');
 $isReceiptOpen = $isActive('/src/fitur/penerimaan_receipt/');
@@ -51,7 +48,6 @@ $isKoreksiOpen = $isActive('/src/fitur/koreksi_stok/') || $isActive('/src/fitur/
 
 $isLaporanOpen = $isPenjualanOpen || $isPelangganOpen || $isReceiptOpen || $isReturnOpen || $isMutasiOpen || $isTransaksiOpen || $isKoreksiOpen || $isActive('/src/fitur/log_backup/');
 
-// 3. Logika Menu PAJAK
 $isPembelianOpen = $isActive('/src/fitur/coretax/input_pembelian') || $isActive('/src/fitur/coretax/laporan_pembelian');
 $isPengeluaranOpen = $isActive('/src/fitur/coretax/data_coretax_keluaran.php') || $isActive('/src/fitur/coretax/import_faktur_keluaran.php'); // Tambahan Baru
 $isMasukanOpen = $isActive('/src/fitur/coretax/data_coretax.php') || $isActive('/src/fitur/coretax/import_faktur.php');
@@ -59,6 +55,7 @@ $isFakturOpen = $isActive('/src/fitur/coretax/input_faktur') || $isActive('/src/
 $isLainnyaOpen = $isActive('/src/fitur/coretax/data_coretax') || $isActive('/src/fitur/coretax/faktur_masukan');
 
 $isPajakOpen = $isActive('/src/fitur/coretax/');
+$isWhatsappOpen = $isActive('/src/fitur/whatsapp_cs/');
 ?>
 
 <div id="sidebar"
@@ -76,16 +73,44 @@ $isPajakOpen = $isActive('/src/fitur/coretax/');
             <span
                 class="sidebar-text ml-3 font-medium transition-all duration-300 group-hover:translate-x-1">Beranda</span>
         </a>
-        <a href="/src/fitur/whatsapp_cs/dashboard_whatsapp" id="whatsappLink" data-menu="whatsapp_dashboard"
-            class="group flex items-center py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-green-100 hover:to-green-200 hover:text-green-700 hover:shadow-lg transition-all duration-300  border border-transparent hover:border-green-300"
-            style="display: none;">
-            <div class="w-8 flex justify-center">
-                <i
-                    class="fa-brands fa-whatsapp text-xl text-green-600 group-hover:text-green-700 transition-all duration-300 group-hover:scale-125 group-hover:-rotate-12 group-hover:drop-shadow-lg"></i>
-            </div>
-            <span class="sidebar-text ml-3 font-medium transition-all duration-300 group-hover:translate-x-1">WhatsApp
-                CS</span>
-        </a>
+        <div id="whatsappMenuContainer" x-data="{ open: <?= $isWhatsappOpen ? 'true' : 'false' ?> }" class="relative" style="display: none;">
+    <button @click="open = !open" id="whatsappToggle" data-title="WhatsApp"
+        class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-green-100 hover:to-green-200 hover:text-green-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-green-300">
+        <div class="w-8 flex justify-center">
+            <i class="fa-brands fa-whatsapp text-xl text-green-600 group-hover:text-green-700 transition-all duration-300 group-hover:scale-125 group-hover:-rotate-12 group-hover:drop-shadow-lg"></i>
+        </div>
+        <span class="sidebar-text ml-3 font-medium transition-all duration-300 group-hover:translate-x-1">WhatsApp CS</span>
+        <svg class="ml-auto w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1"
+            :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+    </button>
+
+    <div x-show="open" @click.away="open = false"
+        class="mt-3 ml-4 bg-gradient-to-br from-white to-green-50 rounded-xl shadow-xl border border-green-200 z-10 backdrop-blur-sm"
+        style="display: none;">
+        <ul class="py-2 space-y-1">
+            <li>
+                <a href="/src/fitur/whatsapp_cs/dashboard_whatsapp" data-menu="whatsapp_dashboard"
+                    class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-green-100 hover:text-green-700 transition-all duration-200 group rounded-lg">
+                    <span class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
+                        <i class="fa-solid fa-gauge-high mr-2 text-base text-green-400 group-hover:text-green-600 group-hover:scale-110 transition-all duration-200"></i>
+                        Dashboard
+                    </span>
+                </a>
+            </li>
+            <li>
+                <a href="/src/fitur/whatsapp_cs/kelola_balasan_otomatis.php" data-menu="whatsapp_autoreply"
+                    class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-green-100 hover:text-green-700 transition-all duration-200 group rounded-lg">
+                    <span class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
+                        <i class="fa-solid fa-robot mr-2 text-base text-green-400 group-hover:text-green-600 group-hover:scale-110 transition-all duration-200"></i>
+                        Balasan Otomatis
+                    </span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
         <div x-data="{ open: false }" class="relative " @reset-menu.window="open = false">
             <button @click="open = !open" id="shopeeLink" data-title="Shopee"
                 class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-orange-100 hover:to-red-200 hover:text-orange-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-orange-300">
