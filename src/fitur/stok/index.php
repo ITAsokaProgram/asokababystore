@@ -218,10 +218,9 @@ require_once __DIR__ . '/../../component/menu_handler.php';
 
                                     <div class="flex gap-1 w-full sm:w-auto">
                                         <div class="relative flex-1 sm:flex-initial">
-                                            <i
-                                                class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[10px]"></i>
+
                                             <input type="text" id="branch-search" placeholder="Cari..."
-                                                class="pl-8 pr-3 py-1.5 text-[11px] border border-gray-200 rounded-lg focus:ring-1 focus:ring-pink-500 w-full sm:w-32 transition-all focus:outline-none">
+                                                class="pl-4 pr-3 py-1.5 text-[11px] border border-gray-200 rounded-lg focus:ring-1 focus:ring-pink-500 w-full sm:w-32 transition-all focus:outline-none">
                                         </div>
                                         <button type="button" id="btn-select-all"
                                             class="text-[10px] bg-pink-50 text-pink-700 font-medium px-3 py-1.5 rounded-lg border border-pink-200">
@@ -285,8 +284,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                     </form>
                 </div>
 
-                <div class="bg-white rounded-2xl shadow-md border border-pink-100 hidden section-card"
-                    id="result-container">
+                <div class="bg-white rounded-2xl shadow-md border border-pink-100 section-card" id="result-container">
                     <div
                         class="p-3 border-b border-pink-100 flex justify-between items-center bg-gradient-to-r from-pink-50 to-white">
                         <div class="flex items-center gap-2">
@@ -304,13 +302,22 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                         </button>
                     </div>
 
-                    <div id="table-scroll-area" class="overflow-x-auto relative overflow-y-auto scrollbar-pink"
-                        style="max-height:450px;">
+                    <div id="table-scroll-area"
+                        class="overflow-x-auto relative overflow-y-auto scrollbar-pink h-[450px]" style="height:450px;">
                         <table class="w-full text-xs text-left text-gray-500" id="stock-table">
                             <thead class="text-[10px] text-gray-700 uppercase sticky top-0 z-20">
-                                <tr id="table-headers"></tr>
+                                <tr id="table-headers">
+                                    <th
+                                        class="px-2 py-2 border-b-2 border-pink-200 text-center w-10 font-bold text-pink-700">
+                                        #</th>
+                                    <th class="px-2 py-2 border-b-2 border-pink-200 font-bold">PLU</th>
+                                    <th class="px-2 py-2 border-b-2 border-pink-200 font-bold">Barcode</th>
+                                    <th class="px-2 py-2 border-b-2 border-pink-200 font-bold">Nama Barang</th>
+                                    <th class="px-2 py-2 border-b-2 border-pink-200 font-bold text-center">Total</th>
+                                </tr>
                             </thead>
-                            <tbody id="table-body"></tbody>
+                            <tbody id="table-body">
+                            </tbody>
                         </table>
                     </div>
                 </div>

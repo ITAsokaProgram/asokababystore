@@ -12,9 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const resultContainer = document.getElementById("result-container");
   const tableHeadersRow = document.getElementById("table-headers");
   const tableBody = document.getElementById("table-body");
-  const tableScrollContainer = document.querySelector(
-    "#result-container .overflow-y-auto"
-  );
+  const tableScrollContainer = document.querySelector("#table-scroll-area");
   const totalBadge = document.getElementById("total-records-badge");
   let debounceTimer;
   let allBranchesData = [];
@@ -24,8 +22,29 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentHeaders = [];
   init();
   async function init() {
+    showEmptyState("Silahkan pilih cabang dan supplier terlebih dahulu.");
     await loadBranches();
     checkUrlAndLoad();
+  }
+  function showEmptyState(message) {
+    resultContainer.classList.remove("hidden");
+    tableHeadersRow.innerHTML = `
+      <th class="px-2 py-2 border-b-2 border-pink-200 text-center w-10 font-bold text-pink-700">#</th>
+      <th class="px-2 py-2 border-b-2 border-pink-200 font-bold min-w-[80px]">PLU</th>
+      <th class="px-2 py-2 border-b-2 border-pink-200 font-bold min-w-[100px]">Barcode</th>
+      <th class="px-2 py-2 border-b-2 border-pink-200 font-bold min-w-[200px]">Nama Barang</th>
+      <th class="px-2 py-2 border-b-2 border-pink-200 font-bold text-center">Total</th>
+    `;
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="100%" class="text-center align-middle p-0" style="height: 400px;">
+          <div class="flex flex-col items-center justify-center h-full text-gray-400 opacity-60">
+            <i class="fas fa-search text-5xl mb-4 text-pink-200"></i>
+            <p class="text-sm font-medium">${message}</p>
+          </div>
+        </td>
+      </tr>
+    `;
   }
   async function loadBranches() {
     try {
@@ -232,8 +251,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (selectSupp.value) {
       resetAndFetchData();
     } else {
-      resultContainer.classList.add("hidden");
-      tableBody.innerHTML = "";
+      showEmptyState("Silahkan pilih supplier.");
       if (totalBadge) totalBadge.classList.add("hidden");
     }
   });
@@ -252,8 +270,9 @@ document.addEventListener("DOMContentLoaded", () => {
       handleBranchSelectionChange();
       branchSearchInput.value = "";
       renderBranches(allBranchesData);
-      resultContainer.classList.add("hidden");
-      tableBody.innerHTML = "";
+      showEmptyState(
+        "Silahkan pilih cabang dan supplier untuk menampilkan data."
+      );
       if (totalBadge) totalBadge.classList.add("hidden");
       currentPage = 1;
       const url = new URL(window.location);
@@ -287,9 +306,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (totalBadge) totalBadge.classList.add("hidden");
     resultContainer.classList.remove("hidden");
     resultContainer.classList.add("show");
-    setTimeout(() => {
-      resultContainer.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 100);
+    /* Opsional: scroll ke result. 
+      Jika ini menyebabkan jump pada mobile, bisa di comment.
+    */
     if (tableScrollContainer) {
       tableScrollContainer.scrollTop = 0;
     }
@@ -315,10 +334,12 @@ document.addEventListener("DOMContentLoaded", () => {
       btnSubmit.disabled = true;
       tableBody.innerHTML = `
         <tr>
-          <td colspan="100%" class="text-center p-8">
-            <div class="inline-block shimmer rounded-xl px-8 py-6">
-              <i class="fas fa-spinner fa-spin text-pink-500 text-xl mb-2"></i>
-              <p class="text-gray-600 font-medium">Memuat data stock...</p>
+          <td colspan="100%" class="text-center p-0" style="height: 400px;">
+             <div class="flex flex-col items-center justify-center h-full">
+                <div class="inline-block shimmer rounded-xl px-8 py-6 bg-pink-50 border border-pink-100">
+                    <i class="fas fa-spinner fa-spin text-pink-500 text-3xl mb-3"></i>
+                    <p class="text-gray-600 font-bold animate-pulse">Memuat data stock...</p>
+                </div>
             </div>
           </td>
         </tr>`;
@@ -328,7 +349,6 @@ document.addEventListener("DOMContentLoaded", () => {
       loadingRow.innerHTML = `
         <td colspan="100%" class="text-center py-3 bg-pink-50">
           <i class="fas fa-spinner fa-spin text-pink-500"></i> 
-          <span class="text-xs text-gray-600 ml-2">Memuat halaman ${page}...</span>
         </td>`;
       tableBody.appendChild(loadingRow);
     }
@@ -364,9 +384,11 @@ document.addEventListener("DOMContentLoaded", () => {
       if (result.data.length === 0 && page === 1) {
         tableBody.innerHTML = `
           <tr>
-            <td colspan="100%" class="text-center p-12">
-              <i class="fas fa-box-open text-gray-300 text-4xl mb-3"></i>
-              <p class="text-gray-500 font-medium">Data tidak ditemukan</p>
+            <td colspan="100%" class="text-center p-0" style="height: 400px;">
+                <div class="flex flex-col items-center justify-center h-full text-gray-400">
+                    <i class="fas fa-box-open text-gray-300 text-5xl mb-3"></i>
+                    <p class="text-gray-500 font-medium">Data tidak ditemukan</p>
+                </div>
             </td>
           </tr>`;
         if (totalBadge) {
@@ -387,9 +409,11 @@ document.addEventListener("DOMContentLoaded", () => {
       if (page === 1)
         tableBody.innerHTML = `
           <tr>
-            <td colspan="100%" class="text-center p-12 text-red-500">
-              <i class="fas fa-exclamation-circle text-3xl mb-2"></i>
-              <p class="font-medium">Terjadi kesalahan</p>
+            <td colspan="100%" class="text-center p-0" style="height: 400px;">
+                <div class="flex flex-col items-center justify-center h-full text-red-400">
+                    <i class="fas fa-exclamation-circle text-4xl mb-2"></i>
+                    <p class="font-medium">Terjadi kesalahan</p>
+                </div>
             </td>
           </tr>`;
       if (totalBadge) totalBadge.classList.add("hidden");
@@ -404,7 +428,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <th class="px-2 py-2 border-b-2 border-pink-200 text-center w-10 font-bold text-pink-700 text-xs">
         <i class="fas fa-hashtag"></i>
       </th>
-      <th class="px-2 py-2 border-b-2 border-pink-200 sticky left-0 z-30 shadow-[2px_0_8px_-2px_rgba(236,72,153,0.2)] font-bold text-xs">
+      <th class="px-2 py-2 border-b-2 border-pink-200 sticky left-0 z-30 shadow-[2px_0_8px_-2px_rgba(236,72,153,0.2)] font-bold text-xs bg-white">
         PLU
       </th>
       <th class="px-2 py-2 border-b-2 border-pink-200 font-bold text-xs">Barcode</th>
