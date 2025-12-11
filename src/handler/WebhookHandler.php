@@ -16,19 +16,19 @@ class WebhookHandler
     private $verificationService;
     private $conversationService;
     private $voucherService;
-    private $autoReplyService; // 1. Tambah property ini
+    private $autoReplyService; 
     private $conn;
 
-    // 2. Update Constructor
+    
     public function __construct(
         VerificationService $verificationService, 
         ConversationService $conversationService, 
-        AutoReplyService $autoReplyService, // Tambah parameter ini
+        AutoReplyService $autoReplyService, 
         $logger
     ) {
         $this->verificationService = $verificationService;
         $this->conversationService = $conversationService;
-        $this->autoReplyService = $autoReplyService; // Set property
+        $this->autoReplyService = $autoReplyService; 
         $this->logger = $logger;
         $this->conn = $conversationService->conn;
         $this->voucherService = new VoucherService($this->conn, $this->logger);
