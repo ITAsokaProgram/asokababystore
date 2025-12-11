@@ -41,7 +41,9 @@ if ($stmt->num_rows === 0) {
 <head>
     <meta charset="UTF-8" />
     <meta name="google-site-verification" content="7pjjd3ZqF-3OOn0FfQstCJMjnHCUriQoJER7EMLrIl4" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <title>Asoka Baby Store - Toko Perlengkapan Bayi & Anak</title>
     <meta name="description"
         content="Temukan perlengkapan bayi dan anak berkualitas di Asoka Baby Store. Aman, nyaman, dan terpercaya untuk si kecil usia 0-8 tahun." />
@@ -49,7 +51,6 @@ if ($stmt->num_rows === 0) {
         content="perlengkapan bayi, toko bayi, kebutuhan anak, stroller, pakaian bayi, mainan anak, Asoka Baby Store" />
     <meta name="author" content="Asoka Baby Store" />
 
-    <!-- Open Graph / Facebook -->
     <meta property="og:title" content="Asoka Baby Store - Toko Perlengkapan Bayi & Anak" />
     <meta property="og:description"
         content="Toko perlengkapan bayi & anak usia 0-8 tahun. Kualitas terbaik, harga bersahabat." />
@@ -57,29 +58,47 @@ if ($stmt->num_rows === 0) {
     <meta property="og:url" content="https://asokababystore.com/home" />
     <meta property="og:type" content="website" />
 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="icon" type="image/png" href="/images/logo1.png" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-        integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link href="https://unpkg.com/splitting/dist/splitting.css" rel="stylesheet" />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="/src/output2.css">
+    <link rel="preconnect" href="https://unpkg.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
 
-    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="/src/output2.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://unpkg.com/splitting/dist/splitting.min.js"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        integrity="sha512-Avb2QiuDEEvB4bZJYdft2mNjVShBftLdPG8FJ0V7irTLQ8Uo0qcPxh4Plq7G5tGm0rU+1SPhVotteLpBERwTkw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" media="print" onload="this.media='all'" />
+    <noscript>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    </noscript>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+        rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+            rel="stylesheet">
+    </noscript>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" media="print"
+        onload="this.media='all'" />
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" media="print" onload="this.media='all'">
+    <link href="https://unpkg.com/splitting/dist/splitting.css" rel="stylesheet" media="print"
+        onload="this.media='all'" />
+    <link rel="preload" as="image" href="public/images/promo/WhatsApp Image 2025-07-19 at 151919_6891aeb80969a.jpeg">
+
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js" defer></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" defer></script>
+    <script src="https://unpkg.com/splitting/dist/splitting.min.js" defer></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
+
     <style>
         * {
             font-family: 'Poppins', 'sans-serif';
@@ -104,7 +123,7 @@ if ($stmt->num_rows === 0) {
             display: none;
         }
 
-        /* Tampilkan di layar lebih besar dari 640px (misalnya tablet/desktop) */
+        /* Tampilkan di layar lebih besar dari 640px */
         @media screen and (min-width: 640px) {
             .user-name {
                 display: inline;
@@ -212,6 +231,59 @@ if ($stmt->num_rows === 0) {
         .scrollbar-thin {
             scrollbar-width: thin;
             scrollbar-color: #f472b6 #f1f5f9;
+        }
+
+        /* Custom Gradient Bullet Points untuk FAQ List */
+        .faq-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .faq-list li {
+            position: relative;
+            padding-left: 1.5rem;
+        }
+
+        .faq-list li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.6rem;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            animation: pulse-dot 2s infinite;
+        }
+
+        .faq-list li:nth-child(1)::before {
+            background: linear-gradient(135deg, #ec4899, #f472b6);
+        }
+
+        .faq-list li:nth-child(2)::before {
+            background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+        }
+
+        .faq-list li:nth-child(3)::before {
+            background: linear-gradient(135deg, #3b82f6, #60a5fa);
+        }
+
+        .faq-list li:nth-child(4)::before {
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+        }
+
+        @keyframes pulse-dot {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.8;
+                transform: scale(1.1);
+            }
         }
     </style>
 </head>
@@ -409,15 +481,26 @@ if ($stmt->num_rows === 0) {
                     $sql = "SELECT * FROM products LIMIT 6";
                     $stmt = $conn->query($sql);
                     $delay = 100;
+
                     while ($row = $stmt->fetch_assoc()) {
                         $image = $row['image'];
+                        // TIP: Idealnya $image diganti ke versi thumbnail, misal: 'thumb_' . $image
                         $name = "Products";
+
                         echo '
-                    <div class="group overflow-hidden rounded-2xl shadow-lg card-hover-effect transition-all duration-300" data-aos="fade-up" data-aos-duration="600" data-aos-delay="' . $delay . '">
-                        <img class="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500" src="uploaded_img/' . $image . '" alt="' . htmlspecialchars($name) . '" />
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    </div>
-                ';
+        <div class="group overflow-hidden rounded-2xl shadow-lg card-hover-effect transition-all duration-300" data-aos="fade-up" data-aos-duration="600" data-aos-delay="' . $delay . '">
+            <img 
+                class="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500" 
+                src="uploaded_img/' . $image . '" 
+                alt="' . htmlspecialchars($name) . '"
+                loading="lazy" 
+                decoding="async"
+                width="352" 
+                height="256" 
+            /> 
+            <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        </div>
+        ';
                         $delay += 100;
                     }
                     $stmt->close();
@@ -463,7 +546,7 @@ if ($stmt->num_rows === 0) {
                             <div class="relative">
                                 <i
                                     class="fas fa-map-marker-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                                <select name="city" id="search-city"
+                                <select name="city" id="search-city" aria-label="Pilih Kota"
                                     class="w-full border-2 border-gray-200 rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-300 text-sm appearance-none bg-white">
                                     <option value="all">Semua Kota</option>
                                     <option value="TANGERANG">TANGERANG</option>
@@ -529,7 +612,7 @@ if ($stmt->num_rows === 0) {
 
         <section id="faq-section" class="py-20 bg-gradient-to-br from-purple-50 via-white to-pink-50">
             <div class="max-w-6xl mx-auto px-4">
-                <div class="text-center mb-12" >
+                <div class="text-center mb-12">
                     <h2 class="text-3xl md:text-4xl font-bold mb-4 gradient-text">Pertanyaan yang Sering Diajukan</h2>
                     <p class="text-lg text-gray-600 max-w-2xl mx-auto">Temukan jawaban untuk pertanyaan Anda seputar
                         Asoka Baby Store</p>
@@ -537,8 +620,8 @@ if ($stmt->num_rows === 0) {
 
                 <div class="space-y-4 max-w-4xl mx-auto">
                     <!-- FAQ 1 -->
-                    <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300"
-                        >
+                    <div
+                        class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300">
                         <button
                             class="faq-button w-full text-left px-6 py-5 flex items-center justify-between hover:bg-pink-50 transition-colors duration-300">
                             <span class="font-semibold text-gray-800 pr-4">Apa saja produk yang tersedia di Asoka Baby
@@ -556,8 +639,8 @@ if ($stmt->num_rows === 0) {
                     </div>
 
                     <!-- FAQ 2 -->
-                    <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300"
-                        >
+                    <div
+                        class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300">
                         <button
                             class="faq-button w-full text-left px-6 py-5 flex items-center justify-between hover:bg-pink-50 transition-colors duration-300">
                             <span class="font-semibold text-gray-800 pr-4">Apakah produk yang dijual di Asoka Baby Store
@@ -574,8 +657,8 @@ if ($stmt->num_rows === 0) {
                     </div>
 
                     <!-- FAQ 3 -->
-                    <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300"
-                        >
+                    <div
+                        class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300">
                         <button
                             class="faq-button w-full text-left px-6 py-5 flex items-center justify-between hover:bg-pink-50 transition-colors duration-300">
                             <span class="font-semibold text-gray-800 pr-4">Apakah Asoka Baby Store melayani pembelian
@@ -595,8 +678,8 @@ if ($stmt->num_rows === 0) {
                     </div>
 
                     <!-- FAQ 4 -->
-                    <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300"
-                        >
+                    <div
+                        class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300">
                         <button
                             class="faq-button w-full text-left px-6 py-5 flex items-center justify-between hover:bg-pink-50 transition-colors duration-300">
                             <span class="font-semibold text-gray-800 pr-4">Apakah Asoka Baby Store memiliki promo atau
@@ -613,8 +696,8 @@ if ($stmt->num_rows === 0) {
                     </div>
 
                     <!-- FAQ 5 -->
-                    <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300"
-                        >
+                    <div
+                        class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300">
                         <button
                             class="faq-button w-full text-left px-6 py-5 flex items-center justify-between hover:bg-pink-50 transition-colors duration-300">
                             <span class="font-semibold text-gray-800 pr-4">Bagaimana kebijakan penukaran barang di Asoka
@@ -634,8 +717,8 @@ if ($stmt->num_rows === 0) {
                     </div>
 
                     <!-- FAQ 6 -->
-                    <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300"
-                        >
+                    <div
+                        class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300">
                         <button
                             class="faq-button w-full text-left px-6 py-5 flex items-center justify-between hover:bg-pink-50 transition-colors duration-300">
                             <span class="font-semibold text-gray-800 pr-4">Apakah Asoka Baby Store menerima pembelian
@@ -650,8 +733,8 @@ if ($stmt->num_rows === 0) {
                     </div>
 
                     <!-- FAQ 7 -->
-                    <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300"
-                        >
+                    <div
+                        class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300">
                         <button
                             class="faq-button w-full text-left px-6 py-5 flex items-center justify-between hover:bg-pink-50 transition-colors duration-300">
                             <span class="font-semibold text-gray-800 pr-4">Bagaimana cara memastikan ketersediaan stok
@@ -667,8 +750,8 @@ if ($stmt->num_rows === 0) {
                     </div>
 
                     <!-- FAQ 8 -->
-                    <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300"
-                        >
+                    <div
+                        class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300">
                         <button
                             class="faq-button w-full text-left px-6 py-5 flex items-center justify-between hover:bg-pink-50 transition-colors duration-300">
                             <span class="font-semibold text-gray-800 pr-4">Bagaimana sistem pembayaran di Asoka Baby
@@ -689,8 +772,8 @@ if ($stmt->num_rows === 0) {
                     </div>
 
                     <!-- FAQ 9 -->
-                    <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300"
-                        >
+                    <div
+                        class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300">
                         <button
                             class="faq-button w-full text-left px-6 py-5 flex items-center justify-between hover:bg-pink-50 transition-colors duration-300">
                             <span class="font-semibold text-gray-800 pr-4">Apakah Asoka Baby Store memiliki program
@@ -708,8 +791,8 @@ if ($stmt->num_rows === 0) {
                     </div>
 
                     <!-- FAQ 10 -->
-                    <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300"
-                        >
+                    <div
+                        class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300">
                         <button
                             class="faq-button w-full text-left px-6 py-5 flex items-center justify-between hover:bg-pink-50 transition-colors duration-300">
                             <span class="font-semibold text-gray-800 pr-4">Apakah Asoka Baby Store Memiliki Cabang
@@ -724,8 +807,8 @@ if ($stmt->num_rows === 0) {
                     </div>
 
                     <!-- FAQ 11 -->
-                    <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300"
-                        >
+                    <div
+                        class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-pink-100 overflow-hidden card-hover-effect transition-all duration-300">
                         <button
                             class="faq-button w-full text-left px-6 py-5 flex items-center justify-between hover:bg-pink-50 transition-colors duration-300">
                             <span class="font-semibold text-gray-800 pr-4">Bagaimana cara menghubungi layanan pelanggan
@@ -861,7 +944,8 @@ if ($stmt->num_rows === 0) {
                         <button id="closeModal"
                             class="flex-1 px-4 py-3 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold transition-all duration-300 hover:scale-105">Tutup</button>
                         <button id="cek-member"
-                            class="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold transition-all duration-300 hover:scale-105 shadow-lg">
+                            class="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-semibold transition-all duration-300 hover:scale-105 shadow-lg"
+                            aria-label="Cari Member">
                             <i class="fas fa-search mr-2"></i>Cek Member
                         </button>
                     </div>
@@ -1025,21 +1109,27 @@ if ($stmt->num_rows === 0) {
     <!-- <script src="src/js/index/mobile_ui/notif_maintance.js" type="module"></script> -->
 
     <script>
-        // Initialize AOS and Splitting
-        AOS.init();
-        Splitting();
-        const observer = new IntersectionObserver(entries => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('show');
-                }
-            });
-        }, {
-            threshold: 0.1
-        });
+        document.addEventListener("DOMContentLoaded", function () {
+            // Initialize AOS
+            AOS.init();
 
-        document.querySelectorAll('.scroll-reveal').forEach(img => {
-            observer.observe(img);
+            // Initialize Splitting
+            Splitting();
+
+            // Your IntersectionObserver code
+            const observer = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('show');
+                    }
+                });
+            }, {
+                threshold: 0.1
+            });
+
+            document.querySelectorAll('.scroll-reveal').forEach(img => {
+                observer.observe(img);
+            });
         });
 
         // Statis counter

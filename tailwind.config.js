@@ -1,10 +1,11 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
-    "./src/**/*.{html,js,php}",
-    "./customer/**/*.{html,js,php}",
-    "./*.php",
-    "./*.html",
+    "./src/**/*.{php,html,js}",
+    "./src/fitur/**/*.{php,html,js}",
+    "./src/fitur/**/**/*.{php,html,js}",
+    "./*{php,html,js}",
+    "*{php,html,js}",
   ],
   safelist: [
     "hidden",

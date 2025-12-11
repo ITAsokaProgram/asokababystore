@@ -17,7 +17,8 @@ fetch("public/slider.json?ca=" + Date.now())
         <img src="https://asokababystore.com${encodeURI(item.path)}"
              class="w-full md:h-full h-auto object-cover md:object-contain" 
              alt="${item.filename}"
-             onload="this.closest('.swiper-slide').style.height = 'auto'">
+             fetchpriority="high" decoding="sync"
+             >
       </div>
     `;
 

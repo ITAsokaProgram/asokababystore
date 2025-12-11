@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "npx tailwindcss -i ./src/input.css -o ./src/output2.css --minify",
+    "watch": "npx tailwindcss -i ./src/input.css -o ./src/output2.css --watch"
   },
   "keywords": [],
   "author": "",

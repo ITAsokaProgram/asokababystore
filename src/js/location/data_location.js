@@ -231,7 +231,7 @@ function createLocationItem(loc, index) {
         <div class="p-4">
             <div class="flex items-start justify-between mb-2">
                 <div class="flex-1">
-                    <h5 class="text-lg font-bold text-gray-800">${loc.name}</h5>
+                    <h3 class="text-lg font-bold text-gray-800">${loc.name}</h3>
                     <span class="inline-block bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded mb-2">${
                       loc.city
                     }</span>
