@@ -5,24 +5,30 @@ require_once __DIR__ . '/../constant/VoucherConstants.php';
 require_once __DIR__ . '/../service/VoucherService.php';
 require_once __DIR__ . '/../service/ConversationService.php';
 require_once __DIR__ . '/../service/MediaService.php';
+require_once __DIR__ . '/../service/AutoReplyService.php';
 require_once __DIR__ . '/../config/Config.php';
 
 use Asoka\Constant\BranchConstants;
 use Asoka\Constant\WhatsappConstants;
-
 class WebhookHandler
 {
     private $logger;
     private $verificationService;
     private $conversationService;
     private $voucherService;
+    private $autoReplyService; // 1. Tambah property ini
     private $conn;
 
-
-    public function __construct(VerificationService $verificationService, ConversationService $conversationService, $logger)
-    {
+    // 2. Update Constructor
+    public function __construct(
+        VerificationService $verificationService, 
+        ConversationService $conversationService, 
+        AutoReplyService $autoReplyService, // Tambah parameter ini
+        $logger
+    ) {
         $this->verificationService = $verificationService;
         $this->conversationService = $conversationService;
+        $this->autoReplyService = $autoReplyService; // Set property
         $this->logger = $logger;
         $this->conn = $conversationService->conn;
         $this->voucherService = new VoucherService($this->conn, $this->logger);
@@ -160,6 +166,31 @@ class WebhookHandler
                 return;
             }
         }
+        if ($messageType === 'text') {
+            $textBody = $message['text']['body'];
+            $balasanOtomatis = $this->autoReplyService->cariBalasan($textBody);
+
+            if ($balasanOtomatis) {
+                $savedUserMessage = $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $textBody);
+
+                if ($savedUserMessage) {
+                    $totalUnread = $this->conversationService->getTotalUnreadCount();
+                    $this->notifyWebSocketServer([
+                        'event' => 'new_message',
+                        'conversation_id' => $conversation['id'],
+                        'phone' => $nomorPengirim,
+                        'message' => $savedUserMessage,
+                        'total_unread_count' => $totalUnread
+                    ]);
+                }
+
+                $sendResult = kirimPesanTeks($nomorPengirim, $balasanOtomatis);
+                
+                $this->saveAdminReply($conversation['id'], $nomorPengirim, $balasanOtomatis, 'text', $sendResult['wamid'] ?? null);
+
+                return; 
+            }
+        }
         if ($conversation['status_percakapan'] === 'live_chat') {
             if (
                 $messageType === 'interactive' &&
@@ -257,29 +288,7 @@ class WebhookHandler
             return;
         }
 
-        if ($messageType === 'text') {
-            $textBody = $message['text']['body'];
-            if (preg_match('/(lowongan|loker)/i', $textBody)) {
-
-                $savedUserMessage = $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $textBody);
-
-                if ($savedUserMessage) {
-                    $totalUnread = $this->conversationService->getTotalUnreadCount();
-                    $this->notifyWebSocketServer([
-                        'event' => 'new_message',
-                        'conversation_id' => $conversation['id'],
-                        'phone' => $nomorPengirim,
-                        'message' => $savedUserMessage,
-                        'total_unread_count' => $totalUnread
-                    ]);
-                }
-
-                $sendResult = kirimPesanTeks($nomorPengirim, WhatsappConstants::LOKER_MESSAGE);
-                $this->saveAdminReply($conversation['id'], $nomorPengirim, WhatsappConstants::LOKER_MESSAGE, 'text', $sendResult['wamid'] ?? null);
-
-                return;
-            }
-        }
+        
         if ($message['type'] === 'interactive' && isset($message['interactive']['type']) && $message['interactive']['type'] === 'button_reply') {
             $this->processButtonReply($message, $conversation, $namaPengirim);
             return;

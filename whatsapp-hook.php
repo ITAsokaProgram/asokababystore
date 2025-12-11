@@ -6,6 +6,7 @@ require_once __DIR__ . "/src/helpers/whatsapp_helper_link.php";
 require_once __DIR__ . "/src/config/Config.php";
 require_once __DIR__ . "/src/service/VerificationService.php";
 require_once __DIR__ . "/src/service/ConversationService.php";
+require_once __DIR__ . "/src/service/AutoReplyService.php";
 require_once __DIR__ . "/src/handler/WebhookHandler.php";
 
 $logger = new AppLogger('webhook_handler.log');
@@ -13,8 +14,8 @@ Config::load();
 
 $verificationService = new VerificationService($conn, $logger);
 $conversationService = new ConversationService($conn, $logger);
-$webhookHandler = new WebhookHandler($verificationService, $conversationService, $logger);
-
+$autoReplyService = new AutoReplyService($conn, $logger);
+$webhookHandler = new WebhookHandler($verificationService, $conversationService, $autoReplyService, $logger);
 
 $requestMethod = $_SERVER['REQUEST_METHOD'];
 
