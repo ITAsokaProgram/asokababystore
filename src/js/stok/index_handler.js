@@ -88,7 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
             class="branch-checkbox peer sr-only">
           <div class="branch-card border border-gray-200 rounded-lg p-2 h-full flex items-center gap-2 bg-white hover:bg-pink-50">
             <div class="branch-icon w-6 h-6 bg-gray-100 rounded-md flex items-center justify-center transition-all flex-shrink-0">
-              <i class="fas fa-store text-gray-400 text-xs"></i>
+              <i class="fas fa-store text-gray-200 text-xs"></i>
             </div>
             <div class="flex flex-col min-w-0 flex-1">
               <span class="text-[11px] font-bold text-gray-800 group-hover:text-pink-600 transition-colors truncate leading-tight">${

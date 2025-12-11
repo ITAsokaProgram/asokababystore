@@ -234,7 +234,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                 </div>
 
                                 <div class="relative border border-gray-200 rounded-lg bg-gray-50 overflow-y-auto scrollbar-pink p-2"
-                                    style="max-height: 180px;">
+                                    style="max-height: 112px;">
                                     <div id="branch-container"
                                         class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
                                     </div>

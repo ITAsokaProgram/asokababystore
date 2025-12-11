@@ -29,7 +29,7 @@ $isJadwalSoOpen = $isActive('/src/fitur/laporan/jadwal_so/');
 $isReceiptToolOpen = $isActive('/src/fitur/receipt/');
 $isReturnToolOpen = $isActive('/src/fitur/return/');
 $isKoreksiToolOpen = $isActive('/src/fitur/koreksi/');
-$isUangBrankasOpen = $isActive('/src/fitur/uang_brangkas/'); 
+$isUangBrankasOpen = $isActive('/src/fitur/uang_brangkas/');
 
 $isToolsOpen = $isVoucherOpen || $isJadwalSoOpen || $isActive('/src/fitur/approval/izin') || $isReceiptToolOpen || $isReturnToolOpen || $isKoreksiToolOpen || $isUangBrankasOpen;
 
@@ -37,7 +37,7 @@ $isPenjualanOpen = $isActive('/src/fitur/laporan/in_laporan_sub_dept') ||
     $isActive('/src/fitur/laporan/in_sales_ratio') ||
     $isActive('/src/fitur/laporan/in_sales_category') ||
     $isActive('/src/fitur/laporan/in_transaction') ||
-    $isActive('/src/fitur/top_sales/'); 
+    $isActive('/src/fitur/top_sales/');
 
 $isPelangganOpen = $isActive('/src/fitur/laporan/in_customer') || $isActive('/src/fitur/laporan/layanan') || $isActive('/src/fitur/laporan/in_review_cust');
 $isReceiptOpen = $isActive('/src/fitur/penerimaan_receipt/');
@@ -46,7 +46,7 @@ $isMutasiOpen = $isActive('/src/fitur/mutasi_in/');
 $isTransaksiOpen = $isActive('/src/fitur/transaction/');
 $isKoreksiOpen = $isActive('/src/fitur/koreksi_stok/') || $isActive('/src/fitur/koreksi_so/');
 
-$isLaporanOpen = $isPenjualanOpen || $isPelangganOpen || $isReceiptOpen || $isReturnOpen || $isMutasiOpen || $isTransaksiOpen || $isKoreksiOpen || $isActive('/src/fitur/log_backup/');
+$isLaporanOpen = $isPenjualanOpen || $isPelangganOpen || $isReceiptOpen || $isReturnOpen || $isMutasiOpen || $isTransaksiOpen || $isKoreksiOpen || $isActive('/src/fitur/log_backup/') || $isActive('/src/fitur/stok/');
 
 $isPembelianOpen = $isActive('/src/fitur/coretax/input_pembelian') || $isActive('/src/fitur/coretax/laporan_pembelian');
 $isPengeluaranOpen = $isActive('/src/fitur/coretax/data_coretax_keluaran.php') || $isActive('/src/fitur/coretax/import_faktur_keluaran.php'); // Tambahan Baru
@@ -73,44 +73,52 @@ $isWhatsappOpen = $isActive('/src/fitur/whatsapp_cs/');
             <span
                 class="sidebar-text ml-3 font-medium transition-all duration-300 group-hover:translate-x-1">Beranda</span>
         </a>
-        <div id="whatsappMenuContainer" x-data="{ open: <?= $isWhatsappOpen ? 'true' : 'false' ?> }" class="relative" style="display: none;">
-    <button @click="open = !open" id="whatsappToggle" data-title="WhatsApp"
-        class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-green-100 hover:to-green-200 hover:text-green-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-green-300">
-        <div class="w-8 flex justify-center">
-            <i class="fa-brands fa-whatsapp text-xl text-green-600 group-hover:text-green-700 transition-all duration-300 group-hover:scale-125 group-hover:-rotate-12 group-hover:drop-shadow-lg"></i>
-        </div>
-        <span class="sidebar-text ml-3 font-medium transition-all duration-300 group-hover:translate-x-1">WhatsApp CS</span>
-        <svg class="ml-auto w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1"
-            :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-        </svg>
-    </button>
+        <div id="whatsappMenuContainer" x-data="{ open: <?= $isWhatsappOpen ? 'true' : 'false' ?> }" class="relative"
+            style="display: none;">
+            <button @click="open = !open" id="whatsappToggle" data-title="WhatsApp"
+                class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-green-100 hover:to-green-200 hover:text-green-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-green-300">
+                <div class="w-8 flex justify-center">
+                    <i
+                        class="fa-brands fa-whatsapp text-xl text-green-600 group-hover:text-green-700 transition-all duration-300 group-hover:scale-125 group-hover:-rotate-12 group-hover:drop-shadow-lg"></i>
+                </div>
+                <span
+                    class="sidebar-text ml-3 font-medium transition-all duration-300 group-hover:translate-x-1">WhatsApp
+                    CS</span>
+                <svg class="ml-auto w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1"
+                    :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </button>
 
-    <div x-show="open" @click.away="open = false"
-        class="mt-3 ml-4 bg-gradient-to-br from-white to-green-50 rounded-xl shadow-xl border border-green-200 z-10 backdrop-blur-sm"
-        style="display: none;">
-        <ul class="py-2 space-y-1">
-            <li>
-                <a href="/src/fitur/whatsapp/dashboard_whatsapp" data-menu="whatsapp_dashboard"
-                    class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-green-100 hover:text-green-700 transition-all duration-200 group rounded-lg">
-                    <span class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
-                        <i class="fa-solid fa-gauge-high mr-2 text-base text-green-400 group-hover:text-green-600 group-hover:scale-110 transition-all duration-200"></i>
-                        Dashboard
-                    </span>
-                </a>
-            </li>
-            <li>
-                <a href="/src/fitur/whatsapp/kelola_balasan_otomatis.php" data-menu="whatsapp_autoreply"
-                    class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-green-100 hover:text-green-700 transition-all duration-200 group rounded-lg">
-                    <span class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
-                        <i class="fa-solid fa-robot mr-2 text-base text-green-400 group-hover:text-green-600 group-hover:scale-110 transition-all duration-200"></i>
-                        Balasan Otomatis
-                    </span>
-                </a>
-            </li>
-        </ul>
-    </div>
-</div>
+            <div x-show="open" @click.away="open = false"
+                class="mt-3 ml-4 bg-gradient-to-br from-white to-green-50 rounded-xl shadow-xl border border-green-200 z-10 backdrop-blur-sm"
+                style="display: none;">
+                <ul class="py-2 space-y-1">
+                    <li>
+                        <a href="/src/fitur/whatsapp/dashboard_whatsapp" data-menu="whatsapp_dashboard"
+                            class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-green-100 hover:text-green-700 transition-all duration-200 group rounded-lg">
+                            <span
+                                class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
+                                <i
+                                    class="fa-solid fa-gauge-high mr-2 text-base text-green-400 group-hover:text-green-600 group-hover:scale-110 transition-all duration-200"></i>
+                                Dashboard
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/src/fitur/whatsapp/kelola_balasan_otomatis.php" data-menu="whatsapp_autoreply"
+                            class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-green-100 hover:text-green-700 transition-all duration-200 group rounded-lg">
+                            <span
+                                class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
+                                <i
+                                    class="fa-solid fa-robot mr-2 text-base text-green-400 group-hover:text-green-600 group-hover:scale-110 transition-all duration-200"></i>
+                                Balasan Otomatis
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
         <div x-data="{ open: false }" class="relative " @reset-menu.window="open = false">
             <button @click="open = !open" id="shopeeLink" data-title="Shopee"
                 class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-orange-100 hover:to-red-200 hover:text-orange-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-orange-300">
@@ -675,6 +683,17 @@ $isWhatsappOpen = $isActive('/src/fitur/whatsapp_cs/');
                                 <i
                                     class="fa-solid fa-database mr-2 text-lg text-blue-500 group-hover:text-blue-600 transition-all duration-200 group-hover:scale-110"></i>
                                 Log Backup
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/src/fitur/stok/index.php" data-menu="laporan_stok"
+                            class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-indigo-100 hover:text-indigo-700 transition-all duration-200 group rounded-lg">
+                            <span
+                                class="transition-all duration-300 group-hover:translate-x-1 font-medium flex items-center">
+                                <i
+                                    class="fa-solid fa-warehouse mr-2 text-lg text-indigo-500 group-hover:text-indigo-600 transition-all duration-200 group-hover:scale-110"></i>
+                                Laporan Stok
                             </span>
                         </a>
                     </li>
