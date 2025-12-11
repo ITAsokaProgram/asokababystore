@@ -2,7 +2,7 @@
 
 require_once 'aa_kon_sett.php';
 
-$sql = "SELECT kode_supp from supplier GROUP BY kode_supp";
+$sql = "SELECT kode_supp, nama_supp from supplier GROUP BY kode_supp";
 
 $stmt = $conn->prepare($sql);
 $stmt->execute();
