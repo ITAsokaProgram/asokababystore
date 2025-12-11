@@ -194,7 +194,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                 <i class="fa-solid fa-boxes-stacked fa-lg"></i>
                             </div>
                             <div>
-                                <h1 id="page-title" class="text-lg font-bold text-gray-800 leading-tight">Stok Harian
+                                <h1 id="page-title" class="text-lg font-bold text-gray-800 leading-tight">Stok Hari Ini
                                 </h1>
                                 <p id="page-subtitle" class="text-[10px] text-gray-600">Master Backup</p>
                             </div>
