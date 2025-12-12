@@ -58,7 +58,7 @@ coverage/
 
 
 # Log files
-logs/
+*.log
 
 # Local database
 *.sqlite
