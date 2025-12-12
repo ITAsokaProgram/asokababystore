@@ -728,12 +728,26 @@ document.addEventListener("DOMContentLoaded", () => {
                               ${row.Nm_Alias || row.kode_store || "-"}
                           </span>
                       </td>
-                      <td class="text-sm font-medium text-gray-800">${
-                        row.nama_supplier || "-"
-                      }</td>
-                      <td class="text-sm text-gray-600 italic">${
-                        row.catatan || "-"
-                      }</td>
+                       <td class="text-sm font-medium text-gray-800 cursor-pointer hover:text-pink-600 hover:underline" 
+                          onclick="showDetailModal('Nama Supplier', '${(
+                            row.nama_supplier || "-"
+                          ).replace(/'/g, "\\'")}')">
+                          ${truncateText(row.nama_supplier, 35)}
+                      </td>
+                      <td class="text-sm text-gray-600 italic ${
+                        row.catatan
+                          ? "cursor-pointer hover:text-pink-600 hover:underline"
+                          : ""
+                      }" 
+                          ${
+                            row.catatan
+                              ? `onclick="showDetailModal('Catatan', '${(
+                                  row.catatan || ""
+                                ).replace(/'/g, "\\'")}')"`
+                              : ""
+                          }>
+                          ${truncateText(row.catatan, 25)}
+                      </td>
                       <td class="text-right font-mono text-gray-700">${formatRupiah(
                         dpp
                       )}</td>
@@ -837,3 +851,22 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   loadData();
 });
+
+function showDetailModal(title, content) {
+  window.dispatchEvent(
+    new CustomEvent("show-detail-modal", {
+      detail: {
+        show: true,
+        title: title,
+        content: content || "-",
+      },
+    })
+  );
+}
+
+function truncateText(text, maxLength = 30) {
+  if (!text || text === "-") return "-";
+  if (text.length <= maxLength) return text;
+  return text.substring(0, maxLength) + "...";
+}
+window.showDetailModal = showDetailModal;
