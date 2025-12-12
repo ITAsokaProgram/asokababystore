@@ -1,4 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const TEMPLATE_CONTACTS = window.TEMPLATE_DATA
+    ? window.TEMPLATE_DATA.contacts
+    : {};
+  const TEMPLATE_LOCATIONS = window.TEMPLATE_DATA
+    ? window.TEMPLATE_DATA.locations
+    : {};
   const tableBody = document.getElementById("table-body");
   const filterForm = document.getElementById("filter-form");
   const modalForm = document.getElementById("modal-form");
@@ -42,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     </button>
                 </div>
                 <div class="content-area">
-                    </div>
+                </div>
             </div>
         `;
     const contentArea = wrapper.querySelector(".content-area");
@@ -58,44 +64,117 @@ document.addEventListener("DOMContentLoaded", () => {
                         rows="3" placeholder="Tulis pesan balasan di sini..." required>${val}</textarea>
                     <div class="text-right text-[10px] text-gray-400 mt-1">Support emoji & format WA (*bold*, _italic_)</div>
                 `;
+        contentArea.innerHTML = inputs;
       } else if (type === "contact") {
         const val = content || { name: "", phone: "" };
+        let optionsHtml =
+          '<option value="">-- Pilih dari Template (Isi Otomatis) --</option>';
+        for (const region in TEMPLATE_CONTACTS) {
+          optionsHtml += `<optgroup label="${region}">`;
+          for (const branch in TEMPLATE_CONTACTS[region]) {
+            const phone = TEMPLATE_CONTACTS[region][branch];
+            optionsHtml += `<option value="${phone}" data-branch="${branch}">${branch}</option>`;
+          }
+          optionsHtml += `</optgroup>`;
+        }
         inputs = `
-                    <div class="grid grid-cols-1 gap-2">
-                        <input type="text" class="input-contact-name input-enhanced w-full px-3 py-2 border border-gray-300 rounded text-sm" 
-                            placeholder="Nama Kontak (Contoh: CS Toko)" value="${
-                              val.name || ""
-                            }" required>
-                        <input type="text" class="input-contact-phone input-enhanced w-full px-3 py-2 border border-gray-300 rounded text-sm" 
-                            placeholder="Nomor HP (Contoh: 08123456789)" value="${
-                              val.phone || ""
-                            }" required>
-                    </div>
-                `;
-      } else if (type === "location") {
-        const val = content || { lat: "", long: "", name: "", address: "" };
-        inputs = `
-                    <div class="space-y-2">
-                        <div class="grid grid-cols-2 gap-2">
-                            <input type="text" class="input-loc-lat input-enhanced w-full px-3 py-2 border border-gray-300 rounded text-sm" 
-                                placeholder="Latitude (-6.xxxx)" value="${
-                                  val.lat || ""
+                    <div class="space-y-3">
+                        <div class="bg-green-50 p-2 rounded border border-green-200">
+                             <label class="block text-xs font-bold text-green-800 mb-1">Opsi Cepat:</label>
+                             <select class="template-selector w-full px-2 py-1.5 border border-green-300 rounded text-sm focus:outline-none bg-white">
+                                ${optionsHtml}
+                             </select>
+                        </div>
+                        <div class="grid grid-cols-1 gap-2 border-t pt-2">
+                            <label class="text-xs text-gray-400 block -mb-1">Data Manual (Dapat diedit):</label>
+                            <input type="text" class="input-contact-name input-enhanced w-full px-3 py-2 border border-gray-300 rounded text-sm" 
+                                placeholder="Nama Kontak (Contoh: CS Toko)" value="${
+                                  val.name || ""
                                 }" required>
-                            <input type="text" class="input-loc-long input-enhanced w-full px-3 py-2 border border-gray-300 rounded text-sm" 
-                                placeholder="Longitude (106.xxxx)" value="${
-                                  val.long || ""
+                            <input type="text" class="input-contact-phone input-enhanced w-full px-3 py-2 border border-gray-300 rounded text-sm" 
+                                placeholder="Nomor HP (Contoh: 08123456789)" value="${
+                                  val.phone || ""
                                 }" required>
                         </div>
-                        <input type="text" class="input-loc-name input-enhanced w-full px-3 py-2 border border-gray-300 rounded text-sm" 
-                            placeholder="Nama Tempat (Contoh: Kantor Cabang)" value="${
-                              val.name || ""
-                            }" required>
-                        <textarea class="input-loc-addr input-enhanced w-full px-3 py-2 border border-gray-300 rounded text-sm" 
-                            rows="2" placeholder="Alamat Lengkap" required>${
-                              val.address || ""
-                            }</textarea>
                     </div>
                 `;
+        contentArea.innerHTML = inputs;
+        const tplSelect = contentArea.querySelector(".template-selector");
+        const nameInput = contentArea.querySelector(".input-contact-name");
+        const phoneInput = contentArea.querySelector(".input-contact-phone");
+        tplSelect.addEventListener("change", (e) => {
+          const selectedOption = e.target.options[e.target.selectedIndex];
+          const phoneNumber = e.target.value;
+          const branchName = selectedOption.dataset.branch;
+          if (phoneNumber && branchName) {
+            nameInput.value = `Asoka Baby Store ${branchName}`;
+            phoneInput.value = phoneNumber;
+          }
+        });
+      } else if (type === "location") {
+        const val = content || { lat: "", long: "", name: "", address: "" };
+        let optionsHtml =
+          '<option value="">-- Pilih Lokasi Cabang (Isi Otomatis) --</option>';
+        for (const region in TEMPLATE_LOCATIONS) {
+          optionsHtml += `<optgroup label="${region}">`;
+          for (const branch in TEMPLATE_LOCATIONS[region]) {
+            const locData = JSON.stringify(TEMPLATE_LOCATIONS[region][branch]);
+            const safeLocData = locData.replace(/'/g, "&apos;");
+            optionsHtml += `<option value='${safeLocData}'>${branch}</option>`;
+          }
+          optionsHtml += `</optgroup>`;
+        }
+        inputs = `
+                    <div class="space-y-3">
+                        <div class="bg-blue-50 p-2 rounded border border-blue-200">
+                             <label class="block text-xs font-bold text-blue-800 mb-1">Opsi Cepat:</label>
+                             <select class="template-selector w-full px-2 py-1.5 border border-blue-300 rounded text-sm focus:outline-none bg-white">
+                                ${optionsHtml}
+                             </select>
+                        </div>
+                        <div class="space-y-2 border-t pt-2">
+                             <label class="text-xs text-gray-400 block -mb-1">Data Manual (Dapat diedit):</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <input type="text" class="input-loc-lat input-enhanced w-full px-3 py-2 border border-gray-300 rounded text-sm" 
+                                    placeholder="Latitude (-6.xxxx)" value="${
+                                      val.lat || ""
+                                    }" required>
+                                <input type="text" class="input-loc-long input-enhanced w-full px-3 py-2 border border-gray-300 rounded text-sm" 
+                                    placeholder="Longitude (106.xxxx)" value="${
+                                      val.long || ""
+                                    }" required>
+                            </div>
+                            <input type="text" class="input-loc-name input-enhanced w-full px-3 py-2 border border-gray-300 rounded text-sm" 
+                                placeholder="Nama Tempat (Contoh: Kantor Cabang)" value="${
+                                  val.name || ""
+                                }" required>
+                            <textarea class="input-loc-addr input-enhanced w-full px-3 py-2 border border-gray-300 rounded text-sm" 
+                                rows="2" placeholder="Alamat Lengkap" required>${
+                                  val.address || ""
+                                }</textarea>
+                        </div>
+                    </div>
+                `;
+        contentArea.innerHTML = inputs;
+        const tplSelect = contentArea.querySelector(".template-selector");
+        const latInput = contentArea.querySelector(".input-loc-lat");
+        const longInput = contentArea.querySelector(".input-loc-long");
+        const nameInput = contentArea.querySelector(".input-loc-name");
+        const addrInput = contentArea.querySelector(".input-loc-addr");
+        tplSelect.addEventListener("change", (e) => {
+          const selectedValue = e.target.value;
+          if (selectedValue) {
+            try {
+              const data = JSON.parse(selectedValue);
+              latInput.value = data.latitude;
+              longInput.value = data.longitude;
+              nameInput.value = data.name;
+              addrInput.value = data.address;
+            } catch (err) {
+              console.error("Error parsing location data", err);
+            }
+          }
+        });
       } else if (type === "media") {
         const val = content || { url: "", caption: "", media_type: "image" };
         inputs = `
@@ -109,19 +188,20 @@ document.addEventListener("DOMContentLoaded", () => {
                             }>Dokumen (PDF)</option>
                         </select>
                         <input type="url" class="input-media-url input-enhanced w-full px-3 py-2 border border-gray-300 rounded text-sm" 
-                            placeholder="Link URL" required
-                            value="${val.url || ""}"
-                            >
+                            placeholder="Link URL" required value="${
+                              val.url || ""
+                            }">
                         <input type="text" class="input-media-caption input-enhanced w-full px-3 py-2 border border-gray-300 rounded text-sm" 
                             placeholder="Caption (Opsional)" value="${
                               val.caption || ""
                             }">
                     </div>
                 `;
+        contentArea.innerHTML = inputs;
       } else if (type === "cta_url") {
         const val = content || { body: "", display_text: "", url: "" };
         inputs = `
-                     <div class="space-y-2">
+                      <div class="space-y-2">
                         <textarea class="input-cta-body input-enhanced w-full px-3 py-2 border border-gray-300 rounded text-sm" 
                             rows="2" placeholder="Pesan Body Utama" required>${
                               val.body || ""
@@ -132,15 +212,14 @@ document.addEventListener("DOMContentLoaded", () => {
                                   val.display_text || ""
                                 }" required maxlength="20">
                             <input type="url" class="input-cta-url input-enhanced w-full px-3 py-2 border border-gray-300 rounded text-sm" 
-                               required
-                                value="${val.url || ""}"
-                                placeholder="asokababystore.com"
-                                >
+                               required value="${
+                                 val.url || ""
+                               }" placeholder="asokababystore.com">
                         </div>
                     </div>
                 `;
+        contentArea.innerHTML = inputs;
       }
-      contentArea.innerHTML = inputs;
     };
     renderInputs(data.type, data.content);
     typeSelector.addEventListener("change", (e) => {
@@ -273,9 +352,9 @@ document.addEventListener("DOMContentLoaded", () => {
                       startNumber + index + 1
                     }</td>
                     <td>
-                         <span class="font-bold text-gray-800 bg-gray-100 px-2 py-1 rounded text-sm">${
-                           row.kata_kunci
-                         }</span>
+                          <span class="font-bold text-gray-800 bg-gray-100 px-2 py-1 rounded text-sm">${
+                            row.kata_kunci
+                          }</span>
                     </td>
                     <td class="text-gray-600 text-sm">
                         <div class="flex items-center">
