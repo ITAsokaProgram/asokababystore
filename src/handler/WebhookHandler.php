@@ -187,14 +187,47 @@ class WebhookHandler
                 }
 
                 foreach ($daftarBalasan as $balasan) {
-                    $sendResult = kirimPesanTeks($nomorPengirim, $balasan);
+                    $type = $balasan['type'];
+                    $content = $balasan['content'];
 
-                    $this->saveAdminReply($conversation['id'], $nomorPengirim, $balasan, 'text', $sendResult['wamid'] ?? null);
+                    $sendResult = null;
+                    $adminMsgType = 'text';
+                    $adminMsgBody = '';
+
+                    if ($type === 'text') {
+                        $sendResult = kirimPesanTeks($nomorPengirim, $content);
+                        $adminMsgBody = $content;
+                        $adminMsgType = 'text';
+                    } elseif ($type === 'contact') {
+                        $sendResult = kirimPesanKontak($nomorPengirim, $content['name'], $content['phone']);
+                        $adminMsgBody = "Contact: " . $content['name'] . " (" . $content['phone'] . ")";
+                        $adminMsgType = 'others'; // Sesuaikan jika DB support 'contact'
+                    } elseif ($type === 'location') {
+                        $sendResult = kirimPesanLokasi($nomorPengirim, $content['lat'], $content['long'], $content['name'], $content['address']);
+                        $adminMsgBody = "Location: " . $content['name'];
+                        $adminMsgType = 'location';
+                    } elseif ($type === 'media') {
+                        $mediaType = $content['media_type'] ?? 'image';
+                        $sendResult = kirimPesanMedia($nomorPengirim, $content['url'], $mediaType, $content['caption']);
+                        $adminMsgBody = "Media: " . $content['url'];
+                        $adminMsgType = $mediaType;
+                    } elseif ($type === 'cta_url') {
+                        $sendResult = kirimPesanCtaUrl($nomorPengirim, $content['body'], $content['display_text'], $content['url']);
+                        $adminMsgBody = "CTA Button: " . $content['display_text'];
+                        $adminMsgType = 'interactive';
+                    }
+
+                    if ($sendResult) {
+                        $this->saveAdminReply($conversation['id'], $nomorPengirim, $adminMsgBody, $adminMsgType, $sendResult['wamid'] ?? null);
+                    }
+
+                    usleep(500000);
                 }
 
                 return;
             }
         }
+
         if ($conversation['status_percakapan'] === 'live_chat') {
             if (
                 $messageType === 'interactive' &&

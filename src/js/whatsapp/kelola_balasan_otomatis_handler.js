@@ -9,68 +9,163 @@ document.addEventListener("DOMContentLoaded", () => {
   const formTransaksi = document.getElementById("form-transaksi");
   const btnAddMessage = document.getElementById("btn-add-message");
   const messageContainer = document.getElementById("message-container");
-
   const API_BASE = "/src/api/whatsapp";
-
-  // --- HELPER: Message Bubble Input UI ---
-  function createMessageInput(value = "") {
+  function createMessageInput(data = { type: "text", content: "" }) {
     const wrapper = document.createElement("div");
-    wrapper.className = "relative group animate-fade-in";
-
-    // Nomor urut dinamis
+    wrapper.className = "relative group animate-fade-in message-item pb-4";
     const currentCount = messageContainer.children.length + 1;
-
     wrapper.innerHTML = `
-            <div class="flex gap-2 items-start bg-gray-50 p-3 rounded-lg border border-gray-200">
-                <div class="mt-1 flex flex-col items-center gap-1">
-                    <span class="text-xs font-bold text-white bg-gray-400 w-6 h-6 flex items-center justify-center rounded-full select-none msg-number">${currentCount}</span>
-                </div>
-                <div class="flex-1">
-                    <textarea name="isi_balasan[]" rows="3"
-                        class="input-enhanced w-full px-3 py-2 border border-gray-300 rounded bg-white focus:outline-none text-sm resize-y"
-                        placeholder="Tulis pesan balasan di sini..." required maxlength="1000">${value}</textarea>
-                    <div class="text-right text-[10px] text-gray-400 mt-1">Max 1000 char</div>
-                </div>
-                <div class="flex flex-col gap-1">
-                    <button type="button" class="btn-remove-msg text-gray-400 hover:text-red-500 hover:bg-red-50 p-1.5 rounded transition-colors" title="Hapus pesan ini">
+            <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 shadow-sm">
+                <div class="flex justify-between items-center mb-3 pb-2 border-b border-gray-200">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold text-white bg-gray-500 w-6 h-6 flex items-center justify-center rounded-full select-none msg-number">${currentCount}</span>
+                        <select class="type-selector text-xs font-bold text-gray-700 bg-white border border-gray-300 rounded px-2 py-1 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 cursor-pointer">
+                            <option value="text" ${
+                              data.type === "text" ? "selected" : ""
+                            }>📝 Teks Biasa</option>
+                            <option value="contact" ${
+                              data.type === "contact" ? "selected" : ""
+                            }>👤 Kontak</option>
+                            <option value="location" ${
+                              data.type === "location" ? "selected" : ""
+                            }>📍 Lokasi</option>
+                            <option value="media" ${
+                              data.type === "media" ? "selected" : ""
+                            }>🖼️ Gambar/Media</option>
+                            <option value="cta_url" ${
+                              data.type === "cta_url" ? "selected" : ""
+                            }>🔗 Tombol Link</option>
+                        </select>
+                    </div>
+                    <button type="button" class="btn-remove-msg text-gray-400 hover:text-red-500 transition-colors p-1" title="Hapus">
                         <i class="fas fa-trash-alt"></i>
                     </button>
                 </div>
+                <div class="content-area">
+                    </div>
             </div>
         `;
-
-    // Event listener hapus
+    const contentArea = wrapper.querySelector(".content-area");
+    const typeSelector = wrapper.querySelector(".type-selector");
     const btnDel = wrapper.querySelector(".btn-remove-msg");
-    if (btnDel) {
-      btnDel.addEventListener("click", () => {
-        // Cek jika ini satu-satunya pesan, jangan hapus (opsional, atau clear value saja)
-        if (messageContainer.children.length > 1) {
-          wrapper.remove();
-          renumberMessages();
-        } else {
-          wrapper.querySelector("textarea").value = "";
-          wrapper.querySelector("textarea").focus();
-        }
-      });
-    }
+    const renderInputs = (type, content) => {
+      contentArea.innerHTML = "";
+      let inputs = "";
+      if (type === "text") {
+        const val = typeof content === "string" ? content : "";
+        inputs = `
+                    <textarea class="input-content input-enhanced w-full px-3 py-2 border border-gray-300 rounded bg-white text-sm focus:outline-none focus:border-green-500" 
+                        rows="3" placeholder="Tulis pesan balasan di sini..." required>${val}</textarea>
+                    <div class="text-right text-[10px] text-gray-400 mt-1">Support emoji & format WA (*bold*, _italic_)</div>
+                `;
+      } else if (type === "contact") {
+        const val = content || { name: "", phone: "" };
+        inputs = `
+                    <div class="grid grid-cols-1 gap-2">
+                        <input type="text" class="input-contact-name input-enhanced w-full px-3 py-2 border border-gray-300 rounded text-sm" 
+                            placeholder="Nama Kontak (Contoh: CS Toko)" value="${
+                              val.name || ""
+                            }" required>
+                        <input type="text" class="input-contact-phone input-enhanced w-full px-3 py-2 border border-gray-300 rounded text-sm" 
+                            placeholder="Nomor HP (Contoh: 08123456789)" value="${
+                              val.phone || ""
+                            }" required>
+                    </div>
+                `;
+      } else if (type === "location") {
+        const val = content || { lat: "", long: "", name: "", address: "" };
+        inputs = `
+                    <div class="space-y-2">
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="text" class="input-loc-lat input-enhanced w-full px-3 py-2 border border-gray-300 rounded text-sm" 
+                                placeholder="Latitude (-6.xxxx)" value="${
+                                  val.lat || ""
+                                }" required>
+                            <input type="text" class="input-loc-long input-enhanced w-full px-3 py-2 border border-gray-300 rounded text-sm" 
+                                placeholder="Longitude (106.xxxx)" value="${
+                                  val.long || ""
+                                }" required>
+                        </div>
+                        <input type="text" class="input-loc-name input-enhanced w-full px-3 py-2 border border-gray-300 rounded text-sm" 
+                            placeholder="Nama Tempat (Contoh: Kantor Cabang)" value="${
+                              val.name || ""
+                            }" required>
+                        <textarea class="input-loc-addr input-enhanced w-full px-3 py-2 border border-gray-300 rounded text-sm" 
+                            rows="2" placeholder="Alamat Lengkap" required>${
+                              val.address || ""
+                            }</textarea>
+                    </div>
+                `;
+      } else if (type === "media") {
+        const val = content || { url: "", caption: "", media_type: "image" };
+        inputs = `
+                    <div class="space-y-2">
+                        <select class="input-media-type w-full px-3 py-2 border border-gray-300 rounded text-sm bg-white">
+                            <option value="image" ${
+                              val.media_type === "image" ? "selected" : ""
+                            }>Foto (JPG/PNG)</option>
+                            <option value="document" ${
+                              val.media_type === "document" ? "selected" : ""
+                            }>Dokumen (PDF)</option>
+                        </select>
+                        <input type="url" class="input-media-url input-enhanced w-full px-3 py-2 border border-gray-300 rounded text-sm" 
+                            placeholder="Link URL Media (https:
+                              val.url || ""
+                            }" required>
+                        <input type="text" class="input-media-caption input-enhanced w-full px-3 py-2 border border-gray-300 rounded text-sm" 
+                            placeholder="Caption (Opsional)" value="${
+                              val.caption || ""
+                            }">
+                    </div>
+                `;
+      } else if (type === "cta_url") {
+        const val = content || { body: "", display_text: "", url: "" };
+        inputs = `
+                     <div class="space-y-2">
+                        <textarea class="input-cta-body input-enhanced w-full px-3 py-2 border border-gray-300 rounded text-sm" 
+                            rows="2" placeholder="Pesan Body Utama" required>${
+                              val.body || ""
+                            }</textarea>
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="text" class="input-cta-text input-enhanced w-full px-3 py-2 border border-gray-300 rounded text-sm" 
+                                placeholder="Label Tombol" value="${
+                                  val.display_text || ""
+                                }" required maxlength="20">
+                            <input type="url" class="input-cta-url input-enhanced w-full px-3 py-2 border border-gray-300 rounded text-sm" 
+                                placeholder="Link Tujuan (https:
+                                  val.url || ""
+                                }" required>
+                        </div>
+                    </div>
+                `;
+      }
+      contentArea.innerHTML = inputs;
+    };
+    renderInputs(data.type, data.content);
+    typeSelector.addEventListener("change", (e) => {
+      renderInputs(e.target.value, null);
+    });
+    btnDel.addEventListener("click", () => {
+      if (messageContainer.children.length > 1) {
+        wrapper.remove();
+        renumberMessages();
+      } else {
+        typeSelector.value = "text";
+        renderInputs("text", "");
+      }
+    });
     return wrapper;
   }
-
-  // Fungsi untuk mengurutkan ulang nomor (1, 2, 3...) setelah delete
   function renumberMessages() {
     Array.from(messageContainer.children).forEach((child, index) => {
       const span = child.querySelector(".msg-number");
       if (span) span.textContent = index + 1;
     });
   }
-
   btnAddMessage.addEventListener("click", () => {
-    messageContainer.appendChild(createMessageInput(""));
-    // Scroll ke bawah
+    messageContainer.appendChild(createMessageInput());
     messageContainer.scrollTop = messageContainer.scrollHeight;
   });
-  // --- END HELPER ---
-
   function getUrlParams() {
     const params = new URLSearchParams(window.location.search);
     return {
@@ -78,20 +173,17 @@ document.addEventListener("DOMContentLoaded", () => {
       page: parseInt(params.get("page") || "1", 10),
     };
   }
-
   function build_pagination_url(newPage) {
     const params = new URLSearchParams(window.location.search);
     params.set("page", newPage);
     return "?" + params.toString();
   }
-
   async function loadData() {
     const urlParams = getUrlParams();
     const inputSearch = filterForm.querySelector(
       'input[name="search_keyword"]'
     );
     if (inputSearch) inputSearch.value = urlParams.search_keyword;
-
     tableBody.innerHTML = `
             <tr>
                 <td colspan="5" class="text-center p-8">
@@ -99,12 +191,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     <p class="mt-3 text-gray-500">Memuat data...</p>
                 </td>
             </tr>`;
-
     const queryString = new URLSearchParams({
       search_keyword: urlParams.search_keyword,
       page: urlParams.page,
     }).toString();
-
     try {
       const response = await fetch(
         `${API_BASE}/get_data_balasan_otomatis.php?${queryString}`
@@ -125,7 +215,6 @@ document.addEventListener("DOMContentLoaded", () => {
       paginationContainer.innerHTML = "";
     }
   }
-
   function renderTable(data, pagination) {
     if (!data || data.length === 0) {
       tableBody.innerHTML = `
@@ -138,41 +227,45 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tr>`;
       return;
     }
-
     const startNumber = (pagination.current_page - 1) * pagination.limit;
-
     tableBody.innerHTML = data
       .map((row, index) => {
         const statusBadge =
           row.status_aktif == "1"
             ? `<span class="badge-status badge-aktif"><i class="fas fa-check-circle"></i> Aktif</span>`
             : `<span class="badge-status badge-nonaktif"><i class="fas fa-times-circle"></i> Non-Aktif</span>`;
-
-        // Logic menampilkan preview pesan
         const messages = row.list_pesan || [];
         let displayBalasan = "<em class='text-gray-400'>Tidak ada pesan</em>";
         let moreCount = 0;
-
         if (messages.length > 0) {
-          // Ambil pesan pertama
-          displayBalasan = messages[0];
-          if (displayBalasan.length > 100) {
-            displayBalasan = displayBalasan.substring(0, 100) + "...";
+          const firstMsg = messages[0];
+          let preview = "";
+          let icon = "";
+          if (firstMsg.type === "text") {
+            icon = "📝";
+            preview = firstMsg.content;
+          } else if (firstMsg.type === "contact") {
+            icon = "👤";
+            preview = firstMsg.content.name;
+          } else if (firstMsg.type === "location") {
+            icon = "📍";
+            preview = firstMsg.content.name;
+          } else if (firstMsg.type === "media") {
+            icon = "🖼️";
+            preview = "Media URL";
+          } else if (firstMsg.type === "cta_url") {
+            icon = "🔗";
+            preview = firstMsg.content.display_text;
           }
-          displayBalasan = displayBalasan.replace(/\n/g, " "); // Hapus enter untuk tampilan tabel
-
-          // Hitung sisa pesan
+          if (preview.length > 50) preview = preview.substring(0, 50) + "...";
+          displayBalasan = `<span class="mr-1">${icon}</span> ${preview}`;
           moreCount = messages.length - 1;
         }
-
         const moreBadge =
           moreCount > 0
-            ? `<span class="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-0.5 rounded-full ml-2 border border-blue-200" title="${moreCount} pesan lainnya">+${moreCount}</span>`
+            ? `<span class="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-0.5 rounded-full ml-2 border border-blue-200">+${moreCount}</span>`
             : "";
-
-        // Encode data untuk dikirim ke fungsi edit
         const rowDataString = encodeURIComponent(JSON.stringify(row));
-
         return `
                 <tr class="hover:bg-gray-50 transition-colors">
                     <td class="text-center font-semibold text-gray-500">${
@@ -211,24 +304,15 @@ document.addEventListener("DOMContentLoaded", () => {
       })
       .join("");
   }
-
   function renderPagination(pagination) {
-    if (!pagination) {
+    if (!pagination || pagination.total_rows === 0) {
       paginationContainer.innerHTML = "";
       return;
     }
-
     const { current_page, total_pages, total_rows, limit } = pagination;
     const offset = (current_page - 1) * limit;
-
-    if (total_rows === 0) {
-      paginationContainer.innerHTML = "";
-      return;
-    }
-
     const start_row = offset + 1;
     const end_row = Math.min(offset + limit, total_rows);
-
     let html = `
             <div class="flex flex-col md:flex-row justify-between items-center gap-4">
                 <span class="text-sm text-gray-600">
@@ -236,7 +320,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 </span>
                 <div class="flex items-center gap-2">
         `;
-
     html += `
               <a href="${
                 current_page > 1 ? build_pagination_url(current_page - 1) : "#"
@@ -247,10 +330,8 @@ document.addEventListener("DOMContentLoaded", () => {
                  <i class="fas fa-chevron-left"></i>
               </a>
           `;
-
     const pages_to_show = [];
     const max_pages_around = 2;
-
     for (let i = 1; i <= total_pages; i++) {
       if (
         i === 1 ||
@@ -261,7 +342,6 @@ document.addEventListener("DOMContentLoaded", () => {
         pages_to_show.push(i);
       }
     }
-
     let last_page = 0;
     for (const page_num of pages_to_show) {
       if (last_page !== 0 && page_num > last_page + 1) {
@@ -277,7 +357,6 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
       last_page = page_num;
     }
-
     html += `
               <a href="${
                 current_page < total_pages
@@ -290,61 +369,42 @@ document.addEventListener("DOMContentLoaded", () => {
                  <i class="fas fa-chevron-right"></i>
               </a>
           `;
-
     html += `</div></div>`;
     paginationContainer.innerHTML = html;
   }
-
   function openModal(mode, data = null) {
     formTransaksi.reset();
     document.getElementById("form_mode").value = mode;
-    messageContainer.innerHTML = ""; // Bersihkan pesan sebelumnya
-
+    messageContainer.innerHTML = "";
     const modalTitle = document.getElementById("modal-title");
     const kataKunciInput = document.getElementById("kata_kunci");
     const idInput = document.getElementById("data_id");
-
     if (mode === "insert") {
       modalTitle.textContent = "Tambah Keyword Baru";
       modalTitle.nextElementSibling.textContent = "Buat balasan otomatis baru";
       idInput.value = "";
       kataKunciInput.readOnly = false;
-      kataKunciInput.classList.remove("bg-gray-100");
-
-      // Tambah 1 kolom pesan kosong secara default
-      messageContainer.appendChild(createMessageInput(""));
+      messageContainer.appendChild(createMessageInput());
     } else if (mode === "update" && data) {
       modalTitle.textContent = "Edit Keyword & Pesan";
       modalTitle.nextElementSibling.textContent = "Perbarui informasi balasan";
-
       idInput.value = data.id;
       kataKunciInput.value = data.kata_kunci;
       document.getElementById("status_aktif").value = data.status_aktif;
-
-      // Load pesan-pesan yang ada
       if (data.list_pesan && data.list_pesan.length > 0) {
         data.list_pesan.forEach((msg) => {
           messageContainer.appendChild(createMessageInput(msg));
         });
       } else {
-        messageContainer.appendChild(createMessageInput(""));
+        messageContainer.appendChild(createMessageInput());
       }
-
       kataKunciInput.readOnly = false;
     }
-
     modalForm.classList.remove("hidden");
-    setTimeout(() => {
-      if (mode === "insert") {
-        kataKunciInput.focus();
-      }
-    }, 100);
   }
-
   function closeModal() {
     modalForm.classList.add("hidden");
   }
-
   btnAddData.addEventListener("click", () => openModal("insert"));
   [btnCloseModal, btnCancel].forEach((el) =>
     el.addEventListener("click", closeModal)
@@ -352,13 +412,6 @@ document.addEventListener("DOMContentLoaded", () => {
   document
     .getElementById("modal-backdrop")
     .addEventListener("click", closeModal);
-
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && !modalForm.classList.contains("hidden")) {
-      closeModal();
-    }
-  });
-
   filterForm.addEventListener("submit", (e) => {
     e.preventDefault();
     const formData = new FormData(filterForm);
@@ -369,38 +422,65 @@ document.addEventListener("DOMContentLoaded", () => {
     window.history.pushState({}, "", `?${params.toString()}`);
     loadData();
   });
-
   formTransaksi.addEventListener("submit", async (e) => {
     e.preventDefault();
-
-    // Ambil data form
     const formData = new FormData(formTransaksi);
-
-    // Perbaikan: Karena FormData kadang sulit menghandle array secara langsung dengan format yang kita mau di PHP,
-    // Kita construct objek JSON manual.
-    const listPesan = formData.getAll("isi_balasan[]");
-
+    const messageItems = [];
+    const itemElements = messageContainer.querySelectorAll(".message-item");
+    itemElements.forEach((el) => {
+      const typeSelector = el.querySelector(".type-selector");
+      if (!typeSelector) return;
+      const type = typeSelector.value;
+      let content = null;
+      if (type === "text") {
+        content = el.querySelector(".input-content").value;
+      } else if (type === "contact") {
+        content = {
+          name: el.querySelector(".input-contact-name").value,
+          phone: el.querySelector(".input-contact-phone").value,
+        };
+      } else if (type === "location") {
+        content = {
+          lat: el.querySelector(".input-loc-lat").value,
+          long: el.querySelector(".input-loc-long").value,
+          name: el.querySelector(".input-loc-name").value,
+          address: el.querySelector(".input-loc-addr").value,
+        };
+      } else if (type === "media") {
+        content = {
+          media_type: el.querySelector(".input-media-type").value,
+          url: el.querySelector(".input-media-url").value,
+          caption: el.querySelector(".input-media-caption").value,
+        };
+      } else if (type === "cta_url") {
+        content = {
+          body: el.querySelector(".input-cta-body").value,
+          display_text: el.querySelector(".input-cta-text").value,
+          url: el.querySelector(".input-cta-url").value,
+        };
+      }
+      if (content) {
+        messageItems.push({ type: type, content: content });
+      }
+    });
     const jsonData = {
       mode: formData.get("mode"),
       id: formData.get("id"),
       kata_kunci: formData.get("kata_kunci"),
       status_aktif: formData.get("status_aktif"),
-      isi_balasan: listPesan, // Array pesan
+      isi_balasan: messageItems,
     };
-
     const btnSave = document.getElementById("btn-save");
     const originalHTML = btnSave.innerHTML;
     btnSave.disabled = true;
     btnSave.innerHTML =
       '<i class="fas fa-spinner fa-spin mr-2"></i> Menyimpan...';
-
     try {
       const response = await fetch(`${API_BASE}/save_balasan_otomatis.php`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(jsonData),
       });
-
       const result = await response.json();
       if (result.success) {
         Swal.fire({
@@ -427,12 +507,10 @@ document.addEventListener("DOMContentLoaded", () => {
       btnSave.innerHTML = originalHTML;
     }
   });
-
   window.editData = (encodedData) => {
     const data = JSON.parse(decodeURIComponent(encodedData));
     openModal("update", data);
   };
-
   window.deleteData = async (id, kataKunci) => {
     const confirm = await Swal.fire({
       title: "Hapus Keyword?",
@@ -445,7 +523,6 @@ document.addEventListener("DOMContentLoaded", () => {
       cancelButtonText: "Batal",
       reverseButtons: true,
     });
-
     if (confirm.isConfirmed) {
       try {
         Swal.fire({
@@ -456,18 +533,15 @@ document.addEventListener("DOMContentLoaded", () => {
             Swal.showLoading();
           },
         });
-
         const response = await fetch(
           `${API_BASE}/delete_balasan_otomatis.php`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id: id }), // Kirim ID bukan kata kunci
+            body: JSON.stringify({ id: id }),
           }
         );
-
         const result = await response.json();
-
         if (result.success) {
           Swal.fire({
             icon: "success",
@@ -490,6 +564,5 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   };
-
   loadData();
 });
