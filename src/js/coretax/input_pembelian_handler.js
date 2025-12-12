@@ -10,6 +10,23 @@ const API_URLS = {
   searchSupplier: "/src/api/coretax/get_supplier_search.php",
   deleteData: "/src/api/coretax/delete_pembelian_single.php",
 };
+let modalData = {
+  show: false,
+  title: "",
+  content: "",
+};
+function showDetailModal(title, content) {
+  modalData = {
+    show: true,
+    title: title,
+    content: content || "-",
+  };
+  window.dispatchEvent(
+    new CustomEvent("show-detail-modal", {
+      detail: modalData,
+    })
+  );
+}
 const form = document.getElementById("single-form");
 const inpId = document.getElementById("inp_id");
 const inpKodeSupplier = document.getElementById("inp_kode_supplier");
@@ -18,7 +35,7 @@ const errNoInvoice = document.getElementById("err_no_invoice");
 const inpKodeStore = document.getElementById("inp_kode_store");
 const inpStatus = document.getElementById("inp_status");
 const inpNamaSupp = document.getElementById("inp_nama_supplier");
-const inpCatatan = document.getElementById("inp_catatan"); // TAMBAHAN
+const inpCatatan = document.getElementById("inp_catatan"); 
 const listSupplier = document.getElementById("supplier_list");
 const inpTgl = document.getElementById("inp_tgl_nota");
 const inpDpp = document.getElementById("inp_dpp");
@@ -65,7 +82,6 @@ function calculateTotal() {
   const total = dpp + ppn;
   inpTotal.value = formatNumber(total);
 }
-
 async function loadStoreOptions() {
   try {
     const result = await sendRequestGET(API_URLS.getStores);
@@ -181,10 +197,20 @@ function renderTableRows(data) {
           row.nm_alias || "-"
         }</span></td>
         <td class="">${badgeStatus}</td>
-        <td class="text-sm truncate max-w-[150px]" title="${
-          row.nama_supplier
-        }">${row.nama_supplier}</td>
-        <td class="text-sm text-gray-600 truncate max-w-[150px]" title="${catatanShow}">${catatanShow}</td>
+        <td class="text-sm cursor-pointer hover:text-pink-600 hover:underline" data-type="supplier">
+            <span class="truncate max-w-[150px] inline-block" title="Klik untuk detail">${
+              row.nama_supplier
+            }</span>
+        </td>
+        <td class="text-sm text-gray-600 ${
+          row.catatan
+            ? "cursor-pointer hover:text-pink-600 hover:underline"
+            : ""
+        }" data-type="catatan">
+            <span class="truncate max-w-[150px] inline-block" ${
+              row.catatan ? 'title="Klik untuk detail"' : ""
+            }>${catatanShow}</span>
+        </td>
         <td class="text-right font-mono text-sm">${formatNumber(dpp)}</td>
         <td class="text-right font-mono text-gray-500 text-sm">${formatNumber(
           dppLain
@@ -208,6 +234,16 @@ function renderTableRows(data) {
             </div>
         </td>
     `;
+    const supplierCell = tr.querySelector('[data-type="supplier"]');
+    supplierCell.addEventListener("click", () => {
+      showDetailModal("Nama Supplier", row.nama_supplier);
+    });
+    const catatanCell = tr.querySelector('[data-type="catatan"]');
+    if (row.catatan) {
+      catatanCell.addEventListener("click", () => {
+        showDetailModal("Catatan", row.catatan);
+      });
+    }
     const btnEdit = tr.querySelector(".btn-edit-row");
     btnEdit.addEventListener("click", () => startEditMode(row));
     const btnDelete = tr.querySelector(".btn-delete-row");
@@ -220,6 +256,7 @@ function renderTableRows(data) {
     tableBody.appendChild(tr);
   });
 }
+window.showDetailModal = showDetailModal;
 function setupInfinityScroll() {
   const observerOptions = {
     root: document.getElementById("table-scroll-container"),
@@ -386,7 +423,7 @@ function startEditMode(data) {
   inpKodeStore.value = data.kode_store || "";
   inpStatus.value = data.status || "PKP";
   inpNamaSupp.value = data.nama_supplier;
-  inpCatatan.value = data.catatan || ""; // TAMBAHAN
+  inpCatatan.value = data.catatan || ""; 
   inpTgl.value = data.tgl_nota;
   inpDpp.value = formatNumber(data.dpp);
   inpDppLain.value = formatNumber(data.dpp_nilai_lain || 0);
@@ -411,7 +448,7 @@ function cancelEditMode() {
   inpTotal.value = "0";
   inpKodeStore.value = "";
   inpStatus.value = "";
-  inpCatatan.value = ""; // TAMBAHAN
+  inpCatatan.value = ""; 
   detectedNoFaktur = null;
   document
     .querySelector(".input-row-container")
@@ -489,7 +526,7 @@ async function handleSave() {
     kode_store: inpKodeStore.value,
     kode_supplier: inpKodeSupplier.value,
     status: inpStatus.value,
-    catatan: inpCatatan.value.trim(), // TAMBAHAN
+    catatan: inpCatatan.value.trim(), 
     nama_supplier: namaSupp,
     tgl_nota: inpTgl.value,
     dpp: parseNumber(inpDpp.value),
@@ -704,7 +741,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
   inpNamaSupp.addEventListener("input", handleSupplierSearch);
-
   inpNoInvoice.addEventListener("change", (e) => {
     const val = e.target.value.trim();
     if (val !== "") {
