@@ -54,13 +54,6 @@ $menuHandler = new MenuHandler('wa_balasan');
             transform: translateY(-1px);
         }
 
-        .textarea-counter {
-            text-align: right;
-            font-size: 0.75rem;
-            color: #6b7280;
-            margin-top: 0.25rem;
-        }
-
         .modal-footer-enhanced {
             background: #f9fafb;
             padding: 1rem 1.5rem;
@@ -98,6 +91,25 @@ $menuHandler = new MenuHandler('wa_balasan');
             color: #991b1b;
         }
 
+        /* Scrollbar custom untuk container pesan */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+
         @media (max-width: 640px) {
             .modal-content-large {
                 width: 100%;
@@ -127,7 +139,7 @@ $menuHandler = new MenuHandler('wa_balasan');
                             </div>
                             <div>
                                 <h1 class="text-xl font-bold text-gray-800 mb-1">Balasan Otomatis WhatsApp</h1>
-                                <p class="text-xs text-gray-600">Kelola keyword dan respon otomatis bot WhatsApp</p>
+                                <p class="text-xs text-gray-600">Kelola keyword dan respon multi-pesan</p>
                             </div>
                         </div>
                         <button id="btn-add-data" class="btn-primary">
@@ -157,8 +169,7 @@ $menuHandler = new MenuHandler('wa_balasan');
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-bold text-gray-800">
                             <i class="fas fa-list mr-2"></i>
-                            Daftar Balasan
-                            Otomatis
+                            Daftar Balasan Otomatis
                         </h3>
                     </div>
                     <div class="table-container">
@@ -167,7 +178,7 @@ $menuHandler = new MenuHandler('wa_balasan');
                                 <tr>
                                     <th class="text-center" style="width: 60px;">No</th>
                                     <th style="width: 200px;">Kata Kunci</th>
-                                    <th>Isi Balasan</th>
+                                    <th>Preview Balasan</th>
                                     <th class="text-center" style="width: 120px;">Status</th>
                                     <th class="text-center" style="width: 140px;">Aksi</th>
                                 </tr>
@@ -204,7 +215,7 @@ $menuHandler = new MenuHandler('wa_balasan');
                                 </div>
                                 <div>
                                     <h3 class="text-lg font-bold" id="modal-title">Form Balasan Otomatis</h3>
-                                    <p class="text-xs text-green-100 mt-0.5">Isi informasi keyword dan balasan</p>
+                                    <p class="text-xs text-green-100 mt-0.5">Konfigurasi keyword dan urutan pesan</p>
                                 </div>
                             </div>
                             <button type="button" id="btn-close-modal"
@@ -215,7 +226,8 @@ $menuHandler = new MenuHandler('wa_balasan');
                     </div>
                     <div class="p-6 space-y-5">
                         <input type="hidden" name="mode" id="form_mode" value="insert">
-                        <input type="hidden" name="old_kata_kunci" id="old_kata_kunci">
+                        <input type="hidden" name="id" id="data_id">
+
                         <div class="input-group">
                             <label class="form-label-required block text-sm font-bold text-gray-700 mb-2">
                                 <i class="fas fa-key mr-1"></i>
@@ -226,24 +238,31 @@ $menuHandler = new MenuHandler('wa_balasan');
                                 required placeholder="Contoh: info, harga, lokasi, jam_buka">
                             <p class="text-xs text-gray-500 mt-2">
                                 <i class="fas fa-info-circle mr-1"></i>
-                                Bot akan merespon otomatis jika pesan mengandung kata kunci ini
+                                Bot akan merespon jika pesan masuk mengandung kata ini.
                             </p>
                         </div>
-                        <div class="input-group">
+
+                        <div>
                             <label class="form-label-required block text-sm font-bold text-gray-700 mb-2">
-                                <i class="fas fa-comment-dots mr-1"></i>
-                                Isi Balasan
+                                <i class="fas fa-comments mr-1"></i>
+                                Daftar Balasan Otomatis
                             </label>
-                            <textarea name="isi_balasan" id="isi_balasan" rows="8"
-                                class="input-enhanced w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none text-sm resize-none"
-                                required
-                                placeholder="Tulis balasan otomatis yang akan dikirim...&#10;&#10;Tips: Gunakan emoji untuk membuat pesan lebih menarik! 😊"
-                                maxlength="1000"></textarea>
-                            <div class="textarea-counter">
-                                <span id="char-count">0</span> / 1000 karakter
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3 text-xs text-blue-800">
+                                <i class="fas fa-lightbulb mr-1"></i>
+                                Pesan akan dikirim secara berurutan dari atas ke bawah.
                             </div>
+
+                            <div id="message-container"
+                                class="space-y-3 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
+                            </div>
+
+                            <button type="button" id="btn-add-message"
+                                class="mt-3 w-full py-2.5 border-2 border-dashed border-green-500 text-green-600 rounded-lg hover:bg-green-50 transition-colors text-sm font-bold flex items-center justify-center gap-2">
+                                <i class="fas fa-plus-circle"></i> Tambah Pesan Lagi
+                            </button>
                         </div>
-                        <div class="input-group">
+
+                        <div class="input-group pt-2">
                             <label class="block text-sm font-bold text-gray-700 mb-2">
                                 <i class="fas fa-toggle-on mr-1"></i>
                                 Status Aktif

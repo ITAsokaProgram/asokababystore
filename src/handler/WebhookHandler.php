@@ -16,19 +16,19 @@ class WebhookHandler
     private $verificationService;
     private $conversationService;
     private $voucherService;
-    private $autoReplyService; 
+    private $autoReplyService;
     private $conn;
 
-    
+
     public function __construct(
-        VerificationService $verificationService, 
-        ConversationService $conversationService, 
-        AutoReplyService $autoReplyService, 
+        VerificationService $verificationService,
+        ConversationService $conversationService,
+        AutoReplyService $autoReplyService,
         $logger
     ) {
         $this->verificationService = $verificationService;
         $this->conversationService = $conversationService;
-        $this->autoReplyService = $autoReplyService; 
+        $this->autoReplyService = $autoReplyService;
         $this->logger = $logger;
         $this->conn = $conversationService->conn;
         $this->voucherService = new VoucherService($this->conn, $this->logger);
@@ -166,11 +166,13 @@ class WebhookHandler
                 return;
             }
         }
+
         if ($messageType === 'text') {
             $textBody = $message['text']['body'];
-            $balasanOtomatis = $this->autoReplyService->cariBalasan($textBody);
 
-            if ($balasanOtomatis) {
+            $daftarBalasan = $this->autoReplyService->cariBalasan($textBody);
+
+            if ($daftarBalasan && is_array($daftarBalasan) && count($daftarBalasan) > 0) {
                 $savedUserMessage = $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $textBody);
 
                 if ($savedUserMessage) {
@@ -184,11 +186,13 @@ class WebhookHandler
                     ]);
                 }
 
-                $sendResult = kirimPesanTeks($nomorPengirim, $balasanOtomatis);
-                
-                $this->saveAdminReply($conversation['id'], $nomorPengirim, $balasanOtomatis, 'text', $sendResult['wamid'] ?? null);
+                foreach ($daftarBalasan as $balasan) {
+                    $sendResult = kirimPesanTeks($nomorPengirim, $balasan);
 
-                return; 
+                    $this->saveAdminReply($conversation['id'], $nomorPengirim, $balasan, 'text', $sendResult['wamid'] ?? null);
+                }
+
+                return;
             }
         }
         if ($conversation['status_percakapan'] === 'live_chat') {
@@ -288,7 +292,7 @@ class WebhookHandler
             return;
         }
 
-        
+
         if ($message['type'] === 'interactive' && isset($message['interactive']['type']) && $message['interactive']['type'] === 'button_reply') {
             $this->processButtonReply($message, $conversation, $namaPengirim);
             return;
