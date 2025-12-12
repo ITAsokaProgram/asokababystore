@@ -102,6 +102,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const tplSelect = contentArea.querySelector(".template-selector");
         const nameInput = contentArea.querySelector(".input-contact-name");
         const phoneInput = contentArea.querySelector(".input-contact-phone");
+        if (val.phone) {
+          tplSelect.value = val.phone;
+        }
         tplSelect.addEventListener("change", (e) => {
           const selectedOption = e.target.options[e.target.selectedIndex];
           const phoneNumber = e.target.value;
@@ -161,6 +164,18 @@ document.addEventListener("DOMContentLoaded", () => {
         const longInput = contentArea.querySelector(".input-loc-long");
         const nameInput = contentArea.querySelector(".input-loc-name");
         const addrInput = contentArea.querySelector(".input-loc-addr");
+        if (val.lat && val.long) {
+          Array.from(tplSelect.options).forEach((option) => {
+            if (option.value) {
+              try {
+                const data = JSON.parse(option.value);
+                if (data.latitude == val.lat && data.longitude == val.long) {
+                  tplSelect.value = option.value;
+                }
+              } catch (err) {}
+            }
+          });
+        }
         tplSelect.addEventListener("change", (e) => {
           const selectedValue = e.target.value;
           if (selectedValue) {
