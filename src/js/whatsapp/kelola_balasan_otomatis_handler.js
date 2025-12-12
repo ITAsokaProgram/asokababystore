@@ -109,9 +109,9 @@ document.addEventListener("DOMContentLoaded", () => {
                             }>Dokumen (PDF)</option>
                         </select>
                         <input type="url" class="input-media-url input-enhanced w-full px-3 py-2 border border-gray-300 rounded text-sm" 
-                            placeholder="Link URL Media (https:
-                              val.url || ""
-                            }" required>
+                            placeholder="Link URL" required
+                            value="${val.url || ""}"
+                            >
                         <input type="text" class="input-media-caption input-enhanced w-full px-3 py-2 border border-gray-300 rounded text-sm" 
                             placeholder="Caption (Opsional)" value="${
                               val.caption || ""
@@ -132,9 +132,10 @@ document.addEventListener("DOMContentLoaded", () => {
                                   val.display_text || ""
                                 }" required maxlength="20">
                             <input type="url" class="input-cta-url input-enhanced w-full px-3 py-2 border border-gray-300 rounded text-sm" 
-                                placeholder="Link Tujuan (https:
-                                  val.url || ""
-                                }" required>
+                               required
+                                value="${val.url || ""}"
+                                placeholder="asokababystore.com"
+                                >
                         </div>
                     </div>
                 `;
@@ -435,9 +436,16 @@ document.addEventListener("DOMContentLoaded", () => {
       if (type === "text") {
         content = el.querySelector(".input-content").value;
       } else if (type === "contact") {
+        let rawPhone = el.querySelector(".input-contact-phone").value;
+        let cleanPhone = rawPhone.replace(/\D/g, "");
+        if (cleanPhone.startsWith("0")) {
+          cleanPhone = "62" + cleanPhone.substring(1);
+        } else if (!cleanPhone.startsWith("62")) {
+          cleanPhone = "62" + cleanPhone;
+        }
         content = {
           name: el.querySelector(".input-contact-name").value,
-          phone: el.querySelector(".input-contact-phone").value,
+          phone: cleanPhone,
         };
       } else if (type === "location") {
         content = {
