@@ -149,6 +149,14 @@ $TEMPLATE_LOCATIONS = [
             box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
         }
 
+        /* Disabled state for save button during upload */
+        .btn-save-enhanced:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
         .badge-status {
             display: inline-flex;
             align-items: center;
@@ -169,7 +177,6 @@ $TEMPLATE_LOCATIONS = [
             color: #991b1b;
         }
 
-        /* Scrollbar custom untuk container pesan */
         .custom-scrollbar::-webkit-scrollbar {
             width: 6px;
         }
@@ -226,12 +233,12 @@ $TEMPLATE_LOCATIONS = [
                         </button>
                     </div>
                 </div>
+
                 <div class="filter-card-simple">
                     <form id="filter-form" class="flex flex-col md:flex-row gap-3 items-end">
                         <div class="flex-1">
                             <label class="block text-xs font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-search mr-1"></i>
-                                Cari Keyword
+                                <i class="fas fa-search mr-1"></i> Cari Keyword
                             </label>
                             <input type="text" name="search_keyword" class="input-modern w-full"
                                 placeholder="Ketik kata kunci untuk mencari...">
@@ -243,11 +250,11 @@ $TEMPLATE_LOCATIONS = [
                         </button>
                     </form>
                 </div>
+
                 <div class="filter-card">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-bold text-gray-800">
-                            <i class="fas fa-list mr-2"></i>
-                            Daftar Balasan Otomatis
+                            <i class="fas fa-list mr-2"></i> Daftar Balasan Otomatis
                         </h3>
                     </div>
                     <div class="table-container">
@@ -276,6 +283,7 @@ $TEMPLATE_LOCATIONS = [
             </div>
         </section>
     </main>
+
     <div id="modal-form" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog"
         aria-modal="true">
         <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
@@ -308,26 +316,24 @@ $TEMPLATE_LOCATIONS = [
 
                         <div class="input-group">
                             <label class="form-label-required block text-sm font-bold text-gray-700 mb-2">
-                                <i class="fas fa-key mr-1"></i>
-                                Kata Kunci (Unique)
+                                <i class="fas fa-key mr-1"></i> Kata Kunci (Unique)
                             </label>
                             <input type="text" name="kata_kunci" id="kata_kunci"
                                 class="input-enhanced w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none text-sm"
                                 required placeholder="Contoh: info, harga, lokasi, jam_buka">
                             <p class="text-xs text-gray-500 mt-2">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                Bot akan merespon jika pesan masuk mengandung kata ini.
+                                <i class="fas fa-info-circle mr-1"></i> Bot akan merespon jika pesan masuk mengandung
+                                kata ini.
                             </p>
                         </div>
 
                         <div>
                             <label class="form-label-required block text-sm font-bold text-gray-700 mb-2">
-                                <i class="fas fa-comments mr-1"></i>
-                                Daftar Balasan Otomatis
+                                <i class="fas fa-comments mr-1"></i> Daftar Balasan Otomatis
                             </label>
                             <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3 text-xs text-blue-800">
-                                <i class="fas fa-lightbulb mr-1"></i>
-                                Pesan akan dikirim secara berurutan dari atas ke bawah.
+                                <i class="fas fa-lightbulb mr-1"></i> Pesan akan dikirim secara berurutan dari atas ke
+                                bawah.
                             </div>
 
                             <div id="message-container"
@@ -342,8 +348,7 @@ $TEMPLATE_LOCATIONS = [
 
                         <div class="input-group pt-2">
                             <label class="block text-sm font-bold text-gray-700 mb-2">
-                                <i class="fas fa-toggle-on mr-1"></i>
-                                Status Aktif
+                                <i class="fas fa-toggle-on mr-1"></i> Status Aktif
                             </label>
                             <select name="status_aktif" id="status_aktif"
                                 class="input-enhanced w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none text-sm">
@@ -356,13 +361,11 @@ $TEMPLATE_LOCATIONS = [
                         <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
                             <button type="button" id="btn-cancel"
                                 class="w-full sm:w-auto px-6 py-2.5 border-2 border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all">
-                                <i class="fas fa-times mr-2"></i>
-                                Batal
+                                <i class="fas fa-times mr-2"></i> Batal
                             </button>
                             <button type="submit" id="btn-save"
                                 class="btn-save-enhanced w-full sm:w-auto px-6 py-2.5 rounded-lg text-sm font-semibold text-white shadow-lg">
-                                <i class="fas fa-save mr-2"></i>
-                                Simpan Data
+                                <i class="fas fa-save mr-2"></i> Simpan Data
                             </button>
                         </div>
                     </div>
@@ -370,6 +373,7 @@ $TEMPLATE_LOCATIONS = [
             </div>
         </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="../../js/whatsapp/kelola_balasan_otomatis_handler.js" type="module"></script>
 </body>
