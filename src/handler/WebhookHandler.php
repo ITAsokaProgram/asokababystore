@@ -173,7 +173,6 @@ class WebhookHandler
             $daftarBalasan = $this->autoReplyService->cariBalasan($textBody);
 
             if ($daftarBalasan && is_array($daftarBalasan) && count($daftarBalasan) > 0) {
-                // 1. Simpan pesan user
                 $savedUserMessage = $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $textBody);
 
                 if ($savedUserMessage) {
@@ -187,7 +186,6 @@ class WebhookHandler
                     ]);
                 }
 
-                // 2. Loop semua balasan dan kirim sesuai tipe
                 foreach ($daftarBalasan as $balasan) {
                     $type = $balasan['type'];
                     $content = $balasan['content'];
@@ -196,7 +194,6 @@ class WebhookHandler
                     $adminMsgType = 'text';
                     $adminMsgBody = '';
 
-                    // Eksekusi kirim sesuai tipe
                     if ($type === 'text') {
                         $sendResult = kirimPesanTeks($nomorPengirim, $content);
                         $adminMsgBody = $content;
@@ -204,14 +201,24 @@ class WebhookHandler
                     } elseif ($type === 'contact') {
                         $sendResult = kirimPesanKontak($nomorPengirim, $content['name'], $content['phone']);
                         $adminMsgBody = "Contact: " . $content['name'] . " (" . $content['phone'] . ")";
-                        $adminMsgType = 'others'; // Sesuaikan jika DB support 'contact'
+                        $adminMsgType = 'others';
                     } elseif ($type === 'location') {
                         $sendResult = kirimPesanLokasi($nomorPengirim, $content['lat'], $content['long'], $content['name'], $content['address']);
                         $adminMsgBody = "Location: " . $content['name'];
                         $adminMsgType = 'location';
                     } elseif ($type === 'media') {
                         $mediaType = $content['media_type'] ?? 'image';
-                        $sendResult = kirimPesanMedia($nomorPengirim, $content['url'], $mediaType, $content['caption']);
+
+                        $filename = $content['filename'] ?? basename(parse_url($content['url'], PHP_URL_PATH));
+
+                        $sendResult = kirimPesanMedia(
+                            $nomorPengirim,
+                            $content['url'],
+                            $mediaType,
+                            $content['caption'],
+                            $filename
+                        );
+
                         $adminMsgBody = $content['url'];
                         $adminMsgType = $mediaType;
                     } elseif ($type === 'cta_url') {

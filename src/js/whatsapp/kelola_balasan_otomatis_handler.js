@@ -238,12 +238,15 @@ document.addEventListener("DOMContentLoaded", () => {
                         <input type="hidden" class="input-media-url" value="${
                           val.url || ""
                         }">
+                        <input type="hidden" class="input-media-filename" value="${
+                          val.filename || ""
+                        }">
                         <div class="preview-area">${previewHtml}</div>
                     </div>
                     <div>
                          <label class="block text-xs font-bold text-gray-600 mb-1">2. Caption (Opsional)</label>
                          <input type="text" class="input-media-caption input-enhanced w-full px-3 py-2 border border-gray-300 rounded text-sm" 
-                            placeholder="Tulis caption gambar..." value="${
+                            placeholder="Tulis caption..." value="${
                               val.caption || ""
                             }">
                     </div>
@@ -254,12 +257,18 @@ document.addEventListener("DOMContentLoaded", () => {
         const previewArea = contentArea.querySelector(".preview-area");
         fileInput.addEventListener("change", (e) => {
           if (e.target.files.length > 0) {
+            const filenameInput = contentArea.querySelector(
+              ".input-media-filename"
+            );
+
+            filenameInput.value = e.target.files[0].name;
+
             previewArea.innerHTML = `
-                        <div class="mt-2 p-2 bg-yellow-50 rounded border border-yellow-200 flex items-center gap-2 text-xs text-yellow-700">
-                            <i class="fas fa-arrow-circle-up animate-bounce"></i> 
-                            <span>File baru dipilih: <b>${e.target.files[0].name}</b> (Akan diupload saat disimpan)</span>
-                        </div>
-                    `;
+            <div class="mt-2 p-2 bg-yellow-50 rounded border border-yellow-200 flex items-center gap-2 text-xs text-yellow-700">
+                <i class="fas fa-arrow-circle-up animate-bounce"></i> 
+                <span>File baru: <b>${e.target.files[0].name}</b> (Akan diupload saat disimpan)</span>
+            </div>
+        `;
           }
         });
       } else if (type === "cta_url") {
@@ -557,9 +566,16 @@ document.addEventListener("DOMContentLoaded", () => {
               "Mohon pilih file gambar/media untuk pesan bertipe Media."
             );
           }
+          let finalFilename = el.querySelector(".input-media-filename").value;
+
+          if (!finalFilename && finalUrl) {
+            finalFilename = finalUrl.split("/").pop();
+          }
+
           content = {
             media_type: el.querySelector(".input-media-type").value,
             url: finalUrl,
+            filename: finalFilename,
             caption: el.querySelector(".input-media-caption").value,
           };
         } else if (type === "cta_url") {

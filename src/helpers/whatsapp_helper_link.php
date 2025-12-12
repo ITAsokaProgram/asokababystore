@@ -233,14 +233,20 @@ function kirimPesanLokasi($nomorPenerima, $latitude, $longitude, $namaLokasi, $a
         return ['success' => false, 'wamid' => null];
     }
 }
-function kirimPesanMedia($nomorPenerima, $mediaUrl, $mediaType, $caption = null)
+// Tambahkan parameter $filename = null di akhir
+function kirimPesanMedia($nomorPenerima, $mediaUrl, $mediaType, $caption = null, $filename = null)
 {
     $logger = new AppLogger('whatsapp_media_message.log');
     $nomorPenerima = normalizePhoneNumber($nomorPenerima);
 
     $mediaObject = ['link' => $mediaUrl];
+
     if ($caption) {
         $mediaObject['caption'] = $caption;
+    }
+
+    if ($mediaType === 'document' && !empty($filename)) {
+        $mediaObject['filename'] = $filename;
     }
 
     $data = [
