@@ -728,12 +728,7 @@ document.addEventListener("DOMContentLoaded", () => {
                               ${row.Nm_Alias || row.kode_store || "-"}
                           </span>
                       </td>
-                       <td class="text-sm font-medium text-gray-800 cursor-pointer hover:text-pink-600 hover:underline" 
-                          onclick="showDetailModal('Nama Supplier', '${(
-                            row.nama_supplier || "-"
-                          ).replace(/'/g, "\\'")}')">
-                          ${truncateText(row.nama_supplier, 35)}
-                      </td>
+                      <td>${row.nama_supplier}</td>
                       <td class="text-sm text-gray-600 italic ${
                         row.catatan
                           ? "cursor-pointer hover:text-pink-600 hover:underline"
@@ -746,7 +741,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 ).replace(/'/g, "\\'")}')"`
                               : ""
                           }>
-                          ${truncateText(row.catatan, 25)}
+                          ${truncateText(row.catatan, 20)}
                       </td>
                       <td class="text-right font-mono text-gray-700">${formatRupiah(
                         dpp
