@@ -46,7 +46,7 @@ $isMutasiOpen = $isActive('/src/fitur/mutasi_in/');
 $isTransaksiOpen = $isActive('/src/fitur/transaction/');
 $isKoreksiOpen = $isActive('/src/fitur/koreksi_stok/') || $isActive('/src/fitur/koreksi_so/');
 
-$isLaporanOpen = $isPenjualanOpen || $isPelangganOpen || $isReceiptOpen || $isReturnOpen || $isMutasiOpen || $isTransaksiOpen || $isKoreksiOpen || $isActive('/src/fitur/log_backup/') || $isActive('/src/fitur/stok/');
+$isLaporanOpen = $isPenjualanOpen || $isPelangganOpen || $isReceiptOpen || $isReturnOpen || $isMutasiOpen || $isTransaksiOpen || $isKoreksiOpen || $isActive('/src/fitur/log_backup/') || $isActive('/src/fitur/stok/') || $isActive('/src/fitur/logs/password_reset.php');
 
 $isPembelianOpen = $isActive('/src/fitur/coretax/input_pembelian') || $isActive('/src/fitur/coretax/laporan_pembelian');
 $isPengeluaranOpen = $isActive('/src/fitur/coretax/data_coretax_keluaran.php') || $isActive('/src/fitur/coretax/import_faktur_keluaran.php'); // Tambahan Baru
@@ -672,9 +672,17 @@ $isWhatsappOpen = $isActive('/src/fitur/whatsapp_cs/');
                             </ul>
                         </div>
                     </li>
-
-
-
+                    <li>
+                        <a href="/src/fitur/stok/index.php" data-menu="laporan_stok"
+                            class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-indigo-100 hover:text-indigo-700 transition-all duration-200 group rounded-lg">
+                            <span
+                                class="transition-all duration-300 group-hover:translate-x-1 font-medium flex items-center">
+                                <i
+                                    class="fa-solid fa-warehouse mr-2 text-lg text-indigo-500 group-hover:text-indigo-600 transition-all duration-200 group-hover:scale-110"></i>
+                                Stok
+                            </span>
+                        </a>
+                    </li>
                     <li>
                         <a href="/src/fitur/log_backup/index.php" data-menu="laporan_log_backup"
                             class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-blue-100 hover:text-blue-700 transition-all duration-200 group rounded-lg">
@@ -687,13 +695,13 @@ $isWhatsappOpen = $isActive('/src/fitur/whatsapp_cs/');
                         </a>
                     </li>
                     <li>
-                        <a href="/src/fitur/stok/index.php" data-menu="laporan_stok"
-                            class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-indigo-100 hover:text-indigo-700 transition-all duration-200 group rounded-lg">
+                        <a href="/src/fitur/logs/password_reset.php" data-menu="laporan_log_password"
+                            class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-red-100 hover:text-red-700 transition-all duration-200 group rounded-lg">
                             <span
                                 class="transition-all duration-300 group-hover:translate-x-1 font-medium flex items-center">
                                 <i
-                                    class="fa-solid fa-warehouse mr-2 text-lg text-indigo-500 group-hover:text-indigo-600 transition-all duration-200 group-hover:scale-110"></i>
-                                Laporan Stok
+                                    class="fa-solid fa-key mr-2 text-lg text-red-500 group-hover:text-red-600 transition-all duration-200 group-hover:scale-110"></i>
+                                Log Password Reset
                             </span>
                         </a>
                     </li>
