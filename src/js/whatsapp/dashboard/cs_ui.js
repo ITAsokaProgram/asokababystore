@@ -290,55 +290,71 @@ function createMessageBubble(msg) {
                 </div>`;
       break;
     case "document":
+      let url, filename;
+
+      // LANGKAH 1: Coba Parse sebagai JSON (Format Baru)
       try {
         const docInfo = JSON.parse(msg.isi_pesan);
-        const url = docInfo.url;
-        const filename = docInfo.filename || "dokumen";
-        const filenameLower = filename.toLowerCase();
-        let iconClass = "fas fa-file-alt";
-        let iconColor = "#4B5563";
-        if (filenameLower.endsWith(".pdf")) {
-          iconClass = "fas fa-file-pdf";
-          iconColor = "#EF4444";
-        } else if (
-          filenameLower.endsWith(".doc") ||
-          filenameLower.endsWith(".docx")
-        ) {
-          iconClass = "fas fa-file-word";
-          iconColor = "#3B82F6";
-        } else if (
-          filenameLower.endsWith(".xls") ||
-          filenameLower.endsWith(".xlsx") ||
-          filenameLower.endsWith(".csv")
-        ) {
-          iconClass = "fas fa-file-excel";
-          iconColor = "#10B981";
-        }
-
-        let bgColor = "#F3F4F6";
-        if (isUser) {
-          bgColor = "#EBF5FF";
-        } else if (msg.dikirim_oleh_bot == 1) {
-          bgColor = "#F0FFF4";
-        }
-
-        contentHTML = `
-                    <div class="message-content document-content" style="display: flex; align-items: center; background-color: ${bgColor}; border-radius: 8px; padding: 10px 14px; max-width: 280px; word-break: break-all;">
-                        <a href="${url}" target="_blank" rel="noopener noreferrer" download="${filename}" style="display: flex; align-items: center; text-decoration: none; color: #333; width: 100%;">
-                            <i class="${iconClass}" style="font-size: 1.6em; color: ${iconColor}; margin-right: 12px; flex-shrink: 0;"></i>
-                            <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; color: #1F2937;">${filename}</span>
-                            <i class="fas fa-download" style="font-size: 1em; color: #6B7280; margin-left: 10px; flex-shrink: 0;"></i>
-                        </a>
-                    </div>`;
-        bubble.classList.add("file-bubble");
+        url = docInfo.url;
+        filename = docInfo.filename || "Dokumen";
       } catch (e) {
-        console.error("Gagal parse JSON dokumen:", e, msg.isi_pesan);
-        const p = document.createElement("p");
-        p.style.whiteSpace = "pre-wrap";
-        p.style.marginBottom = "0";
-        p.appendChild(document.createTextNode(msg.isi_pesan));
-        contentHTML = `<div class="message-content text-content">${p.outerHTML}</div>`;
+        // LANGKAH 2: Fallback (Jika Gagal Parse, anggap sebagai URL biasa/Format Lama)
+        url = msg.isi_pesan;
+
+        // Coba ambil nama file dari ujung URL
+        try {
+          // Ambil bagian setelah slash terakhir
+          filename = url.split("/").pop();
+          // Hapus query parameters jika ada (misal: image.pdf?token=...)
+          if (filename.includes("?")) {
+            filename = filename.split("?")[0];
+          }
+          // Decode URI component (misal %20 jadi spasi)
+          filename = decodeURIComponent(filename);
+        } catch (err) {
+          filename = "Dokumen";
+        }
       }
+
+      // LANGKAH 3: Render Tampilan (Sama untuk JSON maupun URL biasa)
+      const filenameLower = (filename || "").toLowerCase();
+      let iconClass = "fas fa-file-alt";
+      let iconColor = "#4B5563";
+
+      if (filenameLower.endsWith(".pdf")) {
+        iconClass = "fas fa-file-pdf";
+        iconColor = "#EF4444";
+      } else if (
+        filenameLower.endsWith(".doc") ||
+        filenameLower.endsWith(".docx")
+      ) {
+        iconClass = "fas fa-file-word";
+        iconColor = "#3B82F6";
+      } else if (
+        filenameLower.endsWith(".xls") ||
+        filenameLower.endsWith(".xlsx") ||
+        filenameLower.endsWith(".csv")
+      ) {
+        iconClass = "fas fa-file-excel";
+        iconColor = "#10B981";
+      }
+
+      let bgColor = "#F3F4F6";
+      if (isUser) {
+        bgColor = "#EBF5FF";
+      } else if (msg.dikirim_oleh_bot == 1) {
+        bgColor = "#F0FFF4";
+      }
+
+      contentHTML = `
+            <div class="message-content document-content" style="display: flex; align-items: center; background-color: ${bgColor}; border-radius: 8px; padding: 10px 14px; max-width: 280px; word-break: break-all;">
+                <a href="${url}" target="_blank" rel="noopener noreferrer" download="${filename}" style="display: flex; align-items: center; text-decoration: none; color: #333; width: 100%;">
+                    <i class="${iconClass}" style="font-size: 1.6em; color: ${iconColor}; margin-right: 12px; flex-shrink: 0;"></i>
+                    <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; color: #1F2937;">${filename}</span>
+                    <i class="fas fa-download" style="font-size: 1em; color: #6B7280; margin-left: 10px; flex-shrink: 0;"></i>
+                </a>
+            </div>`;
+      bubble.classList.add("file-bubble");
       break;
     case "contacts":
       try {

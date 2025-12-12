@@ -66,27 +66,44 @@ try {
         ]);
 
         $file = $_FILES['media'];
-        $resourceType = strpos($file['type'], 'video') === 0 ? 'video' : 'image';
+        $mimeType = $file['type'];
+        $originalName = $file['name'];
+
+        if (strpos($mimeType, 'image') === 0) {
+            $waType = 'image';
+            $cloudResourceType = 'image';
+        } elseif (strpos($mimeType, 'video') === 0) {
+            $waType = 'video';
+            $cloudResourceType = 'video';
+        } else {
+            $waType = 'document';
+            $cloudResourceType = 'raw';
+        }
 
         $uploadResult = $cloudinary->uploadApi()->upload($file['tmp_name'], [
             'folder' => 'whatsapp_cs_media',
-            'resource_type' => $resourceType
+            'resource_type' => $cloudResourceType,
+            'use_filename' => true,
+            'unique_filename' => true
         ]);
 
         $mediaUrl = $uploadResult['secure_url'];
 
-        $sendResult = kirimPesanMedia($phoneNumber, $mediaUrl, $resourceType, $messageText);
+        $sendResult = kirimPesanMedia($phoneNumber, $mediaUrl, $waType, $messageText, $originalName);
         $wamid = $sendResult['wamid'] ?? null;
 
-        $savedMediaMessage = $conversationService->saveMessage($conversationId, 'admin', $resourceType, $mediaUrl, $wamid);
+        if ($waType === 'document') {
+            $dbContent = json_encode([
+                'url' => $mediaUrl,
+                'filename' => $originalName
+            ]);
+        } else {
+            $dbContent = $mediaUrl;
+        }
+
+        $savedMediaMessage = $conversationService->saveMessage($conversationId, 'admin', $waType, $dbContent, $wamid);
         if ($savedMediaMessage)
             $savedMessages[] = $savedMediaMessage;
-
-        if ($messageText) {
-            $savedTextMessage = $conversationService->saveMessage($conversationId, 'admin', 'text', $messageText);
-            if ($savedTextMessage)
-                $savedMessages[] = $savedTextMessage;
-        }
 
     } elseif ($messageText) {
         $sendResult = kirimPesanTeks($phoneNumber, $messageText);
@@ -127,8 +144,6 @@ try {
             }
         }
     }
-
-
 
     echo json_encode(['success' => true]);
 

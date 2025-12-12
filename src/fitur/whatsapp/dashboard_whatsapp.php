@@ -886,8 +886,8 @@ if (!$menuHandler->initialize()) {
                 title="Kirim Gambar/Video">
                 <i class="fas fa-paperclip text-xl"></i>
               </label>
-              <input type="file" id="media-input" class="hidden" accept="image/*,video/*">
-
+              <input type="file" id="media-input" class="hidden"
+                accept="image/*,video/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
               <button id="quick-contact-button"
                 class="hidden p-3 text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-all flex-shrink-0"
                 title="Kirim Kontak Cabang">
