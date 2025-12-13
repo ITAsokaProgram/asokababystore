@@ -920,7 +920,7 @@ $token = $menuHandler->getToken();
                     <div class="hidden">
                         <label for="oto_tanggal" class="block text-sm font-medium text-gray-700 mb-1">Berlaku
                             Tanggal</label>
-                        <input type="date" id="oto_tanggal" required
+                        <input type="date" id="oto_tanggal"
                             class="block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500 transition-colors">
                     </div>
 
