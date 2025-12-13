@@ -20,15 +20,18 @@ if (token) {
         document.getElementById("user-role").textContent = userRole;
         document.getElementById("user-nama-dropdown").textContent = userNama;
         document.getElementById("user-role-dropdown").textContent = userRole;
-        const whatsappContainer = document.getElementById("whatsappMenuContainer"); 
+        const whatsappContainer = document.getElementById(
+          "whatsappMenuContainer"
+        );
         const pajakLink = document.getElementById("pajakLink");
         if (
           whatsappContainer &&
-          (userNama === "Asfahan Rosyid" || userNama === "Muhammad Ridho")
+          (userNama === "Asfahan Rosyid" ||
+            userNama === "Muhammad Ridho" ||
+            "Superadmin")
         ) {
-          whatsappContainer.style.display = "block"; 
+          whatsappContainer.style.display = "block";
         }
-        
       } else {
         console.error("Gagal mengambil user:", data.message);
       }

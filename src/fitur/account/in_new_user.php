@@ -109,8 +109,8 @@ $token = $menuHandler->getToken();
                 <select id="position" name="position" required
                   class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition hover:border-blue-400">
                   <option value="" disabled selected>-- Pilih Jabatan --</option>
-                  <option value="IT">IT (Super User)</option>
-                  <option value="Superadmin">Superadmin</option>
+                  <option value="IT">IT</option>
+                  <!-- <option value="Superadmin">Superadmin</option> -->
                   <option value="Manajer">Manajer</option>
                   <option value="Admin">Admin</option>
                   <option value="Data Entry (Cabang)">Data Entry (Cabang)</option>
