@@ -38,6 +38,7 @@ if (!$menuHandler->initialize()) {
 
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
 </head>
 
 <body class="bg-gray-50" x-data="{ showDetailModal: false, modalTitle: '', modalItems: [], isLoadingModal: false }"
@@ -128,11 +129,19 @@ if (!$menuHandler->initialize()) {
                                 <option value="all">Seluruh Store</option>
                             </select>
                         </div>
-                        <button type="submit" id="filter-submit-button"
-                            class="btn-primary inline-flex items-center justify-center gap-2">
-                            <i class="fas fa-filter"></i>
-                            <span>Tampilkan</span>
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <button type="submit" id="filter-submit-button"
+                                class="btn-primary inline-flex items-center justify-center gap-2">
+                                <i class="fas fa-filter"></i>
+                                <span>Tampilkan</span>
+                            </button>
+
+                            <button type="button" id="btn-export-excel"
+                                class="btn-secondary-outline inline-flex items-center justify-center gap-2 bg-white text-green-600 border-green-600 hover:bg-green-50">
+                                <i class="fas fa-file-excel"></i>
+                                <span>Export Excel</span>
+                            </button>
+                        </div>
                         <input type="hidden" name="page" value="1">
                     </form>
                 </div>

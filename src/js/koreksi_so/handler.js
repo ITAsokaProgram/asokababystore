@@ -10,6 +10,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const pageSubtitle = document.getElementById("page-subtitle");
   const paginationInfo = document.getElementById("pagination-info");
   const paginationLinks = document.getElementById("pagination-links");
+  const btnExportExcel = document.getElementById("btn-export-excel");
+  if (btnExportExcel) {
+    btnExportExcel.addEventListener("click", handleExportExcel);
+  }
   window.formatRupiah = function (number) {
     if (isNaN(number) || number === null) return "Rp 0";
     return new Intl.NumberFormat("id-ID", {
@@ -258,6 +262,204 @@ document.addEventListener("DOMContentLoaded", () => {
       window.history.pushState({}, "", `?${params.toString()}`);
       loadData();
     });
+  }
+  async function handleExportExcel() {
+    const params = getUrlParams(); // Ambil filter saat ini
+
+    // Tampilkan Loading Swal
+    Swal.fire({
+      title: "Memproses Data",
+      text: "Sedang mengambil data dan menyusun Excel...",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
+    try {
+      // Fetch data detail dari API baru
+      const queryString = new URLSearchParams({
+        tgl_mulai: params.tgl_mulai,
+        tgl_selesai: params.tgl_selesai,
+        kd_store: params.kd_store,
+      }).toString();
+
+      const response = await fetch(
+        `/src/api/koreksi_so/get_export_data.php?${queryString}`
+      );
+      const result = await response.json();
+
+      if (!result.success)
+        throw new Error(result.error || "Gagal mengambil data");
+      if (result.data.length === 0)
+        throw new Error("Tidak ada data untuk diexport pada periode ini.");
+
+      // Generate Excel dengan ExcelJS
+      await generateExcelFile(result.data, params);
+
+      Swal.close();
+
+      // Notifikasi sukses kecil (Toast)
+      const Toast = Swal.mixin({
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+      });
+      Toast.fire({ icon: "success", title: "Excel berhasil diunduh" });
+    } catch (error) {
+      console.error(error);
+      Swal.fire("Gagal", error.message, "error");
+    }
+  }
+
+  // 3. Fungsi Generate File (ExcelJS Logic)
+  async function generateExcelFile(data, params) {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet("Laporan Koreksi SO");
+
+    // Setup Kolom
+    sheet.columns = [
+      { key: "tgl", width: 12 }, // A
+      { key: "store", width: 8 }, // B
+      { key: "supp", width: 10 }, // C
+      { key: "faktur", width: 15 }, // D
+      { key: "plu", width: 10 }, // E
+      { key: "desc", width: 35 }, // F
+      { key: "qty", width: 8 }, // G
+      { key: "cost", width: 15 }, // H
+      { key: "ppn", width: 12 }, // I
+      { key: "total", width: 18 }, // J
+      { key: "ket", width: 20 }, // K (No Kor / Acc)
+    ];
+
+    // Styling Variable
+    const borderAll = {
+      top: { style: "thin" },
+      left: { style: "thin" },
+      bottom: { style: "thin" },
+      right: { style: "thin" },
+    };
+    const fontHeader = { name: "Arial", size: 10, bold: true };
+    const fillHeader = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FFEEEEEE" }, // Abu-abu muda
+    };
+
+    // Header Judul
+    sheet.mergeCells("A1:K1");
+    sheet.getCell("A1").value = "LAPORAN DETAIL KOREKSI SO";
+    sheet.getCell("A1").font = { size: 14, bold: true };
+    sheet.getCell("A1").alignment = { horizontal: "center" };
+
+    sheet.mergeCells("A2:K2");
+    sheet.getCell(
+      "A2"
+    ).value = `Periode: ${params.tgl_mulai} s/d ${params.tgl_selesai} | Store: ${params.kd_store}`;
+    sheet.getCell("A2").alignment = { horizontal: "center" };
+
+    // Header Tabel (Baris 4)
+    const headerRow = sheet.getRow(4);
+    headerRow.values = [
+      "Tgl Koreksi",
+      "Cabang",
+      "Supplier",
+      "No Faktur",
+      "PLU",
+      "Barang",
+      "Selisih Qty",
+      "Avg Cost",
+      "PPN",
+      "Total",
+      "No Koreksi",
+    ];
+
+    headerRow.eachCell((cell) => {
+      cell.font = fontHeader;
+      cell.fill = fillHeader;
+      cell.border = borderAll;
+      cell.alignment = { vertical: "middle", horizontal: "center" };
+    });
+    headerRow.height = 25;
+
+    // Isi Data
+    let grandTotalQty = 0;
+    let grandTotalRupiah = 0;
+
+    data.forEach((item) => {
+      grandTotalQty += item.sel_qty;
+      grandTotalRupiah += item.total_row;
+
+      const row = sheet.addRow([
+        item.tgl_koreksi,
+        item.kd_store,
+        item.kode_supp,
+        item.no_faktur,
+        item.plu,
+        item.deskripsi,
+        item.sel_qty,
+        item.avg_cost,
+        item.ppn_kor,
+        item.total_row,
+        `${item.no_kor} (${item.acc_kor})`,
+      ]);
+
+      // Formatting per baris
+      row.getCell(7).numFmt = "#,##0"; // Qty
+
+      // Warna merah jika qty minus
+      if (item.sel_qty < 0) {
+        row.getCell(7).font = { color: { argb: "FFFF0000" }, bold: true };
+      }
+
+      row.getCell(8).numFmt = "#,##0"; // Cost
+      row.getCell(9).numFmt = "#,##0"; // PPN
+      row.getCell(10).numFmt = "#,##0"; // Total
+
+      row.eachCell({ includeEmpty: false }, (cell) => {
+        cell.border = borderAll;
+        cell.font = { name: "Arial", size: 9 };
+      });
+    });
+
+    // Footer Total
+    const totalRow = sheet.addRow([
+      "",
+      "",
+      "",
+      "",
+      "",
+      "GRAND TOTAL",
+      grandTotalQty,
+      "",
+      "",
+      grandTotalRupiah,
+      "",
+    ]);
+
+    totalRow.getCell(6).font = { bold: true };
+    totalRow.getCell(6).alignment = { horizontal: "right" };
+
+    totalRow.getCell(7).font = { bold: true };
+    totalRow.getCell(7).numFmt = "#,##0";
+    totalRow.getCell(7).border = borderAll;
+
+    totalRow.getCell(10).font = { bold: true };
+    totalRow.getCell(10).numFmt = "#,##0";
+    totalRow.getCell(10).border = borderAll;
+
+    // Download File
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    const url = window.URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `Laporan_Koreksi_SO_${params.tgl_mulai}_${params.tgl_selesai}.xlsx`;
+    anchor.click();
+    window.URL.revokeObjectURL(url);
   }
   loadData();
 });
