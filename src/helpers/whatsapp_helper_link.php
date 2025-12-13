@@ -336,25 +336,22 @@ function kirimPesanRequestLokasi($nomorPenerima, $pesanBody)
     }
 }
 
-function kirimPesanFlow($nomorPenerima, $flowId, $screenId, $judulHeader, $pesanBody, $namaTombol, $dataAwal = [])
+function kirimPesanFlow($nomorPenerima, $flowId, $screenId, $judulHeader, $pesanBody, $pesanFooter, $namaTombol, $dataAwal = [], $mode = 'published')
 {
-    // Gunakan AppLogger
     $logger = new AppLogger('whatsapp_flow_sender.log');
     $nomorPenerima = normalizePhoneNumber($nomorPenerima);
 
-    // 1. Siapkan Payload Action
     $flowActionPayload = [
         "screen" => $screenId
     ];
 
-    // FIX: Hanya tambahkan 'data' jika array tidak kosong
-    // Meta akan menolak jika kita kirim "data": {} (objek kosong)
     if (!empty($dataAwal)) {
         $flowActionPayload["data"] = $dataAwal;
     }
 
     $data = [
         'messaging_product' => 'whatsapp',
+        'recipient_type' => 'individual',
         'to' => $nomorPenerima,
         'type' => 'interactive',
         'interactive' => [
@@ -367,14 +364,14 @@ function kirimPesanFlow($nomorPenerima, $flowId, $screenId, $judulHeader, $pesan
                 'text' => $pesanBody
             ],
             'footer' => [
-                'text' => 'Asoka IT Dev'
+                'text' => $pesanFooter
             ],
             'action' => [
                 'name' => 'flow',
                 'parameters' => [
-                    "mode" => "draft", // Ubah ke 'published' jika sudah publish
+                    "mode" => $mode,
                     "flow_message_version" => "3",
-                    "flow_token" => "TOKEN-" . time(),
+                    "flow_token" => "TOKEN-" . uniqid(),
                     "flow_id" => $flowId,
                     "flow_cta" => $namaTombol,
                     "flow_action" => "navigate",
@@ -384,16 +381,13 @@ function kirimPesanFlow($nomorPenerima, $flowId, $screenId, $judulHeader, $pesan
         ]
     ];
 
-    // Debugging: Lihat JSON yang akan dikirim ke Meta di log
-    $logger->debug("JSON Payload to Meta: " . json_encode($data));
-
     $result = sendWhatsAppMessage($data);
 
     if ($result['httpcode'] >= 200 && $result['httpcode'] < 300) {
         $logger->success("Pesan Flow berhasil dikirim ke {$nomorPenerima}. WAMID: {$result['wamid']}");
         return ['success' => true, 'wamid' => $result['wamid'], 'response' => $result['response']];
     } else {
-        $logger->error("Gagal kirim Flow. HTTP: {$result['httpcode']}. Response: {$result['response']}");
+        $logger->error("Gagal kirim Flow ke {$nomorPenerima}. HTTP: {$result['httpcode']}. Response: {$result['response']}");
         return ['success' => false, 'response' => $result['response']];
     }
 }

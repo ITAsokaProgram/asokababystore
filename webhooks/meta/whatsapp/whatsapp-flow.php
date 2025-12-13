@@ -33,10 +33,8 @@ try {
     $action = $data['action'] ?? '';
     $screen = $data['screen'] ?? '';
 
-    // Inisialisasi responsePayload sebagai object kosong (PENTING)
     $responsePayload = new stdClass();
 
-    // --- LOGIC UTAMA ---
 
     if ($action === 'ping') {
         $responsePayload = [
@@ -45,7 +43,6 @@ try {
             ]
         ];
     } elseif ($action === 'INIT') {
-        // PERBAIKAN: Screen SIGN_IN tidak butuh data, kirim object kosong
         $responsePayload = [
             "screen" => "SIGN_IN",
             "data" => new stdClass()
@@ -86,7 +83,6 @@ try {
         }
     }
 
-    // Encrypt Response
     $finalResponse = $cipher->encryptResponse($responsePayload, $aesKey, $iv);
 
     header('Content-Type: application/json');

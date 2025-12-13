@@ -28,7 +28,7 @@ if ($requestMethod === 'POST') {
     $data = file_get_contents('php://input');
     $body = json_decode($data, true);
 
-    $logger->info("Received POST data: " . $data);
+    // $logger->info("Received POST data: " . $data);
 
     if (json_last_error() === JSON_ERROR_NONE && isset($body['object']) && $body['object'] === 'whatsapp_business_account') {
 
