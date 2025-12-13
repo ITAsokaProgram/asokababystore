@@ -66,7 +66,7 @@ $sql = "UPDATE customers SET
     WHERE kd_cust = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param(
-    "sssssssssssssssisss", 
+    "ssssssssssssssssiss",
     $nama_lengkap,
     $alamat_ktp,
     $provinsi_ktp,

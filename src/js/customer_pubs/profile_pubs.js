@@ -58,8 +58,9 @@ if (!token) {
       document.getElementById("alamatDomisili").textContent = normalize(
         data.data.domisili_prov
       );
+
       document.getElementById("gender").textContent = normalize(
-        data.data.gender
+        data.data.gender == "0" ? "-" : data.data.gender
       );
       document.getElementById("jumlahAnak").textContent = normalize(
         data.data.anak
@@ -90,7 +91,11 @@ const isiFormProfile = (data) => {
   const setSelectValue = (selectId, value) => {
     const select = document.getElementById(selectId);
     if (!select) return;
+
+    if (value === "0" || value === 0) return;
+
     const option = [...select.options].find((opt) => opt.value === value);
+
     if (option) {
       select.value = value;
     } else if (value) {

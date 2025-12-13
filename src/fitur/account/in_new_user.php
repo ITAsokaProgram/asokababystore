@@ -105,12 +105,17 @@ $token = $menuHandler->getToken();
               </div>
 
               <div>
-                <label for="position" class="block text-sm font-medium text-gray-700 mb-1">Posisi</label>
+                <label for="position" class="block text-sm font-medium text-gray-700 mb-1">Posisi / Jabatan</label>
                 <select id="position" name="position" required
                   class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition hover:border-blue-400">
+                  <option value="" disabled selected>-- Pilih Jabatan --</option>
+                  <option value="IT">IT (Super User)</option>
+                  <option value="Superadmin">Superadmin</option>
                   <option value="Manajer">Manajer</option>
-                  <option value="IT">IT</option>
                   <option value="Admin">Admin</option>
+                  <option value="Data Entry (Cabang)">Data Entry (Cabang)</option>
+                  <option value="Merchandiser (Cabang)">Merchandiser (Cabang)</option>
+                  <option value="Store Manager">Store Manager / Asisten Store Manager</option>
                 </select>
               </div>
 
@@ -129,7 +134,7 @@ $token = $menuHandler->getToken();
 
               <div class="md:col-span-2">
                 <div class="flex justify-between items-center mb-2">
-                  <label class="text-sm font-medium text-gray-700">Akses Menu</label>
+                  <label class="text-sm font-medium text-gray-700">Akses Menu (Otomatis berdasarkan Posisi)</label>
                   <label
                     class="flex items-center gap-2 text-sm font-semibold text-blue-600 cursor-pointer hover:text-blue-800">
                     <input type="checkbox" id="selectAllMenus" class="scale-110 focus:ring focus:ring-blue-300 rounded">
@@ -345,10 +350,9 @@ $token = $menuHandler->getToken();
                         <input type="checkbox" name="menus[]" value="laporan_mutasi_in"
                           class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" /> Mutasi Invoice
                       </label>
-                      <label
-                        class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 transition-colors duration-200">
+                      <label class="flex items-center gap-2 text-sm">
                         <input type="checkbox" name="menus[]" value="izin_cetak"
-                          class="w-4 h-4 text-slate-600 rounded focus:ring-slate-500" />
+                          class="menu-item-checkbox scale-110 focus:ring focus:ring-blue-300" />
                         <span class="text-sm"> Izin Cetak Invoice</span>
                       </label>
                       <label class="flex items-center gap-2 text-sm">
@@ -545,6 +549,116 @@ $token = $menuHandler->getToken();
 
     await areaCabang('cabang');
 
+    // KONFIGURASI HAK AKSES
+    const rolePermissions = {
+      'Store Manager': [
+        'dashboard',
+        // Sales
+        'laporan_penjualan_subdept', 'laporan_penjualan_salesratio', 'laporan_penjualan_kategori', 'laporan_penjualan_mnonm',
+        'laporan_pelanggan_aktifitas', 'laporan_pelanggan_review',
+        'laporan_topsales_rupiah', 'laporan_topsales_qty', 'laporan_topsales_supplier', 'laporan_topsales_kasir',
+        // Receipt
+        'receipt_index', 'receipt_create', 'laporan_receipt_detail', 'laporan_receipt_supplier',
+        // Return
+        'return_index', 'return_create', 'laporan_return_all', 'laporan_return_badstock', 'laporan_return_exp', 'laporan_return_hilang',
+        // Stock & Koreksi
+        'laporan_jadwal_so',
+        'koreksi_index', 'koreksi_create', 'laporan_mutasi_in', 'laporan_koreksi_supplier', 'laporan_koreksi_plu',
+        'koreksi_so', 'koreksi_so_missed', 'izin',
+        // Voucher & Promo
+        'voucher_index', 'transaksi_promo', 'reward_give',
+        // Transaksi & Laporan
+        'transaksi_invalid', 'top_invalid', 'top_retur', 'top_margin', 'transaksi_margin',
+        'transaksi_cabang', 'detail_transaksi_cabang',
+        // Member & Produk
+        'member_poin', 'product_favorite', 'product_member', 'top_sales', 'products',
+        'uang_brankas'
+      ],
+
+      'Merchandiser (Cabang)': [
+        'dashboard',
+        // Sales
+        'laporan_penjualan_subdept', 'laporan_penjualan_salesratio', 'laporan_penjualan_kategori', 'laporan_penjualan_mnonm',
+        'laporan_topsales_rupiah', 'laporan_topsales_qty', 'laporan_topsales_supplier', 'laporan_topsales_kasir',
+        // Receipt (View Only based on request)
+        'receipt_index', 'laporan_receipt_detail', 'laporan_receipt_supplier',
+        // Return (View Only based on request)
+        'return_index', 'laporan_return_all', 'laporan_return_badstock', 'laporan_return_exp', 'laporan_return_hilang',
+        // Stock
+        'laporan_jadwal_so',
+        'koreksi_index', 'laporan_mutasi_in', 'laporan_koreksi_supplier', 'laporan_koreksi_plu',
+        'koreksi_so', 'koreksi_so_missed', 'izin',
+        // Voucher & Promo
+        'voucher_index', 'transaksi_promo', 'reward_give',
+        // Transaksi & Laporan
+        'transaksi_invalid', 'top_invalid', 'top_retur', 'top_margin', 'transaksi_margin',
+        'transaksi_cabang', 'detail_transaksi_cabang',
+        // Member & Produk
+        'product_favorite', 'product_member', 'top_sales', 'products'
+      ],
+
+      'Data Entry (Cabang)': [
+        'dashboard',
+        // Pajak (Coretax)
+        'pajak_input_pembelian', 'pajak_laporan_pembelian', 'pajak_input_faktur', 'pajak_laporan_faktur',
+        'pajak_import', 'pajak_data', 'pajak_faktur_masukan', 'pajak_keluaran', 'pajak_keluaran_import',
+        // Sales
+        'laporan_penjualan_subdept', 'laporan_penjualan_salesratio', 'laporan_penjualan_kategori', 'laporan_penjualan_mnonm',
+        'laporan_pelanggan_aktifitas', 'laporan_pelanggan_review',
+        'laporan_topsales_rupiah', 'laporan_topsales_qty', 'laporan_topsales_supplier', 'laporan_topsales_kasir',
+        // Receipt
+        'receipt_index', 'receipt_create', 'laporan_receipt_detail', 'laporan_receipt_supplier',
+        // Return
+        'return_index', 'return_create', 'laporan_return_all', 'laporan_return_badstock', 'laporan_return_exp', 'laporan_return_hilang',
+        // Stock
+        'laporan_jadwal_so',
+        'koreksi_index', 'koreksi_create', 'laporan_mutasi_in', 'laporan_koreksi_supplier', 'laporan_koreksi_plu',
+        'koreksi_so', 'koreksi_so_missed', 'izin',
+        // Voucher & Promo
+        'voucher_index', 'transaksi_promo', 'reward_give',
+        // Transaksi
+        'transaksi_invalid', 'top_invalid', 'top_retur', 'top_margin', 'transaksi_margin',
+        'transaksi_cabang', 'detail_transaksi_cabang',
+        // Member & Produk
+        'member_poin', 'product_favorite', 'product_member', 'top_sales', 'products',
+        'uang_brankas'
+      ],
+
+      'Admin': [], // Kosong sesuai request
+      'Manajer': [] // Kosong sesuai request
+    };
+
+    document.getElementById('position').addEventListener('change', function () {
+      const selectedRole = this.value;
+      const allCheckboxes = document.querySelectorAll('input[name="menus[]"]');
+      const selectAll = document.getElementById('selectAllMenus');
+
+      // Reset semua checkbox
+      allCheckboxes.forEach(cb => cb.checked = false);
+      selectAll.checked = false;
+
+      // Logika IT dan Superadmin (Check All)
+      if (selectedRole === 'IT' || selectedRole === 'Superadmin') {
+        allCheckboxes.forEach(cb => cb.checked = true);
+        selectAll.checked = true;
+        return;
+      }
+
+      // Logika Role Lainnya
+      const allowedMenus = rolePermissions[selectedRole];
+
+      if (allowedMenus) {
+        allowedMenus.forEach(menuCode => {
+          const checkbox = document.querySelector(`input[name="menus[]"][value="${menuCode}"]`);
+          if (checkbox) {
+            checkbox.checked = true;
+          }
+        });
+      }
+    });
+
+    // --- SISA SCRIPT BAWAAN (Fetch kode, Toggle password, dll) ---
+
     fetch('../../api/user/get_next_code_user')
       .then(res => res.json())
       .then(data => {
@@ -606,11 +720,11 @@ $token = $menuHandler->getToken();
     menuCheckboxes.forEach(checkbox => {
       checkbox.addEventListener('change', function () {
         const allChecked = Array.from(menuCheckboxes).every(cb => cb.checked);
-
         selectAllCheckbox.checked = allChecked;
       });
     });
   </script>
+
 </body>
 
 </html>
