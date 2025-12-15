@@ -12,8 +12,94 @@ document.addEventListener("DOMContentLoaded", () => {
   const stepsContainer = document.getElementById("steps-container");
   const btnSave = document.getElementById("btn-save");
 
+  // Template Elements (Pastikan HTML sudah diperbarui sesuai jawaban sebelumnya)
+  const btnApplyTemplate = document.getElementById("btn-apply-template");
+  const templateSelect = document.getElementById("template-select");
+  const templateArea = document.getElementById("template-area");
+
   // --- Config ---
   const API_BASE = "/src/api/whatsapp";
+
+  // --- 0. DATA PRESET / TEMPLATE (Solusi agar mudah dimengerti) ---
+  const TEMPLATES = {
+    promo_lokasi: {
+      keyword: "VCR:PROMOSGM10K",
+      deskripsi: "Promo SGM Eksplor 900G",
+      pesan_habis: "Maaf Bunda, kuota promo SGM ini sudah habis.",
+      pesan_sudah_klaim:
+        "Bunda sudah pernah mengklaim voucher SGM ini sebelumnya.",
+      steps: [
+        {
+          tipe_respon: "button",
+          key_penyimpanan: "konfirmasi_minat",
+          isi_pesan: {
+            header: "Promo SGM Eksplor",
+            body: "Bunda berhak mendapatkan potongan Rp 10.000 untuk pembelian SGM Eksplor 900G. Apakah Bunda ingin melanjutkan klaim?",
+            footer: "Promo Terbatas",
+            buttons: [
+              { id: "ya", title: "Ya, Mau" },
+              { id: "tidak", title: "Tidak" },
+            ],
+          },
+        },
+        {
+          tipe_respon: "location_request",
+          key_penyimpanan: "lokasi_user",
+          isi_pesan: {
+            body: "Baik Bunda. Untuk menentukan lokasi penukaran voucher, mohon *Share Location* (Berbagi Lokasi) Bunda saat ini ya.\n\nCaranya: Klik tombol lampiran (klip kertas/tambah) > Lokasi > Kirim Lokasi Saat Ini.",
+            calc_nearest: true, // AUTO HITUNG JARAK
+          },
+        },
+        {
+          tipe_respon: "list",
+          key_penyimpanan: "produk_terpilih",
+          isi_pesan: {
+            header: "Cabang Terdekat",
+            body: "Berikut adalah hasil pencarian cabang terdekat dari lokasi Anda. Silakan pilih salah satu untuk melanjutkan:",
+            footer: "Asoka Baby Store",
+            btn_text: "Pilih Cabang",
+            sections: [], // KOSONGKAN UNTUK DINAMIS
+          },
+        },
+        {
+          tipe_respon: "generated_qr",
+          isi_pesan: {
+            qr_data: "VCR-SGM-{{produk_terpilih}}",
+            caption:
+              " *Voucher Berhasil Dibuat* \n\nSilakan tunjukkan QR Code ini ke kasir.\n\n*Cabang:* {{nearest_branch_name}}\n*Produk:* {{produk_terpilih}}\n*Potongan:* Rp 10.000\n\n_Voucher berlaku 1x24 jam_",
+          },
+        },
+      ],
+    },
+    registrasi: {
+      keyword: "REG:MEMBER",
+      deskripsi: "Flow Pendaftaran Member Sederhana",
+      pesan_habis: "",
+      pesan_sudah_klaim: "",
+      steps: [
+        {
+          tipe_respon: "save_input",
+          key_penyimpanan: "nama_lengkap",
+          isi_pesan: {
+            body: "Halo Kak! Untuk mendaftar member, silakan ketik *Nama Lengkap* Kakak:",
+          },
+        },
+        {
+          tipe_respon: "save_input",
+          key_penyimpanan: "no_hp",
+          isi_pesan: {
+            body: "Terima kasih {{nama_lengkap}}. Sekarang mohon ketik *Nomor WhatsApp* aktif:",
+          },
+        },
+        {
+          tipe_respon: "text",
+          isi_pesan: {
+            body: "Terima kasih! Pendaftaran berhasil.\nData:\nNama: {{nama_lengkap}}\nNo HP: {{no_hp}}\n\nAdmin kami akan segera menghubungi.",
+          },
+        },
+      ],
+    },
+  };
 
   // --- 1. Helper: Create Step Input UI ---
   function createStepInput(
@@ -35,6 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
         contentObj = {};
       }
     }
+    if (!contentObj) contentObj = {};
 
     // Template HTML Wrapper Step
     wrapper.innerHTML = `
@@ -82,7 +169,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
                 
                 <div class="storage-key-area mb-3 ${
-                  ["save_input", "location_request"].includes(data.tipe_respon)
+                  ["save_input", "location_request", "list", "button"].includes(
+                    data.tipe_respon
+                  )
                     ? ""
                     : "hidden"
                 }">
@@ -90,10 +179,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         <i class="fas fa-database mr-1"></i> Simpan jawaban user ke variabel:
                      </label>
                      <input type="text" class="input-storage-key input-enhanced w-full px-3 py-1.5 border border-indigo-300 bg-white rounded text-sm placeholder-indigo-300 focus:outline-none focus:border-indigo-500" 
-                        placeholder="Contoh: nama_pelanggan (tanpa spasi)" value="${
+                        placeholder="Contoh: produk_terpilih (tanpa spasi)" value="${
                           data.key_penyimpanan || ""
                         }">
-                     <p class="text-[10px] text-gray-400 mt-0.5">Nanti bisa dipanggil di pesan lain dengan format {{nama_pelanggan}}</p>
+                     <p class="text-[10px] text-gray-400 mt-0.5">Nanti bisa dipanggil di pesan lain dengan format {{nama_variabel}}</p>
                 </div>
     
                 <div class="content-area"></div>
@@ -124,39 +213,46 @@ document.addEventListener("DOMContentLoaded", () => {
                     <label class="block text-xs font-bold text-gray-600 mb-1">Isi Pesan / Pertanyaan:</label>
                     <textarea class="input-body w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-indigo-500" 
                         rows="3" placeholder="Masukkan teks pesan...">${bodyVal}</textarea>
-                    <div class="text-[10px] text-gray-400 mt-1 flex items-center gap-1">
-                        <i class="fas fa-info-circle"></i> Gunakan {{variable}} untuk menyisipkan data.
-                    </div>
                `;
+
         if (type === "location_request") {
           const isNearest = val && val.calc_nearest;
           html += `
-                        <div class="mt-2 flex items-center gap-2 bg-white p-2 rounded border border-gray-200">
-                            <input type="checkbox" class="input-calc-nearest w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" id="calc_${currentCount}" ${
+                        <div class="mt-2 flex items-start gap-2 bg-blue-50 p-2 rounded border border-blue-200">
+                            <input type="checkbox" class="input-calc-nearest mt-1 w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" id="calc_${Date.now()}" ${
             isNearest ? "checked" : ""
           }>
-                            <label for="calc_${currentCount}" class="text-xs text-gray-700 cursor-pointer select-none">Hitung & tampilkan cabang terdekat otomatis?</label>
+                            <label for="calc_${Date.now()}" class="text-xs text-blue-900 cursor-pointer">
+                                <b>Aktifkan Pencarian Cabang Terdekat</b><br>
+                                Jika dicentang, sistem akan menghitung jarak user ke semua cabang.<br>
+                                <i>Step selanjutnya HARUS tipe "List" agar hasil cabang bisa ditampilkan otomatis.</i>
+                            </label>
                         </div>
                     `;
+        } else {
+          html += `
+                <div class="text-[10px] text-gray-400 mt-1 flex items-center gap-1">
+                    <i class="fas fa-info-circle"></i> Gunakan {{variable}} untuk menyisipkan data.
+                </div>`;
         }
       } else if (type === "button") {
         const body = val.body || "";
         const footer = val.footer || "";
         const header = val.header || "";
         const buttons = val.buttons || [];
-        // Convert array buttons ke format string baris baru untuk textarea
+        // Convert array buttons ke string baris baru
         let btnsHtml = buttons.map((b) => `${b.id}:${b.title}`).join("\n");
 
         html = `
                     <div class="grid grid-cols-1 gap-2">
-                        <input type="text" class="input-header w-full px-3 py-2 border border-gray-300 rounded text-sm" placeholder="Header (Opsional / Bold Text)" value="${header}">
+                        <input type="text" class="input-header w-full px-3 py-2 border border-gray-300 rounded text-sm" placeholder="Header (Opsional / Bold)" value="${header}">
                         <textarea class="input-body w-full px-3 py-2 border border-gray-300 rounded text-sm" rows="2" placeholder="Body Pesan (Wajib)" required>${body}</textarea>
-                        <input type="text" class="input-footer w-full px-3 py-2 border border-gray-300 rounded text-sm" placeholder="Footer (Opsional / Small Text)" value="${footer}">
+                        <input type="text" class="input-footer w-full px-3 py-2 border border-gray-300 rounded text-sm" placeholder="Footer (Opsional)" value="${footer}">
                         
                         <div class="mt-1 bg-gray-50 p-2 rounded border border-gray-200">
                             <label class="block text-xs font-bold text-gray-600 mb-1">Daftar Tombol (Maks 3):</label>
                             <textarea class="input-buttons-raw w-full px-3 py-2 border border-gray-300 rounded text-sm font-mono focus:bg-white transition-colors" rows="3" 
-                                placeholder="ID_TOMBOL_1:Label Tombol 1\nID_TOMBOL_2:Label Tombol 2">${btnsHtml}</textarea>
+                                placeholder="ya:Ya, Mau\ntidak:Tidak">${btnsHtml}</textarea>
                             <p class="text-[10px] text-gray-400 mt-1">Format per baris: <b>ID_UNIQUE:Label Tombol</b></p>
                         </div>
                     </div>
@@ -168,12 +264,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div class="grid grid-cols-1 gap-3">
                         <div>
                             <label class="block text-xs font-bold text-gray-600 mb-1">Data QR Code:</label>
-                            <textarea class="input-qr-data w-full px-3 py-2 border border-gray-300 rounded text-sm font-mono" rows="2" placeholder="Teks atau URL yang akan di-generate jadi QR">{{qr_data}}</textarea>
-                            <p class="text-[10px] text-gray-400 mt-1">Bisa menggunakan variabel dinamis, misal: {{nomor_tiket}}</p>
+                            <textarea class="input-qr-data w-full px-3 py-2 border border-gray-300 rounded text-sm font-mono" rows="2" placeholder="Teks atau URL yang akan di-generate jadi QR">${qrData}</textarea>
+                            <p class="text-[10px] text-gray-400 mt-1">Contoh: VOUCHER-{{nama_variabel}}</p>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-gray-600 mb-1">Caption:</label>
-                            <input type="text" class="input-caption w-full px-3 py-2 border border-gray-300 rounded text-sm" placeholder="Caption di bawah gambar QR" value="${caption}">
+                            <textarea class="input-caption w-full px-3 py-2 border border-gray-300 rounded text-sm" rows="3">${caption}</textarea>
                         </div>
                     </div>
                 `;
@@ -235,7 +331,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const btnText = val.btn_text || "Menu";
         const sectionsJson = val.sections
           ? JSON.stringify(val.sections, null, 2)
-          : '[\n  {\n    "title": "Judul Section",\n    "rows": [\n      {"id": "ID_1", "title": "Pilihan 1", "description": "Keterangan 1"}\n    ]\n  }\n]';
+          : "[]";
 
         html = `
                     <div class="grid grid-cols-1 gap-2">
@@ -243,12 +339,17 @@ document.addEventListener("DOMContentLoaded", () => {
                         <textarea class="input-body w-full px-3 py-2 border border-gray-300 rounded text-sm" rows="2" placeholder="Body List">${body}</textarea>
                         <div class="flex gap-2">
                             <input type="text" class="input-footer w-full px-3 py-2 border border-gray-300 rounded text-sm" placeholder="Footer" value="${footer}">
-                            <input type="text" class="input-btn-text w-1/3 px-3 py-2 border border-gray-300 rounded text-sm" placeholder="Label Tombol Menu" value="${btnText}">
+                            <input type="text" class="input-btn-text w-1/3 px-3 py-2 border border-gray-300 rounded text-sm" placeholder="Label Tombol" value="${btnText}">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-gray-600 mb-1">Konfigurasi Sections (Format JSON):</label>
+                            
+                             <div class="mb-2 text-xs bg-blue-100 text-blue-800 p-2 rounded border border-blue-200">
+                                <i class="fas fa-info-circle"></i> 
+                                Jika Step sebelumnya adalah <b>Minta Lokasi (Cabang Terdekat)</b>, biarkan Sections ini kosong <code>[]</code>. Sistem akan mengisinya otomatis.
+                            </div>
+
                             <textarea class="input-sections-json w-full px-3 py-2 border border-gray-300 rounded text-xs font-mono bg-gray-50 focus:bg-white" rows="5">${sectionsJson}</textarea>
-                            <p class="text-[10px] text-red-400 mt-1">Pastikan format JSON valid.</p>
                         </div>
                     </div>
                 `;
@@ -256,7 +357,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       contentArea.innerHTML = html;
 
-      // Listener khusus untuk File Input (Preview Nama File)
+      // Listener khusus untuk File Input
       if (type === "media") {
         const fInput = contentArea.querySelector(".input-media-file");
         const prevArea = contentArea.querySelector(".file-preview-area");
@@ -284,7 +385,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // Listener Ganti Tipe
     typeSelector.addEventListener("change", (e) => {
       const newType = e.target.value;
-      if (["save_input", "location_request"].includes(newType)) {
+      if (
+        ["save_input", "location_request", "list", "button"].includes(newType)
+      ) {
         storageArea.classList.remove("hidden");
       } else {
         storageArea.classList.add("hidden");
@@ -301,7 +404,7 @@ document.addEventListener("DOMContentLoaded", () => {
           renumberSteps();
         }, 200);
       } else {
-        // Jika tinggal 1, reset saja isinya
+        // Jika tinggal 1, reset saja
         typeSelector.value = "text";
         renderContentInputs("text", "");
         storageArea.classList.add("hidden");
@@ -340,7 +443,6 @@ document.addEventListener("DOMContentLoaded", () => {
   btnAddStep.addEventListener("click", () => {
     const newStep = createStepInput();
     stepsContainer.appendChild(newStep);
-    // Scroll ke bawah halus
     newStep.scrollIntoView({ behavior: "smooth", block: "center" });
   });
 
@@ -351,12 +453,6 @@ document.addEventListener("DOMContentLoaded", () => {
       search_keyword: (params.get("search_keyword") || "").trim(),
       page: parseInt(params.get("page") || "1", 10),
     };
-  }
-
-  function buildPaginationUrl(newPage) {
-    const params = new URLSearchParams(window.location.search);
-    params.set("page", newPage);
-    return "?" + params.toString();
   }
 
   async function loadData() {
@@ -386,13 +482,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (result.error) throw new Error(result.error);
 
       renderTable(result.data);
-      // Jika ada pagination di server side, render di sini.
-      // Untuk kode ini, asumsikan get_data_dynamic_flow.php mengembalikan semua atau handle pagination sederhana.
-      renderPagination({
-        current_page: urlParams.page,
-        total_pages: 1,
-        total_rows: result.data.length,
-      });
     } catch (error) {
       console.error(error);
       tableBody.innerHTML = `
@@ -400,7 +489,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
                     <p>Gagal memuat data: ${error.message}</p>
                 </td></tr>`;
-      paginationContainer.innerHTML = "";
     }
   }
 
@@ -444,7 +532,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <td class="text-center font-bold text-gray-700">${
                       row.total_steps || 0
                     }</td>
-                    <td class="text-center text-xs">${limitInfo}</td>
+                    <td class="">${limitInfo}</td>
                     <td class="text-center">${statusBadge}</td>
                     <td class="text-center">
                         <div class="flex items-center justify-center gap-2">
@@ -459,12 +547,63 @@ document.addEventListener("DOMContentLoaded", () => {
       .join("");
   }
 
-  function renderPagination(pagination) {
-    // Implementasi sederhana, bisa dikembangkan jika backend support full pagination
-    paginationContainer.innerHTML = "";
+  // --- 5. Template Application Logic ---
+  if (btnApplyTemplate) {
+    btnApplyTemplate.addEventListener("click", () => {
+      const selectedKey = templateSelect.value;
+      if (!selectedKey) {
+        Swal.fire(
+          "Pilih Template",
+          "Silakan pilih salah satu template terlebih dahulu.",
+          "info"
+        );
+        return;
+      }
+
+      const data = TEMPLATES[selectedKey];
+      if (!data) return;
+
+      Swal.fire({
+        title: "Terapkan Template?",
+        text: "Data form saat ini akan diganti dengan data template.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Ya, Terapkan",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Isi Header
+          document.getElementById("keyword").value = data.keyword;
+          document.getElementById("deskripsi").value = data.deskripsi;
+          document.getElementById("pesan_habis").value = data.pesan_habis || "";
+          document.getElementById("pesan_sudah_klaim").value =
+            data.pesan_sudah_klaim || "";
+
+          // Bersihkan Steps
+          stepsContainer.innerHTML = "";
+
+          // Isi Steps
+          data.steps.forEach((stepData) => {
+            const stepEl = createStepInput(stepData);
+            stepsContainer.appendChild(stepEl);
+          });
+
+          // Notifikasi
+          const toast = Swal.mixin({
+            toast: true,
+            position: "top-end",
+            showConfirmButton: false,
+            timer: 3000,
+          });
+          toast.fire({
+            icon: "success",
+            title: "Template diterapkan",
+          });
+        }
+      });
+    });
   }
 
-  // --- 5. Modal Logic ---
+  // --- 6. Modal Logic ---
   function openModal(mode, data = null) {
     formTransaksi.reset();
     document.getElementById("form_mode").value = mode;
@@ -472,8 +611,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const modalTitle = document.getElementById("modal-title");
     const idInput = document.getElementById("data_id");
 
-    // Reset Accordion Error Messages
-    // (Optional: Bisa ditambahkan reset state alpine jika perlu)
+    // Reset Dropdown Template
+    if (templateSelect) templateSelect.value = "";
 
     if (mode === "insert") {
       modalTitle.textContent = "Buat Dynamic Flow Baru";
@@ -481,17 +620,23 @@ document.addEventListener("DOMContentLoaded", () => {
         "Konfigurasi langkah percakapan baru";
       idInput.value = "";
       document.getElementById("status_aktif").value = "1";
-      // Default 1 step empty
+
+      // Tampilkan area template
+      if (templateArea) templateArea.classList.remove("hidden");
+
+      // Default 1 step
       stepsContainer.appendChild(createStepInput());
     } else if (mode === "update" && data) {
       modalTitle.textContent = "Edit Dynamic Flow";
       modalTitle.nextElementSibling.textContent = "Perbarui konfigurasi flow";
 
+      // Sembunyikan area template saat edit (supaya tidak tertimpa)
+      if (templateArea) templateArea.classList.add("hidden");
+
       idInput.value = data.id;
       document.getElementById("keyword").value = data.keyword;
       document.getElementById("deskripsi").value = data.deskripsi;
       if (data.expired_at) {
-        // Convert MySQL datetime to HTML datetime-local format (YYYY-MM-DDTHH:MM)
         document.getElementById("expired_at").value = data.expired_at
           .replace(" ", "T")
           .substring(0, 16);
@@ -518,7 +663,7 @@ document.addEventListener("DOMContentLoaded", () => {
     modalForm.classList.add("hidden");
   }
 
-  // --- 6. Event Listeners Global ---
+  // --- 7. Event Listeners Global ---
   btnAddData.addEventListener("click", () => openModal("insert"));
 
   [btnCloseModal, btnCancel].forEach((el) =>
@@ -540,7 +685,7 @@ document.addEventListener("DOMContentLoaded", () => {
     loadData();
   });
 
-  // --- 7. Form Submit Handler (Save Data) ---
+  // --- 8. Form Submit Handler (Save Data) ---
   formTransaksi.addEventListener("submit", async (e) => {
     e.preventDefault();
     const originalHTML = btnSave.innerHTML;
@@ -553,7 +698,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const stepsData = [];
       const stepElements = stepsContainer.querySelectorAll(".step-item");
 
-      // Loop setiap step untuk ambil datanya
+      // Loop setiap step
       for (const el of stepElements) {
         const typeSelector = el.querySelector(".type-selector");
         if (!typeSelector) continue;
@@ -722,7 +867,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // --- 8. Global Functions (Edit & Delete) ---
+  // --- 9. Global Functions (Edit & Delete) ---
   window.editFlow = (encodedData) => {
     try {
       const data = JSON.parse(decodeURIComponent(encodedData));
