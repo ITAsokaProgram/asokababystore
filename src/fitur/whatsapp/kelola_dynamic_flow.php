@@ -498,7 +498,7 @@ $menuHandler = new MenuHandler('wa_flow');
                                 <select id="template-select" class="flex-1">
                                     <option value="">-- Pilih Template --</option>
                                     <option value="promo_lokasi">🎯 Promo + Cari Cabang Terdekat</option>
-                                    <option value="registrasi">📝 Registrasi Member Sederhana</option>
+                                    <!-- <option value="registrasi">📝 Registrasi Member Sederhana</option> -->
                                 </select>
                                 <button type="button" id="btn-apply-template">
                                     <i class="fas fa-check-circle mr-1"></i> Pakai
