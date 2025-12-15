@@ -354,7 +354,21 @@ document.addEventListener("DOMContentLoaded", () => {
         const btnText = val.btn_text || "Menu";
         const sectionsJson = val.sections
           ? JSON.stringify(val.sections, null, 2)
-          : "[]";
+          : `[
+  {
+    "title": "Header",
+    "rows": [
+      {
+        "id": "1",
+        "title": "Contoh pilihan 1"
+      },
+      {
+        "id": "2",
+        "title": "Contoh pilihan 2"
+      }
+    ]
+  }
+]`;
         html = `
                   <div class="grid grid-cols-1 gap-2">
                       <input type="text" class="input-header w-full px-3 py-2 border border-gray-300 rounded text-sm" placeholder="Header List" value="${header}">
