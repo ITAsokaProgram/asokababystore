@@ -887,6 +887,9 @@ async function startConversation() {
         timer: 3000,
       });
 
+      currentConversationStatus = "live_chat";
+      updateChatUI(currentConversationStatus);
+
       currentConvoPage = 1;
       fetchAndRenderConversations();
     } catch (error) {

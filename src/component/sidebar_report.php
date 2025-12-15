@@ -55,7 +55,7 @@ $isFakturOpen = $isActive('/src/fitur/coretax/input_faktur') || $isActive('/src/
 $isLainnyaOpen = $isActive('/src/fitur/coretax/data_coretax') || $isActive('/src/fitur/coretax/faktur_masukan');
 
 $isPajakOpen = $isActive('/src/fitur/coretax/');
-$isWhatsappOpen = $isActive('/src/fitur/whatsapp_cs/');
+$isWhatsappOpen = $isActive('/src/fitur/whatsapp_cs/') || $isActive('/src/fitur/whatsapp/');
 ?>
 
 <div id="sidebar"
@@ -113,6 +113,17 @@ $isWhatsappOpen = $isActive('/src/fitur/whatsapp_cs/');
                                 <i
                                     class="fa-solid fa-robot mr-2 text-base text-green-400 group-hover:text-green-600 group-hover:scale-110 transition-all duration-200"></i>
                                 Balasan Otomatis
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/src/fitur/whatsapp/kelola_dynamic_flow.php" data-menu="whatsapp_dynamic_flow"
+                            class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-green-100 hover:text-green-700 transition-all duration-200 group rounded-lg">
+                            <span
+                                class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
+                                <i
+                                    class="fa-solid fa-diagram-project mr-2 text-base text-green-400 group-hover:text-green-600 group-hover:scale-110 transition-all duration-200"></i>
+                                Alur Percakapan Otomatis
                             </span>
                         </a>
                     </li>
