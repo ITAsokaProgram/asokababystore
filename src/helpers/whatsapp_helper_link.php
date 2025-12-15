@@ -265,8 +265,7 @@ function kirimPesanMedia($nomorPenerima, $mediaUrl, $mediaType, $caption = null,
         return ['success' => false, 'wamid' => null];
     }
 }
-
-function kirimPesanCtaUrl($nomorPenerima, $pesanBody, $displayText, $url, $pesanHeader = null, $pesanFooter = null)
+function kirimPesanCtaUrl($nomorPenerima, $pesanBody, $displayText, $url, $header = null, $footer = null)
 {
     $logger = new AppLogger('whatsapp_cta_url_message.log');
     $nomorPenerima = normalizePhoneNumber($nomorPenerima);
@@ -283,11 +282,24 @@ function kirimPesanCtaUrl($nomorPenerima, $pesanBody, $displayText, $url, $pesan
         ]
     ];
 
-    if ($pesanHeader) {
-        $interactiveData['header'] = ['type' => 'text', 'text' => substr($pesanHeader, 0, 60)];
+    if (!empty($header)) {
+        if (is_array($header) && isset($header['type']) && isset($header['link'])) {
+            $interactiveData['header'] = [
+                'type' => $header['type'],
+                $header['type'] => [
+                    'link' => $header['link']
+                ]
+            ];
+        } else if (is_string($header)) {
+            $interactiveData['header'] = [
+                'type' => 'text',
+                'text' => substr($header, 0, 60)
+            ];
+        }
     }
-    if ($pesanFooter) {
-        $interactiveData['footer'] = ['text' => substr($pesanFooter, 0, 60)];
+
+    if (!empty($footer)) {
+        $interactiveData['footer'] = ['text' => substr($footer, 0, 60)];
     }
 
     $data = [

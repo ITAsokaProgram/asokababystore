@@ -10,7 +10,7 @@ $menuHandler = new MenuHandler('wa_flow');
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kelola Dynamic Flow</title>
+    <title>KelolaPercakapan Otomatis</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
     <link rel="stylesheet" href="../../style/header.css">
     <link rel="stylesheet" href="../../style/sidebar.css">
@@ -396,7 +396,7 @@ $menuHandler = new MenuHandler('wa_flow');
                                 <i class="fa-solid fa-diagram-project fa-lg"></i>
                             </div>
                             <div>
-                                <h1 class="text-xl font-bold text-gray-800 mb-1">Dynamic Flow Service</h1>
+                                <h1 class="text-xl font-bold text-gray-800 mb-1">Alur Percakapan Otomatis</h1>
                                 <p class="text-xs text-gray-600">Kelola alur percakapan interaktif, form input, dan
                                     logika bertingkat</p>
                             </div>
@@ -472,7 +472,7 @@ $menuHandler = new MenuHandler('wa_flow');
                                     <i class="fa-solid fa-diagram-project fa-lg"></i>
                                 </div>
                                 <div>
-                                    <h3 class="text-lg font-bold" id="modal-title">Form Dynamic Flow</h3>
+                                    <h3 class="text-lg font-bold" id="modal-title">Form Percakapan Otomatis</h3>
                                     <p class="text-xs text-pink-100 mt-0.5">Konfigurasi langkah dan logika flow</p>
                                 </div>
                             </div>
