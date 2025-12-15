@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // --- DOM Elements ---
   const tableBody = document.getElementById("table-body");
   const filterForm = document.getElementById("filter-form");
   const modalForm = document.getElementById("modal-form");
@@ -11,16 +10,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnAddStep = document.getElementById("btn-add-step");
   const stepsContainer = document.getElementById("steps-container");
   const btnSave = document.getElementById("btn-save");
-
-  // Template Elements (Pastikan HTML sudah diperbarui sesuai jawaban sebelumnya)
   const btnApplyTemplate = document.getElementById("btn-apply-template");
   const templateSelect = document.getElementById("template-select");
   const templateArea = document.getElementById("template-area");
-
-  // --- Config ---
   const API_BASE = "/src/api/whatsapp";
-
-  // --- 0. DATA PRESET / TEMPLATE (Solusi agar mudah dimengerti) ---
   const TEMPLATES = {
     promo_lokasi: {
       keyword: "VCR:PROMOSGM10K",
@@ -46,27 +39,27 @@ document.addEventListener("DOMContentLoaded", () => {
           tipe_respon: "location_request",
           key_penyimpanan: "lokasi_user",
           isi_pesan: {
-            body: "Baik Bunda. Untuk menentukan lokasi penukaran voucher, mohon *Share Location* (Berbagi Lokasi) Bunda saat ini ya.\n\nCaranya: Klik tombol lampiran (klip kertas/tambah) > Lokasi > Kirim Lokasi Saat Ini.",
-            calc_nearest: true, // AUTO HITUNG JARAK
+            body: "Baik Bunda. Untuk menentukan lokasi penukaran voucher, mohon *Share Location* (Berbagi Lokasi) Bunda saat ini ya.",
+            calc_nearest: true,
           },
         },
         {
           tipe_respon: "list",
-          key_penyimpanan: "produk_terpilih",
+          key_penyimpanan: "cabang_terpilih",
           isi_pesan: {
             header: "Cabang Terdekat",
-            body: "Berikut adalah hasil pencarian cabang terdekat dari lokasi Anda. Silakan pilih salah satu untuk melanjutkan:",
+            body: "Berikut adalah hasil pencarian cabang terdekat dari lokasi Bunda. Silakan pilih salah satu untuk melanjutkan:",
             footer: "Asoka Baby Store",
             btn_text: "Pilih Cabang",
-            sections: [], // KOSONGKAN UNTUK DINAMIS
+            sections: [],
           },
         },
         {
           tipe_respon: "generated_qr",
           isi_pesan: {
-            qr_data: "VCR-SGM-{{produk_terpilih}}",
+            qr_data: "VCR-SGM-{{cabang_terpilih}}",
             caption:
-              " *Voucher Berhasil Dibuat* \n\nSilakan tunjukkan QR Code ini ke kasir.\n\n*Cabang:* {{nearest_branch_name}}\n*Produk:* {{produk_terpilih}}\n*Potongan:* Rp 10.000\n\n_Voucher berlaku 1x24 jam_",
+              " *Voucher Berhasil Dibuat* \n\nSilakan tunjukkan QR Code ini ke kasir.\n\n*Cabang:* {{cabang_terpilih}}\n*Potongan:* Rp 10.000\n\n_Voucher berlaku 1x24 jam_",
           },
         },
       ],
@@ -100,16 +93,12 @@ document.addEventListener("DOMContentLoaded", () => {
       ],
     },
   };
-
-  // --- 1. Helper: Create Step Input UI ---
   function createStepInput(
     data = { tipe_respon: "text", isi_pesan: "", key_penyimpanan: "" }
   ) {
     const wrapper = document.createElement("div");
     wrapper.className = "relative group animate-fade-in step-item pb-2";
     const currentCount = stepsContainer.children.length + 1;
-
-    // Normalisasi isi_pesan jika string JSON
     let contentObj = data.isi_pesan;
     if (
       typeof contentObj === "string" &&
@@ -122,8 +111,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
     if (!contentObj) contentObj = {};
-
-    // Template HTML Wrapper Step
     wrapper.innerHTML = `
             <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-200 shadow-sm transition-all hover:shadow-md">
                 <div class="flex justify-between items-center mb-3 pb-2 border-b border-indigo-200">
@@ -167,7 +154,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         <button type="button" class="btn-remove-step w-7 h-7 flex items-center justify-center rounded hover:bg-red-100 text-gray-400 hover:text-red-500 transition-colors" title="Hapus Step"><i class="fas fa-trash-alt"></i></button>
                     </div>
                 </div>
-                
                 <div class="storage-key-area mb-3 ${
                   ["save_input", "location_request", "list", "button"].includes(
                     data.tipe_respon
@@ -179,25 +165,20 @@ document.addEventListener("DOMContentLoaded", () => {
                         <i class="fas fa-database mr-1"></i> Simpan jawaban user ke variabel:
                      </label>
                      <input type="text" class="input-storage-key input-enhanced w-full px-3 py-1.5 border border-indigo-300 bg-white rounded text-sm placeholder-indigo-300 focus:outline-none focus:border-indigo-500" 
-                        placeholder="Contoh: produk_terpilih (tanpa spasi)" value="${
+                        placeholder="Contoh: cabang_terpilih (tanpa spasi)" value="${
                           data.key_penyimpanan || ""
                         }">
                      <p class="text-[10px] text-gray-400 mt-0.5">Nanti bisa dipanggil di pesan lain dengan format {{nama_variabel}}</p>
                 </div>
-    
                 <div class="content-area"></div>
             </div>
         `;
-
     const contentArea = wrapper.querySelector(".content-area");
     const typeSelector = wrapper.querySelector(".type-selector");
     const storageArea = wrapper.querySelector(".storage-key-area");
-
-    // Fungsi Render Input berdasarkan Tipe
     const renderContentInputs = (type, val) => {
       contentArea.innerHTML = "";
       let html = "";
-
       if (
         type === "text" ||
         type === "save_input" ||
@@ -214,7 +195,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     <textarea class="input-body w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-indigo-500" 
                         rows="3" placeholder="Masukkan teks pesan...">${bodyVal}</textarea>
                `;
-
         if (type === "location_request") {
           const isNearest = val && val.calc_nearest;
           html += `
@@ -240,15 +220,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const footer = val.footer || "";
         const header = val.header || "";
         const buttons = val.buttons || [];
-        // Convert array buttons ke string baris baru
         let btnsHtml = buttons.map((b) => `${b.id}:${b.title}`).join("\n");
-
         html = `
                     <div class="grid grid-cols-1 gap-2">
                         <input type="text" class="input-header w-full px-3 py-2 border border-gray-300 rounded text-sm" placeholder="Header (Opsional / Bold)" value="${header}">
                         <textarea class="input-body w-full px-3 py-2 border border-gray-300 rounded text-sm" rows="2" placeholder="Body Pesan (Wajib)" required>${body}</textarea>
                         <input type="text" class="input-footer w-full px-3 py-2 border border-gray-300 rounded text-sm" placeholder="Footer (Opsional)" value="${footer}">
-                        
                         <div class="mt-1 bg-gray-50 p-2 rounded border border-gray-200">
                             <label class="block text-xs font-bold text-gray-600 mb-1">Daftar Tombol (Maks 3):</label>
                             <textarea class="input-buttons-raw w-full px-3 py-2 border border-gray-300 rounded text-sm font-mono focus:bg-white transition-colors" rows="3" 
@@ -278,7 +255,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const filename = val.filename || "";
         const caption = val.caption || "";
         const medType = val.type || "image";
-
         let fileStatusHtml = "";
         if (url) {
           fileStatusHtml = `
@@ -289,7 +265,6 @@ document.addEventListener("DOMContentLoaded", () => {
           }</a></span>
                         </div>`;
         }
-
         html = `
                     <div class="space-y-3">
                         <div class="flex gap-2">
@@ -312,15 +287,12 @@ document.addEventListener("DOMContentLoaded", () => {
                                 <input type="file" class="input-media-file w-full text-sm text-slate-500 file:mr-2 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer">
                             </div>
                         </div>
-                        
                         <input type="hidden" class="input-media-url" value="${url}">
                         <input type="hidden" class="input-media-filename" value="${filename}">
-                        
                         <div>
                             <label class="block text-xs font-bold text-gray-600 mb-1">Caption</label>
                             <input type="text" class="input-caption w-full px-3 py-2 border border-gray-300 rounded text-sm" placeholder="Keterangan gambar/file..." value="${caption}">
                         </div>
-
                         <div class="file-preview-area">${fileStatusHtml}</div>
                     </div>
                  `;
@@ -332,7 +304,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const sectionsJson = val.sections
           ? JSON.stringify(val.sections, null, 2)
           : "[]";
-
         html = `
                     <div class="grid grid-cols-1 gap-2">
                         <input type="text" class="input-header w-full px-3 py-2 border border-gray-300 rounded text-sm" placeholder="Header List" value="${header}">
@@ -343,26 +314,20 @@ document.addEventListener("DOMContentLoaded", () => {
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-gray-600 mb-1">Konfigurasi Sections (Format JSON):</label>
-                            
                              <div class="mb-2 text-xs bg-blue-100 text-blue-800 p-2 rounded border border-blue-200">
                                 <i class="fas fa-info-circle"></i> 
                                 Jika Step sebelumnya adalah <b>Minta Lokasi (Cabang Terdekat)</b>, biarkan Sections ini kosong <code>[]</code>. Sistem akan mengisinya otomatis.
                             </div>
-
                             <textarea class="input-sections-json w-full px-3 py-2 border border-gray-300 rounded text-xs font-mono bg-gray-50 focus:bg-white" rows="5">${sectionsJson}</textarea>
                         </div>
                     </div>
                 `;
       }
-
       contentArea.innerHTML = html;
-
-      // Listener khusus untuk File Input
       if (type === "media") {
         const fInput = contentArea.querySelector(".input-media-file");
         const prevArea = contentArea.querySelector(".file-preview-area");
         const fNameInput = contentArea.querySelector(".input-media-filename");
-
         fInput.addEventListener("change", (e) => {
           if (e.target.files.length > 0) {
             const file = e.target.files[0];
@@ -378,11 +343,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
     };
-
-    // Initial Render
     renderContentInputs(data.tipe_respon, contentObj);
-
-    // Listener Ganti Tipe
     typeSelector.addEventListener("change", (e) => {
       const newType = e.target.value;
       if (
@@ -394,8 +355,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       renderContentInputs(newType, {});
     });
-
-    // Event Listener Tombol Aksi Step
     wrapper.querySelector(".btn-remove-step").addEventListener("click", () => {
       if (stepsContainer.children.length > 1) {
         wrapper.classList.add("opacity-0", "transform", "scale-95");
@@ -404,13 +363,11 @@ document.addEventListener("DOMContentLoaded", () => {
           renumberSteps();
         }, 200);
       } else {
-        // Jika tinggal 1, reset saja
         typeSelector.value = "text";
         renderContentInputs("text", "");
         storageArea.classList.add("hidden");
       }
     });
-
     wrapper.querySelector(".btn-move-up").addEventListener("click", () => {
       if (wrapper.previousElementSibling) {
         wrapper.parentNode.insertBefore(
@@ -420,33 +377,25 @@ document.addEventListener("DOMContentLoaded", () => {
         renumberSteps();
       }
     });
-
     wrapper.querySelector(".btn-move-down").addEventListener("click", () => {
       if (wrapper.nextElementSibling) {
         wrapper.parentNode.insertBefore(wrapper.nextElementSibling, wrapper);
         renumberSteps();
       }
     });
-
     return wrapper;
   }
-
-  // --- 2. Helper: Renumbering Steps ---
   function renumberSteps() {
     Array.from(stepsContainer.children).forEach((child, index) => {
       const span = child.querySelector(".step-number");
       if (span) span.textContent = index + 1;
     });
   }
-
-  // --- 3. Event Listener Add Step ---
   btnAddStep.addEventListener("click", () => {
     const newStep = createStepInput();
     stepsContainer.appendChild(newStep);
     newStep.scrollIntoView({ behavior: "smooth", block: "center" });
   });
-
-  // --- 4. Logic Fetch Data Table ---
   function getUrlParams() {
     const params = new URLSearchParams(window.location.search);
     return {
@@ -454,33 +403,27 @@ document.addEventListener("DOMContentLoaded", () => {
       page: parseInt(params.get("page") || "1", 10),
     };
   }
-
   async function loadData() {
     const urlParams = getUrlParams();
     const inputSearch = filterForm.querySelector(
       'input[name="search_keyword"]'
     );
     if (inputSearch) inputSearch.value = urlParams.search_keyword;
-
     tableBody.innerHTML = `
             <tr><td colspan="7" class="text-center p-8">
                 <div class="spinner-simple"></div>
                 <p class="mt-3 text-gray-500">Memuat data...</p>
             </td></tr>`;
-
     const queryString = new URLSearchParams({
       search_keyword: urlParams.search_keyword,
       page: urlParams.page,
     }).toString();
-
     try {
       const response = await fetch(
         `${API_BASE}/get_data_dynamic_flow.php?${queryString}`
       );
       const result = await response.json();
-
       if (result.error) throw new Error(result.error);
-
       renderTable(result.data);
     } catch (error) {
       console.error(error);
@@ -491,20 +434,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 </td></tr>`;
     }
   }
-
   function renderTable(data) {
     if (!data || data.length === 0) {
       tableBody.innerHTML = `<tr><td colspan="7" class="text-center p-12 text-gray-500"><p>Tidak ada data flow ditemukan</p></td></tr>`;
       return;
     }
-
     tableBody.innerHTML = data
       .map((row, index) => {
         const statusBadge =
           row.status_aktif == 1
             ? `<span class="badge-status badge-aktif"><i class="fas fa-check-circle"></i> Aktif</span>`
             : `<span class="badge-status badge-nonaktif"><i class="fas fa-times-circle"></i> Non-Aktif</span>`;
-
         let limitInfo = "";
         if (row.max_global_usage > 0)
           limitInfo += `<div><span class="text-[10px] bg-gray-100 px-1 rounded text-gray-600">Global: ${row.current_global_usage}/${row.max_global_usage}</span></div>`;
@@ -513,9 +453,7 @@ document.addEventListener("DOMContentLoaded", () => {
           limitInfo += `<div><span class="text-[10px] text-red-500"><i class="far fa-clock"></i> ${expDate.toLocaleDateString()}</span></div>`;
         }
         if (!limitInfo) limitInfo = "<span class='text-gray-400'>-</span>";
-
         const rowDataString = encodeURIComponent(JSON.stringify(row));
-
         return `
                 <tr class="hover:bg-gray-50 transition-colors border-b border-gray-100">
                     <td class="text-center font-semibold text-gray-500 py-3">${
@@ -546,8 +484,6 @@ document.addEventListener("DOMContentLoaded", () => {
       })
       .join("");
   }
-
-  // --- 5. Template Application Logic ---
   if (btnApplyTemplate) {
     btnApplyTemplate.addEventListener("click", () => {
       const selectedKey = templateSelect.value;
@@ -559,10 +495,8 @@ document.addEventListener("DOMContentLoaded", () => {
         );
         return;
       }
-
       const data = TEMPLATES[selectedKey];
       if (!data) return;
-
       Swal.fire({
         title: "Terapkan Template?",
         text: "Data form saat ini akan diganti dengan data template.",
@@ -571,23 +505,16 @@ document.addEventListener("DOMContentLoaded", () => {
         confirmButtonText: "Ya, Terapkan",
       }).then((result) => {
         if (result.isConfirmed) {
-          // Isi Header
           document.getElementById("keyword").value = data.keyword;
           document.getElementById("deskripsi").value = data.deskripsi;
           document.getElementById("pesan_habis").value = data.pesan_habis || "";
           document.getElementById("pesan_sudah_klaim").value =
             data.pesan_sudah_klaim || "";
-
-          // Bersihkan Steps
           stepsContainer.innerHTML = "";
-
-          // Isi Steps
           data.steps.forEach((stepData) => {
             const stepEl = createStepInput(stepData);
             stepsContainer.appendChild(stepEl);
           });
-
-          // Notifikasi
           const toast = Swal.mixin({
             toast: true,
             position: "top-end",
@@ -602,37 +529,25 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
   }
-
-  // --- 6. Modal Logic ---
   function openModal(mode, data = null) {
     formTransaksi.reset();
     document.getElementById("form_mode").value = mode;
     stepsContainer.innerHTML = "";
     const modalTitle = document.getElementById("modal-title");
     const idInput = document.getElementById("data_id");
-
-    // Reset Dropdown Template
     if (templateSelect) templateSelect.value = "";
-
     if (mode === "insert") {
       modalTitle.textContent = "Buat Dynamic Flow Baru";
       modalTitle.nextElementSibling.textContent =
         "Konfigurasi langkah percakapan baru";
       idInput.value = "";
       document.getElementById("status_aktif").value = "1";
-
-      // Tampilkan area template
       if (templateArea) templateArea.classList.remove("hidden");
-
-      // Default 1 step
       stepsContainer.appendChild(createStepInput());
     } else if (mode === "update" && data) {
       modalTitle.textContent = "Edit Dynamic Flow";
       modalTitle.nextElementSibling.textContent = "Perbarui konfigurasi flow";
-
-      // Sembunyikan area template saat edit (supaya tidak tertimpa)
       if (templateArea) templateArea.classList.add("hidden");
-
       idInput.value = data.id;
       document.getElementById("keyword").value = data.keyword;
       document.getElementById("deskripsi").value = data.deskripsi;
@@ -647,7 +562,6 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("pesan_habis").value = data.pesan_habis;
       document.getElementById("pesan_sudah_klaim").value =
         data.pesan_sudah_klaim;
-
       if (data.steps && data.steps.length > 0) {
         data.steps.forEach((step) => {
           stepsContainer.appendChild(createStepInput(step));
@@ -658,22 +572,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     modalForm.classList.remove("hidden");
   }
-
   function closeModal() {
     modalForm.classList.add("hidden");
   }
-
-  // --- 7. Event Listeners Global ---
   btnAddData.addEventListener("click", () => openModal("insert"));
-
   [btnCloseModal, btnCancel].forEach((el) =>
     el.addEventListener("click", closeModal)
   );
-
   document
     .getElementById("modal-backdrop")
     .addEventListener("click", closeModal);
-
   filterForm.addEventListener("submit", (e) => {
     e.preventDefault();
     const formData = new FormData(filterForm);
@@ -684,32 +592,23 @@ document.addEventListener("DOMContentLoaded", () => {
     window.history.pushState({}, "", `?${params.toString()}`);
     loadData();
   });
-
-  // --- 8. Form Submit Handler (Save Data) ---
   formTransaksi.addEventListener("submit", async (e) => {
     e.preventDefault();
     const originalHTML = btnSave.innerHTML;
     btnSave.disabled = true;
     btnSave.innerHTML =
       '<i class="fas fa-spinner fa-spin mr-2"></i> Menyimpan...';
-
     try {
       const formData = new FormData(formTransaksi);
       const stepsData = [];
       const stepElements = stepsContainer.querySelectorAll(".step-item");
-
-      // Loop setiap step
       for (const el of stepElements) {
         const typeSelector = el.querySelector(".type-selector");
         if (!typeSelector) continue;
-
         const type = typeSelector.value;
         const storageKeyInput = el.querySelector(".input-storage-key");
         const storageKey = storageKeyInput ? storageKeyInput.value.trim() : "";
-
         let content = {};
-
-        // --- Ekstrak konten berdasarkan tipe ---
         if (type === "text" || type === "save_input") {
           content = { body: el.querySelector(".input-body").value };
         } else if (type === "location_request") {
@@ -721,7 +620,6 @@ document.addEventListener("DOMContentLoaded", () => {
           };
         } else if (type === "button") {
           const rawBtns = el.querySelector(".input-buttons-raw").value;
-          // Parse ID:Title per baris
           const buttonsArr = rawBtns
             .split("\n")
             .map((line) => {
@@ -735,7 +633,6 @@ document.addEventListener("DOMContentLoaded", () => {
               return null;
             })
             .filter((x) => x !== null);
-
           content = {
             header: el.querySelector(".input-header").value,
             body: el.querySelector(".input-body").value,
@@ -769,17 +666,12 @@ document.addEventListener("DOMContentLoaded", () => {
           const filenameInput = el.querySelector(".input-media-filename");
           const medType = el.querySelector(".input-media-type").value;
           const caption = el.querySelector(".input-caption").value;
-
           let finalUrl = urlInput.value;
           let finalFilename = filenameInput.value;
-
-          // Upload File jika user pilih file baru
           if (fileInput.files.length > 0) {
             btnSave.innerHTML = `<i class="fas fa-cloud-upload-alt fa-fade mr-2"></i> Uploading ${fileInput.files[0].name}...`;
-
             const mediaFormData = new FormData();
             mediaFormData.append("file", fileInput.files[0]);
-
             const uploadRes = await fetch(
               `${API_BASE}/upload_media_helper.php`,
               {
@@ -788,18 +680,15 @@ document.addEventListener("DOMContentLoaded", () => {
               }
             );
             const uploadJson = await uploadRes.json();
-
             if (!uploadJson.success) {
               throw new Error(`Gagal upload media: ${uploadJson.message}`);
             }
             finalUrl = uploadJson.url;
             if (!finalFilename) finalFilename = fileInput.files[0].name;
           }
-
           if (!finalUrl) {
             throw new Error("Step Media wajib memiliki file atau URL.");
           }
-
           content = {
             type: medType,
             url: finalUrl,
@@ -807,18 +696,14 @@ document.addEventListener("DOMContentLoaded", () => {
             caption: caption,
           };
         }
-
         stepsData.push({
           tipe_respon: type,
           key_penyimpanan: storageKey,
           isi_pesan: content,
         });
       }
-
-      // Validasi akhir
       if (stepsData.length === 0)
         throw new Error("Minimal harus ada 1 langkah (step).");
-
       const payload = {
         mode: formData.get("mode"),
         id: formData.get("id"),
@@ -832,15 +717,12 @@ document.addEventListener("DOMContentLoaded", () => {
         pesan_sudah_klaim: formData.get("pesan_sudah_klaim"),
         steps: stepsData,
       };
-
       const response = await fetch(`${API_BASE}/save_dynamic_flow.php`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
       const result = await response.json();
-
       if (result.success) {
         Swal.fire({
           icon: "success",
@@ -866,8 +748,6 @@ document.addEventListener("DOMContentLoaded", () => {
       btnSave.innerHTML = originalHTML;
     }
   });
-
-  // --- 9. Global Functions (Edit & Delete) ---
   window.editFlow = (encodedData) => {
     try {
       const data = JSON.parse(decodeURIComponent(encodedData));
@@ -877,7 +757,6 @@ document.addEventListener("DOMContentLoaded", () => {
       Swal.fire("Error", "Gagal membaca data flow", "error");
     }
   };
-
   window.deleteFlow = async (id, keyword) => {
     const confirm = await Swal.fire({
       title: "Hapus Flow?",
@@ -888,7 +767,6 @@ document.addEventListener("DOMContentLoaded", () => {
       confirmButtonText: "Ya, Hapus!",
       cancelButtonText: "Batal",
     });
-
     if (confirm.isConfirmed) {
       try {
         Swal.showLoading();
@@ -898,7 +776,6 @@ document.addEventListener("DOMContentLoaded", () => {
           body: JSON.stringify({ id: id }),
         });
         const result = await response.json();
-
         if (result.success) {
           Swal.fire({
             icon: "success",
@@ -915,7 +792,5 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   };
-
-  // Load data pertama kali
   loadData();
 });
