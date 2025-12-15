@@ -282,7 +282,13 @@ class DynamicFlowService
                 $url = $isiPesan['url'] ?? '';
                 $type = $isiPesan['type'] ?? 'image';
                 $caption = $isiPesan['caption'] ?? '';
+
                 if ($url) {
+                    // ganti jadi jpg ext nya
+                    if ($type === 'image' && strpos($url, 'cloudinary.com') !== false) {
+                        $url = preg_replace('/\.(webp|png|jpeg)$/i', '.jpg', $url);
+                    }
+
                     $res = kirimPesanMedia($nomor, $url, $type, $caption);
                     $wamid = $res['wamid'] ?? null;
                     $messageContent = $url;
