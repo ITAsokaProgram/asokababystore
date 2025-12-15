@@ -172,7 +172,7 @@ $menuHandler = new MenuHandler('wa_flow');
             animation: fadeIn 0.3s ease;
         }
 
-        .step-item > div {
+        .step-item>div {
             background: linear-gradient(135deg, #fef3f8 0%, #fce7f3 100%);
             border: 2px solid #fbcfe8;
             border-radius: 0.75rem;
@@ -180,7 +180,7 @@ $menuHandler = new MenuHandler('wa_flow');
             transition: all 0.3s ease;
         }
 
-        .step-item:hover > div {
+        .step-item:hover>div {
             border-color: #f9a8d4;
             box-shadow: 0 4px 16px rgba(236, 72, 153, 0.15);
         }
@@ -355,7 +355,7 @@ $menuHandler = new MenuHandler('wa_flow');
                 width: 100%;
             }
 
-            .step-item > div {
+            .step-item>div {
                 padding: 0.75rem;
             }
         }
@@ -397,7 +397,8 @@ $menuHandler = new MenuHandler('wa_flow');
                             </div>
                             <div>
                                 <h1 class="text-xl font-bold text-gray-800 mb-1">Dynamic Flow Service</h1>
-                                <p class="text-xs text-gray-600">Kelola alur percakapan interaktif, form input, dan logika bertingkat</p>
+                                <p class="text-xs text-gray-600">Kelola alur percakapan interaktif, form input, dan
+                                    logika bertingkat</p>
                             </div>
                         </div>
                         <button id="btn-add-data" class="btn-primary bg-indigo-600 hover:bg-indigo-700">
@@ -516,7 +517,8 @@ $menuHandler = new MenuHandler('wa_flow');
                                 <input type="text" name="keyword" id="keyword"
                                     class="input-enhanced w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
                                     placeholder="Contoh: VCR:PROMO" required>
-                                <p class="helper-text"><i class="fas fa-info-circle"></i> Kata kunci yang akan memicu flow ini</p>
+                                <p class="helper-text"><i class="fas fa-info-circle"></i> Kata kunci yang akan memicu
+                                    flow ini</p>
                             </div>
                             <div class="input-group">
                                 <label class="block text-sm font-bold text-gray-700 mb-1">
