@@ -284,13 +284,11 @@ class DynamicFlowService
                 $url = $isiPesan['url'] ?? 'https://google.com';
                 $footer = $isiPesan['footer'] ?? '';
 
-                // Siapkan Header
                 $header = null;
                 if (!empty($isiPesan['header_type'])) {
                     if ($isiPesan['header_type'] === 'text') {
                         $header = $isiPesan['header_content'] ?? '';
                     } elseif (in_array($isiPesan['header_type'], ['image', 'video'])) {
-                        // Pastikan URL valid
                         $header = [
                             'type' => $isiPesan['header_type'],
                             'link' => $isiPesan['header_content'] ?? ''
@@ -345,28 +343,49 @@ class DynamicFlowService
         return ['allowed' => true];
     }
     private function replacePlaceholders($isiPesan, $sessionData)
-    { /* ... sama ... */
+    {
         if (empty($sessionData['data_terkumpul']))
             return $isiPesan;
+
         $userData = json_decode($sessionData['data_terkumpul'], true);
         if (!$userData)
             return $isiPesan;
-        $replacer = function ($item) use ($userData) {
+
+        $flatData = [];
+        foreach ($userData as $key => $val) {
+            if (is_array($val)) {
+                foreach ($val as $subKey => $subVal) {
+                    if (is_string($subVal) || is_numeric($subVal)) {
+                        $flatData[$key . '.' . $subKey] = $subVal;
+                    }
+                }
+                if (isset($val['address'])) {
+                    $flatData[$key] = $val['address'];
+                } elseif (isset($val['lat']) && isset($val['long'])) {
+                    $flatData[$key] = $val['lat'] . ',' . $val['long'];
+                }
+            } else {
+                $flatData[$key] = $val;
+            }
+        }
+
+        $replacer = function ($item) use ($flatData) {
             if (is_string($item)) {
-                foreach ($userData as $key => $val) {
-                    if (is_string($val) || is_numeric($val))
-                        $item = str_replace("{{" . $key . "}}", $val, $item);
+                foreach ($flatData as $key => $val) {
+                    $item = str_replace("{{" . $key . "}}", $val, $item);
                 }
                 return $item;
             }
             return $item;
         };
+
         if (is_array($isiPesan)) {
             array_walk_recursive($isiPesan, function (&$value) use ($replacer) {
                 $value = $replacer($value);
             });
             return $isiPesan;
         }
+
         return $replacer($isiPesan);
     }
     private function generateAndUploadQrCode($sessionId, $qrData)
