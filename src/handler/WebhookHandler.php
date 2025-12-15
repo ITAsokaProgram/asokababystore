@@ -6,6 +6,7 @@ require_once __DIR__ . '/../service/VoucherService.php';
 require_once __DIR__ . '/../service/ConversationService.php';
 require_once __DIR__ . '/../service/MediaService.php';
 require_once __DIR__ . '/../service/AutoReplyService.php';
+require_once __DIR__ . '/../service/DynamicFlowService.php';
 require_once __DIR__ . '/../config/Config.php';
 require_once __DIR__ . '/../helpers/whatsapp_helper_link.php';
 use Asoka\Constant\BranchConstants;
@@ -17,16 +18,19 @@ class WebhookHandler
     private $conversationService;
     private $voucherService;
     private $autoReplyService;
+    private $dynamicFlowService;
     private $conn;
     public function __construct(
         VerificationService $verificationService,
         ConversationService $conversationService,
         AutoReplyService $autoReplyService,
+        DynamicFlowService $dynamicFlowService,
         $logger
     ) {
         $this->verificationService = $verificationService;
         $this->conversationService = $conversationService;
         $this->autoReplyService = $autoReplyService;
+        $this->dynamicFlowService = $dynamicFlowService;
         $this->logger = $logger;
         $this->conn = $conversationService->conn;
         $this->voucherService = new VoucherService($this->conn, $this->logger);
@@ -112,34 +116,72 @@ class WebhookHandler
             }
         }
         $conversation = $this->conversationService->getOrCreateConversation($nomorPengirim, $namaPengirim);
-        $activePromoSession = $this->voucherService->getAnyActiveSession($nomorPengirim);
-        if ($activePromoSession) {
-            if ($messageType === 'text') {
-                $textBody = strtolower(trim($message['text']['body']));
-                if ($textBody === 'batal' || $textBody === 'cancel') {
-                    $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $message['text']['body']);
-                    $this->voucherService->cancelSession($conversation, $activePromoSession);
-                    return;
+        $activeFlowSession = $this->dynamicFlowService->getActiveSession($nomorPengirim);
+
+        if ($activeFlowSession) {
+            $msgContentSave = ($messageType === 'text') ? $message['text']['body'] : "[$messageType]";
+
+            if ($messageType === 'interactive') {
+                if (isset($message['interactive']['button_reply'])) {
+                    $msgContentSave = $message['interactive']['button_reply']['title'];
+                } elseif (isset($message['interactive']['list_reply'])) {
+                    $msgContentSave = $message['interactive']['list_reply']['title'];
+                } elseif (isset($message['interactive']['nfm_reply'])) {
+                    $responseJson = $message['interactive']['nfm_reply']['response_json'];
+                    $msgContentSave = "Flow Submit: " . $responseJson;
+
+                    $message['flow_data'] = json_decode($responseJson, true);
                 }
             }
-            $this->voucherService->handlePromoMessage($conversation, $message, $activePromoSession);
+
+            $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $msgContentSave);
+
+            $this->dynamicFlowService->handleFlowMessage($conversation, $message, $activeFlowSession);
             return;
         }
+
         if ($messageType === 'text') {
             $textBody = trim($message['text']['body']);
-            if (substr($textBody, 0, 4) === 'VCR:') {
-                if (!array_key_exists($textBody, \Asoka\Constant\VoucherConstants::VOUCHERS)) {
-                    $this->logger->warning("Kode voucher tidak valid: {$textBody}");
-                    $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $textBody);
-                    $pesanError = "Maaf Ayah/Bunda, kode voucher `{$textBody}` tidak valid atau sudah kedaluwarsa. Silakan periksa kembali kode Anda.";
-                    $sendResult = kirimPesanTeks($nomorPengirim, $pesanError);
-                    $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanError, 'text', $sendResult['wamid'] ?? null);
-                    return;
-                }
-                $this->voucherService->handleVoucherCode($conversation, $message, $namaPengirim);
+            $flowTrigger = $this->dynamicFlowService->checkKeywordTrigger($textBody);
+
+            if ($flowTrigger) {
+                $savedMsg = $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $textBody);
+
+                $totalUnread = $this->conversationService->getTotalUnreadCount();
+                $this->notifyWebSocketServer(['event' => 'new_message', 'conversation_id' => $conversation['id'], 'phone' => $nomorPengirim, 'message' => $savedMsg, 'total_unread_count' => $totalUnread]);
+
+                $this->dynamicFlowService->startFlow($conversation, $flowTrigger);
                 return;
             }
         }
+        // $activePromoSession = $this->voucherService->getAnyActiveSession($nomorPengirim);
+        // if ($activePromoSession) {
+        //     if ($messageType === 'text') {
+        //         $textBody = strtolower(trim($message['text']['body']));
+        //         if ($textBody === 'batal' || $textBody === 'cancel') {
+        //             $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $message['text']['body']);
+        //             $this->voucherService->cancelSession($conversation, $activePromoSession);
+        //             return;
+        //         }
+        //     }
+        //     $this->voucherService->handlePromoMessage($conversation, $message, $activePromoSession);
+        //     return;
+        // }
+        // if ($messageType === 'text') {
+        //     $textBody = trim($message['text']['body']);
+        //     if (substr($textBody, 0, 4) === 'VCR:') {
+        //         if (!array_key_exists($textBody, \Asoka\Constant\VoucherConstants::VOUCHERS)) {
+        //             $this->logger->warning("Kode voucher tidak valid: {$textBody}");
+        //             $this->conversationService->saveMessage($conversation['id'], 'user', 'text', $textBody);
+        //             $pesanError = "Maaf Ayah/Bunda, kode voucher `{$textBody}` tidak valid atau sudah kedaluwarsa. Silakan periksa kembali kode Anda.";
+        //             $sendResult = kirimPesanTeks($nomorPengirim, $pesanError);
+        //             $this->saveAdminReply($conversation['id'], $nomorPengirim, $pesanError, 'text', $sendResult['wamid'] ?? null);
+        //             return;
+        //         }
+        //         $this->voucherService->handleVoucherCode($conversation, $message, $namaPengirim);
+        //         return;
+        //     }
+        // }
         if ($messageType === 'text') {
             $textBody = $message['text']['body'];
             $daftarBalasan = $this->autoReplyService->cariBalasan($textBody);
