@@ -161,14 +161,14 @@ document.addEventListener("DOMContentLoaded", () => {
                     ? ""
                     : "hidden"
                 }">
-                     <label class="block text-[10px] font-bold text-indigo-700 mb-1">
+                      <label class="block text-[10px] font-bold text-indigo-700 mb-1">
                         <i class="fas fa-database mr-1"></i> Simpan jawaban user ke variabel:
-                     </label>
-                     <input type="text" class="input-storage-key input-enhanced w-full px-3 py-1.5 border border-indigo-300 bg-white rounded text-sm placeholder-indigo-300 focus:outline-none focus:border-indigo-500" 
+                      </label>
+                      <input type="text" class="input-storage-key input-enhanced w-full px-3 py-1.5 border border-indigo-300 bg-white rounded text-sm placeholder-indigo-300 focus:outline-none focus:border-indigo-500" 
                         placeholder="Contoh: cabang_terpilih (tanpa spasi)" value="${
                           data.key_penyimpanan || ""
                         }">
-                     <p class="text-[10px] text-gray-400 mt-0.5">Nanti bisa dipanggil di pesan lain dengan format {{nama_variabel}}</p>
+                      <p class="text-[10px] text-gray-400 mt-0.5">Nanti bisa dipanggil di pesan lain dengan format {{nama_variabel}}</p>
                 </div>
                 <div class="content-area"></div>
             </div>
@@ -179,8 +179,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const renderContentInputs = (type, val) => {
       contentArea.innerHTML = "";
       let html = "";
-
-      // --- TIPE 1: TEXT, SAVE_INPUT, LOCATION_REQUEST ---
       if (
         type === "text" ||
         type === "save_input" ||
@@ -192,14 +190,11 @@ document.addEventListener("DOMContentLoaded", () => {
             : typeof val === "string"
             ? val
             : "";
-
-        // PERBAIKAN: Tambah 'form-label-required' dan attribute 'required'
         html = `
                     <label class="block text-xs font-bold text-gray-600 mb-1 form-label-required">Isi Pesan / Pertanyaan:</label>
                     <textarea class="input-body w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-indigo-500" 
                         rows="3" placeholder="Masukkan teks pesan..." required>${bodyVal}</textarea>
                `;
-
         if (type === "location_request") {
           const isNearest = val && val.calc_nearest;
           html += `
@@ -220,25 +215,19 @@ document.addEventListener("DOMContentLoaded", () => {
                     <i class="fas fa-info-circle"></i> Gunakan {{variable}} untuk menyisipkan data.
                 </div>`;
         }
-
-        // --- TIPE 2: BUTTON (TOMBOL) ---
       } else if (type === "button") {
         const body = val.body || "";
         const footer = val.footer || "";
         const header = val.header || "";
         const buttons = val.buttons || [];
         let btnsHtml = buttons.map((b) => `${b.id}:${b.title}`).join("\n");
-
-        // PERBAIKAN: Pastikan 'required' ada dan label diberi tanda merah
         html = `
                     <div class="grid grid-cols-1 gap-2">
                         <input type="text" class="input-header w-full px-3 py-2 border border-gray-300 rounded text-sm" placeholder="Header (Opsional / Bold)" value="${header}">
-                        
                         <div>
                             <label class="block text-xs font-bold text-gray-600 mb-1 form-label-required">Body Pesan:</label>
                             <textarea class="input-body w-full px-3 py-2 border border-gray-300 rounded text-sm" rows="2" placeholder="Body Pesan (Wajib)" required>${body}</textarea>
                         </div>
-
                         <input type="text" class="input-footer w-full px-3 py-2 border border-gray-300 rounded text-sm" placeholder="Footer (Opsional)" value="${footer}">
                         <div class="mt-1 bg-gray-50 p-2 rounded border border-gray-200">
                             <label class="block text-xs font-bold text-gray-600 mb-1 form-label-required">Daftar Tombol (Maks 3):</label>
@@ -248,13 +237,9 @@ document.addEventListener("DOMContentLoaded", () => {
                         </div>
                     </div>
                 `;
-
-        // --- TIPE 3: GENERATED QR ---
       } else if (type === "generated_qr") {
         const qrData = val.qr_data || "";
         const caption = val.caption || "";
-
-        // PERBAIKAN: QR Data wajib diisi
         html = `
                     <div class="grid grid-cols-1 gap-3">
                         <div>
@@ -268,12 +253,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         </div>
                     </div>
                 `;
-
-        // --- TIPE 4: MEDIA ---
       } else if (type === "media") {
-        // ... kode media tidak berubah banyak, tapi pastikan hidden input valiadasi di logic JS save ...
-        // (Kode media Anda sudah menghandle logic upload, HTML tampilannya ok)
-        // Saya persingkat di sini agar fokus ke yang error tadi
         const url = val.url || "";
         const filename = val.filename || "";
         const caption = val.caption || "";
@@ -306,7 +286,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 </select>
                             </div>
                             <div class="w-2/3">
-                                <label class="block text-xs font-bold text-gray-600 mb-1 form-label-required">Upload File</label>
+                                <label class="block text-xs font-bold text-gray-600 mb-1">Upload File</label>
                                 <input type="file" class="input-media-file w-full text-sm text-slate-500 file:mr-2 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer">
                             </div>
                         </div>
@@ -319,8 +299,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         <div class="file-preview-area">${fileStatusHtml}</div>
                     </div>
                  `;
-
-        // --- TIPE 5: LIST (MENU DAFTAR) - INI YANG ERROR DI LOG ---
       } else if (type === "list") {
         const header = val.header || "";
         const body = val.body || "";
@@ -329,20 +307,17 @@ document.addEventListener("DOMContentLoaded", () => {
         const sectionsJson = val.sections
           ? JSON.stringify(val.sections, null, 2)
           : "[]";
-
-        // PERBAIKAN: Body List WAJIB diisi. Button Text juga WAJIB.
         html = `
                     <div class="grid grid-cols-1 gap-2">
                         <input type="text" class="input-header w-full px-3 py-2 border border-gray-300 rounded text-sm" placeholder="Header List" value="${header}">
-                        
                         <div>
                             <label class="block text-xs font-bold text-gray-600 mb-1 form-label-required">Body List (Wajib):</label>
                             <textarea class="input-body w-full px-3 py-2 border border-gray-300 rounded text-sm" rows="2" placeholder="Body List" required>${body}</textarea>
                         </div>
-
                         <div class="flex gap-2">
                             <input type="text" class="input-footer w-full px-3 py-2 border border-gray-300 rounded text-sm" placeholder="Footer" value="${footer}">
                             <div class="w-1/3">
+                                <label class="block text-[10px] font-bold text-gray-600 mb-1 form-label-required">Tombol:</label>
                                 <input type="text" class="input-btn-text w-full px-3 py-2 border border-gray-300 rounded text-sm" placeholder="Label Tombol" value="${btnText}" required>
                             </div>
                         </div>
