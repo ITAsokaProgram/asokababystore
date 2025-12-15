@@ -10,7 +10,7 @@ $menuHandler = new MenuHandler('wa_flow');
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KelolaPercakapan Otomatis</title>
+    <title>Kelola Percakapan Otomatis</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
     <link rel="stylesheet" href="../../style/header.css">
     <link rel="stylesheet" href="../../style/sidebar.css">
@@ -433,10 +433,10 @@ $menuHandler = new MenuHandler('wa_flow');
                             <thead>
                                 <tr>
                                     <th class="text-center" style="width: 50px;">No</th>
-                                    <th style="width: 180px;">Trigger Keyword</th>
-                                    <th>Deskripsi Flow</th>
-                                    <th class="text-center">Total Steps</th>
-                                    <th class="text-center">Limit/Exp</th>
+                                    <th style="width: 180px;">Kata Kunci</th>
+                                    <th>Deskripsi</th>
+                                    <th class="text-center">Total Proses</th>
+                                    <th class="text-center">Batas/Expired</th>
                                     <th class="text-center" style="width: 100px;">Status</th>
                                     <th class="text-center" style="width: 120px;">Aksi</th>
                                 </tr>
@@ -512,7 +512,7 @@ $menuHandler = new MenuHandler('wa_flow');
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 pb-4 border-b border-gray-200">
                             <div class="input-group">
                                 <label class="form-label-required block text-sm font-bold text-gray-700 mb-1">
-                                    <i class="fas fa-tag text-pink-500 mr-1"></i> Keyword Trigger
+                                    <i class="fas fa-tag text-pink-500 mr-1"></i> Kata Kunci
                                 </label>
                                 <input type="text" name="keyword" id="keyword"
                                     class="input-enhanced w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
@@ -522,7 +522,7 @@ $menuHandler = new MenuHandler('wa_flow');
                             </div>
                             <div class="input-group">
                                 <label class="block text-sm font-bold text-gray-700 mb-1">
-                                    <i class="fas fa-align-left text-pink-500 mr-1"></i> Deskripsi Singkat
+                                    <i class="fas fa-align-left text-pink-500 mr-1"></i> Deskripsi
                                 </label>
                                 <input type="text" name="deskripsi" id="deskripsi"
                                     class="input-enhanced w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
@@ -530,21 +530,21 @@ $menuHandler = new MenuHandler('wa_flow');
                             </div>
                             <div class="input-group">
                                 <label class="block text-sm font-bold text-gray-700 mb-1">
-                                    <i class="fas fa-clock text-pink-500 mr-1"></i> Expired At (Opsional)
+                                    <i class="fas fa-clock text-pink-500 mr-1"></i> Expired (Opsional)
                                 </label>
                                 <input type="datetime-local" name="expired_at" id="expired_at"
                                     class="input-enhanced w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
                             <div class="input-group">
                                 <label class="block text-sm font-bold text-gray-700 mb-1">
-                                    <i class="fas fa-globe text-pink-500 mr-1"></i> Max Global Usage
+                                    <i class="fas fa-globe text-pink-500 mr-1"></i> Maksimal dipakai
                                 </label>
                                 <input type="number" name="max_global_usage" id="max_global_usage" value="0"
                                     class="input-enhanced w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
                             </div>
                             <div class="input-group">
                                 <label class="block text-sm font-bold text-gray-700 mb-1">
-                                    <i class="fas fa-user text-pink-500 mr-1"></i> Max User Usage
+                                    <i class="fas fa-user text-pink-500 mr-1"></i> Maksimal dipakai per user
                                 </label>
                                 <input type="number" name="max_user_usage" id="max_user_usage" value="0"
                                     class="input-enhanced w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">

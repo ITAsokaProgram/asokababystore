@@ -132,7 +132,7 @@ class DynamicFlowService
     private function checkAndAutoComplete($conversation, $flowId, $currentStep, $sessionId)
     {
         $stepConfig = $this->getStepConfig($flowId, $currentStep);
-        $outputOnlyTypes = ['text', 'generated_qr', 'media'];
+        $outputOnlyTypes = ['text', 'generated_qr', 'media', 'cta_url'];
         if ($stepConfig && in_array($stepConfig['tipe_respon'], $outputOnlyTypes)) {
             $nextStepOrder = $currentStep + 1;
             $nextStepConfig = $this->getStepConfig($flowId, $nextStepOrder);
@@ -172,7 +172,7 @@ class DynamicFlowService
             }
             return ['valid' => false, 'error_msg' => "Mohon balas dengan pesan teks."];
         }
-        if (in_array($expectedType, ['text', 'generated_qr', 'media'])) {
+        if (in_array($expectedType, ['text', 'generated_qr', 'media', 'cta_url'])) {
             return ['valid' => true, 'data' => 'next'];
         }
         return ['valid' => false, 'error_msg' => "Input tidak dikenali."];
@@ -277,6 +277,31 @@ class DynamicFlowService
                     $messageContent = "QR Code: $qrContent";
                     $tipePesanDB = 'image';
                 }
+                break;
+            case 'cta_url':
+                $body = $isiPesan['body'] ?? '';
+                $btnText = $isiPesan['display_text'] ?? 'Buka Link';
+                $url = $isiPesan['url'] ?? 'https://google.com';
+                $footer = $isiPesan['footer'] ?? '';
+
+                // Siapkan Header
+                $header = null;
+                if (!empty($isiPesan['header_type'])) {
+                    if ($isiPesan['header_type'] === 'text') {
+                        $header = $isiPesan['header_content'] ?? '';
+                    } elseif (in_array($isiPesan['header_type'], ['image', 'video'])) {
+                        // Pastikan URL valid
+                        $header = [
+                            'type' => $isiPesan['header_type'],
+                            'link' => $isiPesan['header_content'] ?? ''
+                        ];
+                    }
+                }
+
+                $res = kirimPesanCtaUrl($nomor, $body, $btnText, $url, $header, $footer);
+                $wamid = $res['wamid'] ?? null;
+                $messageContent = "CTA: $btnText | $url";
+                $tipePesanDB = 'interactive';
                 break;
             case 'media':
                 $url = $isiPesan['url'] ?? '';

@@ -137,6 +137,9 @@ document.addEventListener("DOMContentLoaded", () => {
                                 ? "selected"
                                 : ""
                             }>📍 Minta Lokasi</option>
+                            <option value="cta_url" ${
+                              data.tipe_respon === "cta_url" ? "selected" : ""
+                            }>🔗 CTA Link Button</option>
                             <option value="media" ${
                               data.tipe_respon === "media" ? "selected" : ""
                             }>🖼️ Kirim Gambar/Media</option>
@@ -179,6 +182,51 @@ document.addEventListener("DOMContentLoaded", () => {
     const renderContentInputs = (type, val) => {
       contentArea.innerHTML = "";
       let html = "";
+      const getHeaderInputHtml = (hType, hContent) => {
+        const uniqueId = Math.random().toString(36).substr(2, 9);
+        if (hType === "text") {
+          return `<input type="text" class="input-header-content w-full px-3 py-2 border border-gray-300 rounded text-sm mt-2" placeholder="Isi Header Text (Bold)" value="${hContent}">`;
+        } else if (hType === "image" || hType === "video") {
+          let fileStatusHtml = "";
+          if (hContent && hContent.startsWith("http")) {
+            const fileName = hContent.split("/").pop();
+            fileStatusHtml = `
+                    <div class="mt-2 text-xs text-green-700 bg-green-50 p-2 rounded border border-green-200 flex items-center gap-2">
+                        <i class="fas fa-check-circle"></i> 
+                        <span>Terpasang: <a href="${hContent}" target="_blank" class="font-bold hover:underline truncate max-w-[200px]">${fileName}</a></span>
+                    </div>`;
+          }
+          return `
+                <div class="mt-2 header-media-wrapper p-3 bg-gray-50 rounded border border-gray-200">
+                    <div class="flex gap-4 mb-2 text-xs font-bold text-gray-700">
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-pink-600">
+                            <input type="radio" name="source_${uniqueId}" value="upload" class="radio-source text-pink-600 focus:ring-pink-500" checked> 
+                            <i class="fas fa-upload"></i> Upload File
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-pink-600">
+                            <input type="radio" name="source_${uniqueId}" value="url" class="radio-source text-pink-600 focus:ring-pink-500"> 
+                            <i class="fas fa-link"></i> Input URL
+                        </label>
+                    </div>
+                    <div class="input-container-file">
+                        <input type="file" class="input-media-file w-full text-sm text-slate-500 file:mr-2 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-pink-50 file:text-pink-700 hover:file:bg-pink-100 cursor-pointer" accept="${hType}/*">
+                        <p class="text-[10px] text-gray-400 mt-1">*Maksimal 5MB. Format: jpg, png, mp4.</p>
+                    </div>
+                    <div class="input-container-url hidden">
+                        <input type="url" class="input-media-url-manual w-full px-3 py-2 border border-gray-300 rounded text-sm placeholder-gray-400 focus:border-pink-500" 
+                        placeholder="https:" 
+                        value="${
+                          hContent && hContent.startsWith("http")
+                            ? hContent
+                            : ""
+                        }">
+                    </div>
+                    <input type="hidden" class="input-header-content" value="${hContent}">
+                    <div class="file-preview-area">${fileStatusHtml}</div>
+                </div>`;
+        }
+        return "";
+      };
       if (
         type === "text" ||
         type === "save_input" ||
@@ -191,29 +239,29 @@ document.addEventListener("DOMContentLoaded", () => {
             ? val
             : "";
         html = `
-                    <label class="block text-xs font-bold text-gray-600 mb-1 form-label-required">Isi Pesan / Pertanyaan:</label>
-                    <textarea class="input-body w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-indigo-500" 
-                        rows="3" placeholder="Masukkan teks pesan..." required>${bodyVal}</textarea>
-               `;
+                  <label class="block text-xs font-bold text-gray-600 mb-1 form-label-required">Isi Pesan / Pertanyaan:</label>
+                  <textarea class="input-body w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-indigo-500" 
+                      rows="3" placeholder="Masukkan teks pesan..." required>${bodyVal}</textarea>
+             `;
         if (type === "location_request") {
           const isNearest = val && val.calc_nearest;
           html += `
-                        <div class="mt-2 flex items-start gap-2 bg-blue-50 p-2 rounded border border-blue-200">
-                            <input type="checkbox" class="input-calc-nearest mt-1 w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" id="calc_${Date.now()}" ${
+                      <div class="mt-2 flex items-start gap-2 bg-blue-50 p-2 rounded border border-blue-200">
+                          <input type="checkbox" class="input-calc-nearest mt-1 w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" id="calc_${Date.now()}" ${
             isNearest ? "checked" : ""
           }>
-                            <label for="calc_${Date.now()}" class="text-xs text-blue-900 cursor-pointer">
-                                <b>Aktifkan Pencarian Cabang Terdekat</b><br>
-                                Jika dicentang, sistem akan menghitung jarak user ke semua cabang.<br>
-                                <i>Step selanjutnya HARUS tipe "List" agar hasil cabang bisa ditampilkan otomatis.</i>
-                            </label>
-                        </div>
-                    `;
+                          <label for="calc_${Date.now()}" class="text-xs text-blue-900 cursor-pointer">
+                              <b>Aktifkan Pencarian Cabang Terdekat</b><br>
+                              Jika dicentang, sistem akan menghitung jarak user ke semua cabang.<br>
+                              <i>Step selanjutnya HARUS tipe "List" agar hasil cabang bisa ditampilkan otomatis.</i>
+                          </label>
+                      </div>
+                  `;
         } else {
           html += `
-                <div class="text-[10px] text-gray-400 mt-1 flex items-center gap-1">
-                    <i class="fas fa-info-circle"></i> Gunakan {{variable}} untuk menyisipkan data.
-                </div>`;
+              <div class="text-[10px] text-gray-400 mt-1 flex items-center gap-1">
+                  <i class="fas fa-info-circle"></i> Gunakan {{variable}} untuk menyisipkan data.
+              </div>`;
         }
       } else if (type === "button") {
         const body = val.body || "";
@@ -222,37 +270,37 @@ document.addEventListener("DOMContentLoaded", () => {
         const buttons = val.buttons || [];
         let btnsHtml = buttons.map((b) => `${b.id}:${b.title}`).join("\n");
         html = `
-                    <div class="grid grid-cols-1 gap-2">
-                        <input type="text" class="input-header w-full px-3 py-2 border border-gray-300 rounded text-sm" placeholder="Header (Opsional / Bold)" value="${header}">
-                        <div>
-                            <label class="block text-xs font-bold text-gray-600 mb-1 form-label-required">Body Pesan:</label>
-                            <textarea class="input-body w-full px-3 py-2 border border-gray-300 rounded text-sm" rows="2" placeholder="Body Pesan (Wajib)" required>${body}</textarea>
-                        </div>
-                        <input type="text" class="input-footer w-full px-3 py-2 border border-gray-300 rounded text-sm" placeholder="Footer (Opsional)" value="${footer}">
-                        <div class="mt-1 bg-gray-50 p-2 rounded border border-gray-200">
-                            <label class="block text-xs font-bold text-gray-600 mb-1 form-label-required">Daftar Tombol (Maks 3):</label>
-                            <textarea class="input-buttons-raw w-full px-3 py-2 border border-gray-300 rounded text-sm font-mono focus:bg-white transition-colors" rows="3" 
-                                placeholder="ya:Ya, Mau\ntidak:Tidak" required>${btnsHtml}</textarea>
-                            <p class="text-[10px] text-gray-400 mt-1">Format per baris: <b>ID_UNIQUE:Label Tombol</b></p>
-                        </div>
-                    </div>
-                `;
+                  <div class="grid grid-cols-1 gap-2">
+                      <input type="text" class="input-header w-full px-3 py-2 border border-gray-300 rounded text-sm" placeholder="Header (Opsional / Bold)" value="${header}">
+                      <div>
+                          <label class="block text-xs font-bold text-gray-600 mb-1 form-label-required">Body Pesan:</label>
+                          <textarea class="input-body w-full px-3 py-2 border border-gray-300 rounded text-sm" rows="2" placeholder="Body Pesan (Wajib)" required>${body}</textarea>
+                      </div>
+                      <input type="text" class="input-footer w-full px-3 py-2 border border-gray-300 rounded text-sm" placeholder="Footer (Opsional)" value="${footer}">
+                      <div class="mt-1 bg-gray-50 p-2 rounded border border-gray-200">
+                          <label class="block text-xs font-bold text-gray-600 mb-1 form-label-required">Daftar Tombol (Maks 3):</label>
+                          <textarea class="input-buttons-raw w-full px-3 py-2 border border-gray-300 rounded text-sm font-mono focus:bg-white transition-colors" rows="3" 
+                              placeholder="ya:Ya, Mau\ntidak:Tidak" required>${btnsHtml}</textarea>
+                          <p class="text-[10px] text-gray-400 mt-1">Format per baris: <b>ID_UNIQUE:Label Tombol</b></p>
+                      </div>
+                  </div>
+              `;
       } else if (type === "generated_qr") {
         const qrData = val.qr_data || "";
         const caption = val.caption || "";
         html = `
-                    <div class="grid grid-cols-1 gap-3">
-                        <div>
-                            <label class="block text-xs font-bold text-gray-600 mb-1 form-label-required">Data QR Code:</label>
-                            <textarea class="input-qr-data w-full px-3 py-2 border border-gray-300 rounded text-sm font-mono" rows="2" placeholder="Teks atau URL yang akan di-generate jadi QR" required>${qrData}</textarea>
-                            <p class="text-[10px] text-gray-400 mt-1">Contoh: VOUCHER-{{nama_variabel}}</p>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-600 mb-1">Caption:</label>
-                            <textarea class="input-caption w-full px-3 py-2 border border-gray-300 rounded text-sm" rows="3">${caption}</textarea>
-                        </div>
-                    </div>
-                `;
+                  <div class="grid grid-cols-1 gap-3">
+                      <div>
+                          <label class="block text-xs font-bold text-gray-600 mb-1 form-label-required">Data QR Code:</label>
+                          <textarea class="input-qr-data w-full px-3 py-2 border border-gray-300 rounded text-sm font-mono" rows="2" placeholder="Teks atau URL yang akan di-generate jadi QR" required>${qrData}</textarea>
+                          <p class="text-[10px] text-gray-400 mt-1">Contoh: VOUCHER-{{nama_variabel}}</p>
+                      </div>
+                      <div>
+                          <label class="block text-xs font-bold text-gray-600 mb-1">Caption:</label>
+                          <textarea class="input-caption w-full px-3 py-2 border border-gray-300 rounded text-sm" rows="3">${caption}</textarea>
+                      </div>
+                  </div>
+              `;
       } else if (type === "media") {
         const url = val.url || "";
         const filename = val.filename || "";
@@ -261,44 +309,44 @@ document.addEventListener("DOMContentLoaded", () => {
         let fileStatusHtml = "";
         if (url) {
           fileStatusHtml = `
-                        <div class="mt-2 text-xs text-green-700 bg-green-50 p-2 rounded border border-green-200 flex items-center gap-2">
-                            <i class="fas fa-check-circle"></i> 
-                            <span>File tersimpan: <a href="${url}" target="_blank" class="font-bold hover:underline" title="${url}">${
+                      <div class="mt-2 text-xs text-green-700 bg-green-50 p-2 rounded border border-green-200 flex items-center gap-2">
+                          <i class="fas fa-check-circle"></i> 
+                          <span>File tersimpan: <a href="${url}" target="_blank" class="font-bold hover:underline" title="${url}">${
             filename || "Lihat File"
           }</a></span>
-                        </div>`;
+                      </div>`;
         }
         html = `
-                    <div class="space-y-3">
-                        <div class="flex gap-2">
-                            <div class="w-1/3">
-                                <label class="block text-xs font-bold text-gray-600 mb-1">Tipe Media</label>
-                                <select class="input-media-type w-full text-sm border border-gray-300 rounded px-2 py-2 bg-white focus:outline-none focus:border-indigo-500">
-                                    <option value="image" ${
-                                      medType === "image" ? "selected" : ""
-                                    }>📷 Foto</option>
-                                    <option value="document" ${
-                                      medType === "document" ? "selected" : ""
-                                    }>📄 Dokumen</option>
-                                    <option value="video" ${
-                                      medType === "video" ? "selected" : ""
-                                    }>🎥 Video</option>
-                                </select>
-                            </div>
-                            <div class="w-2/3">
-                                <label class="block text-xs font-bold text-gray-600 mb-1">Upload File</label>
-                                <input type="file" class="input-media-file w-full text-sm text-slate-500 file:mr-2 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer">
-                            </div>
-                        </div>
-                        <input type="hidden" class="input-media-url" value="${url}">
-                        <input type="hidden" class="input-media-filename" value="${filename}">
-                        <div>
-                            <label class="block text-xs font-bold text-gray-600 mb-1">Caption</label>
-                            <input type="text" class="input-caption w-full px-3 py-2 border border-gray-300 rounded text-sm" placeholder="Keterangan gambar/file..." value="${caption}">
-                        </div>
-                        <div class="file-preview-area">${fileStatusHtml}</div>
-                    </div>
-                 `;
+                  <div class="space-y-3">
+                      <div class="flex gap-2">
+                          <div class="w-1/3">
+                              <label class="block text-xs font-bold text-gray-600 mb-1">Tipe Media</label>
+                              <select class="input-media-type w-full text-sm border border-gray-300 rounded px-2 py-2 bg-white focus:outline-none focus:border-indigo-500">
+                                  <option value="image" ${
+                                    medType === "image" ? "selected" : ""
+                                  }>📷 Foto</option>
+                                  <option value="document" ${
+                                    medType === "document" ? "selected" : ""
+                                  }>📄 Dokumen</option>
+                                  <option value="video" ${
+                                    medType === "video" ? "selected" : ""
+                                  }>🎥 Video</option>
+                              </select>
+                          </div>
+                          <div class="w-2/3">
+                              <label class="block text-xs font-bold text-gray-600 mb-1">Upload File</label>
+                              <input type="file" class="input-media-file w-full text-sm text-slate-500 file:mr-2 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer">
+                          </div>
+                      </div>
+                      <input type="hidden" class="input-media-url" value="${url}">
+                      <input type="hidden" class="input-media-filename" value="${filename}">
+                      <div>
+                          <label class="block text-xs font-bold text-gray-600 mb-1">Caption</label>
+                          <input type="text" class="input-caption w-full px-3 py-2 border border-gray-300 rounded text-sm" placeholder="Keterangan gambar/file..." value="${caption}">
+                      </div>
+                      <div class="file-preview-area">${fileStatusHtml}</div>
+                  </div>
+               `;
       } else if (type === "list") {
         const header = val.header || "";
         const body = val.body || "";
@@ -308,31 +356,155 @@ document.addEventListener("DOMContentLoaded", () => {
           ? JSON.stringify(val.sections, null, 2)
           : "[]";
         html = `
-                    <div class="grid grid-cols-1 gap-2">
-                        <input type="text" class="input-header w-full px-3 py-2 border border-gray-300 rounded text-sm" placeholder="Header List" value="${header}">
-                        <div>
-                            <label class="block text-xs font-bold text-gray-600 mb-1 form-label-required">Body List (Wajib):</label>
-                            <textarea class="input-body w-full px-3 py-2 border border-gray-300 rounded text-sm" rows="2" placeholder="Body List" required>${body}</textarea>
-                        </div>
-                        <div class="flex gap-2">
-                            <input type="text" class="input-footer w-full px-3 py-2 border border-gray-300 rounded text-sm" placeholder="Footer" value="${footer}">
-                            <div class="w-1/3">
-                                <label class="block text-[10px] font-bold text-gray-600 mb-1 form-label-required">Tombol:</label>
-                                <input type="text" class="input-btn-text w-full px-3 py-2 border border-gray-300 rounded text-sm" placeholder="Label Tombol" value="${btnText}" required>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-600 mb-1">Konfigurasi Sections (Format JSON):</label>
-                             <div class="mb-2 text-xs bg-blue-100 text-blue-800 p-2 rounded border border-blue-200">
-                                <i class="fas fa-info-circle"></i> 
-                                Jika Step sebelumnya adalah <b>Minta Lokasi (Cabang Terdekat)</b>, biarkan Sections ini kosong <code>[]</code>. Sistem akan mengisinya otomatis.
-                            </div>
-                            <textarea class="input-sections-json w-full px-3 py-2 border border-gray-300 rounded text-xs font-mono bg-gray-50 focus:bg-white" rows="5">${sectionsJson}</textarea>
-                        </div>
-                    </div>
-                `;
+                  <div class="grid grid-cols-1 gap-2">
+                      <input type="text" class="input-header w-full px-3 py-2 border border-gray-300 rounded text-sm" placeholder="Header List" value="${header}">
+                      <div>
+                          <label class="block text-xs font-bold text-gray-600 mb-1 form-label-required">Body List (Wajib):</label>
+                          <textarea class="input-body w-full px-3 py-2 border border-gray-300 rounded text-sm" rows="2" placeholder="Body List" required>${body}</textarea>
+                      </div>
+                      <div class="flex gap-2">
+                          <input type="text" class="input-footer w-full px-3 py-2 border border-gray-300 rounded text-sm" placeholder="Footer" value="${footer}">
+                          <div class="w-1/3">
+                              <label class="block text-[10px] font-bold text-gray-600 mb-1 form-label-required">Tombol:</label>
+                              <input type="text" class="input-btn-text w-full px-3 py-2 border border-gray-300 rounded text-sm" placeholder="Label Tombol" value="${btnText}" required>
+                          </div>
+                      </div>
+                      <div>
+                          <label class="block text-xs font-bold text-gray-600 mb-1">Konfigurasi Sections (Format JSON):</label>
+                           <div class="mb-2 text-xs bg-blue-100 text-blue-800 p-2 rounded border border-blue-200">
+                              <i class="fas fa-info-circle"></i> 
+                              Jika Step sebelumnya adalah <b>Minta Lokasi (Cabang Terdekat)</b>, biarkan Sections ini kosong <code>[]</code>. Sistem akan mengisinya otomatis.
+                          </div>
+                          <textarea class="input-sections-json w-full px-3 py-2 border border-gray-300 rounded text-xs font-mono bg-gray-50 focus:bg-white" rows="5">${sectionsJson}</textarea>
+                      </div>
+                  </div>
+              `;
+      } else if (type === "cta_url") {
+        const headerType = val.header_type || "none";
+        const headerContent = val.header_content || "";
+        const body = val.body || "";
+        const footer = val.footer || "";
+        const displayText = val.display_text || "Lihat Detail";
+        const url = val.url || "";
+        html = `
+          <div class="space-y-3 bg-white p-2 rounded">
+              <div class="border-b pb-3 border-gray-100">
+                  <div class="flex items-center justify-between mb-1">
+                      <label class="block text-xs font-bold text-gray-600">Header (Opsional)</label>
+                      <select class="input-header-type text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:border-pink-500">
+                          <option value="none" ${
+                            headerType === "none" ? "selected" : ""
+                          }>Tanpa Header</option>
+                          <option value="text" ${
+                            headerType === "text" ? "selected" : ""
+                          }>Teks (Bold)</option>
+                          <option value="image" ${
+                            headerType === "image" ? "selected" : ""
+                          }>Gambar (Image)</option>
+                          <option value="video" ${
+                            headerType === "video" ? "selected" : ""
+                          }>Video</option>
+                      </select>
+                  </div>
+                  <div class="header-content-area">${getHeaderInputHtml(
+                    headerType,
+                    headerContent
+                  )}</div>
+              </div>
+              <div>
+                  <label class="block text-xs font-bold text-gray-600 mb-1 form-label-required">Body Pesan:</label>
+                  <textarea class="input-body w-full px-3 py-2 border border-gray-300 rounded text-sm focus:border-pink-500" rows="2" placeholder="Isi pesan utama..." required>${body}</textarea>
+              </div>
+              <div>
+                  <input type="text" class="input-footer w-full px-3 py-2 border border-gray-300 rounded text-sm" placeholder="Footer (Opsional)" value="${footer}">
+              </div>
+              <div class="bg-pink-50 p-3 rounded border border-pink-100">
+                  <label class="block text-xs font-bold text-pink-700 mb-2"><i class="fas fa-link"></i> Konfigurasi Tombol Link</label>
+                  <div class="grid grid-cols-2 gap-3">
+                      <div>
+                          <label class="block text-[10px] text-gray-500 mb-1">Label Tombol (Max 20 char)</label>
+                          <input type="text" class="input-display-text w-full px-3 py-2 border border-gray-300 rounded text-sm" placeholder="Contoh: Buka Web" value="${displayText}" maxlength="20" required>
+                      </div>
+                      <div>
+                          <label class="block text-[10px] text-gray-500 mb-1">URL Tujuan (https:)</label>
+                          <input type="url" class="input-url w-full px-3 py-2 border border-gray-300 rounded text-sm" 
+                          placeholder="https:" 
+                          value="${url}">
+                      </div>
+                  </div>
+              </div>
+          </div>
+      `;
       }
       contentArea.innerHTML = html;
+      if (type === "cta_url") {
+        const headerSelect = contentArea.querySelector(".input-header-type");
+        const headerArea = contentArea.querySelector(".header-content-area");
+        const setupMediaListeners = () => {
+          const wrapper = headerArea.querySelector(".header-media-wrapper");
+          if (!wrapper) return;
+          const radioSources = wrapper.querySelectorAll(".radio-source");
+          const containerFile = wrapper.querySelector(".input-container-file");
+          const containerUrl = wrapper.querySelector(".input-container-url");
+          const fileInput = wrapper.querySelector(".input-media-file");
+          const urlInput = wrapper.querySelector(".input-media-url-manual");
+          const previewArea = wrapper.querySelector(".file-preview-area");
+          const hiddenContent = wrapper.querySelector(".input-header-content");
+          radioSources.forEach((radio) => {
+            radio.addEventListener("change", (e) => {
+              previewArea.innerHTML = "";
+              hiddenContent.value = "";
+              if (e.target.value === "upload") {
+                containerFile.classList.remove("hidden");
+                containerUrl.classList.add("hidden");
+              } else {
+                containerFile.classList.add("hidden");
+                containerUrl.classList.remove("hidden");
+              }
+            });
+          });
+          if (fileInput) {
+            fileInput.addEventListener("change", (e) => {
+              if (e.target.files.length > 0) {
+                const file = e.target.files[0];
+                hiddenContent.value = "pending_upload";
+                previewArea.innerHTML = `
+                            <div class="mt-2 text-xs text-yellow-700 bg-yellow-50 p-2 rounded border border-yellow-200 flex items-center gap-2">
+                                <i class="fas fa-arrow-circle-up animate-bounce"></i> 
+                                <span>Akan diupload: <b>${file.name}</b> (${(
+                  file.size / 1024
+                ).toFixed(1)} KB)</span>
+                            </div>`;
+              }
+            });
+          }
+          if (urlInput) {
+            urlInput.addEventListener("input", (e) => {
+              const val = e.target.value;
+              hiddenContent.value = val;
+              if (val.startsWith("http")) {
+                previewArea.innerHTML = `
+                            <div class="mt-2 text-xs text-blue-700 bg-blue-50 p-2 rounded border border-blue-200 flex items-center gap-2">
+                                <i class="fas fa-link"></i> 
+                                <span>Menggunakan URL External</span>
+                            </div>`;
+              }
+            });
+          }
+        };
+        headerSelect.addEventListener("change", (e) => {
+          const newType = e.target.value;
+          const newHtml = getHeaderInputHtml(newType, "");
+          headerArea.innerHTML = newHtml;
+          if (newType === "image" || newType === "video") {
+            setupMediaListeners();
+          }
+        });
+        const currentType = headerSelect.value;
+        if (currentType === "image" || currentType === "video") {
+          setupMediaListeners();
+        }
+      }
       if (type === "media") {
         const fInput = contentArea.querySelector(".input-media-file");
         const prevArea = contentArea.querySelector(".file-preview-area");
@@ -342,12 +514,12 @@ document.addEventListener("DOMContentLoaded", () => {
             const file = e.target.files[0];
             fNameInput.value = file.name;
             prevArea.innerHTML = `
-                            <div class="mt-2 text-xs text-yellow-700 bg-yellow-50 p-2 rounded border border-yellow-200 flex items-center gap-2">
-                                <i class="fas fa-arrow-circle-up animate-bounce"></i> 
-                                <span>Akan diupload: <b>${file.name}</b> (${(
+                          <div class="mt-2 text-xs text-yellow-700 bg-yellow-50 p-2 rounded border border-yellow-200 flex items-center gap-2">
+                              <i class="fas fa-arrow-circle-up animate-bounce"></i> 
+                              <span>Akan diupload: <b>${file.name}</b> (${(
               file.size / 1024
             ).toFixed(1)} KB)</span>
-                            </div>`;
+                          </div>`;
           }
         });
       }
@@ -668,6 +840,69 @@ document.addEventListener("DOMContentLoaded", () => {
             footer: el.querySelector(".input-footer").value,
             btn_text: el.querySelector(".input-btn-text").value,
             sections: sections,
+          };
+        } else if (type === "cta_url") {
+          const headerTypeEl = el.querySelector(".input-header-type");
+          const headerType = headerTypeEl ? headerTypeEl.value : "none";
+          let headerContent = "";
+          if (headerType === "text") {
+            const headerContentEl = el.querySelector(".input-header-content");
+            headerContent = headerContentEl ? headerContentEl.value : "";
+          } else if (headerType === "image" || headerType === "video") {
+            const wrapper = el.querySelector(".header-media-wrapper");
+            if (wrapper) {
+              const activeSourceEl = wrapper.querySelector(
+                ".radio-source:checked"
+              );
+              const activeSource = activeSourceEl
+                ? activeSourceEl.value
+                : "upload";
+              const hiddenInput = el.querySelector(".input-header-content");
+              const oldContent = hiddenInput ? hiddenInput.value : "";
+              if (activeSource === "upload") {
+                const fileInput = el.querySelector(".input-media-file");
+                if (fileInput && fileInput.files.length > 0) {
+                  btnSave.innerHTML = `<i class="fas fa-cloud-upload-alt fa-fade mr-2"></i> Uploading Header...`;
+                  const mediaFormData = new FormData();
+                  mediaFormData.append("file", fileInput.files[0]);
+                  const uploadRes = await fetch(
+                    `${API_BASE}/upload_media_helper.php`,
+                    {
+                      method: "POST",
+                      body: mediaFormData,
+                    }
+                  );
+                  const uploadJson = await uploadRes.json();
+                  if (!uploadJson.success)
+                    throw new Error(`Gagal upload: ${uploadJson.message}`);
+                  headerContent = uploadJson.url;
+                } else {
+                  headerContent = oldContent;
+                }
+              } else {
+                const urlInput = el.querySelector(".input-media-url-manual");
+                headerContent = urlInput ? urlInput.value.trim() : "";
+              }
+              if (!headerContent) {
+                throw new Error(
+                  "Header Image/Video wajib diisi (Upload file atau Input URL)."
+                );
+              }
+            } else {
+              console.warn("Media wrapper tidak ditemukan, header di-skip");
+            }
+          }
+          const bodyEl = el.querySelector(".input-body");
+          const footerEl = el.querySelector(".input-footer");
+          const displayTextEl = el.querySelector(".input-display-text");
+          const urlEl = el.querySelector(".input-url");
+          content = {
+            header_type: headerType,
+            header_content: headerContent,
+            body: bodyEl ? bodyEl.value : "",
+            footer: footerEl ? footerEl.value : "",
+            display_text: displayTextEl ? displayTextEl.value : "Lihat Detail",
+            url: urlEl ? urlEl.value : "",
           };
         } else if (type === "media") {
           const fileInput = el.querySelector(".input-media-file");
