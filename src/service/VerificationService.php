@@ -80,7 +80,7 @@ class VerificationService
 
             if ($noHpTerdaftar !== $nomorPengirimNormalized) {
                 $this->logger->error("SECURITY ALERT: Token reset untuk {$noHpTerdaftar} coba digunakan oleh {$nomorPengirimNormalized}.");
-                kirimPesanTeks($nomorPengirim, "Terjadi kesalahan keamanan. Permintaan dibatalkan.");
+                kirimPesanTeks($nomorPengirim, "Nomor wa ini tidak sama dengan nomor member anda, silahkan kirim pesan diatas dengan nomor whatsapp yang sama dengan nomor member anda.");
                 return;
             }
 
@@ -140,7 +140,7 @@ class VerificationService
 
             if ($noHpTerdaftar !== $nomorPengirimNormalized) {
                 $this->logger->error("SECURITY ALERT: Token registrasi untuk {$noHpTerdaftar} coba digunakan oleh {$nomorPengirimNormalized}.");
-                kirimPesanTeks($nomorPengirim, "Terjadi kesalahan keamanan. Permintaan dibatalkan.");
+                kirimPesanTeks($nomorPengirim, "Nomor wa ini tidak sama dengan nomor member anda, silahkan kirim pesan diatas dengan nomor whatsapp yang sama dengan nomor member anda.");
                 return;
             }
 
