@@ -60,25 +60,25 @@ class BranchConstants
     ];
 
     public const LOKASI_JABODETABEK = [
-        'Daan Mogot' => ['latitude' => '-6.1503038', 'longitude' => '106.7107386', 'name' => 'Baby Store Daan Mogot', 'address' => 'Perumahan Daan Mogot Baru, Jalan Gilimanuk No. 38, Kalideres, Kec. Kalideres, Kota Jakarta Barat'],
-        'Poris' => ['latitude' => '-6.1745246', 'longitude' => '106.6827735', 'name' => 'Baby Store Poris', 'address' => 'Garden, Jl. Raya Poris Indah Blok A1 No.3, Cipondoh Indah, Kec. Cipondoh, Kota Tangerang'],
-        'Harapan Indah' => ['latitude' => '-6.1867495', 'longitude' => '106.9794397', 'name' => 'Baby Store Harapan Indah', 'address' => 'Ruko Boulevard Hijau, Jl. Boulevard Hijau Raya No.38, Pejuang, Kecamatan Medan Satria, Kota Bks'],
-        'Bintaro' => ['latitude' => '-6.2701572', 'longitude' => '106.7314572', 'name' => 'Baby Store Bintaro', 'address' => 'Jl. Bintaro Utama 5 Blok EA No. 21-23, East Jurang Manggu, Pondok Aren, South Tangerang City'],
-        'Cinere' => ['latitude' => '-6.3407371', 'longitude' => '106.7767895', 'name' => 'Baby Store Cinere', 'address' => 'Jl cinere raya NC 17, Cinere, Kec. Cinere, Kota Depok'],
-        'Pamulang' => ['latitude' => '-6.3433559', 'longitude' => '106.7277418', 'name' => 'Baby Store Pamulang', 'address' => 'Jl. Siliwangi No.9 Blok E, West Pamulang, Pamulang, South Tangerang City'],
-        'Ciledug' => ['latitude' => '-6.2274337', 'longitude' => '106.7152493', 'name' => 'Baby Store Ciledug', 'address' => 'JL HOS COKROAMINOTO BLOK 0 NO. 18 SUDIMARA TIMUR CILEDUG. TANGERANG'],
-        'Kartini' => ['latitude' => '-6.4024028', 'longitude' => '106.8160667', 'name' => 'Baby Store Kartini', 'address' => 'Jl. Kartini No.43, Depok, Kec. Pancoran Mas, Kota Depok'],
-        'Parung' => ['latitude' => '-6.4387641', 'longitude' => '106.6980704', 'name' => 'Baby Store Parung', 'address' => 'Jl. H. Mawi No.1A, Bojong Sempu, Kec. Parung, Kabupaten Bogor'],
-        'Condet' => ['latitude' => '-6.2707673', 'longitude' => '106.8585867', 'name' => 'Baby Store Condet', 'address' => 'JL RAYA CONDET BLOK O NO. 39 BATU AMPAR KRAMAT JATI, JAKARTA TIMUR'],
-        'Duren Sawit' => ['latitude' => '-6.2428015', 'longitude' => '106.9007402', 'name' => 'Baby Store Duren Sawit', 'address' => 'RT.5/RW.12, Pd. Bambu, Kec. Duren Sawit, Kota Jakarta Timur'],
-        'Rawamangun' => ['latitude' => '-6.2005677', 'longitude' => '106.8926293', 'name' => 'Baby Store Rawamangun', 'address' => 'Jl. Tawes No.27 3, RT.3/RW.7, Jati, Kec. Pulo Gadung, Kota Jakarta Timur'],
-        'Cibubur' => ['latitude' => '-6.3475857', 'longitude' => '106.8726729', 'name' => 'Baby Store Cibubur', 'address' => 'Jl. Lap. Tembak Cibubur No.131, Pekayon, Kec. Ciracas, Kota Jakarta Timur'],
-        'Ceger' => ['latitude' => '-6.26322', 'longitude' => '106.7237342', 'name' => 'Baby Store Ceger', 'address' => 'Jl. Ceger Raya No.22, Jurang Manggu Tim., Kec. Pd. Aren, Kota Tangerang Selatan'],
-        'Jatiwaringin' => ['latitude' => '-6.2760389', 'longitude' => '106.9101746', 'name' => 'Baby Store Jati Waringin', 'address' => 'Jl. Raya Jatiwaringin No.56, Jatiwaringin, Kec. Pd. Gede, Kota Bks'],
-        'Graha Raya' => ['latitude' => '-6.2360847', 'longitude' => '106.6756861', 'name' => 'Baby Store Graha Raya', 'address' => 'Jl. Boulevard Graha Raya No.11a, Sudimara Pinang, Kec. Serpong Utara, Kota Tangerang Selatan'],
-        'Galaxy' => ['latitude' => '-6.2594662', 'longitude' => '106.9679006', 'name' => 'Baby Store Taman Galaxy', 'address' => 'Jl. Pulosirih Tengah 17 No.149 Blok E, Pekayon Jaya, Kec. Bekasi Sel., Kota Bks'],
-        'Jatiasih' => ['latitude' => '-6.2933534', 'longitude' => '106.9588403', 'name' => 'Baby Store Jati Asih', 'address' => 'Jl. Raya Jatiasih No.86, Jatiasih, Kec. Jatiasih, Kota Bks'],
-        'PIK 2' => ['latitude' => '-6.0514482', 'longitude' => '106.6860203', 'name' => 'Baby Store PIK 2', 'address' => 'Soho Orchard Boulevard Blok A No. 15, Salembaran, Kec. Kosambi, Kabupaten Tangerang']
+        'Daan Mogot' => ['latitude' => '-6.1503038', 'longitude' => '106.7107386', 'name' => 'Asoka Daan Mogot', 'address' => 'Perumahan Daan Mogot Baru, Jalan Gilimanuk No. 38, Kalideres, Kec. Kalideres, Kota Jakarta Barat'],
+        'Poris' => ['latitude' => '-6.1745246', 'longitude' => '106.6827735', 'name' => 'Asoka Poris', 'address' => 'Garden, Jl. Raya Poris Indah Blok A1 No.3, Cipondoh Indah, Kec. Cipondoh, Kota Tangerang'],
+        'Harapan Indah' => ['latitude' => '-6.1867495', 'longitude' => '106.9794397', 'name' => 'Asoka Harapan Indah', 'address' => 'Ruko Boulevard Hijau, Jl. Boulevard Hijau Raya No.38, Pejuang, Kecamatan Medan Satria, Kota Bks'],
+        'Bintaro' => ['latitude' => '-6.2701572', 'longitude' => '106.7314572', 'name' => 'Asoka Bintaro', 'address' => 'Jl. Bintaro Utama 5 Blok EA No. 21-23, East Jurang Manggu, Pondok Aren, South Tangerang City'],
+        'Cinere' => ['latitude' => '-6.3407371', 'longitude' => '106.7767895', 'name' => 'Asoka Cinere', 'address' => 'Jl cinere raya NC 17, Cinere, Kec. Cinere, Kota Depok'],
+        'Pamulang' => ['latitude' => '-6.3433559', 'longitude' => '106.7277418', 'name' => 'Asoka Pamulang', 'address' => 'Jl. Siliwangi No.9 Blok E, West Pamulang, Pamulang, South Tangerang City'],
+        'Ciledug' => ['latitude' => '-6.2274337', 'longitude' => '106.7152493', 'name' => 'Asoka Ciledug', 'address' => 'JL HOS COKROAMINOTO BLOK 0 NO. 18 SUDIMARA TIMUR CILEDUG. TANGERANG'],
+        'Kartini' => ['latitude' => '-6.4024028', 'longitude' => '106.8160667', 'name' => 'Asoka Kartini', 'address' => 'Jl. Kartini No.43, Depok, Kec. Pancoran Mas, Kota Depok'],
+        'Parung' => ['latitude' => '-6.4387641', 'longitude' => '106.6980704', 'name' => 'Asoka Parung', 'address' => 'Jl. H. Mawi No.1A, Bojong Sempu, Kec. Parung, Kabupaten Bogor'],
+        'Condet' => ['latitude' => '-6.2707673', 'longitude' => '106.8585867', 'name' => 'Asoka Condet', 'address' => 'JL RAYA CONDET BLOK O NO. 39 BATU AMPAR KRAMAT JATI, JAKARTA TIMUR'],
+        'Duren Sawit' => ['latitude' => '-6.2428015', 'longitude' => '106.9007402', 'name' => 'Asoka Duren Sawit', 'address' => 'RT.5/RW.12, Pd. Bambu, Kec. Duren Sawit, Kota Jakarta Timur'],
+        'Rawamangun' => ['latitude' => '-6.2005677', 'longitude' => '106.8926293', 'name' => 'Asoka Rawamangun', 'address' => 'Jl. Tawes No.27 3, RT.3/RW.7, Jati, Kec. Pulo Gadung, Kota Jakarta Timur'],
+        'Cibubur' => ['latitude' => '-6.3475857', 'longitude' => '106.8726729', 'name' => 'Asoka Cibubur', 'address' => 'Jl. Lap. Tembak Cibubur No.131, Pekayon, Kec. Ciracas, Kota Jakarta Timur'],
+        'Ceger' => ['latitude' => '-6.26322', 'longitude' => '106.7237342', 'name' => 'Asoka Ceger', 'address' => 'Jl. Ceger Raya No.22, Jurang Manggu Tim., Kec. Pd. Aren, Kota Tangerang Selatan'],
+        'Jatiwaringin' => ['latitude' => '-6.2760389', 'longitude' => '106.9101746', 'name' => 'Asoka Jati Waringin', 'address' => 'Jl. Raya Jatiwaringin No.56, Jatiwaringin, Kec. Pd. Gede, Kota Bks'],
+        'Graha Raya' => ['latitude' => '-6.2360847', 'longitude' => '106.6756861', 'name' => 'Asoka Graha Raya', 'address' => 'Jl. Boulevard Graha Raya No.11a, Sudimara Pinang, Kec. Serpong Utara, Kota Tangerang Selatan'],
+        'Galaxy' => ['latitude' => '-6.2594662', 'longitude' => '106.9679006', 'name' => 'Asoka Taman Galaxy', 'address' => 'Jl. Pulosirih Tengah 17 No.149 Blok E, Pekayon Jaya, Kec. Bekasi Sel., Kota Bks'],
+        'Jatiasih' => ['latitude' => '-6.2933534', 'longitude' => '106.9588403', 'name' => 'Asoka Jati Asih', 'address' => 'Jl. Raya Jatiasih No.86, Jatiasih, Kec. Jatiasih, Kota Bks'],
+        'PIK 2' => ['latitude' => '-6.0514482', 'longitude' => '106.6860203', 'name' => 'Asoka PIK 2', 'address' => 'Soho Orchard Boulevard Blok A No. 15, Salembaran, Kec. Kosambi, Kabupaten Tangerang']
     ];
 
     public const CITIES_JABODETABEK = [
@@ -117,15 +117,15 @@ class BranchConstants
     ];
 
     public const LOKASI_BELITUNG = [
-        'Pangkal Pinang' => ['latitude' => '-2.13295', 'longitude' => '106.11545', 'name' => 'Supermarket & Departemen Store Pangkal Pinang', 'address' => 'Jl. Ahmad Yani No.1, Batin Tikal, Kec. Taman Sari, Kota Pangkal Pinang, Kepulauan Bangka Belitung 33684, Indonesia'],
-        'Merapin' => ['latitude' => '-2.14881', 'longitude' => '106.13313', 'name' => 'Baby Store - Merapin', 'address' => 'Ruko City Hill, Jl. Kampung Melayu No.Raya A1-A3, Bukit Merapin, Kec. Gerunggang, Kota Pangkal Pinang, Kepulauan Bangka Belitung 33123, Indonesia'],
-        'Toboali' => ['latitude' => '-3.0106671', 'longitude' => '106.4563138', 'name' => 'Toboali Bangka Selatan', 'address' => 'XFQ4+MGX, Toboali, Kec. Toboali, Kabupaten Bangka Selatan, Kepulauan Bangka Belitung 33783, Indonesia'],
-        'Semabung' => ['latitude' => '-2.1350629', 'longitude' => '106.1202253', 'name' => 'Baby Store Semabung', 'address' => 'Semabung Lama, Kec. Bukitintan, Kota Pangkal Pinang, Kepulauan Bangka Belitung 33684, Indonesia'],
-        'Koba' => ['latitude' => '-2.50462', 'longitude' => '106.30337', 'name' => 'Supermarket Koba', 'address' => 'FCW3+485, Simpang Perlang, Kec. Koba, Kabupaten Bangka Tengah, Kepulauan Bangka Belitung, Indonesia'],
-        'Sungailiat' => ['latitude' => '-1.85404', 'longitude' => '106.12196', 'name' => 'Supermarket & Department Store Sungailiat', 'address' => 'Jl. Jenderal Sudirman No.127, Sungailiat, Sungai Liat, Kabupaten Bangka, Kepulauan Bangka Belitung 33215, Indonesia'],
-        'Tanjung Pandan' => ['latitude' => '-2.73752', 'longitude' => '107.63004', 'name' => 'Baby Store - Tanjung Pandan', 'address' => '7J6J+X25, Parit, Kec. Tj. Pandan, Kabupaten Belitung, Kepulauan Bangka Belitung 33411, Indonesia'],
-        'Air Raya' => ['latitude' => '-2.74709', 'longitude' => '107.65842', 'name' => 'Baby Store Air Raya', 'address' => '7M35+59Q, Jl. Jend. Sudirman, Lesung Batang, Kec. Tj. Pandan, Kabupaten Belitung, Kepulauan Bangka Belitung 33412, Indonesia'],
-        'Manggar' => ['latitude' => '-2.8607083', 'longitude' => '108.2837832', 'name' => 'Baby Store Manggar', 'address' => '47QM+WXW, Kurnia Jaya, Kec. Manggar, Kabupaten Belitung Timur, Kepulauan Bangka Belitung 33512, Indonesia'],
+        'Pangkal Pinang' => ['latitude' => '-2.13295', 'longitude' => '106.11545', 'name' => 'Asoka Pangkal Pinang', 'address' => 'Jl. Ahmad Yani No.1, Batin Tikal, Kec. Taman Sari, Kota Pangkal Pinang, Kepulauan Bangka Belitung 33684, Indonesia'],
+        'Merapin' => ['latitude' => '-2.14881', 'longitude' => '106.13313', 'name' => 'Asoka Merapin', 'address' => 'Ruko City Hill, Jl. Kampung Melayu No.Raya A1-A3, Bukit Merapin, Kec. Gerunggang, Kota Pangkal Pinang, Kepulauan Bangka Belitung 33123, Indonesia'],
+        'Toboali' => ['latitude' => '-3.0106671', 'longitude' => '106.4563138', 'name' => 'Asoka Toboali Bangka Selatan', 'address' => 'XFQ4+MGX, Toboali, Kec. Toboali, Kabupaten Bangka Selatan, Kepulauan Bangka Belitung 33783, Indonesia'],
+        'Semabung' => ['latitude' => '-2.1350629', 'longitude' => '106.1202253', 'name' => 'Asoka Semabung', 'address' => 'Semabung Lama, Kec. Bukitintan, Kota Pangkal Pinang, Kepulauan Bangka Belitung 33684, Indonesia'],
+        'Koba' => ['latitude' => '-2.50462', 'longitude' => '106.30337', 'name' => 'Asoka Koba', 'address' => 'FCW3+485, Simpang Perlang, Kec. Koba, Kabupaten Bangka Tengah, Kepulauan Bangka Belitung, Indonesia'],
+        'Sungailiat' => ['latitude' => '-1.85404', 'longitude' => '106.12196', 'name' => 'Asoka Sungailiat', 'address' => 'Jl. Jenderal Sudirman No.127, Sungailiat, Sungai Liat, Kabupaten Bangka, Kepulauan Bangka Belitung 33215, Indonesia'],
+        'Tanjung Pandan' => ['latitude' => '-2.73752', 'longitude' => '107.63004', 'name' => 'Asoka - Tanjung Pandan', 'address' => '7J6J+X25, Parit, Kec. Tj. Pandan, Kabupaten Belitung, Kepulauan Bangka Belitung 33411, Indonesia'],
+        'Air Raya' => ['latitude' => '-2.74709', 'longitude' => '107.65842', 'name' => 'Asoka Air Raya', 'address' => '7M35+59Q, Jl. Jend. Sudirman, Lesung Batang, Kec. Tj. Pandan, Kabupaten Belitung, Kepulauan Bangka Belitung 33412, Indonesia'],
+        'Manggar' => ['latitude' => '-2.8607083', 'longitude' => '108.2837832', 'name' => 'Asoka Manggar', 'address' => '47QM+WXW, Kurnia Jaya, Kec. Manggar, Kabupaten Belitung Timur, Kepulauan Bangka Belitung 33512, Indonesia'],
     ];
 
     public const CITIES_BELITUNG = [

@@ -88,7 +88,7 @@ class DynamicFlowService
         if ($currentStepConfig['tipe_respon'] === 'location_request' && is_array($inputData)) {
             $stepConfig = json_decode($currentStepConfig['isi_pesan'], true);
             if (isset($stepConfig['calc_nearest']) && $stepConfig['calc_nearest'] === true) {
-                $nearby = $this->findNearbyBranches($inputData['lat'], $inputData['long'], 5);
+                $nearby = $this->findNearbyBranches($inputData['lat'], $inputData['long'], 10);
                 if (!empty($nearby)) {
                     $nearest = $nearby[0];
                     $inputData['nearest_branch_name'] = $nearest['name'];
