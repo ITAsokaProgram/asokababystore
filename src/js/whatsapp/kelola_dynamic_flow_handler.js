@@ -481,6 +481,22 @@ document.addEventListener("DOMContentLoaded", () => {
             fileInput.addEventListener("change", (e) => {
               if (e.target.files.length > 0) {
                 const file = e.target.files[0];
+
+                if (
+                  file.type === "image/webp" ||
+                  file.name.toLowerCase().endsWith(".webp")
+                ) {
+                  Swal.fire({
+                    icon: "error",
+                    title: "Format Tidak Didukung",
+                    text: "WhatsApp tidak mendukung gambar .webp untuk Header. Harap gunakan JPG atau PNG.",
+                  });
+                  e.target.value = "";
+                  hiddenContent.value = "";
+                  previewArea.innerHTML = "";
+                  return;
+                }
+
                 hiddenContent.value = "pending_upload";
                 previewArea.innerHTML = `
                             <div class="mt-2 text-xs text-yellow-700 bg-yellow-50 p-2 rounded border border-yellow-200 flex items-center gap-2">
@@ -523,9 +539,26 @@ document.addEventListener("DOMContentLoaded", () => {
         const fInput = contentArea.querySelector(".input-media-file");
         const prevArea = contentArea.querySelector(".file-preview-area");
         const fNameInput = contentArea.querySelector(".input-media-filename");
+
         fInput.addEventListener("change", (e) => {
           if (e.target.files.length > 0) {
             const file = e.target.files[0];
+
+            if (
+              file.type === "image/webp" ||
+              file.name.toLowerCase().endsWith(".webp")
+            ) {
+              Swal.fire({
+                icon: "error",
+                title: "Format Tidak Didukung",
+                text: "WhatsApp tidak mendukung gambar .webp. Harap gunakan JPG atau PNG.",
+              });
+              e.target.value = "";
+              fNameInput.value = "";
+              prevArea.innerHTML = "";
+              return;
+            }
+
             fNameInput.value = file.name;
             prevArea.innerHTML = `
                           <div class="mt-2 text-xs text-yellow-700 bg-yellow-50 p-2 rounded border border-yellow-200 flex items-center gap-2">

@@ -203,7 +203,8 @@ FROM trans_b t
 $joinSql 
 WHERE 
     t.kd_cust IS NOT NULL
-    AND t.kd_cust NOT IN ('', '898989', '#898989', '#999999999')
+    AND t.kd_cust NOT IN ('', '898989', '#898989', '#999999999', '999999999')
+    AND t.plu != '999900022'
     $date_sql 
     $status_sql 
 GROUP BY t.plu, t.descp

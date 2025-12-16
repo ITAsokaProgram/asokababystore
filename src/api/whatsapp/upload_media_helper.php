@@ -41,6 +41,11 @@ try {
     $mimeType = mime_content_type($file['tmp_name']);
     $originalName = $file['name'];
     $extension = pathinfo($originalName, PATHINFO_EXTENSION);
+
+    if ($mimeType === 'image/webp' || strtolower($extension) === 'webp') {
+        throw new Exception("Format gambar .webp tidak didukung oleh WhatsApp API. Mohon convert ke JPG atau PNG terlebih dahulu.");
+    }
+
     $filenameWithoutExt = pathinfo($originalName, PATHINFO_FILENAME);
     $resourceType = 'raw';
     if (strpos($mimeType, 'image') !== false) {

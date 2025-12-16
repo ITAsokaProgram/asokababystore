@@ -104,13 +104,18 @@ WHERE
 GROUP BY t.kd_cust, t.plu
 ORDER BY total_qty DESC limit 1";
 
-$sqlTopSalesByProduct = "SELECT descp AS barang, barcode AS kode_pabrik, plu, SUM(qty) AS total_qty
+$sqlTopSalesByProduct = "SELECT 
+    descp AS barang, 
+    barcode AS kode_pabrik, 
+    plu, 
+    SUM(qty) AS total_qty,
+    SUM(qty * harga) AS total_penjualan  
 FROM trans_b 
 WHERE tgl_trans = CURDATE() - INTERVAL 1 DAY 
 AND kd_cust NOT IN ('', '898989', '999999999')
 AND plu != '999900022' 
 GROUP BY plu 
-ORDER BY total_qty DESC limit 1";
+ORDER BY total_penjualan DESC LIMIT 1";
 
 $sqlJumlahMemberPerCabang = "SELECT 
   ks.Nm_Alias AS cabang,
