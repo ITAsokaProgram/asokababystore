@@ -838,29 +838,24 @@ const handleSyncAllProductsToRedisClick = async (event) => {
     btn.disabled = false;
   }
 };
-
 const handleForceSyncAllProductsToRedisClick = async (event) => {
   const btn = event.currentTarget;
   const originalHtml = btn.innerHTML;
-
   const result = await Swal.fire({
     title: `Konfirmasi SYNC PAKSA ke Cache (Redis)`,
     html: `Anda akan <strong>MEMAKSA</strong> sinkronisasi <strong>SEMUA</strong> produk dari Shopee ke cache.<br><br><strong class='text-red-600'>PERINGATAN:</strong> Tindakan ini akan mengabaikan dan menimpa proses sync lain yang mungkin sedang berjalan. Lanjutkan hanya jika Anda yakin.`,
     icon: "warning",
     showCancelButton: true,
-    confirmButtonColor: "#dc2626", // Merah
+    confirmButtonColor: "#dc2626",
     cancelButtonColor: "#6b7280",
     confirmButtonText:
       '<i class="fas fa-exclamation-triangle mr-1"></i> Ya, Sync Paksa!',
     cancelButtonText: "Batal",
     reverseButtons: true,
   });
-
   if (!result.isConfirmed) return;
-
   btn.innerHTML = '<span class="loading-spinner"></span> Memaksa Sync...';
   btn.disabled = true;
-
   Swal.fire({
     title: "Sinkronisasi Paksa Dimulai...",
     html: `Memproses semua produk. Harap tunggu...<br><br>Jangan tutup halaman ini. Server sedang mengambil semua data produk Anda.`,
@@ -869,10 +864,9 @@ const handleForceSyncAllProductsToRedisClick = async (event) => {
       Swal.showLoading();
     },
   });
-
   try {
     const data = {};
-    const response = await forceSyncAllProductsToRedis(data); // Memanggil fungsi API baru
+    const response = await forceSyncAllProductsToRedis(data);
     if (response.success) {
       Swal.fire({
         title: "Sinkronisasi Selesai!",
@@ -911,7 +905,6 @@ const handleInvalidAccessToken = (error) => {
   ).toLowerCase();
   if (errorMessageText.includes("invalid access_token")) {
     Swal.close();
-
     Swal.fire({
       icon: "error",
       title: "Sesi Shopee Habis",

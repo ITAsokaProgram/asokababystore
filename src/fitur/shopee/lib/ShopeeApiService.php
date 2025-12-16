@@ -235,9 +235,8 @@ class ShopeeApiService
                     $item['calculated_total_stock'] = $total_stock;
                 }
             }
-
-            usleep(200000);
         }
+        usleep(200000);
         return $merged_products;
     }
     public function updateStock($item_id, $new_stock, $model_id = 0)
@@ -274,129 +273,135 @@ class ShopeeApiService
     {
         return $this->call("/api/v2/order/get_order_detail", 'GET', $params);
     }
-
-    public function fetchAndCacheAllProducts($redis, $redisKey, $lockKey, $expiry_seconds = 86400, $force = false)
+    public function syncAllProductsToDatabase($conn, $force = false)
     {
-        if (!isset($redis) || !$redis->ping()) {
-            throw new Exception("Koneksi Redis Gagal.");
-        }
-
-
-        $lockAcquired = false;
-        if ($force) {
-            $this->logger->warning("[fetchAndCache-FORCE] Mengambil alih lock '{$lockKey}' (force=true).");
-            $redis->set($lockKey, 1, ['ex' => 1800]);
-            $lockAcquired = true;
+        $lockFile = sys_get_temp_dir() . '/shopee_db_sync.lock';
+        if (!$force) {
+            if (file_exists($lockFile)) {
+                $last_update = filemtime($lockFile);
+                if ((time() - $last_update) < 1800) {
+                    $this->logger->warning("[SyncDB] Skip: Proses lain sedang berjalan (Lock file exists).");
+                    throw new Exception("Sinkronisasi sedang berjalan. Harap tunggu atau gunakan 'Force Sync'.");
+                } else {
+                    @unlink($lockFile);
+                }
+            }
         } else {
-            $lockAcquired = $redis->set($lockKey, 1, ['nx', 'ex' => 1800]);
+            if (file_exists($lockFile)) {
+                @unlink($lockFile);
+                $this->logger->info("[SyncDB] Force Sync: Lock file dihapus.");
+            }
         }
-
-        if (!$lockAcquired) {
-            $this->logger->warning("[fetchAndCache] Gagal mendapatkan lock '{$lockKey}'. Sync lain mungkin sedang berjalan.");
-            throw new Exception("Sinkronisasi sudah sedang berjalan. Gagal mendapatkan lock '{$lockKey}'.");
-        }
-
-        $this->logger->info("[fetchAndCache] Lock '{$lockKey}' didapat. Memulai sinkronisasi Shopee ke Redis...");
-
+        touch($lockFile);
+        $this->logger->info("[SyncDB] Memulai sinkronisasi Shopee ke Database MySQL...");
         try {
             if (!$this->isConnected()) {
-                $this->logger->warning("[fetchAndCache] Gagal: Belum terautentikasi dengan Shopee.");
                 throw new Exception("Not authenticated with Shopee");
             }
-
-            $all_detailed_products = [];
             $offset = 0;
             $page_size = 50;
-            $total_items_found = 0;
+            $total_processed = 0;
             $has_next_page = true;
-            $page_counter = 1;
-
+            $sql = "INSERT INTO s_shopee_produk 
+                    (kode_produk, nama_produk, kode_variasi, nama_variasi, sku_induk, sku, harga, stok, image_url) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ON DUPLICATE KEY UPDATE 
+                    nama_produk = VALUES(nama_produk),
+                    nama_variasi = VALUES(nama_variasi),
+                    sku_induk = VALUES(sku_induk),
+                    sku = VALUES(sku),
+                    harga = VALUES(harga),
+                    stok = VALUES(stok),
+                    image_url = VALUES(image_url),
+                    updated_at = NOW()";
+            $stmt = $conn->prepare($sql);
+            if (!$stmt) {
+                throw new Exception("Gagal prepare statement: " . $conn->error);
+            }
             while ($has_next_page) {
-                $this->logger->info("[fetchAndCache] Mengambil batch #{$page_counter}. Offset: {$offset}, Page Size: {$page_size}.");
                 $api_params = [
                     'offset' => $offset,
                     'page_size' => $page_size,
                     'item_status' => 'NORMAL'
                 ];
-
-                $product_list_response = $this->getProductList($api_params);
-
-                if (isset($product_list_response['error']) && $product_list_response['error']) {
-                    $this->logger->error("❌ [fetchAndCache] Gagal mengambil daftar produk batch offset: {$offset}", $product_list_response);
-                    throw new Exception("Gagal mengambil daftar produk dari Shopee: " . ($product_list_response['message'] ?? 'Unknown error'));
+                $list_response = $this->getProductList($api_params);
+                if (isset($list_response['error']) && $list_response['error']) {
+                    throw new Exception("Shopee API Error: " . ($list_response['message'] ?? 'Unknown'));
                 }
-
-                if (!isset($product_list_response['response']['item']) || empty($product_list_response['response']['item'])) {
-                    $this->logger->info("[fetchAndCache] Tidak ada item lagi di batch (Offset: {$offset}). Berhenti mengambil.");
+                if (empty($list_response['response']['item'])) {
                     break;
                 }
-
-                $detailed_items_batch = $this->getDetailedProductInfo($product_list_response);
-
-                if (empty($detailed_items_batch)) {
-                    $this->logger->info("[fetchAndCache] Batch (Offset: {$offset}) tidak mengembalikan item detail. Menghentikan loop.");
+                $detailed_items = $this->getDetailedProductInfo($list_response);
+                if (empty($detailed_items)) {
                     break;
                 }
-
-                $batch_count = count($detailed_items_batch);
-                $all_detailed_products = array_merge($all_detailed_products, $detailed_items_batch);
-                $total_items_found += $batch_count;
-
-                $this->logger->info("[fetchAndCache] Batch #{$page_counter} (Offset: {$offset}) sukses. Ditemukan {$batch_count} item. Total sementara: {$total_items_found}.");
-
-                $has_next_page = $product_list_response['response']['has_next_page'] ?? false;
-                $offset = $product_list_response['response']['next_offset'] ?? 0;
-                $page_counter++;
-
-                if (!$has_next_page) {
-                    $this->logger->info("[fetchAndCache] Shopee API melaporkan tidak ada halaman berikutnya (has_next_page: false).");
-                    break;
+                $conn->begin_transaction();
+                foreach ($detailed_items as $item) {
+                    $kode_produk = $item['item_id'];
+                    $nama_produk = $item['item_name'];
+                    $sku_induk = $item['item_sku'] ?? '';
+                    $image_url = $item['image']['image_url_list'][0] ?? '';
+                    if (isset($item['has_model']) && $item['has_model'] === true && !empty($item['models'])) {
+                        foreach ($item['models'] as $model) {
+                            $kode_variasi = $model['model_id'];
+                            $nama_variasi = $model['model_name'];
+                            $sku = $model['model_sku'] ?? '';
+                            $harga = $model['price_info'][0]['original_price'] ?? 0;
+                            $stok = $model['stock_info_v2']['summary_info']['total_available_stock']
+                                ?? $model['stock_info'][0]['seller_stock'] ?? 0;
+                            $stmt->bind_param(
+                                "isisssdis",
+                                $kode_produk,
+                                $nama_produk,
+                                $kode_variasi,
+                                $nama_variasi,
+                                $sku_induk,
+                                $sku,
+                                $harga,
+                                $stok,
+                                $image_url
+                            );
+                            $stmt->execute();
+                            $total_processed++;
+                        }
+                    } else {
+                        $kode_variasi = 0;
+                        $nama_variasi = null;
+                        $sku = $item['item_sku'] ?? '';
+                        $harga = $item['price_info'][0]['original_price'] ?? 0;
+                        $stok = $item['stock_info_v2']['summary_info']['total_available_stock']
+                            ?? $item['stock_info'][0]['seller_stock'] ?? 0;
+                        $stmt->bind_param(
+                            "isisssdis",
+                            $kode_produk,
+                            $nama_produk,
+                            $kode_variasi,
+                            $nama_variasi,
+                            $sku_induk,
+                            $sku,
+                            $harga,
+                            $stok,
+                            $image_url
+                        );
+                        $stmt->execute();
+                        $total_processed++;
+                    }
                 }
-                usleep(250000);
+                $conn->commit();
+                $has_next_page = $list_response['response']['has_next_page'];
+                $offset = $list_response['response']['next_offset'];
+                usleep(500000);
             }
-
-            $total_products = count($all_detailed_products);
-
-            if (empty($all_detailed_products)) {
-                $this->logger->warning("[fetchAndCache] Tidak ada produk yang ditemukan di akun Shopee.");
-
-            } else {
-                $this->logger->info("[fetchAndCache-SAVE] Selesai mengambil {$total_products} item. Mulai menyimpan ke Redis key '{$redisKey}'...");
-                $json_data = json_encode($all_detailed_products);
-
-                if (json_last_error() !== JSON_ERROR_NONE) {
-                    $this->logger->error("❌ [fetchAndCache-FAIL] Gagal encode JSON: " . json_last_error_msg());
-                    throw new Exception("Gagal memproses data produk untuk cache.");
-                }
-
-                $success = $redis->setex($redisKey, $expiry_seconds, $json_data);
-
-                if (!$success) {
-                    $this->logger->error("❌ [fetchAndCache-FAIL] Gagal menyimpan ke Redis. SETEX mengembalikan false. Key: {$redisKey}");
-                    throw new Exception("Perintah REDIS setex gagal mengembalikan true.");
-                }
-
-                $this->logger->info("✅ [fetchAndCache-SUCCESS] Berhasil menyimpan {$total_products} item ke Redis key '{$redisKey}'.");
-            }
-
-
-            $redis->del($lockKey);
-            return $total_products;
-
+            $stmt->close();
+            @unlink($lockFile);
+            $this->logger->info("[SyncDB] Selesai. Total item/variasi tersimpan: $total_processed");
+            return $total_processed;
         } catch (Throwable $t) {
-
-            $redis->del($lockKey);
-            $this->logger->critical("🔥 [fetchAndCache-FATAL] Error saat fetch/cache: " . $t->getMessage());
-
-
-            $errorMessage = $t->getMessage();
-            if (strpos($errorMessage, 'Invalid access_token') !== false || strpos($errorMessage, 'invalid_acceess_token') !== false) {
-                $this->disconnect();
-                $this->logger->warning("[fetchAndCache] Token invalid terdeteksi. Otomatis disconnect.");
-            }
-
-
+            if (isset($conn))
+                $conn->rollback();
+            $this->logger->error("[SyncDB] Error: " . $t->getMessage());
             throw $t;
         }
     }
 }
+?>

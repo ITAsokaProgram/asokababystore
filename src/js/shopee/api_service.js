@@ -154,10 +154,7 @@ export const syncAllProductsToDb = (data) => {
   return sendRequestJSON("/src/api/shopee/sync_all_products_to_db.php", data);
 };
 export const syncAllProductsToRedis = (data) => {
-  return sendRequestJSON(
-    "/src/api/shopee/sync_all_products_to_redis.php",
-    data
-  );
+  return sendRequestJSON("/src/api/shopee/sync_all_products_to_db.php", data);
 };
 export const deleteStokOlItem = (plu, kd_store) => {
   return sendRequestJSON("/src/api/shopee/delete_stok_ol.php", {
@@ -168,7 +165,7 @@ export const deleteStokOlItem = (plu, kd_store) => {
 
 export const forceSyncAllProductsToRedis = (data) => {
   return sendRequestJSON(
-    "/src/api/shopee/force_sync_all_products_to_redis.php",
+    "/src/api/shopee/force_sync_all_products_to_db.php",
     data
   );
 };
