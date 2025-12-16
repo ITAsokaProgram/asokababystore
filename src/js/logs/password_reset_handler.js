@@ -25,10 +25,17 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   function getUrlParams() {
     const params = new URLSearchParams(window.location.search);
+
+    const inputMulai = document.getElementById("tgl_mulai");
+    const inputSelesai = document.getElementById("tgl_selesai");
+    const inputSearch = document.getElementById("search");
+
     return {
-      tgl_mulai: params.get("tgl_mulai") || "",
-      tgl_selesai: params.get("tgl_selesai") || "",
-      search: params.get("search") || "",
+      tgl_mulai:
+        params.get("tgl_mulai") || (inputMulai ? inputMulai.value : ""),
+      tgl_selesai:
+        params.get("tgl_selesai") || (inputSelesai ? inputSelesai.value : ""),
+      search: params.get("search") || (inputSearch ? inputSearch.value : ""),
       page: parseInt(params.get("page") || "1", 10),
     };
   }

@@ -30,8 +30,9 @@ $response = [
 ];
 try {
     $tanggal_kemarin = date('Y-m-d', strtotime('-30 days'));
-    $tgl_mulai = $_GET['tgl_mulai'] ?? $tanggal_kemarin;
-    $tgl_selesai = $_GET['tgl_selesai'] ?? date('Y-m-d');
+
+    $tgl_mulai = !empty($_GET['tgl_mulai']) ? $_GET['tgl_mulai'] : $tanggal_kemarin;
+    $tgl_selesai = !empty($_GET['tgl_selesai']) ? $_GET['tgl_selesai'] : date('Y-m-d');
     $search_keyword = $_GET['search'] ?? '';
     $page = (int) ($_GET['page'] ?? 1);
     $limit = 50;
