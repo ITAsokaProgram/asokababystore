@@ -55,20 +55,12 @@ require_once __DIR__ . '/produk_shopee.logic.php';
                     <div class="search-filter-section">
                         <div class="flex flex-col lg:flex-row gap-4 items-stretch lg:items-start justify-between">
 
-                            <div class="flex flex-col w-full lg:w-auto lg:max-w-xl gap-2">
-                                <div class="flex-none w-40">
-                                    <select id="search-type"
-                                        class="h-full w-full px-4 py-2 rounded-xl border-2 border-gray-300 bg-white text-gray-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition">
-                                        <option value="sku" <?php echo ($search_type === 'sku') ? 'selected' : ''; ?>>Cari by
-                                            SKU</option>
-                                        <option value="name" <?php echo ($search_type === 'name') ? 'selected' : ''; ?>>Cari
-                                            by Name</option>
-                                    </select>
-                                </div>
-                                <div class="search-box flex-grow relative">
-                                    <input type="text" id="product-search" placeholder="Masukkan SKU atau Nama Produk..."
-                                        autocomplete="off" aria-label="Cari produk"
-                                        value="<?php echo htmlspecialchars($search_keyword); ?>">
+                           <div class="flex flex-col w-full lg:w-auto lg:max-w-xl gap-2">
+                            <div class="search-box flex-grow relative">
+                                <input type="text" id="product-search" placeholder="Cari Kode, Nama, SKU, atau Variasi..."
+                                    class="w-full px-4 py-2 rounded-xl border-2 border-gray-300 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition"
+                                    autocomplete="off" aria-label="Cari produk"
+                                    value="<?php echo htmlspecialchars($search_keyword); ?>">
                                     <?php if (!empty($search_keyword)): ?>
                                         <button id="clear-search"
                                             class="absolute hidden right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition">
@@ -146,7 +138,7 @@ require_once __DIR__ . '/produk_shopee.logic.php';
                         </div>
 
                         <?php if (!empty($detailed_products)): ?>
-                            <div class="divide-y divide-gray-100">
+                            <div class="divide-y divide-gray-100 flex flex-col gap-4">
                                 <?php
                                 $filtered_product_count = 0;
                                 foreach ($detailed_products as $item):

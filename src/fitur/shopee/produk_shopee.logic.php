@@ -12,7 +12,6 @@ header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 $shopeeService = new ShopeeApiService();
 $redirect_uri = "https://" . $_SERVER['HTTP_HOST'] . preg_replace('/produk_shopee\.logic\.php$/', 'produk_shopee.php', $_SERVER['PHP_SELF']);
-
 if (isset($_GET['code'])) {
     $code = $_GET['code'];
     $shop_id = $_GET['shop_id'] ?? null;
@@ -102,19 +101,20 @@ if ($shopeeService->isConnected()) {
         $wheres .= " AND so.item_n IS NULL ";
     }
     if (!empty($search_keyword)) {
-        if ($search_type === 'name') {
-            $wheres .= " AND (sp.nama_produk LIKE ? OR sp.nama_variasi LIKE ?) ";
-            $kw = "%" . $search_keyword . "%";
-            $params[] = $kw;
-            $params[] = $kw;
-            $types .= "ss";
-        } else {
-            $wheres .= " AND (sp.sku LIKE ? OR sp.sku_induk LIKE ?) ";
-            $kw = "%" . $search_keyword . "%";
-            $params[] = $kw;
-            $params[] = $kw;
-            $types .= "ss";
-        }
+        $wheres .= " AND (
+            sp.kode_produk LIKE ? OR 
+            sp.nama_produk LIKE ? OR 
+            sp.kode_variasi LIKE ? OR 
+            sp.sku_induk LIKE ? OR 
+            sp.sku LIKE ?
+        ) ";
+        $kw = "%" . $search_keyword . "%";
+        $params[] = $kw;
+        $params[] = $kw;
+        $params[] = $kw;
+        $params[] = $kw;
+        $params[] = $kw;
+        $types .= "sssss";
     }
     $sql_count = "SELECT COUNT(*) as total " . $sql_core . $joins . $wheres;
     $stmt_cnt = $conn->prepare($sql_count);
@@ -145,10 +145,8 @@ if ($shopeeService->isConnected()) {
             'item_name' => $row['nama_produk'],
             'item_sku' => $row['sku_induk'],
             'has_model' => $is_variant,
-            // --- UPDATED: Add harga_beli and keterangan ---
             'harga_beli' => $row['harga_beli'],
             'keterangan' => $row['keterangan'],
-            // ----------------------------------------------
             'image' => [
                 'image_url_list' => [$row['image_url']]
             ],
@@ -171,10 +169,8 @@ if ($shopeeService->isConnected()) {
                 'model_id' => (int) $row['kode_variasi'],
                 'model_name' => $row['nama_variasi'],
                 'model_sku' => $row['sku'],
-                // --- UPDATED: Add harga_beli and keterangan to model ---
                 'harga_beli' => $row['harga_beli'],
                 'keterangan' => $row['keterangan'],
-                // -------------------------------------------------------
                 'price_info' => [['original_price' => (float) $row['harga']]],
                 'stock_info_v2' => ['summary_info' => ['total_available_stock' => (int) $row['stok']]],
                 'stock_info' => [['seller_stock' => (int) $row['stok']]]
