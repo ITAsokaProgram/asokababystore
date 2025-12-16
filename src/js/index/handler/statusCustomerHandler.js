@@ -2,12 +2,15 @@ import fetchTransaksi from "../fetch/fetch_trans.js";
 import { fetchStatusUser, fetchPointUser } from "../fetch/fetch_user.js";
 import { getCookie } from "../utils/cookies.js";
 import renderTransaksi from "./transaksiHandler.js";
+
 const token = getCookie("customer_token");
+
 export const statusCustomerHandler = async () => {
   const response = await fetchStatusUser(token);
   const kode = response.data.phone_number;
   const updateBuddy = response.data.updated;
   const isMember = response.data.status_member === "member";
+
   if (!kode) {
     Swal.fire({
       icon: "info",
@@ -30,6 +33,7 @@ export const statusCustomerHandler = async () => {
     });
     return;
   }
+
   if (updateBuddy === 1 && isMember) {
     Swal.fire({
       icon: "info",
@@ -52,6 +56,7 @@ export const statusCustomerHandler = async () => {
     });
     return;
   }
+
   localStorage.setItem("kode", kode);
   const name = document.getElementById("nameUser");
   const poin = document.getElementById("poinCust");
@@ -59,13 +64,18 @@ export const statusCustomerHandler = async () => {
   const bulan = new Date().getMonth() + 1;
   const tahun = new Date().getFullYear();
   const status = document.getElementById("status");
+
   name.textContent = `Halo, ${response.data.nama_lengkap}`;
   status.textContent = response.data.status_member;
+
   try {
     if (response.status === "success") {
       const responsePoin = await fetchPointUser(token, kode);
-      const responseTrans = await fetchTransaksi(token, kode);
+
+      const responseTrans = await fetchTransaksi(token, kode, 3);
+
       poin.textContent = responsePoin.data[0]?.total_poin_pk_pm ?? 0;
+
       if (responsePoin.data[0]?.total_poin_pk_pm <= 0) {
         masaBerlaku.textContent =
           "Belum punya poin? Saatnya belanja dan nikmati reward menarik";
@@ -75,6 +85,7 @@ export const statusCustomerHandler = async () => {
             ? `Berakhir Pada : 30 Juni ${tahun}`
             : `Berakhir Pada : 31 Desember ${tahun}`;
       }
+
       renderTransaksi(responseTrans.data);
       const loader = document.getElementById("transaksi-loader");
       if (loader) loader.style.display = "none";
@@ -83,4 +94,5 @@ export const statusCustomerHandler = async () => {
     console.log("error");
   }
 };
+
 export default statusCustomerHandler;

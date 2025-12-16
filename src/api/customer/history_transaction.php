@@ -23,6 +23,16 @@ if (!$verify) {
 }
 
 $kode = $data['kode'];
+
+// --- UPDATE START: Logika Limit ---
+$limitQuery = "";
+if (isset($data['limit']) && is_numeric($data['limit'])) {
+    // Casting ke (int) agar aman dari SQL Injection walau ditempel langsung
+    $limit = (int) $data['limit'];
+    $limitQuery = "LIMIT $limit";
+}
+// --- UPDATE END ---
+
 $sql = "SELECT 
     p.no_faktur,
     p.tanggal,
@@ -49,17 +59,22 @@ $sql = "SELECT
     LEFT JOIN review_detail AS rd on rd.review_id = r.id
     WHERE ua.no_hp = ?
     ORDER BY p.tanggal DESC , p.jam DESC
-";
+    $limitQuery"; // Variabel limit ditempel di sini
+
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("s", $kode);
 $stmt->execute();
 $result = $stmt->get_result();
 $data = $result->fetch_all(MYSQLI_ASSOC);
+
 $formattedData = array_map(function ($item) {
     $item['conversation_started'] = (bool) $item['conversation_started'];
     return $item;
 }, $data);
+
 http_response_code(200);
 echo json_encode(['status' => 'success', 'message' => 'Data berhasil fetch', 'data' => $formattedData]);
+
 $stmt->close();
 $conn->close();
+?>
