@@ -186,6 +186,28 @@ require_once __DIR__ . '/produk_shopee.logic.php';
                                                                 <?php echo (isset($item['has_model']) && $item['has_model'] === true && !empty($item['models'])) ? getPriceRange($item['models']) : number_format($item['price_info'][0]['original_price'] ?? 0, 0, ',', '.'); ?>
                                                             </span></span>
                                                     </span>
+                                                    <?php
+                                                    $hb_val = (float) ($item['harga_beli'] ?? 0);
+                                                    $ket_val = $item['keterangan'] ?? '';
+                                                    $has_hb_data = ($hb_val > 0 && !empty($ket_val));
+                                                    ?>
+                                                    <span class="stats-badge"
+                                                        style="background-color: <?php echo $has_hb_data ? '#ecfeff' : '#f3f4f6'; ?>; 
+                                                                   color: <?php echo $has_hb_data ? '#0e7490' : '#9ca3af'; ?>; 
+                                                                   border-color: <?php echo $has_hb_data ? '#cffafe' : '#e5e7eb'; ?>;">
+                                                        <i class="fas fa-file-invoice-dollar fa-fw"></i>
+                                                        <span>Harga Beli:
+                                                            <strong>
+                                                                <?php if ($has_hb_data): ?>
+                                                                    Rp <?php echo number_format($hb_val, 0, ',', '.'); ?>
+                                                                    <span
+                                                                        style="font-size: 0.75em; font-weight: normal; opacity: 0.8;">(<?php echo htmlspecialchars($ket_val); ?>)</span>
+                                                                <?php else: ?>
+                                                                    -
+                                                                <?php endif; ?>
+                                                            </strong>
+                                                        </span>
+                                                    </span>
                                                     <span class="stats-badge badge-stock">
                                                         <i class="fas fa-boxes"></i>
                                                         <span>Stok Shopee: <strong
@@ -217,6 +239,8 @@ require_once __DIR__ . '/produk_shopee.logic.php';
                                                                         <?php echo number_format($sku_stok_ol_data_map[$item_sku_trimmed]['price'] ?? 0, 0, ',', '.'); ?></strong></span>
                                                             </span>
                                                         <?php endif; ?>
+
+
                                                     <?php endif; ?>
                                                 </div>
 
@@ -266,6 +290,25 @@ require_once __DIR__ . '/produk_shopee.logic.php';
                                                                             💰 Rp <span id="price-display-<?php echo $model['model_id']; ?>"
                                                                                 class="variant-price"><?php echo number_format($model['price_info'][0]['original_price'] ?? 0, 0, ',', '.'); ?></span>
                                                                         </span>
+                                                                        <?php
+                                                                        $hb_val_mod = (float)($model['harga_beli'] ?? 0);
+                                                                        $ket_val_mod = $model['keterangan'] ?? '';
+                                                                        $has_hb_data_mod = ($hb_val_mod > 0 && !empty($ket_val_mod));
+                                                                        ?>
+                                                                        <span class="text-xs"
+                                                                            style="background: <?php echo $has_hb_data_mod ? '#ecfeff' : '#f3f4f6'; ?>; 
+                                                                                   color: <?php echo $has_hb_data_mod ? '#0e7490' : '#9ca3af'; ?>; 
+                                                                                   padding: 4px 8px; border-radius: 6px; font-weight: 600; border: 1px solid <?php echo $has_hb_data_mod ? '#cffafe' : '#e5e7eb'; ?>;">
+                                                                            <i class="fas fa-file-invoice-dollar fa-fw"></i> Harga Beli:
+                                                                            <strong>
+                                                                            <?php if ($has_hb_data_mod): ?>
+                                                                                Rp <?php echo number_format($hb_val_mod, 0, ',', '.'); ?> 
+                                                                                <span style="opacity: 0.8;">(<?php echo htmlspecialchars($ket_val_mod); ?>)</span>
+                                                                            <?php else: ?>
+                                                                                -
+                                                                            <?php endif; ?>
+                                                                            </strong>
+                                                                        </span>
                                                                         <span class="text-xs"
                                                                             style="background: #e0e7ff; color: #3730a3; padding: 4px 8px; border-radius: 6px; font-weight: 600;">
                                                                             SKU:
@@ -297,327 +340,334 @@ require_once __DIR__ . '/produk_shopee.logic.php';
                                                                                     <?php echo number_format($sku_stok_ol_data_map[$model_sku_trimmed]['price'] ?? 0, 0, ',', '.'); ?></strong>
                                                                             </span>
                                                                         <?php endif; ?>
+
+                                                                        
+                                                                        </div>
+                                                                </div>
+
+                                                                    <div
+                                                                        class="flex md:items-center justify-between md:flex-row flex-col flex-wrap gap-4">
+                                                                        <form class="update-stock-form form-group"
+                                                                            data-model-id="<?php echo $model['model_id']; ?>">
+                                                                            <input type="hidden" name="item_id"
+                                                                                value="<?php echo htmlspecialchars($item['item_id']); ?>">
+                                                                            <input type="hidden" name="model_id"
+                                                                                value="<?php echo htmlspecialchars($model['model_id']); ?>">
+                                                                            <label
+                                                                                class="text-sm font-semibold text-gray-700 whitespace-nowrap w-28">
+                                                                                <i class="fas fa-box mr-1"></i> Stok Baru:
+                                                                            </label>
+                                                                            <input type="number" name="new_stock" placeholder="0"
+                                                                                class="input-field flex-1" required>
+                                                                            <button type="submit"
+                                                                                class="btn-action btn-stock rounded-xl whitespace-nowrap">Update</button>
+                                                                        </form>
+                                                                        <form class="update-price-form form-group"
+                                                                            data-model-id="<?php echo $model['model_id']; ?>">
+                                                                            <input type="hidden" name="item_id"
+                                                                                value="<?php echo htmlspecialchars($item['item_id']); ?>">
+                                                                            <input type="hidden" name="model_id"
+                                                                                value="<?php echo htmlspecialchars($model['model_id']); ?>">
+                                                                            <label
+                                                                                class="text-sm font-semibold text-gray-700 whitespace-nowrap w-28">
+                                                                                <i class="fas fa-tag mr-1"></i> Harga Baru:
+                                                                            </label>
+                                                                            <input type="number" name="new_price" placeholder="0"
+                                                                                class="input-field flex-1" required>
+                                                                            <button type="submit"
+                                                                                class="btn-action btn-price rounded-xl whitespace-nowrap">Update</button>
+                                                                        </form>
+                                                                        <form class="sync-stock-form"
+                                                                            data-item-id="<?php echo htmlspecialchars($item['item_id']); ?>"
+                                                                            data-model-id="<?php echo htmlspecialchars($model['model_id']); ?>">
+                                                                            <input type="hidden" name="item_id"
+                                                                                value="<?php echo htmlspecialchars($item['item_id']); ?>">
+                                                                            <input type="hidden" name="model_id"
+                                                                                value="<?php echo htmlspecialchars($model['model_id']); ?>">
+                                                                            <input type="hidden" name="sku"
+                                                                                value="<?php echo htmlspecialchars($model['model_sku']); ?>">
+                                                                            <button type="submit"
+                                                                                class="btn-action btn-sync rounded-xl whitespace-nowrap"
+                                                                                title="Samakan stok Shopee dengan stok database">Sinkronisasi
+                                                                                Stok</button>
+                                                                        </form>
+                                                                        <?php
+                                                                        $btn_text = '';
+                                                                        $btn_class = '';
+                                                                        $btn_icon = 'fa-plus';
+                                                                        $btn_disabled = false;
+                                                                        $data_attrs = '';
+                                                                        $show_button = false;
+                                                                        if ($barang_data) {
+                                                                            if ($stok_ol_data) {
+                                                                                $show_button = false;
+                                                                            } else {
+                                                                                $show_button = true;
+                                                                                $btn_text = 'Masukkan ke Stok Online';
+                                                                                $btn_class = 'btn-manage-ol-add';
+                                                                                $btn_icon = 'fa-plus';
+                                                                                $data_attrs = 'data-mode="add" data-sku="' . htmlspecialchars($model_sku_trimmed) . '" data-plu="' . htmlspecialchars($barang_data['plu']) . '" data-descp="' . htmlspecialchars($barang_data['descp']) . '" data-vendor="' . htmlspecialchars($barang_data['vendor']) . '" data-hrg_beli="' . htmlspecialchars($barang_data['harga_beli']) . '" data-price="' . htmlspecialchars($barang_data['harga_jual']) . '"';
+                                                                            }
+                                                                        } else {
+                                                                            $show_button = true;
+                                                                            $btn_text = 'SKU tdk ada di s_barang';
+                                                                            $btn_class = 'btn-manage-ol-disabled';
+                                                                            $btn_icon = 'fa-times';
+                                                                            $btn_disabled = true;
+                                                                        }
+                                                                        ?>
+                                                                        <?php if ($show_button): ?>
+                                                                            <button type="button"
+                                                                                class="btn-action btn-manage-stok-ol <?php echo $btn_class; ?> rounded-xl whitespace-nowrap"
+                                                                                <?php echo $data_attrs; ?>                         <?php if ($btn_disabled)
+                                                                                                                echo 'disabled'; ?>>
+                                                                                <i
+                                                                                    class="fas <?php echo $btn_icon; ?> fa-fw"></i><span><?php echo $btn_text; ?></span>
+                                                                            </button>
+                                                                        <?php endif; ?>
                                                                     </div>
                                                                 </div>
                                                             </div>
-
-                                                            <div
-                                                                class="flex md:items-center justify-between md:flex-row flex-col flex-wrap gap-4">
-                                                                <form class="update-stock-form form-group"
-                                                                    data-model-id="<?php echo $model['model_id']; ?>">
-                                                                    <input type="hidden" name="item_id"
-                                                                        value="<?php echo htmlspecialchars($item['item_id']); ?>">
-                                                                    <input type="hidden" name="model_id"
-                                                                        value="<?php echo htmlspecialchars($model['model_id']); ?>">
-                                                                    <label
-                                                                        class="text-sm font-semibold text-gray-700 whitespace-nowrap w-28">
-                                                                        <i class="fas fa-box mr-1"></i> Stok Baru:
-                                                                    </label>
-                                                                    <input type="number" name="new_stock" placeholder="0"
-                                                                        class="input-field flex-1" required>
-                                                                    <button type="submit"
-                                                                        class="btn-action btn-stock rounded-xl whitespace-nowrap">Update</button>
-                                                                </form>
-                                                                <form class="update-price-form form-group"
-                                                                    data-model-id="<?php echo $model['model_id']; ?>">
-                                                                    <input type="hidden" name="item_id"
-                                                                        value="<?php echo htmlspecialchars($item['item_id']); ?>">
-                                                                    <input type="hidden" name="model_id"
-                                                                        value="<?php echo htmlspecialchars($model['model_id']); ?>">
-                                                                    <label
-                                                                        class="text-sm font-semibold text-gray-700 whitespace-nowrap w-28">
-                                                                        <i class="fas fa-tag mr-1"></i> Harga Baru:
-                                                                    </label>
-                                                                    <input type="number" name="new_price" placeholder="0"
-                                                                        class="input-field flex-1" required>
-                                                                    <button type="submit"
-                                                                        class="btn-action btn-price rounded-xl whitespace-nowrap">Update</button>
-                                                                </form>
-                                                                <form class="sync-stock-form"
-                                                                    data-item-id="<?php echo htmlspecialchars($item['item_id']); ?>"
-                                                                    data-model-id="<?php echo htmlspecialchars($model['model_id']); ?>">
-                                                                    <input type="hidden" name="item_id"
-                                                                        value="<?php echo htmlspecialchars($item['item_id']); ?>">
-                                                                    <input type="hidden" name="model_id"
-                                                                        value="<?php echo htmlspecialchars($model['model_id']); ?>">
-                                                                    <input type="hidden" name="sku"
-                                                                        value="<?php echo htmlspecialchars($model['model_sku']); ?>">
-                                                                    <button type="submit"
-                                                                        class="btn-action btn-sync rounded-xl whitespace-nowrap"
-                                                                        title="Samakan stok Shopee dengan stok database">Sinkronisasi
-                                                                        Stok</button>
-                                                                </form>
-                                                                <?php
-                                                                $btn_text = '';
-                                                                $btn_class = '';
-                                                                $btn_icon = 'fa-plus';
-                                                                $btn_disabled = false;
-                                                                $data_attrs = '';
-                                                                $show_button = false;
-                                                                if ($barang_data) {
-                                                                    if ($stok_ol_data) {
-                                                                        $show_button = false;
-                                                                    } else {
-                                                                        $show_button = true;
-                                                                        $btn_text = 'Masukkan ke Stok Online';
-                                                                        $btn_class = 'btn-manage-ol-add';
-                                                                        $btn_icon = 'fa-plus';
-                                                                        $data_attrs = 'data-mode="add" data-sku="' . htmlspecialchars($model_sku_trimmed) . '" data-plu="' . htmlspecialchars($barang_data['plu']) . '" data-descp="' . htmlspecialchars($barang_data['descp']) . '" data-vendor="' . htmlspecialchars($barang_data['vendor']) . '" data-hrg_beli="' . htmlspecialchars($barang_data['harga_beli']) . '" data-price="' . htmlspecialchars($barang_data['harga_jual']) . '"';
-                                                                    }
-                                                                } else {
-                                                                    $show_button = true;
-                                                                    $btn_text = 'SKU tdk ada di s_barang';
-                                                                    $btn_class = 'btn-manage-ol-disabled';
-                                                                    $btn_icon = 'fa-times';
-                                                                    $btn_disabled = true;
-                                                                }
-                                                                ?>
-                                                                <?php if ($show_button): ?>
-                                                                    <button type="button"
-                                                                        class="btn-action btn-manage-stok-ol <?php echo $btn_class; ?> rounded-xl whitespace-nowrap"
-                                                                        <?php echo $data_attrs; ?>                         <?php if ($btn_disabled)
-                                                                                                        echo 'disabled'; ?>>
-                                                                        <i
-                                                                            class="fas <?php echo $btn_icon; ?> fa-fw"></i><span><?php echo $btn_text; ?></span>
-                                                                    </button>
-                                                                <?php endif; ?>
-                                                            </div>
-                                                        </div>
-                                                    <?php endforeach; ?>
-                                                </div>
-                                            <?php else: ?>
-                                                <?php
-                                                $item_sku_trimmed = trim($item['item_sku'] ?? '');
-                                                $barang_data = $sku_barang_data_map[$item_sku_trimmed] ?? null;
-                                                $stok_ol_data = $sku_stok_ol_data_map[$item_sku_trimmed] ?? null;
-                                                ?>
-                                                <div class="flex md:items-center justify-between md:flex-row flex-col flex-wrap gap-4">
-                                                    <form class="update-stock-form form-group"
-                                                        data-item-id="<?php echo $item['item_id']; ?>">
-                                                        <input type="hidden" name="item_id"
-                                                            value="<?php echo htmlspecialchars($item['item_id']); ?>">
-                                                        <label class="text-sm font-semibold text-gray-700 whitespace-nowrap w-28"><i
-                                                                class="fas fa-box mr-1"></i> Stok Baru:</label>
-                                                        <input type="number" name="new_stock" placeholder="0" class="input-field flex-1"
-                                                            required>
-                                                        <button type="submit"
-                                                            class="btn-action btn-stock rounded-xl whitespace-nowrap">Update</button>
-                                                    </form>
-                                                    <form class="update-price-form form-group"
-                                                        data-item-id="<?php echo $item['item_id']; ?>">
-                                                        <input type="hidden" name="item_id"
-                                                            value="<?php echo htmlspecialchars($item['item_id']); ?>">
-                                                        <label class="text-sm font-semibold text-gray-700 whitespace-nowrap w-28"><i
-                                                                class="fas fa-tag mr-1"></i> Harga Baru:</label>
-                                                        <input type="number" name="new_price" placeholder="0" class="input-field flex-1"
-                                                            required>
-                                                        <button type="submit"
-                                                            class="btn-action btn-price rounded-xl whitespace-nowrap">Update</button>
-                                                    </form>
-                                                    <form class="sync-stock-form"
-                                                        data-item-id="<?php echo htmlspecialchars($item['item_id']); ?>">
-                                                        <input type="hidden" name="item_id"
-                                                            value="<?php echo htmlspecialchars($item['item_id']); ?>">
-                                                        <input type="hidden" name="model_id" value="0"> <input type="hidden" name="sku"
-                                                            value="<?php echo htmlspecialchars($item['item_sku']); ?>">
-                                                        <button type="submit" class="btn-action btn-sync rounded-xl whitespace-nowrap"
-                                                            title="Samakan stok Shopee dengan stok database">Sinkronisasi Stok</button>
-                                                    </form>
+                                                        <?php endforeach; ?>
+                                                    </div>
+                                                <?php else: ?>
                                                     <?php
-                                                    $btn_text = '';
-                                                    $btn_class = '';
-                                                    $btn_icon = 'fa-plus';
-                                                    $btn_disabled = false;
-                                                    $data_attrs = '';
-                                                    $show_button = false;
-                                                    if ($barang_data) {
-                                                        if ($stok_ol_data) {
-                                                            $show_button = false;
+                                                    $item_sku_trimmed = trim($item['item_sku'] ?? '');
+                                                    $barang_data = $sku_barang_data_map[$item_sku_trimmed] ?? null;
+                                                    $stok_ol_data = $sku_stok_ol_data_map[$item_sku_trimmed] ?? null;
+                                                    ?>
+                                                    <div
+                                                        class="flex md:items-center justify-between md:flex-row flex-col flex-wrap gap-4">
+                                                        <form class="update-stock-form form-group"
+                                                            data-item-id="<?php echo $item['item_id']; ?>">
+                                                            <input type="hidden" name="item_id"
+                                                                value="<?php echo htmlspecialchars($item['item_id']); ?>">
+                                                            <label class="text-sm font-semibold text-gray-700 whitespace-nowrap w-28"><i
+                                                                    class="fas fa-box mr-1"></i> Stok Baru:</label>
+                                                            <input type="number" name="new_stock" placeholder="0"
+                                                                class="input-field flex-1" required>
+                                                            <button type="submit"
+                                                                class="btn-action btn-stock rounded-xl whitespace-nowrap">Update</button>
+                                                        </form>
+                                                        <form class="update-price-form form-group"
+                                                            data-item-id="<?php echo $item['item_id']; ?>">
+                                                            <input type="hidden" name="item_id"
+                                                                value="<?php echo htmlspecialchars($item['item_id']); ?>">
+                                                            <label class="text-sm font-semibold text-gray-700 whitespace-nowrap w-28"><i
+                                                                    class="fas fa-tag mr-1"></i> Harga Baru:</label>
+                                                            <input type="number" name="new_price" placeholder="0"
+                                                                class="input-field flex-1" required>
+                                                            <button type="submit"
+                                                                class="btn-action btn-price rounded-xl whitespace-nowrap">Update</button>
+                                                        </form>
+                                                        <form class="sync-stock-form"
+                                                            data-item-id="<?php echo htmlspecialchars($item['item_id']); ?>">
+                                                            <input type="hidden" name="item_id"
+                                                                value="<?php echo htmlspecialchars($item['item_id']); ?>">
+                                                            <input type="hidden" name="model_id" value="0"> <input type="hidden"
+                                                                name="sku" value="<?php echo htmlspecialchars($item['item_sku']); ?>">
+                                                            <button type="submit"
+                                                                class="btn-action btn-sync rounded-xl whitespace-nowrap"
+                                                                title="Samakan stok Shopee dengan stok database">Sinkronisasi
+                                                                Stok</button>
+                                                        </form>
+                                                        <?php
+                                                        $btn_text = '';
+                                                        $btn_class = '';
+                                                        $btn_icon = 'fa-plus';
+                                                        $btn_disabled = false;
+                                                        $data_attrs = '';
+                                                        $show_button = false;
+                                                        if ($barang_data) {
+                                                            if ($stok_ol_data) {
+                                                                $show_button = false;
+                                                            } else {
+                                                                $show_button = true;
+                                                                $btn_text = 'Masukkan ke Stok Online';
+                                                                $btn_class = 'btn-manage-ol-add';
+                                                                $btn_icon = 'fa-plus';
+                                                                $data_attrs = 'data-mode="add" data-sku="' . htmlspecialchars($item_sku_trimmed) . '" data-plu="' . htmlspecialchars($barang_data['plu']) . '" data-descp="' . htmlspecialchars($barang_data['descp']) . '" data-vendor="' . htmlspecialchars($barang_data['vendor']) . '" data-hrg_beli="' . htmlspecialchars($barang_data['harga_beli']) . '" data-price="' . htmlspecialchars($barang_data['harga_jual']) . '"';
+                                                            }
                                                         } else {
                                                             $show_button = true;
-                                                            $btn_text = 'Masukkan ke Stok Online';
-                                                            $btn_class = 'btn-manage-ol-add';
-                                                            $btn_icon = 'fa-plus';
-                                                            $data_attrs = 'data-mode="add" data-sku="' . htmlspecialchars($item_sku_trimmed) . '" data-plu="' . htmlspecialchars($barang_data['plu']) . '" data-descp="' . htmlspecialchars($barang_data['descp']) . '" data-vendor="' . htmlspecialchars($barang_data['vendor']) . '" data-hrg_beli="' . htmlspecialchars($barang_data['harga_beli']) . '" data-price="' . htmlspecialchars($barang_data['harga_jual']) . '"';
+                                                            $btn_text = 'SKU tdk ada di s_barang';
+                                                            $btn_class = 'btn-manage-ol-disabled';
+                                                            $btn_icon = 'fa-times';
+                                                            $btn_disabled = true;
                                                         }
-                                                    } else {
-                                                        $show_button = true;
-                                                        $btn_text = 'SKU tdk ada di s_barang';
-                                                        $btn_class = 'btn-manage-ol-disabled';
-                                                        $btn_icon = 'fa-times';
-                                                        $btn_disabled = true;
-                                                    }
-                                                    ?>
-                                                    <?php if ($show_button): ?>
-                                                        <button type="button"
-                                                            class="btn-action btn-manage-stok-ol <?php echo $btn_class; ?> rounded-xl whitespace-nowrap"
-                                                            <?php echo $data_attrs; ?>                     <?php if ($btn_disabled)
-                                                                                        echo 'disabled'; ?>>
-                                                            <i
-                                                                class="fas <?php echo $btn_icon; ?> fa-fw"></i><span><?php echo $btn_text; ?></span>
-                                                        </button>
-                                                    <?php endif; ?>
-                                                </div>
-                                            <?php endif; ?>
+                                                        ?>
+                                                        <?php if ($show_button): ?>
+                                                            <button type="button"
+                                                                class="btn-action btn-manage-stok-ol <?php echo $btn_class; ?> rounded-xl whitespace-nowrap"
+                                                                <?php echo $data_attrs; ?>                     <?php if ($btn_disabled)
+                                                                                            echo 'disabled'; ?>>
+                                                                <i
+                                                                    class="fas <?php echo $btn_icon; ?> fa-fw"></i><span><?php echo $btn_text; ?></span>
+                                                            </button>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
                                         </div>
-                                    </div>
-                                <?php endforeach; ?>
-                                <?php if ($filter_type != 'all'): ?>
-                                    <script>
-                                        document.addEventListener('DOMContentLoaded', function () {
-                                            const countDisplay = document.getElementById('product-count-display');
-                                            if (countDisplay) {
-                                                const filteredPageCount = <?php echo $total_count; ?>;
-                                                countDisplay.innerHTML = `<i class="fas fa-filter"></i> ${filteredPageCount} Produk Ditemukan`;
-                                                const countBadge = countDisplay.closest('.stats-badge');
-                                                if (countBadge) {
-                                                    countBadge.style.background = 'linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%)';
-                                                    countBadge.style.color = '#0369a1';
-                                                    countBadge.style.borderColor = '#7dd3fc';
+                                    <?php endforeach; ?>
+                                    <?php if ($filter_type != 'all'): ?>
+                                        <script>
+                                            document.addEventListener('DOMContentLoaded', function () {
+                                                const countDisplay = document.getElementById('product-count-display');
+                                                if (countDisplay) {
+                                                    const filteredPageCount = <?php echo $total_count; ?>;
+                                                    countDisplay.innerHTML = `<i class="fas fa-filter"></i> ${filteredPageCount} Produk Ditemukan`;
+                                                    const countBadge = countDisplay.closest('.stats-badge');
+                                                    if (countBadge) {
+                                                        countBadge.style.background = 'linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%)';
+                                                        countBadge.style.color = '#0369a1';
+                                                        countBadge.style.borderColor = '#7dd3fc';
+                                                    }
                                                 }
-                                            }
+                                            });
+                                        </script>
+                                    <?php endif; ?>
+                                </div>
+
+                                <?php if ($filtered_product_count == 0): ?>
+                                    <div class="p-8 text-center">
+                                        <i class="fas fa-filter text-6xl text-gray-300 mb-4"></i>
+                                        <p class="text-gray-500 text-lg font-medium">Tidak Ada Produk Ditemukan</p>
+                                        <p class="text-gray-400 text-sm mt-2">Tidak ada produk yang cocok dengan filter
+                                            "<?php echo htmlspecialchars($filter_type); ?>" dan pencarian Anda.</p>
+                                    </div>
+                                <?php endif; ?>
+
+                                <?php if (isset($_SESSION['shopee_flash_message'])): ?>
+                                    <script>
+                                        document.addEventListener('DOMContentLoaded', () => {
+                                            Swal.fire({
+                                                icon: 'warning',
+                                                title: 'Perhatian',
+                                                text: '<?php echo addslashes($_SESSION['shopee_flash_message']); ?>',
+                                                toast: true,
+                                                position: 'top-end',
+                                                showConfirmButton: false,
+                                                timer: 4000,
+                                                timerProgressBar: true,
+                                                didOpen: (toast) => {
+                                                    toast.addEventListener('mouseenter', Swal.stopTimer);
+                                                    toast.addEventListener('mouseleave', Swal.resumeTimer);
+                                                }
+                                            });
                                         });
                                     </script>
-                                <?php endif; ?>
-                            </div>
+                                    <?php unset($_SESSION['shopee_flash_message']); endif; ?>
 
-                            <?php if ($filtered_product_count == 0): ?>
+                            <?php else: ?>
                                 <div class="p-8 text-center">
-                                    <i class="fas fa-filter text-6xl text-gray-300 mb-4"></i>
-                                    <p class="text-gray-500 text-lg font-medium">Tidak Ada Produk Ditemukan</p>
-                                    <p class="text-gray-400 text-sm mt-2">Tidak ada produk yang cocok dengan filter
-                                        "<?php echo htmlspecialchars($filter_type); ?>" dan pencarian Anda.</p>
+                                    <i class="fas fa-box-open text-6xl text-gray-300 mb-4"></i>
+                                    <p class="text-gray-500 text-lg font-medium">Tidak ada produk ditemukan</p>
+                                    <p class="text-gray-400 text-sm mt-2">Produk Anda akan muncul di sini. Jika cache kosong,
+                                        coba
+                                        'Sync Produk ke Cache'.</p>
                                 </div>
                             <?php endif; ?>
+                        </div>
 
-                            <?php if (isset($_SESSION['shopee_flash_message'])): ?>
-                                <script>
-                                    document.addEventListener('DOMContentLoaded', () => {
-                                        Swal.fire({
-                                            icon: 'warning',
-                                            title: 'Perhatian',
-                                            text: '<?php echo addslashes($_SESSION['shopee_flash_message']); ?>',
-                                            toast: true,
-                                            position: 'top-end',
-                                            showConfirmButton: false,
-                                            timer: 4000,
-                                            timerProgressBar: true,
-                                            didOpen: (toast) => {
-                                                toast.addEventListener('mouseenter', Swal.stopTimer);
-                                                toast.addEventListener('mouseleave', Swal.resumeTimer);
-                                            }
-                                        });
-                                    });
-                                </script>
-                                <?php unset($_SESSION['shopee_flash_message']); endif; ?>
+                        <?php if ($pagination_info && $total_pages > 1): ?>
+                            <div class="pagination-controls p-6 border-t border-gray-100 bg-white rounded-b-2xl mt-6">
+                                <div class="flex flex-wrap items-center justify-center gap-2">
+                                    <?php
+                                    $adjacents = 2; // Jumlah angka di kiri/kanan halaman aktif
+                                    $start_loop = max(2, $current_page - $adjacents);
+                                    $end_loop = min($total_pages - 1, $current_page + $adjacents);
 
-                        <?php else: ?>
-                            <div class="p-8 text-center">
-                                <i class="fas fa-box-open text-6xl text-gray-300 mb-4"></i>
-                                <p class="text-gray-500 text-lg font-medium">Tidak ada produk ditemukan</p>
-                                <p class="text-gray-400 text-sm mt-2">Produk Anda akan muncul di sini. Jika cache kosong, coba
-                                    'Sync Produk ke Cache'.</p>
+                                    // Helper function untuk generate URL
+                                    function get_page_url($page_num, $page_size)
+                                    {
+                                        global $search_keyword, $search_type, $filter_type;
+                                        $offset_val = ($page_num - 1) * $page_size;
+                                        $url = "?offset=" . $offset_val;
+                                        if (!empty($search_keyword)) {
+                                            $url .= "&search=" . urlencode($search_keyword) . "&search_type=" . $search_type;
+                                        }
+                                        if ($filter_type != 'all') {
+                                            $url .= "&filter=" . $filter_type;
+                                        }
+                                        return $url;
+                                    }
+                                    ?>
+
+                                    <?php
+                                    $active_class = ($current_page == 1)
+                                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-md transform scale-105'
+                                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-indigo-300';
+                                    ?>
+                                    <a href="<?php echo get_page_url(1, $page_size); ?>"
+                                        class="w-10 h-10 flex items-center justify-center rounded-xl border-2 font-semibold text-sm transition-all duration-200 <?php echo $active_class; ?>">
+                                        1
+                                    </a>
+
+                                    <?php if ($start_loop > 2): ?>
+                                        <span class="w-10 h-10 flex items-center justify-center text-gray-400 font-bold">...</span>
+                                    <?php endif; ?>
+
+                                    <?php for ($i = $start_loop; $i <= $end_loop; $i++): ?>
+                                        <?php
+                                        $active_class = ($current_page == $i)
+                                            ? 'bg-indigo-600 text-white border-indigo-600 shadow-md transform scale-105'
+                                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-indigo-300';
+                                        ?>
+                                        <a href="<?php echo get_page_url($i, $page_size); ?>"
+                                            class="w-10 h-10 flex items-center justify-center rounded-xl border-2 font-semibold text-sm transition-all duration-200 <?php echo $active_class; ?>">
+                                            <?php echo $i; ?>
+                                        </a>
+                                    <?php endfor; ?>
+
+                                    <?php if ($end_loop < $total_pages - 1): ?>
+                                        <span class="w-10 h-10 flex items-center justify-center text-gray-400 font-bold">...</span>
+                                    <?php endif; ?>
+
+                                    <?php if ($total_pages > 1): ?>
+                                        <?php
+                                        $active_class = ($current_page == $total_pages)
+                                            ? 'bg-indigo-600 text-white border-indigo-600 shadow-md transform scale-105'
+                                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-indigo-300';
+                                        ?>
+                                        <a href="<?php echo get_page_url($total_pages, $page_size); ?>"
+                                            class="w-10 h-10 flex items-center justify-center rounded-xl border-2 font-semibold text-sm transition-all duration-200 <?php echo $active_class; ?>">
+                                            <?php echo $total_pages; ?>
+                                        </a>
+                                    <?php endif; ?>
+
+                                </div>
                             </div>
                         <?php endif; ?>
-                    </div>
 
-                    <?php if ($pagination_info && $total_pages > 1): ?>
-                        <div class="pagination-controls p-6 border-t border-gray-100 bg-white rounded-b-2xl mt-6">
-                            <div class="flex flex-wrap items-center justify-center gap-2">
-                                <?php
-                                $adjacents = 2; // Jumlah angka di kiri/kanan halaman aktif
-                                $start_loop = max(2, $current_page - $adjacents);
-                                $end_loop = min($total_pages - 1, $current_page + $adjacents);
+                    <?php else: ?>
+                        <div class="connect-card p-16 rounded-2xl">
+                            <div class="max-w-md mx-auto text-center py-4">
+                                <div class="icon-wrapper w-24 h-24 mx-auto mb-8 flex items-center justify-center">
+                                    <img src="../../../public/images/logo/shopee.png" alt="Shopee" class="h-12 w-12">
+                                </div>
+                                <h2 class="text-3xl font-bold text-gray-800 mb-4">Hubungkan Toko Shopee</h2>
+                                <p class="text-gray-600 mb-8 text-lg leading-relaxed">Kelola produk dan stok toko Shopee
+                                    Anda
+                                    dengan mudah dari satu dashboard yang terintegrasi</p>
 
-                                // Helper function untuk generate URL
-                                function get_page_url($page_num, $page_size)
-                                {
-                                    global $search_keyword, $search_type, $filter_type;
-                                    $offset_val = ($page_num - 1) * $page_size;
-                                    $url = "?offset=" . $offset_val;
-                                    if (!empty($search_keyword)) {
-                                        $url .= "&search=" . urlencode($search_keyword) . "&search_type=" . $search_type;
-                                    }
-                                    if ($filter_type != 'all') {
-                                        $url .= "&filter=" . $filter_type;
-                                    }
-                                    return $url;
-                                }
-                                ?>
-
-                                <?php
-                                $active_class = ($current_page == 1)
-                                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-md transform scale-105'
-                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-indigo-300';
-                                ?>
-                                <a href="<?php echo get_page_url(1, $page_size); ?>"
-                                    class="w-10 h-10 flex items-center justify-center rounded-xl border-2 font-semibold text-sm transition-all duration-200 <?php echo $active_class; ?>">
-                                    1
-                                </a>
-
-                                <?php if ($start_loop > 2): ?>
-                                    <span class="w-10 h-10 flex items-center justify-center text-gray-400 font-bold">...</span>
-                                <?php endif; ?>
-
-                                <?php for ($i = $start_loop; $i <= $end_loop; $i++): ?>
-                                    <?php
-                                    $active_class = ($current_page == $i)
-                                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-md transform scale-105'
-                                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-indigo-300';
-                                    ?>
-                                    <a href="<?php echo get_page_url($i, $page_size); ?>"
-                                        class="w-10 h-10 flex items-center justify-center rounded-xl border-2 font-semibold text-sm transition-all duration-200 <?php echo $active_class; ?>">
-                                        <?php echo $i; ?>
+                                <?php if (isset($auth_url)): ?>
+                                    <a href="<?php echo htmlspecialchars($auth_url); ?>"
+                                        class="inline-flex items-center justify-center gap-3 w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-4 px-8 rounded-xl text-lg transition shadow-xl hover:shadow-2xl transform hover:-translate-y-1">
+                                        <i class="fas fa-link text-xl"></i>
+                                        <span>Hubungkan Sekarang</span>
                                     </a>
-                                <?php endfor; ?>
-
-                                <?php if ($end_loop < $total_pages - 1): ?>
-                                    <span class="w-10 h-10 flex items-center justify-center text-gray-400 font-bold">...</span>
+                                <?php else: ?>
+                                    <div class="bg-red-50 border-2 border-red-200 text-red-700 px-6 py-4 rounded-xl">
+                                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                                        <span class="font-semibold">Gagal membuat URL autentikasi</span>
+                                    </div>
                                 <?php endif; ?>
-
-                                <?php if ($total_pages > 1): ?>
-                                    <?php
-                                    $active_class = ($current_page == $total_pages)
-                                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-md transform scale-105'
-                                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 hover:border-indigo-300';
-                                    ?>
-                                    <a href="<?php echo get_page_url($total_pages, $page_size); ?>"
-                                        class="w-10 h-10 flex items-center justify-center rounded-xl border-2 font-semibold text-sm transition-all duration-200 <?php echo $active_class; ?>">
-                                        <?php echo $total_pages; ?>
-                                    </a>
-                                <?php endif; ?>
-
                             </div>
                         </div>
                     <?php endif; ?>
 
-                <?php else: ?>
-                    <div class="connect-card p-16 rounded-2xl">
-                        <div class="max-w-md mx-auto text-center py-4">
-                            <div class="icon-wrapper w-24 h-24 mx-auto mb-8 flex items-center justify-center">
-                                <img src="../../../public/images/logo/shopee.png" alt="Shopee" class="h-12 w-12">
-                            </div>
-                            <h2 class="text-3xl font-bold text-gray-800 mb-4">Hubungkan Toko Shopee</h2>
-                            <p class="text-gray-600 mb-8 text-lg leading-relaxed">Kelola produk dan stok toko Shopee Anda
-                                dengan mudah dari satu dashboard yang terintegrasi</p>
-
-                            <?php if (isset($auth_url)): ?>
-                                <a href="<?php echo htmlspecialchars($auth_url); ?>"
-                                    class="inline-flex items-center justify-center gap-3 w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-4 px-8 rounded-xl text-lg transition shadow-xl hover:shadow-2xl transform hover:-translate-y-1">
-                                    <i class="fas fa-link text-xl"></i>
-                                    <span>Hubungkan Sekarang</span>
-                                </a>
-                            <?php else: ?>
-                                <div class="bg-red-50 border-2 border-red-200 text-red-700 px-6 py-4 rounded-xl">
-                                    <i class="fas fa-exclamation-triangle mr-2"></i>
-                                    <span class="font-semibold">Gagal membuat URL autentikasi</span>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                <?php endif; ?>
-
-            </div>
+                </div>
         </section>
     </main>
 

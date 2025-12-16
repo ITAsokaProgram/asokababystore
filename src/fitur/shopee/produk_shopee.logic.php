@@ -145,6 +145,10 @@ if ($shopeeService->isConnected()) {
             'item_name' => $row['nama_produk'],
             'item_sku' => $row['sku_induk'],
             'has_model' => $is_variant,
+            // --- UPDATED: Add harga_beli and keterangan ---
+            'harga_beli' => $row['harga_beli'],
+            'keterangan' => $row['keterangan'],
+            // ----------------------------------------------
             'image' => [
                 'image_url_list' => [$row['image_url']]
             ],
@@ -167,6 +171,10 @@ if ($shopeeService->isConnected()) {
                 'model_id' => (int) $row['kode_variasi'],
                 'model_name' => $row['nama_variasi'],
                 'model_sku' => $row['sku'],
+                // --- UPDATED: Add harga_beli and keterangan to model ---
+                'harga_beli' => $row['harga_beli'],
+                'keterangan' => $row['keterangan'],
+                // -------------------------------------------------------
                 'price_info' => [['original_price' => (float) $row['harga']]],
                 'stock_info_v2' => ['summary_info' => ['total_available_stock' => (int) $row['stok']]],
                 'stock_info' => [['seller_stock' => (int) $row['stok']]]
