@@ -70,13 +70,15 @@ export const statusCustomerHandler = async () => {
 
   try {
     if (response.status === "success") {
-      const responsePoin = await fetchPointUser(token, kode);
+      const [responsePoin, responseTrans] = await Promise.all([
+        fetchPointUser(token, kode),
+        fetchTransaksi(token, kode, 3),
+      ]);
 
-      const responseTrans = await fetchTransaksi(token, kode, 3);
+      const totalPoin = responsePoin.data[0]?.total_poin_pk_pm ?? 0;
+      poin.textContent = totalPoin;
 
-      poin.textContent = responsePoin.data[0]?.total_poin_pk_pm ?? 0;
-
-      if (responsePoin.data[0]?.total_poin_pk_pm <= 0) {
+      if (totalPoin <= 0) {
         masaBerlaku.textContent =
           "Belum punya poin? Saatnya belanja dan nikmati reward menarik";
       } else {
@@ -90,8 +92,8 @@ export const statusCustomerHandler = async () => {
       const loader = document.getElementById("transaksi-loader");
       if (loader) loader.style.display = "none";
     }
-  } catch {
-    console.log("error");
+  } catch (error) {
+    console.log("error", error);
   }
 };
 
