@@ -7,6 +7,7 @@ import {
   syncAllProductsToDb,
   syncAllProductsToRedis,
   forceSyncAllProductsToRedis,
+  updateHargaBeliMassal,
 } from "./api_service.js";
 const updatePriceRange = (form) => {
   const productCard = form.closest(".update-form-wrapper");
@@ -48,6 +49,7 @@ const updateTotalStock = (form) => {
     mainStockDisplay.innerText = totalStock;
   }
 };
+
 const initializeSearchAndFilter = () => {
   const searchInput = document.getElementById("product-search");
   const clearSearchBtn = document.getElementById("clear-search");
@@ -953,6 +955,10 @@ document.addEventListener("DOMContentLoaded", () => {
   if (syncAllStockBtn) {
     syncAllStockBtn.addEventListener("click", handleSyncAllClick);
   }
+  const updateHbBtn = document.getElementById("update-harga-beli-btn");
+  if (updateHbBtn) {
+    updateHbBtn.addEventListener("click", handleUpdateHargaBeliClick);
+  }
   const forceSyncAllProductsRedisBtn = document.getElementById(
     "force-sync-products-to-redis-btn"
   );
@@ -980,3 +986,63 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   document.body.classList.add("loaded");
 });
+
+const handleUpdateHargaBeliClick = async (event) => {
+  const btn = event.currentTarget;
+  const originalHtml = btn.innerHTML;
+
+  const result = await Swal.fire({
+    title: `Update Harga Beli?`,
+    html: `Anda akan mengupdate harga beli produk di s_shopee_produk berdasarkan:<br>
+           1. Data Receipt Terakhir (Prioritas Utama)<br>
+           2. Data Stok OL (KD_STORE 9998)`,
+    icon: "info",
+    showCancelButton: true,
+    confirmButtonColor: "#0891b2", // Cyan color
+    cancelButtonColor: "#6b7280",
+    confirmButtonText:
+      '<i class="fas fa-file-invoice-dollar mr-1"></i> Ya, Update Harga!',
+    cancelButtonText: "Batal",
+    reverseButtons: true,
+  });
+
+  if (!result.isConfirmed) return;
+
+  btn.innerHTML = '<span class="loading-spinner"></span> Memproses...';
+  btn.disabled = true;
+
+  Swal.fire({
+    title: "Sedang Mengupdate...",
+    html: `Mohon tunggu sebentar, sedang menjalankan query update.`,
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    },
+  });
+
+  try {
+    const response = await updateHargaBeliMassal();
+    if (response.success) {
+      Swal.fire({
+        title: "Update Berhasil!",
+        html: `<pre class="text-left bg-gray-100 p-2 rounded text-sm">${response.message}</pre>`,
+        icon: "success",
+        confirmButtonText: "Muat Ulang",
+      }).then(() => {
+        location.reload();
+      });
+    } else {
+      throw new Error(response.message || "Gagal update data.");
+    }
+  } catch (error) {
+    console.error("Update HB Error:", error);
+    Swal.fire({
+      title: "Error!",
+      text: `Terjadi kesalahan: ${error.message}`,
+      icon: "error",
+    });
+  } finally {
+    btn.innerHTML = originalHtml;
+    btn.disabled = false;
+  }
+};

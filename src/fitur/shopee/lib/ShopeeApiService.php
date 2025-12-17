@@ -411,13 +411,14 @@ class ShopeeApiService
                     ) latest ON r.barcode = latest.barcode AND r.tgl_tiba = latest.max_tgl
                     GROUP BY r.barcode
                 ) src ON sp.barcode = src.barcode
+                LEFT JOIN s_stok_ol so ON sp.barcode = so.item_n AND so.KD_STORE = '9998'
                 SET 
                     sp.hb_old = sp.harga_beli, 
                     sp.harga_beli = src.total_beli_receipt,
                     sp.keterangan = 'Dari Receipt (Last Data)'
+                WHERE so.item_n IS NULL
             ";
             $conn->query($sql_update_receipt);
-
             $sql_update_stok_ol = "
                 UPDATE s_shopee_produk sp
                 INNER JOIN s_stok_ol so ON sp.barcode = so.item_n
@@ -429,7 +430,6 @@ class ShopeeApiService
                     so.KD_STORE = '9998'
             ";
             $conn->query($sql_update_stok_ol);
-
             $this->logger->info("[SyncDB] Update harga beli selesai.");
             @unlink($lockFile);
             $this->logger->info("[SyncDB] Selesai. Total item/variasi tersimpan: $total_processed");

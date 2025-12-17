@@ -169,3 +169,7 @@ export const forceSyncAllProductsToRedis = (data) => {
     data
   );
 };
+
+export const updateHargaBeliMassal = () => {
+  return sendRequestJSON("/src/api/shopee/update_harga_beli.php", {});
+};

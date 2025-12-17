@@ -118,6 +118,12 @@ require_once __DIR__ . '/produk_shopee.logic.php';
                                         <i class="fas fa-exclamation-triangle text-sm"></i>
                                         <span>Paksa Sync Produk ke Database</span>
                                     </button>
+                                    <button id="update-harga-beli-btn"
+                                        class="px-5 btn-sync py-2.5 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 whitespace-nowrap"
+                                        title="Update Harga Beli dari Receipt & Stok OL">
+                                        <i class="fas fa-file-invoice-dollar text-sm"></i>
+                                        <span>Update Harga Beli</span>
+                                    </button>
                                 </div>
                             </div>
                         </div>
