@@ -271,7 +271,7 @@ require_once __DIR__ . '/produk_shopee.logic.php';
                                                         }
                                                         ?>
                                                         <div class="variant-card p-4" <?php echo $variant_card_style; ?>>
-                                                            <div class="flex justify-between items-start mb-4">
+                                                            <div class="flex justify-between items-start mb-4 gap-4">
                                                                 <div>
                                                                     <p class="font-bold text-gray-900 mb-2">
                                                                         <?php echo htmlspecialchars($model['model_name'] ?? 'Variation'); ?>
