@@ -78,6 +78,7 @@ require_once __DIR__ . '/produk_shopee.logic.php';
                                         'pusat' => ['label' => 'Beda Stok (Pusat)', 'icon' => 'fa-cloud'],
                                         'cabang' => ['label' => 'Beda Stok (Cabang)', 'icon' => 'fa-store'],
                                         'beda_harga' => ['label' => 'Beda Harga (Pusat)', 'icon' => 'fa-dollar-sign'],
+                                        'beda_hb_old_new' => ['label' => 'Beda HB (Lama vs Baru)', 'icon' => 'fa-history'],
                                         'ada_pusat' => ['label' => 'Ada di Pusat', 'icon' => 'fa-cloud-download-alt'],
                                         'ada_cabang' => ['label' => 'Ada di Cabang', 'icon' => 'fa-store-alt']
                                     ];

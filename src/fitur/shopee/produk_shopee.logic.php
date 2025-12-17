@@ -103,6 +103,8 @@ if ($shopeeService->isConnected()) {
         $params[] = $kd_store_ol;
         $types .= "s";
         $wheres .= " AND ABS(sp.harga - so.price) > 1 ";
+    } elseif ($filter_type === 'beda_hb_old_new') {
+        $wheres .= " AND sp.hb_old != sp.harga_beli AND sp.hb_old > 0";
     } elseif ($filter_type === 'ada_pusat') {
         $joins .= " JOIN s_stok_ol so ON sp.sku = so.item_n AND so.KD_STORE = ? ";
         $params[] = $kd_store_ol;

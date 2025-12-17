@@ -412,20 +412,24 @@ class ShopeeApiService
                     GROUP BY r.barcode
                 ) src ON sp.barcode = src.barcode
                 SET 
+                    sp.hb_old = sp.harga_beli, 
                     sp.harga_beli = src.total_beli_receipt,
                     sp.keterangan = 'Dari Receipt (Last Data)'
             ";
             $conn->query($sql_update_receipt);
+
             $sql_update_stok_ol = "
                 UPDATE s_shopee_produk sp
                 INNER JOIN s_stok_ol so ON sp.barcode = so.item_n
                 SET 
+                    sp.hb_old = sp.harga_beli,
                     sp.harga_beli = so.hrg_beli,
                     sp.keterangan = 'Dari Stok OL'
                 WHERE 
-                    so.KD_STORE = '3190'
+                    so.KD_STORE = '9998'
             ";
             $conn->query($sql_update_stok_ol);
+
             $this->logger->info("[SyncDB] Update harga beli selesai.");
             @unlink($lockFile);
             $this->logger->info("[SyncDB] Selesai. Total item/variasi tersimpan: $total_processed");
