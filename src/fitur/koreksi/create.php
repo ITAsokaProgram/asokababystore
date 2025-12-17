@@ -140,7 +140,7 @@ if (!$menuHandler->initialize()) {
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 mb-1">Total Koreksi (Rp)</label>
                             <input type="text" name="total_koreksi_display" id="total_koreksi_display"
-                                class="input-modern w-full" placeholder="0" onkeyup="formatCurrency(this)">
+                                class="input-modern w-full" placeholder="0" onkeyup="formatCurrency(this)" required>
                             <input type="hidden" name="total_koreksi" id="total_koreksi">
                         </div>
 
