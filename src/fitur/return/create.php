@@ -135,7 +135,7 @@ if (!$menuHandler->initialize()) {
                             <label class="block text-xs font-semibold text-gray-700 mb-1">Total Return (Rp)</label>
                             <input type="text" name="total_return_display" id="total_return_display"
                                 class="input-modern w-full" placeholder="0" onkeyup="formatCurrency(this)" required>
-                            <input type="hidden" name="total_return" id="total_return">
+                            <input type="hidden" name="total_return" id="total_return" required>
                         </div>
 
                         <div class="md:col-span-2">

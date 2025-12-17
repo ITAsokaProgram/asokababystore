@@ -146,7 +146,7 @@ if (!$menuHandler->initialize()) {
                             <label class="block text-xs font-semibold text-gray-700 mb-1">Total Penerimaan (Rp)</label>
                             <input type="text" name="total_penerimaan_display" id="total_penerimaan_display"
                                 class="input-modern w-full" placeholder="0" onkeyup="formatCurrency(this)" required>
-                            <input type="hidden" name="total_penerimaan" id="total_penerimaan">
+                            <input type="hidden" name="total_penerimaan" id="total_penerimaan" required>
                         </div>
 
                         <div class="md:col-span-2">
