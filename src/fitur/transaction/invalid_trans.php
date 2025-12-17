@@ -229,7 +229,8 @@ $token = $menuHandler->getToken();
                             <th class="p-2 border">Tanggal</th>
                             <th class="p-2 border">Jam</th>
                             <th class="p-2 border">Cabang</th>
-                            <th class="p-2 border">Periksa</th>
+                            <th class="p-2 border">Periksa Area</th>
+                            <th class="p-2 border">Periksa Leader</th>
                         </tr>
                     </thead>
                     <tbody id="detailTbody" class="bg-white divide-y">

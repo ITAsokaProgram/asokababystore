@@ -782,13 +782,13 @@ const handleSyncAllProductsToRedisClick = async (event) => {
   const btn = event.currentTarget;
   const originalHtml = btn.innerHTML;
   const result = await Swal.fire({
-    title: `Konfirmasi Sync Produk ke Cache (Redis)`,
-    html: `Anda akan mengambil <strong>SEMUA</strong> produk dari Shopee dan menyimpannya di cache (Redis).<br><br>Ini akan menjadi sumber data untuk halaman ini. Lakukan ini jika ada produk baru atau perubahan besar. Proses ini mungkin memakan waktu.`,
+    title: `Konfirmasi Sync Produk ke Database`,
+    html: `Anda akan mengambil <strong>SEMUA</strong> produk dari Shopee dan menyimpannya di Database.<br><br>Ini akan menjadi sumber data untuk halaman ini. Lakukan ini jika ada produk baru atau perubahan besar. Proses ini mungkin memakan waktu.`,
     icon: "info",
     showCancelButton: true,
     confirmButtonColor: "#eab308",
     cancelButtonColor: "#6b7280",
-    confirmButtonText: '<i class="fas fa-bolt mr-1"></i> Ya, Sync ke Cache!',
+    confirmButtonText: '<i class="fas fa-bolt mr-1"></i> Ya, Sync ke Database!',
     cancelButtonText: "Batal",
     reverseButtons: true,
   });
@@ -796,7 +796,7 @@ const handleSyncAllProductsToRedisClick = async (event) => {
   btn.innerHTML = '<span class="loading-spinner"></span> Mengambil data...';
   btn.disabled = true;
   Swal.fire({
-    title: "Sinkronisasi ke Cache Dimulai...",
+    title: "Sinkronisasi ke Database Dimulai...",
     html: `Memproses semua produk. Harap tunggu...<br><br>Jangan tutup halaman ini. Server sedang mengambil semua data produk Anda.`,
     allowOutsideClick: false,
     didOpen: () => {
@@ -812,7 +812,7 @@ const handleSyncAllProductsToRedisClick = async (event) => {
         html: `
                     <div class="text-left space-y-2">
                         <p><strong><i class="fas fa-check-circle text-green-500"></i> Berhasil!</strong></p>
-                        <p><strong><i class="fas fa-cubes text-blue-500"></i> Total Produk/Variasi disimpan:</strong> ${response.total_items_saved_to_redis} item</p>
+
                         <p class="mt-4">Halaman akan dimuat ulang untuk menggunakan data baru...</p>
                     </div>
                 `,
@@ -827,7 +827,7 @@ const handleSyncAllProductsToRedisClick = async (event) => {
     }
   } catch (error) {
     if (handleInvalidAccessToken(error)) return;
-    console.error("Sync All Products to Redis Error:", error);
+    console.error("Sync All Products to Db Error:", error);
     Swal.fire({
       title: "Error!",
       text: `Terjadi kesalahan: ${error.message}`,
@@ -842,8 +842,8 @@ const handleForceSyncAllProductsToRedisClick = async (event) => {
   const btn = event.currentTarget;
   const originalHtml = btn.innerHTML;
   const result = await Swal.fire({
-    title: `Konfirmasi SYNC PAKSA ke Cache (Redis)`,
-    html: `Anda akan <strong>MEMAKSA</strong> sinkronisasi <strong>SEMUA</strong> produk dari Shopee ke cache.<br><br><strong class='text-red-600'>PERINGATAN:</strong> Tindakan ini akan mengabaikan dan menimpa proses sync lain yang mungkin sedang berjalan. Lanjutkan hanya jika Anda yakin.`,
+    title: `Konfirmasi SYNC PAKSA ke Database`,
+    html: `Anda akan <strong>MEMAKSA</strong> sinkronisasi <strong>SEMUA</strong> produk dari Shopee ke Database.<br><br><strong class='text-red-600'>PERINGATAN:</strong> Tindakan ini akan mengabaikan dan menimpa proses sync lain yang mungkin sedang berjalan. Lanjutkan hanya jika Anda yakin.`,
     icon: "warning",
     showCancelButton: true,
     confirmButtonColor: "#dc2626",
@@ -873,7 +873,7 @@ const handleForceSyncAllProductsToRedisClick = async (event) => {
         html: `
                     <div class="text-left space-y-2">
                         <p><strong><i class="fas fa-check-circle text-green-500"></i> Berhasil (Dipaksa)!</strong></p>
-                        <p><strong><i class="fas fa-cubes text-blue-500"></i> Total Produk/Variasi disimpan:</strong> ${response.total_items_saved_to_redis} item</p>
+
                         <p class="mt-4">Halaman akan dimuat ulang untuk menggunakan data baru...</p>
                     </div>
                 `,
@@ -888,7 +888,7 @@ const handleForceSyncAllProductsToRedisClick = async (event) => {
     }
   } catch (error) {
     if (handleInvalidAccessToken(error)) return;
-    console.error("Force Sync All Products to Redis Error:", error);
+    console.error("Force Sync All Products to Db Error:", error);
     Swal.fire({
       title: "Error!",
       text: `Terjadi kesalahan: ${error.message}`,

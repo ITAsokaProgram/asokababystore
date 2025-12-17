@@ -174,10 +174,25 @@ export const filterByTanggal = () => {
       const htmlContent = `
         <div class="flex flex-col gap-4 text-left">
             <div class="bg-blue-50 p-3 rounded text-sm text-blue-700 mb-2">
-                <i class="fas fa-info-circle"></i> Anda akan mengupdate <b>${itemsToUpdate.length}</b> data sekaligus.
+                <i class="fas fa-info-circle"></i> Update <b>${itemsToUpdate.length}</b> data.
             </div>
+            
             <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-1">Keterangan (Massal)</label>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Update Sebagai:</label>
+                <div class="flex gap-4">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="swal-role" value="area" class="w-4 h-4 text-pink-600" checked>
+                        <span class="text-sm">Area</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="swal-role" value="leader" class="w-4 h-4 text-pink-600">
+                        <span class="text-sm">Leader</span>
+                    </label>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Keterangan</label>
                 <input id="swal-bulk-ket" class="swal2-input !m-0 !w-full" placeholder="Keterangan update massal">
             </div>
             <div class="p-3 bg-red-50 border border-red-100 rounded-lg">
@@ -193,31 +208,27 @@ export const filterByTanggal = () => {
             </div>
         </div>
       `;
+
       Swal.fire({
         title: "Bulk Update Checking",
         html: htmlContent,
         showCancelButton: true,
         confirmButtonText: "Update Semua",
         confirmButtonColor: "#db2777",
-        cancelButtonText: "Batal",
-        focusConfirm: false,
         preConfirm: () => {
+          const role = document.querySelector(
+            'input[name="swal-role"]:checked'
+          ).value;
           const keterangan = document.getElementById("swal-bulk-ket").value;
           const userCheck = document.getElementById("swal-bulk-user").value;
           const passAuth = document.getElementById("swal-bulk-pass").value;
-          if (!keterangan) {
-            Swal.showValidationMessage("Keterangan tidak boleh kosong");
+
+          if (!keterangan || !userCheck || !passAuth) {
+            Swal.showValidationMessage("Semua field wajib diisi");
             return false;
           }
-          if (!userCheck) {
-            Swal.showValidationMessage("Nama User Check wajib diisi");
-            return false;
-          }
-          if (!passAuth) {
-            Swal.showValidationMessage("Kode Otorisasi wajib diisi");
-            return false;
-          }
-          return { keterangan, userCheck, passAuth };
+          // Sertakan tipe_cek di return value
+          return { keterangan, userCheck, passAuth, tipe_cek: role };
         },
       }).then(async (result) => {
         if (result.isConfirmed) {
@@ -241,8 +252,11 @@ export const filterByTanggal = () => {
   document.addEventListener("click", async function (e) {
     const button = e.target.closest(".periksa");
     if (!button) return;
+
     const kode = button.getAttribute("data-kode");
     const kategori = button.getAttribute("data-kat");
+    const tipeCek = button.getAttribute("data-type"); // Ambil tipe (area/leader)
+
     const data = {
       nama: sessionStorage.getItem("userName"),
       kasir: button.getAttribute("data-kode"),
@@ -250,38 +264,33 @@ export const filterByTanggal = () => {
       tgl: button.getAttribute("data-tglU"),
       jam: button.getAttribute("data-jam"),
       kd_store: button.getAttribute("data-toko"),
+      tipe_cek: tipeCek, // Kirim tipe ke fetch
     };
+
     await fetchCekData(
       data,
       kategori,
       kode,
-      startDateInput.value,
-      endDateInput.value
+      document.getElementById("startDate").value,
+      document.getElementById("endDate").value
     );
   });
-  document.addEventListener("click", async function (e) {
+
+  document.addEventListener("click", function (e) {
     const button = e.target.closest(".lihat-keterangan");
-    const showInformation = document.getElementById("informasi");
+    if (!button) return;
+
+    // Data sekarang diambil langsung dari atribut tombol (karena sudah di parse di render)
     const namaPIC = document.getElementById("nama_pic");
     const keterangan = document.getElementById("ketM");
-    if (!button) return;
-    const data = {
-      kasir: button.getAttribute("data-kode"),
-      plu: button.getAttribute("data-barcode"),
-      tgl: button.getAttribute("data-tglU"),
-      jam: button.getAttribute("data-jam"),
-      cabang: button.getAttribute("data-toko"),
-    };
-    const ket = await fetchKeterangan(
-      data.plu,
-      data.kasir,
-      data.tgl,
-      data.jam,
-      data.cabang
-    );
+    const showInformation = document.getElementById("informasi");
+
+    const picName = button.getAttribute("data-pic");
+    const picKet = button.getAttribute("data-keterangan");
+
     showInformation.classList.remove("hidden");
-    namaPIC.textContent = ket.data[0].nama_cek;
-    keterangan.textContent = ket.data[0].ket_cek;
+    namaPIC.textContent = picName;
+    keterangan.textContent = picKet || "-";
   });
 };
 const btnCloseInfo = document.getElementById("btnCloseInformasi");

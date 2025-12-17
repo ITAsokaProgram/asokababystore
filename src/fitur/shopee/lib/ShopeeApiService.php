@@ -303,13 +303,14 @@ class ShopeeApiService
             $total_processed = 0;
             $has_next_page = true;
             $sql = "INSERT INTO s_shopee_produk 
-                    (kode_produk, nama_produk, kode_variasi, nama_variasi, sku_induk, sku, harga, stok, image_url) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    (kode_produk, nama_produk, kode_variasi, nama_variasi, sku_induk, sku, barcode, harga, stok, image_url) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     ON DUPLICATE KEY UPDATE 
                     nama_produk = VALUES(nama_produk),
                     nama_variasi = VALUES(nama_variasi),
                     sku_induk = VALUES(sku_induk),
                     sku = VALUES(sku),
+                    barcode = VALUES(barcode),
                     harga = VALUES(harga),
                     stok = VALUES(stok),
                     image_url = VALUES(image_url),
@@ -346,17 +347,19 @@ class ShopeeApiService
                             $kode_variasi = $model['model_id'];
                             $nama_variasi = $model['model_name'];
                             $sku = $model['model_sku'] ?? '';
+                            $barcode = (empty($sku)) ? $sku_induk : $sku;
                             $harga = $model['price_info'][0]['original_price'] ?? 0;
                             $stok = $model['stock_info_v2']['summary_info']['total_available_stock']
                                 ?? $model['stock_info'][0]['seller_stock'] ?? 0;
                             $stmt->bind_param(
-                                "isisssdis",
+                                "isissssdis",
                                 $kode_produk,
                                 $nama_produk,
                                 $kode_variasi,
                                 $nama_variasi,
                                 $sku_induk,
                                 $sku,
+                                $barcode,
                                 $harga,
                                 $stok,
                                 $image_url
@@ -368,17 +371,19 @@ class ShopeeApiService
                         $kode_variasi = 0;
                         $nama_variasi = null;
                         $sku = $item['item_sku'] ?? '';
+                        $barcode = (empty($sku)) ? $sku_induk : $sku;
                         $harga = $item['price_info'][0]['original_price'] ?? 0;
                         $stok = $item['stock_info_v2']['summary_info']['total_available_stock']
                             ?? $item['stock_info'][0]['seller_stock'] ?? 0;
                         $stmt->bind_param(
-                            "isisssdis",
+                            "isissssdis",
                             $kode_produk,
                             $nama_produk,
                             $kode_variasi,
                             $nama_variasi,
                             $sku_induk,
                             $sku,
+                            $barcode,
                             $harga,
                             $stok,
                             $image_url
@@ -393,6 +398,35 @@ class ShopeeApiService
                 usleep(500000);
             }
             $stmt->close();
+            $this->logger->info("[SyncDB] Menjalankan update harga beli berdasarkan Barcode...");
+            $sql_update_receipt = "
+                UPDATE s_shopee_produk sp
+                INNER JOIN (
+                    SELECT r.plu, (r.netto + r.ppn) AS total_beli_receipt
+                    FROM receipt r
+                    INNER JOIN (
+                        SELECT plu, MAX(tgl_tiba) AS max_tgl
+                        FROM receipt
+                        GROUP BY plu
+                    ) latest ON r.plu = latest.plu AND r.tgl_tiba = latest.max_tgl
+                    GROUP BY r.plu
+                ) src ON sp.barcode = src.plu
+                SET 
+                    sp.harga_beli = src.total_beli_receipt,
+                    sp.keterangan = 'Dari Receipt (Last Data)'
+            ";
+            $conn->query($sql_update_receipt);
+            $sql_update_stok_ol = "
+                UPDATE s_shopee_produk sp
+                INNER JOIN s_stok_ol so ON sp.barcode = so.item_n
+                SET 
+                    sp.harga_beli = so.hrg_beli,
+                    sp.keterangan = 'Dari Stok OL'
+                WHERE 
+                    so.KD_STORE = '3190'
+            ";
+            $conn->query($sql_update_stok_ol);
+            $this->logger->info("[SyncDB] Update harga beli selesai.");
             @unlink($lockFile);
             $this->logger->info("[SyncDB] Selesai. Total item/variasi tersimpan: $total_processed");
             return $total_processed;

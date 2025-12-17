@@ -33,7 +33,6 @@ export const renderAllKategori = (data, offset = 0) => {
   });
   tbody.innerHTML = row;
 };
-
 export const renderDetailAllKategori = (data, offset = 0) => {
   const tbody = document.querySelector("#detailTbody");
 
@@ -52,15 +51,50 @@ export const renderDetailAllKategori = (data, offset = 0) => {
       year: "numeric",
     });
 
-    // Membuat string JSON untuk value checkbox agar mudah diambil
     const rowData = JSON.stringify({
       kasir: item.kode,
       plu: item.barcode,
-      tgl: item.tgl.split(" ")[0], // format YYYY-MM-DD
+      tgl: item.tgl.split(" ")[0],
       jam: item.jam,
       kd_store: item.kode_toko,
-      cabang: item.cabang, // backup
+      cabang: item.cabang,
     });
+
+    // LOGIKA BARU: Pisah string berdasarkan koma
+    // Format DB: "NamaArea,NamaLeader" atau "NamaArea" atau ",NamaLeader"
+    const cekNames = (item.nama_cek || "").split(",");
+    const ketNames = (item.ket_cek || "").split(",");
+
+    const areaName = cekNames[0] || ""; // Index 0 untuk Area
+    const leaderName = cekNames[1] || ""; // Index 1 untuk Leader
+
+    const areaKet = ketNames[0] || "";
+    const leaderKet = ketNames[1] || "";
+
+    // Helper untuk membuat tombol Cek/Info
+    const createCheckBtn = (isChecked, name, ket, type) => {
+      if (isChecked) {
+        return `<button class="text-green-600 hover:text-green-800 lihat-keterangan" 
+                        data-pic="${name}"
+                        data-keterangan="${ket}"
+                        title="Dicek oleh: ${name}">
+                        <div class="flex flex-col items-center">
+                            <i class="fas fa-check-circle text-xl"></i>
+                            <span class="text-[10px] font-bold mt-1">${name}</span>
+                        </div>
+                    </button>`;
+      } else {
+        return `<button class="text-red-600 hover:text-red-800 periksa" 
+                        data-kode="${item.kode}" 
+                        data-barcode="${item.barcode}"
+                        data-toko="${item.kode_toko}"
+                        data-tglU="${item.tgl.split(" ")[0]}"
+                        data-kat="${item.kategori}"
+                        data-jam="${item.jam}"
+                        data-type="${type}"> <i class="fas fa-times-circle text-xl"></i>
+                    </button>`;
+      }
+    };
 
     row += `
         <tr class="border-b hover:bg-gray-50 text-center">
@@ -83,30 +117,18 @@ export const renderDetailAllKategori = (data, offset = 0) => {
             <td class='px-4  text-center truncate' title="${tgl}"> ${tgl} </td>
             <td class='px-4  text-center'> ${item.jam} </td>
             <td class='px-4   text-center'> ${item.cabang} </td>
-            <td class="px-4 text-center">
-                  ${
-                    item.ket_cek
-                      ? `<button class="text-green-600 hover:text-green-800 lihat-keterangan" 
-                                data-keterangan="${item.ket_cek}"
-                                data-kode="${item.kode}" 
-                                data-barcode="${item.barcode}"
-                                data-toko="${item.kode_toko}"
-                                data-tglU="${item.tgl.split(" ")[0]}"
-                                data-jam="${item.jam}" 
-                                title="Lihat keterangan">
-                            <i class="fas fa-check-circle text-xl"></i>
-                        </button>`
-                      : `<button class="text-red-600 hover:text-red-800 periksa" 
-                                  data-kode="${item.kode}" 
-                                  data-barcode="${item.barcode}"
-                                  data-toko="${item.kode_toko}"
-                                  data-tglU="${item.tgl.split(" ")[0]}"
-                                  data-kat = "${item.kategori}"
-                                  data-jam="${item.jam}">
-                              <i class="fas fa-times-circle text-xl"></i>
-                        </button>`
-                  }
-                </td>
+            
+            <td class="px-4 text-center border-l bg-gray-50/50">
+                ${createCheckBtn(areaName !== "", areaName, areaKet, "area")}
+            </td>
+
+            <td class="px-4 text-center border-l bg-gray-50/50">
+                ${createCheckBtn(
+                  leaderName !== "",
+                  leaderName,
+                  leaderKet,
+                  "leader"
+                )}
             </td>
         </tr>
         `;

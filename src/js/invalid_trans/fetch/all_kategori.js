@@ -268,6 +268,7 @@ export const fetchKategoriByTgl = async (
     }).showToast();
   }
 };
+
 export const fetchCekData = async (
   data,
   kategori,
@@ -325,6 +326,7 @@ export const fetchCekData = async (
         ket: keterangan,
         nama_user_cek: userCheck,
         kode_otorisasi: passAuth,
+        tipe_cek: data.tipe_cek,
       };
     },
   }).then(async (result) => {
@@ -370,6 +372,7 @@ export const fetchBulkCekData = async (
     ket: formValues.keterangan,
     nama_user_cek: formValues.userCheck,
     kode_otorisasi: formValues.passAuth,
+    tipe_cek: formValues.tipe_cek, // KIRIM TIPE CEK
     nama: sessionStorage.getItem("userName"),
   };
   Swal.showLoading();

@@ -494,7 +494,7 @@ body {
   position: relative;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
-
+/* 
 .variant-card::before {
   content: "";
   position: absolute;
@@ -510,7 +510,7 @@ body {
   );
   opacity: 0;
   transition: opacity 0.3s ease;
-}
+} */
 
 .variant-card:hover {
   border-color: #e0e7ff;
