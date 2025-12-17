@@ -402,15 +402,15 @@ class ShopeeApiService
             $sql_update_receipt = "
                 UPDATE s_shopee_produk sp
                 INNER JOIN (
-                    SELECT r.plu, (r.netto + r.ppn) AS total_beli_receipt
+                    SELECT r.barcode, (r.netto + r.ppn) AS total_beli_receipt
                     FROM receipt r
                     INNER JOIN (
-                        SELECT plu, MAX(tgl_tiba) AS max_tgl
+                        SELECT barcode, MAX(tgl_tiba) AS max_tgl
                         FROM receipt
-                        GROUP BY plu
-                    ) latest ON r.plu = latest.plu AND r.tgl_tiba = latest.max_tgl
-                    GROUP BY r.plu
-                ) src ON sp.barcode = src.plu
+                        GROUP BY barcode
+                    ) latest ON r.barcode = latest.barcode AND r.tgl_tiba = latest.max_tgl
+                    GROUP BY r.barcode
+                ) src ON sp.barcode = src.barcode
                 SET 
                     sp.harga_beli = src.total_beli_receipt,
                     sp.keterangan = 'Dari Receipt (Last Data)'
