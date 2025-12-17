@@ -14,14 +14,18 @@ export const renderTableDefault = (data, offset = 0) => {
   };
 
   data.forEach((item, index) => {
-    const formatDate = new Date(item.tgl);
-    const tgl = formatDate.toLocaleDateString("id-ID", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-    });
+    const tgl = item.tgl ? item.tgl.split(" ")[0] : "-";
 
-    // Data object lengkap untuk dikirim saat bulk update
+    // --- LOGIC SPLIT (AREA, LEADER) ---
+    const cekNames = (item.nama_cek || "").split(",");
+    const ketNames = (item.ket_cek || "").split(",");
+
+    const areaName = cekNames[0] || ""; // Index 0 = Area
+    const leaderName = cekNames[1] || ""; // Index 1 = Leader
+
+    const areaKet = ketNames[0] || "";
+    const leaderKet = ketNames[1] || "";
+
     const itemData = JSON.stringify({
       plu: item.plu,
       bon: item.no_trans,
@@ -32,48 +36,30 @@ export const renderTableDefault = (data, offset = 0) => {
       avg: item.avg_cost,
       ppn: item.PPN,
       margin: item.Margin,
-      tgl: item.tgl,
+      tgl: tgl,
       cabang: item.cabang,
       kd: item.kode,
     });
 
-    row += `
-        <tr class="border-b hover:bg-gray-50">
-            <td class="px-4 py-2 text-center">
-                <input type="checkbox" class="check-item w-4 h-4 text-pink-600 bg-gray-100 border-gray-300 rounded focus:ring-pink-500 cursor-pointer" value='${itemData}'>
-            </td>
-            <td class='px-4 py-2'> ${offset + index + 1} </td>
-            <td class='px-4 py-2'> ${item.plu} </td>
-            <td class='px-4 py-2 truncate' title="${item.no_trans}"> ${
-      item.no_trans
-    } </td>
-            <td class='px-4 py-2 truncate' title="${item.descp}"> ${
-      item.descp
-    } </td>
-            <td class='px-4 py-2 text-center'> ${item.qty} </td>
-            <td class='px-4 py-2 text-center'> ${formatAngka(item.GROSS)} </td>
-            <td class='px-4 py-2 text-center'> ${formatAngka(item.net)} </td>
-            <td class='px-4 py-2 text-center'> ${formatAngka(
-              item.avg_cost
-            )} </td>
-            <td class='px-4 py-2 text-center'> ${formatAngka(item.PPN)} </td>
-            <td class='px-4 py-2 text-center font-bold ${
-              Number(item.Margin) < 0 ? "text-red-600" : "text-green-600"
-            }'> ${formatAngka(item.Margin)} </td>
-            <td class='px-4 py-2'> ${tgl} </td>
-            <td class='px-4 py-2'> ${item.cabang} </td>
-            <td class="px-4 py-2 text-center">
-            ${
-              item.status_cek === 1 && item.status_cek !== null
-                ? `<button class="text-green-600 hover:text-green-800 lihat-keterangan" 
-                                data-plu="${item.plu}"
-                                data-bon="${item.no_trans}"
-                                data-cabang="${item.kode}"
-                                title="Lihat keterangan">
-                            <i class="fas fa-check-circle text-xl"></i>
-                  </button>`
-                : `
-                <button class="text-red-600 hover:text-red-800 checking" 
+    // Helper membuat tombol
+    const createCheckBtn = (name, ket, type) => {
+      if (name !== "") {
+        // SUDAH DICEK
+        return `
+            <button class="text-green-600 hover:text-green-800 lihat-keterangan" 
+                data-pic="${name}" 
+                data-keterangan="${ket}" 
+                data-cabang="${item.kode}"
+                title="Dicek oleh: ${name}">
+                <div class="flex flex-col items-center">
+                    <i class="fas fa-check-circle text-xl"></i>
+                    <span class="text-[10px] font-bold mt-1">${name}</span>
+                </div>
+            </button>`;
+      } else {
+        // BELUM DICEK
+        return `
+            <button class="text-red-600 hover:text-red-800 periksa" 
                 data-plu="${item.plu}"
                 data-bon="${item.no_trans}"
                 data-barang="${item.descp}"
@@ -83,14 +69,48 @@ export const renderTableDefault = (data, offset = 0) => {
                 data-avg="${item.avg_cost}"
                 data-ppn="${item.PPN}"
                 data-margin="${item.Margin}"
-                data-tgl="${item.tgl}"
+                data-tgl="${tgl}"
                 data-cabang="${item.cabang}"
                 data-store="${item.kode}"
-                >
-                  <i class="fas fa-times-circle text-xl"></i>
-                </button>
-              `
-            }
+                data-type="${type}"> <i class="fas fa-times-circle text-xl"></i>
+            </button>`;
+      }
+    };
+
+    row += `
+        <tr class="border-b hover:bg-gray-50 text-sm">
+            <td class="px-4 py-2 text-center">
+                <input type="checkbox" class="check-item w-4 h-4 text-pink-600 bg-gray-100 border-gray-300 rounded focus:ring-pink-500 cursor-pointer" value='${itemData}'>
+            </td>
+            <td class='px-4 py-2 text-center'> ${offset + index + 1} </td>
+            <td class='px-4 py-2 font-mono'> ${item.plu} </td>
+            <td class='px-4 py-2 truncate max-w-[150px]' title="${
+              item.no_trans
+            }"> ${item.no_trans} </td>
+            <td class='px-4 py-2 truncate max-w-[200px]' title="${
+              item.descp
+            }"> ${item.descp} </td>
+            <td class='px-4 py-2 text-center'> ${item.qty} </td>
+            <td class='px-4 py-2 text-right'> ${formatAngka(item.GROSS)} </td>
+            <td class='px-4 py-2 text-right'> ${formatAngka(item.net)} </td>
+            <td class='px-4 py-2 text-right'> ${formatAngka(
+              item.avg_cost
+            )} </td>
+            <td class='px-4 py-2 text-right'> ${formatAngka(item.PPN)} </td>
+            <td class='px-4 py-2 text-right font-bold ${
+              Number(item.Margin) < 0 ? "text-red-600" : "text-green-600"
+            }'> 
+                ${formatAngka(item.Margin)} 
+            </td>
+            <td class='px-4 py-2 text-center'> ${tgl} </td>
+            <td class='px-4 py-2 text-center'> ${item.cabang} </td>
+            
+            <td class="px-4 py-2 text-center border-l bg-gray-50/30">
+                ${createCheckBtn(areaName, areaKet, "area")}
+            </td>
+
+            <td class="px-4 py-2 text-center border-l bg-gray-50/30">
+                ${createCheckBtn(leaderName, leaderKet, "leader")}
             </td>
         </tr>
         `;
@@ -105,7 +125,7 @@ export const renderTop3Minus = (data) => {
     .slice(0, 3);
 
   const container = document.getElementById("top3-minus-summary");
-  if (!container) return; // Prevent error if element not exists
+  if (!container) return;
 
   container.innerHTML = minusData
     .map(
@@ -266,11 +286,8 @@ export const renderMinusMarginCards = (data) => {
         .join("")}
   `;
 };
-export const renderDetailMargin = (data) => {
-  // SEBELUMNYA (SALAH):
-  // const container = document.getElementById("detailTbody");
 
-  // SESUDAH (BENAR): Sesuaikan dengan ID di HTML
+export const renderDetailMargin = (data) => {
   const container = document.getElementById("modal-detail-tbody");
 
   if (!container) return;
@@ -280,7 +297,6 @@ export const renderDetailMargin = (data) => {
   const formatAngka = (angka) => Number(angka).toLocaleString("id-ID");
 
   data.forEach((item, index) => {
-    // ... logic row ...
     row += `
     <tr class="hover:bg-emerald-50 text-center">
     <td class="px-4 py-2 text-center">${index + 1}</td>

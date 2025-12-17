@@ -76,18 +76,29 @@ $token = $menuHandler->getToken();
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
                 <div class="bg-white/70 backdrop-blur rounded-2xl shadow border border-white/30 p-6 animate-fade-in-up">
                     <h2 class="text-base font-bold text-gray-700 mb-4 flex items-center gap-2">
-                        <i class="fa fa-filter text-pink-500"></i> Filter Tanggal & Cabang
+                        <i class="fa fa-filter text-pink-500"></i> Filter & Pencarian
                     </h2>
+
                     <div class="flex flex-col md:flex-row gap-4 mb-4">
-                        <div class="flex flex-col w-full md:w-1/2">
-                            <label for="periodeFilter" class="text-xs text-gray-600 mb-1">Cabang</label>
+                        <div class="flex flex-col w-full md:w-1/3">
+                            <label for="cabangFilter" class="text-xs text-gray-600 mb-1">Cabang</label>
                             <select
                                 class="border border-gray-300 rounded-xl px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400 transition hover:border-pink-400"
                                 id="cabangFilter">
                                 <option value="">Pilih Cabang</option>
                             </select>
                         </div>
+
+                        <div class="flex flex-col w-full md:w-2/3">
+                            <label for="globalSearch" class="text-xs text-gray-600 mb-1">Cari (PLU, Faktur, Barang,
+                                Cabang)</label>
+                            <div class="relative">
+                                <input type="text" id="globalSearch" placeholder="Ketik untuk mencari..."
+                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400 transition hover:border-pink-400">
+                            </div>
+                        </div>
                     </div>
+
                     <div class="flex flex-col md:flex-row items-end gap-4">
                         <div class="flex flex-col w-full md:w-1/2">
                             <label for="startDate" class="text-xs text-gray-600 mb-1">Tanggal Awal</label>
@@ -128,7 +139,9 @@ $token = $menuHandler->getToken();
                             <th class="px-4 py-2 text-center ">Margin</th>
                             <th class="px-4 py-2 ">Tanggal</th>
                             <th class="px-4 py-2 ">Cabang</th>
-                            <th class="px-4 py-2 text-center">Periksa</th>
+                            <th class="px-4 py-2 text-center border-l bg-gray-50/20">Periksa Area</th>
+                            <th class="px-4 py-2 text-center border-l bg-gray-50/20">Periksa Leader</th>
+
                         </tr>
                     </thead>
                     <tbody id="kategoriTable" class="kategori-body text-gray-700 text-sm">
@@ -170,6 +183,8 @@ $token = $menuHandler->getToken();
                             <th class="p-2 border">Keterangan</th>
                             <th class="p-2 border">Tanggal</th>
                             <th class="p-2 border">Cabang</th>
+                            <th class="px-4 py-2 text-center border-l bg-gray-50/20">Periksa Area</th>
+                            <th class="px-4 py-2 text-center border-l bg-gray-50/20">Periksa Leader</th>
                         </tr>
                     </thead>
                     <tbody id="detailTbody" class="bg-white divide-y">

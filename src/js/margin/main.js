@@ -9,13 +9,22 @@ const formatDate = (date) => {
 const init = async () => {
   sessionStorage.removeItem("default_table");
   sessionStorage.removeItem("filter_table");
+  sessionStorage.removeItem("search_table");
   await kodeCabang("cabangFilter");
   const selectCabang = document.getElementById("cabangFilter");
   const start = document.getElementById("startDate");
   const end = document.getElementById("endDate");
   const btnFilter = document.getElementById("filter");
+  const searchInput = document.getElementById("globalSearch");
   const urlParams = new URLSearchParams(window.location.search);
   const hasFilter = urlParams.has("start") && urlParams.has("end");
+  const getActiveBaseKey = () => {
+    const currentParams = new URLSearchParams(window.location.search);
+    if (currentParams.has("start") && currentParams.has("end")) {
+      return "filter_table";
+    }
+    return "default_table";
+  };
   if (hasFilter) {
     start.value = urlParams.get("start");
     end.value = urlParams.get("end");
@@ -30,6 +39,37 @@ const init = async () => {
     end.value = formatDate(today);
     await fetchMargin();
     paginationMargin(1, 50, "default_table");
+  }
+  if (searchInput) {
+    searchInput.addEventListener("keyup", function (e) {
+      const keyword = e.target.value.toLowerCase().trim();
+      const baseKey = getActiveBaseKey();
+      const sessionData = sessionStorage.getItem(baseKey);
+      if (!sessionData) return;
+      try {
+        const parsed = JSON.parse(sessionData);
+        const originalData = parsed.data || [];
+        if (keyword === "") {
+          paginationMargin(1, 50, baseKey);
+          return;
+        }
+        const filteredData = originalData.filter((item) => {
+          return (
+            item.plu?.toString().toLowerCase().includes(keyword) ||
+            item.no_trans?.toLowerCase().includes(keyword) ||
+            item.descp?.toLowerCase().includes(keyword) ||
+            item.cabang?.toLowerCase().includes(keyword)
+          );
+        });
+        sessionStorage.setItem(
+          "search_table",
+          JSON.stringify({ data: filteredData })
+        );
+        paginationMargin(1, 50, "search_table");
+      } catch (err) {
+        console.error("Error filtering data:", err);
+      }
+    });
   }
   btnFilter.addEventListener("click", async (e) => {
     const cabangValue = selectCabang.value;
@@ -53,11 +93,11 @@ const init = async () => {
     await fetchFilterMargin(start.value, end.value, cabangValue);
     paginationMargin(1, 50, "filter_table");
   });
-  paginationMargin(1, 50, "default_table");
   document.addEventListener("click", function (e) {
-    const button = e.target.closest(".checking");
+    const button = e.target.closest(".periksa");
     if (!button) return;
     const currentCabang = selectCabang.value;
+    const tipeCek = button.getAttribute("data-type");
     const data = {
       plu: button.getAttribute("data-plu"),
       bon: button.getAttribute("data-bon"),
@@ -70,33 +110,23 @@ const init = async () => {
       margin: button.getAttribute("data-margin"),
       tgl: button.getAttribute("data-tgl"),
       cabang: button.getAttribute("data-cabang"),
-      nama: sessionStorage.getItem("userName"),
       kd: button.getAttribute("data-store"),
+      tipe_cek: tipeCek,
     };
     fetchUpdateMargin(data, start.value, end.value, currentCabang);
   });
   document.addEventListener("click", async function (e) {
     const button = e.target.closest(".lihat-keterangan");
     if (!button) return;
-    const plu = button.getAttribute("data-plu");
-    const bon = button.getAttribute("data-bon");
-    const kodeCabangAttr = button.getAttribute("data-cabang");
-    const ket = document.getElementById("keterangan");
+    const picName = button.getAttribute("data-pic");
+    const picKet = button.getAttribute("data-keterangan");
+    const ketEl = document.getElementById("keterangan");
     const namaPIC = document.getElementById("nama_pic");
-    const tanggalCek = document.getElementById("tanggal_cek");
     const showInformation = document.getElementById("informasi");
-    ket.textContent = "Loading...";
     showInformation.classList.remove("hidden");
-    const keterangan = await getKeterangan(plu, bon, kodeCabangAttr);
-    ket.textContent = keterangan?.data?.[0]?.ket_cek || "-";
-    namaPIC.textContent = keterangan?.data?.[0]?.nama_cek || "-";
-    tanggalCek.textContent = keterangan?.data?.[0]?.tanggal_cek
-      ? new Date(keterangan.data[0].tanggal_cek).toLocaleDateString("id-ID", {
-          day: "2-digit",
-          month: "long",
-          year: "numeric",
-        })
-      : "-";
+    namaPIC.textContent = picName;
+    ketEl.textContent = picKet || "-";
+    document.getElementById("tanggal_cek").textContent = "-";
   });
   const checkAll = document.getElementById("checkAll");
   const btnBulk = document.getElementById("btnBulkUpdate");
@@ -131,13 +161,25 @@ const init = async () => {
     const itemsToUpdate = [];
     checkedBoxes.forEach((cb) => {
       const data = JSON.parse(cb.value);
-      data.nama = sessionStorage.getItem("userName");
       itemsToUpdate.push(data);
     });
     const htmlContent = `
         <div class="flex flex-col gap-4 text-left">
             <div class="bg-blue-50 p-3 rounded text-sm text-blue-700 mb-2">
-                <i class="fas fa-info-circle"></i> Anda akan mengupdate <b>${itemsToUpdate.length}</b> data sekaligus.
+                <i class="fas fa-info-circle"></i> Update <b>${itemsToUpdate.length}</b> data.
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Update Sebagai:</label>
+                <div class="flex gap-4">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="swal-role" value="area" class="w-4 h-4 text-pink-600" checked>
+                        <span class="text-sm">Area</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="swal-role" value="leader" class="w-4 h-4 text-pink-600">
+                        <span class="text-sm">Leader</span>
+                    </label>
+                </div>
             </div>
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-1">Keterangan (Massal)</label>
@@ -163,24 +205,18 @@ const init = async () => {
       confirmButtonText: "Update Semua",
       confirmButtonColor: "#db2777",
       cancelButtonText: "Batal",
-      focusConfirm: false,
       preConfirm: () => {
+        const role = document.querySelector(
+          'input[name="swal-role"]:checked'
+        ).value;
         const keterangan = document.getElementById("swal-bulk-ket").value;
         const userCheck = document.getElementById("swal-bulk-user").value;
         const passAuth = document.getElementById("swal-bulk-pass").value;
-        if (!keterangan) {
-          Swal.showValidationMessage("Keterangan tidak boleh kosong");
+        if (!keterangan || !userCheck || !passAuth) {
+          Swal.showValidationMessage("Semua field wajib diisi");
           return false;
         }
-        if (!userCheck) {
-          Swal.showValidationMessage("Nama User Check wajib diisi");
-          return false;
-        }
-        if (!passAuth) {
-          Swal.showValidationMessage("Kode Otorisasi wajib diisi");
-          return false;
-        }
-        return { keterangan, userCheck, passAuth };
+        return { keterangan, userCheck, passAuth, tipe_cek: role };
       },
     }).then(async (result) => {
       if (result.isConfirmed) {
@@ -199,10 +235,7 @@ const init = async () => {
     });
   });
   window.closeModal = () => {
-    const modalInfo = document.getElementById("informasi");
-    if (modalInfo) {
-      modalInfo.classList.add("hidden");
-    }
+    document.getElementById("informasi")?.classList.add("hidden");
   };
   const btnCloseDetail = document.getElementById("btnCloseDetail");
   const modalDetail = document.getElementById("detailInvalid");

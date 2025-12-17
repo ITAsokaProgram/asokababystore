@@ -70,8 +70,10 @@ export const fetchUpdateMargin = (data, start, end, cabang) => {
         items: [{ ...data }],
         keterangan: keterangan,
         nama: data.nama,
-        nama_user_cek: userCheck, // Tambahan
-        kode_otorisasi: passAuth, // Tambahan
+        nama_user_cek: userCheck,
+        kode_otorisasi: passAuth,
+        // PERBAIKAN: Kirim tipe_cek agar backend tahu ini Area atau Leader
+        tipe_cek: data.tipe_cek,
       };
 
       Swal.showLoading();
@@ -114,7 +116,7 @@ export const fetchUpdateMargin = (data, start, end, cabang) => {
 // Bulk Update
 export const fetchBulkUpdateMargin = async (
   items,
-  formValues, // Menerima object {keterangan, userCheck, passAuth}
+  formValues, // Menerima object {keterangan, userCheck, passAuth, tipe_cek}
   start,
   end,
   cabang
@@ -126,6 +128,8 @@ export const fetchBulkUpdateMargin = async (
     nama_user_cek: formValues.userCheck,
     kode_otorisasi: formValues.passAuth,
     nama: sessionStorage.getItem("userName"),
+    // PERBAIKAN: Kirim tipe_cek dari formValues (radio button selection)
+    tipe_cek: formValues.tipe_cek,
   };
 
   Swal.showLoading();
