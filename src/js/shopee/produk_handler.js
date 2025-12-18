@@ -175,6 +175,10 @@ const handleFormSubmit = async (event, form, apiFunction, actionType) => {
   submitButton.style.cursor = "not-allowed";
   try {
     const formData = new FormData(form);
+    if (form.dataset.fromMargin === "1") {
+      formData.append("from_margin", "1");
+      delete form.dataset.fromMargin;
+    }
     const data = await apiFunction(formData);
     if (data.success) {
       submitButton.innerHTML = '<i class="fas fa-check"></i> Berhasil!';
@@ -1167,11 +1171,22 @@ const handleCalcMarginClick = async (event) => {
         modelId != 0
           ? `.update-price-form[data-model-id="${modelId}"]`
           : `.update-price-form[data-item-id="${itemId}"]`;
+
       const existingForm = document.querySelector(formSelector);
       if (existingForm) {
+        existingForm.dataset.fromMargin = "1";
+
         const input = existingForm.querySelector('input[name="new_price"]');
-        input.value = newPrice;
-        existingForm.querySelector('button[type="submit"]').click();
+        if (input) {
+          input.value = newPrice;
+          input.dispatchEvent(new Event("input", { bubbles: true }));
+        }
+
+        // 3. Klik tombol submit
+        const submitBtn = existingForm.querySelector('button[type="submit"]');
+        if (submitBtn) {
+          submitBtn.click();
+        }
       }
     }
   } catch (error) {
