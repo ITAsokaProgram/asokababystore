@@ -1,7 +1,7 @@
 <?php
 session_start();
 include '../../../aa_kon_sett.php';
-
+require_once __DIR__ . "./../../auth/middleware_login.php"; // Tambahkan middleware
 
 register_shutdown_function(function () {
     $error = error_get_last();
@@ -17,9 +17,24 @@ register_shutdown_function(function () {
 
 header('Content-Type: application/json');
 
+// --- BAGIAN OTENTIKASI (DARI get_kode.php) ---
+$header = getAllHeaders();
+$authHeader = $header['Authorization'] ?? '';
+$token = null;
+if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
+    $token = $matches[1];
+}
+
+if (!$token) {
+    http_response_code(401);
+    echo json_encode(['error' => 'Unauthenticated', 'message' => 'Request ditolak user tidak terdaftar']);
+    exit;
+}
+$verif = verify_token($token);
+// ---------------------------------------------
+
 $is_export = $_GET['export'] ?? false;
 $is_export = ($is_export === 'true' || $is_export === true);
-
 
 $response = [
     'summary' => [
@@ -41,7 +56,6 @@ $response = [
 ];
 
 try {
-
     $tanggal_kemarin = date('Y-m-d', strtotime('-1 day'));
     $tgl_mulai = $_GET['tgl_mulai'] ?? $tanggal_kemarin;
     $tgl_selesai = $_GET['tgl_selesai'] ?? $tanggal_kemarin;
@@ -65,28 +79,45 @@ try {
         $response['pagination']['offset'] = $offset;
     }
 
+    // --- BAGIAN GET KODE CABANG (FUNCTIONALITY DARI get_kode.php) ---
+    $sqlUserCabang = "SELECT kd_store FROM user_account WHERE kode = ?";
+    $stmtUserCabang = $conn->prepare($sqlUserCabang);
+    $stmtUserCabang->bind_param("s", $verif->kode);
+    $stmtUserCabang->execute();
+    $resultUserCabang = $stmtUserCabang->get_result();
 
-    $sql_stores = "SELECT kd_store, nm_alias FROM kode_store WHERE display = 'on' ORDER BY nm_alias ASC";
-    $result_stores = $conn->query($sql_stores);
-    if ($result_stores) {
-        while ($row = $result_stores->fetch_assoc()) {
+    if ($resultUserCabang->num_rows > 0) {
+        $userCabang = $resultUserCabang->fetch_assoc();
+        if ($userCabang['kd_store'] == "Pusat") {
+            $sql_stores = "SELECT Kd_Store as kd_store, Nm_Alias as nm_alias FROM kode_store WHERE display = 'on' ORDER BY nm_alias ASC";
+            $stmt_s = $conn->prepare($sql_stores);
+        } else {
+            $kdStoreArray = explode(',', $userCabang['kd_store']);
+            $kdStoreImplode = "'" . implode("','", $kdStoreArray) . "'";
+            $sql_stores = "SELECT Kd_Store as kd_store, Nm_Alias as nm_alias FROM kode_store WHERE Kd_Store IN ($kdStoreImplode) AND display = 'on' ORDER BY nm_alias ASC";
+            $stmt_s = $conn->prepare($sql_stores);
+        }
+        $stmt_s->execute();
+        $res_s = $stmt_s->get_result();
+        while ($row = $res_s->fetch_assoc()) {
             $response['stores'][] = $row;
         }
+        $stmt_s->close();
     }
-
+    $stmtUserCabang->close();
+    // --------------------------------------------------------------
 
     $where_conditions = "DATE(k.tgl_koreksi) BETWEEN ? AND ?";
     $bind_params_data = ['ss', $tgl_mulai, $tgl_selesai];
     $bind_params_summary = ['ss', $tgl_mulai, $tgl_selesai];
 
-    if ($kd_store != 'all') {
+    if ($kd_store != 'all' && $kd_store != 'SEMUA CABANG' && $kd_store != 'none') {
         $where_conditions .= " AND k.kd_store = ?";
         $bind_params_data[0] .= 's';
         $bind_params_data[] = $kd_store;
         $bind_params_summary[0] .= 's';
         $bind_params_summary[] = $kd_store;
     }
-
 
     $sql_calc_found_rows = "";
     $limit_offset_sql = "";
@@ -98,11 +129,10 @@ try {
         $bind_params_data[] = $offset;
     }
 
-
     $sql_data = "
         SELECT
             $sql_calc_found_rows
-            DATE(k.tgl_koreksi) AS tanggal, -- <-- TAMBAHKAN TANGGAL
+            DATE(k.tgl_koreksi) AS tanggal,
             k.no_faktur,
             k.plu,
             k.deskripsi,
@@ -123,10 +153,10 @@ try {
             supplier AS s ON k.kode_supp = s.kode_supp AND k.kd_store = s.kd_store
         WHERE
             $where_conditions
-        GROUP BY -- <-- TAMBAHKAN GROUP BY TANGGAL
+        GROUP BY 
             tanggal, k.no_faktur, k.plu, k.deskripsi, k.isi1, k.isi2, k.avg_cost, k.qty_kor, k.stock, k.sel_qty, k.type_kor, k.kode_supp, s.nama_supp
         ORDER BY
-            tanggal, nama_supp, k.kode_supp, k.plu -- <-- UBAH ORDER BY
+            tanggal, nama_supp, k.kode_supp, k.plu
         $limit_offset_sql
     ";
 
@@ -148,9 +178,7 @@ try {
     }
     $stmt_data->close();
 
-
     if (!$is_export) {
-
         $sql_count_total = "
             SELECT COUNT(DISTINCT DATE(k.tgl_koreksi), k.kode_supp, k.plu) AS total_rows
             FROM koreksi AS k
@@ -166,18 +194,9 @@ try {
         $total_rows = $stmt_count->get_result()->fetch_assoc()['total_rows'] ?? 0;
         $stmt_count->close();
 
-
         $response['pagination']['total_rows'] = (int) $total_rows;
         $response['pagination']['total_pages'] = ceil($total_rows / $limit);
-
-        if ($page > $response['pagination']['total_pages'] && $total_rows > 0) {
-            $page = $response['pagination']['total_pages'];
-            $response['pagination']['current_page'] = $page;
-            $offset = ($page - 1) * $limit;
-            $response['pagination']['offset'] = $offset;
-        }
     }
-
 
     $sql_summary = "
         SELECT
@@ -206,7 +225,6 @@ try {
         $response['summary']['total_rp_selisih'] = $summary_data['total_rp_selisih'] ?? 0;
     }
 
-
     $sql_date_summary = "
         SELECT
             DATE(k.tgl_koreksi) AS tanggal,
@@ -224,10 +242,6 @@ try {
     ";
 
     $stmt_date_summary = $conn->prepare($sql_date_summary);
-    if ($stmt_date_summary === false) {
-        throw new Exception("Prepare failed (sql_date_summary): " . $conn->error);
-    }
-
     $stmt_date_summary->bind_param(...$bind_params_summary);
     $stmt_date_summary->execute();
     $result_date_summary = $stmt_date_summary->get_result();
@@ -240,8 +254,6 @@ try {
         ];
     }
     $stmt_date_summary->close();
-
-
     $conn->close();
 
 } catch (Exception $e) {
@@ -249,17 +261,5 @@ try {
     $response['error'] = $e->getMessage();
 }
 
-
-$json_output = json_encode($response);
-if ($json_output === false) {
-    $json_error_code = json_last_error();
-    $json_error_msg = json_last_error_msg();
-    http_response_code(500);
-    echo json_encode([
-        'error' => "Gagal melakukan encode JSON. Pesan: " . $json_error_msg,
-        'json_error_code' => $json_error_code
-    ]);
-} else {
-    echo $json_output;
-}
+echo json_encode($response);
 ?>

@@ -53,30 +53,46 @@ document.addEventListener("DOMContentLoaded", () => {
   async function loadData() {
     const params = getUrlParams();
     const isPagination = params.page > 1;
+    const token = getCookie("admin_token"); // Mengambil token untuk otentikasi
+
     setLoadingState(true, false, isPagination);
+
     const queryString = new URLSearchParams({
       tgl_mulai: params.tgl_mulai,
       tgl_selesai: params.tgl_selesai,
       kd_store: params.kd_store,
       page: params.page,
     }).toString();
+
     try {
       const response = await fetch(
-        `/src/api/koreksi_stock/get_by_supplier.php?${queryString}`
+        `/src/api/koreksi_stock/get_by_supplier.php?${queryString}`,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer " + token, // Menambahkan header sesuai instruksi get_kode
+          },
+        }
       );
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
           errorData.error || `HTTP error! status: ${response.status}`
         );
       }
+
       const data = await response.json();
+
       if (data.error) {
         throw new Error(data.error);
       }
+
+      // Bagian memproses data store yang sudah difilter dari server
       if (data.stores) {
         populateStoreFilter(data.stores, params.kd_store);
       }
+
       if (pageSubtitle) {
         let storeName = "Seluruh Cabang";
         if (
@@ -91,9 +107,11 @@ document.addEventListener("DOMContentLoaded", () => {
           pageTitle.textContent = `Laporan Koreksi (Supplier) - ${storeName}`;
         }
       }
+
       if (data.summary) {
         updateSummaryCards(data.summary);
       }
+
       renderTable(
         data.tabel_data,
         data.pagination ? data.pagination.offset : 0,
@@ -662,7 +680,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ["B5", "B6", "B7"].forEach((cell) => {
         if (ws[cell]) {
           ws[cell].t = "n";
-          ws[cell].s = { numFmt: numFormat }; 
+          ws[cell].s = { numFmt: numFormat };
         }
       });
 
