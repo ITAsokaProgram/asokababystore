@@ -59,33 +59,83 @@ document.addEventListener("DOMContentLoaded", () => {
     const params = getUrlParams();
     const isPagination = params.page > 1;
     setLoadingState(true, false, isPagination);
+
+    const token = getCookie("admin_token");
+
+    // Pastikan jika kd_store kosong/undefined, defaultnya adalah SEMUA CABANG
+    const selectedStore = params.kd_store || "SEMUA CABANG";
+
     const queryString = new URLSearchParams({
       tgl_mulai: params.tgl_mulai,
       tgl_selesai: params.tgl_selesai,
-      kd_store: params.kd_store,
+      kd_store: selectedStore,
       mode: params.mode,
       page: params.page,
     }).toString();
+
     try {
       const response = await fetch(
-        `/src/api/koreksi_so/get_missed_items.php?${queryString}`
+        `/src/api/koreksi_so/get_missed_items.php?${queryString}`,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer " + token,
+          },
+        }
       );
+
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
+
       const data = await response.json();
       if (data.error) throw new Error(data.error);
-      if (data.stores && filterSelectStore.options.length <= 1) {
-        populateStoreFilter(data.stores, params.kd_store);
-      } else {
-        filterSelectStore.value = params.kd_store;
+
+      // --- BAGIAN UPDATE DROPDOWN CABANG ---
+      if (data.stores) {
+        // Kita isi ulang HANYA jika select-nya kosong atau baru pertama kali load
+        if (filterSelectStore.options.length <= 1) {
+          filterSelectStore.innerHTML = ""; // Bersihkan dulu
+
+          // 1. Tambahkan "Pilih Cabang" (Value: none)
+          const defaultOpt = document.createElement("option");
+          defaultOpt.value = "none";
+          defaultOpt.text = "Pilih Cabang";
+          filterSelectStore.add(defaultOpt);
+
+          // 2. Tambahkan "SEMUA CABANG" (Value: SEMUA CABANG)
+          const allOpt = document.createElement("option");
+          allOpt.value = "SEMUA CABANG";
+          allOpt.text = "SEMUA CABANG";
+          filterSelectStore.add(allOpt);
+
+          // 3. Tambahkan daftar cabang dari database
+          data.stores.forEach((store) => {
+            const option = new Option(store.nm_alias, store.kd_store);
+            filterSelectStore.add(option);
+          });
+        }
+
+        // SINKRONISASI VALUE:
+        // Jika value dari URL ada di dalam list, pakai itu.
+        // Jika tidak (atau kosong), paksa ke "SEMUA CABANG".
+        filterSelectStore.value = selectedStore;
+
+        // Jika setelah di-set ternyata value-nya masih kosong (karena value tidak ditemukan),
+        // kembalikan ke SEMUA CABANG
+        if (filterSelectStore.value === "") {
+          filterSelectStore.value = "SEMUA CABANG";
+        }
       }
+
       const modeEl = document.getElementById("mode");
       if (modeEl && params.mode) {
         modeEl.value = params.mode;
       }
+
       if (data.summary) {
         summaryQty.textContent = formatNumber(data.summary.total_items);
       }
+
       const startIndex = data.start_group_index || 0;
       renderTable(data.tabel_data, params.mode, startIndex);
       renderPagination(data.pagination);
