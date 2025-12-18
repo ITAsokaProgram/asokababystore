@@ -198,31 +198,25 @@ require_once __DIR__ . '/produk_shopee.logic.php';
                                                     ?>
 
                                                     <?php if ($is_diff_hb): ?>
-                                                        <span class="stats-badge"
-                                                            style="background-color: #fef2f2; color: #b91c1c; border-color: #fecaca;">
-                                                            <i class="fas fa-history fa-fw"></i>
-                                                            <span>HB Lama: <span class="line-through">
-                                                                    <?php echo number_format($hb_old_val, 0, ',', '.'); ?></span></span>
+                                                        <span class="stats-badge badge-hb-old">
+                                                            <i class="fas fa-history"></i>
+                                                            <div class="badge-content-wrapper">
+                                                                <span class="badge-label">HB Lama</span>
+                                                                <span class="badge-value line-through">Rp <?php echo number_format($hb_old_val, 0, ',', '.'); ?></span>
+                                                            </div>
                                                         </span>
                                                     <?php endif; ?>
 
-                                                    <span class="stats-badge"
-                                                        style="background-color: <?php echo $has_hb_data ? '#ecfeff' : '#f3f4f6'; ?>; 
-                                                               color: <?php echo $has_hb_data ? '#0e7490' : '#9ca3af'; ?>; 
-                                                               border-color: <?php echo $has_hb_data ? '#cffafe' : '#e5e7eb'; ?>;">
-                                                        <i class="fas fa-file-invoice-dollar fa-fw"></i>
-                                                        <div class="flex flex-col text-left leading-tight">
-                                                            <span>Harga Beli:</span>
-                                                            <strong>
-                                                                <?php if ($has_hb_data): ?>
-                                                                     <?php echo number_format($hb_val, 0, ',', '.'); ?>
-                                                                    <?php if (!empty($ket_val)): ?>
-                                                                        <span style="font-size: 0.75em; font-weight: normal; opacity: 0.8; display:block;">(<?php echo htmlspecialchars($ket_val); ?>)</span>
-                                                                    <?php endif; ?>
-                                                                <?php else: ?>
-                                                                    -
+                                                    <span class="stats-badge <?php echo $has_hb_data ? 'badge-hb-active' : 'badge-hb-empty'; ?>">
+                                                        <i class="fas fa-file-invoice-dollar"></i>
+                                                        <div class="badge-content-wrapper">
+                                                            <span class="badge-label">Harga Beli</span>
+                                                            <span class="badge-value">
+                                                                <?php echo $has_hb_data ? 'Rp ' . number_format($hb_val, 0, ',', '.') : '-'; ?>
+                                                                <?php if (!empty($ket_val)): ?>
+                                                                    <span class="badge-sub-value">(<?php echo htmlspecialchars($ket_val); ?>)</span>
                                                                 <?php endif; ?>
-                                                            </strong>
+                                                            </span>
                                                         </div>
                                                     </span>
 
@@ -320,36 +314,27 @@ require_once __DIR__ . '/produk_shopee.logic.php';
                                                                         ?>
 
                                                                         <?php if ($is_diff_hb_mod): ?>
-                                                                            <span class="text-xs flex items-center gap-1"
-                                                                                style="background: #fef2f2; color: #b91c1c; padding: 4px 8px; border-radius: 6px; font-weight: 600; border: 1px solid #fecaca;">
-                                                                                <i class="fas fa-history fa-fw"></i>
-                                                                                HB Lama: <span class="line-through"> <?php echo number_format($hb_old_val_mod, 0, ',', '.'); ?></span>
-                                                                            </span>
-                                                                        <?php endif; ?>
-
-                                                                        <span class="text-xs flex flex-col justify-start"
-                                                                            style="background: <?php echo $has_hb_data_mod ? '#ecfeff' : '#f3f4f6'; ?>; 
-                                                                                   color: <?php echo $has_hb_data_mod ? '#0e7490' : '#9ca3af'; ?>; 
-                                                                                   padding: 4px 8px; border-radius: 6px; border: 1px solid <?php echo $has_hb_data_mod ? '#cffafe' : '#e5e7eb'; ?>;">
-                                                                            
-                                                                            <span class="flex items-center gap-1 font-bold mb-1 opacity-80">
-                                                                                <i class="fas fa-file-invoice-dollar fa-fw"></i> Harga Beli
-                                                                            </span>
-
-                                                                            <strong style="font-size: 1em;">
-                                                                                <?php if ($has_hb_data_mod): ?>
-                                                                                     <?php echo number_format($hb_val_mod, 0, ',', '.'); ?>
-                                                                                <?php else: ?>
-                                                                                    -
-                                                                                <?php endif; ?>
-                                                                            </strong>
-
-                                                                            <?php if ($has_hb_data_mod && !empty($ket_val_mod)): ?>
-                                                                                <span style="opacity: 0.8; font-weight: normal; font-style: italic; display:block; margin-top: 2px;">
-                                                                                    (<?php echo htmlspecialchars($ket_val_mod); ?>)
+                                                                                <span class="stats-badge badge-hb-old">
+                                                                                    <i class="fas fa-history"></i>
+                                                                                    <div class="badge-content-wrapper">
+                                                                                        <span class="badge-label">HB Lama</span>
+                                                                                        <span class="badge-value line-through">Rp <?php echo number_format($hb_old_val_mod, 0, ',', '.'); ?></span>
+                                                                                    </div>
                                                                                 </span>
                                                                             <?php endif; ?>
-                                                                        </span>
+
+                                                                            <span class="stats-badge <?php echo $has_hb_data_mod ? 'badge-hb-active' : 'badge-hb-empty'; ?>">
+                                                                                <i class="fas fa-file-invoice-dollar"></i>
+                                                                                <div class="badge-content-wrapper">
+                                                                                    <span class="badge-label">Harga Beli</span>
+                                                                                    <span class="badge-value">
+                                                                                        <?php echo $has_hb_data_mod ? 'Rp ' . number_format($hb_val_mod, 0, ',', '.') : '-'; ?>
+                                                                                        <?php if (!empty($ket_val_mod)): ?>
+                                                                                            <span class="badge-sub-value">(<?php echo htmlspecialchars($ket_val_mod); ?>)</span>
+                                                                                        <?php endif; ?>
+                                                                                    </span>
+                                                                                </div>
+                                                                            </span>
 
                                                                         <span class="text-xs"
                                                                             style="background: #e0e7ff; color: #3730a3; padding: 4px 8px; border-radius: 6px; font-weight: 600;">

@@ -220,23 +220,66 @@ body {
 .filter-btn.active i {
   transform: scale(1);
 }
-
-/* ===========================
-   ENHANCED BADGES
-   =========================== */
+/* Update pada stats-badge untuk mendukung pemisahan data */
 .stats-badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
+  gap: 8px; /* Jarak antara ikon dan teks */
+  padding: 8px 14px;
   border-radius: 10px;
   font-size: 13px;
   font-weight: 600;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s ease;
   white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid transparent;
+  min-height: 42px; /* Menjaga tinggi tetap konsisten */
 }
 
+/* Helper untuk memisahkan data di dalam satu badge */
+.badge-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  text-align: left;
+}
+
+.badge-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  opacity: 0.8;
+  font-weight: 700;
+}
+
+.badge-value {
+  font-size: 13px;
+}
+
+.badge-sub-value {
+  font-size: 11px;
+  font-weight: normal;
+  font-style: italic;
+  opacity: 0.9;
+}
+
+/* Warna standar untuk Badge Harga Beli */
+.badge-hb-active {
+  background: linear-gradient(135deg, #ecfeff 0%, #cffafe 100%);
+  color: #0e7490;
+  border-color: #a5f3fc;
+}
+
+.badge-hb-empty {
+  background: #f3f4f6;
+  color: #9ca3af;
+  border-color: #e5e7eb;
+}
+
+/* Badge HB Lama/History */
+.badge-hb-old {
+  background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
+  color: #b91c1c;
+  border-color: #fca5a5;
+}
 .stats-badge:hover {
   transform: translateY(-2px) scale(1.02);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
@@ -717,6 +760,31 @@ body {
 .swal-form-grid input:focus {
   border-color: #6366f1 !important;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+}
+
+.swal2-html-container {
+  overflow-x: hidden !important; /* Paksa hilangkan horizontal scroll */
+  margin: 1em 0 0 !important; /* Sesuaikan margin agar tidak nabrak */
+}
+
+/* Buat grid form lebih fleksibel jika di layar kecil */
+@media (max-width: 480px) {
+  .swal-form-grid {
+    grid-template-columns: 1fr; /* Ubah jadi 1 kolom saja */
+    gap: 0.5rem;
+  }
+
+  .swal-form-grid label {
+    text-align: left;
+  }
+}
+
+/* Pastikan input di dalam swal mengambil lebar penuh kontainer */
+.swal2-input,
+.swal-form-grid input {
+  box-sizing: border-box;
+  width: 100% !important;
+  margin: 0 !important;
 }
 
 /* ===========================
