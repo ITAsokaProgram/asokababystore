@@ -54,29 +54,66 @@ document.addEventListener("DOMContentLoaded", () => {
     const params = getUrlParams();
     const isPagination = params.page > 1;
     setLoadingState(true, false, isPagination);
+
     const queryString = new URLSearchParams({
       tgl_mulai: params.tgl_mulai,
       tgl_selesai: params.tgl_selesai,
       kd_store: params.kd_store,
       page: params.page,
     }).toString();
+
     try {
+      const token = getCookie("admin_token");
       const response = await fetch(
-        `/src/api/penerimaan_receipt/get_by_supplier.php?${queryString}`
+        `/src/api/penerimaan_receipt/get_by_supplier.php?${queryString}`,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer " + token,
+          },
+        }
       );
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
           errorData.error || `HTTP error! status: ${response.status}`
         );
       }
+
       const data = await response.json();
       if (data.error) {
         throw new Error(data.error);
       }
+
+      // --- BAGIAN PENGGANTI POPULATE CABANG (Sesuai Logika get_kode) ---
       if (data.stores) {
-        populateStoreFilter(data.stores, params.kd_store);
+        const select = filterSelectStore;
+        select.innerHTML = "";
+
+        if (data.stores.length > 0) {
+          const defaultOption = new Option("Pilih Cabang", "none");
+          select.add(defaultOption);
+
+          const allOption = new Option("SEMUA CABANG", "all"); // value 'all' sesuai logic PHP default
+          select.add(allOption);
+
+          data.stores.forEach((store) => {
+            const option = new Option(store.nm_alias, store.kd_store);
+            select.add(option);
+          });
+
+          // Mengembalikan value select sesuai dengan params di URL agar tidak kosong
+          if (params.kd_store) {
+            select.value = params.kd_store;
+          }
+        } else {
+          select.innerHTML =
+            '<option value="none">Gagal memuat data cabang</option>';
+        }
       }
+      // ----------------------------------------------------------------
+
       if (pageSubtitle) {
         let storeName = "Seluruh Cabang";
         if (
@@ -91,9 +128,11 @@ document.addEventListener("DOMContentLoaded", () => {
           pageTitle.textContent = `Receipt by Supplier - ${storeName}`;
         }
       }
+
       if (data.summary) {
         updateSummaryCards(data.summary);
       }
+
       renderTable(data.tabel_data, data.pagination.offset, data.summary);
       renderPagination(data.pagination);
     } catch (error) {

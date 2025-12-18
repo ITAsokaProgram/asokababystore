@@ -1,7 +1,7 @@
 <?php
 session_start();
 include '../../../aa_kon_sett.php';
-
+require_once __DIR__ . "./../../auth/middleware_login.php";
 
 register_shutdown_function(function () {
     $error = error_get_last();
@@ -17,13 +17,26 @@ register_shutdown_function(function () {
 
 header('Content-Type: application/json');
 
+// Auth Check
+$header = getAllHeaders();
+$authHeader = $header['Authorization'] ?? '';
+$token = null;
+if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $macthes)) {
+    $token = $macthes[1];
+}
+
+if (!$token) {
+    http_response_code(401);
+    echo json_encode(['error' => 'Unauthenticated']);
+    exit;
+}
+$verif = verify_token($token);
+
 $is_export = $_GET['export'] ?? false;
 $is_export = ($is_export === 'true' || $is_export === true);
 
-
 $response = [
     'summary' => [
-
         'total_netto' => 0,
         'total_ppn' => 0,
         'total_total' => 0,
@@ -41,7 +54,6 @@ $response = [
 ];
 
 try {
-
     $tanggal_kemarin = date('Y-m-d', strtotime('-1 day'));
     $tgl_mulai = $_GET['tgl_mulai'] ?? $tanggal_kemarin;
     $tgl_selesai = $_GET['tgl_selesai'] ?? $tanggal_kemarin;
@@ -65,28 +77,45 @@ try {
         $response['pagination']['offset'] = $offset;
     }
 
+    // --- LOGIKA GET KODE (Berdasarkan Hak Akses User) ---
+    $sqlUserCabang = "SELECT kd_store FROM user_account WHERE kode = ?";
+    $stmtUserCabang = $conn->prepare($sqlUserCabang);
+    $stmtUserCabang->bind_param("s", $verif->kode);
+    $stmtUserCabang->execute();
+    $resultUserCabang = $stmtUserCabang->get_result();
 
-    $sql_stores = "SELECT kd_store, nm_alias FROM kode_store WHERE display = 'on' ORDER BY Nm_Alias ASC";
-    $result_stores = $conn->query($sql_stores);
-    if ($result_stores) {
-        while ($row = $result_stores->fetch_assoc()) {
+    if ($resultUserCabang->num_rows > 0) {
+        $userCabang = $resultUserCabang->fetch_assoc();
+        if ($userCabang['kd_store'] == "Pusat") {
+            $sql_s = "SELECT Kd_Store as kd_store, Nm_Alias as nm_alias FROM kode_store WHERE display = 'on' ORDER BY Nm_Alias ASC";
+            $stmt_s = $conn->prepare($sql_s);
+        } else {
+            $kdStoreArray = explode(',', $userCabang['kd_store']);
+            $kdStoreImplode = "'" . implode("','", $kdStoreArray) . "'";
+            $sql_s = "SELECT Kd_Store as kd_store, Nm_Alias as nm_alias FROM kode_store WHERE display = 'on' AND Kd_Store IN ($kdStoreImplode) ORDER BY Nm_Alias ASC";
+            $stmt_s = $conn->prepare($sql_s);
+        }
+        $stmt_s->execute();
+        $res_s = $stmt_s->get_result();
+        while ($row = $res_s->fetch_assoc()) {
             $response['stores'][] = $row;
         }
+        $stmt_s->close();
     }
-
+    $stmtUserCabang->close();
+    // ---------------------------------------------------
 
     $where_conditions = "a.tgl_tiba BETWEEN ? AND ?";
     $bind_params_data = ['ss', $tgl_mulai, $tgl_selesai];
     $bind_params_summary = ['ss', $tgl_mulai, $tgl_selesai];
 
-    if ($kd_store != 'all') {
+    if ($kd_store != 'all' && $kd_store != 'none' && $kd_store != 'SEMUA CABANG') {
         $where_conditions .= " AND a.kd_store = ?";
         $bind_params_data[0] .= 's';
         $bind_params_data[] = $kd_store;
         $bind_params_summary[0] .= 's';
         $bind_params_summary[] = $kd_store;
     }
-
 
     $sql_calc_found_rows = "";
     $limit_offset_sql = "";
@@ -97,8 +126,6 @@ try {
         $bind_params_data[] = $limit;
         $bind_params_data[] = $offset;
     }
-
-
 
     $sql_data = "
         SELECT
@@ -128,7 +155,7 @@ try {
 
     $stmt_data = $conn->prepare($sql_data);
     if ($stmt_data === false) {
-        throw new Exception("Prepare failed (sql_data): " . $conn->error);
+        throw new Exception("Prepare failed: " . $conn->error);
     }
     $stmt_data->bind_param(...$bind_params_data);
     $stmt_data->execute();
@@ -144,24 +171,13 @@ try {
     }
     $stmt_data->close();
 
-
     if (!$is_export) {
         $sql_count_result = "SELECT FOUND_ROWS() AS total_rows";
         $result_count = $conn->query($sql_count_result);
         $total_rows = $result_count->fetch_assoc()['total_rows'] ?? 0;
         $response['pagination']['total_rows'] = (int) $total_rows;
         $response['pagination']['total_pages'] = ceil($total_rows / $limit);
-
-        if ($page > $response['pagination']['total_pages'] && $total_rows > 0) {
-            $page = $response['pagination']['total_pages'];
-            $response['pagination']['current_page'] = $page;
-            $offset = ($page - 1) * $limit;
-            $response['pagination']['offset'] = $offset;
-        }
     }
-
-
-
 
     $sql_summary = "
         SELECT
@@ -179,9 +195,6 @@ try {
     ";
 
     $stmt_summary = $conn->prepare($sql_summary);
-    if ($stmt_summary === false) {
-        throw new Exception("Prepare failed (sql_summary): " . $conn->error);
-    }
     $stmt_summary->bind_param(...$bind_params_summary);
     $stmt_summary->execute();
     $result_summary = $stmt_summary->get_result();
@@ -189,7 +202,6 @@ try {
     $stmt_summary->close();
 
     if ($summary_data) {
-
         $response['summary']['total_netto'] = $summary_data['total_netto'] ?? 0;
         $response['summary']['total_ppn'] = $summary_data['total_ppn'] ?? 0;
         $response['summary']['total_total'] = $summary_data['total_total'] ?? 0;
@@ -202,17 +214,5 @@ try {
     $response['error'] = $e->getMessage();
 }
 
-
-$json_output = json_encode($response);
-if ($json_output === false) {
-    $json_error_code = json_last_error();
-    $json_error_msg = json_last_error_msg();
-    http_response_code(500);
-    echo json_encode([
-        'error' => "Gagal melakukan encode JSON. Pesan: " . $json_error_msg,
-        'json_error_code' => $json_error_code
-    ]);
-} else {
-    echo $json_output;
-}
+echo json_encode($response);
 ?>
