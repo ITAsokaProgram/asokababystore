@@ -54,47 +54,95 @@ document.addEventListener("DOMContentLoaded", () => {
   async function loadData() {
     const params = getUrlParams();
     const isPagination = params.page > 1;
+    const token = getCookie("admin_token"); // Ambil token untuk dikirim ke API
+
     setLoadingState(true, false, isPagination);
+
     const queryString = new URLSearchParams({
       tgl_mulai: params.tgl_mulai,
       tgl_selesai: params.tgl_selesai,
       kd_store: params.kd_store,
       page: params.page,
     }).toString();
+
     try {
       const response = await fetch(
-        `/src/api/return_out/get_all_item.php?${queryString}`
+        `/src/api/return_out/get_all_item.php?${queryString}`,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer " + token, // Kirim token seperti pada loadStores
+          },
+        }
       );
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
           errorData.error || `HTTP error! status: ${response.status}`
         );
       }
+
       const data = await response.json();
+
       if (data.error) {
         throw new Error(data.error);
       }
+
+      // Fungsi populateStoreFilter disesuaikan agar formatnya konsisten (Pilih Cabang & SEMUA CABANG)
       if (data.stores) {
-        populateStoreFilter(data.stores, params.kd_store);
+        const select = filterSelectStore; // filterSelectStore adalah element select cabang
+        select.innerHTML = "";
+
+        if (data.stores.length > 0) {
+          const defaultOption = new Option("Pilih Cabang", "none");
+          select.add(defaultOption);
+
+          const allOption = new Option("SEMUA CABANG", "all");
+          select.add(allOption);
+
+          data.stores.forEach((store) => {
+            const option = new Option(store.nm_alias, store.kd_store);
+            select.add(option);
+
+            // Set selected jika kd_store di URL cocok
+            if (store.kd_store === params.kd_store) {
+              option.selected = true;
+            }
+          });
+
+          if (params.kd_store === "all") allOption.selected = true;
+        } else {
+          select.innerHTML =
+            '<option value="none">Gagal memuat data cabang</option>';
+        }
       }
+
       if (pageSubtitle) {
         let storeName = "Seluruh Cabang";
         if (
           filterSelectStore.options.length > 0 &&
           filterSelectStore.selectedIndex > -1
         ) {
-          storeName =
+          const selectedText =
             filterSelectStore.options[filterSelectStore.selectedIndex].text;
+          if (
+            selectedText !== "Pilih Cabang" &&
+            selectedText !== "SEMUA CABANG"
+          ) {
+            storeName = selectedText;
+          }
         }
         pageSubtitle.textContent = `Laporan Return Out Periode ${params.tgl_mulai} s/d ${params.tgl_selesai} - ${storeName}`;
         if (pageTitle) {
           pageTitle.textContent = `Laporan Return Out (All Item) - ${storeName}`;
         }
       }
+
       if (data.summary) {
         updateSummaryCards(data.summary);
       }
+
       renderTable(
         data.tabel_data,
         data.pagination ? data.pagination.offset : 0,
@@ -102,6 +150,7 @@ document.addEventListener("DOMContentLoaded", () => {
         data.date_subtotals,
         data.pagination
       );
+
       renderPagination(data.pagination);
     } catch (error) {
       console.error("Error loading data:", error);
@@ -263,7 +312,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     )}</td>
                     <td></td> 
                 </tr>
-            `;  
+            `;
     }
     function buildSubtotalTanggalRow(tanggal) {
       const subtotal = date_subtotals[tanggal] || {
