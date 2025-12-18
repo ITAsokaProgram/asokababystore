@@ -64,8 +64,16 @@ document.addEventListener("DOMContentLoaded", () => {
       page: params.page,
     }).toString();
     try {
+      const token = getCookie("admin_token");
+
       const response = await fetch(
-        `/src/api/top_sales/get_by_rupiah.php?${queryString}`
+        `/src/api/top_sales/get_by_rupiah.php?${queryString}`,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer " + token,
+          },
+        }
       );
       if (!response.ok) {
         const errorData = await response.json();
