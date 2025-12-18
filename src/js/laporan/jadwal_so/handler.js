@@ -34,21 +34,34 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   async function loadData() {
     const params = getUrlParams();
+    const token = getCookie("admin_token"); // Ambil token untuk dikirim ke header
     setLoadingState(true);
     const queryString = new URLSearchParams(params).toString();
+
     try {
       const response = await fetch(
-        `/src/api/laporan/jadwal_so/get_data.php?${queryString}`
+        `/src/api/laporan/jadwal_so/get_data.php?${queryString}`,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer " + token,
+          },
+        }
       );
+
       if (!response.ok) throw new Error(`HTTP Status: ${response.status}`);
       const data = await response.json();
       if (data.error) throw new Error(data.error);
+
       if (data.stores && filterSelectStore.options.length <= 1) {
+        // Fungsi populateStoreFilter diperbarui di bawah
         populateStoreFilter(data.stores, params.kd_store);
       }
+
       if (filterSelectSync) {
         filterSelectSync.value = params.sync;
       }
+
       updatePageHeader(params);
       updateSummaryCards(data.summary);
       renderTable(
@@ -61,6 +74,31 @@ document.addEventListener("DOMContentLoaded", () => {
       showTableError(error.message);
     } finally {
       setLoadingState(false);
+    }
+  }
+
+  // Fungsi pembantu untuk mengisi dropdown (Disesuaikan dengan property baru)
+  function populateStoreFilter(stores, selectedValue) {
+    if (!filterSelectStore) return;
+
+    filterSelectStore.innerHTML = "";
+
+    // Default Option
+    const defaultOption = new Option("Pilih Cabang", "none");
+    filterSelectStore.add(defaultOption);
+
+    // All Option
+    const allOption = new Option("SEMUA CABANG", "all");
+    filterSelectStore.add(allOption);
+
+    stores.forEach((s) => {
+      // Menggunakan s.nama_cabang dan s.store sesuai dengan alias SQL PHP
+      const option = new Option(s.nama_cabang, s.store);
+      filterSelectStore.add(option);
+    });
+
+    if (selectedValue) {
+      filterSelectStore.value = selectedValue;
     }
   }
   function updatePageHeader(params) {
@@ -162,15 +200,7 @@ document.addEventListener("DOMContentLoaded", () => {
                       <i class="fas fa-chevron-right"></i></a>`;
     paginationLinks.innerHTML = links;
   }
-  function populateStoreFilter(stores, selected) {
-    stores.forEach((store) => {
-      const opt = document.createElement("option");
-      opt.value = store.kd_store;
-      opt.textContent = `${store.kd_store} - ${store.nm_alias}`;
-      if (store.kd_store === selected) opt.selected = true;
-      filterSelectStore.appendChild(opt);
-    });
-  }
+
   function setLoadingState(isLoading) {
     if (isLoading) {
       filterSubmitButton.disabled = true;
