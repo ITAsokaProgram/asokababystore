@@ -24,13 +24,13 @@ $resultUserCabang = $stmtUserCabang->get_result();
 if ($resultUserCabang->num_rows > 0) {
     $userCabang = $resultUserCabang->fetch_assoc();
     if ($userCabang['kd_store'] == "Pusat") {
-        $sql = "SELECT Kd_Store as store, Nm_Alias as nama_cabang FROM kode_store";
+        $sql = "SELECT Kd_Store as store, Nm_Alias as nama_cabang FROM kode_store WHERE display = 'on' ORDER BY nm_alias ASC";
         $stmt = $conn->prepare($sql);
         $stmt->execute();
     } else {
         $kdStoreArray = explode(',', $userCabang['kd_store']);
         $kdStoreImplode = "'" . implode("','", $kdStoreArray) . "'";
-        $sql = "SELECT Kd_Store as store, Nm_Alias as nama_cabang FROM kode_store WHERE Kd_Store IN ($kdStoreImplode)";
+        $sql = "SELECT Kd_Store as store, Nm_Alias as nama_cabang FROM kode_store WHERE Kd_Store IN ($kdStoreImplode) and display = 'on' ORDER BY nm_alias ASC";
         $stmt = $conn->prepare($sql);
         $stmt->execute();
     }

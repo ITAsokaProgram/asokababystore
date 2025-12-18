@@ -108,19 +108,86 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   async function loadStores() {
     try {
-      const response = await fetch("/src/api/shared/get_all_store.php");
+      const token = getCookie("admin_token");
+      const response = await fetch("/src/api/cabang/get_kode.php", {
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + token,
+        },
+      });
+
       const result = await response.json();
-      if (result.success) {
-        let options =
-          '<option value="" disabled selected>Pilih Cabang</option>';
-        options += '<option value="">Semua Cabang</option>';
+
+      // Pastikan elemen filterStore/cabang ada di DOM
+      const select = filterStore || document.getElementById("cabang");
+      if (!select) return;
+
+      select.innerHTML = ""; // Kosongkan sebelum mengisi
+
+      if (result.data && result.data.length > 0) {
+        // Opsi Default
+        const defaultOption = new Option("Pilih Cabang", "");
+        defaultOption.disabled = true;
+        defaultOption.selected = true;
+        select.add(defaultOption);
+
+        // Opsi Semua Cabang
+        const allOption = new Option("Semua Cabang", "");
+        select.add(allOption);
+
+        // Mapping data dari API baru (store & nama_cabang)
         result.data.forEach((store) => {
-          options += `<option value="${store.Kd_Store}">${store.Nm_Alias} (${store.Kd_Store})</option>`;
+          const option = new Option(
+            `${store.nama_cabang} (${store.store})`,
+            store.store
+          );
+          select.add(option);
         });
-        if (filterStore) filterStore.innerHTML = options;
+      } else {
+        select.innerHTML = '<option value="">Gagal memuat data cabang</option>';
       }
     } catch (error) {
       console.error("Gagal load store:", error);
+      const select = filterStore || document.getElementById("cabang");
+      if (select) {
+        select.innerHTML = '<option value="">Error koneksi</option>';
+      }
+    }
+  }
+
+  async function loadData() {
+    setLoading(true);
+    const formData = new FormData(filterForm);
+    const params = new URLSearchParams(formData);
+    try {
+      const response = await fetch(
+        `/src/api/receipt/get_receipts.php?${params.toString()}`
+      );
+      const data = await response.json();
+      if (data.error) throw new Error(data.error);
+      if (data.summary) {
+        elTotalSelisih.textContent = data.summary.total_selisih;
+        elTotalMissing.textContent =
+          "Rp " + formatRupiah(data.summary.total_belum_ada);
+        if (elTotalRupiahSelisih) {
+          elTotalRupiahSelisih.textContent =
+            "Rp " + formatRupiah(data.summary.total_selisih_rupiah);
+        }
+        if (elTotalNotFound) {
+          elTotalNotFound.textContent = data.summary.total_tidak_ditemukan;
+        }
+        summaryData.list_selisih = data.summary.list_selisih;
+        summaryData.list_belum_ada = data.summary.list_belum_ada;
+        summaryData.list_tidak_ditemukan = data.summary.list_tidak_ditemukan;
+      }
+      currentTableData = data.tabel_data || [];
+      renderTable(data.tabel_data, data.pagination.offset);
+      renderPagination(data.pagination);
+    } catch (error) {
+      console.error(error);
+      tableBody.innerHTML = `<tr><td colspan="8" class="text-center text-red-500 p-4">Error: ${error.message}</td></tr>`;
+    } finally {
+      setLoading(false);
     }
   }
   async function loadData() {
