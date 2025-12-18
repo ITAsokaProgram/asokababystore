@@ -54,33 +54,67 @@ document.addEventListener("DOMContentLoaded", () => {
   async function loadData() {
     const params = getUrlParams();
     const isPagination = params.page > 1;
+    const token = getCookie("admin_token"); // Ambil token untuk header
+
     setLoadingState(true, false, isPagination);
 
-    // Tambahkan search_query ke query string API
     const queryString = new URLSearchParams({
       tgl_mulai: params.tgl_mulai,
       tgl_selesai: params.tgl_selesai,
       kd_store: params.kd_store,
-      search_query: params.search_query, // Tambahan
+      search_query: params.search_query,
       page: params.page,
     }).toString();
+
     try {
       const response = await fetch(
-        `/src/api/koreksi_stock/get_by_plu.php?${queryString}`
+        `/src/api/koreksi_stock/get_by_plu.php?${queryString}`,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer " + token, // Tambahkan Bearer Token
+          },
+        }
       );
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
           errorData.error || `HTTP error! status: ${response.status}`
         );
       }
+
       const data = await response.json();
       if (data.error) {
         throw new Error(data.error);
       }
-      if (data.stores) {
-        populateStoreFilter(data.stores, params.kd_store);
+
+      // BAGIAN UPDATE DROPDOWN CABANG (DISESUAIKAN DENGAN LOGIKA GET_KODE)
+      if (data.stores && filterSelectStore) {
+        const select = filterSelectStore;
+        const currentVal = params.kd_store;
+
+        select.innerHTML = ""; // Kosongkan dulu
+
+        if (data.stores.length > 0) {
+          // Tambahkan default options
+          select.add(new Option("Pilih Cabang", "none"));
+          select.add(new Option("SEMUA CABANG", "all"));
+
+          data.stores.forEach((s) => {
+            // Gunakan properti kd_store dan nm_alias dari response API
+            const option = new Option(s.nm_alias, s.kd_store);
+            if (s.kd_store === currentVal) {
+              option.selected = true;
+            }
+            select.add(option);
+          });
+        } else {
+          select.innerHTML =
+            '<option value="none">Gagal memuat data cabang</option>';
+        }
       }
+
       if (pageSubtitle) {
         let storeName = "Seluruh Cabang";
         if (
@@ -95,9 +129,11 @@ document.addEventListener("DOMContentLoaded", () => {
           pageTitle.textContent = `Laporan Koreksi (PLU) - ${storeName}`;
         }
       }
+
       if (data.summary) {
         updateSummaryCards(data.summary);
       }
+
       renderTable(
         data.tabel_data,
         data.pagination ? data.pagination.offset : 0,
