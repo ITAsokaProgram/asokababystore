@@ -406,7 +406,7 @@ class ShopeeApiService
                     FROM receipt r
                     INNER JOIN (
                         SELECT barcode, MAX(tgl_tiba) AS max_tgl
-                        FROM receipt
+                        FROM receipt where kd_store='3190'
                         GROUP BY barcode
                     ) latest ON r.barcode = latest.barcode AND r.tgl_tiba = latest.max_tgl
                     GROUP BY r.barcode
@@ -416,7 +416,7 @@ class ShopeeApiService
                     sp.hb_old = sp.harga_beli, 
                     sp.harga_beli = src.total_beli_receipt,
                     sp.keterangan = 'Dari Receipt (Last Data)'
-                WHERE so.item_n IS NULL
+                WHERE so.item_n IS NULL;
             ";
             $conn->query($sql_update_receipt);
             $sql_update_stok_ol = "
