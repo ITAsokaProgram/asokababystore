@@ -50,6 +50,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   async function loadData() {
     const params = getUrlParams();
+    const token = getCookie("admin_token"); // Ambil token dari cookie
+
     setLoadingState(true, params.page > 1);
     if (!new URLSearchParams(window.location.search).has("tgl_mulai")) {
       document.getElementById("tgl_mulai").value = params.tgl_mulai;
@@ -63,16 +65,25 @@ document.addEventListener("DOMContentLoaded", () => {
     }).toString();
     try {
       const response = await fetch(
-        `/src/api/koreksi_so/get_koreksi.php?${queryString}`
+        `/src/api/koreksi_so/get_koreksi.php?${queryString}`,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer " + token, // Tambahkan header token di sini
+          },
+        }
       );
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       if (data.error) throw new Error(data.error);
       if (data.stores) populateStoreFilter(data.stores, params.kd_store);
+
       if (pageSubtitle) {
+        // Pastikan elemen select diambil agar tidak error 'options of null'
+        const filterSelectStore = document.getElementById("cabang");
         let storeName =
-          filterSelectStore.options[filterSelectStore.selectedIndex]?.text ||
+          filterSelectStore?.options[filterSelectStore.selectedIndex]?.text ||
           "Seluruh Cabang";
         pageSubtitle.textContent = `Periode ${params.tgl_mulai} s/d ${params.tgl_selesai} - ${storeName}`;
       }
