@@ -1,6 +1,8 @@
 <?php
 session_start();
-include '../../../aa_kon_sett.php';
+require_once __DIR__ . "./../../../aa_kon_sett.php";
+require_once __DIR__ . "./../../auth/middleware_login.php";
+
 register_shutdown_function(function () {
     $error = error_get_last();
     if ($error !== null && in_array($error['type'], [E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR, E_RECOVERABLE_ERROR])) {
@@ -12,9 +14,56 @@ register_shutdown_function(function () {
         }
     }
 });
+
 header('Content-Type: application/json');
+
+// --- BAGIAN GET KODE CABANG (LOGIKA DARI get_kode.php) ---
+$header = getAllHeaders();
+$authHeader = $header['Authorization'] ?? '';
+$token = null;
+if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
+    $token = $matches[1];
+}
+
+if (!$token) {
+    http_response_code(401);
+    echo json_encode(['error' => 'Unauthenticated', 'message' => 'Request ditolak user tidak terdaftar']);
+    exit;
+}
+
+$verif = verify_token($token);
+$stores_allowed = [];
+
+$sqlUserCabang = "SELECT kd_store FROM user_account WHERE kode = ?";
+$stmtUserCabang = $conn->prepare($sqlUserCabang);
+$stmtUserCabang->bind_param("s", $verif->kode);
+$stmtUserCabang->execute();
+$resultUserCabang = $stmtUserCabang->get_result();
+
+if ($resultUserCabang->num_rows > 0) {
+    $userCabang = $resultUserCabang->fetch_assoc();
+    if ($userCabang['kd_store'] == "Pusat") {
+        $sqlS = "SELECT Kd_Store as kd_store, Nm_Alias as nm_alias FROM kode_store WHERE display = 'on' ORDER BY Nm_Alias ASC";
+        $stmtS = $conn->prepare($sqlS);
+    } else {
+        $kdStoreArray = explode(',', $userCabang['kd_store']);
+        $kdStoreImplode = "'" . implode("','", $kdStoreArray) . "'";
+        $sqlS = "SELECT Kd_Store as kd_store, Nm_Alias as nm_alias FROM kode_store WHERE Kd_Store IN ($kdStoreImplode) AND display = 'on' ORDER BY Nm_Alias ASC";
+        $stmtS = $conn->prepare($sqlS);
+    }
+    $stmtS->execute();
+    $resS = $stmtS->get_result();
+    while ($rowS = $resS->fetch_assoc()) {
+        $stores_allowed[] = $rowS;
+    }
+    $stmtS->close();
+}
+$stmtUserCabang->close();
+// --- END BAGIAN GET KODE CABANG ---
+
 $is_export = $_GET['export'] ?? false;
 $is_export = ($is_export === 'true' || $is_export === true);
+
 $response = [
     'summary' => [
         'total_qty' => 0,
@@ -22,7 +71,7 @@ $response = [
         'total_ppn' => 0,
         'total_grand' => 0,
     ],
-    'stores' => [],
+    'stores' => $stores_allowed, // Menggunakan hasil filter cabang di atas
     'tabel_data' => [],
     'date_subtotals' => [],
     'pagination' => [
@@ -34,13 +83,16 @@ $response = [
     ],
     'error' => null,
 ];
+
 try {
     $tanggal_kemarin = date('Y-m-d', strtotime('-1 day'));
     $tgl_mulai = $_GET['tgl_mulai'] ?? $tanggal_kemarin;
     $tgl_selesai = $_GET['tgl_selesai'] ?? $tanggal_kemarin;
     $kd_store = $_GET['kd_store'] ?? 'all';
+
     $page = 1;
     $limit = 10;
+
     if (!$is_export) {
         $page = (int) ($_GET['page'] ?? 1);
         if ($page < 1)
@@ -50,27 +102,40 @@ try {
     } else {
         $response['pagination'] = null;
     }
+
     $offset = ($page - 1) * $limit;
     if (isset($response['pagination'])) {
         $response['pagination']['offset'] = $offset;
     }
-    $sql_stores = "SELECT kd_store, nm_alias FROM kode_store WHERE display = 'on' ORDER BY Nm_Alias ASC";
-    $result_stores = $conn->query($sql_stores);
-    if ($result_stores) {
-        while ($row = $result_stores->fetch_assoc()) {
-            $response['stores'][] = $row;
-        }
-    }
+
     $where_conditions = "DATE(a.tgl_input) BETWEEN ? AND ?";
     $bind_params_data = ['ss', $tgl_mulai, $tgl_selesai];
     $bind_params_summary = ['ss', $tgl_mulai, $tgl_selesai];
-    if ($kd_store != 'all') {
+
+    // Penyesuaian filter kd_store: jika 'SEMUA CABANG' atau 'all'
+    if ($kd_store != 'all' && $kd_store != 'SEMUA CABANG') {
         $where_conditions .= " AND a.kd_store = ?";
         $bind_params_data[0] .= 's';
         $bind_params_data[] = $kd_store;
         $bind_params_summary[0] .= 's';
         $bind_params_summary[] = $kd_store;
+    } else {
+        // Jika pilih semua, tapi user punya batasan cabang, batasi querynya
+        if ($userCabang['kd_store'] != "Pusat") {
+            $kdStoreArray = explode(',', $userCabang['kd_store']);
+            $placeholders = implode(',', array_fill(0, count($kdStoreArray), '?'));
+            $where_conditions .= " AND a.kd_store IN ($placeholders)";
+
+            $bind_params_data[0] .= str_repeat('s', count($kdStoreArray));
+            $bind_params_summary[0] .= str_repeat('s', count($kdStoreArray));
+
+            foreach ($kdStoreArray as $kd) {
+                $bind_params_data[] = $kd;
+                $bind_params_summary[] = $kd;
+            }
+        }
     }
+
     $sql_calc_found_rows = "";
     $limit_offset_sql = "";
     if (!$is_export) {
@@ -80,6 +145,7 @@ try {
         $bind_params_data[] = $limit;
         $bind_params_data[] = $offset;
     }
+
     $sql_data = "
         SELECT
             $sql_calc_found_rows
@@ -104,29 +170,18 @@ try {
         WHERE
             $where_conditions
         GROUP BY
-            DATE(a.tgl_input),
-            a.no_faktur,
-            a.kode_supp,
-            b.nama_supp,
-            b.nama_inisial,
-            a.plu,
-            a.descp,
-            a.satuan,
-            a.conv1,
-            a.conv2,
-            a.qty,
-            a.Keterangan 
+            DATE(a.tgl_input), a.no_faktur, a.kode_supp, b.nama_supp, b.nama_inisial,
+            a.plu, a.descp, a.satuan, a.conv1, a.conv2, a.qty, a.Keterangan 
         ORDER BY
             tanggal, faktur, a.plu
         $limit_offset_sql
     ";
+
     $stmt_data = $conn->prepare($sql_data);
-    if ($stmt_data === false) {
-        throw new Exception("Prepare failed (sql_data): " . $conn->error);
-    }
     $stmt_data->bind_param(...$bind_params_data);
     $stmt_data->execute();
     $result_data = $stmt_data->get_result();
+
     while ($row = $result_data->fetch_assoc()) {
         foreach ($row as $key => $value) {
             if (is_string($value)) {
@@ -136,19 +191,15 @@ try {
         $response['tabel_data'][] = $row;
     }
     $stmt_data->close();
+
     if (!$is_export) {
         $sql_count_result = "SELECT FOUND_ROWS() AS total_rows";
         $result_count = $conn->query($sql_count_result);
         $total_rows = $result_count->fetch_assoc()['total_rows'] ?? 0;
         $response['pagination']['total_rows'] = (int) $total_rows;
         $response['pagination']['total_pages'] = ceil($total_rows / $limit);
-        if ($page > $response['pagination']['total_pages'] && $total_rows > 0) {
-            $page = $response['pagination']['total_pages'];
-            $response['pagination']['current_page'] = $page;
-            $offset = ($page - 1) * $limit;
-            $response['pagination']['offset'] = $offset;
-        }
     }
+
     $sql_summary = "
         SELECT
             SUM(a.qty) AS total_qty,
@@ -156,26 +207,24 @@ try {
             SUM(IFNULL(a.ppn,0) * (CASE WHEN a.timbang='true' THEN a.qty/1000 ELSE a.qty END)) AS total_ppn,
             (SUM(a.netto * (CASE WHEN a.timbang='true' THEN a.qty/1000 ELSE a.qty END)) +
              SUM(IFNULL(a.ppn,0) * (CASE WHEN a.timbang='true' THEN a.qty/1000 ELSE a.qty END))) AS total_grand
-        FROM
-            hilang_pasangan a
-        WHERE
-            $where_conditions
+        FROM hilang_pasangan a
+        WHERE $where_conditions
     ";
     $stmt_summary = $conn->prepare($sql_summary);
-    if ($stmt_summary === false) {
-        throw new Exception("Prepare failed (sql_summary): " . $conn->error);
-    }
     $stmt_summary->bind_param(...$bind_params_summary);
     $stmt_summary->execute();
-    $result_summary = $stmt_summary->get_result();
-    $summary_data = $result_summary->fetch_assoc();
+    $summary_data = $stmt_summary->get_result()->fetch_assoc();
     $stmt_summary->close();
+
     if ($summary_data) {
-        $response['summary']['total_qty'] = $summary_data['total_qty'] ?? 0;
-        $response['summary']['total_netto'] = $summary_data['total_netto'] ?? 0;
-        $response['summary']['total_ppn'] = $summary_data['total_ppn'] ?? 0;
-        $response['summary']['total_grand'] = $summary_data['total_grand'] ?? 0;
+        $response['summary'] = [
+            'total_qty' => $summary_data['total_qty'] ?? 0,
+            'total_netto' => $summary_data['total_netto'] ?? 0,
+            'total_ppn' => $summary_data['total_ppn'] ?? 0,
+            'total_grand' => $summary_data['total_grand'] ?? 0,
+        ];
     }
+
     $sql_date_summary = "
         SELECT
             DATE(a.tgl_input) AS tanggal,
@@ -184,19 +233,12 @@ try {
             SUM(IFNULL(a.ppn,0) * (CASE WHEN a.timbang='true' THEN a.qty/1000 ELSE a.qty END)) AS total_ppn,
             (SUM(a.netto * (CASE WHEN a.timbang='true' THEN a.qty/1000 ELSE a.qty END)) +
              SUM(IFNULL(a.ppn,0) * (CASE WHEN a.timbang='true' THEN a.qty/1000 ELSE a.qty END))) AS total_grand
-        FROM
-            hilang_pasangan a
-        WHERE
-            $where_conditions
-        GROUP BY
-            DATE(a.tgl_input)
-        ORDER BY
-            tanggal
+        FROM hilang_pasangan a
+        WHERE $where_conditions
+        GROUP BY DATE(a.tgl_input)
+        ORDER BY tanggal
     ";
     $stmt_date_summary = $conn->prepare($sql_date_summary);
-    if ($stmt_date_summary === false) {
-        throw new Exception("Prepare failed (sql_date_summary): " . $conn->error);
-    }
     $stmt_date_summary->bind_param(...$bind_params_summary);
     $stmt_date_summary->execute();
     $result_date_summary = $stmt_date_summary->get_result();
@@ -210,20 +252,11 @@ try {
     }
     $stmt_date_summary->close();
     $conn->close();
+
 } catch (Exception $e) {
     http_response_code(500);
     $response['error'] = $e->getMessage();
 }
-$json_output = json_encode($response);
-if ($json_output === false) {
-    $json_error_code = json_last_error();
-    $json_error_msg = json_last_error_msg();
-    http_response_code(500);
-    echo json_encode([
-        'error' => "Gagal melakukan encode JSON. Pesan: " . $json_error_msg,
-        'json_error_code' => $json_error_code
-    ]);
-} else {
-    echo $json_output;
-}
+
+echo json_encode($response);
 ?>

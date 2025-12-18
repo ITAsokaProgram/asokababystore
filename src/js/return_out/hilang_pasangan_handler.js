@@ -54,30 +54,47 @@ document.addEventListener("DOMContentLoaded", () => {
   async function loadData() {
     const params = getUrlParams();
     const isPagination = params.page > 1;
+    const token = getCookie("admin_token"); // Ambil token dari cookie
+
     setLoadingState(true, false, isPagination);
+
     const queryString = new URLSearchParams({
       tgl_mulai: params.tgl_mulai,
       tgl_selesai: params.tgl_selesai,
       kd_store: params.kd_store,
       page: params.page,
     }).toString();
+
     try {
       const response = await fetch(
-        `/src/api/return_out/get_hilang_pasangan.php?${queryString}`
+        `/src/api/return_out/get_hilang_pasangan.php?${queryString}`,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer " + token, // Tambahkan Header Authorization
+          },
+        }
       );
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
           errorData.error || `HTTP error! status: ${response.status}`
         );
       }
+
       const data = await response.json();
+
       if (data.error) {
         throw new Error(data.error);
       }
+
+      // Bagian Populate Store Filter (Mirip fungsi loadStores)
       if (data.stores) {
+        // populateStoreFilter adalah fungsi pembantu untuk mengisi <select>
         populateStoreFilter(data.stores, params.kd_store);
       }
+
       if (pageSubtitle) {
         let storeName = "Seluruh Cabang";
         if (
@@ -92,9 +109,11 @@ document.addEventListener("DOMContentLoaded", () => {
           pageTitle.textContent = `Laporan Return Out (Hilang Pasangan) - ${storeName}`;
         }
       }
+
       if (data.summary) {
         updateSummaryCards(data.summary);
       }
+
       renderTable(
         data.tabel_data,
         data.pagination ? data.pagination.offset : 0,
@@ -102,6 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
         data.date_subtotals,
         data.pagination
       );
+
       renderPagination(data.pagination);
     } catch (error) {
       console.error("Error loading data:", error);
@@ -115,6 +135,28 @@ document.addEventListener("DOMContentLoaded", () => {
     } finally {
       setLoadingState(false);
     }
+  }
+
+  // Fungsi pembantu untuk populate select option (disesuaikan dengan logic get_kode)
+  function populateStoreFilter(stores, selectedKd) {
+    if (!filterSelectStore) return;
+
+    filterSelectStore.innerHTML = "";
+
+    // Tambahkan opsi default
+    const defaultOption = new Option("Pilih Cabang", "none");
+    filterSelectStore.add(defaultOption);
+
+    const allOption = new Option("SEMUA CABANG", "SEMUA CABANG");
+    filterSelectStore.add(allOption);
+
+    stores.forEach((store) => {
+      const option = new Option(store.nm_alias, store.kd_store);
+      if (store.kd_store === selectedKd) {
+        option.selected = true;
+      }
+      filterSelectStore.add(option);
+    });
   }
   function setLoadingState(
     isLoading,
