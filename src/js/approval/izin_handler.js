@@ -49,15 +49,33 @@ document.addEventListener("DOMContentLoaded", () => {
     const params = getUrlParams();
     setLoadingState(true, false, params.page > 1);
     const queryString = new URLSearchParams(params).toString();
+
+    // Mengambil token dari cookie untuk dikirim ke header
+    const token = getCookie("admin_token");
+
     try {
       const response = await fetch(
-        `/src/api/approval/get_izin.php?${queryString}`
+        `/src/api/approval/get_izin.php?${queryString}`,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer " + token, // Penting agar PHP bisa filter cabang
+          },
+        }
       );
+
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
+
       const data = await response.json();
       if (data.error) throw new Error(data.error);
-      if (data.stores) populateStoreFilter(data.stores, params.kd_store);
+
+      // Memperbarui dropdown cabang jika ada data stores
+      if (data.stores) {
+        // Pastikan fungsi populateStoreFilter menangani format 'kd_store' dan 'nm_alias'
+        populateStoreFilter(data.stores, params.kd_store);
+      }
+
       if (pageSubtitle) {
         let storeName = "Seluruh Cabang";
         if (
@@ -69,11 +87,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         pageSubtitle.textContent = `Periode ${params.tgl_mulai} s/d ${params.tgl_selesai} - ${storeName}`;
       }
+
       if (data.summary) updateSummaryCards(data.summary);
+
       renderTable(
         data.tabel_data,
         data.pagination ? data.pagination.offset : 0
       );
+
       renderPagination(data.pagination);
     } catch (error) {
       console.error(error);
@@ -81,6 +102,39 @@ document.addEventListener("DOMContentLoaded", () => {
     } finally {
       setLoadingState(false);
       bulkActionBar.classList.add("translate-y-24", "opacity-0");
+    }
+  }
+
+  /** * Fungsi Helper untuk mengisi select (digunakan di dalam loadData)
+   * Mengikuti logika dari file get_kode.php yang Anda berikan
+   */
+  function populateStoreFilter(stores, currentSelected) {
+    const select = document.getElementById("cabang") || filterSelectStore;
+    if (!select) return;
+
+    // Simpan nilai yang sedang dipilih agar tidak hilang saat re-render
+    const valBefore = currentSelected || select.value;
+
+    select.innerHTML = "";
+
+    if (stores.length > 0) {
+      const defaultOption = new Option("Pilih Cabang", "none");
+      select.add(defaultOption);
+
+      const allOption = new Option("SEMUA CABANG", "all"); // value 'all' sesuai logika PHP get_izin
+      select.add(allOption);
+
+      stores.forEach((store) => {
+        // Menggunakan properti dari query PHP di atas: kd_store dan nm_alias
+        const option = new Option(store.nm_alias, store.kd_store);
+        select.add(option);
+      });
+
+      // Set kembali nilai yang dipilih
+      select.value = valBefore;
+    } else {
+      select.innerHTML =
+        '<option value="none">Gagal memuat data cabang</option>';
     }
   }
   function renderTable(tabel_data, offset) {
