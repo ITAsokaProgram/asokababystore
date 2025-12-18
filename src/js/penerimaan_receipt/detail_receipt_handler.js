@@ -55,7 +55,11 @@ document.addEventListener("DOMContentLoaded", () => {
   async function loadData() {
     const params = getUrlParams();
     const isPagination = params.page > 1;
+    // Ambil token dari cookie
+    const token = getCookie("admin_token");
+
     setLoadingState(true, false, isPagination);
+
     const queryString = new URLSearchParams({
       tgl_mulai: params.tgl_mulai,
       tgl_selesai: params.tgl_selesai,
@@ -63,26 +67,39 @@ document.addEventListener("DOMContentLoaded", () => {
       search_query: params.search_query,
       page: params.page,
     }).toString();
+
     if (filterSearchQuery) {
       filterSearchQuery.value = params.search_query;
     }
+
     try {
       const response = await fetch(
-        `/src/api/penerimaan_receipt/get_detail_receipt.php?${queryString}`
+        `/src/api/penerimaan_receipt/get_detail_receipt.php?${queryString}`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer " + token, // Penambahan Token
+          },
+        }
       );
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
           errorData.error || `HTTP error! status: ${response.status}`
         );
       }
+
       const data = await response.json();
       if (data.error) {
         throw new Error(data.error);
       }
+
       if (data.stores) {
         populateStoreFilter(data.stores, params.kd_store);
       }
+
       if (pageSubtitle) {
         let storeName = "Seluruh Cabang";
         if (
@@ -97,9 +114,11 @@ document.addEventListener("DOMContentLoaded", () => {
           pageTitle.textContent = `Detail Receipt - ${storeName}`;
         }
       }
+
       if (data.summary) {
         updateSummaryCards(data.summary);
       }
+
       renderTable(
         data.tabel_data,
         data.pagination.offset,
