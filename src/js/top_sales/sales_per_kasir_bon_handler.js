@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const searchInput = document.getElementById("search-input"); 
+  const searchInput = document.getElementById("search-input");
   const tableBody = document.getElementById("top-sales-table-body");
   const filterForm = document.getElementById("filter-form");
   const filterSubmitButton = document.getElementById("filter-submit-button");
@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tgl_mulai: params.get("tgl_mulai") || yesterdayString,
       tgl_selesai: params.get("tgl_selesai") || yesterdayString,
       kd_store: params.get("kd_store") || "all",
-      search: params.get("search") || "", 
+      search: params.get("search") || "",
       page: parseInt(params.get("page") || "1", 10),
     };
   }
@@ -59,17 +59,24 @@ document.addEventListener("DOMContentLoaded", () => {
   async function loadTopSalesData() {
     const params = getUrlParams();
     const isPagination = params.page > 1;
+    const token = getCookie("admin_token"); // Tambahan token
+
     setLoadingState(true, false, isPagination);
     const queryString = new URLSearchParams({
       tgl_mulai: params.tgl_mulai,
       tgl_selesai: params.tgl_selesai,
       kd_store: params.kd_store,
-      search: params.search, 
+      search: params.search,
       page: params.page,
     }).toString();
     try {
       const response = await fetch(
-        `/src/api/top_sales/get_sales_per_kasir_bon.php?${queryString}`
+        `/src/api/top_sales/get_sales_per_kasir_bon.php?${queryString}`,
+        {
+          headers: {
+            Authorization: "Bearer " + token, // Tambahan header
+          },
+        }
       );
       if (!response.ok) {
         const errorData = await response.json();
@@ -458,7 +465,7 @@ document.addEventListener("DOMContentLoaded", () => {
       tgl_mulai: params.tgl_mulai,
       tgl_selesai: params.tgl_selesai,
       kd_store: params.kd_store,
-      search: params.search, 
+      search: params.search,
       export: true,
     }).toString();
     try {
@@ -579,11 +586,11 @@ document.addEventListener("DOMContentLoaded", () => {
         dataRows.push([
           `No Trans: ${row.no_bon}`,
           "",
-          "", 
-          `Jam: ${row.jam_trs}`, 
+          "",
+          `Jam: ${row.jam_trs}`,
           `Kasir: ${row.kode_kasir} - ${row.nama_kasir}`,
-          "", 
-          "", 
+          "",
+          "",
         ]);
         merges.push({
           s: { r: dataRows.length + rowOffset - 1, c: 0 },
@@ -652,13 +659,13 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 6 } }, ...merges];
       const safeApplyStyle = (cellRef, styleObj) => {
-        if (!ws[cellRef]) return; 
+        if (!ws[cellRef]) return;
         ws[cellRef].s = styleObj;
       };
       const safeApplyFormat = (cellRef, format) => {
         if (!ws[cellRef]) return;
         ws[cellRef].t = "n";
-        ws[cellRef].z = format; 
+        ws[cellRef].z = format;
         if (!ws[cellRef].s) ws[cellRef].s = {};
         ws[cellRef].s.numFmt = format;
       };
@@ -707,28 +714,28 @@ document.addEventListener("DOMContentLoaded", () => {
       dataRows.forEach((row, R_idx) => {
         const R = R_idx + dataRowStartIndex;
         if (!row || row.length === 0) return;
-        const label = row[0] || row[2]; 
+        const label = row[0] || row[2];
         if (typeof label === "string") {
           const cellA = XLSX.utils.encode_cell({ r: R, c: 0 });
           const cellE = XLSX.utils.encode_cell({ r: R, c: 4 });
-          const cellC_next = XLSX.utils.encode_cell({ r: R + 1, c: 2 }); 
-          const cellD_next = XLSX.utils.encode_cell({ r: R + 1, c: 3 }); 
-          const cellF_next = XLSX.utils.encode_cell({ r: R + 1, c: 5 }); 
-          const cellG_next = XLSX.utils.encode_cell({ r: R + 1, c: 6 }); 
+          const cellC_next = XLSX.utils.encode_cell({ r: R + 1, c: 2 });
+          const cellD_next = XLSX.utils.encode_cell({ r: R + 1, c: 3 });
+          const cellF_next = XLSX.utils.encode_cell({ r: R + 1, c: 5 });
+          const cellG_next = XLSX.utils.encode_cell({ r: R + 1, c: 6 });
           if (label.startsWith("Tanggal:")) {
             safeApplyStyle(cellA, headerTanggalStyle);
           } else if (label.startsWith("No Trans:")) {
             safeApplyStyle(cellA, headerBonStyle);
-            safeApplyStyle(cellE, headerBonStyle); 
+            safeApplyStyle(cellE, headerBonStyle);
           } else if (label.startsWith("Sub Total Bon:")) {
             safeApplyStyle(XLSX.utils.encode_cell({ r: R, c: 2 }), {
               ...subtotalBonStyle,
-            }); 
+            });
             const styleNum = { ...subtotalBonStyle, numFmt: numFormat };
             const styleDec = { ...subtotalBonStyle, numFmt: numFormatDec };
-            safeApplyStyle(XLSX.utils.encode_cell({ r: R, c: 3 }), styleDec); 
-            safeApplyStyle(XLSX.utils.encode_cell({ r: R, c: 5 }), styleNum); 
-            safeApplyStyle(XLSX.utils.encode_cell({ r: R, c: 6 }), styleNum); 
+            safeApplyStyle(XLSX.utils.encode_cell({ r: R, c: 3 }), styleDec);
+            safeApplyStyle(XLSX.utils.encode_cell({ r: R, c: 5 }), styleNum);
+            safeApplyStyle(XLSX.utils.encode_cell({ r: R, c: 6 }), styleNum);
           } else if (label.startsWith("Sub Total Tanggal:")) {
             safeApplyStyle(XLSX.utils.encode_cell({ r: R, c: 2 }), {
               ...subtotalTanggalStyle,
@@ -751,10 +758,10 @@ document.addEventListener("DOMContentLoaded", () => {
             safeApplyFormat(
               XLSX.utils.encode_cell({ r: R, c: 3 }),
               numFormatDec
-            ); 
-            safeApplyFormat(XLSX.utils.encode_cell({ r: R, c: 4 }), numFormat); 
-            safeApplyFormat(XLSX.utils.encode_cell({ r: R, c: 5 }), numFormat); 
-            safeApplyFormat(XLSX.utils.encode_cell({ r: R, c: 6 }), numFormat); 
+            );
+            safeApplyFormat(XLSX.utils.encode_cell({ r: R, c: 4 }), numFormat);
+            safeApplyFormat(XLSX.utils.encode_cell({ r: R, c: 5 }), numFormat);
+            safeApplyFormat(XLSX.utils.encode_cell({ r: R, c: 6 }), numFormat);
           }
         }
       });
@@ -943,12 +950,12 @@ document.addEventListener("DOMContentLoaded", () => {
           {
             content: `Jam: ${row.jam_trs}`,
             colSpan: 1,
-            styles: { ...headerBonStyles, halign: "center" }, 
+            styles: { ...headerBonStyles, halign: "center" },
           },
           {
             content: `Kasir: ${row.kode_kasir} - ${row.nama_kasir}`,
-            colSpan: 3, 
-            styles: { ...headerBonStyles, halign: "right" }, 
+            colSpan: 3,
+            styles: { ...headerBonStyles, halign: "right" },
           },
         ]);
       };

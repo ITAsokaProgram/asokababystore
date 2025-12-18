@@ -56,44 +56,88 @@ document.addEventListener("DOMContentLoaded", () => {
   async function loadTopSalesData() {
     const params = getUrlParams();
     const isPagination = params.page > 1;
+    const token = getCookie("admin_token"); // Ambil token untuk header
+
     setLoadingState(true, false, isPagination);
+
     const queryString = new URLSearchParams({
       tgl_mulai: params.tgl_mulai,
       tgl_selesai: params.tgl_selesai,
       kd_store: params.kd_store,
       page: params.page,
     }).toString();
+
     try {
       const response = await fetch(
-        `/src/api/top_sales/get_by_qty.php?${queryString}`
+        `/src/api/top_sales/get_by_qty.php?${queryString}`,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer " + token, // Sertakan token
+          },
+        }
       );
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
           errorData.error || `HTTP error! status: ${response.status}`
         );
       }
+
       const data = await response.json();
       if (data.error) {
         throw new Error(data.error);
       }
-      if (data.stores) {
-        populateStoreFilter(data.stores, params.kd_store);
+
+      // --- REVISI POPULATE FILTER CABANG (Sesuai Logic get_kode) ---
+      if (data.stores && filterSelectStore) {
+        filterSelectStore.innerHTML = ""; // Bersihkan isi dropdown
+
+        if (data.stores.length > 0) {
+          const defaultOption = new Option("Pilih Cabang", "none");
+          filterSelectStore.add(defaultOption);
+
+          const allOption = new Option("SEMUA CABANG", "SEMUA CABANG");
+          filterSelectStore.add(allOption);
+
+          data.stores.forEach((store) => {
+            const option = new Option(store.nm_alias, store.kd_store);
+            // Autoselect jika sesuai dengan parameter URL
+            if (store.kd_store === params.kd_store) {
+              option.selected = true;
+            }
+            filterSelectStore.add(option);
+          });
+
+          // Khusus handle 'SEMUA CABANG' agar tetap terpilih jika terpilih sebelumnya
+          if (params.kd_store === "SEMUA CABANG") {
+            allOption.selected = true;
+          }
+        } else {
+          filterSelectStore.innerHTML =
+            '<option value="none">Data cabang kosong</option>';
+        }
       }
+
+      // Update Subtitle dan Title
       if (pageSubtitle) {
         let storeName = "Seluruh Cabang";
         if (
+          filterSelectStore &&
           filterSelectStore.options.length > 0 &&
           filterSelectStore.selectedIndex > -1
         ) {
           storeName =
             filterSelectStore.options[filterSelectStore.selectedIndex].text;
+          if (storeName === "Pilih Cabang") storeName = "Seluruh Cabang";
         }
         pageSubtitle.textContent = `Top Sales by Quantity Periode ${params.tgl_mulai} s/d ${params.tgl_selesai} - ${storeName}`;
         if (pageTitle) {
           pageTitle.textContent = `Top Sales by (Qty) - ${storeName}`;
         }
       }
+
       if (data.summary) {
         updateSummaryCards(data.summary);
       }

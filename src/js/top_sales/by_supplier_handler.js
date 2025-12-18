@@ -56,30 +56,46 @@ document.addEventListener("DOMContentLoaded", () => {
   async function loadTopSalesData() {
     const params = getUrlParams();
     const isPagination = params.page > 1;
+    const token = getCookie("admin_token"); // Ambil token untuk Authorization
+
     setLoadingState(true, false, isPagination);
+
     const queryString = new URLSearchParams({
       tgl_mulai: params.tgl_mulai,
       tgl_selesai: params.tgl_selesai,
       kd_store: params.kd_store,
       page: params.page,
     }).toString();
+
     try {
       const response = await fetch(
-        `/src/api/top_sales/get_by_supplier.php?${queryString}`
+        `/src/api/top_sales/get_by_supplier.php?${queryString}`,
+        {
+          // Tambahkan header Authorization agar PHP bisa mengenali user
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer " + token,
+          },
+        }
       );
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
           errorData.error || `HTTP error! status: ${response.status}`
         );
       }
+
       const data = await response.json();
       if (data.error) {
         throw new Error(data.error);
       }
+
+      // Memperbarui dropdown cabang dengan data yang diizinkan saja
       if (data.stores) {
         populateStoreFilter(data.stores, params.kd_store);
       }
+
       if (pageSubtitle) {
         let storeName = "Seluruh Cabang";
         if (
@@ -94,9 +110,11 @@ document.addEventListener("DOMContentLoaded", () => {
           pageTitle.textContent = `Top Sales by (Supplier) - ${storeName}`;
         }
       }
+
       if (data.summary) {
         updateSummaryCards(data.summary);
       }
+
       renderTable(data.tabel_data, data.pagination, data.summary);
       renderPagination(data.pagination);
     } catch (error) {
@@ -112,6 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
       setLoadingState(false);
     }
   }
+
   function setLoadingState(
     isLoading,
     isExporting = false,
