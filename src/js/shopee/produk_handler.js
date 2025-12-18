@@ -1046,27 +1046,31 @@ const handleUpdateHargaBeliClick = async (event) => {
     btn.disabled = false;
   }
 };
+
 const handleCalcMarginClick = async (event) => {
   const btn = event.currentTarget;
   const sku = btn.dataset.sku;
   const itemId = btn.dataset.itemId;
   const modelId = btn.dataset.modelId;
   const hrgBeli = parseFloat(btn.dataset.hb);
-  const hrgBeliOld = parseFloat(btn.dataset.hbOld);
   const currentPrice = parseFloat(btn.dataset.price);
+
   btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
   btn.disabled = true;
+
   try {
     const result = await calculateMargin({
       sku: sku,
       hrg_beli: hrgBeli,
       price: currentPrice,
     });
+
     if (!result.success) throw new Error(result.message);
     const d = result.data;
     const formatNumber = (val) =>
       new Intl.NumberFormat("id-ID").format(Math.round(val));
     const formatPct = (val) => val.toFixed(2) + "%";
+
     const htmlContent = `
       <div class="text-sm text-left space-y-3">
         <div class="bg-gray-50 p-3 rounded-lg border">
@@ -1078,9 +1082,38 @@ const handleCalcMarginClick = async (event) => {
                 )}</span>
             </div>
         </div>
+
+        <div id="hb-simulation-result" class="bg-orange-50 p-3 rounded-lg border border-orange-100">
+            <h4 class="font-bold text-orange-800 text-xs uppercase mb-2">HB</h4>
+            <div class="text-xs space-y-1 mb-2 text-gray-600">
+                <div class="flex justify-between">
+                    <span>Admin Shopee:</span> 
+                    <span>-${formatNumber(d.based_on_hb.admin_rp)}</span>
+                    
+                </div>
+                <div class="flex justify-between">
+                    <span>Biaya Ongkir:</span> 
+                    <span>-${formatNumber(d.based_on_hb.ongkir_rp)}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>Biaya Promo:</span> 
+                    <span>-${formatNumber(d.based_on_hb.promo_rp)}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>Biaya Pesanan:</span> 
+                    <span>-${formatNumber(d.costs.biaya_pesanan)}</span>
+                </div>
+            </div>
+            <div class="flex justify-between items-center border-t border-orange-200 pt-2 font-bold text-orange-900">
+                <span>Total HPP:</span>
+                <span>${formatNumber(d.based_on_hb.hpp_total)}</span>
+            </div>
+        </div>
+
         <div id="margin-simulation-result" class="bg-blue-50 p-3 rounded-lg border border-blue-100">
             ${renderSimulationContent(d)}
         </div>
+
         <div class="mt-4">
             <label class="block text-sm font-medium text-gray-700 mb-1">Simulasi Harga Jual Baru:</label>
             <input type="number" id="swal-new-price" class="swal2-input w-full" 
@@ -1093,20 +1126,21 @@ const handleCalcMarginClick = async (event) => {
         </div>
       </div>
     `;
+
     function renderSimulationContent(data) {
       let marginClass = "text-gray-800";
       if (data.margin_rp < 0) marginClass = "text-red-600 font-bold";
       else if (data.margin_rp > 0) marginClass = "text-green-600 font-bold";
 
       return `
-        <h4 class="font-bold text-blue-800 text-xs uppercase mb-2">Hasil Simulasi</h4>
+        <h4 class="font-bold text-blue-800 text-xs uppercase mb-2">HJ</h4>
         <div class="text-xs space-y-1 mb-2 text-gray-600">
             <div class="flex justify-between">
                 <span>Admin Shopee (${data.costs.admin_pct}%):</span> 
                 <span>-${formatNumber(data.costs.admin_rp)}</span>
             </div>
             <div class="flex justify-between">
-                <span>Partisipasi Ongkir (${data.costs.ongkir_pct}%):</span> 
+                <span>Biaya Ongkir (${data.costs.ongkir_pct}%):</span> 
                 <span>-${formatNumber(data.costs.ongkir_rp)}</span>
             </div>
             <div class="flex justify-between">
@@ -1130,6 +1164,8 @@ const handleCalcMarginClick = async (event) => {
         </div>
     `;
     }
+
+    // Sisanya tetap sama (Swal.fire, debounce, dll)
     const swalInstance = Swal.fire({
       title: "Kalkulasi Margin",
       html: htmlContent,
@@ -1170,6 +1206,7 @@ const handleCalcMarginClick = async (event) => {
         return document.getElementById("swal-new-price").value;
       },
     });
+
     const { isConfirmed, value: newPrice } = await swalInstance;
     if (isConfirmed && newPrice) {
       const formSelector =
@@ -1185,9 +1222,7 @@ const handleCalcMarginClick = async (event) => {
           input.dispatchEvent(new Event("input", { bubbles: true }));
         }
         const submitBtn = existingForm.querySelector('button[type="submit"]');
-        if (submitBtn) {
-          submitBtn.click();
-        }
+        if (submitBtn) submitBtn.click();
       }
     }
   } catch (error) {

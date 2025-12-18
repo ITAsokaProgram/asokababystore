@@ -467,34 +467,34 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function loadStores() {
-  fetch("/src/api/shared/get_all_store.php")
+  const token = getCookie("admin_token");
+  const url = "/src/api/cabang/get_kode.php";
+
+  fetch(url, {
+    headers: {
+      Accept: "application/json",
+      Authorization: "Bearer " + token,
+    },
+  })
     .then((response) => response.json())
     .then((result) => {
       const select = document.getElementById("cabang");
 
-      // 1. Reset isi dropdown
       select.innerHTML = "";
 
-      if (result.success && result.data.length > 0) {
-        // 2. Tambahkan Opsi Default
+      if (result.data.length > 0) {
         const defaultOption = new Option("Pilih Cabang", "none");
         select.add(defaultOption);
 
-        // 3. Tambahkan Opsi "SEMUA CABANG" (Hardcoded manual sesuai kebutuhan user)
-        // Pastikan logic backend Anda bisa menangani value "SEMUA CABANG"
         const allOption = new Option("SEMUA CABANG", "SEMUA CABANG");
         select.add(allOption);
-
-        // 4. Loop data dari database
+        console.log("RESULT DATA", result.data);
         result.data.forEach((store) => {
-          // Menggunakan Nm_Alias sebagai value dan text (sesuai pola kode lama: ABIN, ACE, dll)
-          // Jika ingin nama lengkap, ubah store.Nm_Alias menjadi store.Nm_Store pada parameter kedua
-          const option = new Option(store.Nm_Alias, store.Kd_Store);
+          const option = new Option(store.nama_cabang, store.store);
           select.add(option);
         });
       } else {
-        select.innerHTML =
-          '<option value="none">Gagal memuat data cabang</option>';
+        ('<option value="none">Gagal memuat data cabang</option>');
       }
     })
     .catch((error) => {
