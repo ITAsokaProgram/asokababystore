@@ -72,27 +72,24 @@ $page = (int) ($_GET['page'] ?? $default_page);
                 <div class="filter-card-simple mb-4">
                     <form id="filter-form" class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
                         <div>
-                            <label for="tgl_mulai" class="block text-xs font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-calendar-alt text-pink-600 mr-1"></i> Dari Tanggal
-                            </label>
+                            <label class="block text-xs font-semibold text-gray-700 mb-2">Dari Tanggal</label>
                             <input type="date" name="tgl_mulai" id="tgl_mulai" class="input-modern w-full"
-                                value="<?php echo htmlspecialchars($tgl_mulai); ?>">
+                                value="<?= $tgl_mulai ?>">
                         </div>
                         <div>
-                            <label for="tgl_selesai" class="block text-xs font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-calendar-alt text-pink-600 mr-1"></i> Sampai Tanggal
-                            </label>
+                            <label class="block text-xs font-semibold text-gray-700 mb-2">Sampai Tanggal</label>
                             <input type="date" name="tgl_selesai" id="tgl_selesai" class="input-modern w-full"
-                                value="<?php echo htmlspecialchars($tgl_selesai); ?>">
+                                value="<?= $tgl_selesai ?>">
                         </div>
                         <div>
-                            <button type="submit" id="filter-submit-button"
-                                class="btn-primary inline-flex items-center justify-center gap-2 w-full md:w-auto">
-                                <i class="fas fa-filter"></i>
-                                <span>Tampilkan</span>
-                            </button>
+                            <label class="block text-xs font-semibold text-gray-700 mb-2">Pilih Cabang</label>
+                            <select name="kd_store" id="kd_store" class="input-modern w-full">
+                                <option value="all">Seluruh Store</option>
+                            </select>
                         </div>
-                        <input type="hidden" name="page" id="page_input" value="1">
+                        <button type="submit" class="btn-primary flex items-center justify-center gap-2">
+                            <i class="fas fa-filter"></i> Tampilkan
+                        </button>
                     </form>
                 </div>
 
@@ -107,13 +104,13 @@ $page = (int) ($_GET['page'] ?? $default_page);
                         <table class="table-modern w-full" id="data-table">
                             <thead>
                                 <tr>
-                                    <th>No</th>
                                     <th>Waktu Hitung</th>
+                                    <th>Cabang</th>
                                     <th>User Hitung</th>
                                     <th>User Check</th>
                                     <th>Total Nominal</th>
                                     <th>Keterangan</th>
-                                    <th class="text-center">Detail</th>
+                                    <th>Detail</th>
                                 </tr>
                             </thead>
                             <tbody id="table-body">
@@ -163,6 +160,13 @@ $page = (int) ($_GET['page'] ?? $default_page);
 
                         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             <div class="lg:col-span-1 space-y-4">
+                                <div class="p-3 border border-pink-200 rounded-lg bg-white">
+                                    <label class="block text-xs font-bold text-gray-700 mb-1">Pilih Cabang <span
+                                            class="text-red-500">*</span></label>
+                                    <select name="kd_store" id="modal_kd_store" class="input-modern w-full" required>
+                                        <option value="">-- Pilih Cabang --</option>
+                                    </select>
+                                </div>
                                 <div class="bg-pink-50 p-4 rounded-lg border border-pink-100">
                                     <label class="block text-xs font-bold text-gray-700 mb-1">Total Nominal</label>
                                     <div class="text-2xl font-bold text-pink-600" id="display-total-nominal">Rp 0</div>

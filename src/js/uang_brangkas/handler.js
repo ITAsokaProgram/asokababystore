@@ -1,17 +1,26 @@
 import { sendRequestJSON, sendRequestGET } from "../utils/api_helpers.js";
+
 document.addEventListener("DOMContentLoaded", () => {
   const tableBody = document.getElementById("table-body");
   const filterForm = document.getElementById("filter-form");
   const modalForm = document.getElementById("modal-form");
-  const btnAddData = document.getElementById("btn-add-data");
+  const formTransaksi = document.getElementById("form-transaksi");
+
+  // Selectors untuk Modal & Filter Cabang
+  const btnAddData = document.getElementById("btn-add-data"); // TOMBOL YANG BERMASALAH
   const btnCloseModal = document.getElementById("btn-close-modal");
   const btnCancel = document.getElementById("btn-cancel");
   const btnSave = document.getElementById("btn-save");
-  const formTransaksi = document.getElementById("form-transaksi");
+
+  const modalStoreSelect = document.getElementById("modal_kd_store");
+  const filterStoreSelect = document.getElementById("kd_store");
+
   const displayTotal = document.getElementById("display-total-nominal");
   const inputDenoms = document.querySelectorAll(".input-denim");
   const divPassword = document.getElementById("div-password");
+
   const API_BASE = "/src/api/uang_brangkas";
+
   const NOMINAL_MAP = {
     qty_100rb: 100000,
     qty_50rb: 50000,
@@ -25,91 +34,70 @@ document.addEventListener("DOMContentLoaded", () => {
     qty_200_koin: 200,
     qty_100_koin: 100,
   };
+
+  function getCookie(name) {
+    let nameEQ = name + "=";
+    let ca = document.cookie.split(";");
+    for (let i = 0; i < ca.length; i++) {
+      let c = ca[i];
+      while (c.charAt(0) == " ") c = c.substring(1, c.length);
+      if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+    }
+    return null;
+  }
+
   function formatRupiah(number) {
-    return new Intl.NumberFormat("id-ID", {
-      style: "decimal",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-    }).format(number);
+    return new Intl.NumberFormat("id-ID").format(number);
   }
-  async function loadData() {
-    tableBody.innerHTML = `<tr><td colspan="7" class="text-center p-8"><div class="spinner-simple"></div></td></tr>`;
-    const params = new URLSearchParams(new FormData(filterForm)).toString();
-    try {
-      const response = await fetch(`${API_BASE}/get_data.php?${params}`);
-      const result = await response.json();
-      if (result.error) throw new Error(result.error);
-      renderTable(result.tabel_data, result.pagination.offset);
-    } catch (error) {
-      tableBody.innerHTML = `<tr><td colspan="7" class="text-center text-red-500">${error.message}</td></tr>`;
+
+  // Fungsi untuk mengisi dropdown cabang
+  function populateStoreDropdowns(stores) {
+    if (filterStoreSelect) {
+      const currentFilterVal = filterStoreSelect.value;
+      filterStoreSelect.innerHTML =
+        '<option value="all">Seluruh Store</option>';
+      stores.forEach((s) =>
+        filterStoreSelect.add(
+          new Option(`${s.kd_store} - ${s.nm_alias}`, s.kd_store)
+        )
+      );
+      if (currentFilterVal) filterStoreSelect.value = currentFilterVal;
+    }
+
+    if (modalStoreSelect) {
+      modalStoreSelect.innerHTML = '<option value="">-- Pilih Toko --</option>';
+      stores.forEach((s) =>
+        modalStoreSelect.add(
+          new Option(`${s.kd_store} - ${s.nm_alias}`, s.kd_store)
+        )
+      );
     }
   }
-  function renderTable(data, offset) {
-    if (!data || data.length === 0) {
-      tableBody.innerHTML = `<tr><td colspan="7" class="text-center text-gray-500">Tidak ada data.</td></tr>`;
-      return;
-    }
-    tableBody.innerHTML = data
-      .map(
-        (row, i) => `
-            <tr class="hover:bg-gray-50 border-b border-gray-100">
-                <td class="text-center text-sm text-gray-500">${
-                  offset + i + 1
-                }</td>
-                <td class="text-sm text-gray-800">${
-                  row.tanggal
-                }<br><span class="text-xs text-gray-500">${row.jam}</span></td>
-                <td class="text-left text-sm font-medium text-gray-700">${
-                  row.nama_user_hitung
-                }</td>
-                <td class="text-left text-sm font-medium text-gray-700">${
-                  row.nama_user_cek
-                }</td>
-                <td class="text-left text-sm font-bold text-pink-600 pr-4">${formatRupiah(
-                  row.total_nominal
-                )}</td>
-                <td class="text-sm text-gray-600 truncate max-w-xs">${
-                  row.keterangan || "-"
-                }</td>
-                <td class="text-center">
-                    <button onclick="window.viewBrangkas('${encodeURIComponent(
-                      JSON.stringify(row)
-                    )}')" 
-                        class="text-gray-500 hover:text-pink-600 transition-colors" title="Lihat Detail">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                </td>
-            </tr>
-        `
-      )
-      .join("");
-  }
+
+  // Fungsi buka modal (Mode Insert atau Detail)
   function openModal(mode, data = null) {
     formTransaksi.reset();
     document.getElementById("form_mode").value = mode;
-    const allInputs = formTransaksi.querySelectorAll("input, textarea");
+    const allInputs = formTransaksi.querySelectorAll("input, textarea, select");
+
     if (mode === "insert") {
       document.getElementById("modal-title").textContent =
         "Input Uang Brangkas";
       allInputs.forEach((el) => (el.disabled = false));
       divPassword.style.display = "block";
       btnSave.style.display = "inline-flex";
-      btnSave.innerHTML = '<i class="fas fa-save mr-2 mt-1"></i> Simpan Data';
     } else if (mode === "detail") {
       document.getElementById("modal-title").textContent =
         "Detail Uang Brangkas";
       if (data) {
-        document.getElementById("pk_tanggal").value = data.tanggal;
-        document.getElementById("pk_jam").value = data.jam;
-        document.getElementById("pk_user_hitung").value = data.user_hitung;
+        if (modalStoreSelect) modalStoreSelect.value = data.kd_store;
         document.getElementById("nama_user_cek").value =
           data.nama_user_cek_inisial || "";
         document.getElementById("keterangan").value = data.keterangan;
-        document.getElementById("kode_otorisasi").value = "";
-        for (const [key] of Object.entries(NOMINAL_MAP)) {
+        Object.keys(NOMINAL_MAP).forEach((key) => {
           const el = formTransaksi.querySelector(`[name="${key}"]`);
           if (el) el.value = data[key];
-        }
+        });
       }
       allInputs.forEach((el) => (el.disabled = true));
       divPassword.style.display = "none";
@@ -118,33 +106,59 @@ document.addEventListener("DOMContentLoaded", () => {
     calculateFormTotal();
     modalForm.classList.remove("hidden");
   }
-  function calculateFormTotal() {
-    let total = 0;
-    inputDenoms.forEach((input) => {
-      total += (parseInt(input.value) || 0) * (NOMINAL_MAP[input.name] || 0);
-    });
-    displayTotal.textContent = formatRupiah(total);
+
+  // --- EVENT LISTENERS ---
+
+  // 1. Klik Tombol Input Baru (PENTING)
+  if (btnAddData) {
+    btnAddData.addEventListener("click", () => openModal("insert"));
   }
-  inputDenoms.forEach((inp) =>
-    inp.addEventListener("input", calculateFormTotal)
-  );
-  btnAddData.addEventListener("click", () => openModal("insert"));
-  [btnCloseModal, btnCancel].forEach((el) =>
-    el.addEventListener("click", () => modalForm.classList.add("hidden"))
-  );
+
+  // 2. Tutup Modal
+  [btnCloseModal, btnCancel].forEach((el) => {
+    if (el)
+      el.addEventListener("click", () => modalForm.classList.add("hidden"));
+  });
+
+  // 3. Filter Form Submit
   filterForm.addEventListener("submit", (e) => {
     e.preventDefault();
     loadData();
   });
+
+  // 4. Kalkulasi Otomatis saat input angka
+  function calculateFormTotal() {
+    let total = 0;
+    inputDenoms.forEach(
+      (inp) =>
+        (total += (parseInt(inp.value) || 0) * (NOMINAL_MAP[inp.name] || 0))
+    );
+    displayTotal.textContent = "Rp " + formatRupiah(total);
+  }
+  inputDenoms.forEach((inp) =>
+    inp.addEventListener("input", calculateFormTotal)
+  );
+
+  // 5. Simpan Data (Submit Modal)
   formTransaksi.addEventListener("submit", async (e) => {
     e.preventDefault();
     const mode = document.getElementById("form_mode").value;
     if (mode === "detail") return;
-    const endpoint = "/insert.php";
+
+    const token = getCookie("admin_token");
     const jsonData = {};
     new FormData(formTransaksi).forEach((v, k) => (jsonData[k] = v));
+
     try {
-      const result = await sendRequestJSON(API_BASE + endpoint, jsonData);
+      const response = await fetch(`${API_BASE}/insert.php`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token,
+        },
+        body: JSON.stringify(jsonData),
+      });
+      const result = await response.json();
       if (result.success) {
         Swal.fire("Berhasil", result.message, "success");
         modalForm.classList.add("hidden");
@@ -153,10 +167,73 @@ document.addEventListener("DOMContentLoaded", () => {
         Swal.fire("Gagal", result.message, "error");
       }
     } catch (error) {
-      Swal.fire("Error", error.message, "error");
+      Swal.fire("Error", "Gagal menyimpan data", "error");
     }
   });
+
+  // 6. Global Function untuk Lihat Detail (Eye Icon)
   window.viewBrangkas = (str) =>
     openModal("detail", JSON.parse(decodeURIComponent(str)));
+
+  // Fungsi Ambil Data dari API
+  async function loadData() {
+    const token = getCookie("admin_token");
+    const params = new URLSearchParams(new FormData(filterForm)).toString();
+
+    try {
+      const response = await fetch(`${API_BASE}/get_data.php?${params}`, {
+        headers: { Authorization: "Bearer " + token },
+      });
+      const result = await response.json();
+
+      if (result.stores) populateStoreDropdowns(result.stores);
+      renderTable(result.tabel_data, result.pagination.offset);
+    } catch (error) {
+      console.error("Load Error:", error);
+    }
+  }
+  // Cari fungsi renderTable dan ubah bagian kolom cabangnya
+  function renderTable(data, offset) {
+    if (!data || data.length === 0) {
+      tableBody.innerHTML = `<tr><td colspan="8" class="text-center p-4">Tidak ada data.</td></tr>`;
+      return;
+    }
+    tableBody.innerHTML = data
+      .map(
+        (row, i) => `
+        <tr class="hover:bg-gray-50 border-b">
+            <td class="text-sm">
+                <span class="font-medium text-gray-800">${
+                  row.tanggal
+                }</span><br>
+                <span class="text-xs text-gray-400">${row.jam}</span>
+            </td>
+            <td class="text-sm">
+                <span class="px-2 py-1 bg-pink-50 text-pink-700 rounded-md font-bold text-xs">
+                    ${row.display_store ?? "-"}
+                </span>
+            </td>
+            <td class="text-sm text-gray-700">${row.nama_user_hitung}</td>
+            <td class="text-sm text-gray-700">${row.nama_user_cek}</td>
+            <td class="text-sm font-bold text-pink-600">Rp ${formatRupiah(
+              row.total_nominal
+            )}</td>
+            <td class="text-sm text-gray-500 italic">${
+              row.keterangan || "-"
+            }</td>
+            <td class="text-center">
+                <button onclick="window.viewBrangkas('${encodeURIComponent(
+                  JSON.stringify(row)
+                )}')" 
+                        class="text-gray-400 hover:text-pink-600 transition-colors">
+                    <i class="fas fa-eye"></i>
+                </button>
+            </td>
+        </tr>
+    `
+      )
+      .join("");
+  }
+  // Jalankan load data pertama kali
   loadData();
 });
