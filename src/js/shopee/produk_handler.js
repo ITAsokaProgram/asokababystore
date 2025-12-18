@@ -1097,21 +1097,26 @@ const handleCalcMarginClick = async (event) => {
       let marginClass = "text-gray-800";
       if (data.margin_rp < 0) marginClass = "text-red-600 font-bold";
       else if (data.margin_rp > 0) marginClass = "text-green-600 font-bold";
+
       return `
         <h4 class="font-bold text-blue-800 text-xs uppercase mb-2">Hasil Simulasi</h4>
         <div class="text-xs space-y-1 mb-2 text-gray-600">
-            <div class="flex justify-between"><span>Admin Shopee:</span> <span>-${formatNumber(
-              data.costs.admin_rp
-            )}</span></div>
-            <div class="flex justify-between"><span>Partisipasi Ongkir:</span> <span>-${formatNumber(
-              data.costs.ongkir_rp
-            )}</span></div>
-            <div class="flex justify-between"><span>Biaya Promo:</span> <span>-${formatNumber(
-              data.costs.promo_rp
-            )}</span></div>
-            <div class="flex justify-between"><span>Biaya Pesanan:</span> <span>-${formatNumber(
-              data.costs.biaya_pesanan
-            )}</span></div>
+            <div class="flex justify-between">
+                <span>Admin Shopee (${data.costs.admin_pct}%):</span> 
+                <span>-${formatNumber(data.costs.admin_rp)}</span>
+            </div>
+            <div class="flex justify-between">
+                <span>Partisipasi Ongkir (${data.costs.ongkir_pct}%):</span> 
+                <span>-${formatNumber(data.costs.ongkir_rp)}</span>
+            </div>
+            <div class="flex justify-between">
+                <span>Biaya Promo (${data.costs.promo_pct}%):</span> 
+                <span>-${formatNumber(data.costs.promo_rp)}</span>
+            </div>
+            <div class="flex justify-between">
+                <span>Biaya Pesanan:</span> 
+                <span>-${formatNumber(data.costs.biaya_pesanan)}</span>
+            </div>
         </div>
         <div class="flex justify-between items-center border-t border-blue-200 pt-2 mb-2">
             <span class="font-bold">Total HPP:</span>
@@ -1123,7 +1128,7 @@ const handleCalcMarginClick = async (event) => {
                 ${formatNumber(data.margin_rp)} (${formatPct(data.margin_pct)})
             </span>
         </div>
-      `;
+    `;
     }
     const swalInstance = Swal.fire({
       title: "Kalkulasi Margin",
@@ -1171,18 +1176,14 @@ const handleCalcMarginClick = async (event) => {
         modelId != 0
           ? `.update-price-form[data-model-id="${modelId}"]`
           : `.update-price-form[data-item-id="${itemId}"]`;
-
       const existingForm = document.querySelector(formSelector);
       if (existingForm) {
         existingForm.dataset.fromMargin = "1";
-
         const input = existingForm.querySelector('input[name="new_price"]');
         if (input) {
           input.value = newPrice;
           input.dispatchEvent(new Event("input", { bubbles: true }));
         }
-
-        // 3. Klik tombol submit
         const submitBtn = existingForm.querySelector('button[type="submit"]');
         if (submitBtn) {
           submitBtn.click();

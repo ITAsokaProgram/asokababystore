@@ -50,7 +50,6 @@ $hpp_total = $netto + $total_biaya_lain;
 
 $margin = $price - $hpp_total;
 $margin_pct = ($price > 0) ? ($margin / $price) * 100 : 0;
-
 echo json_encode([
     'success' => true,
     'data' => [
@@ -62,7 +61,9 @@ echo json_encode([
         'costs' => [
             'admin_pct' => $admin_pct,
             'admin_rp' => $admin_cost_margin,
+            'ongkir_pct' => $ongkir_pct,
             'ongkir_rp' => $ongkir_cost_margin,
+            'promo_pct' => $promo_pct,
             'promo_rp' => $promo_cost_margin,
             'biaya_pesanan' => $biaya_pesanan_cost,
             'total_lain' => $total_biaya_lain
