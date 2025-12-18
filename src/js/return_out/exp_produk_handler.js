@@ -55,29 +55,45 @@ document.addEventListener("DOMContentLoaded", () => {
     const params = getUrlParams();
     const isPagination = params.page > 1;
     setLoadingState(true, false, isPagination);
+
+    // Ambil token untuk dikirim di header
+    const token = getCookie("admin_token");
+
     const queryString = new URLSearchParams({
       tgl_mulai: params.tgl_mulai,
       tgl_selesai: params.tgl_selesai,
       kd_store: params.kd_store,
       page: params.page,
     }).toString();
+
     try {
       const response = await fetch(
-        `/src/api/return_out/get_exp_produk.php?${queryString}`
+        `/src/api/return_out/get_exp_produk.php?${queryString}`,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer " + token, // Penambahan Token
+          },
+        }
       );
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
           errorData.error || `HTTP error! status: ${response.status}`
         );
       }
+
       const data = await response.json();
+
       if (data.error) {
         throw new Error(data.error);
       }
+
       if (data.stores) {
         populateStoreFilter(data.stores, params.kd_store);
       }
+
       if (pageSubtitle) {
         let storeName = "Seluruh Cabang";
         if (
@@ -92,9 +108,11 @@ document.addEventListener("DOMContentLoaded", () => {
           pageTitle.textContent = `Laporan Return Out (Expired) - ${storeName}`;
         }
       }
+
       if (data.summary) {
         updateSummaryCards(data.summary);
       }
+
       renderTable(
         data.tabel_data,
         data.pagination ? data.pagination.offset : 0,
