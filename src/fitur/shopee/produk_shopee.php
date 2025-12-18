@@ -187,9 +187,6 @@ require_once __DIR__ . '/produk_shopee.logic.php';
                                                     </span>
 
                                                     <?php
-                                                    // ============================================
-                                                    // TAMPILAN HARGA BELI (Single Product)
-                                                    // ============================================
                                                     $hb_val = (float) ($item['harga_beli'] ?? 0);
                                                     $hb_old_val = (float) ($item['hb_old'] ?? 0);
                                                     $ket_val = $item['keterangan'] ?? '';
@@ -303,9 +300,6 @@ require_once __DIR__ . '/produk_shopee.logic.php';
                                                                                 class="variant-price"><?php echo number_format($model['price_info'][0]['original_price'] ?? 0, 0, ',', '.'); ?></span>
                                                                         </span>
                                                                         <?php
-                                                                        // ============================================
-                                                                        // TAMPILAN HARGA BELI (Variasi)
-                                                                        // ============================================
                                                                         $hb_val_mod = (float)($model['harga_beli'] ?? 0);
                                                                         $hb_old_val_mod = (float)($model['hb_old'] ?? 0);
                                                                         $ket_val_mod = $model['keterangan'] ?? '';
@@ -629,11 +623,10 @@ require_once __DIR__ . '/produk_shopee.logic.php';
                         <div class="pagination-controls p-6 border-t border-gray-100 bg-white rounded-b-2xl mt-6">
                             <div class="flex flex-wrap items-center justify-center gap-2">
                                 <?php
-                                $adjacents = 2; // Jumlah angka di kiri/kanan halaman aktif
+                                $adjacents = 2; 
                                 $start_loop = max(2, $current_page - $adjacents);
                                 $end_loop = min($total_pages - 1, $current_page + $adjacents);
 
-                                // Helper function untuk generate URL
                                 function get_page_url($page_num, $page_size)
                                 {
                                     global $search_keyword, $search_type, $filter_type;
