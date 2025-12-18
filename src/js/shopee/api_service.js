@@ -173,3 +173,7 @@ export const forceSyncAllProductsToRedis = (data) => {
 export const updateHargaBeliMassal = () => {
   return sendRequestJSON("/src/api/shopee/update_harga_beli.php", {});
 };
+
+export const calculateMargin = (data) => {
+  return sendRequestJSON("/src/api/shopee/calculate_margin.php", data);
+};

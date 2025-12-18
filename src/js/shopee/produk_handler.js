@@ -8,7 +8,9 @@ import {
   syncAllProductsToRedis,
   forceSyncAllProductsToRedis,
   updateHargaBeliMassal,
+  calculateMargin,
 } from "./api_service.js";
+import { debounce } from "../utils/debounce.js";
 const updatePriceRange = (form) => {
   const productCard = form.closest(".update-form-wrapper");
   if (!productCard) return;
@@ -49,7 +51,6 @@ const updateTotalStock = (form) => {
     mainStockDisplay.innerText = totalStock;
   }
 };
-
 const initializeSearchAndFilter = () => {
   const searchInput = document.getElementById("product-search");
   const clearSearchBtn = document.getElementById("clear-search");
@@ -814,7 +815,6 @@ const handleSyncAllProductsToRedisClick = async (event) => {
         html: `
                     <div class="text-left space-y-2">
                         <p><strong><i class="fas fa-check-circle text-green-500"></i> Berhasil!</strong></p>
-
                         <p class="mt-4">Halaman akan dimuat ulang untuk menggunakan data baru...</p>
                     </div>
                 `,
@@ -875,7 +875,6 @@ const handleForceSyncAllProductsToRedisClick = async (event) => {
         html: `
                     <div class="text-left space-y-2">
                         <p><strong><i class="fas fa-check-circle text-green-500"></i> Berhasil (Dipaksa)!</strong></p>
-
                         <p class="mt-4">Halaman akan dimuat ulang untuk menggunakan data baru...</p>
                     </div>
                 `,
@@ -932,6 +931,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }, 1000);
   enhanceInputFields();
   initializeAutosave();
+  document.querySelectorAll(".btn-calc-margin").forEach((button) => {
+    button.addEventListener("click", handleCalcMarginClick);
+  });
   document.querySelectorAll(".update-stock-form").forEach((form) => {
     form.addEventListener("submit", (event) =>
       handleFormSubmit(event, form, updateStock, "stock")
@@ -986,11 +988,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   document.body.classList.add("loaded");
 });
-
 const handleUpdateHargaBeliClick = async (event) => {
   const btn = event.currentTarget;
   const originalHtml = btn.innerHTML;
-
   const result = await Swal.fire({
     title: `Update Harga Beli?`,
     html: `Anda akan mengupdate harga beli produk di s_shopee_produk berdasarkan:<br>
@@ -998,19 +998,16 @@ const handleUpdateHargaBeliClick = async (event) => {
            2. Data Stok OL (KD_STORE 9998)`,
     icon: "info",
     showCancelButton: true,
-    confirmButtonColor: "#0891b2", // Cyan color
+    confirmButtonColor: "#0891b2",
     cancelButtonColor: "#6b7280",
     confirmButtonText:
       '<i class="fas fa-file-invoice-dollar mr-1"></i> Ya, Update Harga!',
     cancelButtonText: "Batal",
     reverseButtons: true,
   });
-
   if (!result.isConfirmed) return;
-
   btn.innerHTML = '<span class="loading-spinner"></span> Memproses...';
   btn.disabled = true;
-
   Swal.fire({
     title: "Sedang Mengupdate...",
     html: `Mohon tunggu sebentar, sedang menjalankan query update.`,
@@ -1019,7 +1016,6 @@ const handleUpdateHargaBeliClick = async (event) => {
       Swal.showLoading();
     },
   });
-
   try {
     const response = await updateHargaBeliMassal();
     if (response.success) {
@@ -1043,6 +1039,146 @@ const handleUpdateHargaBeliClick = async (event) => {
     });
   } finally {
     btn.innerHTML = originalHtml;
+    btn.disabled = false;
+  }
+};
+const handleCalcMarginClick = async (event) => {
+  const btn = event.currentTarget;
+  const sku = btn.dataset.sku;
+  const itemId = btn.dataset.itemId;
+  const modelId = btn.dataset.modelId;
+  const hrgBeli = parseFloat(btn.dataset.hb);
+  const hrgBeliOld = parseFloat(btn.dataset.hbOld);
+  const currentPrice = parseFloat(btn.dataset.price);
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+  btn.disabled = true;
+  try {
+    const result = await calculateMargin({
+      sku: sku,
+      hrg_beli: hrgBeli,
+      price: currentPrice,
+    });
+    if (!result.success) throw new Error(result.message);
+    const d = result.data;
+    const formatNumber = (val) =>
+      new Intl.NumberFormat("id-ID").format(Math.round(val));
+    const formatPct = (val) => val.toFixed(2) + "%";
+    const htmlContent = `
+      <div class="text-sm text-left space-y-3">
+        <div class="bg-gray-50 p-3 rounded-lg border">
+            <h4 class="font-bold text-gray-500 text-xs uppercase mb-2">Informasi Harga Beli</h4>
+            <div class="flex justify-between items-center">
+                <span class="text-gray-600 font-bold">Harga Beli:</span>
+                <span class="font-bold text-blue-600 text-lg">${formatNumber(
+                  d.hrg_beli
+                )}</span>
+            </div>
+        </div>
+        <div id="margin-simulation-result" class="bg-blue-50 p-3 rounded-lg border border-blue-100">
+            ${renderSimulationContent(d)}
+        </div>
+        <div class="mt-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Simulasi Harga Jual Baru:</label>
+            <input type="number" id="swal-new-price" class="swal2-input w-full" 
+                value="${
+                  d.current_price
+                }" placeholder="Masukkan harga untuk cek margin...">
+            <div id="calc-loading" class="text-xs text-blue-500 mt-1 hidden">
+                <i class="fas fa-sync fa-spin"></i> Menghitung ulang...
+            </div>
+        </div>
+      </div>
+    `;
+    function renderSimulationContent(data) {
+      let marginClass = "text-gray-800";
+      if (data.margin_rp < 0) marginClass = "text-red-600 font-bold";
+      else if (data.margin_rp > 0) marginClass = "text-green-600 font-bold";
+      return `
+        <h4 class="font-bold text-blue-800 text-xs uppercase mb-2">Hasil Simulasi</h4>
+        <div class="text-xs space-y-1 mb-2 text-gray-600">
+            <div class="flex justify-between"><span>Admin Shopee:</span> <span>-${formatNumber(
+              data.costs.admin_rp
+            )}</span></div>
+            <div class="flex justify-between"><span>Partisipasi Ongkir:</span> <span>-${formatNumber(
+              data.costs.ongkir_rp
+            )}</span></div>
+            <div class="flex justify-between"><span>Biaya Promo:</span> <span>-${formatNumber(
+              data.costs.promo_rp
+            )}</span></div>
+            <div class="flex justify-between"><span>Biaya Pesanan:</span> <span>-${formatNumber(
+              data.costs.biaya_pesanan
+            )}</span></div>
+        </div>
+        <div class="flex justify-between items-center border-t border-blue-200 pt-2 mb-2">
+            <span class="font-bold">Total HPP:</span>
+            <span class="text-gray-700">${formatNumber(data.hpp_total)}</span>
+        </div>
+        <div class="flex justify-between items-center bg-white p-2 rounded border">
+            <span class="font-bold">Margin / Profit:</span>
+            <span class="${marginClass} text-lg">
+                ${formatNumber(data.margin_rp)} (${formatPct(data.margin_pct)})
+            </span>
+        </div>
+      `;
+    }
+    const swalInstance = Swal.fire({
+      title: "Kalkulasi Margin",
+      html: htmlContent,
+      showCancelButton: true,
+      confirmButtonText: "Update Harga Jual",
+      confirmButtonColor: "#4f46e5",
+      cancelButtonText: "Tutup",
+      width: "500px",
+      didOpen: () => {
+        const inputPrice = document.getElementById("swal-new-price");
+        const simulationDiv = document.getElementById(
+          "margin-simulation-result"
+        );
+        const loader = document.getElementById("calc-loading");
+        const reCalculate = debounce(async (newVal) => {
+          if (!newVal || newVal <= 0) return;
+          loader.classList.remove("hidden");
+          try {
+            const res = await calculateMargin({
+              sku: sku,
+              hrg_beli: hrgBeli,
+              price: parseFloat(newVal),
+            });
+            if (res.success) {
+              simulationDiv.innerHTML = renderSimulationContent(res.data);
+            }
+          } catch (err) {
+            console.error("Recalc failed", err);
+          } finally {
+            loader.classList.add("hidden");
+          }
+        }, 500);
+        inputPrice.addEventListener("input", (e) =>
+          reCalculate(e.target.value)
+        );
+      },
+      preConfirm: () => {
+        return document.getElementById("swal-new-price").value;
+      },
+    });
+    const { isConfirmed, value: newPrice } = await swalInstance;
+    if (isConfirmed && newPrice) {
+      const formSelector =
+        modelId != 0
+          ? `.update-price-form[data-model-id="${modelId}"]`
+          : `.update-price-form[data-item-id="${itemId}"]`;
+      const existingForm = document.querySelector(formSelector);
+      if (existingForm) {
+        const input = existingForm.querySelector('input[name="new_price"]');
+        input.value = newPrice;
+        existingForm.querySelector('button[type="submit"]').click();
+      }
+    }
+  } catch (error) {
+    console.error(error);
+    Swal.fire("Error", "Gagal melakukan kalkulasi: " + error.message, "error");
+  } finally {
+    btn.innerHTML = '<i class="fas fa-calculator mr-1"></i> Cek Harga';
     btn.disabled = false;
   }
 };
