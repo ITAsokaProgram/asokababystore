@@ -54,6 +54,8 @@ document.addEventListener("DOMContentLoaded", () => {
   async function loadData() {
     const params = getUrlParams();
     const isPagination = params.page > 1;
+    const token = getCookie("admin_token"); // Dibutuhkan karena API sekarang pakai middleware
+
     setLoadingState(true, false, isPagination);
     const queryString = new URLSearchParams({
       tgl_mulai: params.tgl_mulai,
@@ -63,7 +65,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }).toString();
     try {
       const response = await fetch(
-        `/src/api/return_out/get_bad_stock.php?${queryString}`
+        `/src/api/return_out/get_bad_stock.php?${queryString}`,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer " + token,
+          },
+        }
       );
       if (!response.ok) {
         const errorData = await response.json();
@@ -75,9 +83,30 @@ document.addEventListener("DOMContentLoaded", () => {
       if (data.error) {
         throw new Error(data.error);
       }
+
+      // BAGIAN INI: Mengisi dropdown cabang dari response data.stores
       if (data.stores) {
-        populateStoreFilter(data.stores, params.kd_store);
+        // filterSelectStore adalah variabel global yang biasanya merujuk ke element select cabang
+        const select = filterSelectStore;
+        select.innerHTML = ""; // Kosongkan dulu
+
+        if (data.stores.length > 0) {
+          // Tambahkan opsi default
+          select.add(new Option("Pilih Cabang", "none"));
+          select.add(new Option("SEMUA CABANG", "SEMUA CABANG"));
+
+          // Loop data stores dari response
+          data.stores.forEach((store) => {
+            // Gunakan store.nm_alias dan store.kd_store sesuai output PHP
+            const option = new Option(store.nm_alias, store.kd_store);
+            if (store.kd_store === params.kd_store) {
+              option.selected = true;
+            }
+            select.add(option);
+          });
+        }
       }
+
       if (pageSubtitle) {
         let storeName = "Seluruh Cabang";
         if (
