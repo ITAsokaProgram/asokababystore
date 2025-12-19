@@ -267,7 +267,8 @@
             <div class="bg-white/80 backdrop-blur-md border border-violet-200 rounded-3xl p-6 shadow-lg">
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="text-xl font-semibold text-gray-700">Retur Terbaru</h3>
-                    <button id="view-all-btn" class="text-violet-500 hover:text-violet-700 font-medium" onclick="window.location.href='<?php echo $base_url; ?>/src/fitur/transaction/invalid_trans'">
+                    <button id="view-all-btn" class="text-violet-500 hover:text-violet-700 font-medium"
+                        onclick="window.location.href='<?php echo $base_url; ?>/src/fitur/transaction/invalid_trans'">
                         Lihat Semua <i class="fas fa-arrow-right ml-1"></i>
                     </button>
                 </div>
@@ -347,7 +348,7 @@
                         <thead class="bg-gray-50 sticky top-0">
                             <tr>
                                 <th class="text-left py-3 px-4 font-semibold text-gray-700">No</th>
-                                <th class="text-left py-3 px-4 font-semibold text-gray-700">No. Bon</th>    
+                                <th class="text-left py-3 px-4 font-semibold text-gray-700">No. Bon</th>
                                 <th class="text-left py-3 px-4 font-semibold text-gray-700">Barang</th>
                                 <th class="text-left py-3 px-4 font-semibold text-gray-700">PLU</th>
                                 <th class="text-left py-3 px-4 font-semibold text-gray-700">Kode</th>
@@ -372,6 +373,8 @@
     <div id="tooltip" class="tooltip"></div>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="../../js/ui/navbar_toogle.js" type="module"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script src="../../js/invalid_trans/top/retur.js" type="module"></script>
 </body>
 

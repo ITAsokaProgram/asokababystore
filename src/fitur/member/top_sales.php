@@ -217,7 +217,7 @@ $token = $menuHandler->getToken();
                                 class="border border-yellow-100 rounded-xl px-3 py-1 focus:ring-2 focus:ring-yellow-500 focus:border-yellow-400 shadow-sm">
                                 <option value="belanja">Sort by Total Belanja</option>
                                 <option value="qty">Sort by Quantity</option>
-                                <option value="nama">Sort by Nama</option>
+                                <!-- <option value="nama">Sort by Nama</option> -->
                             </select>
                             <button onclick="exportTopSalesData()"
                                 class="bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-500 hover:to-yellow-700 text-white px-3 py-1 rounded-xl font-bold shadow-md transition-all duration-200 flex items-center gap-2">
