@@ -1,4 +1,20 @@
 RewriteEngine On
+RewriteRule ^iclock/cdata$ iclock/cdata.php [L]
+RewriteRule ^iclock/getrequest$ iclock/getrequest.php [L]
+RewriteRule ^iclock/idata$ iclock/cdata.php [L]
+
+# 2. Baru kemudian proteksi folder iclock agar tidak kena aturan root lainnya
+RewriteCond %{REQUEST_URI} ^/iclock [NC]
+RewriteRule ^ - [L]
+
+# ============================================================
+# 1. PENGECUALIAN ADMS (WAJIB DI ATAS)
+# Pastikan folder iclock tidak diganggu oleh aturan rewrite apapun
+# ============================================================
+
+# ============================================================
+# 2. KONFIGURASI PHP & AUTH
+# ============================================================
 php_value upload_max_filesize 10M
 php_value post_max_size 12M
 RewriteCond %{HTTP:Authorization} ^(.*)
@@ -7,7 +23,6 @@ RewriteRule .* - [E=HTTP_AUTHORIZATION:%1]
 # Mengecualikan folder src/api/ agar tetap bisa mengakses file .php
 RewriteCond %{REQUEST_URI} ^/src/api/ [NC]
 RewriteCond %{REQUEST_URI} ^/src/config/ [NC]
-
 
 # Hanya menghapus .php di folder fitur/laporan/
 RewriteCond %{REQUEST_URI} ^/src/fitur/laporan/ [NC,OR]
@@ -25,14 +40,12 @@ RewriteRule ^(.+?)/?$ $1.php [L]
 # Jika ingin redirect index.php ke /
 RewriteRule ^index/?$ / [R=301,L]
 
-
 # Menghapus .php untuk semua file di root (kecuali yang sudah diatur)
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME}.php -f
 RewriteRule ^(.+)$ $1.php [L]
 
-
-# Mencegah akses langsung ke direktori
+# --- SISA KODE KE BAWAH TETAP SAMA ---
 Options -Indexes 
 
 <IfModule mod_brotli.c>
@@ -52,12 +65,8 @@ Options -Indexes
   AddOutputFilterByType DEFLATE application/json
 </IfModule>
 
-
-# Mencegah cache untuk file HTML, CSS, dan JS
 <IfModule mod_expires.c>
     ExpiresActive On
-
-    # Images: Cache for 1 year
     ExpiresByType image/jpg "access plus 1 year"
     ExpiresByType image/jpeg "access plus 1 year"
     ExpiresByType image/gif "access plus 1 year"
@@ -65,35 +74,22 @@ Options -Indexes
     ExpiresByType image/webp "access plus 1 year"
     ExpiresByType image/svg+xml "access plus 1 year"
     ExpiresByType image/x-icon "access plus 1 year"
-
-    # CSS and JS: Cache for 1 month
     ExpiresByType text/css "access plus 1 month"
     ExpiresByType application/javascript "access plus 1 month"
     ExpiresByType text/javascript "access plus 1 month"
-
-    # Fonts
     ExpiresByType font/woff2 "access plus 1 year"
 </IfModule>
 
 <IfModule mod_headers.c>
-    # Keep Alive to keep connection open
     Header set Connection keep-alive
+    Header set X-XSS-Protection "1; mode=block"
 </IfModule>
 
-# Mencegah akses langsung ke file tertentu
 <Files "aa_kon_sett.php">
     Order Allow,Deny
     Deny from all
 </Files>
 
-
-# Extra Security Headers
-<IfModule mod_headers.c>
-	Header set X-XSS-Protection "1; mode=block"
-</IfModule>
-
-
-# Mengarahkan ke halaman error kustom
 ErrorDocument 404 /errorpage.php
 ErrorDocument 403 /errorpage.php
 ErrorDocument 401 /src/component/error_token.php

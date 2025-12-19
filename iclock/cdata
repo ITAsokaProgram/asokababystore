@@ -1,0 +1,45 @@
+<?php
+require_once __DIR__ . "/../src/utils/Logger.php";
+$logger = new AppLogger('adms_machine.log');
+
+$method = $_SERVER['REQUEST_METHOD'];
+$query = $_SERVER['QUERY_STRING'] ?? '';
+$rawData = file_get_contents('php://input');
+
+parse_str($query, $params);
+$sn = $params['SN'] ?? 'UNKNOWN';
+$table = $params['table'] ?? '';
+
+if ($method === 'POST') {
+    if ($table === 'ATTLOG') {
+        $rows = explode("\n", trim($rawData));
+        foreach ($rows as $line) {
+            $line = trim($line);
+            if (empty($line))
+                continue;
+
+            // ADMS menggunakan pemisah TAB (\t)
+            $data = explode("\t", $line);
+
+            if (count($data) >= 2) {
+                $pin = trim($data[0]); // 99273
+                $time = trim($data[1]); // 2025-12-19 16:39:16
+                $status = trim($data[2] ?? '0');
+                $v_mode = trim($data[3] ?? '0');
+
+                // Log hasil parsing agar Anda bisa lihat di file log
+                $logger->success("PARSED: Karyawan $pin Absen pada $time (Status: $status)");
+
+                // DISINI: Anda bisa masukkan query INSERT INTO database
+                // $sql = "INSERT INTO absensi (pin, scan_time, sn) VALUES ('$pin', '$time', '$sn')";
+            }
+        }
+    }
+    echo "OK";
+    exit;
+}
+
+if ($method === 'GET') {
+    echo "GET OPTION FROM: 1\r\nStamp=9999\r\nOK";
+    exit;
+}
