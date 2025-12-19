@@ -34,10 +34,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   async function loadData() {
     const params = getUrlParams();
-    const token = getCookie("admin_token"); // Ambil token untuk dikirim ke header
+    const token = getCookie("admin_token");
     setLoadingState(true);
     const queryString = new URLSearchParams(params).toString();
-
     try {
       const response = await fetch(
         `/src/api/laporan/jadwal_so/get_data.php?${queryString}`,
@@ -48,20 +47,15 @@ document.addEventListener("DOMContentLoaded", () => {
           },
         }
       );
-
       if (!response.ok) throw new Error(`HTTP Status: ${response.status}`);
       const data = await response.json();
       if (data.error) throw new Error(data.error);
-
       if (data.stores && filterSelectStore.options.length <= 1) {
-        // Fungsi populateStoreFilter diperbarui di bawah
         populateStoreFilter(data.stores, params.kd_store);
       }
-
       if (filterSelectSync) {
         filterSelectSync.value = params.sync;
       }
-
       updatePageHeader(params);
       updateSummaryCards(data.summary);
       renderTable(
@@ -76,27 +70,17 @@ document.addEventListener("DOMContentLoaded", () => {
       setLoadingState(false);
     }
   }
-
-  // Fungsi pembantu untuk mengisi dropdown (Disesuaikan dengan property baru)
   function populateStoreFilter(stores, selectedValue) {
     if (!filterSelectStore) return;
-
     filterSelectStore.innerHTML = "";
-
-    // Default Option
     const defaultOption = new Option("Pilih Cabang", "none");
     filterSelectStore.add(defaultOption);
-
-    // All Option
     const allOption = new Option("SEMUA CABANG", "all");
     filterSelectStore.add(allOption);
-
     stores.forEach((s) => {
-      // Menggunakan s.nama_cabang dan s.store sesuai dengan alias SQL PHP
       const option = new Option(s.nama_cabang, s.store);
       filterSelectStore.add(option);
     });
-
     if (selectedValue) {
       filterSelectStore.value = selectedValue;
     }
@@ -168,39 +152,69 @@ document.addEventListener("DOMContentLoaded", () => {
     tableBody.innerHTML = html;
   }
   function renderPagination(pagination) {
-    if (!pagination || pagination.total_rows === 0) {
+    if (!pagination) {
       paginationInfo.textContent = "";
       paginationLinks.innerHTML = "";
       return;
     }
     const { current_page, total_pages, total_rows, limit, offset } = pagination;
-    const start = offset + 1;
-    const end = Math.min(offset + limit, total_rows);
-    paginationInfo.textContent = `Menampilkan ${start} - ${end} dari ${total_rows} data`;
-    let links = "";
-    const buildUrl = (p) => {
-      const url = new URL(window.location);
-      url.searchParams.set("page", p);
-      return url.toString();
-    };
-    links += `<a href="${current_page > 1 ? buildUrl(current_page - 1) : "#"}" 
-                      class="pagination-link ${
-                        current_page === 1 ? "pagination-disabled" : ""
-                      } px-2 py-1 border rounded mr-1">
-                      <i class="fas fa-chevron-left"></i></a>`;
-    links += `<span class="mx-2 text-sm font-semibold">Hal ${current_page} dari ${total_pages}</span>`;
-    links += `<a href="${
-      current_page < total_pages ? buildUrl(current_page + 1) : "#"
-    }" 
-                      class="pagination-link ${
-                        current_page === total_pages
-                          ? "pagination-disabled"
-                          : ""
-                      } px-2 py-1 border rounded ml-1">
-                      <i class="fas fa-chevron-right"></i></a>`;
-    paginationLinks.innerHTML = links;
+    if (total_rows === 0) {
+      paginationInfo.textContent = "Menampilkan 0 dari 0 data";
+      paginationLinks.innerHTML = "";
+      return;
+    }
+    const start_row = offset + 1;
+    const end_row = Math.min(offset + limit, total_rows);
+    paginationInfo.textContent = `Menampilkan ${start_row} - ${end_row} dari ${total_rows} data`;
+    let linksHtml = "";
+    linksHtml += `
+        <a href="${
+          current_page > 1 ? build_pagination_url(current_page - 1) : "#"
+        }" 
+           class="pagination-link ${
+             current_page === 1 ? "pagination-disabled" : ""
+           }">
+            <i class="fas fa-chevron-left"></i>
+        </a>`;
+    const pages_to_show = [];
+    const max_pages_around = 2;
+    for (let i = 1; i <= total_pages; i++) {
+      if (
+        i === 1 ||
+        i === total_pages ||
+        (i >= current_page - max_pages_around &&
+          i <= current_page + max_pages_around)
+      ) {
+        pages_to_show.push(i);
+      }
+    }
+    let last_page = 0;
+    for (const page_num of pages_to_show) {
+      if (last_page !== 0 && page_num > last_page + 1) {
+        linksHtml += `<span class="pagination-ellipsis px-2 text-gray-400">...</span>`;
+      }
+      linksHtml += `
+            <a href="${build_pagination_url(page_num)}" 
+               class="pagination-link ${
+                 page_num === current_page ? "pagination-active" : ""
+               }">
+                ${page_num}
+            </a>`;
+      last_page = page_num;
+    }
+    linksHtml += `
+        <a href="${
+          current_page < total_pages
+            ? build_pagination_url(current_page + 1)
+            : "#"
+        }" 
+           class="pagination-link ${
+             current_page === total_pages ? "pagination-disabled" : ""
+           }">
+            <i class="fas fa-chevron-right"></i>
+        </a>`;
+    paginationLinks.innerHTML = linksHtml;
   }
-
   function setLoadingState(isLoading) {
     if (isLoading) {
       filterSubmitButton.disabled = true;
@@ -282,3 +296,8 @@ document.addEventListener("DOMContentLoaded", () => {
   if (exportPdfButton) exportPdfButton.addEventListener("click", exportToPDF);
   loadData();
 });
+function build_pagination_url(newPage) {
+  const params = new URLSearchParams(window.location.search);
+  params.set("page", newPage);
+  return "?" + params.toString();
+}
