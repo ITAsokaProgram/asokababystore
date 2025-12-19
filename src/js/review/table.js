@@ -2,7 +2,6 @@ export const renderTableReview = (data, offset) => {
   const tableBody = document.querySelector("tbody");
   const tableLoading = document.getElementById("tableLoading");
   const table = document.querySelector("table");
-  console.log("DATA: ", data);
   if (tableLoading) tableLoading.classList.remove("hidden");
   if (table) table.classList.add("hidden");
 
