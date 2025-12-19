@@ -1088,25 +1088,25 @@ const handleCalcMarginClick = async (event) => {
             <div class="text-xs space-y-1 mb-2 text-gray-600">
                 <div class="flex justify-between">
                     <span>Admin Shopee:</span> 
-                    <span>-${formatNumber(d.based_on_hb.admin_rp)}</span>
+                    <span>${formatNumber(d.based_on_hb.admin_rp)}</span>
                     
                 </div>
                 <div class="flex justify-between">
                     <span>Biaya Ongkir:</span> 
-                    <span>-${formatNumber(d.based_on_hb.ongkir_rp)}</span>
+                    <span>${formatNumber(d.based_on_hb.ongkir_rp)}</span>
                 </div>
                 <div class="flex justify-between">
                     <span>Biaya Promo:</span> 
-                    <span>-${formatNumber(d.based_on_hb.promo_rp)}</span>
+                    <span>${formatNumber(d.based_on_hb.promo_rp)}</span>
                 </div>
                 <div class="flex justify-between">
                     <span>Biaya Pesanan:</span> 
-                    <span>-${formatNumber(d.costs.biaya_pesanan)}</span>
+                    <span>${formatNumber(d.costs.biaya_pesanan)}</span>
                 </div>
             </div>
             <div class="flex justify-between items-center border-t border-orange-200 pt-2 font-bold text-orange-900">
-                <span>Total HPP:</span>
-                <span>${formatNumber(d.based_on_hb.hpp_total)}</span>
+                <span>Total:</span>
+                <span>${formatNumber(d.based_on_hb.total_display)}</span>
             </div>
         </div>
 
@@ -1137,24 +1137,26 @@ const handleCalcMarginClick = async (event) => {
         <div class="text-xs space-y-1 mb-2 text-gray-600">
             <div class="flex justify-between">
                 <span>Admin Shopee (${data.costs.admin_pct}%):</span> 
-                <span>-${formatNumber(data.costs.admin_rp)}</span>
+                <span>${formatNumber(data.costs.admin_rp)}</span>
             </div>
             <div class="flex justify-between">
                 <span>Biaya Ongkir (${data.costs.ongkir_pct}%):</span> 
-                <span>-${formatNumber(data.costs.ongkir_rp)}</span>
+                <span>${formatNumber(data.costs.ongkir_rp)}</span>
             </div>
             <div class="flex justify-between">
                 <span>Biaya Promo (${data.costs.promo_pct}%):</span> 
-                <span>-${formatNumber(data.costs.promo_rp)}</span>
+                <span>${formatNumber(data.costs.promo_rp)}</span>
             </div>
             <div class="flex justify-between">
                 <span>Biaya Pesanan:</span> 
-                <span>-${formatNumber(data.costs.biaya_pesanan)}</span>
+                <span>${formatNumber(data.costs.biaya_pesanan)}</span>
             </div>
         </div>
         <div class="flex justify-between items-center border-t border-blue-200 pt-2 mb-2">
-            <span class="font-bold">Total HPP:</span>
-            <span class="text-gray-700">${formatNumber(data.hpp_total)}</span>
+            <span class="font-bold">Total:</span>
+            <span class="text-gray-700">${formatNumber(
+              data.costs.total_hj
+            )}</span>
         </div>
         <div class="flex justify-between items-center bg-white p-2 rounded border">
             <span class="font-bold">Margin / Profit:</span>

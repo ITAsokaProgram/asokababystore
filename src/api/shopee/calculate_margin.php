@@ -8,9 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'message' => 'Invalid Method']);
     exit;
 }
-
 $data = json_decode(file_get_contents('php://input'), true);
-
 $sku = $data['sku'] ?? '';
 $hrg_beli = (float) ($data['hrg_beli'] ?? 0);
 $price = (float) ($data['price'] ?? 0);
@@ -31,53 +29,45 @@ $ongkir_max = (float) ($kategori_data['x_ongkir_max'] ?? 0);
 $promo_pct = (float) ($kategori_data['x_promo'] ?? 0);
 $promo_max = (float) ($kategori_data['x_promo_max'] ?? 0);
 $biaya_pesanan_cost = (float) ($kategori_data['biaya_pesanan'] ?? 0);
-$ppn = 0;
-$netto = $hrg_beli + $ppn;
 
-// HB
-$admin_cost = ($netto * $admin_pct) / 100;
-$ongkir_cost_raw = ($netto * $ongkir_pct) / 100;
-$ongkir_cost = ($ongkir_max > 0 && $ongkir_cost_raw > $ongkir_max) ? $ongkir_max : $ongkir_cost_raw;
-$promo_cost_raw = ($netto * $promo_pct) / 100;
-$promo_cost = ($promo_max > 0 && $promo_cost_raw > $promo_max) ? $promo_max : $promo_cost_raw;
-$hb_plus_lainnya = $netto + $admin_cost + $ongkir_cost + $promo_cost + $biaya_pesanan_cost;
-// HJ
-$admin_cost_margin = ($price * $admin_pct) / 100;
-$ongkir_cost_margin_raw = ($price * $ongkir_pct) / 100;
-$ongkir_cost_margin = ($ongkir_max > 0 && $ongkir_cost_margin_raw > $ongkir_max) ? $ongkir_max : $ongkir_cost_margin_raw;
-$promo_cost_margin_raw = ($price * $promo_pct) / 100;
-$promo_cost_margin = ($promo_max > 0 && $promo_cost_margin_raw > $promo_max) ? $promo_max : $promo_cost_margin_raw;
-$margin = $price - ($netto + $admin_cost_margin + $ongkir_cost_margin + $promo_cost_margin + $biaya_pesanan_cost);
+
+$admin_cost_hb = ($hrg_beli * $admin_pct) / 100;
+$ongkir_cost_hb = ($ongkir_max > 0) ? min(($hrg_beli * $ongkir_pct) / 100, $ongkir_max) : ($hrg_beli * $ongkir_pct) / 100;
+$promo_cost_hb = ($promo_max > 0) ? min(($hrg_beli * $promo_pct) / 100, $promo_max) : ($hrg_beli * $promo_pct) / 100;
+$total_hb_display = $hrg_beli + $admin_cost_hb + $ongkir_cost_hb + $promo_cost_hb + $biaya_pesanan_cost;
+
+$admin_cost_hj = ($price * $admin_pct) / 100;
+$ongkir_cost_hj = ($ongkir_max > 0) ? min(($price * $ongkir_pct) / 100, $ongkir_max) : ($price * $ongkir_pct) / 100;
+$promo_cost_hj = ($promo_max > 0) ? min(($price * $promo_pct) / 100, $promo_max) : ($price * $promo_pct) / 100;
+$hpp_real = $hrg_beli + $admin_cost_hj + $ongkir_cost_hj + $promo_cost_hj + $biaya_pesanan_cost;
+$total_hj_display = $price + $admin_cost_hj + $ongkir_cost_hj + $promo_cost_hj + $biaya_pesanan_cost;
+
+$margin = $price - $hpp_real;
 $margin_pct = ($price > 0) ? ($margin / $price) * 100 : 0;
 echo json_encode([
     'success' => true,
     'data' => [
         'sku' => $sku,
         'hrg_beli' => $hrg_beli,
-        'ppn' => $ppn,
-        'netto' => $netto,
         'current_price' => $price,
         'costs' => [
             'admin_pct' => $admin_pct,
-            'admin_rp' => $admin_cost_margin,
+            'admin_rp' => $admin_cost_hj,
             'ongkir_pct' => $ongkir_pct,
-            'ongkir_rp' => $ongkir_cost_margin,
+            'ongkir_rp' => $ongkir_cost_hj,
             'promo_pct' => $promo_pct,
-            'promo_rp' => $promo_cost_margin,
+            'promo_rp' => $promo_cost_hj,
             'biaya_pesanan' => $biaya_pesanan_cost,
-            'total_lain' => $admin_cost_margin + $ongkir_cost_margin + $promo_cost_margin + $biaya_pesanan_cost
+            'total_hj' => $total_hj_display
         ],
-        'hpp_total' => $hb_plus_lainnya,
         'margin_rp' => $margin,
         'margin_pct' => $margin_pct,
         'based_on_hb' => [
-            'admin_rp' => $admin_cost,
-            'ongkir_rp' => $ongkir_cost,
-            'promo_rp' => $promo_cost,
+            'admin_rp' => $admin_cost_hb,
+            'ongkir_rp' => $ongkir_cost_hb,
+            'promo_rp' => $promo_cost_hb,
             'biaya_pesanan' => $biaya_pesanan_cost,
-            'total_lain' => $admin_cost + $ongkir_cost + $promo_cost + $biaya_pesanan_cost,
-            'hpp_total' => $hb_plus_lainnya
+            'total_display' => $total_hb_display
         ]
     ]
 ]);
-?>

@@ -194,6 +194,10 @@ require_once __DIR__ . '/produk_shopee.logic.php';
                                                     $is_diff_hb = ($hb_old_val > 0 && abs($hb_old_val - $hb_val) > 1);
                                                     ?>
 
+                                                    <!-- <span class="text-[10px] text-gray-400">
+                                                        DB HB: <?php echo $hb_val; ?> | DB HB Old: <?php echo $hb_old_val; ?>
+                                                    </span> -->
+
                                                     <?php if ($is_diff_hb): ?>
                                                         <span class="stats-badge badge-hb-old">
                                                             <i class="fas fa-history"></i>
