@@ -401,22 +401,29 @@ class ShopeeApiService
             $this->logger->info("[SyncDB] Menjalankan update harga beli berdasarkan Barcode...");
             $sql_update_receipt = "
                 UPDATE s_shopee_produk sp
-                INNER JOIN (
-                    SELECT r.barcode, (r.netto + r.ppn) AS total_beli_receipt
-                    FROM receipt r
                     INNER JOIN (
-                        SELECT barcode, MAX(tgl_tiba) AS max_tgl
-                        FROM receipt where kd_store='3190'
-                        GROUP BY barcode
-                    ) latest ON r.barcode = latest.barcode AND r.tgl_tiba = latest.max_tgl
-                    GROUP BY r.barcode
-                ) src ON sp.barcode = src.barcode
-                LEFT JOIN s_stok_ol so ON sp.barcode = so.item_n AND so.KD_STORE = '9998'
-                SET 
-                    sp.hb_old = sp.harga_beli, 
-                    sp.harga_beli = src.total_beli_receipt,
-                    sp.keterangan = 'Dari Receipt (Last Data)'
-                WHERE so.item_n IS NULL;
+                        SELECT r1.barcode, 
+                            (r1.netto + r1.ppn) AS total_beli_receipt
+                        FROM receipt r1
+                        INNER JOIN (
+                            SELECT barcode, MAX(tgl_tiba) AS max_tgl
+                            FROM receipt 
+                            WHERE kd_store = '3190'
+                            GROUP BY barcode
+                        ) r2 ON r1.barcode = r2.barcode AND r1.tgl_tiba = r2.max_tgl
+                        WHERE r1.kd_store = '3190'
+                        GROUP BY r1.barcode 
+                    ) src ON sp.barcode = src.barcode
+                    LEFT JOIN s_stok_ol so ON sp.barcode = so.item_n AND so.KD_STORE = '9998'
+                    SET 
+                        sp.hb_old = CASE 
+                            WHEN sp.harga_beli = src.total_beli_receipt THEN sp.hb_old
+                            WHEN sp.harga_beli IS NULL OR sp.harga_beli = 0 THEN src.total_beli_receipt
+                            ELSE sp.harga_beli 
+                        END,
+                        sp.harga_beli = src.total_beli_receipt,
+                        sp.keterangan = 'Dari Receipt (Last Data)'
+                    WHERE so.item_n IS NULL;
             ";
             $conn->query($sql_update_receipt);
             $sql_update_stok_ol = "
