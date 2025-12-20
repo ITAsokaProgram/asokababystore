@@ -31,6 +31,8 @@ if ($kd_store == "all") {
     t.no_bon AS no_trans,
     t.kd_store AS kode,
     m.status_cek,
+    m.nama_cek,   
+    m.ket_cek,    
     SUM(
         CASE 
             WHEN MOD(t.plu, 10) = 0 THEN t.qty * t.conv2 
@@ -76,6 +78,8 @@ GROUP BY t.plu ORDER BY  t.tgl_trans DESC";
     t.no_bon AS no_trans,
     t.kd_store AS kode,
     m.status_cek,
+    m.nama_cek,   
+    m.ket_cek,    
     SUM(
         CASE 
             WHEN MOD(t.plu, 10) = 0 THEN t.qty * t.conv2 

@@ -84,9 +84,9 @@ export const renderTableDefault = (data, offset = 0) => {
             </td>
             <td class='px-4 py-2 text-center'> ${offset + index + 1} </td>
             <td class='px-4 py-2 font-mono'> ${item.plu} </td>
-            <td class='px-4 py-2 truncate max-w-[150px]' title="${
-              item.no_trans
-            }"> ${item.no_trans} </td>
+            <td class='px-4 py-2 max-w-[150px]' title="${item.no_trans}"> ${
+      item.no_trans
+    } </td>
             <td class='px-4 py-2 truncate max-w-[200px]' title="${
               item.descp
             }"> ${item.descp} </td>
