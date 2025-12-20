@@ -1,10 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const filterStore = document.getElementById("kode_store_filter"); // Tambahan selector
+  const filterStore = document.getElementById("kode_store_filter");
   const tableBody = document.getElementById("koreksi-table-body");
   const filterForm = document.getElementById("filter-form");
   const paginationInfo = document.getElementById("pagination-info");
   const paginationLinks = document.getElementById("pagination-links");
-
   function formatRupiah(number) {
     if (isNaN(number) || number === null) return "0";
     return new Intl.NumberFormat("id-ID", {
@@ -12,29 +11,53 @@ document.addEventListener("DOMContentLoaded", () => {
       minimumFractionDigits: 0,
     }).format(number);
   }
-
   function formatJustDate(dateString) {
     if (!dateString) return "-";
     return dateString.substring(0, 10);
   }
-
-  // Tambahan Function Load Stores
+  function getCookie(name) {
+    let nameEQ = name + "=";
+    let ca = document.cookie.split(";");
+    for (let i = 0; i < ca.length; i++) {
+      let c = ca[i];
+      while (c.charAt(0) == " ") c = c.substring(1, c.length);
+      if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+    }
+    return null;
+  }
   async function loadStores() {
+    const token = getCookie("admin_token");
+    const url = "/src/api/cabang/get_kode.php";
     try {
-      const response = await fetch("/src/api/shared/get_all_store.php");
+      const response = await fetch(url, {
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + token,
+        },
+      });
       const result = await response.json();
-      if (result.success) {
-        let options = '<option value="">Semua Cabang</option>';
-        result.data.forEach((store) => {
-          options += `<option value="${store.Kd_Store}">${store.Nm_Alias} (${store.Kd_Store})</option>`;
-        });
-        if (filterStore) filterStore.innerHTML = options;
+      if (filterStore) {
+        filterStore.innerHTML = "";
+        if (result.data && result.data.length > 0) {
+          result.data.forEach((store) => {
+            const option = new Option(
+              `${store.nama_cabang} (${store.store})`,
+              store.store
+            );
+            filterStore.add(option);
+          });
+        } else {
+          filterStore.innerHTML =
+            '<option value="">Gagal memuat data cabang</option>';
+        }
       }
     } catch (error) {
-      console.error("Gagal load store:", error);
+      console.error("Error fetching stores:", error);
+      if (filterStore) {
+        filterStore.innerHTML = '<option value="">Error koneksi</option>';
+      }
     }
   }
-
   async function loadData() {
     setLoading(true);
     const formData = new FormData(filterForm);
@@ -54,13 +77,11 @@ document.addEventListener("DOMContentLoaded", () => {
       setLoading(false);
     }
   }
-
   function setLoading(isLoading) {
     if (isLoading) {
       tableBody.innerHTML = `<tr><td colspan="8" class="text-center p-8"><div class="spinner-simple"></div></td></tr>`;
     }
   }
-
   function renderTable(rows, offset) {
     if (!rows || rows.length === 0) {
       tableBody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-gray-500">Tidak ada data ditemukan.</td></tr>`;
@@ -68,11 +89,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     let html = "";
     rows.forEach((row, index) => {
-      // Logic Badge Store
       const storeLabel = row.kode_store
         ? `<span class="badge-pink">${row.Nm_Alias}</span>`
         : "-";
-
       html += `
         <tr class="hover:bg-gray-50 border-b border-gray-100">
             <td class="text-center text-gray-500 text-sm py-3">${
@@ -81,7 +100,6 @@ document.addEventListener("DOMContentLoaded", () => {
             <td class="text-sm text-gray-700">${formatJustDate(
               row.tgl_koreksi
             )}</td>
-
             <td class="text-sm font-semibold text-gray-600">${storeLabel}</td> <td class="font-medium text-pink-600">${
         row.kode_supp
       }</td>
@@ -98,7 +116,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     tableBody.innerHTML = html;
   }
-
   function renderPagination(pagination) {
     if (!pagination) {
       paginationInfo.textContent = "";
@@ -166,7 +183,6 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
     paginationLinks.innerHTML = linksHtml;
   }
-
   if (filterForm) {
     filterForm.addEventListener("submit", (e) => {
       e.preventDefault();
@@ -177,12 +193,9 @@ document.addEventListener("DOMContentLoaded", () => {
       loadData();
     });
   }
-
-  // Panggil loadStores saat inisialisasi
   loadStores();
   loadData();
 });
-
 function build_pagination_url(newPage) {
   const params = new URLSearchParams(window.location.search);
   params.set("page", newPage);
