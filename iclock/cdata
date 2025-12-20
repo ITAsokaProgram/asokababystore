@@ -1,59 +1,100 @@
 <?php
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
-// Tambahkan ini agar PHP tidak limit saat memproses ribuan baris
 ini_set('memory_limit', '512M');
 set_time_limit(0);
-
 try {
     $rootDir = realpath(__DIR__ . '/..');
     require_once $rootDir . '/src/utils/Logger.php';
     $logger = new AppLogger('adms_machine.log');
-
-    $method = $_SERVER['REQUEST_METHOD'];
+    $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
     $queryString = $_SERVER['QUERY_STRING'] ?? '';
-
     if ($method === 'POST') {
         $rawData = file_get_contents('php://input');
         parse_str($queryString, $params);
-        $table = strtoupper($params['table'] ?? '');
+        $table = strtoupper($params['table'] ?? $params['Table'] ?? '');
+        if (empty(trim($rawData))) {
+            $logger->warning("POST diterima tapi data kosong. Table: $table");
+            echo "OK";
+            exit;
+        }
+        $rows = array_filter(array_map('trim', explode("\n", $rawData)));
+        $logger->info("📥 Data Received [POST] Table: $table | Rows: " . count($rows));
+        foreach ($rows as $line) {
+            if (empty($line))
+                continue;
 
-        // Log ukuran data yang masuk
-        $logger->info("📥 DATA MASUK: Tabel $table, Ukuran: " . strlen($rawData) . " bytes");
+            $data = explode("\t", $line);
+            $pin = '';
+            $name = '';
 
-        if ($table === 'ATTLOG') {
-            $rows = explode("\n", trim($rawData));
-            $count = 0;
-            foreach ($rows as $line) {
-                $line = trim($line);
-                if (empty($line))
-                    continue;
+            // 1. Identifikasi PIN dan Nama
+            if (count($data) >= 2) {
+                $pin = trim($data[0] ?? '');
+                $name = trim($data[1] ?? '');
+            } else {
+                // Untuk format: PIN=99280 Name=Fulan atau NIK=FP PIN=...
+                $line_temp = str_replace(" ", "&", $line);
+                parse_str($line_temp, $userData);
 
-                $data = explode("\t", $line);
-                if (count($data) >= 2) {
-                    $pin = trim($data[0]);
-                    $time = trim($data[1]);
-                    // Di sini Anda bisa masukkan ke Database (INSERT IGNORE)
-                    $count++;
+                // Cek semua kemungkinan key yang dikirim mesin
+                $pin = $userData['NIK'] ?? $userData['PIN'] ?? '';
+                $name = $userData['Nama'] ?? $userData['Name'] ?? $userData['FileName'] ?? $userData['FID'] ?? '';
+            }
+
+            // --- FILTER SAKTI ---
+            // Kita cek apakah dalam string PIN mengandung kata FP, USERPIC, atau USER
+            $upperPin = strtoupper($pin);
+            $forbidden = ['FP', 'USERPIC', 'USER'];
+
+            $isForbidden = false;
+            foreach ($forbidden as $word) {
+                if (strpos($upperPin, $word) !== false) {
+                    $isForbidden = true;
+                    break;
                 }
             }
-            $logger->success("✅ BERHASIL: $count log absensi diproses.");
+
+            // Jika termasuk kata terlarang atau PIN kosong, abaikan!
+            if ($isForbidden || empty(trim($pin))) {
+                continue;
+            }
+
+            // 2. Logging berdasarkan Tabel
+            if ($table === 'ATTLOG' || $table === 'TRANSACTION' || strpos($table, 'ATT') !== false) {
+                $time = trim($data[1] ?? '');
+                $status = trim($data[2] ?? '1');
+                $logger->success("✅ ABSEN REALTIME: NIK=$pin | Time=$time | Status=$status");
+            } elseif ($table === 'USERINFO' || strpos($table, 'USER') !== false) {
+                $logger->info("👤 USERINFO: NIK=$pin | Nama=$name");
+            } else {
+                // Menghindari OPERLOG yang isinya sampah
+                if ($table !== 'OPERLOG') {
+                    $logger->info("📋 Table $table: NIK=$pin | Nama=$name");
+                }
+            }
         }
         echo "OK";
         exit;
     }
-
-    // ... bagian GET handshake tetap sama ...
     if ($method === 'GET') {
+        $logger->info("🔗 ADMS Handshake [GET] dari mesin");
         echo "GET OPTION FROM: 1\r\n";
-        echo "Stamp=9999\r\n";
-        echo "OpStamp=1\r\n";
-        echo "ErrorDelay=30\r\n";
-        echo "Delay=10\r\n";
-        echo "TransFlag=1111000000\r\n";
+        echo "Stamp=9999999999\r\n";
+        echo "OpStamp=9999\r\n";
+        echo "PhotoStamp=0\r\n";
+        echo "ErrorDelay=60\r\n";
+        echo "Delay=30\r\n";
+        echo "TransTimes=00:00;23:59\r\n";
+        echo "TransInterval=1\r\n";
+        echo "TransFlag=1111111111\r\n";
+        echo "Realtime=1\r\n";
+        echo "Encrypt=0\r\n";
         exit;
     }
-
+    http_response_code(405);
+    echo "Method Not Allowed";
 } catch (Exception $e) {
-    error_log($e->getMessage());
+    error_log("CDATA Error: " . $e->getMessage() . " | Trace: " . $e->getTraceAsString());
+    echo "ERROR";
 }

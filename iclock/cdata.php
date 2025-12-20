@@ -7,63 +7,87 @@ try {
     $rootDir = realpath(__DIR__ . '/..');
     require_once $rootDir . '/src/utils/Logger.php';
     $logger = new AppLogger('adms_machine.log');
-    $method = $_SERVER['REQUEST_METHOD'];
+    $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
     $queryString = $_SERVER['QUERY_STRING'] ?? '';
     if ($method === 'POST') {
         $rawData = file_get_contents('php://input');
         parse_str($queryString, $params);
-        $table = strtoupper($params['table'] ?? '');
-        $rows = explode("\n", trim($rawData));
+        $table = strtoupper($params['table'] ?? $params['Table'] ?? '');
+        if (empty(trim($rawData))) {
+            $logger->warning("POST diterima tapi data kosong. Table: $table");
+            echo "OK";
+            exit;
+        }
+        $rows = array_filter(array_map('trim', explode("\n", $rawData)));
         $logger->info("📥 Data Received [POST] Table: $table | Rows: " . count($rows));
         foreach ($rows as $line) {
-            $line = trim($line);
             if (empty($line))
                 continue;
             $data = explode("\t", $line);
-            if ($table === 'ATTLOG' || $table === 'TRANSACTION') {
+
+            // 1. Logika untuk ATTLOG / ABSENSI
+            if ($table === 'ATTLOG' || $table === 'TRANSACTION' || strpos($table, 'ATT') !== false) {
+                if (count($data) >= 4) {
+                    $pin = trim($data[0] ?? '');
+                    $time = trim($data[1] ?? '');
+                    $status = trim($data[2] ?? '1');
+
+                    // FILTER FP & USERPIC
+                    if (empty($pin) || empty($time) || strtoupper($pin) === 'FP' || strtoupper($pin) === 'USERPIC')
+                        continue;
+
+                    $logger->success("✅ ABSEN REALTIME: NIK=$pin | Time=$time | Status=$status");
+                }
+            }
+            // 2. Logika untuk USERINFO & Data Lainnya
+            else {
                 if (count($data) >= 2) {
-                    $pin = trim($data[0]);
-                    $time = trim($data[1]);
-                    $status = trim($data[2] ?? '0');
-                    $verify = trim($data[3] ?? '');
-                    $logger->success("✅ ABSEN: PIN $pin pada $time (Status: $status)");
-                }
-            } elseif ($table === 'USERINFO' || strpos($line, 'USER PIN=') === 0 || strpos($line, 'PIN=') === 0) {
-                if (strpos($line, 'USER PIN=') === 0 || strpos($line, 'PIN=') !== false) {
-                    parse_str(str_replace(" ", "&", $line), $userData);
-                    $pin = $userData['PIN'] ?? $userData['UserPIN'] ?? '';
-                    $name = $userData['Name'] ?? '';
+                    $pin = trim($data[0] ?? '');
+                    $name = trim($data[1] ?? '');
                 } else {
-                    $pin = $data[0] ?? '';
-                    $name = $data[1] ?? '';
+                    // Parsing manual jika formatnya string (PIN=... Name=...)
+                    $line_temp = str_replace(" ", "&", $line);
+                    parse_str($line_temp, $userData);
+                    $pin = $userData['PIN'] ?? '';
+                    $name = $userData['Name'] ?? $userData['FileName'] ?? '';
                 }
-                $logger->info("👤 USERINFO: PIN $pin - Nama: $name");
-            } elseif ($table === 'FINGERTMP' || strpos($line, 'FPPIN=') === 0) {
-                $logger->info("🤚 FINGERTMP Received for PIN: " . ($data[0] ?? 'unknown'));
-            } else {
-                $logger->info("📋 Other Table: $table | Line: $line");
+
+                // --- FILTER UTAMA ---
+                // Jika PIN kosong, atau PIN adalah FP, atau PIN adalah USERPIC, maka JANGAN di log.
+                $cleanPin = strtoupper(trim($pin));
+                if (empty($cleanPin) || $cleanPin === 'FP' || $cleanPin === 'USERPIC') {
+                    continue;
+                }
+
+                // Jika sampai di sini, berarti data valid untuk dicatat
+                if ($table === 'USERINFO' || strpos($table, 'USER') !== false) {
+                    $logger->info("👤 USERINFO: NIK=$pin | Nama=$name");
+                } else {
+                    $logger->info("📋 Other Table: $table | NIK=$pin | Nama=$name");
+                }
             }
-            /*
-            try {
-                $db = new PDO("odbc:Driver={Microsoft Access Driver (*.mdb, *.accdb)};Dbq=C:/path/to/database.mdb;");
-            } catch (Exception $e) {
-                $logger->error("DB Error: " . $e->getMessage());
-            }
-            */
         }
         echo "OK";
         exit;
     }
     if ($method === 'GET') {
-        $logger->info("🔗 ADMS Handshake [GET]");
+        $logger->info("🔗 ADMS Handshake [GET] dari mesin");
         echo "GET OPTION FROM: 1\r\n";
-        echo "Stamp=0\r\n";
-        echo "OpStamp=0\r\n";
-        echo "ErrorDelay=30\r\n";
-        echo "Delay=10\r\n";
-        echo "TransFlag=1111000000\r\n";
+        echo "Stamp=9999999999\r\n";
+        echo "OpStamp=9999\r\n";
+        echo "PhotoStamp=0\r\n";
+        echo "ErrorDelay=60\r\n";
+        echo "Delay=30\r\n";
+        echo "TransTimes=00:00;23:59\r\n";
+        echo "TransInterval=1\r\n";
+        echo "TransFlag=1111111111\r\n";
+        echo "Realtime=1\r\n";
+        echo "Encrypt=0\r\n";
         exit;
     }
+    http_response_code(405);
+    echo "Method Not Allowed";
 } catch (Exception $e) {
-    error_log($e->getMessage());
+    error_log("CDATA Error: " . $e->getMessage() . " | Trace: " . $e->getTraceAsString());
+    echo "ERROR";
 }
