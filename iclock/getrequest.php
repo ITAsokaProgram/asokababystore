@@ -4,18 +4,17 @@ $logger = new AppLogger('absence_get_request.log');
 
 $cmdId = time();
 
-/** * Pilih salah satu perintah di bawah dengan menghilangkan komentar (uncomment):
- */
+// Kirim multiple commands sekaligus (mesin akan proses satu per satu)
+$commands = [
+    "C:$cmdId:DATA QUERY USERINFO",      // Tarik semua info user (PIN, Name, dll.)
+    "C:" . ($cmdId + 1) . ":DATA QUERY ATTLOG",  // Tarik semua log absensi existing
+    "C:" . ($cmdId + 2) . ":DATA QUERY FINGERTMP" // Tarik semua template sidik jari
+    // Tambahkan yang lain jika perlu, misal BIOphoto dll jika support
+];
 
-// A. Tarik SEMUA info user (Nama, PIN, Group)
-$command = "C:$cmdId:DATA QUERY USERINFO";
+$response = implode("\n", $commands);
 
-// B. Tarik SEMUA data absensi yang tersimpan di memori mesin
-// $command = "C:$cmdId:DATA QUERY ATTLOG";
+$logger->info("Sending Multiple Commands to Machine: \n$response");
 
-// C. Tarik SEMUA sidik jari (Fingerprint template)
-// $command = "C:$cmdId:DATA QUERY FINGERTMP";
-
-$logger->info("Sending Command to Machine: $command");
-
-echo $command;
+echo $response;
+?>

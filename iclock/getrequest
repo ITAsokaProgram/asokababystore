@@ -1,1 +1,14 @@
-cdata.php
+<?php
+require_once __DIR__ . "/../src/utils/Logger.php";
+$logger = new AppLogger('absence_get_request.log');
+
+$cmdId = time();
+
+/**
+ * Perintah untuk menarik seluruh log absensi dari awal (tahun 2000) sampai sekarang
+ */
+$command = "C:$cmdId:DATA QUERY ATTLOG StartTime=2000-01-01 00:00:00";
+
+$logger->info("Sending COMMAND PULL ALL DATA: $command");
+
+echo $command;
