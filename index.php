@@ -510,7 +510,7 @@ if ($stmt->num_rows === 0) {
             </div>
         </section>
 
-        <!-- <section id="lokasi" class="py-20 bg-gradient-to-br from-blue-50 via-white to-pink-50">
+        <section id="lokasi" class="py-20 bg-gradient-to-br from-blue-50 via-white to-pink-50">
             <div class="max-w-6xl mx-auto px-4">
                 <div class="text-center mb-12" data-aos="fade-down" data-aos-duration="800">
                     <h2 class="text-3xl md:text-4xl font-bold mb-4 gradient-text">Lokasi Toko Kami</h2>
@@ -601,7 +601,7 @@ if ($stmt->num_rows === 0) {
                     </div>
                 </div>
             </div>
-        </section> -->
+        </section>
 
         <section id="faq-section" class="py-20 bg-gradient-to-br from-purple-50 via-white to-pink-50">
             <div class="max-w-6xl mx-auto px-4">
