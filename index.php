@@ -510,7 +510,7 @@ if ($stmt->num_rows === 0) {
             </div>
         </section>
 
-        <section id="lokasi" class="py-20 bg-gradient-to-br from-blue-50 via-white to-pink-50">
+        <!-- <section id="lokasi" class="py-20 bg-gradient-to-br from-blue-50 via-white to-pink-50">
             <div class="max-w-6xl mx-auto px-4">
                 <div class="text-center mb-12" data-aos="fade-down" data-aos-duration="800">
                     <h2 class="text-3xl md:text-4xl font-bold mb-4 gradient-text">Lokasi Toko Kami</h2>
@@ -520,7 +520,6 @@ if ($stmt->num_rows === 0) {
 
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-auto lg:h-[70vh]">
-                    <!-- Sidebar scrollable -->
                     <div id="sidebar"
                         class="bg-white/90 backdrop-blur-lg shadow-xl rounded-2xl p-6 overflow-hidden lg:col-span-1 h-full min-h-[50vh] border border-blue-100"
                         data-aos="fade-right" data-aos-duration="600">
@@ -534,7 +533,6 @@ if ($stmt->num_rows === 0) {
                             </h3>
                         </div>
 
-                        <!-- Search and Filter Controls -->
                         <div class="mb-4 space-y-3">
                             <div class="relative">
                                 <i
@@ -565,13 +563,10 @@ if ($stmt->num_rows === 0) {
                             </div>
                         </div>
 
-                        <!-- Location List Container -->
                         <div id="location-list"
                             class="space-y-3 overflow-y-auto max-h-[calc(70vh-200px)] pr-2 scrollbar-thin scrollbar-thumb-pink-300 scrollbar-track-gray-100">
-                            <!-- Location items will be populated here -->
                         </div>
 
-                        <!-- No Results Message -->
                         <div id="no-results" class="hidden text-center py-8">
                             <div
                                 class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -581,7 +576,6 @@ if ($stmt->num_rows === 0) {
                         </div>
                     </div>
 
-                    <!-- Map Container -->
                     <div class="lg:col-span-2 h-full relative" data-aos="fade-left" data-aos-duration="600">
                         <div id="map-tip"
                             class="absolute top-4 left-1/2 -translate-x-1/2 bg-white/95 backdrop-blur-md text-gray-800 text-sm px-4 py-2 rounded-xl shadow-lg z-[1000] hidden lg:hidden border border-pink-100">
@@ -591,7 +585,6 @@ if ($stmt->num_rows === 0) {
                         <div id="map" class="w-full h-full rounded-2xl shadow-xl min-h-[50vh] border border-blue-100">
                         </div>
 
-                        <!-- Map Controls Info -->
                         <div
                             class="absolute bottom-4 right-4 bg-white/95 backdrop-blur-md rounded-xl p-3 shadow-lg border border-gray-200 hidden lg:block">
                             <div class="text-xs text-gray-600 space-y-1">
@@ -608,7 +601,7 @@ if ($stmt->num_rows === 0) {
                     </div>
                 </div>
             </div>
-        </section>
+        </section> -->
 
         <section id="faq-section" class="py-20 bg-gradient-to-br from-purple-50 via-white to-pink-50">
             <div class="max-w-6xl mx-auto px-4">

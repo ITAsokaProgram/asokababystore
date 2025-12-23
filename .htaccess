@@ -1,9 +1,11 @@
 RewriteEngine On
+
 RewriteRule ^iclock/cdata$ iclock/cdata.php [L]
 RewriteRule ^iclock/getrequest$ iclock/getrequest.php [L]
 RewriteRule ^iclock/idata$ iclock/devicecmd.php [L]
 
 # 2. Baru kemudian proteksi folder iclock agar tidak kena aturan root lainnya
+RewriteCond %{REMOTE_ADDR} !^36\.77\.250\.71
 RewriteCond %{REQUEST_URI} ^/iclock [NC]
 RewriteRule ^ - [L]
 

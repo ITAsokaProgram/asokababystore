@@ -3,6 +3,7 @@ ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 ini_set('memory_limit', '512M');
 set_time_limit(0);
+require_once __DIR__ . '/../aa_kon_sett.php';
 try {
     $rootDir = realpath(__DIR__ . '/..');
     require_once $rootDir . '/src/utils/Logger.php';
@@ -23,54 +24,44 @@ try {
         foreach ($rows as $line) {
             if (empty($line))
                 continue;
-
             $data = explode("\t", $line);
-            $pin = '';
-            $name = '';
-
-            // 1. Identifikasi PIN dan Nama
-            if (count($data) >= 2) {
-                $pin = trim($data[0] ?? '');
-                $name = trim($data[1] ?? '');
-            } else {
-                // Untuk format: PIN=99280 Name=Fulan atau NIK=FP PIN=...
-                $line_temp = str_replace(" ", "&", $line);
-                parse_str($line_temp, $userData);
-
-                // Cek semua kemungkinan key yang dikirim mesin
-                $pin = $userData['NIK'] ?? $userData['PIN'] ?? '';
-                $name = $userData['Nama'] ?? $userData['Name'] ?? $userData['FileName'] ?? $userData['FID'] ?? '';
-            }
-
-            // --- FILTER SAKTI ---
-            // Kita cek apakah dalam string PIN mengandung kata FP, USERPIC, atau USER
-            $upperPin = strtoupper($pin);
-            $forbidden = ['FP', 'USERPIC', 'USER'];
-
-            $isForbidden = false;
-            foreach ($forbidden as $word) {
-                if (strpos($upperPin, $word) !== false) {
-                    $isForbidden = true;
-                    break;
-                }
-            }
-
-            // Jika termasuk kata terlarang atau PIN kosong, abaikan!
-            if ($isForbidden || empty(trim($pin))) {
-                continue;
-            }
-
-            // 2. Logging berdasarkan Tabel
             if ($table === 'ATTLOG' || $table === 'TRANSACTION' || strpos($table, 'ATT') !== false) {
-                $time = trim($data[1] ?? '');
-                $status = trim($data[2] ?? '1');
-                $logger->success("✅ ABSEN REALTIME: NIK=$pin | Time=$time | Status=$status");
-            } elseif ($table === 'USERINFO' || strpos($table, 'USER') !== false) {
-                $logger->info("👤 USERINFO: NIK=$pin | Nama=$name");
+                if (count($data) >= 4) {
+                    $pin = mysqli_real_escape_string($conn, trim($data[0]));
+                    $time = mysqli_real_escape_string($conn, trim($data[1]));
+                    $status = mysqli_real_escape_string($conn, trim($data[2] ?? '0'));
+                    if (empty($pin) || empty($time) || strtoupper($pin) === 'FP' || strtoupper($pin) === 'USERPIC')
+                        continue;
+                    $resKaryawan = mysqli_query($conn, "SELECT id FROM karyawan WHERE nik = '$pin' LIMIT 1");
+                    if ($rowK = mysqli_fetch_assoc($resKaryawan)) {
+                        $id_karyawan = $rowK['id'];
+                        $query = "INSERT INTO absen (id_karyawan, jam, status) VALUES ('$id_karyawan', '$time', '$status')";
+                        if (mysqli_query($conn, $query)) {
+                            $logger->success("✅ ABSEN SAVED: NIK=$pin | Time=$time");
+                        }
+                    } else {
+                        $logger->warning("❌ ABSEN GAGAL: NIK $pin tidak ditemukan di tabel karyawan");
+                    }
+                }
             } else {
-                // Menghindari OPERLOG yang isinya sampah
-                if ($table !== 'OPERLOG') {
-                    $logger->info("📋 Table $table: NIK=$pin | Nama=$name");
+                if (count($data) >= 2) {
+                    $pin = trim($data[0]);
+                    $name = trim($data[1]);
+                } else {
+                    $line_temp = str_replace(" ", "&", $line);
+                    parse_str($line_temp, $userData);
+                    $pin = $userData['PIN'] ?? '';
+                    $name = $userData['Name'] ?? $userData['FileName'] ?? '';
+                }
+                $cleanPin = strtoupper(trim($pin));
+                if (empty($cleanPin) || $cleanPin === 'FP' || $cleanPin === 'USERPIC')
+                    continue;
+                $pinEscaped = mysqli_real_escape_string($conn, $cleanPin);
+                $nameEscaped = mysqli_real_escape_string($conn, $name);
+                $queryKaryawan = "INSERT INTO karyawan (nik, nama) VALUES ('$pinEscaped', '$nameEscaped') 
+                                  ON DUPLICATE KEY UPDATE nama = '$nameEscaped'";
+                if (mysqli_query($conn, $queryKaryawan)) {
+                    $logger->info("👤 USER SYNCED: NIK=$pin | Nama=$name");
                 }
             }
         }
@@ -92,9 +83,7 @@ try {
         echo "Encrypt=0\r\n";
         exit;
     }
-    http_response_code(405);
-    echo "Method Not Allowed";
 } catch (Exception $e) {
-    error_log("CDATA Error: " . $e->getMessage() . " | Trace: " . $e->getTraceAsString());
+    error_log("CDATA Error: " . $e->getMessage());
     echo "ERROR";
 }

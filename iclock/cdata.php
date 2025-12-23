@@ -24,42 +24,29 @@ try {
             if (empty($line))
                 continue;
             $data = explode("\t", $line);
-
-            // 1. Logika untuk ATTLOG / ABSENSI
             if ($table === 'ATTLOG' || $table === 'TRANSACTION' || strpos($table, 'ATT') !== false) {
                 if (count($data) >= 4) {
                     $pin = trim($data[0] ?? '');
                     $time = trim($data[1] ?? '');
                     $status = trim($data[2] ?? '1');
-
-                    // FILTER FP & USERPIC
                     if (empty($pin) || empty($time) || strtoupper($pin) === 'FP' || strtoupper($pin) === 'USERPIC')
                         continue;
-
                     $logger->success("✅ ABSEN REALTIME: NIK=$pin | Time=$time | Status=$status");
                 }
-            }
-            // 2. Logika untuk USERINFO & Data Lainnya
-            else {
+            } else {
                 if (count($data) >= 2) {
                     $pin = trim($data[0] ?? '');
                     $name = trim($data[1] ?? '');
                 } else {
-                    // Parsing manual jika formatnya string (PIN=... Name=...)
                     $line_temp = str_replace(" ", "&", $line);
                     parse_str($line_temp, $userData);
                     $pin = $userData['PIN'] ?? '';
                     $name = $userData['Name'] ?? $userData['FileName'] ?? '';
                 }
-
-                // --- FILTER UTAMA ---
-                // Jika PIN kosong, atau PIN adalah FP, atau PIN adalah USERPIC, maka JANGAN di log.
                 $cleanPin = strtoupper(trim($pin));
                 if (empty($cleanPin) || $cleanPin === 'FP' || $cleanPin === 'USERPIC') {
                     continue;
                 }
-
-                // Jika sampai di sini, berarti data valid untuk dicatat
                 if ($table === 'USERINFO' || strpos($table, 'USER') !== false) {
                     $logger->info("👤 USERINFO: NIK=$pin | Nama=$name");
                 } else {
