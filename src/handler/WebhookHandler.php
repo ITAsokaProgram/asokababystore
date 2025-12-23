@@ -684,7 +684,7 @@ class WebhookHandler
                         'phone' => $nomorUntukDikirim
                     ]);
                     $sendResult = kirimPesanKontak($nomorPengirim, $namaKontak, $nomorUntukDikirim);
-                    $this->logger->info("result: " . $sendResult);
+                    $this->logger->info("result: " . json_encode($sendResult));
                     $this->saveAdminReply($conversation['id'], $nomorPengirim, $contactInfo, 'contacts', $sendResult['wamid'] ?? null);
                 } else {
                     $pesanError = WhatsappConstants::INVALID_OPTION;
