@@ -28,7 +28,7 @@ $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $offset = ($page - 1) * $limit;
 
 // 3. Bangun Query Dasar (WHERE)
-$whereClause = "WHERE user_account.aktif = 1";
+$whereClause = "WHERE (user_account.aktif = 1 OR user_account.aktif = 'True' OR user_account.aktif = '1')";
 $params = [];
 $types = "";
 

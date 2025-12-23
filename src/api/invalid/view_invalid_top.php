@@ -6,7 +6,7 @@ header("Content-Type:application/json");
 header("Access-Control-Allow-Methods: GET");
 $headers = getallheaders();
 
-if(!isset($headers['Authorization'])){
+if (!isset($headers['Authorization'])) {
     http_response_code(401);
     echo json_encode(['status' => "Unauthenticated", 'message' => 'Request ditolak, token tidak ditemukan']);
     exit;
@@ -52,11 +52,22 @@ $countRetur = $resultRetur->num_rows;
 $resultRetur->close();
 
 
-if ($count > 0 && $countRetur > 0) {
-    http_response_code(200);
-    echo json_encode(['status' => 'success', 'message' => 'Data berhasil diambil', 'data' => $data, 'dataRetur' => $dataRetur]);
+
+if ($count > 0 || $countRetur > 0) {
+    echo json_encode([
+        'status' => 'success',
+        'message' => 'Data berhasil diambil',
+        'data' => $data,
+        'dataRetur' => $dataRetur
+    ]);
 } else {
-    http_response_code(204);
-    echo json_encode(['status' => 'success', 'message' => 'Tidak ada data invalid transaksi', 'data' => [], 'dataRetur' => []]);
+    // Tetap kirim array kosong agar JS tidak error saat melakukan .length atau .slice
+    echo json_encode([
+        'status' => 'success',
+        'message' => 'Tidak ada data invalid transaksi',
+        'data' => [],
+        'dataRetur' => []
+    ]);
 }
 $conn->close();
+exit;

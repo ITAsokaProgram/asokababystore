@@ -6,7 +6,7 @@ error_reporting(E_ALL);
 $result = $conn->query("
     SELECT GROUP_CONCAT(COLUMN_NAME SEPARATOR ', ') AS kolom 
     FROM INFORMATION_SCHEMA.COLUMNS 
-    WHERE TABLE_SCHEMA = 'dbasokaonline' AND TABLE_NAME = 'pembayaran_b'
+    WHERE TABLE_SCHEMA = 'appsasokaol' AND TABLE_NAME = 'pembayaran_b'
 ");
 
 $row = $result->fetch_assoc();

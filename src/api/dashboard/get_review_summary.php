@@ -16,7 +16,7 @@ $token = null;
 if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
     $token = $matches[1];
 }
-$verif = verify_token($token); 
+$verif = verify_token($token);
 
 
 $sqlStats = "SELECT 
@@ -32,7 +32,7 @@ SELECT
     r.id,
     r.rating,
     ua.nama_lengkap AS nama_customer,
-    COALESCE(rd.status, 'pending') AS review_status, 
+    COALESCE(rd.status, 'Pending') AS review_status, 
     r.dibuat_tgl
 FROM
     review r
@@ -57,30 +57,30 @@ LIMIT 1;
 
 
 try {
-    
+
     $stmtStats = $conn->prepare($sqlStats);
     $stmtStats->execute();
     $resultStats = $stmtStats->get_result();
     $stats = $resultStats->fetch_assoc();
     $stmtStats->close();
 
-    
+
     $stmtFeatured = $conn->prepare($sqlFeatured);
     $stmtFeatured->execute();
     $resultFeatured = $stmtFeatured->get_result();
-    $featuredReview = $resultFeatured->fetch_assoc(); 
+    $featuredReview = $resultFeatured->fetch_assoc();
     $stmtFeatured->close();
 
-    
+
     http_response_code(200);
     echo json_encode([
         'status' => 'success',
         'message' => 'Data berhasil diambil',
         'data' => [
-            'featured_review' => $featuredReview, 
+            'featured_review' => $featuredReview,
             'avg_rating' => $stats['avg_rating'] ?? 0,
-            'total_reviews' => (int)($stats['total_reviews'] ?? 0),
-            'pending_count' => (int)($stats['pending_count'] ?? 0)
+            'total_reviews' => (int) ($stats['total_reviews'] ?? 0),
+            'pending_count' => (int) ($stats['pending_count'] ?? 0)
         ]
     ]);
 } catch (Exception $e) {
