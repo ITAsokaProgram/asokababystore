@@ -17,9 +17,9 @@ $safe_name = htmlspecialchars($_SESSION['username'] ?? '');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $queryType = $_POST['query_type'] ?? 'query1';
-    $kd_store = filter_input(INPUT_POST, 'kd_store', FILTER_SANITIZE_STRING);
-    $subDataDept = filter_input(INPUT_POST, 'subdept', FILTER_SANITIZE_STRING);
-    $kode_supp = filter_input(INPUT_POST, 'kode_supp', FILTER_SANITIZE_STRING);
+    $kd_store = isset($_POST['kd_store']) ? htmlspecialchars($_POST['kd_store']) : '';
+    $subDataDept = isset($_POST['subdept']) ? htmlspecialchars($_POST['subdept']) : '';
+    $kode_supp = isset($_POST['kode_supp']) ? htmlspecialchars($_POST['kode_supp']) : '';
     $allowedOrderColumns = ['Total', 'Qty'];
     $filter = isset($_GET['filter']) && in_array($_GET['filter'], $allowedOrderColumns) ? $_GET['filter'] : 'Qty';
     $startDate = DateTime::createFromFormat('d-m-Y', $_POST['start_date']) ? date('Y-m-d', strtotime($_POST['start_date'])) : null;

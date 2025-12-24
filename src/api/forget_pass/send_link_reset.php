@@ -3,6 +3,9 @@
 require_once __DIR__ . '/../../../vendor/autoload.php';
 require_once __DIR__ . '/../../../aa_kon_sett.php';
 $env = parse_ini_file(__DIR__ . '/../../../.env');
+// Perhatikan: Middleware login biasanya memblokir akses tamu. 
+// Pastikan file ini tidak memaksa user harus login, karena ini fitur lupa password.
+// Jika middleware_login.php berisi fungsi 'checkEmail', sebaiknya dipisah atau dipanggil selektif.
 require_once __DIR__ . '/../../auth/middleware_login.php';
 require_once __DIR__ . '/../../../src/utils/Logger.php';
 
@@ -10,8 +13,8 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST");
 header("Content-Type: application/json");
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+// Matikan display error agar tidak merusak format JSON response
+ini_set('display_errors', 0);
 error_reporting(E_ALL);
 
 use PHPMailer\PHPMailer\PHPMailer;
@@ -30,7 +33,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
+    // 1. CEK DATABASE DULU (Fail Fast)
+    // Cek apakah email terdaftar sebelum melakukan setup PHPMailer yang berat
+    $checkEmail = checkEmail($conn, $email);
+    if ($checkEmail['status'] !== 'success') {
+        http_response_code(404);
+        echo json_encode(['status' => 'error', 'message' => 'Email tidak terdaftar.']);
+        exit;
+    }
+
+    // 2. PERSIAPAN TOKEN DB
     $token = bin2hex(random_bytes(32));
+    $createdAt = date('Y-m-d H:i:s');
+    $expiredAt = date('Y-m-d H:i:s', strtotime('+30 minutes'));
+
+    // Hapus token lama
+    $stmtDelete = $conn->prepare("DELETE FROM reset_token WHERE email = ?");
+    $stmtDelete->bind_param("s", $email);
+    $stmtDelete->execute();
+
+    // Insert token baru
+    $stmtInsert = $conn->prepare("INSERT INTO reset_token (email, token, dibuat_tgl, kadaluarsa, used) VALUES (?, ?, ?, ?, 0)");
+    $stmtInsert->bind_param("ssss", $email, $token, $createdAt, $expiredAt);
+
+    if (!$stmtInsert->execute()) {
+        http_response_code(500);
+        echo json_encode(['status' => 'error', 'message' => 'Gagal membuat token reset.']);
+        exit;
+    }
+
+    // 3. KIRIM RESPON KE USER SEKARANG (User Experience)
+    // Ini trik agar user merasa prosesnya instan (tidak perlu nunggu email terkirim)
+    // Respon dikirim, koneksi ke browser ditutup, tapi script PHP di bawah (kirim email) tetap jalan di background.
+    http_response_code(200);
+    echo json_encode(['status' => 'success', 'message' => 'Link reset password sedang dikirim ke email Anda.']);
+
+    if (function_exists('fastcgi_finish_request')) {
+        fastcgi_finish_request();
+    } else {
+        // Fallback untuk Apache mod_php (jarang dipakai di setup modern, tapi aman)
+        flush();
+    }
+
+    // ==================================================================
+    // 4. PROSES KIRIM EMAIL (Berjalan di Background Server)
+    // ==================================================================
+
     $mail = new PHPMailer(true);
 
     try {
@@ -41,14 +89,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $mail->Password = $env['SMTP_PASS'];
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = $env['SMTP_PORT'];
-
         $mail->CharSet = 'UTF-8';
+
+        // TWEAK PENTING: Timeout Settings
+        // Jangan biarkan PHP menunggu 2 menit default timeout
+        $mail->Timeout = 15; // Timeout koneksi (detik)
+        $mail->Timelimit = 15; // Timeout proses baca data
+
+        // TWEAK KHUSUS DEBIAN 12 + IPV6 DISABLED
+        // Jika server memaksa resolve IPv6 dan gagal, ini memaksa bypass verifikasi peer yang kadang bikin hang
+        $mail->SMTPOptions = array(
+            'ssl' => array(
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+                'allow_self_signed' => true
+            )
+        );
 
         $mail->setFrom($env['SMTP_USER'], 'ASOKA Baby Store');
         $mail->addAddress($email);
         $mail->isHTML(true);
         $mail->Subject = 'Reset Password Akun ASOKA Baby Store';
 
+        // Penanganan Gambar
         $logoPath = __DIR__ . '/../../../public/images/logo.png';
         $logoCid = 'logo_asoka_id';
 
@@ -56,14 +119,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $mail->addEmbeddedImage($logoPath, $logoCid, 'logo.png');
             $logoSrc = 'cid:' . $logoCid;
         } else {
+            // Fallback ke URL absolut jika file tidak ketemu di path lokal
             $logoSrc = 'https://asokababystore.com/public/images/logo.png';
         }
 
+        // Baca Template
         $templatePath = __DIR__ . '/../../../email_template.html';
-        if (!is_readable($templatePath)) {
-            throw new Exception('File template email tidak ditemukan.');
+        if (is_readable($templatePath)) {
+            $htmlContent = file_get_contents($templatePath);
+        } else {
+            // Fallback template sederhana jika file html hilang
+            $htmlContent = "Klik link ini untuk reset: {{reset_link}}";
         }
-        $htmlContent = file_get_contents($templatePath);
 
         $resetLink = "https://asokababystore.com/src/fitur/pubs/user/reset/reset_password.php?token=$token";
 
@@ -80,40 +147,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $mail->Body = $htmlContent;
-
-        $mail->AltBody = "Halo " . $email . ",\n\nUntuk mereset password Anda, silakan kunjungi link berikut: " . $resetLink . "\n\nSalam,\nTim ASOKA Baby Store";
-
-
-        $checkEmail = checkEmail($conn, $email);
-        if ($checkEmail['status'] !== 'success') {
-            http_response_code(404);
-            echo json_encode(['status' => 'error', 'message' => 'Email tidak terdaftar.']);
-            exit;
-        }
-
-        $stmtDelete = $conn->prepare("DELETE FROM reset_token WHERE email = ?");
-        $stmtDelete->bind_param("s", $email);
-        $stmtDelete->execute();
+        $mail->AltBody = "Halo $email,\n\nUntuk mereset password Anda, silakan kunjungi link berikut: $resetLink\n\nSalam,\nTim ASOKA Baby Store";
 
         $mail->send();
 
-        $createdAt = date('Y-m-d H:i:s');
-        $expiredAt = date('Y-m-d H:i:s', strtotime('+30 minutes'));
-
-        $stmtInsert = $conn->prepare("INSERT INTO reset_token (email, token, dibuat_tgl, kadaluarsa, used) VALUES (?, ?, ?, ?, 0)");
-        $stmtInsert->bind_param("ssss", $email, $token, $createdAt, $expiredAt);
-        $stmtInsert->execute();
-
-        http_response_code(200);
-        echo json_encode(['status' => 'success', 'message' => 'Link reset password berhasil dikirim ke email Anda.']);
+        // Log sukses (karena user tidak melihat ini lagi)
+        // $logger->log("Email reset terkirim ke $email");
 
     } catch (Exception $e) {
-        http_response_code(500);
-        echo json_encode([
-            'status' => 'error',
-            'message' => 'Gagal mengirim email. Mailer Error: ' . $mail->ErrorInfo
-        ]);
+        // Log error (karena user sudah dapat respon sukses, kita harus log error server-side)
+        // Pastikan path logger benar
+        error_log("Gagal kirim email reset ke $email. Error: " . $mail->ErrorInfo);
     }
+
+    // Tidak perlu echo apapun lagi di sini karena koneksi sudah ditutup di langkah 3
 
 } else {
     http_response_code(405);
