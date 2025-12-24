@@ -54,10 +54,9 @@ document.addEventListener("DOMContentLoaded", () => {
   async function loadData() {
     const params = getUrlParams();
     const isPagination = params.page > 1;
-    const token = getCookie("admin_token"); // Ambil token untuk header
-
+    
     setLoadingState(true, false, isPagination);
-
+    
     const queryString = new URLSearchParams({
       tgl_mulai: params.tgl_mulai,
       tgl_selesai: params.tgl_selesai,
@@ -65,8 +64,9 @@ document.addEventListener("DOMContentLoaded", () => {
       search_query: params.search_query,
       page: params.page,
     }).toString();
-
+    
     try {
+      const token = getCookie("admin_token"); // Ambil token untuk header
       const response = await fetch(
         `/src/api/koreksi_stock/get_by_plu.php?${queryString}`,
         {
@@ -496,8 +496,15 @@ document.addEventListener("DOMContentLoaded", () => {
       export: true,
     }).toString();
     try {
+      const token = getCookie("admin_token"); // Ambil token untuk header
       const response = await fetch(
-        `/src/api/koreksi_stock/get_by_plu.php?${queryString}`
+        `/src/api/koreksi_stock/get_by_plu.php?${queryString}`,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer " + token, // Tambahkan Bearer Token
+          },
+        }
       );
       if (!response.ok) {
         const errorData = await response.json();

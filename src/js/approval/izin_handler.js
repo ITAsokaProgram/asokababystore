@@ -324,8 +324,15 @@ document.addEventListener("DOMContentLoaded", () => {
       export: true,
     }).toString();
     try {
+      const token = getCookie("admin_token");
       const response = await fetch(
-        `/src/api/approval/get_izin.php?${queryString}`
+        `/src/api/approval/get_izin.php?${queryString}`,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer " + token, // Penting agar PHP bisa filter cabang
+          },
+        }
       );
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);

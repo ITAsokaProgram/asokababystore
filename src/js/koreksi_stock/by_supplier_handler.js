@@ -53,18 +53,18 @@ document.addEventListener("DOMContentLoaded", () => {
   async function loadData() {
     const params = getUrlParams();
     const isPagination = params.page > 1;
-    const token = getCookie("admin_token"); // Mengambil token untuk otentikasi
-
+    
     setLoadingState(true, false, isPagination);
-
+    
     const queryString = new URLSearchParams({
       tgl_mulai: params.tgl_mulai,
       tgl_selesai: params.tgl_selesai,
       kd_store: params.kd_store,
       page: params.page,
     }).toString();
-
+    
     try {
+      const token = getCookie("admin_token"); // Mengambil token untuk otentikasi
       const response = await fetch(
         `/src/api/koreksi_stock/get_by_supplier.php?${queryString}`,
         {
@@ -459,9 +459,17 @@ document.addEventListener("DOMContentLoaded", () => {
       export: true,
     }).toString();
     try {
+      const token = getCookie("admin_token"); // Mengambil token untuk otentikasi
       const response = await fetch(
-        `/src/api/koreksi_stock/get_by_supplier.php?${queryString}`
+        `/src/api/koreksi_stock/get_by_supplier.php?${queryString}`,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer " + token, // Menambahkan header sesuai instruksi get_kode
+          },
+        }
       );
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(

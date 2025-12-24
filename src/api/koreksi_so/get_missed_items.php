@@ -1,11 +1,10 @@
 <?php
 session_start();
+ini_set('memory_limit', '512M');
+ini_set('max_execution_time', 300);
 include '../../../aa_kon_sett.php';
-// Tambahkan middleware untuk verifikasi token
 require_once __DIR__ . "./../../auth/middleware_login.php";
-
 header('Content-Type: application/json');
-
 register_shutdown_function(function () {
     $error = error_get_last();
     if ($error && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
@@ -13,7 +12,6 @@ register_shutdown_function(function () {
         echo json_encode(['error' => 'Server Error: ' . $error['message']]);
     }
 });
-
 $is_export = isset($_GET['export']) && $_GET['export'] === 'true';
 $response = [
     'stores' => [],
@@ -24,28 +22,22 @@ $response = [
     'params' => [],
     'start_group_index' => 0
 ];
-
 try {
-    // --- START: LOGIKA PENGAMBILAN KODE CABANG (Sama dengan get_kode.php) ---
     $header = getAllHeaders();
     $authHeader = $header['Authorization'] ?? '';
     $token = null;
     if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
         $token = $matches[1];
     }
-
     if (!$token) {
         throw new Exception('Unauthenticated: Request ditolak user tidak terdaftar');
     }
-
     $verif = verify_token($token);
-
     $sqlUserCabang = "SELECT kd_store FROM user_account WHERE kode = ?";
     $stmtUserCabang = $conn->prepare($sqlUserCabang);
     $stmtUserCabang->bind_param("s", $verif->kode);
     $stmtUserCabang->execute();
     $resultUserCabang = $stmtUserCabang->get_result();
-
     if ($resultUserCabang->num_rows > 0) {
         $userCabang = $resultUserCabang->fetch_assoc();
         if ($userCabang['kd_store'] == "Pusat") {
@@ -61,7 +53,6 @@ try {
         $stmt_s->execute();
         $res_stores = $stmt_s->get_result();
         while ($row = $res_stores->fetch_assoc()) {
-            // Kita petakan ke format yang diharapkan UI lama: kd_store dan nm_alias
             $response['stores'][] = [
                 'kd_store' => $row['store'],
                 'nm_alias' => $row['nama_cabang']
@@ -69,33 +60,26 @@ try {
         }
         $stmt_s->close();
     }
-    // --- END: LOGIKA PENGAMBILAN KODE CABANG ---
-
     $default_tgl_mulai = date('Y-m-16', strtotime('last month'));
     $default_tgl_selesai = date('Y-m-15');
     $tgl_mulai = $_GET['tgl_mulai'] ?? $default_tgl_mulai;
     $tgl_selesai = $_GET['tgl_selesai'] ?? $default_tgl_selesai;
     $kd_store = $_GET['kd_store'] ?? 'all';
     $mode_laporan = $_GET['mode'] ?? 'jadwal';
-
     $response['params'] = [
         'tgl_mulai' => $tgl_mulai,
         'tgl_selesai' => $tgl_selesai,
         'mode' => $mode_laporan
     ];
-
     $page = max(1, (int) ($_GET['page'] ?? 1));
     $limit = 1000;
     $offset = ($page - 1) * $limit;
-
     $sql_koreksi_filter = "DATE(tgl_koreksi) BETWEEN ? AND ?";
     $params_koreksi = [$tgl_mulai, $tgl_selesai];
     $types_koreksi = "ss";
-
     $where_store_master = "";
     $params_store = [];
     $types_store = "";
-
     if ($kd_store !== 'all' && $kd_store !== 'SEMUA CABANG' && $kd_store !== 'none') {
         $where_store_master = "AND m.KD_STORE = ?";
         $sql_koreksi_filter .= " AND kd_store = ?";
@@ -104,10 +88,8 @@ try {
         $params_koreksi[] = $kd_store;
         $types_koreksi .= "s";
     }
-
     $final_bind_vars = [];
     $final_bind_types = "";
-
     if ($mode_laporan === 'non_jadwal') {
         $sql_core = "
             FROM master m
@@ -124,7 +106,6 @@ try {
         $final_bind_vars = array_merge($final_bind_vars, $params_store);
         $final_bind_types .= $types_koreksi;
         $final_bind_vars = array_merge($final_bind_vars, $params_koreksi);
-
         $cols_select = "
             '$tgl_selesai' as tgl_jadwal,
             m.plu, m.DESCP as deskripsi, IFNULL(m.SATUAN, 'PCS') as satuan, 
@@ -136,13 +117,11 @@ try {
         $sql_jadwal_exclude = "DATE(Tgl_schedule) BETWEEN ? AND ?";
         $params_jadwal_ex = [$tgl_mulai, $tgl_selesai];
         $types_jadwal_ex = "ss";
-
         if ($kd_store !== 'all' && $kd_store !== 'SEMUA CABANG' && $kd_store !== 'none') {
             $sql_jadwal_exclude .= " AND Kd_Store = ?";
             $params_jadwal_ex[] = $kd_store;
             $types_jadwal_ex .= "s";
         }
-
         $sql_core = "
             FROM master m
             WHERE 
@@ -157,7 +136,6 @@ try {
         $final_bind_vars = array_merge($final_bind_vars, $params_koreksi);
         $final_bind_types .= $types_jadwal_ex;
         $final_bind_vars = array_merge($final_bind_vars, $params_jadwal_ex);
-
         $cols_select = "
             '$tgl_selesai' as tgl_jadwal,
             m.plu, m.DESCP as deskripsi, IFNULL(m.SATUAN, 'PCS') as satuan, 
@@ -169,13 +147,11 @@ try {
         $sql_jadwal_filter = "DATE(Tgl_schedule) BETWEEN ? AND ?";
         $params_jadwal = [$tgl_mulai, $tgl_selesai];
         $types_jadwal = "ss";
-
         if ($kd_store !== 'all' && $kd_store !== 'SEMUA CABANG' && $kd_store !== 'none') {
             $sql_jadwal_filter .= " AND Kd_Store = ?";
             $params_jadwal[] = $kd_store;
             $types_jadwal .= "s";
         }
-
         $sql_core = "
             FROM master m
             JOIN (
@@ -198,7 +174,6 @@ try {
         $final_bind_vars = array_merge($final_bind_vars, $params_store);
         $final_bind_types .= $types_koreksi;
         $final_bind_vars = array_merge($final_bind_vars, $params_koreksi);
-
         $cols_select = "
             j.tgl_jadwal,
             m.plu, m.DESCP as deskripsi, IFNULL(m.SATUAN, 'PCS') as satuan, 
@@ -207,14 +182,12 @@ try {
         ";
         $order_by = "ORDER BY j.tgl_jadwal ASC, m.VENDOR ASC, m.plu ASC";
     }
-
     if (!$is_export && $offset > 0) {
         $sql_pre_count = "SELECT $cols_select $sql_core $order_by LIMIT ?";
         $stmt_pre = $conn->prepare($sql_pre_count);
         $bind_types_pre = $final_bind_types . "i";
         $bind_vars_pre = $final_bind_vars;
         $bind_vars_pre[] = $offset;
-
         if ($stmt_pre) {
             $stmt_pre->bind_param($bind_types_pre, ...$bind_vars_pre);
             $stmt_pre->execute();
@@ -232,7 +205,6 @@ try {
             $stmt_pre->close();
         }
     }
-
     if (!$is_export) {
         $sql_count = "SELECT COUNT(*) as total $sql_core";
         $stmt_count = $conn->prepare($sql_count);
@@ -251,7 +223,6 @@ try {
         ];
         $response['summary']['total_items'] = (int) $total_rows;
     }
-
     $sql_select = "SELECT $cols_select $sql_core $order_by";
     if (!$is_export) {
         $sql_select .= " LIMIT ? OFFSET ?";
@@ -261,27 +232,24 @@ try {
         $final_bind_types_select = $final_bind_types;
         $final_bind_vars_select = $final_bind_vars;
     }
-
     $stmt = $conn->prepare($sql_select);
     if (!$stmt)
         throw new Exception("Select Query Error: " . $conn->error);
     $stmt->bind_param($final_bind_types_select, ...$final_bind_vars_select);
     $stmt->execute();
     $result = $stmt->get_result();
-
     while ($row = $result->fetch_assoc()) {
         array_walk_recursive($row, function (&$item) {
-            if (is_string($item))
-                $item = utf8_encode($item);
+            if (is_string($item)) {
+                $item = mb_convert_encoding($item, 'UTF-8', 'ISO-8859-1');
+            }
         });
         $response['tabel_data'][] = $row;
     }
     $conn->close();
-
 } catch (Exception $e) {
     http_response_code(500);
     $response['error'] = $e->getMessage();
 }
-
 echo json_encode($response);
 ?>
