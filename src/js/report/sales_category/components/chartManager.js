@@ -2,7 +2,6 @@
  * @fileoverview Chart Manager untuk laporan penjualan kategori
  * @description Mengelola semua operasi chart menggunakan ECharts
  */
-
 import {
   CATEGORY_NAME_MAPPING,
   CHART_COLORS,
@@ -11,7 +10,6 @@ import {
   CHART_MODES,
 } from "../config/constants.js";
 import { parseCurrencyToNumber } from "../utils/formatters.js";
-
 /**
  * Class untuk mengelola chart operations
  */
@@ -21,7 +19,6 @@ class ChartManager {
     this.isInitialized = false;
     this.clickHandler = null;
   }
-
   /**
    * Initialize chart instance
    * @returns {boolean} Success status
@@ -33,20 +30,15 @@ class ChartManager {
         console.error("Chart element not found");
         return false;
       }
-
       this.chartInstance = echarts.init(chartElement);
       this.isInitialized = true;
-
-      // Add window resize listener
       window.addEventListener("resize", this.handleResize.bind(this));
-
       return true;
     } catch (error) {
       console.error("Failed to initialize chart:", error);
       return false;
     }
   }
-
   /**
    * Handle window resize untuk responsive chart
    */
@@ -55,7 +47,6 @@ class ChartManager {
       this.chartInstance.resize();
     }
   }
-
   /**
    * Update chart untuk tampilan awal (pie chart kategori)
    * @param {Array} labels - Labels untuk chart
@@ -64,14 +55,12 @@ class ChartManager {
    */
   updateEarlyChart(labels, data, onClickHandler) {
     if (!this.ensureInitialized()) return;
-
     const chartData = labels.map((label, index) => ({
       name: label,
       value: data[index]?.value || 0,
       uang: data[index]?.uang || "Rp 0",
       percentage: data[index]?.persentase || 0,
     }));
-
     const option = {
       animationDuration: CHART_ANIMATION_CONFIG.duration,
       animationEasing: CHART_ANIMATION_CONFIG.easing,
@@ -104,245 +93,10 @@ class ChartManager {
         },
       ],
     };
-
     this.chartInstance.setOption(option, { notMerge: true });
     this.bindClickHandler(onClickHandler);
-
     setTimeout(() => this.chartInstance.resize(), 300);
   }
-
-  // updateCategoryChart(labels, data, sortBy, onClickHandler) {
-  //     if (!this.ensureInitialized()) return;
-  //     const chartData = labels.map((label, index) => {
-  //         const item = data[index];
-  //         const value = sortBy === "total" ? parseCurrencyToNumber(item.total) : item.qty;
-  //         return {
-  //             name: label,
-  //             value: isNaN(value) ? 0 : value,
-  //             kode: item.kode,
-  //             kategori: item.kategori,
-  //             total: item.total,
-  //             qty: item.qty,
-  //             persen_qty: item.persen_qty,
-  //             persen_rp: item.persen_rp
-  //         };
-  //     });
-
-  //     const option = {
-  //         animationDuration: CHART_ANIMATION_CONFIG.duration,
-  //         animationEasing: CHART_ANIMATION_CONFIG.easing,
-  //         tooltip: {
-  //             trigger: 'item',
-  //             formatter: (params) => {
-  //                 if (sortBy === "total") {
-  //                     return `${params.name}<br/>Qty: ${params.data.qty}<br/>Total: Rp ${params.value.toLocaleString()}`;
-  //                 } else {
-  //                     return `${params.name}<br/>Qty: ${params.value}<br/>Total: ${params.data.total}`;
-  //                 }
-  //             }
-  //         },
-  //         toolbox: {
-  //             show: true,
-  //             feature: {
-  //                 dataZoom: {
-  //                     show: true,
-  //                     title: {
-  //                         zoom: 'Zoom',
-  //                         back: 'Reset Zoom'
-  //                     }
-  //                 },
-  //                 saveAsImage: {
-  //                     show: true,
-  //                     title: 'Simpan Gambar'
-  //                 }
-  //             }
-  //         },
-  //         series: [{
-  //             type: 'pie',
-  //             radius: ['40%', '70%'],
-  //             center: ['50%', '50%'],
-  //             minAngle: 5,
-  //             minShowLabelAngle: 2,
-  //             avoidLabelOverlap: true,
-  //             itemStyle: {
-  //                 borderRadius: 8,
-  //                 borderColor: '#fff',
-  //                 borderWidth: 2
-  //             },
-  //             label: {
-  //                 show: true,
-  //                 fontSize: 11,
-  //                 position: 'outer',
-  //                 alignTo: 'edge',
-  //                 margin: 20,
-  //                 edgeDistance: 10,
-  //                 lineHeight: 15,
-  //                 formatter: (params) => {
-  //                     const percentage = sortBy === "total" ? params.data.persen_rp : params.data.persen_qty;
-  //                     const persenFix = !isNaN(Number(percentage)) ? Number(percentage).toFixed(2) : '0.00';
-  //                     if (persenFix < 1) {
-  //                         return `${params.name.substring(0, 15)}...\n${persenFix}%`;
-  //                     }
-  //                     return `${params.name}\n(${persenFix}%)`;
-  //                 },
-  //                 overflow: 'break',
-  //                 distanceToLabelLine: 5
-  //             },
-  //             labelLine: {
-  //                 show: true,
-  //                 length: 15,
-  //                 length2: 30,
-  //                 smooth: 0.2,
-  //                 lineStyle: {
-  //                     width: 1.5
-  //                 }
-  //             },
-  //             emphasis: {
-  //                 focus: 'self',
-  //                 label: {
-  //                     show: true,
-  //                     fontSize: 14,
-  //                     fontWeight: 'bold'
-  //                 },
-  //                 itemStyle: {
-  //                     shadowBlur: 1,
-  //                     shadowOffsetX: 0,
-  //                     shadowColor: 'rgba(0, 0, 0, 0.8)',
-  //                     borderWidth: 3,
-  //                     scale: true,
-  //                     scaleSize: 1
-  //                 }
-  //             },
-  //             data: chartData,
-  //             itemStyle: {
-  //                 color: (params) => CHART_COLORS[params.dataIndex % CHART_COLORS.length]
-  //             }
-  //         }]
-  //     };
-
-  //     this.chartInstance.setOption(option, { notMerge: true });
-  //     this.bindClickHandler(onClickHandler);
-  //     setTimeout(() => this.chartInstance.resize(), 300);
-  // }
-
-  // updateCategoryChart(labels, data, sortBy, onClickHandler) {
-  //     if (!this.ensureInitialized()) return;
-  //     const chartData = labels.map((label, index) => {
-  //         const item = data[index];
-  //         const value = sortBy === "total" ? parseCurrencyToNumber(item.total) : item.qty;
-  //         return {
-  //             name: label,
-  //             value: isNaN(value) ? 0 : value,
-  //             kode: item.kode,
-  //             kategori: item.kategori,
-  //             total: item.total,
-  //             qty: item.qty,
-  //             persen_qty: item.persen_qty,
-  //             persen_rp: item.persen_rp
-  //         };
-  //     });
-
-  //     const option = {
-  //         animationDuration: CHART_ANIMATION_CONFIG.duration,
-  //         animationEasing: CHART_ANIMATION_CONFIG.easing,
-  //         tooltip: {
-  //             trigger: 'item',
-  //             formatter: (params) => {
-  //                 if (sortBy === "total") {
-  //                     return `${params.name}<br/>Qty: ${params.data.qty}<br/>Total: Rp ${params.value.toLocaleString()}`;
-  //                 } else {
-  //                     return `${params.name}<br/>Qty: ${params.value}<br/>Total: ${params.data.total}`;
-  //                 }
-  //             }
-  //         },
-  //         toolbox: {
-  //             show: true,
-  //             feature: {
-
-  //                 saveAsImage: {
-  //                     show: true,
-  //                     title: 'Simpan Gambar'
-  //                 }
-  //             }
-  //         },
-  //         series: [{
-  //             type: 'pie',
-  //             // [BARU] Mengaktifkan zoom (scroll wheel) dan pan (drag)
-  //             roam: true,
-  //             // [BARU] Membatasi level zoom
-  //             scaleLimit: {
-  //                 min: 0.5, // Maksimal zoom out
-  //                 max: 4    // Maksimal zoom in
-  //             },
-  //             // [BARU] Mengaktifkan highlight (explode) saat slice di-klik
-  //             selectedMode: 'single',
-  //             radius: ['40%', '70%'],
-  //             center: ['50%', '50%'],
-  //             minAngle: 5, // Tetap pertahankan agar slice sangat kecil tetap terlihat
-  //             // [DIHAPUS] minShowLabelAngle: 2, // Menghapus ini agar semua label dipaksa tampil
-  //             avoidLabelOverlap: true, // Biarkan ECharts mengatur agar label tidak tumpang tindih
-  //             itemStyle: {
-  //                 borderRadius: 8,
-  //                 borderColor: '#fff',
-  //                 borderWidth: 2
-  //             },
-  //             label: {
-  //                 show: true,
-  //                 fontSize: 11,
-  //                 position: 'outer',
-  //                 alignTo: 'edge',
-  //                 margin: 20,
-  //                 edgeDistance: 10,
-  //                 lineHeight: 15,
-  //                 formatter: (params) => {
-  //                     const percentage = sortBy === "total" ? params.data.persen_rp : params.data.persen_qty;
-  //                     const persenFix = !isNaN(Number(percentage)) ? Number(percentage).toFixed(2) : '0.00';
-  //                     if (persenFix < 1) {
-  //                          // Memotong teks jika terlalu kecil, agar lebih rapi saat di-zoom
-  //                         return `${params.name.substring(0, 15)}...\n${persenFix}%`;
-  //                     }
-  //                     return `${params.name}\n(${persenFix}%)`;
-  //                 },
-  //                 overflow: 'break',
-  //                 distanceToLabelLine: 5
-  //             },
-  //             labelLine: {
-  //                 show: true,
-  //                 length: 15,
-  //                 length2: 30,
-  //                 smooth: 0.2,
-  //                 lineStyle: {
-  //                     width: 1.5
-  //                 }
-  //             },
-  //             emphasis: {
-  //                 focus: 'self',
-  //                 label: {
-  //                     show: true,
-  //                     fontSize: 14,
-  //                     fontWeight: 'bold'
-  //                 },
-  //                 itemStyle: {
-  //                     shadowBlur: 1,
-  //                     shadowOffsetX: 0,
-  //                     shadowColor: 'rgba(0, 0, 0, 0.8)',
-  //                     borderWidth: 3,
-  //                     scale: true,
-  //                     scaleSize: 1
-  //                 }
-  //             },
-  //             data: chartData,
-  //             itemStyle: {
-  //                 color: (params) => CHART_COLORS[params.dataIndex % CHART_COLORS.length]
-  //             }
-  //         }]
-  //     };
-
-  //     this.chartInstance.setOption(option, { notMerge: true });
-  //     this.bindClickHandler(onClickHandler);
-  //     setTimeout(() => this.chartInstance.resize(), 300);
-  // }
-
   updateCategoryChart(labels, data, sortBy, onClickHandler) {
     if (!this.ensureInitialized()) return;
     const chartData = labels.map((label, index) => {
@@ -360,13 +114,11 @@ class ChartManager {
         persen_rp: item.persen_rp,
       };
     });
-
     const option = {
       animationDuration: CHART_ANIMATION_CONFIG.duration,
       animationEasing: CHART_ANIMATION_CONFIG.easing,
       tooltip: {
         trigger: "item",
-        // Konflik: memunculkan tooltip lebih cepat untuk membantu identifikasi slice kecil
         showDelay: 0,
         formatter: (params) => {
           if (sortBy === "total") {
@@ -396,10 +148,8 @@ class ChartManager {
             max: 4,
           },
           selectedMode: "single",
-          // Memperbesar radius untuk area klik yang lebih luas
           radius: ["30%", "80%"],
           center: ["50%", "50%"],
-          // Mengurangi minAngle agar slice kecil lebih lebar dan mudah diklik
           minAngle: 2,
           avoidLabelOverlap: true,
           itemStyle: {
@@ -407,12 +157,10 @@ class ChartManager {
             borderColor: "#fff",
             borderWidth: 2,
           },
-          // Memperluas area hover untuk slice kecil
           emphasis: {
             focus: "self",
-            // Memperbesar scale saat hover agar lebih mudah diklik
             scale: true,
-            scaleSize: 20, // Memberikan perbesaran signifikan saat di-hover
+            scaleSize: 20, 
             label: {
               show: true,
               fontSize: 15,
@@ -467,10 +215,8 @@ class ChartManager {
         },
       ],
     };
-
     this.chartInstance.setOption(option, { notMerge: true });
     this.bindClickHandler(onClickHandler);
-
     this.chartInstance.off("mousemove");
     this.chartInstance.on("mousemove", (params) => {
       if (params.componentType === "series" && params.dataIndex !== undefined) {
@@ -481,7 +227,6 @@ class ChartManager {
         });
       }
     });
-
     this.chartInstance.off("mouseout");
     this.chartInstance.on("mouseout", (params) => {
       if (params.componentType === "series") {
@@ -491,10 +236,8 @@ class ChartManager {
         });
       }
     });
-
     setTimeout(() => this.chartInstance.resize(), 300);
   }
-
   /**
    * Update chart untuk tampilan detail (bar/line chart timeline)
    * @param {Array} labels - Labels untuk chart
@@ -503,7 +246,6 @@ class ChartManager {
    */
   updateDetailChart(labels, data, sortBy) {
     if (!this.ensureInitialized()) return;
-
     const chartData = labels.map((label, index) => {
       const isRp = sortBy === "total";
       return {
@@ -517,7 +259,6 @@ class ChartManager {
         total: data[index].total,
       };
     });
-
     const option = {
       animationDuration: CHART_ANIMATION_CONFIG.duration,
       animationEasing: CHART_ANIMATION_CONFIG.easing,
@@ -594,10 +335,7 @@ class ChartManager {
         },
       ],
     };
-
     this.chartInstance.setOption(option, { notMerge: false });
-
-    // Handle magic type change untuk line/bar toggle
     this.chartInstance.off("magictypechanged");
     this.chartInstance.on("magictypechanged", (event) => {
       const newType = event.currentType;
@@ -609,13 +347,9 @@ class ChartManager {
         ],
       });
     });
-
-    // Remove click handler untuk detail chart
     this.chartInstance.off("click");
-
     setTimeout(() => this.chartInstance.resize(), 300);
   }
-
   /**
    * Bind click handler ke chart
    * @private
@@ -623,12 +357,10 @@ class ChartManager {
    */
   bindClickHandler(handler) {
     if (!this.chartInstance || typeof handler !== "function") return;
-
     this.chartInstance.off("click");
     this.chartInstance.on("click", handler);
     this.clickHandler = handler;
   }
-
   /**
    * Remove click handler dari chart
    */
@@ -638,7 +370,6 @@ class ChartManager {
       this.clickHandler = null;
     }
   }
-
   /**
    * Ensure chart is initialized
    * @private
@@ -651,7 +382,6 @@ class ChartManager {
     }
     return true;
   }
-
   /**
    * Show chart element
    */
@@ -661,7 +391,6 @@ class ChartManager {
       chartElement.style.display = "block";
     }
   }
-
   /**
    * Hide chart element
    */
@@ -671,7 +400,6 @@ class ChartManager {
       chartElement.style.display = "none";
     }
   }
-
   /**
    * Resize chart
    */
@@ -680,7 +408,6 @@ class ChartManager {
       this.chartInstance.resize();
     }
   }
-
   /**
    * Dispose chart instance
    */
@@ -691,12 +418,8 @@ class ChartManager {
       this.isInitialized = false;
       this.clickHandler = null;
     }
-
     window.removeEventListener("resize", this.handleResize.bind(this));
   }
 }
-
-// Create singleton instance
 const chartManager = new ChartManager();
-
 export default chartManager;

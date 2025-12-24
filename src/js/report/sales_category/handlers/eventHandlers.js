@@ -65,36 +65,54 @@ class EventHandlers {
    * @private
    */
   async _initializeBranchDropdown() {
-    try {
-      uiManager.showLoading("Memuat data cabang...");
+        try {
+            uiManager.showLoading("Memuat data cabang...");
+            const options = await branchService.getSelectOptions(true);
+            const $cabangSelect = $("#cabang");
 
-      const options = await branchService.getSelectOptions(true);
-      const $cabangSelect = $("#cabang");
+            if ($cabangSelect.length > 0) {
+                $cabangSelect.empty();
+                
+                // Render Options
+                options.forEach((option) => {
+                    // Kita simpan storeCode asli di atribut data agar mudah diambil
+                    const storeCodeVal = option.isAll ? 'ALL' : option.storeCode;
+                    $cabangSelect.append(
+                        `<option value="${option.value}" data-store="${storeCodeVal}">${option.text}</option>`
+                    );
+                });
 
-      if ($cabangSelect.length > 0) {
-        // Clear existing options
-        $cabangSelect.empty();
+                // Inisialisasi Select2
+                $cabangSelect.select2({
+                    placeholder: "Pilih Cabang (Bisa lebih dari 1)",
+                    allowClear: true,
+                    width: '100%',
+                    closeOnSelect: false 
+                });
 
-        // Add default option
-        $cabangSelect.append('<option value="none">Pilih Cabang</option>');
-
-        // Add branch options
-        options.forEach((option) => {
-          $cabangSelect.append(
-            `<option value="${option.value}">${option.text}</option>`
-          );
-        });
-
-        // Trigger change untuk set initial value
-        $cabangSelect.trigger("change");
-      }
-    } catch (error) {
-      console.error("Failed to initialize branch dropdown:", error);
-      uiManager.showError("Error", "Gagal memuat data cabang");
-    } finally {
-      uiManager.hideLoading();
+                // Logic Khusus: Jika pilih "SEMUA CABANG", hapus pilihan lain
+                $cabangSelect.on('select2:select', function (e) {
+                    const selectedValue = e.params.data.id;
+                    if (selectedValue === 'SEMUA CABANG') {
+                        // Jika klik semua, reset dan set hanya SEMUA
+                        $cabangSelect.val(['SEMUA CABANG']).trigger('change');
+                    } else {
+                        // Jika klik spesifik, pastikan SEMUA tidak terpilih
+                        const currentVal = $cabangSelect.val() || [];
+                        if (currentVal.includes('SEMUA CABANG')) {
+                            const newVal = currentVal.filter(v => v !== 'SEMUA CABANG');
+                            $cabangSelect.val(newVal).trigger('change');
+                        }
+                    }
+                });
+            }
+        } catch (error) {
+            console.error("Failed to initialize branch dropdown:", error);
+            uiManager.showError("Error", "Gagal memuat data cabang");
+        } finally {
+            uiManager.hideLoading();
+        }
     }
-  }
 
   /**
    * Bind handler untuk tombol-tombol utama
@@ -125,60 +143,76 @@ class EventHandlers {
    * @private
    */
   async _handleSendButtonClick() {
-    const startDate = uiManager.getValue(ELEMENT_IDS.DATE_START);
-    const endDate = uiManager.getValue(ELEMENT_IDS.DATE_END);
-    const selectedBranch = uiManager.getValue(ELEMENT_IDS.BRANCH_SELECT);
+        const startDate = uiManager.getValue(ELEMENT_IDS.DATE_START);
+        const endDate = uiManager.getValue(ELEMENT_IDS.DATE_END);
+        
+        // Ambil value dari Select2 (ini akan return Array)
+        let selectedBranchNames = $("#cabang").val();
 
-    // Validasi
-    if (!selectedBranch || selectedBranch === "none") {
-      uiManager.showError("Error", "Silahkan pilih cabang terlebih dahulu");
-      return;
+        // Validasi
+        if (!selectedBranchNames || selectedBranchNames.length === 0) {
+            uiManager.showError("Error", "Silahkan pilih minimal satu cabang");
+            return;
+        }
+
+        if (!startDate || !endDate) {
+            uiManager.showError("Error", "Silahkan isi tanggal periode");
+            return;
+        }
+
+        try {
+            uiManager.showLoading("Memuat data kategori...");
+
+            // LOGIKA PENTING: Konversi Nama Cabang ke Kode Store
+            let storeCodesToSend = [];
+            
+            // Cek apakah "SEMUA CABANG" dipilih
+            if (selectedBranchNames.includes("SEMUA CABANG")) {
+                // Ambil semua kode toko dari service
+                const allStoreMap = await branchService.getStoreCodes();
+                storeCodesToSend = Object.values(allStoreMap);
+            } else {
+                // Ambil kode toko spesifik berdasarkan nama cabang yang dipilih
+                const allStoreMap = await branchService.getStoreCodes();
+                storeCodesToSend = selectedBranchNames.map(name => allStoreMap[name]).filter(code => code);
+            }
+
+            // Simpan ke state (dalam bentuk array)
+            await salesCategoryState.setStoreCode(storeCodesToSend);
+
+            const response = await salesCategoryAPI.fetchInitialData({
+                storeCode: storeCodesToSend, // Kirim array kode toko
+                startDate: startDate,
+                endDate: endDate,
+                query: "allCate",
+            });
+
+            // ... sisa kode sama seperti sebelumnya ...
+            if (response.data && response.data.length >= 0) {
+                 const processedData = this._processInitialData(response.data);
+                 // ... rest of logic
+                 chartManager.updateEarlyChart(
+                    processedData.labels,
+                    processedData.chartData,
+                    (params) => this._handleChartClick(params, "category")
+                 );
+                 uiManager.setEarlyMode();
+                 salesCategoryState.setFullCache({
+                    chartMode: "early",
+                    labels: processedData.labels,
+                    chartData: processedData.chartData,
+                    tableMode: "early",
+                    tableData: ["input"],
+                 });
+            }
+
+        } catch (error) {
+            const errorMessage = salesCategoryAPI.handleError(error);
+            uiManager.showError("Gagal Memuat Data", errorMessage);
+        } finally {
+            uiManager.hideLoading();
+        }
     }
-
-    if (!startDate || !endDate) {
-      uiManager.showError("Error", "Silahkan isi tanggal periode");
-      return;
-    }
-
-    try {
-      uiManager.showLoading("Memuat data kategori...");
-
-      const response = await salesCategoryAPI.fetchInitialData({
-        storeCode: salesCategoryState.getStoreCode(),
-        startDate: startDate,
-        endDate: endDate,
-        query: "allCate",
-      });
-
-      if (response.data && response.data.length >= 0) {
-        const processedData = this._processInitialData(response.data);
-
-        // Update chart
-        chartManager.updateEarlyChart(
-          processedData.labels,
-          processedData.chartData,
-          (params) => this._handleChartClick(params, "category")
-        );
-
-        // Update UI state
-        uiManager.setEarlyMode();
-
-        // Cache state
-        salesCategoryState.setFullCache({
-          chartMode: "early",
-          labels: processedData.labels,
-          chartData: processedData.chartData,
-          tableMode: "early",
-          tableData: ["input"],
-        });
-      }
-    } catch (error) {
-      const errorMessage = salesCategoryAPI.handleError(error);
-      uiManager.showError("Gagal Memuat Data", errorMessage);
-    } finally {
-      uiManager.hideLoading();
-    }
-  }
 
   /**
    * Handle back button click

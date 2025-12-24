@@ -4,8 +4,6 @@
  * @author Asoka Baby Store Development Team
  * @version 2.0.0
  */
-
-// Import semua dependencies
 import chartManager from './components/chartManager.js';
 import tableManager from './components/tableManager.js';
 import uiManager from './components/uiManager.js';
@@ -13,7 +11,6 @@ import eventHandlers from './handlers/eventHandlers.js';
 import dateManager from './utils/dateManager.js';
 import salesCategoryState from './utils/state.js';
 import branchService from './services/branchService.js';
-
 /**
  * Main Application Class untuk Sales Category Report
  */
@@ -28,59 +25,39 @@ class SalesCategoryApp {
             date: dateManager
         };
     }
-
     /**
      * Initialize aplikasi
      * @returns {Promise<boolean>} Success status
      */
     async initialize() {
         try {
-
-            // Load branch data first (critical dependency)
             await branchService.loadStoreCodes();
-
-            // Initialize UI Manager first
             if (!this.components.ui.initialize()) {
                 throw new Error('Failed to initialize UI Manager');
             }
-
-            // Initialize Chart Manager
             if (!this.components.chart.initialize()) {
                 throw new Error('Failed to initialize Chart Manager');
             }
-
-            // Initialize Table Manager
             if (!this.components.table.initialize()) {
                 console.warn('Table Manager initialization failed, continuing...');
             }
-
-            // Initialize Date Manager
             if (!this.components.date.initialize()) {
                 console.warn('Date Manager initialization failed, continuing...');
             }
-
-            // Initialize Event Handlers (must be last)
             if (!this.components.events.initialize()) {
                 throw new Error('Failed to initialize Event Handlers');
             }
-
             this.isInitialized = true;
-            
-
             return true;
         } catch (error) {
             console.error('❌ Failed to initialize Sales Category Application:', error);
-            
-            // Show error notification
             this.components.ui.showError(
                 'Gagal Memuat Aplikasi',
                 'Terjadi kesalahan saat memuat aplikasi. Silakan refresh halaman.'
             );
-            
             return false;
         }
     }
-
     /**
      * Get application status
      * @returns {Object} Application status information
@@ -101,53 +78,36 @@ class SalesCategoryApp {
             }
         };
     }
-
     /**
      * Restart aplikasi (re-initialize semua komponen)
      * @returns {Promise<boolean>} Success status
      */
     async restart() {
-        
         this.dispose();
         return await this.initialize();
     }
-
     /**
      * Reset aplikasi ke state awal
      */
     reset() {
-        
-        // Clear state
         salesCategoryState.clearCache();
-        
-        // Reset UI
         this.components.ui.setEarlyMode();
         this.components.chart.hide();
         this.components.table.hide();
-        
-        // Reset date to default
         this.components.date.resetToDefault();
-        
     }
-
     /**
      * Dispose aplikasi (cleanup)
      */
     dispose() {
-        
-        // Dispose all components
         Object.values(this.components).forEach(component => {
             if (component && typeof component.dispose === 'function') {
                 component.dispose();
             }
         });
-        
-        // Clear state
         salesCategoryState.clearCache();
-        
         this.isInitialized = false;
     }
-
     /**
      * Handle global errors
      * @param {Error} error - Error object
@@ -155,16 +115,11 @@ class SalesCategoryApp {
      */
     handleError(error, context = 'Unknown') {
         console.error(`Application Error [${context}]:`, error);
-        
         this.components.ui.showError(
             'Terjadi Kesalahan',
             `Error: ${error.message || 'Unknown error'}`
         );
-        
-        // Optional: Send error to logging service
-        // this.logError(error, context);
     }
-
     /**
      * Get component instance
      * @param {string} componentName - Component name
@@ -173,7 +128,6 @@ class SalesCategoryApp {
     getComponent(componentName) {
         return this.components[componentName] || null;
     }
-
     /**
      * Check if application is ready for use
      * @returns {boolean} Ready status
@@ -184,7 +138,6 @@ class SalesCategoryApp {
                this.components.chart.isInitialized;
     }
 }
-
 /**
  * Global error handler untuk uncaught errors
  */
@@ -194,7 +147,6 @@ window.addEventListener('error', (event) => {
         window.salesCategoryApp.handleError(event.error, 'Global');
     }
 });
-
 /**
  * Global promise rejection handler
  */
@@ -207,24 +159,17 @@ window.addEventListener('unhandledrejection', (event) => {
         );
     }
 });
-
 /**
  * Initialize aplikasi ketika DOM ready
  */
 document.addEventListener('DOMContentLoaded', async () => {
-    
-    // Create global app instance
     window.salesCategoryApp = new SalesCategoryApp();
-    
-    // Initialize application
     const success = await window.salesCategoryApp.initialize();
-    
     if (success) {
     } else {
         console.error('Failed to start Sales Category Application');
     }
 });
-
 /**
  * Handle page unload (cleanup)
  */
@@ -233,6 +178,4 @@ window.addEventListener('beforeunload', () => {
         window.salesCategoryApp.dispose();
     }
 });
-
-// Export for module usage
 export default SalesCategoryApp;

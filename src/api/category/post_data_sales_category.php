@@ -23,17 +23,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $startDate = $startDateObj ? $startDateObj->format('Y-m-d') : null;
         $endDate = $endDateObj ? $endDateObj->format('Y-m-d') : null;
         $query = $input['query'] ?? '';
-        
+
         // Convert kd_store to array if it's not already
         if (!is_array($kd_store)) {
             $kd_store = explode(',', $kd_store);
         }
-        
+
         // Validate required data
         if (empty($kd_store) || !$startDate || !$endDate) {
             throw new Exception('Missing required parameters: kd_store, start_date, or end_date');
         }
-        
+
         // Execute query based on conditions
         if (!empty($query)) {
             // Fetch data based on category (allCate or BABY/DST/SPM)
@@ -89,7 +89,7 @@ function fetchData($conn, $startDate, $endDate, $kd_store, $kategori, $filter)
                 )) AS persentase,
                 (SUM(hrg_promo * qty) * 100.0 / (
                     SELECT SUM(hrg_promo * qty)
-                    FROM trans_b         
+                    FROM trans_b          
                     WHERE type_kategori IN ('BABY', 'DST', 'SPM')
                     AND tgl_trans BETWEEN ? AND ?
                     AND kd_store IN ($placeholders)
@@ -99,7 +99,7 @@ function fetchData($conn, $startDate, $endDate, $kd_store, $kategori, $filter)
             AND tgl_trans BETWEEN ? AND ?
             AND kd_store IN ($placeholders)
             GROUP BY type_kategori";
-            
+
             $params = array_merge(
                 [$startDate, $endDate],
                 $kd_store,
@@ -109,6 +109,11 @@ function fetchData($conn, $startDate, $endDate, $kd_store, $kategori, $filter)
                 $kd_store
             );
         } else {
+            // PERBAIKAN DI SINI:
+            // Subquery Supplier diperbaiki agar kompatibel dengan Multi-Store & Group By Strict Mode
+            // Kita menghapus 'kd_store' dan 'type_kategori' dari SELECT subquery supplier
+            // dan menggunakan MAX(nama_supp)
+
             $sql = "SELECT 
                 s.kode_supp,
                 s.nama_supp,
@@ -124,14 +129,14 @@ function fetchData($conn, $startDate, $endDate, $kd_store, $kategori, $filter)
                 )) AS persentase,
                 (SUM(t.hrg_promo * t.qty) * 100.0 / (
                     SELECT SUM(hrg_promo * qty)
-                    FROM trans_b         
+                    FROM trans_b          
                     WHERE type_kategori = ?
                     AND tgl_trans BETWEEN ? AND ?
                     AND kd_store IN ($placeholders)
                 )) AS persentase_rp
             FROM trans_b t
             LEFT JOIN (
-                SELECT kd_store, kode_supp, type_kategori, nama_supp 
+                SELECT kode_supp, MAX(nama_supp) as nama_supp 
                 FROM supplier 
                 WHERE kd_store IN ($placeholders) 
                 GROUP BY kode_supp
@@ -139,39 +144,40 @@ function fetchData($conn, $startDate, $endDate, $kd_store, $kategori, $filter)
             WHERE t.type_kategori = ?
             AND t.tgl_trans BETWEEN ? AND ? 
             AND t.kd_store IN ($placeholders)
-            GROUP BY s.kode_supp 
+            GROUP BY s.kode_supp, s.nama_supp, t.type_kategori 
             ORDER BY $filter DESC";
-            
+
+            // Urutan parameter harus sama persis dengan urutan tanda tanya (?) di SQL
             $params = array_merge(
-                [$kategori, $startDate, $endDate],
-                $kd_store,
-                [$kategori, $startDate, $endDate],
-                $kd_store,
-                $kd_store,
-                [$kategori, $startDate, $endDate],
-                $kd_store
+                [$kategori, $startDate, $endDate], // Param Subquery 1 (Persentase Qty)
+                $kd_store,                         // Store Subquery 1
+                [$kategori, $startDate, $endDate], // Param Subquery 2 (Persentase Rp)
+                $kd_store,                         // Store Subquery 2
+                $kd_store,                         // Param Subquery LEFT JOIN Supplier
+                [$kategori, $startDate, $endDate], // Param Main Query WHERE
+                $kd_store                          // Store Main Query
             );
         }
 
         $paramTypes = str_repeat('s', count($params));
-        
+
         $stmt = $conn->prepare($sql);
         if (!$stmt) {
             throw new Exception("Prepare failed in fetchData: " . $conn->error);
         }
-        
+
         $stmt->bind_param($paramTypes, ...$params);
-        
+
         if (!$stmt->execute()) {
             throw new Exception("Execute failed in fetchData: " . $stmt->error);
         }
-        
+
         $result = $stmt->get_result();
         $data = $result->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
 
         return $data;
-        
+
     } catch (Exception $e) {
         if (isset($stmt) && $stmt !== false) {
             $stmt->close();
@@ -201,7 +207,7 @@ function fetchSupplierDetail($conn, $startDate, $endDate, $kd_store, $kode_supp,
             )) AS persentase,
             (SUM(t.hrg_promo * t.qty) * 100.0 / (
                 SELECT SUM(hrg_promo * qty)
-                FROM trans_b         
+                FROM trans_b          
                 WHERE type_kategori = ?
                 AND tgl_trans BETWEEN ? AND ?
                 AND kd_store IN ($placeholders) 
@@ -217,40 +223,41 @@ function fetchSupplierDetail($conn, $startDate, $endDate, $kd_store, $kode_supp,
         AND t.kode_supp = ?
         AND t.tgl_trans BETWEEN ? AND ?
         AND t.kd_store IN ($placeholders)
-        GROUP BY periode
+        GROUP BY periode, t.barcode, t.descp, t.type_kategori
         ORDER BY t.tgl_trans ASC, $filter ASC";
 
+        // Perbaikan: Parameter binding harus hati-hati dengan urutan
         $params = array_merge(
-            [$kategori, $startDate, $endDate], 
-            $kd_store,                         
-            [$kode_supp],                     
-            [$kategori, $startDate, $endDate],            
-            $kd_store,     
-            [$kode_supp],                    
-            [$endDate, $startDate, $endDate, $startDate], 
-            [$kategori, $kode_supp, $startDate, $endDate],
-            $kd_store                          
+            [$kategori, $startDate, $endDate], // Subquery 1
+            $kd_store,                         // Store Subquery 1
+            [$kode_supp],                      // Kode Supp Subquery 1
+            [$kategori, $startDate, $endDate], // Subquery 2
+            $kd_store,                         // Store Subquery 2
+            [$kode_supp],                      // Kode Supp Subquery 2
+            [$endDate, $startDate, $endDate, $startDate], // DATEDIFF params
+            [$kategori, $kode_supp, $startDate, $endDate], // Main WHERE
+            $kd_store // Main Store
         );
 
         $paramTypes = str_repeat('s', count($params));
-        
+
         $stmt = $conn->prepare($sql);
         if (!$stmt) {
             throw new Exception("Prepare failed in fetchSupplierDetail: " . $conn->error);
         }
-        
+
         $stmt->bind_param($paramTypes, ...$params);
-        
+
         if (!$stmt->execute()) {
             throw new Exception("Execute failed in fetchSupplierDetail: " . $stmt->error);
         }
-        
+
         $result = $stmt->get_result();
         $data = $result->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
 
         return $data;
-        
+
     } catch (Exception $e) {
         if (isset($stmt) && $stmt !== false) {
             $stmt->close();
@@ -275,7 +282,7 @@ function fetchBarangSupplier($conn, $kd_store, $kategori, $startDate, $endDate, 
         AND t.type_kategori = ?
         AND t.tgl_trans BETWEEN ? AND ?
         AND t.kode_supp = ?
-        GROUP BY t.barcode
+        GROUP BY t.barcode, t.descp, t.type_kategori
         ORDER BY $filter DESC";
 
         $params = array_merge($kd_store, [$kategori, $startDate, $endDate, $kode_supp]);
@@ -285,19 +292,19 @@ function fetchBarangSupplier($conn, $kd_store, $kategori, $startDate, $endDate, 
         if (!$stmt) {
             throw new Exception("Prepare failed in fetchBarangSupplier: " . $conn->error);
         }
-        
+
         $stmt->bind_param($paramTypes, ...$params);
-        
+
         if (!$stmt->execute()) {
             throw new Exception("Execute failed in fetchBarangSupplier: " . $stmt->error);
         }
-        
+
         $result = $stmt->get_result();
         $data = $result->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
 
         return $data;
-        
+
     } catch (Exception $e) {
         if (isset($stmt) && $stmt !== false) {
             $stmt->close();
@@ -306,4 +313,3 @@ function fetchBarangSupplier($conn, $kd_store, $kategori, $startDate, $endDate, 
     }
 }
 ?>
-

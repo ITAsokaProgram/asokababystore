@@ -34,11 +34,14 @@ if (!$menuHandler->initialize()) {
     <link rel="stylesheet" href="../../style/animation-fade-in.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.2.2/css/tom-select.css">
+
     <link
         href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="../../style/default-font.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
     <script defer src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
     <!-- <link rel="stylesheet" href="../../style/output.css"> -->
@@ -84,6 +87,44 @@ if (!$menuHandler->initialize()) {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(6px);
         }
+
+        .select2-container--default .select2-selection--multiple {
+            border: 1px solid #dbeafe;
+            /* blue-100 */
+            border-radius: 0.75rem;
+            /* rounded-xl */
+            padding: 0.5rem;
+            min-height: 50px;
+        }
+
+        .select2-container--default.select2-container--focus .select2-selection--multiple {
+            border-color: #60a5fa;
+            /* blue-400 */
+            box-shadow: 0 0 0 2px rgba(147, 197, 253, 0.5);
+            /* ring-blue-300 */
+        }
+
+        .select2-container--default .select2-selection--multiple .select2-selection__choice {
+            background-color: #3b82f6;
+            /* blue-500 */
+            border: none;
+            color: white;
+            border-radius: 0.5rem;
+            padding: 2px 8px;
+            margin-top: 4px;
+        }
+
+        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+            color: white;
+            margin-right: 5px;
+            border-right: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+            background-color: #2563eb;
+            /* blue-600 */
+            color: white;
+        }
     </style>
 </head>
 
@@ -107,8 +148,9 @@ if (!$menuHandler->initialize()) {
                             class="w-12 h-12 cursor-pointer flex items-center justify-center bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 text-white hover:brightness-110 shadow-lg rounded-xl text-2xl transition-all duration-200 hover:scale-105">
                             <i class="fa-solid fa-angle-left pointer-events-none"></i>
                         </button>
-                        <select id="cabang" name="cabang"
+                        <select id="cabang" name="cabang" multiple
                             class="w-full px-5 py-3 border border-blue-100 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-400 transition-all duration-200">
+                        </select>
 
                         </select>
                         <input type="text" id="date" name="start_date"
@@ -181,31 +223,39 @@ if (!$menuHandler->initialize()) {
     </main>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+
     <script src="https://unpkg.com/exceljs/dist/exceljs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="../../js/report/sales_category/main.js" type="module"></script>
-    <!-- <script src="../../js/in_sales_category.js"></script> -->
-    <script src="../../js/loadingbar.js"></script>
-    <script src="../../js/middleware_auth.js"></script>
 
-    <!-- DataTables + Buttons + dependencies -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.2.2/js/tom-select.complete.min.js"></script>
+
+    <script src="../../js/report/sales_category/main.js" type="module"></script>
+
+    <script src="../../js/loadingbar.js"></script>
+    <script src="../../js/middleware_auth.js"></script>
+
+    <!-- DataTables + Buttons + dependencies -->
+
 
 </body>
 
