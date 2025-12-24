@@ -20,6 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let isLoadingMore = false;
   let hasMoreData = true;
   let currentHeaders = [];
+  let accumulatedData = []; 
   init();
   async function init() {
     showEmptyState("Silahkan pilih cabang dan supplier terlebih dahulu.");
@@ -275,6 +276,7 @@ document.addEventListener("DOMContentLoaded", () => {
       );
       if (totalBadge) totalBadge.classList.add("hidden");
       currentPage = 1;
+      accumulatedData = []; 
       const url = new URL(window.location);
       url.searchParams.delete("stores");
       url.searchParams.delete("supp");
@@ -301,14 +303,12 @@ document.addEventListener("DOMContentLoaded", () => {
     currentPage = 1;
     hasMoreData = true;
     currentHeaders = [];
+    accumulatedData = []; 
     tableHeadersRow.innerHTML = "";
     tableBody.innerHTML = "";
     if (totalBadge) totalBadge.classList.add("hidden");
     resultContainer.classList.remove("hidden");
     resultContainer.classList.add("show");
-    /* Opsional: scroll ke result. 
-      Jika ini menyebabkan jump pada mobile, bisa di comment.
-    */
     if (tableScrollContainer) {
       tableScrollContainer.scrollTop = 0;
     }
@@ -396,6 +396,7 @@ document.addEventListener("DOMContentLoaded", () => {
           totalBadge.classList.remove("hidden");
         }
       } else {
+        accumulatedData = [...accumulatedData, ...result.data];
         const startNumber = (page - 1) * 20 + 1;
         appendTableRows(result.data, currentHeaders, startNumber);
       }
@@ -507,9 +508,48 @@ document.addEventListener("DOMContentLoaded", () => {
     return new Intl.NumberFormat("id-ID").format(num);
   }
   window.exportToExcel = function () {
-    const table = document.getElementById("stock-table");
-    if (!table) return;
-    const wb = XLSX.utils.table_to_book(table, { sheet: "Stock" });
-    XLSX.writeFile(wb, "Laporan_Stock_Harian.xlsx");
+    if (accumulatedData.length === 0) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Data Kosong',
+        text: 'Tidak ada data untuk diexport. Silahkan cari data terlebih dahulu.',
+        confirmButtonColor: "#ec4899"
+      });
+      return;
+    }
+    const excelData = accumulatedData.map((item, index) => {
+      const row = {
+        "No": index + 1,
+        "PLU": item.plu,
+        "Barcode": item.barcode,
+        "Nama Barang": item.nama_barang,
+      };
+      let totalQty = 0;
+      currentHeaders.forEach(header => {
+        const qty = item.stok_per_store[header.code] !== undefined 
+          ? parseFloat(item.stok_per_store[header.code]) 
+          : 0;
+        totalQty += qty;
+        row[header.name] = qty; 
+      });
+      row["Total Qty"] = totalQty;
+      row["Total Value (Rp)"] = item.total_value_rp || 0; 
+      return row;
+    });
+    const ws = XLSX.utils.json_to_sheet(excelData);
+    const wscols = [
+      {wch: 5},  
+      {wch: 10}, 
+      {wch: 15}, 
+      {wch: 40}, 
+    ];
+    currentHeaders.forEach(() => wscols.push({wch: 10}));
+    wscols.push({wch: 10});
+    wscols.push({wch: 15});
+    ws['!cols'] = wscols;
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Data Stock");
+    const date = new Date().toISOString().slice(0,10);
+    XLSX.writeFile(wb, `Laporan_Stock_${date}.xlsx`);
   };
 });

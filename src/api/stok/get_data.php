@@ -72,12 +72,14 @@ try {
         exit;
     }
     $plu_placeholders = implode(',', array_fill(0, count($target_plus), '?'));
-    $sqlDetail = "SELECT KD_STORE, plu, ITEM_N as barcode, DESCP as nama_barang, ON_HAND1 as qty
+    $sqlDetail = "SELECT KD_STORE, plu, ITEM_N as barcode, DESCP as nama_barang, ON_HAND1 as qty, AVG_COST
                   FROM master_backup 
                   WHERE KD_STORE IN ($store_placeholders) 
                   AND plu IN ($plu_placeholders)
                   AND VENDOR = ?
+                  GROUP BY KD_STORE, plu  
                   ORDER BY DESCP ASC";
+
     $typesDetail = $types . str_repeat('s', count($target_plus)) . 's';
     $paramsDetail = array_merge($kd_stores, $target_plus, [$kode_supp]);
     $stmtDetail = $conn->prepare($sqlDetail);
@@ -88,15 +90,20 @@ try {
     while ($row = $resultDetail->fetch_assoc()) {
         $plu = $row['plu'];
         $store = $row['KD_STORE'];
+        $qty = floatval($row['qty']);
+        $cost = floatval($row['AVG_COST'] ?? 0);
+        $total_row_rp = round($qty * $cost);
         if (!isset($items[$plu])) {
             $items[$plu] = [
                 'plu' => $plu,
                 'barcode' => $row['barcode'],
                 'nama_barang' => $row['nama_barang'],
-                'stok_per_store' => []
+                'stok_per_store' => [],
+                'total_value_rp' => 0
             ];
         }
-        $items[$plu]['stok_per_store'][$store] = $row['qty'];
+        $items[$plu]['stok_per_store'][$store] = $qty;
+        $items[$plu]['total_value_rp'] += $total_row_rp;
     }
     echo json_encode([
         'success' => true,
