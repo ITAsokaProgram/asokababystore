@@ -1,4 +1,7 @@
 <?php
+ini_set('memory_limit', '512M');
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
 require_once __DIR__ . "/../../../../config.php";
 require_once __DIR__ . "/../../../../redis.php";
 require_once __DIR__ . "/../../../auth/middleware_login.php";

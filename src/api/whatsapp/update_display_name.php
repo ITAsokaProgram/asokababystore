@@ -11,7 +11,7 @@ try {
         echo json_encode(['success' => false, 'message' => 'Token tidak ditemukan atau format salah.']);
         exit;
     }
-    
+
     $token = $matches[1];
     $decoded = verify_token($token);
 
@@ -38,7 +38,7 @@ $conversationId = filter_var($data['conversation_id'], FILTER_VALIDATE_INT);
 $namaDisplay = $data['nama_display'] ?? null;
 
 if ($namaDisplay !== null) {
-    $namaDisplay = trim(filter_var($namaDisplay, FILTER_SANITIZE_STRING));
+    $namaDisplay = trim(htmlspecialchars($namaDisplay, ENT_QUOTES, 'UTF-8'));
     if (empty($namaDisplay)) {
         $namaDisplay = null;
     }
@@ -60,7 +60,7 @@ try {
     } else {
         echo json_encode(['success' => true, 'message' => 'Tidak ada perubahan atau percakapan ditemukan.']);
     }
-    
+
     $stmt->close();
     $conn->close();
 

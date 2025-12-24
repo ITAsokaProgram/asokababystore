@@ -2,9 +2,6 @@ RewriteEngine On
 
 RewriteCond %{REQUEST_URI} !^/maintanance\.php$ [NC]
 RewriteCond %{REQUEST_URI} !^/iclock/ [NC]
-RewriteCond %{REQUEST_URI} !^/whatsapp-hook [NC]
-RewriteCond %{REMOTE_ADDR} !=36.77.250.71
-RewriteRule ^(.*)$ /maintanance.php [R=302,L]
 
 RewriteRule ^iclock/cdata$ iclock/cdata.php [L]
 RewriteRule ^iclock/getrequest$ iclock/getrequest.php [L]
