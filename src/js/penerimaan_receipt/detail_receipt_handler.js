@@ -465,9 +465,18 @@ document.addEventListener("DOMContentLoaded", () => {
       export: true,
     }).toString();
     try {
+
+      const token = getCookie("admin_token");
+
       const response = await fetch(
-        `/src/api/penerimaan_receipt/get_detail_receipt.php?${queryString}`
+        `/src/api/penerimaan_receipt/get_detail_receipt.php?${queryString}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
+      
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(

@@ -14,7 +14,7 @@ $kd_store = $_GET['cabang'] ?? null;
 $inStore = $kd_store && $kd_store !== 'all' ? "'" . implode("','", explode(',', $kd_store)) . "'" : null;
 function rangeParameter($rangeFilter, $date)
 {
-    $baseDate = preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) ? $date : date('Y-m-d', strtotime('-1 day'));
+    $baseDate = ($date && preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) ? $date : date('Y-m-d', strtotime('-1 day'));
     switch ($rangeFilter) {
         case 'day':
             $start_date = $baseDate;
@@ -65,12 +65,12 @@ if (!$kd_cust) {
     SELECT 
         c.kd_cust,
         c.nama_cust,
-        tr.store_kode,
-        tr.store_alias_pk,
+        IFNULL(tr.store_kode, '') AS store_kode,         
+        IFNULL(tr.store_alias_pk, '-') AS store_alias_pk, 
         IFNULL(tp.total_poin_pk, 0) + IFNULL(tpm.total_poin_pm, 0) AS total_poin_pk_pm,
         IFNULL(pt.total_poin_pt, 0) AS poin_trans,
         (IFNULL(tp.total_poin_pk, 0) + IFNULL(tpm.total_poin_pm, 0) - IFNULL(pt.total_poin_pt, 0)) AS sisa_poin,
-        tr.jumlah_transaksi AS T_Trans,
+        IFNULL(tr.jumlah_transaksi, 0) AS T_Trans,       
         u.status_upload,
         u.folder,
         u.uploaded_at
@@ -94,7 +94,6 @@ if (!$kd_cust) {
     LEFT JOIN (SELECT kd_cust, SUM(point_1) AS total_poin_pk FROM point_kasir GROUP BY kd_cust) AS tp ON c.kd_cust = tp.kd_cust
     LEFT JOIN (SELECT kd_cust, SUM(jum_point) AS total_poin_pm FROM point_manual GROUP BY kd_cust) AS tpm ON c.kd_cust = tpm.kd_cust
     LEFT JOIN (SELECT kd_cust, SUM(jum_point) AS total_poin_pt FROM point_trans GROUP BY kd_cust) AS pt ON c.kd_cust = pt.kd_cust
-    -- Join untuk data upload (DIUBAH DISINI: MENGAMBIL file_link BUKAN file_id)
     LEFT JOIN (
         SELECT 
             kd_cust,

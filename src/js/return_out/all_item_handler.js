@@ -489,8 +489,15 @@ document.addEventListener("DOMContentLoaded", () => {
       export: true,
     }).toString();
     try {
+      const token = getCookie("admin_token")
       const response = await fetch(
-        `/src/api/return_out/get_all_item.php?${queryString}`
+        `/src/api/return_out/get_all_item.php?${queryString}`,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer " + token, // Kirim token seperti pada loadStores
+          },
+        }
       );
       if (!response.ok) {
         const errorData = await response.json();
