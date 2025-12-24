@@ -469,9 +469,18 @@ document.addEventListener("DOMContentLoaded", () => {
       export: true,
     }).toString();
     try {
+      const token = getCookie("admin_token");
+
       const response = await fetch(
-        `/src/api/top_sales/get_sales_per_kasir_bon.php?${queryString}`
+        `/src/api/top_sales/get_sales_per_kasir_bon.php?${queryString}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
+      
+  
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
