@@ -130,6 +130,18 @@ if (!$menuHandler->initialize()) {
                     </div>
 
                     <div class="flex items-center gap-2">
+                        <button type="button" id="btn-export"
+                            class="btn-export flex items-center gap-2 px-3 py-2 shadow-sm decoration-0 text-green-600 bg-green-50 border border-green-200 hover:bg-green-100 rounded text-sm font-medium">
+                            <i class="fas fa-file-excel"></i> <span>Export</span>
+                        </button>
+
+                        <button type="button" id="btn-import"
+                            class="btn-import flex items-center gap-2 px-3 py-2 shadow-sm decoration-0 text-blue-600 bg-blue-50 border border-blue-200 hover:bg-blue-100 rounded text-sm font-medium">
+                            <i class="fas fa-cloud-upload-alt"></i> <span>Import</span>
+                        </button>
+
+                        <input type="file" id="file_import" accept=".xlsx, .xls" class="hidden">
+
                         <a href="laporan_faktur_pajak.php"
                             class="btn-secondary flex items-center gap-2 px-4 py-2 shadow-sm decoration-0">
                             <i class="fas fa-file-lines"></i> <span>Lihat Laporan</span>
@@ -294,6 +306,7 @@ if (!$menuHandler->initialize()) {
 
     <script src="../../js/coretax/input_faktur_pajak_handler.js" type="module"></script>
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </body>
 

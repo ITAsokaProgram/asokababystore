@@ -103,6 +103,9 @@ let currentRequestController = null;
 async function fetchTableData(reset = false) {
   if (isLoadingData && !reset) return;
   if (reset) {
+    currentPage = 1;
+    tableRowIndex = 0;
+    hasMoreData = true; 
     if (currentRequestController) {
       currentRequestController.abort();
     }
@@ -138,8 +141,6 @@ async function fetchTableData(reset = false) {
     const result = await response.json();
     if (reset) {
       tableBody.innerHTML = "";
-      currentPage = 1;
-      tableRowIndex = 0;
     }
     if (result.success && Array.isArray(result.data)) {
       if (result.data.length === 0 && currentPage === 1) {

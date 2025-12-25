@@ -201,7 +201,7 @@ class ShopeeApiService
         $detail_response = $this->call("/api/v2/product/get_item_base_info", 'GET', ['item_id_list' => implode(',', $item_ids)]);
         if (isset($detail_response['error']) && $detail_response['error']) {
             $error_message = $detail_response['message'] ?? 'Unknown error';
-            $this->logger->error("❌ Gagal get_item_base_info: " . $error_message, $detail_response);
+            $this->logger->error("❌ Gagal get_item_base_info: " . $error_message);
             throw new Exception("Gagal mengambil detail (get_item_base_info): " . $error_message);
         }
         $detailed_info_map = [];
@@ -220,7 +220,7 @@ class ShopeeApiService
                 $model_response = $this->call("/api/v2/product/get_model_list", 'GET', ['item_id' => $item['item_id']]);
                 if (isset($model_response['error']) && $model_response['error']) {
                     $error_message = $model_response['message'] ?? 'Unknown error';
-                    $this->logger->warning("⚠️ Gagal get_model_list untuk item_id " . $item['item_id'] . ": " . $error_message . ". Melanjutkan tanpa data model.", $model_response);
+                    $this->logger->warning("⚠️ Gagal get_model_list untuk item_id " . $item['item_id'] . ": " . $error_message . ". Melanjutkan tanpa data model.");
                     continue;
                 }
                 if (isset($model_response['response']['model']) && !empty($model_response['response']['model'])) {
