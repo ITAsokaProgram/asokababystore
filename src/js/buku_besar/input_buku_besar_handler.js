@@ -15,6 +15,7 @@ const inpKodeStore = document.getElementById("inp_kode_store");
 const inpNoFaktur = document.getElementById("inp_no_faktur");
 const inpKodeSupplier = document.getElementById("inp_kode_supplier");
 const inpNamaSupp = document.getElementById("inp_nama_supplier");
+const inpNilaiFaktur = document.getElementById("inp_nilai_faktur");
 const inpTglNota = document.getElementById("inp_tgl_nota");
 const inpTglBayar = document.getElementById("inp_tgl_bayar");
 const inpPotongan = document.getElementById("inp_potongan");
@@ -129,19 +130,23 @@ async function fetchTableData(reset = false) {
   }
 }
 function renderTableRows(data) {
+  console.log(data)
   data.forEach((row) => {
     tableRowIndex++;
     const tr = document.createElement("tr");
     tr.className = "hover:bg-pink-50 transition-colors border-b border-gray-50";
     const potongan = parseFloat(row.potongan || 0);
+    const nilaiFaktur = parseFloat(row.nilai_faktur || 0);
     const total = parseFloat(row.total_bayar || 0);
     tr.innerHTML = `
         <td class="text-center text-gray-500 py-3">${tableRowIndex}</td>
         <td class="text-sm">${row.tanggal_bayar || "-"}</td>
+        <td class="text-sm">${row.tgl_nota || "-"}</td>
         <td class="font-medium text-gray-800 text-sm">${row.no_faktur}</td>
         <td class="text-sm">${row.nama_supplier}</td>
         <td><span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded border border-gray-200">${row.nm_alias || row.kode_store}</span></td>
         <td class="text-sm text-gray-500 italic max-w-xs truncate" title="${row.ket || ''}">${row.ket || "-"}</td>
+        <td class="text-right font-mono text-sm text-red-500">${formatNumber(nilaiFaktur)}</td>
         <td class="text-right font-mono text-sm text-red-500">${formatNumber(potongan)}</td>
         <td class="text-right font-bold font-mono text-pink-600 text-sm">${formatNumber(total)}</td>
         <td class="text-center py-2">
@@ -271,6 +276,7 @@ async function handleSave() {
     tgl_nota: inpTglNota.value,
     tanggal_bayar: inpTglBayar.value,
     potongan: parseNumber(inpPotongan.value),
+    nilai_faktur: parseNumber(inpNilaiFaktur.value),
     ket_potongan: inpKetPotongan.value,
     ket: inpKet.value,
     total_bayar: parseNumber(inpTotalBayar.value)

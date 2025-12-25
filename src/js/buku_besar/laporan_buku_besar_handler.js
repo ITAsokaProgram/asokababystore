@@ -412,7 +412,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td class="text-right font-mono text-gray-700">${formatRupiah(nilaiFaktur)}</td>
                 
                 <td class="text-right font-mono text-red-600">
-                    ${potongan > 0 ? '-' + formatRupiah(potongan) : '0'}
+                    ${potongan > 0 ? '' + formatRupiah(potongan) : '0'}
                     ${ketPotonganHtml}
                 </td>
                 

@@ -163,9 +163,9 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                             </div>
 
                             <div class="relative">
-                                <label class="form-label">No. Faktur</label>
+                                <label class="form-label">No. Invoice</label>
                                 <input type="text" id="inp_no_faktur" name="no_faktur" class="input-compact"
-                                    placeholder="Cari Faktur / Input Manual...">
+                                    placeholder="Cari Invoice / Input Manual...">
                                 <p id="err_no_faktur"
                                     class="text-red-500 absolute -bottom-4 left-0 hidden font-semibold"
                                     style="font-size: 0.55rem"></p>
@@ -207,10 +207,15 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                     placeholder="(Opsional)">
                             </div>
 
-                            <div class="md:col-span-2">
+                            <div>
                                 <label class="form-label">Keterangan / Notes</label>
                                 <input type="text" id="inp_ket" name="ket" class="input-compact"
                                     placeholder="Keterangan tambahan...">
+                            </div>
+                            <div>
+                                <label class="form-label">Nilai Faktur</label>
+                                <input type="text" id="inp_nilai_faktur" name="nilai_faktur"
+                                    class="input-compact text-right font-mono" value="0">
                             </div>
 
                             <div>
@@ -248,10 +253,12 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                 <tr>
                                     <th class="w-10 text-center">No</th>
                                     <th>Tgl Bayar</th>
-                                    <th>No Faktur</th>
+                                    <th>Tgl Nota</th>
+                                    <th>No Invoice</th>
                                     <th>Supplier</th>
                                     <th>Cabang</th>
                                     <th>Ket</th>
+                                    <th class="text-right">Nilai Faktur</th>
                                     <th class="text-right">Potongan</th>
                                     <th class="text-right">Total Bayar</th>
                                     <th class="w-20 text-center">Aksi</th>
