@@ -32,7 +32,8 @@ try {
         $sqlCount = "SELECT COUNT(DISTINCT plu) as total 
                      FROM master_backup 
                      WHERE KD_STORE IN ($store_placeholders) 
-                     AND VENDOR = ?";
+                     AND VENDOR = ?
+                     AND DATE(TGL_BACKUP) = CURDATE()";
         $stmtCount = $conn->prepare($sqlCount);
         $stmtCount->bind_param($countTypes, ...$countParams);
         $stmtCount->execute();
@@ -48,7 +49,7 @@ try {
                FROM master_backup 
                WHERE KD_STORE IN ($store_placeholders) 
                AND VENDOR = ? 
-               ORDER BY DESCP ASC 
+               AND DATE(TGL_BACKUP) = CURDATE() 
                LIMIT ? OFFSET ?";
     $paramsPLU[] = $limit;
     $paramsPLU[] = $offset;
@@ -77,9 +78,8 @@ try {
                   WHERE KD_STORE IN ($store_placeholders) 
                   AND plu IN ($plu_placeholders)
                   AND VENDOR = ?
-                  GROUP BY KD_STORE, plu  
+                  AND DATE(TGL_BACKUP) = CURDATE() 
                   ORDER BY DESCP ASC";
-
     $typesDetail = $types . str_repeat('s', count($target_plus)) . 's';
     $paramsDetail = array_merge($kd_stores, $target_plus, [$kode_supp]);
     $stmtDetail = $conn->prepare($sqlDetail);

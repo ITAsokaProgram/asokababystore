@@ -73,6 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const nsfpVal = parts[0];
         const supplierName = parts[1] || "Tanpa Nama";
         const sourcesVal = parts[2] || "";
+        const branchName = parts[3] || ""; 
         let labelSource = "";
         if (sourcesVal.includes("CORETAX") && sourcesVal.includes("FISIK")) {
           labelSource = " [Coretax & Fisik]";
@@ -81,7 +82,8 @@ document.addEventListener("DOMContentLoaded", () => {
         } else if (sourcesVal.includes("FISIK")) {
           labelSource = " [Manual / Fisik]";
         }
-        inputOptions[nsfpVal] = `${nsfpVal} - ${supplierName}${labelSource}`;
+        const labelCabang = branchName ? ` (${branchName})` : "";
+        inputOptions[nsfpVal] = `${nsfpVal} - ${supplierName}${labelSource}${labelCabang}`;
       });
       const { value: userSelection } = await Swal.fire({
         title: "Pilih NSFP",
@@ -90,7 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
         inputOptions: inputOptions,
         inputValue: selectedNsfp,
         inputPlaceholder: "Pilih NSFP...",
-        width: "650px",
+        width: "800px",
         showCancelButton: true,
         confirmButtonText: "Pilih & Konfirmasi",
         cancelButtonText: "Batal",
@@ -648,7 +650,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const bestCandidate = candidateList[0];
           const candidateString = availableCandidates
             .map(
-              (c) => `${c.nsfp}###${c.supplierName}###${c.sources.join("&")}`
+              (c) => `${c.nsfp}###${c.supplierName}###${c.sources.join("&")}###${c.branchName || ""}`
             )
             .join(",");
           const count = availableCandidates.length;
@@ -846,7 +848,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   loadData();
 });
-
 function showDetailModal(title, content) {
   window.dispatchEvent(
     new CustomEvent("show-detail-modal", {
@@ -858,7 +859,6 @@ function showDetailModal(title, content) {
     })
   );
 }
-
 function truncateText(text, maxLength = 30) {
   if (!text || text === "-") return "-";
   if (text.length <= maxLength) return text;
