@@ -40,6 +40,15 @@ let hasMoreData = true;
 let currentSearchTerm = "";
 let tableRowIndex = 0;
 let currentRequestController = null; 
+function isFormDirty() {
+    const hasFaktur = inpNoFaktur.value.trim() !== "";
+    const hasSupplier = inpNamaSupp.value.trim() !== "";
+    const hasTotal = parseNumber(inpTotalBayar.value) !== 0;
+    const hasPotongan = parseNumber(inpPotongan.value) !== 0;
+    const hasKet = inpKet.value.trim() !== "";
+
+    return (hasFaktur || hasSupplier || hasTotal || hasPotongan || hasKet);
+}
 function formatNumber(num) {
   if (isNaN(num) || num === null) return "0";
   return new Intl.NumberFormat("id-ID", {
@@ -270,6 +279,7 @@ async function handleSave() {
   const originalBtnClass = btnSave.className;
   btnSave.disabled = true;
   btnSave.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Proses...`;
+  isSubmitting = true;
   try {
     const result = await sendRequestJSON(API_URLS.saveData, payload);
     if (result.success) {
@@ -281,6 +291,7 @@ async function handleSave() {
     }
   } catch (error) {
     Swal.fire("Gagal Simpan", error.message, "error");
+    isSubmitting = false;
   } finally {
     btnSave.disabled = false;
     btnSave.innerHTML = originalBtnContent;
@@ -570,4 +581,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   if (inpFileImport) inpFileImport.addEventListener("change", handleImport);
 
-});
+})
+
+window.addEventListener('beforeunload', (e) => {
+    if (isSubmitting) return undefined;
+
+    if (isFormDirty()) {
+        e.preventDefault();
+        e.returnValue = ''; 
+        return '';
+    }
+});;

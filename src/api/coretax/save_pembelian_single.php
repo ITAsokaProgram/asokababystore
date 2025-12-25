@@ -4,6 +4,7 @@ ini_set('display_errors', 0);
 header('Content-Type: application/json');
 require_once __DIR__ . '/../../../aa_kon_sett.php';
 require_once __DIR__ . '/../../auth/middleware_login.php';
+
 try {
     $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
     if (!preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
@@ -19,71 +20,58 @@ try {
         exit;
     }
     $kd_user = $verif->id ?? $verif->kode ?? 0;
+
     $json = file_get_contents('php://input');
     $input = json_decode($json, true);
-    if (!$input) {
+    if (!$input)
         throw new Exception("Data tidak valid");
-    }
+
     $id = isset($input['id']) ? (int) $input['id'] : null;
     $no_lpb = $input['no_lpb'] ?? '';
     $kode_supplier = $input['kode_supplier'] ?? '';
     $kode_store = $input['kode_store'] ?? '';
     $status = $input['status'] ?? '';
     $nama_supplier = $input['nama_supplier'] ?? '';
-    $catatan = $input['catatan'] ?? null; // TAMBAHAN AMBIL DATA
-    $no_faktur = $input['no_faktur'] ?? '';
+    $catatan = $input['catatan'] ?? null;
+    $no_faktur_pajak = $input['no_faktur'] ?? '';
     $tgl_nota = $input['tgl_nota'] ?? date('Y-m-d');
+
+
     $d = DateTime::createFromFormat('Y-m-d', $tgl_nota);
     if (!$d || $d->format('Y-m-d') !== $tgl_nota) {
-        throw new Exception("Format tanggal atau nilai tanggal nota salah, cek tanggal yang diinput");
+        throw new Exception("Format tanggal nota salah.");
     }
-    $year = (int) $d->format('Y');
-    if ($year < 2000 || $year > 2099) {
-        throw new Exception("Tahun tanggal nota tidak valid ($year). Mohon periksa input tanggal.");
-    }
+
     $no_invoice = $input['no_invoice'] ?? '';
     $dpp = (float) ($input['dpp'] ?? 0);
     $dpp_nilai_lain = (float) ($input['dpp_nilai_lain'] ?? 0);
     $ppn = (float) ($input['ppn'] ?? 0);
     $total_terima_fp = (float) ($input['total_terima_fp'] ?? 0);
-    if (empty($status)) {
-        throw new Exception("Status wajib dipilih (PKP/NON PKP/BTKP).");
-    }
+
     if (empty($no_invoice) || empty($nama_supplier)) {
         throw new Exception("No Invoice dan Nama Supplier wajib diisi.");
     }
+
+
+    $conn->begin_transaction();
+
     if ($id) {
+
         $query = "UPDATE ff_pembelian SET 
-                    nama_supplier=?, 
-                    kode_supplier=?,  
-                    kode_store=?, 
-                    tgl_nota=?, 
-                    no_invoice=?, 
-                    no_faktur=?, 
-                    catatan=?, /* TAMBAHAN */
-                    dpp=?, 
-                    dpp_nilai_lain=?, 
-                    ppn=?, 
-                    total_terima_fp=?, 
-                    kd_user=?, 
-                    status=?,  
-                    edit_pada=NOW() 
+                    nama_supplier=?, kode_supplier=?, kode_store=?, tgl_nota=?, 
+                    no_invoice=?, no_faktur=?, catatan=?, dpp=?, dpp_nilai_lain=?, 
+                    ppn=?, total_terima_fp=?, kd_user=?, status=?, edit_pada=NOW() 
                   WHERE id=?";
         $stmt = $conn->prepare($query);
-        if (!$stmt)
-            throw new Exception("Prepare Update Error: " . $conn->error);
-
-        // Perhatikan urutan tipe data bind_param (s = string, d = double, i = integer)
-        // Ditambah satu 's' untuk catatan setelah no_faktur
         $stmt->bind_param(
-            "sssssssddddisi", // Tambah 's'
+            "sssssssddddisi",
             $nama_supplier,
             $kode_supplier,
             $kode_store,
             $tgl_nota,
             $no_invoice,
-            $no_faktur,
-            $catatan, // TAMBAHAN VARIABLE
+            $no_faktur_pajak,
+            $catatan,
             $dpp,
             $dpp_nilai_lain,
             $ppn,
@@ -92,28 +80,28 @@ try {
             $status,
             $id
         );
-        if (!$stmt->execute()) {
-            throw new Exception("Gagal mengupdate data: " . $stmt->error);
-        }
-        $message = "Data berhasil diperbarui.";
-    } else {
-        $query = "INSERT INTO ff_pembelian 
-                  (nama_supplier, kode_supplier, kode_store, tgl_nota, no_invoice, no_faktur, catatan, dpp, dpp_nilai_lain, ppn, total_terima_fp, status, kd_user) 
-                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"; // Tambah ? satu lagi
-        $stmt = $conn->prepare($query);
-        if (!$stmt)
-            throw new Exception("Prepare Insert Error: " . $conn->error);
 
-        // Tambah 's' pada tipe data
-        $stmt->bind_param(
-            "sssssssddddsi", // Tambah 's'
+        if (!$stmt->execute())
+            throw new Exception("Gagal update ff_pembelian: " . $stmt->error);
+        $message = "Data pembelian berhasil diperbarui (Buku Besar tidak berubah).";
+
+    } else {
+
+
+
+        $queryIns = "INSERT INTO ff_pembelian 
+                    (nama_supplier, kode_supplier, kode_store, tgl_nota, no_invoice, no_faktur, catatan, dpp, dpp_nilai_lain, ppn, total_terima_fp, status, kd_user) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $stmtIns = $conn->prepare($queryIns);
+        $stmtIns->bind_param(
+            "sssssssddddsi",
             $nama_supplier,
             $kode_supplier,
             $kode_store,
             $tgl_nota,
             $no_invoice,
-            $no_faktur,
-            $catatan, // TAMBAHAN VARIABLE
+            $no_faktur_pajak,
+            $catatan,
             $dpp,
             $dpp_nilai_lain,
             $ppn,
@@ -121,13 +109,40 @@ try {
             $status,
             $kd_user
         );
-        if (!$stmt->execute()) {
-            throw new Exception("Gagal menyimpan data: " . $stmt->error);
-        }
-        $message = "Data berhasil disimpan.";
+        if (!$stmtIns->execute())
+            throw new Exception("Gagal simpan ff_pembelian: " . $stmtIns->error);
+
+
+        $queryBB = "INSERT INTO buku_besar 
+                    (tgl_nota, no_faktur, kode_supplier, nama_supplier, nilai_faktur, total_bayar, kode_store, kd_user) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        $stmtBB = $conn->prepare($queryBB);
+        $total_bayar_awal = 0;
+
+        $stmtBB->bind_param(
+            "ssssddss",
+            $tgl_nota,
+            $no_invoice,
+            $kode_supplier,
+            $nama_supplier,
+            $total_terima_fp,
+            $total_bayar_awal,
+            $kode_store,
+            $kd_user
+        );
+        if (!$stmtBB->execute())
+            throw new Exception("Gagal simpan ke Buku Besar: " . $stmtBB->error);
+
+        $message = "Data berhasil disimpan ke Pembelian dan Buku Besar.";
     }
+
+
+    $conn->commit();
     echo json_encode(['success' => true, 'message' => $message]);
+
 } catch (Exception $e) {
+    if (isset($conn))
+        $conn->rollback();
     http_response_code(200);
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 } finally {
