@@ -121,6 +121,18 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
+                        <button type="button" id="btn-export"
+                            class="btn-export flex items-center gap-2 px-3 py-2 shadow-sm decoration-0 text-green-600 bg-green-50 border border-green-200 hover:bg-green-100 rounded text-sm font-medium">
+                            <i class="fas fa-file-excel"></i> <span>Export</span>
+                        </button>
+
+                        <button type="button" id="btn-import"
+                            class="btn-import flex items-center gap-2 px-3 py-2 shadow-sm decoration-0 text-blue-600 bg-blue-50 border border-blue-200 hover:bg-blue-100 rounded text-sm font-medium">
+                            <i class="fas fa-cloud-upload-alt"></i> <span>Import</span>
+                        </button>
+
+                        <input type="file" id="file_import" accept=".xlsx, .xls" class="hidden">
+
                         <button type="button" id="btn-save"
                             class="btn-primary flex items-center gap-2 px-6 py-2 shadow-lg shadow-pink-500/30">
                             <i class="fas fa-save"></i> <span>Simpan</span>
@@ -258,7 +270,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
 
     <script src="/src/js/middleware_auth.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
     <script src="../../js/buku_besar/input_buku_besar_handler.js" type="module"></script>
 </body>
 
