@@ -16,11 +16,18 @@ try {
     $tgl_selesai = $_GET['tgl_selesai'] ?? date('Y-m-d');
     $search_query = $_GET['search_query'] ?? '';
     $kd_store = $_GET['kd_store'] ?? 'all';
+    $status_bayar = $_GET['status_bayar'] ?? 'all';
 
     // Build Query
     $where_conditions = "1=1";
     $bind_types = "";
     $bind_params = [];
+
+    if ($status_bayar === 'paid') {
+        $where_conditions .= " AND bb.tanggal_bayar IS NOT NULL";
+    } elseif ($status_bayar === 'unpaid') {
+        $where_conditions .= " AND bb.tanggal_bayar IS NULL";
+    }
 
     if ($filter_type === 'month') {
         $where_conditions .= " AND MONTH(bb.tgl_nota) = ? AND YEAR(bb.tgl_nota) = ?";
@@ -61,9 +68,11 @@ try {
     $sql = "
         SELECT 
             bb.*,
-            ks.Nm_Alias
+            ks.Nm_Alias,
+            ks_bayar.Nm_Alias as Nm_Alias_Bayar
         FROM buku_besar bb
         LEFT JOIN kode_store ks ON bb.kode_store = ks.Kd_Store
+        LEFT JOIN kode_store ks_bayar ON bb.store_bayar = ks_bayar.Kd_Store
         WHERE $where_conditions
         ORDER BY bb.tgl_nota DESC, bb.id DESC
     ";

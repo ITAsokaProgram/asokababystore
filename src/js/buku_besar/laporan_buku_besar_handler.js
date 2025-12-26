@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const tableBody = document.getElementById("ledger-table-body");
     const filterForm = document.getElementById("filter-form");
     const filterSubmitButton = document.getElementById("filter-submit-button");
+    const filterStatusBayar = document.getElementById("status_bayar"); // Tambahkan ini
     const filterSelectStore = document.getElementById("kd_store");
     const filterInputQuery = document.getElementById("search_query");
     
@@ -94,6 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 tgl_selesai: params.tgl_selesai,
                 kd_store: params.kd_store,
                 search_query: params.search_query,
+                status_bayar: params.status_bayar,
             }).toString();
     
             const response = await fetch(
@@ -114,18 +116,17 @@ document.addEventListener("DOMContentLoaded", () => {
             const sheet = workbook.addWorksheet("Laporan Buku Besar");
     
             sheet.columns = [
-                { key: "no", width: 5 },
-                { key: "tgl_nota", width: 12 },
-                { key: "no_faktur", width: 25 },
-                { key: "cabang", width: 15 },
-                { key: "supplier", width: 35 },
-                { key: "ket", width: 30 },
-                { key: "nilai_faktur", width: 15 },
-                { key: "potongan", width: 15 },
-                { key: "ket_potongan", width: 20 },
-                { key: "total_bayar", width: 15 },
-                { key: "tanggal_bayar", width: 12 },
-            ];
+            { key: "no", width: 5 },
+            { key: "tgl_nota", width: 12 },
+            { key: "cabang", width: 15 },
+            { key: "supplier", width: 35 },
+            { key: "ket", width: 30 },
+            { key: "potongan", width: 15 },
+            { key: "nilai_faktur", width: 15 },
+            { key: "total_bayar", width: 15 },
+            { key: "tanggal_bayar", width: 12 },
+            { key: "cabang_bayar", width: 15 },
+        ];
     
             sheet.mergeCells("A1:K1");
             const titleCell = sheet.getCell("A1");
@@ -134,9 +135,10 @@ document.addEventListener("DOMContentLoaded", () => {
             titleCell.alignment = { horizontal: "center" };
     
             const headers = [
-                "No", "Tgl Nota", "No Faktur", "Cabang", "Nama Supplier", 
-                "Keterangan", "Nilai Faktur", "Potongan", "Ket Potongan", "Total Bayar", "Tgl Bayar"
-            ];
+            "No", "Tgl Nota", "Cabang", "Supplier", 
+            "Keterangan", "Potongan", "Nilai Faktur", "Total Bayar", 
+            "Tgl Bayar", "Cabang Bayar"
+        ];
     
             const headerRow = sheet.getRow(3);
             headerRow.values = headers;
@@ -157,21 +159,20 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     
             let rowNum = 4;
-            data.forEach((item, index) => {
-                const r = sheet.getRow(rowNum);
-                r.values = [
-                    index + 1,
-                    item.tgl_nota,
-                    item.no_faktur,
-                    item.Nm_Alias || item.kode_store,
-                    item.nama_supplier,
-                    item.ket || "",
-                    parseFloat(item.nilai_faktur) || 0,
-                    parseFloat(item.potongan) || 0,
-                    item.ket_potongan || "",
-                    parseFloat(item.total_bayar) || 0,
-                    item.tanggal_bayar
-                ];
+        data.forEach((item, index) => {
+            const r = sheet.getRow(rowNum);
+            r.values = [
+                index + 1,
+                item.tgl_nota,
+                item.Nm_Alias || item.kode_store,
+                item.nama_supplier,
+                item.ket || "",
+                parseFloat(item.potongan) || 0,
+                parseFloat(item.nilai_faktur) || 0,
+                parseFloat(item.total_bayar) || 0,
+                item.tanggal_bayar,
+                item.Nm_Alias_Bayar || item.store_bayar || "" // Mapping Cabang Bayar
+            ];
                 
                 // Format Currency Columns
                 [7, 8, 10].forEach(idx => {
@@ -237,6 +238,7 @@ document.addEventListener("DOMContentLoaded", () => {
         tgl_selesai: params.get("tgl_selesai") || yesterdayString,
         kd_store: params.get("kd_store") || "all",
         search_query: params.get("search_query") || "",
+        status_bayar: params.get("status_bayar") || "all",
         page: parseInt(params.get("page") || "1", 10),
       };
     }
@@ -278,6 +280,7 @@ document.addEventListener("DOMContentLoaded", () => {
         kd_store: params.kd_store,
         search_query: params.search_query,
         page: params.page,
+        status_bayar: params.status_bayar
       }).toString();
   
       try {
@@ -298,6 +301,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
   
         // Set Filter Values
+        if (filterStatusBayar) filterStatusBayar.value = params.status_bayar;
         if (filterInputQuery) filterInputQuery.value = params.search_query;
         if (filterTypeSelect) {
             filterTypeSelect.value = params.filter_type;
@@ -384,49 +388,60 @@ document.addEventListener("DOMContentLoaded", () => {
       let item_counter = offset + 1;
   
       tabel_data.forEach((row) => {
-        const nilaiFaktur = parseFloat(row.nilai_faktur) || 0;
-        const potongan = parseFloat(row.potongan) || 0;
-        const totalBayar = parseFloat(row.total_bayar) || 0;
-        
-        let ketPotonganHtml = "";
-        if (row.ket_potongan) {
-             ketPotonganHtml = `<div class="text-[10px] text-gray-500 italic mt-1">${row.ket_potongan}</div>`;
-        }
+            const nilaiFaktur = parseFloat(row.nilai_faktur) || 0;
+            const potongan = parseFloat(row.potongan) || 0;
+            const totalBayar = parseFloat(row.total_bayar) || 0;
+            
+            let ketPotonganHtml = "";
+            if (row.ket_potongan) {
+                 ketPotonganHtml = `<div class="text-[10px] text-gray-500 italic mt-1">${row.ket_potongan}</div>`;
+            }
 
-        htmlRows += `
-            <tr class="hover:bg-gray-50">
-                <td class="text-center font-medium text-gray-500">${item_counter}</td>
-                <td>${formatDate(row.tgl_nota)}</td>
-                <td class="font-semibold text-gray-700">${row.no_faktur || "-"}</td>
-                <td class="">
-                    <span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded border border-gray-200">
-                        ${row.Nm_Alias || row.kode_store || "-"}
-                    </span>
-                </td>
-                <td>${row.nama_supplier}</td>
-                <td class="text-sm text-gray-600 italic ${row.ket ? "cursor-pointer hover:text-pink-600 hover:underline" : ""}" 
-                    ${row.ket ? `onclick="showDetailModal('Keterangan', '${(row.ket || "").replace(/'/g, "\\'")}')"` : ""}>
-                    ${truncateText(row.ket, 30)}
-                </td>
-                
-                <td class="text-right font-mono text-gray-700">${formatRupiah(nilaiFaktur)}</td>
-                
-                <td class="text-right font-mono text-red-600">
-                    ${potongan > 0 ? '' + formatRupiah(potongan) : '0'}
-                    ${ketPotonganHtml}
-                </td>
-                
-                <td class="text-right font-bold text-gray-800">${formatRupiah(totalBayar)}</td>
-                
-                <td class="text-center text-sm text-gray-600">
-                     ${formatDate(row.tanggal_bayar)}
-                </td>
-            </tr>
-        `;
-        item_counter++;
-      });
-  
-      tableBody.innerHTML = htmlRows;
+            // Handle Cabang Bayar (Jika store_bayar kode, kita coba tampilkan nama alias jika ada di data join, atau kodenya saja)
+            // Asumsi API nanti mengembalikan Nm_Alias_Bayar
+            const cabangBayar = row.Nm_Alias_Bayar || row.store_bayar || "-";
+
+            htmlRows += `
+                <tr class="hover:bg-gray-50">
+                    <td class="text-center font-medium text-gray-500">${item_counter}</td>
+                    
+                    <td>${formatDate(row.tgl_nota)}</td>
+                    
+                    <td class="text-center">
+                        <span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded border border-gray-200">
+                            ${row.Nm_Alias || row.kode_store || "-"}
+                        </span>
+                    </td>
+                    
+                    <td>${row.nama_supplier || "-"}</td>
+                    
+                    <td class="text-sm text-gray-600 italic ${row.ket ? "cursor-pointer hover:text-pink-600 hover:underline" : ""}" 
+                        ${row.ket ? `onclick="showDetailModal('Keterangan', '${(row.ket || "").replace(/'/g, "\\'")}')"` : ""}>
+                        ${truncateText(row.ket, 30)}
+                    </td>
+                    
+                    <td class="text-right font-mono text-red-600">
+                        ${potongan > 0 ? '' + formatRupiah(potongan) : '0'}
+                        ${ketPotonganHtml}
+                    </td>
+
+                    <td class="text-right font-mono text-gray-700">${formatRupiah(nilaiFaktur)}</td>
+                    
+                    <td class="text-right font-bold text-gray-800">${formatRupiah(totalBayar)}</td>
+                    
+                    <td class="text-center text-sm text-gray-600">
+                         ${formatDate(row.tanggal_bayar)}
+                    </td>
+
+                    <td class="text-center">
+                         ${cabangBayar}
+                    </td>
+                </tr>
+            `;
+            item_counter++;
+        });
+
+        tableBody.innerHTML = htmlRows;
     }
   
     // ... Function renderPagination (sama seperti sebelumnya, disingkat untuk hemat tempat) ...

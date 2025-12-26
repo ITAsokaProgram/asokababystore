@@ -1,38 +1,14 @@
 <?php
 session_start();
-include '../../../aa_kon_sett.php';
-
-// Error Handler
-register_shutdown_function(function () {
-    $error = error_get_last();
-    if ($error !== null && in_array($error['type'], [E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR, E_RECOVERABLE_ERROR])) {
-        if (!headers_sent()) {
-            http_response_code(500);
-            echo json_encode(['error' => 'Fatal Server Error: ' . $error['message']]);
-        }
-    }
-});
-
+ini_set('display_errors', 0);
 header('Content-Type: application/json');
-
-$response = [
-    'stores' => [],
-    'tabel_data' => [],
-    'pagination' => ['current_page' => 1, 'total_pages' => 1, 'total_rows' => 0, 'offset' => 0, 'limit' => 100],
-    'error' => null,
-];
+require_once __DIR__ . '/../../../aa_kon_sett.php';
 
 try {
-    // 1. Get Stores
-    $sql_stores = "SELECT kd_store, nm_alias FROM kode_store WHERE display = 'on' ORDER BY Nm_Alias ASC";
-    $result_stores = $conn->query($sql_stores);
-    if ($result_stores) {
-        while ($row = $result_stores->fetch_assoc()) {
-            $response['stores'][] = $row;
-        }
-    }
+    if (!$conn)
+        throw new Exception("Koneksi Database Gagal");
 
-    // 2. Prepare Filters
+    // Params
     $filter_type = $_GET['filter_type'] ?? 'month';
     $bulan = $_GET['bulan'] ?? date('m');
     $tahun = $_GET['tahun'] ?? date('Y');
@@ -40,18 +16,13 @@ try {
     $tgl_selesai = $_GET['tgl_selesai'] ?? date('Y-m-d');
     $search_query = $_GET['search_query'] ?? '';
     $kd_store = $_GET['kd_store'] ?? 'all';
+    $status_bayar = $_GET['status_bayar'] ?? 'all'; // PARAM BARU
 
-    $page = (int) ($_GET['page'] ?? 1);
-    if ($page < 1)
-        $page = 1;
-    $limit = 100;
+    $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
+    $limit = 50;
     $offset = ($page - 1) * $limit;
 
-    $response['pagination']['limit'] = $limit;
-    $response['pagination']['current_page'] = $page;
-    $response['pagination']['offset'] = $offset;
-
-    // WHERE Logic
+    // Build Query Conditions
     $where_conditions = "1=1";
     $bind_types = "";
     $bind_params = [];
@@ -74,78 +45,97 @@ try {
         $bind_params[] = $kd_store;
     }
 
+    // LOGIKA FILTER STATUS BAYAR
+    if ($status_bayar === 'paid') {
+        $where_conditions .= " AND bb.tanggal_bayar IS NOT NULL";
+    } elseif ($status_bayar === 'unpaid') {
+        $where_conditions .= " AND bb.tanggal_bayar IS NULL";
+    }
+
     if (!empty($search_query)) {
         $search_raw = trim($search_query);
         $search_numeric = str_replace(['.', ','], '', $search_raw);
-
         $where_conditions .= " AND (
-            bb.nama_supplier LIKE ? 
-            OR bb.kode_supplier LIKE ? 
-            OR bb.no_faktur LIKE ? 
-            OR bb.ket LIKE ? 
-            OR CAST(bb.total_bayar AS CHAR) LIKE ?
-            OR CAST(bb.potongan AS CHAR) LIKE ?
+            bb.nama_supplier LIKE ? OR bb.kode_supplier LIKE ? OR bb.no_faktur LIKE ? 
+            OR bb.ket LIKE ? OR CAST(bb.total_bayar AS CHAR) LIKE ?
         )";
         $termRaw = '%' . $search_raw . '%';
         $termNumeric = '%' . $search_numeric . '%';
-
-        $bind_types .= 'ssssss';
+        $bind_types .= 'sssss';
         $bind_params[] = $termRaw;
         $bind_params[] = $termRaw;
         $bind_params[] = $termRaw;
         $bind_params[] = $termRaw;
-        $bind_params[] = $termNumeric;
         $bind_params[] = $termNumeric;
     }
 
-    // 3. Count Total Rows
-    $sql_count = "SELECT COUNT(id) as total FROM buku_besar bb WHERE $where_conditions";
+    // Count Total
+    $sql_count = "SELECT COUNT(*) as total FROM buku_besar bb WHERE $where_conditions";
     $stmt_count = $conn->prepare($sql_count);
     if (!empty($bind_params)) {
         $stmt_count->bind_param($bind_types, ...$bind_params);
     }
     $stmt_count->execute();
     $result_count = $stmt_count->get_result();
-    $total_rows = $result_count->fetch_assoc()['total'] ?? 0;
-    $stmt_count->close();
+    $total_rows = $result_count->fetch_assoc()['total'];
+    $total_pages = ceil($total_rows / $limit);
 
-    $response['pagination']['total_rows'] = (int) $total_rows;
-    $response['pagination']['total_pages'] = ceil($total_rows / $limit);
-
-    // 4. Fetch Data
-    $sql_data = "
+    // Query Data (Join store_bayar agar dapat nama cabang bayar)
+    $sql = "
         SELECT 
             bb.*,
-            ks.Nm_Alias
+            ks.Nm_Alias,
+            ks_bayar.Nm_Alias as Nm_Alias_Bayar
         FROM buku_besar bb
         LEFT JOIN kode_store ks ON bb.kode_store = ks.Kd_Store
+        LEFT JOIN kode_store ks_bayar ON bb.store_bayar = ks_bayar.Kd_Store
         WHERE $where_conditions
         ORDER BY bb.tgl_nota DESC, bb.id DESC
         LIMIT ? OFFSET ?
     ";
 
-    // Append Limit params
+    // Append limit params
     $bind_types .= 'ii';
     $bind_params[] = $limit;
     $bind_params[] = $offset;
 
-    $stmt_data = $conn->prepare($sql_data);
+    $stmt = $conn->prepare($sql);
     if (!empty($bind_params)) {
-        $stmt_data->bind_param($bind_types, ...$bind_params);
+        $stmt->bind_param($bind_types, ...$bind_params);
     }
-    $stmt_data->execute();
-    $result_data = $stmt_data->get_result();
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-    while ($row = $result_data->fetch_assoc()) {
-        $response['tabel_data'][] = $row;
+    $data = [];
+    while ($row = $result->fetch_assoc()) {
+        $data[] = $row;
     }
-    $stmt_data->close();
-    $conn->close();
+
+    // Get List Stores for Filter
+    $sql_stores = "SELECT Kd_Store as kd_store, Nm_Alias as nm_alias FROM kode_store ORDER BY Nm_Alias ASC";
+    $res_stores = $conn->query($sql_stores);
+    $stores = [];
+    while ($r = $res_stores->fetch_assoc())
+        $stores[] = $r;
+
+    echo json_encode([
+        'success' => true,
+        'tabel_data' => $data,
+        'stores' => $stores,
+        'pagination' => [
+            'current_page' => $page,
+            'total_pages' => $total_pages,
+            'total_rows' => $total_rows,
+            'limit' => $limit,
+            'offset' => $offset
+        ]
+    ]);
 
 } catch (Exception $e) {
     http_response_code(500);
-    $response['error'] = $e->getMessage();
+    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+} finally {
+    if (isset($conn))
+        $conn->close();
 }
-
-echo json_encode($response);
 ?>

@@ -157,6 +157,17 @@ $menuHandler = new MenuHandler('laporan_buku_besar'); // Sesuaikan permission ke
                                 <option value="all">Seluruh Store</option>
                             </select>
                         </div>
+                        <div class="lg:col-span-1">
+                            <label for="status_bayar" class="block text-xs font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-money-bill-wave text-pink-600 mr-1"></i> Status Bayar
+                            </label>
+                            <select name="status_bayar" id="status_bayar" class="input-modern w-full">
+                                <option value="all">Semua</option>
+                                <option value="paid">Sudah Dibayar</option>
+                                <option value="unpaid">Belum Dibayar</option>
+                            </select>
+                        </div>
+
 
                         <div class="lg:col-span-2 lg:col-start-5">
                             <label for="search_query" class="block text-xs font-semibold text-gray-700 mb-2">
@@ -193,19 +204,20 @@ $menuHandler = new MenuHandler('laporan_buku_besar'); // Sesuaikan permission ke
                         </h3>
                     </div>
                     <div class="table-container">
+
                         <table class="table-modern" id="ledger-table">
                             <thead>
                                 <tr>
                                     <th>No</th>
                                     <th>Tgl Nota</th>
-                                    <th>No Faktur</th>
                                     <th class="text-center">Cabang</th>
-                                    <th>Nama Supplier</th>
+                                    <th>Supplier</th>
                                     <th>Keterangan</th>
-                                    <th class="text-right">Nilai Faktur</th>
                                     <th class="text-right">Potongan</th>
+                                    <th class="text-right">Nilai Faktur</th>
                                     <th class="text-right">Total Bayar</th>
                                     <th class="text-center">Tgl Bayar</th>
+                                    <th class="text-center">Cabang Bayar</th>
                                 </tr>
                             </thead>
                             <tbody id="ledger-table-body">
