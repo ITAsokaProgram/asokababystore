@@ -12,6 +12,7 @@ const API_URLS = {
 const form = document.getElementById("single-form");
 const inpId = document.getElementById("inp_id");
 const inpKodeStore = document.getElementById("inp_kode_store");
+const inpStoreBayar = document.getElementById("inp_store_bayar"); // TAMBAHKAN INI
 const inpNoFaktur = document.getElementById("inp_no_faktur");
 const inpKodeSupplier = document.getElementById("inp_kode_supplier");
 const inpNamaSupp = document.getElementById("inp_nama_supplier");
@@ -130,14 +131,17 @@ async function fetchTableData(reset = false) {
   }
 }
 function renderTableRows(data) {
-  console.log(data)
   data.forEach((row) => {
     tableRowIndex++;
     const tr = document.createElement("tr");
     tr.className = "hover:bg-pink-50 transition-colors border-b border-gray-50";
+    
     const potongan = parseFloat(row.potongan || 0);
     const nilaiFaktur = parseFloat(row.nilai_faktur || 0);
     const total = parseFloat(row.total_bayar || 0);
+    const storeBayarDisplay = row.nm_alias_bayar || row.store_bayar || "-";
+
+    // Modifikasi template di bawah ini:
     tr.innerHTML = `
         <td class="text-center text-gray-500 py-3">${tableRowIndex}</td>
         <td class="text-sm">${row.tanggal_bayar || "-"}</td>
@@ -145,9 +149,15 @@ function renderTableRows(data) {
         <td class="font-medium text-gray-800 text-sm">${row.no_faktur}</td>
         <td class="text-sm">${row.nama_supplier}</td>
         <td><span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded border border-gray-200">${row.nm_alias || row.kode_store}</span></td>
+        <td><span class="bg-pink-50 text-pink-700 text-xs px-2 py-1 rounded border border-pink-100 font-bold">${storeBayarDisplay}</span></td>
         <td class="text-sm text-gray-500 italic max-w-xs truncate" title="${row.ket || ''}">${row.ket || "-"}</td>
         <td class="text-right font-mono text-sm text-red-500">${formatNumber(nilaiFaktur)}</td>
-        <td class="text-right font-mono text-sm text-red-500">${formatNumber(potongan)}</td>
+        
+        <td class="text-right font-mono text-sm">
+            <div class="text-red-500">${formatNumber(potongan)}</div>
+            ${row.ket_potongan ? `<div class="text-[10px] text-gray-400 italic leading-tight mt-1" title="Ket: ${row.ket_potongan}">${row.ket_potongan}</div>` : ''}
+        </td>
+
         <td class="text-right font-bold font-mono text-pink-600 text-sm">${formatNumber(total)}</td>
         <td class="text-center py-2">
             <div class="flex justify-center gap-1">
@@ -187,7 +197,9 @@ async function loadStoreOptions() {
         const displayName = store.Nm_Alias ? `${store.Nm_Alias} (${store.Kd_Store})` : store.Nm_Store;
         html += `<option value="${store.Kd_Store}">${displayName}</option>`;
       });
+      
       inpKodeStore.innerHTML = html;
+      inpStoreBayar.innerHTML = html;
     }
   } catch (error) {
     console.error("Gagal memuat toko:", error);
@@ -211,7 +223,7 @@ async function fetchFakturData(noFaktur) {
       inpKodeSupplier.value = d.kode_supplier || "";
       inpNamaSupp.value = d.nama_supplier || "";
       inpTglNota.value = d.tgl_nota || "";
-      inpTotalBayar.value = formatNumber(parseFloat(d.total_bayar) || 0);
+      inpNilaiFaktur.value = formatNumber(parseFloat(d.total_bayar) || 0);
       inpNoFaktur.classList.remove("bg-yellow-50");
       inpNoFaktur.classList.add("bg-green-50", "text-green-700");
       let msgText = "✅ Data Ditemukan!";
@@ -266,10 +278,12 @@ async function handleSave() {
     Swal.fire("Gagal", "Pilih Cabang", "warning");
     return;
   }
+  // if (inpStoreBayar.value === "") { Swal.fire("Gagal", "Pilih Cabang Bayar", "warning"); return; }
   isSubmitting = true;
   const payload = {
     id: inpId.value || null,
     kode_store: inpKodeStore.value,
+    store_bayar: inpStoreBayar.value, // TAMBAHKAN INI
     no_faktur: noFaktur,
     kode_supplier: inpKodeSupplier.value,
     nama_supplier: inpNamaSupp.value,
@@ -306,17 +320,15 @@ async function handleSave() {
   }
 }
 function startEditMode(data) {
+  console.log(data)
   inpId.value = data.id;
   const kodeStoreVal = data.kode_store ? data.kode_store.trim() : "";
   inpKodeStore.value = kodeStoreVal;
-  if (inpKodeStore.value !== kodeStoreVal) {
-      console.warn("Data store tidak cocok dengan opsi yang tersedia.", {
-          data_dari_tabel: kodeStoreVal,
-          opsi_tersedia: Array.from(inpKodeStore.options).map(o => o.value)
-      });
-  }
+  const storeBayarVal = data.store_bayar ? data.store_bayar.trim() : "";
+  inpStoreBayar.value = storeBayarVal;
   inpNoFaktur.value = data.no_faktur;
   inpKodeSupplier.value = data.kode_supplier;
+  inpNilaiFaktur.value = data.nilai_faktur;
   inpNamaSupp.value = data.nama_supplier;
   inpTglNota.value = data.tgl_nota;
   inpTglBayar.value = data.tanggal_bayar;
@@ -381,7 +393,7 @@ async function handleExport() {
     const params = new URLSearchParams({
       search: currentSearchTerm,
     });
-    
+
     const response = await fetch(`${API_URLS.getExport}?${params.toString()}`);
     const result = await response.json();
 
@@ -396,14 +408,20 @@ async function handleExport() {
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet("Data Buku Besar");
 
+    // UPDATE: Kolom diperlengkap
     sheet.columns = [
       { header: "Tgl Bayar", key: "tanggal_bayar", width: 12 },
+      { header: "Tgl Nota", key: "tgl_nota", width: 12 },         // BARU
       { header: "No Faktur", key: "no_faktur", width: 20 },
+      { header: "Kode Supp", key: "kode_supplier", width: 15 },   // BARU
       { header: "Nama Supplier", key: "nama_supplier", width: 30 },
-      { header: "Cabang", key: "nm_alias", width: 15 },
-      { header: "Keterangan", key: "ket", width: 30 },
+      { header: "Cabang Inv", key: "nm_alias", width: 15 },
+      { header: "Cabang Bayar", key: "nm_alias_bayar", width: 15 },
+      { header: "Nilai Faktur", key: "nilai_faktur", width: 15 }, // BARU
       { header: "Potongan", key: "potongan", width: 15 },
+      { header: "Ket Potongan", key: "ket_potongan", width: 20 }, // BARU
       { header: "Total Bayar", key: "total_bayar", width: 15 },
+      { header: "Keterangan", key: "ket", width: 30 },
     ];
 
     // Styling Header
@@ -414,32 +432,32 @@ async function handleExport() {
       cell.fill = {
         type: "pattern",
         pattern: "solid",
-        fgColor: { argb: "FFEC4899" }, // Warna Pink
+        fgColor: { argb: "FFEC4899" },
       };
       cell.alignment = { horizontal: "center", vertical: "middle" };
-      cell.border = {
-        top: { style: "thin" },
-        left: { style: "thin" },
-        bottom: { style: "thin" },
-        right: { style: "thin" },
-      };
+      cell.border = { top: { style: "thin" }, left: { style: "thin" }, bottom: { style: "thin" }, right: { style: "thin" } };
     });
 
     // Isi Data
     data.forEach((row) => {
       sheet.addRow({
         tanggal_bayar: row.tanggal_bayar,
+        tgl_nota: row.tgl_nota,          // BARU
         no_faktur: row.no_faktur,
+        kode_supplier: row.kode_supplier, // BARU
         nama_supplier: row.nama_supplier,
         nm_alias: row.nm_alias || row.kode_store,
-        ket: row.ket,
+        nm_alias_bayar: row.nm_alias_bayar || row.store_bayar,
+        nilai_faktur: parseFloat(row.nilai_faktur) || 0, // BARU
         potongan: parseFloat(row.potongan) || 0,
+        ket_potongan: row.ket_potongan,   // BARU
         total_bayar: parseFloat(row.total_bayar) || 0,
+        ket: row.ket,
       });
     });
 
     // Format Angka
-    ["potongan", "total_bayar"].forEach((key) => {
+    ["nilai_faktur", "potongan", "total_bayar"].forEach((key) => {
       sheet.getColumn(key).numFmt = "#,##0";
     });
 
@@ -556,27 +574,44 @@ document.addEventListener("DOMContentLoaded", async () => {
   
   if (btnImport) {
     btnImport.addEventListener("click", () => {
+      // UPDATE: Panduan kolom disesuaikan dengan format baru (A-L)
       Swal.fire({
         title: "Import Buku Besar",
         html: `
         <div class="text-left text-sm text-gray-600 mb-4">
-            <p class="mb-2">Gunakan format Excel (.xlsx) urutan kolom:</p>
-            <table class="w-full text-xs border border-gray-200">
-                <tr class="bg-gray-100 font-bold">
-                    <td>A</td><td>B</td><td>C</td><td>D</td><td>E</td><td>F</td><td>G</td>
-                </tr>
-                <tr>
-                    <td>Tgl Bayar</td><td>No Faktur</td><td>Nama Supplier</td><td>Nm Cabang</td><td>Keterangan</td><td>Potongan</td><td>Total Bayar</td>
-                </tr>
-            </table>
-            <p class="mt-2 text-xs italic">*Kolom D diisi <b>Nama Alias Cabang</b> (Contoh: ADET, ASOKA).</p>
-            <p class="mt-1 text-xs italic">*Baris pertama (Header) akan dilewati.</p>
+            <p class="mb-2">Gunakan format Excel (.xlsx) dengan urutan kolom:</p>
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs border border-gray-200">
+                    <tr class="bg-gray-100 font-bold text-center">
+                        <td class="p-1 border">A</td><td class="p-1 border">B</td><td class="p-1 border">C</td><td class="p-1 border">D</td>
+                        <td class="p-1 border">E</td><td class="p-1 border">F</td><td class="p-1 border">G</td><td class="p-1 border">H</td>
+                        <td class="p-1 border">I</td><td class="p-1 border">J</td><td class="p-1 border">K</td><td class="p-1 border">L</td>
+                    </tr>
+                    <tr>
+                        <td class="p-1 border">Tgl Bayar</td>
+                        <td class="p-1 border">Tgl Nota</td>
+                        <td class="p-1 border">Faktur</td>
+                        <td class="p-1 border">Kd Supp</td>
+                        <td class="p-1 border">Nm Supp</td>
+                        <td class="p-1 border">Cab Inv</td>
+                        <td class="p-1 border">Cab Bayar</td>
+                        <td class="p-1 border">Nilai</td>
+                        <td class="p-1 border">Pot</td>
+                        <td class="p-1 border">Ket Pot</td>
+                        <td class="p-1 border">Total</td>
+                        <td class="p-1 border">Ket</td>
+                    </tr>
+                </table>
+            </div>
+            <p class="mt-2 text-xs italic">*Kolom F & G diisi <b>Nama Alias</b> (Contoh: ADET, ASOKA).</p>
+            <p class="mt-1 text-xs italic">*Jika Tgl Nota/Kode Supplier kosong, biarkan kosong di Excel.</p>
         </div>
     `,
         icon: "info",
         showCancelButton: true,
         confirmButtonText: "Pilih File",
         confirmButtonColor: "#3b82f6",
+        width: '600px'
       }).then((result) => {
         if (result.isConfirmed) {
           inpFileImport.click();
@@ -586,8 +621,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   if (inpFileImport) inpFileImport.addEventListener("change", handleImport);
-
-})
+});
 
 window.addEventListener('beforeunload', (e) => {
     if (isSubmitting) return undefined;

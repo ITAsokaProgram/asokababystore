@@ -3,25 +3,19 @@ session_start();
 ini_set('display_errors', 0);
 ini_set('memory_limit', '512M');
 set_time_limit(300);
-
 require_once __DIR__ . '/../../../aa_kon_sett.php';
 require_once __DIR__ . '/../../auth/middleware_login.php';
 require_once __DIR__ . '/../../../vendor/autoload.php';
-
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
-
 header('Content-Type: application/json');
-
 function clean_excel_number($val)
 {
-    if (empty($val))
-        return 0;
+    if ($val === null || $val === '')
+        return null;
     $cleaned = preg_replace('/[^0-9.,-]/', '', $val);
     if ($cleaned === '')
-        return false;
-
-    // Convert format 1.000,00 atau 1,000.00 ke float standard
+        return null;
     if (strpos($cleaned, '.') !== false && strpos($cleaned, ',') !== false) {
         $cleaned = str_replace('.', '', $cleaned);
         $cleaned = str_replace(',', '.', $cleaned);
@@ -30,12 +24,24 @@ function clean_excel_number($val)
     }
     return (double) $cleaned;
 }
-
+function parse_excel_date($val)
+{
+    if (empty($val))
+        return null;
+    try {
+        if (is_numeric($val)) {
+            return Date::excelToDateTimeObject($val)->format('Y-m-d');
+        } else {
+            $ts = strtotime($val);
+            return $ts ? date('Y-m-d', $ts) : null;
+        }
+    } catch (\Throwable $th) {
+        return null;
+    }
+}
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST')
         throw new Exception('Method Not Allowed');
-
-    // Auth Check
     $kd_user = 0;
     $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
     if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
@@ -47,115 +53,89 @@ try {
     if ($kd_user == 0 && isset($_SESSION['user_id'])) {
         $kd_user = $_SESSION['user_id'];
     }
-
     if (!isset($_FILES['file_excel']) || $_FILES['file_excel']['error'] != UPLOAD_ERR_OK) {
         throw new Exception("Gagal upload file.");
     }
-
     $fileTmpPath = $_FILES['file_excel']['tmp_name'];
-
     try {
         $spreadsheet = IOFactory::load($fileTmpPath);
         $rows = $spreadsheet->getActiveSheet()->toArray(null, true, false, true);
     } catch (Exception $e) {
         throw new Exception("File Excel corrupt atau format salah.");
     }
-
-    // Mapping Kode Store (Alias -> ID)
     $storeMap = [];
     $queryStore = $conn->query("SELECT Kd_Store, Nm_Alias FROM kode_store");
     if ($queryStore) {
         while ($rowStore = $queryStore->fetch_assoc()) {
             $key = strtoupper(trim($rowStore['Nm_Alias']));
-            if (!empty($key)) {
+            if (!empty($key))
                 $storeMap[$key] = $rowStore['Kd_Store'];
-            }
         }
     }
-
     $count_success = 0;
     $count_fail = 0;
     $count_skip = 0;
     $logs = [];
-
-    // Cek Duplikat di Buku Besar
     $stmtCheck = $conn->prepare("SELECT id FROM buku_besar WHERE no_faktur = ? AND kode_store = ? AND total_bayar = ?");
-
-    // Insert Query
     $stmtInsert = $conn->prepare("INSERT INTO buku_besar 
-        (tanggal_bayar, no_faktur, nama_supplier, kode_store, ket, potongan, total_bayar, tgl_nota, kd_user) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-
-    /* MAPPING KOLOM EXCEL (Berdasarkan instruksi JS):
-       A: Tgl Bayar
-       B: No Faktur
-       C: Nama Supplier
-       D: Nm Cabang (Alias)
-       E: Keterangan
-       F: Potongan
-       G: Total Bayar
-    */
-
+        (tanggal_bayar, tgl_nota, no_faktur, kode_supplier, nama_supplier, 
+         kode_store, store_bayar, nilai_faktur, potongan, ket_potongan, 
+         total_bayar, ket, kd_user) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
     foreach ($rows as $idx => $row) {
         if ($idx < 2)
-            continue; // Skip Header
-
-        $tgl_raw = $row['A'];
-        $no_faktur = trim($row['B'] ?? '');
-        $nama_supplier = trim($row['C'] ?? '');
-        $alias_store = trim($row['D'] ?? '');
-        $ket = trim($row['E'] ?? '');
-        $potongan = clean_excel_number($row['F'] ?? 0);
-        $total_bayar = clean_excel_number($row['G'] ?? 0);
-
-        // Validasi Wajib
-        if (empty($no_faktur) && empty($nama_supplier) && empty($alias_store))
-            continue; // Baris kosong
-
-        if (empty($no_faktur) || empty($alias_store)) {
+            continue;
+        $raw_tgl_bayar = $row['A'];
+        $raw_tgl_nota = $row['B'];
+        $no_faktur = trim($row['C'] ?? '');
+        $kode_supplier = trim($row['D'] ?? '');
+        $nama_supplier = trim($row['E'] ?? '');
+        $alias_store = trim($row['F'] ?? '');
+        $alias_bayar = trim($row['G'] ?? '');
+        $raw_nilai = $row['H'];
+        $raw_potongan = $row['I'];
+        $ket_potongan = trim($row['J'] ?? '');
+        $raw_total = $row['K'];
+        $ket = trim($row['L'] ?? '');
+        if (empty($no_faktur) && empty($alias_store))
+            continue;
+        if (empty($no_faktur)) {
             $count_fail++;
-            $logs[] = "Baris $idx: Gagal - No Faktur dan Nama Cabang wajib diisi.";
+            $logs[] = "Baris $idx: Gagal - No Faktur wajib diisi.";
             continue;
         }
-
-        // Cek Store
+        $tgl_bayar = parse_excel_date($raw_tgl_bayar);
+        $tgl_nota = parse_excel_date($raw_tgl_nota);
         $lookupKey = strtoupper($alias_store);
-        $kode_store_final = '';
-        if (isset($storeMap[$lookupKey])) {
-            $kode_store_final = $storeMap[$lookupKey];
-        } else {
+        $kode_store_final = isset($storeMap[$lookupKey]) ? $storeMap[$lookupKey] : null;
+        if (!$kode_store_final) {
             $count_fail++;
-            $logs[] = "Baris $idx: Gagal - Cabang '$alias_store' tidak dikenali.";
+            $logs[] = "Baris $idx: Gagal - Cabang Inv '$alias_store' tidak dikenali.";
             continue;
         }
-
-        // Cek Angka
-        if ($potongan === false || $total_bayar === false) {
-            $count_fail++;
-            $logs[] = "Baris $idx: Gagal - Format angka salah.";
-            continue;
-        }
-
-        // Parse Tanggal Bayar
-        $tgl_bayar = date('Y-m-d');
-        try {
-            if (!empty($tgl_raw)) {
-                if (is_numeric($tgl_raw)) {
-                    $tgl_bayar = Date::excelToDateTimeObject($tgl_raw)->format('Y-m-d');
-                } else {
-                    $ts = strtotime($tgl_raw);
-                    if ($ts)
-                        $tgl_bayar = date('Y-m-d', $ts);
-                }
+        $kode_store_bayar_final = null;
+        if (!empty($alias_bayar)) {
+            $lookupBayar = strtoupper($alias_bayar);
+            if (isset($storeMap[$lookupBayar])) {
+                $kode_store_bayar_final = $storeMap[$lookupBayar];
+            } else {
+                $count_fail++;
+                $logs[] = "Baris $idx: Gagal - Cabang Bayar '$alias_bayar' tidak dikenali.";
+                continue;
             }
-        } catch (\Throwable $th) {
-            $logs[] = "Baris $idx: Warning - Format tanggal salah, menggunakan hari ini.";
         }
-
-        // Set Tgl Nota default sama dengan Tgl Bayar (karena tidak ada di excel map simple)
-        $tgl_nota = $tgl_bayar;
-
-        // Cek Duplikat (Strict check: Faktur + Store + Nominal sama)
+        $nilai_faktur = clean_excel_number($raw_nilai);
+        $potongan = clean_excel_number($raw_potongan) ?? 0;
+        $total_bayar = clean_excel_number($raw_total) ?? 0;
+        if ($nilai_faktur === null || $nilai_faktur == 0) {
+            $count_fail++;
+            $logs[] = "Baris $idx: Gagal - Nilai Faktur wajib diisi.";
+            continue;
+        }
+        $kode_supplier = ($kode_supplier === '') ? null : $kode_supplier;
+        $nama_supplier = ($nama_supplier === '') ? null : $nama_supplier;
+        $ket_potongan = ($ket_potongan === '') ? null : $ket_potongan;
+        $ket = ($ket === '') ? null : $ket;
         $stmtCheck->bind_param("ssd", $no_faktur, $kode_store_final, $total_bayar);
         $stmtCheck->execute();
         $stmtCheck->store_result();
@@ -163,21 +143,22 @@ try {
             $count_skip++;
             continue;
         }
-
-        // Insert
         $stmtInsert->bind_param(
-            "sssssddsi",
+            "sssssssddsdsi",
             $tgl_bayar,
+            $tgl_nota,
             $no_faktur,
+            $kode_supplier,
             $nama_supplier,
             $kode_store_final,
-            $ket,
+            $kode_store_bayar_final,
+            $nilai_faktur,
             $potongan,
+            $ket_potongan,
             $total_bayar,
-            $tgl_nota,
+            $ket,
             $kd_user
         );
-
         if ($stmtInsert->execute()) {
             $count_success++;
         } else {
@@ -185,19 +166,17 @@ try {
             $logs[] = "Baris $idx: SQL Error - " . $stmtInsert->error;
         }
     }
-
     $msg = "<b>Import Selesai</b>\n";
     $msg .= "✅ Berhasil: $count_success\n";
     $msg .= "⏩ Skip (Duplikat): $count_skip\n";
     $msg .= "❌ Gagal: $count_fail";
-
     echo json_encode([
         'success' => true,
         'message' => $msg,
         'logs' => $logs
     ]);
-
 } catch (Exception $e) {
+    http_response_code(500);
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 ?>

@@ -40,7 +40,7 @@ try {
             'found' => true,
             'data' => [
                 'id_pembelian' => $data['id'],
-                'no_faktur' => !empty($data['no_faktur']) ? $data['no_faktur'] : $data['no_invoice'],
+                'no_faktur' => !empty($data['no_invoice']) ? $data['no_invoice'] : $data['no_faktur'],
                 'no_invoice_asli' => $data['no_invoice'],
                 'tgl_nota' => $data['tgl_nota'],
                 'kode_supplier' => $data['kode_supplier'],

@@ -50,9 +50,12 @@ try {
     $sqlWhere = implode(" AND ", $whereClauses);
 
     // Ambil semua data tanpa LIMIT
-    $query = "SELECT bb.*, ks.Nm_Alias as nm_alias 
+    $query = "SELECT bb.*, 
+                     ks.Nm_Alias as nm_alias,
+                     ks_bayar.Nm_Alias as nm_alias_bayar
               FROM buku_besar bb
               LEFT JOIN kode_store ks ON bb.kode_store = ks.Kd_Store
+              LEFT JOIN kode_store ks_bayar ON bb.store_bayar = ks_bayar.Kd_Store
               WHERE $sqlWhere
               ORDER BY bb.tanggal_bayar DESC, bb.id DESC";
 

@@ -17,6 +17,7 @@ try {
     $id = isset($input['id']) && !empty($input['id']) ? (int) $input['id'] : null;
     $no_faktur = trim($input['no_faktur'] ?? '');
     $kode_store = $input['kode_store'] ?? '';
+    $store_bayar = $input['store_bayar'] ?? ''; // AMBIL DATA BARU
     if (empty($no_faktur) || empty($kode_store)) {
         throw new Exception("No Faktur dan Cabang wajib diisi.");
     }
@@ -30,14 +31,15 @@ try {
     $ket = $input['ket'] ?? '';
     $nilai_faktur = (float) ($input['nilai_faktur'] ?? 0);
     if ($id) {
+        // UPDATE QUERY
         $query = "UPDATE buku_besar SET 
                   tgl_nota=?, no_faktur=?, kode_supplier=?, nama_supplier=?, 
                   potongan=?, ket_potongan=?, nilai_faktur=?, total_bayar=?, tanggal_bayar=?, 
-                  kode_store=?, ket=?, kd_user=?, edit_pada=NOW()
+                  kode_store=?, store_bayar=?, ket=?, kd_user=?, edit_pada=NOW() 
                   WHERE id=?";
         $stmt = $conn->prepare($query);
         $stmt->bind_param(
-            "ssssdsddssssi",
+            "ssssdsddsssssi", // Perhatikan jumlah 's' bertambah satu untuk store_bayar
             $tgl_nota,
             $no_faktur,
             $kode_supplier,
@@ -48,19 +50,21 @@ try {
             $total_bayar,
             $tanggal_bayar,
             $kode_store,
+            $store_bayar, // Bind variable baru
             $ket,
             $kd_user,
             $id
         );
     } else {
+        // INSERT QUERY
         $query = "INSERT INTO buku_besar 
                   (tgl_nota, no_faktur, kode_supplier, nama_supplier, 
                   potongan, ket_potongan, nilai_faktur, total_bayar, tanggal_bayar, 
-                  kode_store, ket, kd_user)
-                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                  kode_store, store_bayar, ket, kd_user)
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($query);
         $stmt->bind_param(
-            "ssssdsddssss",
+            "ssssdsddsssss", // Tambah tipe data string
             $tgl_nota,
             $no_faktur,
             $kode_supplier,
@@ -71,6 +75,7 @@ try {
             $total_bayar,
             $tanggal_bayar,
             $kode_store,
+            $store_bayar, // Bind variable baru
             $ket,
             $kd_user
         );

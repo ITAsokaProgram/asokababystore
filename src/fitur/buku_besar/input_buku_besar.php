@@ -155,9 +155,17 @@ require_once __DIR__ . '/../../component/menu_handler.php';
 
                         <div class="form-grid">
                             <div>
-                                <label class="form-label">Cabang</label>
+                                <label class="form-label">Cabang (Invoice)</label>
                                 <select id="inp_kode_store" name="kode_store"
                                     class="input-compact bg-white cursor-pointer">
+                                    <option value="">Pilih Cabang</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="form-label text-pink-600">Cabang Bayar</label>
+                                <select id="inp_store_bayar" name="store_bayar"
+                                    class="input-compact bg-white cursor-pointer border-pink-200 focus:border-pink-500">
                                     <option value="">Pilih Cabang</option>
                                 </select>
                             </div>
@@ -192,7 +200,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                             <div>
                                 <label class="form-label">Tanggal Bayar</label>
                                 <input type="date" id="inp_tgl_bayar" name="tanggal_bayar" class="input-compact"
-                                    value="<?php echo date('Y-m-d'); ?>">
+                                    value="">
                             </div>
 
                             <div>
@@ -256,7 +264,8 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                     <th>Tgl Nota</th>
                                     <th>No Invoice</th>
                                     <th>Supplier</th>
-                                    <th>Cabang</th>
+                                    <th>Cabang Inv</th>
+                                    <th>Cabang Bayar</th>
                                     <th>Ket</th>
                                     <th class="text-right">Nilai Faktur</th>
                                     <th class="text-right">Potongan</th>
