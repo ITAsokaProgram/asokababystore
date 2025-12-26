@@ -493,7 +493,7 @@ function startEditMode(data) {
   btnCancelEdit.classList.remove("hidden");
   btnSave.innerHTML = `<i class="fas fa-sync-alt"></i> <span>Update</span>`;
   btnSave.className =
-    "btn-warning px-6 py-2 rounded shadow-lg bg-amber-500 text-white hover:bg-amber-600";
+    "btn-warning px-6 py-2 rounded shadow-lg bg-yellow-500 text-white hover:bg-amber-600";
 }
 function cancelEditMode() {
   form.reset();

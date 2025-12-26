@@ -99,6 +99,16 @@ require_once __DIR__ . '/../../component/menu_handler.php';
             font-size: 0.875rem;
             border-bottom: 1px solid #f3f4f6;
         }
+
+        .cell-merged {
+            vertical-align: top;
+            background-color: #fff;
+            border-right: 5px solid #f3f4f6;
+        }
+
+        .row-group-start td {
+            border-top: 5px solid #e5e7eb;
+        }
     </style>
 </head>
 
@@ -111,7 +121,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
         <section class="min-h-screen">
             <div class="max-w-[1600px] mx-auto">
 
-                <div class="header-card p-4 rounded-2xl mb-4 bg-white shadow-sm flex justify-between items-center">
+                <div class="header-card p-4 rounded-2xl bg-white shadow-sm flex gap-4 items-center">
                     <div class="flex items-center gap-3">
                         <div class="icon-wrapper bg-pink-100 text-pink-600 p-2 rounded-lg">
                             <i class="fa-solid fa-book-open fa-lg"></i>
@@ -141,107 +151,181 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                             class="btn-primary flex items-center gap-2 px-6 py-2 shadow-lg shadow-pink-500/30">
                             <i class="fas fa-save"></i> <span>Simpan</span>
                         </button>
+
+                        <button type="button" id="btn-cancel-edit"
+                            class="hidden bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded shadow-lg flex items-center gap-2 transition-all">
+                            <i class="fas fa-times"></i> <span>Batal</span>
+                        </button>
+
+                        <div id="edit-mode-indicator"
+                            class="hidden bg-amber-100 text-amber-800 px-4 py-2 rounded border border-amber-300 font-bold text-center">
+                            <i class="fas fa-pencil-alt mr-2"></i> MODE EDIT DATA
+                        </div>
                     </div>
                 </div>
 
-                <div class="input-row-container mb-6 relative">
-                    <div id="edit-mode-indicator"
-                        class="hidden absolute -top-3 left-4 bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-bold border border-amber-200 shadow-sm">
-                        <i class="fas fa-edit mr-1"></i> Mode Edit
-                    </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
 
-                    <form id="single-form" autocomplete="off">
-                        <input type="hidden" id="inp_id" name="id" value="">
+                    <div class="lg:col-span-1 space-y-4 input-row-container">
 
-                        <div class="form-grid">
-                            <div>
-                                <label class="form-label">Cabang (Invoice)</label>
-                                <select id="inp_kode_store" name="kode_store"
-                                    class="input-compact bg-white cursor-pointer">
-                                    <option value="">Pilih Cabang</option>
-                                </select>
-                            </div>
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-pink-100">
+                            <h3 class="text-pink-600 font-bold text-sm mb-3 border-b pb-2"><i
+                                    class="fas fa-user-tie mr-1"></i> Data Pembayaran </h3>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="form-label">Nama Supplier</label>
 
-                            <div>
-                                <label class="form-label text-pink-600">Cabang Bayar</label>
-                                <select id="inp_store_bayar" name="store_bayar"
-                                    class="input-compact bg-white cursor-pointer border-pink-200 focus:border-pink-500">
-                                    <option value="">Pilih Cabang</option>
-                                </select>
-                            </div>
+                                    <input type="hidden" id="inp_id">
 
-                            <div class="relative">
-                                <label class="form-label">No. Invoice</label>
-                                <input type="text" id="inp_no_faktur" name="no_faktur" class="input-compact"
-                                    placeholder="Cari Invoice / Input Manual...">
-                                <p id="err_no_faktur"
-                                    class="text-red-500 absolute -bottom-4 left-0 hidden font-semibold"
-                                    style="font-size: 0.55rem"></p>
-                            </div>
+                                    <input type="hidden" id="inp_total_bayar">
 
-                            <div class="hidden">
-                                <label class="form-label">Kode Supplier</label>
-                                <input type="text" id="inp_kode_supplier" name="kode_supplier" class="input-compact"
-                                    placeholder="Kode Supplier...">
-                            </div>
+                                    <input type="hidden" id="inp_ket">
 
-                            <div>
-                                <label class="form-label">Nama Supplier</label>
-                                <input type="text" id="inp_nama_supplier" name="nama_supplier" class="input-compact"
-                                    list="supplier_list">
-                                <datalist id="supplier_list"></datalist>
-                            </div>
-
-                            <div>
-                                <label class="form-label">Tgl Nota (Faktur)</label>
-                                <input type="date" id="inp_tgl_nota" name="tgl_nota" class="input-compact">
-                            </div>
-
-                            <div>
-                                <label class="form-label">Tanggal Bayar</label>
-                                <input type="date" id="inp_tgl_bayar" name="tanggal_bayar" class="input-compact"
-                                    value="">
-                            </div>
-
-                            <div>
-                                <label class="form-label text-right">Potongan</label>
-                                <input type="text" id="inp_potongan" name="potongan"
-                                    class="input-compact text-right font-mono" value="0">
-                            </div>
-
-                            <div>
-                                <label class="form-label">Ket. Potongan</label>
-                                <input type="text" id="inp_ket_potongan" name="ket_potongan" class="input-compact"
-                                    placeholder="(Opsional)">
-                            </div>
-
-                            <div>
-                                <label class="form-label">Keterangan / Notes</label>
-                                <input type="text" id="inp_ket" name="ket" class="input-compact"
-                                    placeholder="Keterangan tambahan...">
-                            </div>
-                            <div>
-                                <label class="form-label">Nilai Faktur</label>
-                                <input type="text" id="inp_nilai_faktur" name="nilai_faktur"
-                                    class="input-compact text-right font-mono" value="0">
-                            </div>
-
-                            <div>
-                                <label class="form-label text-right text-pink-600 font-bold">Total Bayar</label>
-                                <input type="text" id="inp_total_bayar" name="total_bayar"
-                                    class="input-compact text-right font-bold font-mono text-pink-600" value="0">
-                            </div>
-
-                            <div class="flex items-end h-full pb-1">
-                                <button type="button" id="btn-cancel-edit"
-                                    class="hidden text-gray-400 hover:text-red-500 transition-colors"
-                                    title="Batal Edit">
-                                    <i class="fas fa-times-circle fa-lg"></i>
-                                </button>
+                                    <input type="hidden" id="inp_kode_supplier">
+                                    <input type="text" id="inp_nama_supplier" class="input-compact" list="supplier_list"
+                                        placeholder="Ketik nama supplier...">
+                                    <datalist id="supplier_list"></datalist>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="form-label">Tanggal Bayar</label>
+                                        <input type="date" id="inp_tgl_bayar" class="input-compact"
+                                            value="<?php echo date('Y-m-d'); ?>">
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Cabang Bayar</label>
+                                        <select id="inp_store_bayar"
+                                            class="input-compact bg-white cursor-pointer border-pink-200">
+                                            <option value="">Pilih...</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="form-label">Keterangan </label>
+                                    <textarea id="inp_ket_global" class="input-compact" rows="2"
+                                        placeholder=""></textarea>
+                                </div>
+                                <div class="mt-3 pt-3 border-t border-dashed border-gray-200">
+                                    <label class="form-label text-blue-600">Total Bayar</label>
+                                    <div class="flex flex-col">
+                                        <input type="text" id="inp_global_total"
+                                            class="input-compact text-right font-bold font-mono text-blue-700"
+                                            placeholder="0">
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </form>
+
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-blue-100 relative">
+                            <div class="absolute top-0 left-0 w-1 h-full bg-blue-500 rounded-l-xl"></div>
+                            <h3 class="text-blue-600 font-bold text-sm mb-3 border-b pb-2 pl-2"><i
+                                    class="fas fa-plus-circle mr-1"></i> Input Faktur</h3>
+
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="form-label">No. Invoice / Faktur</label>
+                                    <div class="relative">
+                                        <input type="text" id="inp_no_faktur" class="input-compact pr-8"
+                                            placeholder="Scan / Cari Invoice...">
+                                        <i class="fas fa-search absolute right-2 top-2 text-gray-400 text-xs"></i>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="form-label">Cabang (Inv)</label>
+                                        <select id="inp_kode_store" class="input-compact bg-white">
+                                            <option value="">Pilih...</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Tgl Nota</label>
+                                        <input type="date" id="inp_tgl_nota" class="input-compact">
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="form-label">Nilai Faktur</label>
+                                        <input type="text" id="inp_nilai_faktur"
+                                            class="input-compact text-right font-mono" value="0">
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Potongan</label>
+                                        <input type="text" id="inp_potongan"
+                                            class="input-compact text-right font-mono text-red-500" value="0">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="form-label">Ket. Potongan</label>
+                                    <input type="text" id="inp_ket_potongan" class="input-compact"
+                                        placeholder="(Opsional)">
+                                </div>
+
+                                <div class="pt-2 border-t border-dashed">
+
+                                    <button type="button" id="btn-add-item"
+                                        class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded shadow-md text-sm font-semibold transition-all">
+                                        <i class="fas fa-arrow-down mr-1"></i> Tambah ke Daftar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-1 flex flex-col h-full">
+                        <div
+                            class="bg-white rounded-xl shadow-sm border border-gray-200 flex-1 flex flex-col overflow-hidden">
+                            <div class="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+                                <h3 class="font-bold text-gray-700"><i class="fas fa-list-ol mr-2"></i> Daftar Faktur
+                                    yang akan dibayar</h3>
+                                <button type="button" id="btn-clear-list"
+                                    class="text-xs text-red-500 hover:text-red-700 underline hidden">Hapus
+                                    Semua</button>
+                            </div>
+
+                            <div class="flex-1 overflow-y-auto bg-white p-0 relative" style="min-height: 300px;">
+                                <table class="w-full text-left border-collapse">
+                                    <thead class="bg-gray-100 sticky top-0 z-10 text-xs text-gray-600 uppercase">
+                                        <tr>
+                                            <th class="p-3 border-b">No. Inv</th>
+                                            <th class="p-3 border-b">Cabang</th>
+                                            <th class="p-3 border-b text-right">Nilai</th>
+                                            <th class="p-3 border-b text-right">Pot</th>
+                                            <th class="p-3 border-b text-right">Bayar</th>
+                                            <th class="p-3 border-b text-center">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="temp-list-body" class="text-sm">
+                                        <tr>
+                                            <td colspan="6" class="text-center p-10 text-gray-400">
+                                                <i class="fas fa-basket-shopping text-4xl mb-2 opacity-30"></i><br>
+                                                Belum ada faktur ditambahkan
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="p-4 bg-pink-50 border-t border-pink-100">
+                                <div class="flex justify-between items-center">
+                                    <div class="text-sm text-pink-800">
+                                        Total Faktur: <span id="lbl_count_item" class="font-bold">0</span> Item
+                                    </div>
+
+                                </div>
+                                <div class="mt-4 flex justify-end gap-3">
+                                    <button type="button" id="btn-save-batch" disabled
+                                        class="btn-primary flex items-center gap-2 px-8 py-3 shadow-lg shadow-pink-500/30 opacity-50 cursor-not-allowed">
+                                        <i class="fas fa-save fa-lg"></i> <span>SIMPAN TRANSAKSI</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
 
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     <div
