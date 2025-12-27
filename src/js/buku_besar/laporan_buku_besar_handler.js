@@ -180,12 +180,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
 
                 r.eachCell((cell) => {
-                    cell.border = {
-                        top: { style: "thin" },
-                        left: { style: "thin" },
-                        bottom: { style: "thin" },
-                        right: { style: "thin" },
-                    };
+                  cell.alignment = { 
+                      horizontal: "center", 
+                      vertical: "middle", 
+                      wrapText: true // PENTING: Agar baris baru terbaca
+                  };
                 });
                 rowNum++;
             });

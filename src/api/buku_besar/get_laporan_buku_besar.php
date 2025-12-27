@@ -16,7 +16,7 @@ try {
     $tgl_selesai = $_GET['tgl_selesai'] ?? date('Y-m-d');
     $search_query = $_GET['search_query'] ?? '';
     $kd_store = $_GET['kd_store'] ?? 'all';
-    $status_bayar = $_GET['status_bayar'] ?? 'all'; // PARAM BARU
+    $status_bayar = $_GET['status_bayar'] ?? 'all';
 
     $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
     $limit = 50;
@@ -45,7 +45,6 @@ try {
         $bind_params[] = $kd_store;
     }
 
-    // LOGIKA FILTER STATUS BAYAR
     if ($status_bayar === 'paid') {
         $where_conditions .= " AND bb.tanggal_bayar IS NOT NULL";
     } elseif ($status_bayar === 'unpaid') {
@@ -69,8 +68,11 @@ try {
         $bind_params[] = $termNumeric;
     }
 
-    // Count Total
-    $sql_count = "SELECT COUNT(*) as total FROM buku_besar bb WHERE $where_conditions";
+    // --- REVISI LOGIC COUNT (Menghitung Grup, bukan baris mentah) ---
+    // Logic Grouping: Jika group_id ada, pakai itu. Jika NULL/Kosong, pakai ID unik.
+    $group_logic = "CASE WHEN bb.group_id IS NOT NULL AND bb.group_id != '' THEN bb.group_id ELSE bb.id END";
+
+    $sql_count = "SELECT COUNT(DISTINCT $group_logic) as total FROM buku_besar bb WHERE $where_conditions";
     $stmt_count = $conn->prepare($sql_count);
     if (!empty($bind_params)) {
         $stmt_count->bind_param($bind_types, ...$bind_params);
@@ -80,17 +82,41 @@ try {
     $total_rows = $result_count->fetch_assoc()['total'];
     $total_pages = ceil($total_rows / $limit);
 
-    // Query Data (Join store_bayar agar dapat nama cabang bayar)
+    // --- REVISI QUERY DATA (Gunakan GROUP_CONCAT dan SUM) ---
+    // Note: GROUP_CONCAT tgl_nota dan no_faktur dipisah dengan separator HTML <br> agar rapi di tabel
     $sql = "
         SELECT 
-            bb.*,
-            ks.Nm_Alias,
-            ks_bayar.Nm_Alias as Nm_Alias_Bayar
+            -- Kolom yang 'Disatukan'
+            MAX(bb.id) as id,
+            MAX(bb.group_id) as group_id,
+            MAX(bb.tgl_nota) as sort_date, -- Untuk sorting
+            
+            -- Variable Data (Digabung)
+            GROUP_CONCAT(DISTINCT bb.tgl_nota ORDER BY bb.tgl_nota DESC SEPARATOR '<br>') as tgl_nota,
+            GROUP_CONCAT(DISTINCT bb.no_faktur ORDER BY bb.no_faktur DESC SEPARATOR '<br>') as no_faktur,
+            GROUP_CONCAT(DISTINCT ks.Nm_Alias ORDER BY ks.Nm_Alias ASC SEPARATOR '<br>') as Nm_Alias,
+            GROUP_CONCAT(DISTINCT bb.kode_store SEPARATOR ', ') as kode_store,
+
+            -- Numeric Data (Dijumlah)
+            SUM(bb.potongan) as potongan,
+            SUM(bb.nilai_faktur) as nilai_faktur,
+
+            -- Constant Data (Diambil salah satu karena pasti sama per grup)
+            MAX(bb.nama_supplier) as nama_supplier,
+            MAX(bb.kode_supplier) as kode_supplier,
+            MAX(bb.ket_potongan) as ket_potongan,
+            MAX(bb.ket) as ket,
+            MAX(bb.total_bayar) as total_bayar, -- User request: total_bayar dianggap sama/konstan
+            MAX(bb.tanggal_bayar) as tanggal_bayar,
+            MAX(bb.store_bayar) as store_bayar,
+            MAX(ks_bayar.Nm_Alias) as Nm_Alias_Bayar
+
         FROM buku_besar bb
         LEFT JOIN kode_store ks ON bb.kode_store = ks.Kd_Store
         LEFT JOIN kode_store ks_bayar ON bb.store_bayar = ks_bayar.Kd_Store
         WHERE $where_conditions
-        ORDER BY bb.tgl_nota DESC, bb.id DESC
+        GROUP BY $group_logic
+        ORDER BY sort_date DESC, id DESC
         LIMIT ? OFFSET ?
     ";
 
