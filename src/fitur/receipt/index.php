@@ -162,7 +162,6 @@ if (!$menuHandler->initialize()) {
                                 <span>Tampilkan Data</span>
                             </button>
                         </div>
-                        <input type="hidden" name="page" id="current_page" value="1">
                     </form>
                 </div>
 

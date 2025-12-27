@@ -115,27 +115,18 @@ document.addEventListener("DOMContentLoaded", () => {
           Authorization: "Bearer " + token,
         },
       });
-
       const result = await response.json();
-
-      // Pastikan elemen filterStore/cabang ada di DOM
       const select = filterStore || document.getElementById("cabang");
       if (!select) return;
-
-      select.innerHTML = ""; // Kosongkan sebelum mengisi
-
+      select.innerHTML = ""; 
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlKodeStore = urlParams.get('kode_store');
       if (result.data && result.data.length > 0) {
-        // Opsi Default
         const defaultOption = new Option("Pilih Cabang", "");
         defaultOption.disabled = true;
-        defaultOption.selected = true;
         select.add(defaultOption);
-
-        // Opsi Semua Cabang
         const allOption = new Option("Semua Cabang", "");
         select.add(allOption);
-
-        // Mapping data dari API baru (store & nama_cabang)
         result.data.forEach((store) => {
           const option = new Option(
             `${store.nama_cabang} (${store.store})`,
@@ -143,8 +134,20 @@ document.addEventListener("DOMContentLoaded", () => {
           );
           select.add(option);
         });
+        if (urlKodeStore !== null) {
+            if (urlKodeStore === "") {
+                select.selectedIndex = 1; 
+            } else {
+                select.value = urlKodeStore;
+            }
+        } else {
+            select.selectedIndex = 1; 
+        }
       } else {
         select.innerHTML = '<option value="">Gagal memuat data cabang</option>';
+      }
+      if (urlParams.has('page') || urlParams.has('kode_store')) {
+          loadData();
       }
     } catch (error) {
       console.error("Gagal load store:", error);
@@ -154,11 +157,13 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   }
-
   async function loadData() {
     setLoading(true);
     const formData = new FormData(filterForm);
     const params = new URLSearchParams(formData);
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentPageFromUrl = urlParams.get('page') || '1';
+    params.set('page', currentPageFromUrl);
     try {
       const response = await fetch(
         `/src/api/receipt/get_receipts.php?${params.toString()}`
@@ -167,46 +172,9 @@ document.addEventListener("DOMContentLoaded", () => {
       if (data.error) throw new Error(data.error);
       if (data.summary) {
         elTotalSelisih.textContent = data.summary.total_selisih;
-        elTotalMissing.textContent =
-          "Rp " + formatRupiah(data.summary.total_belum_ada);
+        elTotalMissing.textContent = "Rp " + formatRupiah(data.summary.total_belum_ada);
         if (elTotalRupiahSelisih) {
-          elTotalRupiahSelisih.textContent =
-            "Rp " + formatRupiah(data.summary.total_selisih_rupiah);
-        }
-        if (elTotalNotFound) {
-          elTotalNotFound.textContent = data.summary.total_tidak_ditemukan;
-        }
-        summaryData.list_selisih = data.summary.list_selisih;
-        summaryData.list_belum_ada = data.summary.list_belum_ada;
-        summaryData.list_tidak_ditemukan = data.summary.list_tidak_ditemukan;
-      }
-      currentTableData = data.tabel_data || [];
-      renderTable(data.tabel_data, data.pagination.offset);
-      renderPagination(data.pagination);
-    } catch (error) {
-      console.error(error);
-      tableBody.innerHTML = `<tr><td colspan="8" class="text-center text-red-500 p-4">Error: ${error.message}</td></tr>`;
-    } finally {
-      setLoading(false);
-    }
-  }
-  async function loadData() {
-    setLoading(true);
-    const formData = new FormData(filterForm);
-    const params = new URLSearchParams(formData);
-    try {
-      const response = await fetch(
-        `/src/api/receipt/get_receipts.php?${params.toString()}`
-      );
-      const data = await response.json();
-      if (data.error) throw new Error(data.error);
-      if (data.summary) {
-        elTotalSelisih.textContent = data.summary.total_selisih;
-        elTotalMissing.textContent =
-          "Rp " + formatRupiah(data.summary.total_belum_ada);
-        if (elTotalRupiahSelisih) {
-          elTotalRupiahSelisih.textContent =
-            "Rp " + formatRupiah(data.summary.total_selisih_rupiah);
+          elTotalRupiahSelisih.textContent = "Rp " + formatRupiah(data.summary.total_selisih_rupiah);
         }
         if (elTotalNotFound) {
           elTotalNotFound.textContent = data.summary.total_tidak_ditemukan;
@@ -323,6 +291,7 @@ document.addEventListener("DOMContentLoaded", () => {
          `;
     const pages_to_show = [];
     const max_pages_around = 2;
+    console.log(current_page)
     for (let i = 1; i <= total_pages; i++) {
       if (
         i === 1 ||
@@ -341,7 +310,7 @@ document.addEventListener("DOMContentLoaded", () => {
       linksHtml += `
                  <a href="${build_pagination_url(page_num)}" 
                     class="pagination-link ${
-                      page_num === current_page ? "pagination-active" : ""
+                      page_num === Number(current_page) ? "pagination-active" : ""
                     }">
                      ${page_num}
                  </a>
@@ -367,7 +336,7 @@ document.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
       const formData = new FormData(filterForm);
       const params = new URLSearchParams(formData);
-      params.set("page", "1");
+      params.set("page", "1"); 
       window.history.pushState({}, "", `?${params.toString()}`);
       loadData();
     });
