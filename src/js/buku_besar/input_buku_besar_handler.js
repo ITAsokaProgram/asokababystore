@@ -217,7 +217,7 @@ function renderTableRows(data) {
         const potongan = parseFloat(row.potongan || 0);
         const nilaiFaktur = parseFloat(row.nilai_faktur || 0);
         const total = parseFloat(row.total_bayar || 0);
-        const storeBayarDisplay = row.nm_alias_bayar || row.store_bayar || "-";
+        const storeBayarDisplay = row.store_bayar || "-";
         let html = '';
         html += `<td class="text-center text-gray-500 py-3 align-top">${tableRowIndex}</td>`;
         if (isGroupStart) {
@@ -286,12 +286,13 @@ async function loadStoreOptions() {
         html += `<option value="${store.Kd_Store}">${displayName}</option>`;
       });
       inpKodeStore.innerHTML = html;
-      inpStoreBayar.innerHTML = html;
+      // HAPUS BARIS INI: inpStoreBayar.innerHTML = html; 
     }
   } catch (error) {
     console.error("Gagal memuat toko:", error);
   }
 }
+
 async function fetchFakturData(noFaktur) {
   if (!noFaktur) return;
   const originalPlaceholder = inpNoFaktur.placeholder;
@@ -559,7 +560,7 @@ async function handleExport() {
         kode_supplier: row.kode_supplier, 
         nama_supplier: row.nama_supplier,
         nm_alias: row.nm_alias || row.kode_store,
-        nm_alias_bayar: row.nm_alias_bayar || row.store_bayar,
+        nm_alias_bayar: row.store_bayar,
         nilai_faktur: parseFloat(row.nilai_faktur) || 0, 
         potongan: parseFloat(row.potongan) || 0,
         ket_potongan: row.ket_potongan,   

@@ -115,14 +115,7 @@ try {
         }
         $kode_store_bayar_final = null;
         if (!empty($alias_bayar)) {
-            $lookupBayar = strtoupper($alias_bayar);
-            if (isset($storeMap[$lookupBayar])) {
-                $kode_store_bayar_final = $storeMap[$lookupBayar];
-            } else {
-                $count_fail++;
-                $logs[] = "Baris $idx: Gagal - Cabang Bayar '$alias_bayar' tidak dikenali.";
-                continue;
-            }
+            $kode_store_bayar_final = $alias_bayar;
         }
         $nilai_faktur = clean_excel_number($raw_nilai);
         $potongan = clean_excel_number($raw_potongan) ?? 0;

@@ -84,11 +84,9 @@ try {
             MAX(bb.ket) as ket,
             MAX(bb.total_bayar) as total_bayar,
             MAX(bb.tanggal_bayar) as tanggal_bayar,
-            MAX(bb.store_bayar) as store_bayar,
-            MAX(ks_bayar.Nm_Alias) as Nm_Alias_Bayar
+            MAX(bb.store_bayar) as Nm_Alias_Bayar
         FROM buku_besar bb
         LEFT JOIN kode_store ks ON bb.kode_store = ks.Kd_Store
-        LEFT JOIN kode_store ks_bayar ON bb.store_bayar = ks_bayar.Kd_Store
         WHERE $where_conditions
         GROUP BY $group_logic
         ORDER BY sort_date DESC, id DESC

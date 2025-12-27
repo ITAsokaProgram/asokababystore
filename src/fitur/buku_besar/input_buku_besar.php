@@ -194,10 +194,8 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                     </div>
                                     <div>
                                         <label class="form-label">Cabang Bayar</label>
-                                        <select id="inp_store_bayar"
-                                            class="input-compact bg-white cursor-pointer border-pink-200">
-                                            <option value="">Pilih...</option>
-                                        </select>
+                                        <input type="text" id="inp_store_bayar" class="input-compact border-pink-200"
+                                            placeholder="Ketik cabang bayar...">
                                     </div>
                                 </div>
                                 <div>

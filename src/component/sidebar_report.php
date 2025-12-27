@@ -1418,7 +1418,7 @@ $isFinanceOpen = $isBukuBesarOpen;
                 </ul>
             </div>
         </div>
-        <div x-data="{ 
+        <!-- <div x-data="{ 
         open: <?= $isFinanceOpen ? 'true' : 'false' ?>, 
         nestedOpenBukuBesar: <?= $isBukuBesarOpen ? 'true' : 'false' ?> 
     }" class="relative" @reset-menu.window="open = false; nestedOpenBukuBesar = false">
@@ -1486,7 +1486,7 @@ $isFinanceOpen = $isBukuBesarOpen;
                     </li>
                 </ul>
             </div>
-        </div>
+        </div> -->
 
     </nav>
 </div>
