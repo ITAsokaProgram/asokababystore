@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const filterStatusBayar = document.getElementById("status_bayar"); 
     const filterSelectStore = document.getElementById("kd_store");
     const filterInputQuery = document.getElementById("search_query");
+    const filterStatusPajak = document.getElementById("filter_status");
     const pageTitle = document.getElementById("page-title");
     const pageSubtitle = document.getElementById("page-subtitle");
     const paginationContainer = document.getElementById("pagination-container");
@@ -134,6 +135,8 @@ document.addEventListener("DOMContentLoaded", () => {
             { key: "tgl_nota", width: 12 },
             { key: "cabang", width: 15 },
             { key: "supplier", width: 35 },
+            { key: "status", width: 15 }, // Baru
+            { key: "top", width: 15 },    // Baru
             { key: "ket", width: 30 },
             { key: "no_faktur", width: 20 }, // Tambah Kolom No Faktur
             { key: "ket_potongan", width: 20 }, // Tambah Kolom Ket Potongan
@@ -196,6 +199,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     formatDate(item.tgl_nota).replace(/<br>/g, '\n'),
                     (item.Nm_Alias || item.kode_store || "").replace(/<br>/g, '\n'),
                     item.nama_supplier,
+                    formatListExcel(item.list_status), // Baru
+                    formatListExcel(item.list_top),    // Baru
                     item.ket || "",
                     
                     // Kolom Baru yang di list
@@ -270,6 +275,7 @@ document.addEventListener("DOMContentLoaded", () => {
         kd_store: params.get("kd_store") || "all",
         search_query: params.get("search_query") || "",
         status_bayar: params.get("status_bayar") || "all",
+        filter_status: params.get("filter_status") || "all",
         page: parseInt(params.get("page") || "1", 10),
       };
     }
@@ -311,7 +317,8 @@ document.addEventListener("DOMContentLoaded", () => {
         kd_store: params.kd_store,
         search_query: params.search_query,
         page: params.page,
-        status_bayar: params.status_bayar
+        status_bayar: params.status_bayar,
+        filter_status: params.filter_status
       }).toString();
 
       try {
@@ -423,27 +430,43 @@ document.addEventListener("DOMContentLoaded", () => {
             
             const totalBayar = parseFloat(row.total_bayar) || 0;
             const cabangBayar = row.Nm_Alias_Bayar || row.store_bayar || "-";
+            const rawStore = row.Nm_Alias || row.kode_store || "-";
+            const storeList = rawStore.split('<br>');
             
             // Format HTML untuk List (Potongan, Nilai Faktur, No Faktur, Ket Potongan)
             const listPotonganHtml = formatListRupiah(row.list_potongan, '|');
             const listNilaiFakturHtml = formatListRupiah(row.list_nilai_faktur, '|');
             const listNoFakturHtml = row.no_faktur || "-"; // Sudah <br> dari API
             const listKetPotonganHtml = row.ket_potongan || "-"; // Sudah <br> dari API
+            const listStatusHtml = row.list_status || "-"; // Nanti dibackend kita GROUP_CONCAT
+            const listTopHtml = row.list_top || "-";       // Nanti dibackend kita GROUP_CONCAT
 
             htmlRows += `
                 <tr class="hover:bg-gray-50 align-top">
+                
                     <td class="text-center font-medium text-gray-500 pt-3">${item_counter}</td>
                     
                     <td class="pt-3 text-sm">${formatDate(row.tgl_nota)}</td>
                     
                     <td class="text-center pt-3">
-                        <span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded border border-gray-200 block">
-                            ${row.Nm_Alias || row.kode_store || "-"}
-                        </span>
+                        <div class="flex flex-col gap-1 items-center">
+                            ${storeList.map(storeName => `
+                                <span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded border border-gray-200 block w-fit truncate max-w-[150px]">
+                                    ${storeName}
+                                </span>
+                            `).join('')}
+                        </div>
                     </td>
                     
                     <td class="pt-3 font-semibold text-gray-700">
                         ${row.nama_supplier || "-"}
+                    </td>
+                    <td class="text-center pt-3 text-xs">
+                        ${listStatusHtml.split('|').map(s => `<span class="px-1 rounded bg-gray-100 border">${s}</span>`).join('<br>')}
+                    </td>
+
+                    <td class="text-center pt-3 text-xs text-gray-600">
+                        ${listTopHtml.replace(/\|/g, '<br>')}
                     </td>
                     
                     <td class="text-sm text-gray-600 pt-3">

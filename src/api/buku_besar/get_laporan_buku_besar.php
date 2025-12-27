@@ -7,6 +7,7 @@ try {
     if (!$conn)
         throw new Exception("Koneksi Database Gagal");
     $filter_type = $_GET['filter_type'] ?? 'month';
+    $filter_status = $_GET['filter_status'] ?? 'all';
     $bulan = $_GET['bulan'] ?? date('m');
     $tahun = $_GET['tahun'] ?? date('Y');
     $tgl_mulai = $_GET['tgl_mulai'] ?? date('Y-m-d');
@@ -20,6 +21,12 @@ try {
     $where_conditions = "1=1";
     $bind_types = "";
     $bind_params = [];
+    if ($filter_status !== 'all') {
+        $where_conditions .= " AND bb.status = ?";
+        $bind_types .= 's';
+        $bind_params[] = $filter_status;
+    }
+
     if ($filter_type === 'month') {
         $where_conditions .= " AND MONTH(bb.tgl_nota) = ? AND YEAR(bb.tgl_nota) = ?";
         $bind_types .= 'ss';
@@ -77,8 +84,10 @@ try {
             GROUP_CONCAT(COALESCE(bb.ket_potongan, '-') ORDER BY bb.id ASC SEPARATOR '<br>') as ket_potongan,
             GROUP_CONCAT(bb.potongan ORDER BY bb.id ASC SEPARATOR '|') as list_potongan,
             GROUP_CONCAT(bb.nilai_faktur ORDER BY bb.id ASC SEPARATOR '|') as list_nilai_faktur,
-            GROUP_CONCAT(DISTINCT ks.Nm_Alias ORDER BY ks.Nm_Alias ASC SEPARATOR '<br>') as Nm_Alias,
-            GROUP_CONCAT(DISTINCT bb.kode_store SEPARATOR ', ') as kode_store,
+            GROUP_CONCAT(COALESCE(ks.Nm_Alias, bb.kode_store) ORDER BY bb.id ASC SEPARATOR '<br>') as Nm_Alias,
+            GROUP_CONCAT(bb.kode_store ORDER BY bb.id ASC SEPARATOR '<br>') as kode_store,
+            GROUP_CONCAT(COALESCE(bb.status, '-') ORDER BY bb.id ASC SEPARATOR '|') as list_status,
+            GROUP_CONCAT(COALESCE(bb.top, '-') ORDER BY bb.id ASC SEPARATOR '|') as list_top,
             MAX(bb.nama_supplier) as nama_supplier,
             MAX(bb.kode_supplier) as kode_supplier,
             MAX(bb.ket) as ket,

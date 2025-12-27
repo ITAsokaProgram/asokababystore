@@ -193,6 +193,23 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                             value="<?php echo date('Y-m-d'); ?>">
                                     </div>
                                     <div>
+                                        <label class="form-label">Jatuh Tempo (TOP)</label>
+                                        <input type="date" id="inp_top" class="input-compact" title="Opsional">
+                                    </div>
+
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+
+                                    <div>
+                                        <label class="form-label">Status</label>
+                                        <select id="inp_status" class="input-compact bg-white">
+                                            <option value="">Pilih Status...</option>
+                                            <option value="PKP">PKP</option>
+                                            <option value="NON PKP">NON PKP</option>
+                                            <option value="BTKP">BTKP</option>
+                                        </select>
+                                    </div>
+                                    <div>
                                         <label class="form-label">Cabang Bayar</label>
                                         <input type="text" id="inp_store_bayar" class="input-compact border-pink-200"
                                             placeholder="Ketik cabang bayar...">

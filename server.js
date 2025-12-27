@@ -39,7 +39,7 @@ const interval = setInterval(() => {
 wss.on('close', () => {
   clearInterval(interval); 
 });
-server.listen(8080, 'asokababystore.com', () => {
+server.listen(8081, 'asokababystore.com', () => {
   console.log('WebSocket server is running on wss://asokababystore.com:8080');
 });
 server.on('error', (error) => {

@@ -111,6 +111,7 @@ $menuHandler = new MenuHandler('laporan_buku_besar'); // Sesuaikan permission ke
                             </select>
                         </div>
 
+
                         <div id="container-month" class="contents">
                             <div class="lg:col-span-1">
                                 <label for="bulan" class="block text-xs font-semibold text-gray-700 mb-2">
@@ -167,6 +168,17 @@ $menuHandler = new MenuHandler('laporan_buku_besar'); // Sesuaikan permission ke
                                 <option value="unpaid">Belum Dibayar</option>
                             </select>
                         </div>
+                        <div class="lg:col-span-1">
+                            <label for="filter_status" class="block text-xs font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-tag text-pink-600 mr-1"></i> Status Pajak
+                            </label>
+                            <select name="filter_status" id="filter_status" class="input-modern w-full">
+                                <option value="all">Semua</option>
+                                <option value="PKP">PKP</option>
+                                <option value="NON PKP">NON PKP</option>
+                                <option value="BTKP">BTKP</option>
+                            </select>
+                        </div>
 
 
                         <div class="lg:col-span-2 lg:col-start-5">
@@ -212,6 +224,8 @@ $menuHandler = new MenuHandler('laporan_buku_besar'); // Sesuaikan permission ke
                                     <th>Tgl Nota</th>
                                     <th class="text-center">Cabang</th>
                                     <th>Supplier</th>
+                                    <th class="text-center">Status</th>
+                                    <th class="text-center">Jatuh Tempo</th>
                                     <th>Keterangan</th>
                                     <th class="text-right">Potongan</th>
                                     <th class="text-right">Nilai Faktur</th>

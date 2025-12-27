@@ -11,6 +11,7 @@ const API_URLS = {
   getGroupDetails: "/src/api/buku_besar/get_group_details.php", 
 };
 const form = document.getElementById("single-form");
+
 const inpId = document.getElementById("inp_id");
 const inpKodeStore = document.getElementById("inp_kode_store");
 const inpStoreBayar = document.getElementById("inp_store_bayar"); 
@@ -23,6 +24,8 @@ const inpTglBayar = document.getElementById("inp_tgl_bayar");
 const inpPotongan = document.getElementById("inp_potongan");
 const inpKetPotongan = document.getElementById("inp_ket_potongan");
 const inpKet = document.getElementById("inp_ket");
+const inpTop = document.getElementById("inp_top");
+const inpStatus = document.getElementById("inp_status");
 const btnSave = document.getElementById("btn-save");
 const btnCancelEdit = document.getElementById("btn-cancel-edit");
 const editIndicator = document.getElementById("edit-mode-indicator");
@@ -33,6 +36,7 @@ const listSupplier = document.getElementById("supplier_list");
 const btnExport = document.getElementById("btn-export");
 const btnImport = document.getElementById("btn-import");
 const inpFileImport = document.getElementById("file_import");
+
 let editingCartIndex = -1; 
 let currentGroupId = null; 
 let deletedCartIds = [];   
@@ -71,6 +75,8 @@ function resetItemForm() {
     inpNilaiFaktur.value = "0";
     inpPotongan.value = "0";
     inpKetPotongan.value = "";
+    inpTop.value = "";
+    inpStatus.value = "";
     editingCartIndex = -1;
     btnAddItem.innerHTML = `<i class="fas fa-arrow-down mr-1"></i> Tambah ke Daftar`;
     btnAddItem.classList.remove("bg-yellow-500", "hover:bg-amber-600");
@@ -713,6 +719,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   btnAddItem.addEventListener("click", () => {
     const noFaktur = inpNoFaktur.value.trim();
     const kodeStore = inpKodeStore.value;
+    const valTop = inpTop.value;
+    const valStatus = inpStatus.value;
     const nilai = parseNumber(inpNilaiFaktur.value);
     const potongan = parseNumber(inpPotongan.value);
     const manualTotal = parseNumber(inpGlobalTotal.value);
@@ -727,8 +735,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         nilai_faktur: nilai,
         potongan: potongan,
         ket_potongan: inpKetPotongan.value,
-        total_bayar: totalItem, 
-        ket: "" 
+        top: valTop,
+        status: valStatus,
+        total_bayar: totalItem,
+        ket: ""
     };
     if (editingCartIndex >= 0) {
         if (cartItems[editingCartIndex].id) {
@@ -850,6 +860,8 @@ window.editCartItem = (index) => {
         }
         inpKodeStore.value = item.kode_store;
     }
+    inpTop.value = item.top || "";
+    inpStatus.value = item.status || "";
     inpTglNota.value = item.tgl_nota || "";
     inpNilaiFaktur.value = formatNumber(item.nilai_faktur);
     inpPotongan.value = formatNumber(item.potongan);

@@ -114,17 +114,18 @@ try {
 
 
         $queryBB = "INSERT INTO buku_besar 
-                    (tgl_nota, no_faktur, kode_supplier, nama_supplier, nilai_faktur, total_bayar, kode_store, kd_user) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                    (tgl_nota, no_faktur, kode_supplier, nama_supplier, status, nilai_faktur, total_bayar, kode_store, kd_user) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmtBB = $conn->prepare($queryBB);
         $total_bayar_awal = 0;
 
         $stmtBB->bind_param(
-            "ssssddss",
+            "sssssddss",
             $tgl_nota,
             $no_invoice,
             $kode_supplier,
             $nama_supplier,
+            $status,
             $total_terima_fp,
             $total_bayar_awal,
             $kode_store,
