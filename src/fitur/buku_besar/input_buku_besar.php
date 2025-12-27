@@ -216,9 +216,12 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="form-label">Keterangan </label>
-                                    <textarea id="inp_ket_global" class="input-compact" rows="2"
-                                        placeholder=""></textarea>
+                                    <label class="form-label">MOP</label>
+                                    <select id="inp_ket_global"
+                                        class="input-compact bg-white font-semibold text-blue-800">
+                                        <option value="TRANSFER">TRANSFER</option>
+                                        <option value="CASH">CASH</option>
+                                    </select>
                                 </div>
                                 <div class="mt-3 pt-3 border-t border-dashed border-gray-200">
                                     <label class="form-label text-blue-600">Total Bayar</label>
@@ -363,9 +366,11 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                     <th>Tgl Nota</th>
                                     <th>No Invoice</th>
                                     <th>Supplier</th>
+                                    <th>Status Pajak</th>
+                                    <th>TOP</th>
                                     <th>Cabang Inv</th>
                                     <th>Cabang Bayar</th>
-                                    <th>Ket</th>
+                                    <th>MOP</th>
                                     <th class="text-right">Nilai Faktur</th>
                                     <th class="text-right">Potongan</th>
                                     <th class="text-right">Total Bayar</th>

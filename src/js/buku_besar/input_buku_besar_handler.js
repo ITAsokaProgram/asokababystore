@@ -201,11 +201,13 @@ function renderCart() {
 function renderTableRows(data) {
     for (let i = 0; i < data.length; i++) {
         const row = data[i];
-        tableRowIndex++; 
+        tableRowIndex++;
         const currentGroup = row.group_id;
         const prevGroup = (i > 0) ? data[i - 1].group_id : null;
         const isGroupStart = !currentGroup || (currentGroup !== prevGroup);
         let rowSpan = 1;
+        
+        // Hitung rowspan untuk group
         if (currentGroup && isGroupStart) {
             for (let j = i + 1; j < data.length; j++) {
                 if (data[j].group_id === currentGroup) {
@@ -215,38 +217,56 @@ function renderTableRows(data) {
                 }
             }
         }
+
         const tr = document.createElement("tr");
         tr.className = "hover:bg-pink-50 transition-colors border-b border-gray-50";
-        if (isGroupStart) {
-            tr.classList.add("row-group-start"); 
-        }
+        if (isGroupStart) tr.classList.add("row-group-start");
+
         const potongan = parseFloat(row.potongan || 0);
         const nilaiFaktur = parseFloat(row.nilai_faktur || 0);
         const total = parseFloat(row.total_bayar || 0);
         const storeBayarDisplay = row.store_bayar || "-";
+
         let html = '';
         html += `<td class="text-center text-gray-500 py-3 align-top">${tableRowIndex}</td>`;
+
+        // Kolom Grouping: Tgl Bayar
         if (isGroupStart) {
             html += `<td class="text-sm cell-merged font-medium" rowspan="${rowSpan}">${row.tanggal_bayar || "-"}</td>`;
         } else if (!currentGroup) {
             html += `<td class="text-sm align-top">${row.tanggal_bayar || "-"}</td>`;
         }
+
         html += `<td class="text-sm align-top text-gray-600">${row.tgl_nota || "-"}</td>`;
         html += `<td class="font-medium text-gray-800 text-sm align-top">${row.no_faktur}</td>`;
+
+        // Kolom Grouping: Supplier
         if (isGroupStart) {
             html += `<td class="text-sm cell-merged" rowspan="${rowSpan}">${row.nama_supplier}</td>`;
         } else if (!currentGroup) {
             html += `<td class="text-sm align-top">${row.nama_supplier}</td>`;
         }
+
+        // --- TAMBAHAN BARU: STATUS PAJAK & TOP ---
+        html += `<td class="align-top"><span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-0.5 rounded border border-gray-200">${row.status || '-'}</span></td>`;
+        html += `<td class="align-top text-xs text-red-500 font-medium">${row.top || '-'}</td>`;
+        // -----------------------------------------
+
         html += `<td class="align-top"><span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded border border-gray-200">${row.nm_alias || row.kode_store}</span></td>`;
+
+        // Kolom Grouping: Cabang Bayar & MOP (Ket)
         if (isGroupStart) {
              html += `<td class="cell-merged" rowspan="${rowSpan}"><span class="bg-pink-50 text-pink-700 text-xs px-2 py-1 rounded border border-pink-100 font-bold">${storeBayarDisplay}</span></td>`;
+             // MOP (Ket) - Grouping
+             html += `<td class="cell-merged font-bold text-blue-700 text-xs" rowspan="${rowSpan}">${row.ket || "-"}</td>`; 
         } else if (!currentGroup) {
              html += `<td class="align-top"><span class="bg-pink-50 text-pink-700 text-xs px-2 py-1 rounded border border-pink-100 font-bold">${storeBayarDisplay}</span></td>`;
+             // MOP (Ket) - Single
+             html += `<td class="align-top font-bold text-blue-700 text-xs">${row.ket || "-"}</td>`;
         }
+
         html += `
-            <td class="text-sm text-gray-500 italic max-w-xs truncate align-top" title="${row.ket || ''}">${row.ket || "-"}</td>
-            <td class="text-right font-mono text-sm text-red-500 align-top">${formatNumber(nilaiFaktur)}</td>
+            <td class="text-right font-mono text-sm text-gray-600 align-top">${formatNumber(nilaiFaktur)}</td>
             <td class="text-right font-mono text-sm align-top">
                 <div class="text-red-500">${formatNumber(potongan)}</div>
                 ${row.ket_potongan ? `<div class="text-[10px] text-gray-400 italic leading-tight mt-1 truncate max-w-[150px]" title="Ket: ${row.ket_potongan}">${row.ket_potongan}</div>` : ''}
@@ -263,12 +283,14 @@ function renderTableRows(data) {
                 </div>
             </td>
         `;
+
         tr.innerHTML = html;
         tr.querySelector(".btn-edit-row").addEventListener("click", () => startEditMode(row));
         tr.querySelector(".btn-delete-row").addEventListener("click", () => handleDelete(row.id));
         tableBody.appendChild(tr);
     }
 }
+
 function setupInfinityScroll() {
   const observerOptions = {
     root: document.getElementById("table-scroll-container"),
@@ -533,18 +555,20 @@ async function handleExport() {
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet("Data Buku Besar");
     sheet.columns = [
-      { header: "Tgl Bayar", key: "tanggal_bayar", width: 12 },
-      { header: "Tgl Nota", key: "tgl_nota", width: 12 },         
-      { header: "No Faktur", key: "no_faktur", width: 20 },
-      { header: "Kode Supp", key: "kode_supplier", width: 15 },   
-      { header: "Nama Supplier", key: "nama_supplier", width: 30 },
-      { header: "Cabang Inv", key: "nm_alias", width: 15 },
-      { header: "Cabang Bayar", key: "nm_alias_bayar", width: 15 },
-      { header: "Nilai Faktur", key: "nilai_faktur", width: 15 }, 
-      { header: "Potongan", key: "potongan", width: 15 },
-      { header: "Ket Potongan", key: "ket_potongan", width: 20 }, 
-      { header: "Total Bayar", key: "total_bayar", width: 15 },
-      { header: "Keterangan", key: "ket", width: 30 },
+      { header: "Tgl Bayar", key: "tanggal_bayar", width: 12 },    // A
+      { header: "Tgl Nota", key: "tgl_nota", width: 12 },          // B
+      { header: "No Faktur", key: "no_faktur", width: 20 },        // C
+      { header: "Kode Supp", key: "kode_supplier", width: 15 },    // D
+      { header: "Nama Supplier", key: "nama_supplier", width: 30 },// E
+      { header: "Cabang Inv", key: "nm_alias", width: 15 },        // F
+      { header: "Cabang Bayar", key: "nm_alias_bayar", width: 15 },// G
+      { header: "Nilai Faktur", key: "nilai_faktur", width: 15 },  // H
+      { header: "Potongan", key: "potongan", width: 15 },          // I
+      { header: "Ket Potongan", key: "ket_potongan", width: 20 },  // J
+      { header: "Total Bayar", key: "total_bayar", width: 15 },    // K
+      { header: "MOP", key: "ket", width: 15 },                    // L (Ubah Ket jadi MOP)
+      { header: "Status Pajak", key: "status", width: 15 },        // M (Baru)
+      { header: "TOP", key: "top", width: 15 }                     // N (Baru)
     ];
     const headerRow = sheet.getRow(1);
     sheet.columns.forEach((col, index) => {
@@ -566,12 +590,14 @@ async function handleExport() {
         kode_supplier: row.kode_supplier, 
         nama_supplier: row.nama_supplier,
         nm_alias: row.nm_alias || row.kode_store,
-        nm_alias_bayar: row.store_bayar,
+        nm_alias_bayar: row.nm_alias_bayar || row.store_bayar, // Pastikan field ini diambil dari query
         nilai_faktur: parseFloat(row.nilai_faktur) || 0, 
         potongan: parseFloat(row.potongan) || 0,
-        ket_potongan: row.ket_potongan,   
+        ket_potongan: row.ket_potongan,    
         total_bayar: parseFloat(row.total_bayar) || 0,
-        ket: row.ket,
+        ket: row.ket,       // MOP (CASH/TRANSFER)
+        status: row.status, // Status (PKP/NON PKP)
+        top: row.top        // TOP
       });
     });
     ["nilai_faktur", "potongan", "total_bayar"].forEach((key) => {
@@ -682,7 +708,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         <td class="p-1 border">A</td><td class="p-1 border">B</td><td class="p-1 border">C</td><td class="p-1 border">D</td>
                         <td class="p-1 border">E</td><td class="p-1 border">F</td><td class="p-1 border">G</td><td class="p-1 border">H</td>
                         <td class="p-1 border">I</td><td class="p-1 border">J</td><td class="p-1 border">K</td><td class="p-1 border">L</td>
-                    </tr>
+                        <td class="p-1 border">M</td><td class="p-1 border">N</td> </tr>
                     <tr>
                         <td class="p-1 border">Tgl Bayar</td>
                         <td class="p-1 border">Tgl Nota</td>
@@ -695,14 +721,15 @@ document.addEventListener("DOMContentLoaded", async () => {
                         <td class="p-1 border">Pot</td>
                         <td class="p-1 border">Ket Pot</td>
                         <td class="p-1 border">Total</td>
-                        <td class="p-1 border">Ket</td>
+                        <td class="p-1 border">MOP</td> 
+                        <td class="p-1 border bg-yellow-50">Status</td> <td class="p-1 border bg-yellow-50">TOP</td>    
                     </tr>
                 </table>
             </div>
-            <p class="mt-2 text-xs italic">*Kolom F & G diisi <b>Nama Alias</b> (Contoh: ADET, ASOKA).</p>
-            <p class="mt-1 text-xs italic">*Jika Tgl Nota/Kode Supplier kosong, biarkan kosong di Excel.</p>
+            <p class="mt-2 text-xs italic">*Kolom M (Status) isi: PKP / NON PKP.</p>
+            <p class="mt-1 text-xs italic">*Kolom L (MOP) isi: CASH / TRANSFER.</p>
         </div>
-    `,
+        `,
         icon: "info",
         showCancelButton: true,
         confirmButtonText: "Pilih File",

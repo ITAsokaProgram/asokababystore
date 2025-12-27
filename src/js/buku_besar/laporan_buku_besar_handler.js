@@ -131,21 +131,21 @@ document.addEventListener("DOMContentLoaded", () => {
             const sheet = workbook.addWorksheet("Laporan Buku Besar");
 
             sheet.columns = [
-            { key: "no", width: 5 },
-            { key: "tgl_nota", width: 12 },
-            { key: "cabang", width: 15 },
-            { key: "supplier", width: 35 },
-            { key: "status", width: 15 }, // Baru
-            { key: "top", width: 15 },    // Baru
-            { key: "ket", width: 30 },
-            { key: "no_faktur", width: 20 }, // Tambah Kolom No Faktur
-            { key: "ket_potongan", width: 20 }, // Tambah Kolom Ket Potongan
-            { key: "potongan", width: 15 },
-            { key: "nilai_faktur", width: 15 },
-            { key: "total_bayar", width: 15 },
-            { key: "tanggal_bayar", width: 12 },
-            { key: "cabang_bayar", width: 15 },
-        ];
+                { key: "no", width: 5 },
+                { key: "tgl_nota", width: 12 },
+                { key: "cabang", width: 15 },
+                { key: "supplier", width: 35 },
+                { key: "status", width: 15 }, // Status Pajak
+                { key: "top", width: 15 },    // TOP
+                { key: "ket", width: 15 },    // MOP (tadinya keterangan lebar 30, kecilin dikit krn enum)
+                { key: "no_faktur", width: 20 }, 
+                { key: "ket_potongan", width: 20 },
+                { key: "potongan", width: 15 },
+                { key: "nilai_faktur", width: 15 },
+                { key: "total_bayar", width: 15 },
+                { key: "tanggal_bayar", width: 12 },
+                { key: "cabang_bayar", width: 15 },
+            ];
 
             sheet.mergeCells("A1:L1"); // Adjust merge
             const titleCell = sheet.getCell("A1");
@@ -154,11 +154,12 @@ document.addEventListener("DOMContentLoaded", () => {
             titleCell.alignment = { horizontal: "center" };
 
             const headers = [
-            "No", "Tgl Nota", "Cabang", "Supplier", 
-            "Keterangan", "No Faktur", "Ket Potongan", 
-            "Potongan (List)", "Nilai Faktur (List)", "Total Bayar (Group)", 
-            "Tgl Bayar", "Cabang Bayar"
-        ];
+                "No", "Tgl Nota", "Cabang", "Supplier", 
+                "Status Pajak", "Jatuh Tempo", "MOP", // Update Headers
+                "No Faktur", "Ket Potongan", 
+                "Potongan (List)", "Nilai Faktur (List)", "Total Bayar (Group)", 
+                "Tgl Bayar", "Cabang Bayar"
+            ];
 
             const headerRow = sheet.getRow(3);
             headerRow.values = headers;
