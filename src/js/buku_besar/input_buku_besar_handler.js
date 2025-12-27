@@ -243,7 +243,7 @@ function renderTableRows(data) {
             <td class="text-right font-mono text-sm text-red-500 align-top">${formatNumber(nilaiFaktur)}</td>
             <td class="text-right font-mono text-sm align-top">
                 <div class="text-red-500">${formatNumber(potongan)}</div>
-                ${row.ket_potongan ? `<div class="text-[10px] text-gray-400 italic leading-tight mt-1" title="Ket: ${row.ket_potongan}">${row.ket_potongan}</div>` : ''}
+                ${row.ket_potongan ? `<div class="text-[10px] text-gray-400 italic leading-tight mt-1 truncate max-w-[150px]" title="Ket: ${row.ket_potongan}">${row.ket_potongan}</div>` : ''}
             </td>
             <td class="text-right font-bold font-mono text-pink-600 text-sm align-top">${formatNumber(total)}</td>
             <td class="text-center py-2 align-top">

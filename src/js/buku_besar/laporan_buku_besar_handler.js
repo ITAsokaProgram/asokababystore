@@ -2,17 +2,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const tableBody = document.getElementById("ledger-table-body");
     const filterForm = document.getElementById("filter-form");
     const filterSubmitButton = document.getElementById("filter-submit-button");
-    const filterStatusBayar = document.getElementById("status_bayar"); // Tambahkan ini
+    const filterStatusBayar = document.getElementById("status_bayar"); 
     const filterSelectStore = document.getElementById("kd_store");
     const filterInputQuery = document.getElementById("search_query");
-    
     const pageTitle = document.getElementById("page-title");
     const pageSubtitle = document.getElementById("page-subtitle");
-    
     const paginationContainer = document.getElementById("pagination-container");
     const paginationInfo = document.getElementById("pagination-info");
     const paginationLinks = document.getElementById("pagination-links");
-    
     const filterTypeSelect = document.getElementById("filter_type");
     const containerMonth = document.getElementById("container-month");
     const containerDateRange = document.getElementById("container-date-range");
@@ -20,13 +17,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const filterTahun = document.getElementById("tahun");
     const filterTglMulai = document.getElementById("tgl_mulai");
     const filterTglSelesai = document.getElementById("tgl_selesai");
-    
     const exportExcelButton = document.getElementById("export-excel-button");
-  
+
     if (exportExcelButton) {
       exportExcelButton.addEventListener("click", handleExportExcel);
     }
-  
+
     function toggleFilterMode() {
       const mode = filterTypeSelect.value;
       if (mode === "month") {
@@ -37,12 +33,12 @@ document.addEventListener("DOMContentLoaded", () => {
         containerDateRange.style.display = "contents";
       }
     }
-  
+
     if (filterTypeSelect) {
       filterTypeSelect.addEventListener("change", toggleFilterMode);
       toggleFilterMode();
     }
-  
+
     function formatRupiah(number) {
       if (isNaN(number) || number === null) return "0";
       return new Intl.NumberFormat("id-ID", {
@@ -52,9 +48,27 @@ document.addEventListener("DOMContentLoaded", () => {
         maximumFractionDigits: 0,
       }).format(number);
     }
-    
+
+    // -- FUNGSI BARU HELPER FORMAT LIST --
+    function formatListRupiah(strList, separator = '|') {
+        if (!strList) return "0";
+        // Pecah string "1000|2000" menjadi array, format, lalu gabung dengan <br>
+        return strList.split(separator).map(numStr => {
+            const val = parseFloat(numStr);
+            return formatRupiah(val);
+        }).join('<br>');
+    }
+
     function formatDate(dateString) {
         if (!dateString) return "-";
+        // Handle jika dateString berisi <br> (concat date)
+        if (dateString.includes('<br>')) {
+            return dateString.split('<br>').map(d => {
+                 const dateObj = new Date(d);
+                 return dateObj.toLocaleDateString("id-ID", { day: "2-digit", month: "2-digit", year: "numeric" });
+            }).join('<br>');
+        }
+
         const dateObj = new Date(dateString);
         return dateObj.toLocaleDateString("id-ID", {
             day: "2-digit",
@@ -67,7 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const params = getUrlParams();
         const currencyFmt = "#,##0";
         let periodeText = "";
-    
+
         if (params.filter_type === "month") {
             const monthNames = [
                 "Januari", "Februari", "Maret", "April", "Mei", "Juni",
@@ -78,14 +92,14 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
             periodeText = `${params.tgl_mulai} s/d ${params.tgl_selesai}`;
         }
-    
+
         Swal.fire({
             title: "Menyiapkan Excel...",
             text: "Sedang mengambil seluruh data...",
             allowOutsideClick: false,
             didOpen: () => { Swal.showLoading(); },
         });
-    
+
         try {
             const queryString = new URLSearchParams({
                 filter_type: params.filter_type,
@@ -97,49 +111,52 @@ document.addEventListener("DOMContentLoaded", () => {
                 search_query: params.search_query,
                 status_bayar: params.status_bayar,
             }).toString();
-    
+
             const response = await fetch(
                 `/src/api/buku_besar/get_export_laporan_buku_besar.php?${queryString}`
             );
-    
+
             if (!response.ok) throw new Error("Gagal mengambil data export");
             const result = await response.json();
             if (result.error) throw new Error(result.error);
-            
             const data = result.data;
+
             if (!data || data.length === 0) {
                 Swal.fire("Info", "Tidak ada data untuk diexport", "info");
                 return;
             }
-    
+
             const workbook = new ExcelJS.Workbook();
             const sheet = workbook.addWorksheet("Laporan Buku Besar");
-    
+
             sheet.columns = [
             { key: "no", width: 5 },
             { key: "tgl_nota", width: 12 },
             { key: "cabang", width: 15 },
             { key: "supplier", width: 35 },
             { key: "ket", width: 30 },
+            { key: "no_faktur", width: 20 }, // Tambah Kolom No Faktur
+            { key: "ket_potongan", width: 20 }, // Tambah Kolom Ket Potongan
             { key: "potongan", width: 15 },
             { key: "nilai_faktur", width: 15 },
             { key: "total_bayar", width: 15 },
             { key: "tanggal_bayar", width: 12 },
             { key: "cabang_bayar", width: 15 },
         ];
-    
-            sheet.mergeCells("A1:K1");
+
+            sheet.mergeCells("A1:L1"); // Adjust merge
             const titleCell = sheet.getCell("A1");
             titleCell.value = `LAPORAN BUKU BESAR - ${periodeText}`;
             titleCell.font = { name: "Arial", size: 14, bold: true };
             titleCell.alignment = { horizontal: "center" };
-    
+
             const headers = [
             "No", "Tgl Nota", "Cabang", "Supplier", 
-            "Keterangan", "Potongan", "Nilai Faktur", "Total Bayar", 
+            "Keterangan", "No Faktur", "Ket Potongan", 
+            "Potongan (List)", "Nilai Faktur (List)", "Total Bayar (Group)", 
             "Tgl Bayar", "Cabang Bayar"
         ];
-    
+
             const headerRow = sheet.getRow(3);
             headerRow.values = headers;
             headerRow.eachCell((cell) => {
@@ -147,7 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 cell.fill = {
                     type: "pattern",
                     pattern: "solid",
-                    fgColor: { argb: "FFDB2777" }, // Pink Theme
+                    fgColor: { argb: "FFDB2777" }, 
                 };
                 cell.alignment = { horizontal: "center", vertical: "middle" };
                 cell.border = {
@@ -157,38 +174,54 @@ document.addEventListener("DOMContentLoaded", () => {
                     right: { style: "thin" },
                 };
             });
-    
+
             let rowNum = 4;
-        data.forEach((item, index) => {
-            const r = sheet.getRow(rowNum);
-            r.values = [
-                index + 1,
-                item.tgl_nota,
-                item.Nm_Alias || item.kode_store,
-                item.nama_supplier,
-                item.ket || "",
-                parseFloat(item.potongan) || 0,
-                parseFloat(item.nilai_faktur) || 0,
-                parseFloat(item.total_bayar) || 0,
-                item.tanggal_bayar,
-                item.Nm_Alias_Bayar || item.store_bayar || "" // Mapping Cabang Bayar
-            ];
+            data.forEach((item, index) => {
+                const r = sheet.getRow(rowNum);
                 
-                // Format Currency Columns
-                [7, 8, 10].forEach(idx => {
-                    r.getCell(idx).numFmt = currencyFmt;
-                });
+                // Logic Formatting List untuk Excel (Ganti <br> atau | jadi newline)
+                // Note: ExcelJS butuh wrapText: true
+                const formatListExcel = (str, isCurrency = false) => {
+                    if(!str) return '';
+                    if(isCurrency) {
+                        // Tidak bisa format currency numeric murni jika dalam satu sel ada banyak baris
+                        // Jadi kita format sebagai string tampilan rupiah
+                        return str.split('|').map(n => parseFloat(n).toLocaleString('id-ID')).join('\n');
+                    }
+                    return str.replace(/<br>/g, '\n');
+                };
+
+                r.values = [
+                    index + 1,
+                    formatDate(item.tgl_nota).replace(/<br>/g, '\n'),
+                    (item.Nm_Alias || item.kode_store || "").replace(/<br>/g, '\n'),
+                    item.nama_supplier,
+                    item.ket || "",
+                    
+                    // Kolom Baru yang di list
+                    formatListExcel(item.no_faktur),
+                    formatListExcel(item.ket_potongan),
+                    formatListExcel(item.list_potongan, true),
+                    formatListExcel(item.list_nilai_faktur, true),
+                    
+                    parseFloat(item.total_bayar) || 0,
+                    item.tanggal_bayar,
+                    item.Nm_Alias_Bayar || item.store_bayar || "" 
+                ];
+
+                // Format Currency HANYA untuk Total Bayar (karena single value)
+                r.getCell(10).numFmt = currencyFmt; 
 
                 r.eachCell((cell) => {
                   cell.alignment = { 
                       horizontal: "center", 
                       vertical: "middle", 
-                      wrapText: true // PENTING: Agar baris baru terbaca
+                      wrapText: true // PENTING: Agar newline terbaca
                   };
                 });
                 rowNum++;
             });
-    
+
             const buffer = await workbook.xlsx.writeBuffer();
             const blob = new Blob([buffer], {
                 type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -197,7 +230,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const anchor = document.createElement("a");
             anchor.href = url;
             let filename = `Buku_Besar_`;
-            
             if (params.filter_type === "month") {
                 filename += `${params.bulan}_${params.tahun}`;
             } else {
@@ -206,7 +238,7 @@ document.addEventListener("DOMContentLoaded", () => {
             anchor.download = `${filename}.xlsx`;
             anchor.click();
             window.URL.revokeObjectURL(url);
-    
+
             Swal.fire({
                 icon: "success",
                 title: "Berhasil",
@@ -219,7 +251,7 @@ document.addEventListener("DOMContentLoaded", () => {
             Swal.fire("Error", e.message, "error");
         }
     }
-  
+
     function getUrlParams() {
       const params = new URLSearchParams(window.location.search);
       const yesterday = new Date();
@@ -228,7 +260,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const now = new Date();
       const currentMonth = String(now.getMonth() + 1).padStart(2, "0");
       const currentYear = now.getFullYear();
-  
+
       return {
         filter_type: params.get("filter_type") || "month",
         bulan: params.get("bulan") || currentMonth,
@@ -241,13 +273,13 @@ document.addEventListener("DOMContentLoaded", () => {
         page: parseInt(params.get("page") || "1", 10),
       };
     }
-  
+
     function build_pagination_url(newPage) {
       const params = new URLSearchParams(window.location.search);
       params.set("page", newPage);
       return "?" + params.toString();
     }
-  
+
     function populateStoreFilter(stores, selectedStore) {
       if (!filterSelectStore || filterSelectStore.options.length > 1) {
         filterSelectStore.value = selectedStore;
@@ -264,12 +296,12 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       filterSelectStore.value = selectedStore;
     }
-  
+
     async function loadData() {
       const params = getUrlParams();
       const isPagination = params.page > 1;
       setLoadingState(true, isPagination);
-  
+
       const queryString = new URLSearchParams({
         filter_type: params.filter_type,
         bulan: params.bulan,
@@ -281,25 +313,25 @@ document.addEventListener("DOMContentLoaded", () => {
         page: params.page,
         status_bayar: params.status_bayar
       }).toString();
-  
+
       try {
         const response = await fetch(
           `/src/api/buku_besar/get_laporan_buku_besar.php?${queryString}`
         );
-  
+
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
         }
-  
+
         const data = await response.json();
+
         if (data.error) throw new Error(data.error);
-  
+
         if (data.stores) {
           populateStoreFilter(data.stores, params.kd_store);
         }
-  
-        // Set Filter Values
+
         if (filterStatusBayar) filterStatusBayar.value = params.status_bayar;
         if (filterInputQuery) filterInputQuery.value = params.search_query;
         if (filterTypeSelect) {
@@ -310,8 +342,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (filterTahun) filterTahun.value = params.tahun;
         if (filterTglMulai) filterTglMulai.value = params.tgl_mulai;
         if (filterTglSelesai) filterTglSelesai.value = params.tgl_selesai;
-  
-        // Update Subtitle
+
         if (pageSubtitle) {
           let storeName = "";
           if (
@@ -321,7 +352,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ) {
             storeName = " - " + filterSelectStore.options[filterSelectStore.selectedIndex].text;
           }
-  
+
           let periodText = "";
           if (params.filter_type === "month") {
             const monthNames = [
@@ -336,10 +367,10 @@ document.addEventListener("DOMContentLoaded", () => {
           }
           pageSubtitle.textContent = `${periodText}${storeName}`;
         }
-  
+
         renderTable(data.tabel_data, data.pagination ? data.pagination.offset : 0);
         renderPagination(data.pagination);
-  
+
       } catch (error) {
         console.error("Error loading data:", error);
         showTableError(error.message);
@@ -347,7 +378,7 @@ document.addEventListener("DOMContentLoaded", () => {
         setLoadingState(false);
       }
     }
-  
+
     function setLoadingState(isLoading, isPagination = false) {
       if (isLoading) {
         if (filterSubmitButton) filterSubmitButton.disabled = true;
@@ -366,11 +397,11 @@ document.addEventListener("DOMContentLoaded", () => {
         if (exportExcelButton) exportExcelButton.disabled = false;
       }
     }
-  
+
     function showTableError(message) {
       tableBody.innerHTML = `<tr><td colspan="10" class="text-center p-8 text-red-600"><p>Gagal: ${message}</p></td></tr>`;
     }
-  
+
     function renderTable(tabel_data, offset) {
       if (!tabel_data || tabel_data.length === 0) {
         tableBody.innerHTML = `
@@ -382,57 +413,70 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tr>`;
         return;
       }
-  
+
       let htmlRows = "";
       let item_counter = offset + 1;
-  
-      tabel_data.forEach((row) => {
-            const nilaiFaktur = parseFloat(row.nilai_faktur) || 0;
-            const potongan = parseFloat(row.potongan) || 0;
-            const totalBayar = parseFloat(row.total_bayar) || 0;
-            
-            let ketPotonganHtml = "";
-            if (row.ket_potongan) {
-                 ketPotonganHtml = `<div class="text-[10px] text-gray-500 italic mt-1">${row.ket_potongan}</div>`;
-            }
 
-            // Handle Cabang Bayar (Jika store_bayar kode, kita coba tampilkan nama alias jika ada di data join, atau kodenya saja)
-            // Asumsi API nanti mengembalikan Nm_Alias_Bayar
+      tabel_data.forEach((row) => {
+            // -- LOGIC RENDER DIUBAH --
+            // Menggunakan formatListRupiah untuk list_potongan dan list_nilai_faktur
+            
+            const totalBayar = parseFloat(row.total_bayar) || 0;
             const cabangBayar = row.Nm_Alias_Bayar || row.store_bayar || "-";
+            
+            // Format HTML untuk List (Potongan, Nilai Faktur, No Faktur, Ket Potongan)
+            const listPotonganHtml = formatListRupiah(row.list_potongan, '|');
+            const listNilaiFakturHtml = formatListRupiah(row.list_nilai_faktur, '|');
+            const listNoFakturHtml = row.no_faktur || "-"; // Sudah <br> dari API
+            const listKetPotonganHtml = row.ket_potongan || "-"; // Sudah <br> dari API
 
             htmlRows += `
-                <tr class="hover:bg-gray-50">
-                    <td class="text-center font-medium text-gray-500">${item_counter}</td>
+                <tr class="hover:bg-gray-50 align-top">
+                    <td class="text-center font-medium text-gray-500 pt-3">${item_counter}</td>
                     
-                    <td>${formatDate(row.tgl_nota)}</td>
+                    <td class="pt-3 text-sm">${formatDate(row.tgl_nota)}</td>
                     
-                    <td class="text-center">
-                        <span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded border border-gray-200">
+                    <td class="text-center pt-3">
+                        <span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded border border-gray-200 block">
                             ${row.Nm_Alias || row.kode_store || "-"}
                         </span>
                     </td>
                     
-                    <td>${row.nama_supplier || "-"}</td>
-                    
-                    <td class="text-sm text-gray-600 italic ${row.ket ? "cursor-pointer hover:text-pink-600 hover:underline" : ""}" 
-                        ${row.ket ? `onclick="showDetailModal('Keterangan', '${(row.ket || "").replace(/'/g, "\\'")}')"` : ""}>
-                        ${truncateText(row.ket, 30)}
+                    <td class="pt-3 font-semibold text-gray-700">
+                        ${row.nama_supplier || "-"}
                     </td>
                     
-                    <td class="text-right font-mono text-red-600">
-                        ${potongan > 0 ? '' + formatRupiah(potongan) : '0'}
-                        ${ketPotonganHtml}
+                    <td class="text-sm text-gray-600 pt-3">
+                        <div class="flex gap-4">
+                             <div class="font-mono text-xs text-blue-600 truncate">
+                                ${row.ket || '-'}
+                             </div>
+
+                        </div>
                     </td>
 
-                    <td class="text-right font-mono text-gray-700">${formatRupiah(nilaiFaktur)}</td>
-                    
-                    <td class="text-right font-bold text-gray-800">${formatRupiah(totalBayar)}</td>
-                    
-                    <td class="text-center text-sm text-gray-600">
+                    <td class="text-right font-mono text-red-600 text-sm pt-3">
+                      <div class="font-mono text-xs text-blue-600 truncate">
+                        ${listPotonganHtml}
+                      </div>
+                      <div class="text-xs italic text-gray-500 truncate max-w-[150px]">
+                        ${listKetPotonganHtml}
+                      </div>
+                    </td>
+
+                    <td class="text-right font-mono text-gray-700 text-sm pt-3">
+                        ${listNilaiFakturHtml}
+                    </td>
+
+                    <td class="text-right font-bold text-gray-800 pt-3 border-l border-gray-100 bg-gray-50/50">
+                        ${formatRupiah(totalBayar)}
+                    </td>
+
+                    <td class="text-center text-sm text-gray-600 pt-3">
                          ${formatDate(row.tanggal_bayar)}
                     </td>
-
-                    <td class="text-center">
+                    
+                    <td class="text-center pt-3">
                          ${cabangBayar}
                     </td>
                 </tr>
@@ -442,8 +486,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         tableBody.innerHTML = htmlRows;
     }
-  
-    // ... Function renderPagination (sama seperti sebelumnya, disingkat untuk hemat tempat) ...
+
     function renderPagination(pagination) {
         if (!pagination) {
           paginationInfo.textContent = "";
@@ -456,9 +499,11 @@ document.addEventListener("DOMContentLoaded", () => {
           paginationLinks.innerHTML = "";
           return;
         }
+
         const start_row = offset + 1;
         const end_row = Math.min(offset + limit, total_rows);
         paginationInfo.textContent = `Menampilkan ${start_row} - ${end_row} dari ${total_rows} data`;
+
         let linksHtml = "";
         linksHtml += `
                 <a href="${current_page > 1 ? build_pagination_url(current_page - 1) : "#"}" 
@@ -466,13 +511,16 @@ document.addEventListener("DOMContentLoaded", () => {
                    <i class="fas fa-chevron-left"></i>
                 </a>
             `;
+
         const pages_to_show = [];
         const max_pages_around = 2;
+
         for (let i = 1; i <= total_pages; i++) {
           if (i === 1 || i === total_pages || (i >= current_page - max_pages_around && i <= current_page + max_pages_around)) {
             pages_to_show.push(i);
           }
         }
+
         let last_page = 0;
         for (const page_num of pages_to_show) {
           if (last_page !== 0 && page_num > last_page + 1) {
@@ -486,6 +534,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 `;
           last_page = page_num;
         }
+
         linksHtml += `
                 <a href="${current_page < total_pages ? build_pagination_url(current_page + 1) : "#"}" 
                    class="pagination-link ${current_page === total_pages ? "pagination-disabled" : ""}">
@@ -505,10 +554,10 @@ document.addEventListener("DOMContentLoaded", () => {
         loadData();
       });
     }
-  
+
     loadData();
 });
-  
+
 function showDetailModal(title, content) {
     window.dispatchEvent(
       new CustomEvent("show-detail-modal", {
@@ -520,7 +569,8 @@ function showDetailModal(title, content) {
       })
     );
 }
-  
+// Helper truncate dihapus/jarang dipakai karena data list ditampilkan full
+// Tapi jika masih mau dipakai untuk kolom ket global, biarkan saja
 function truncateText(text, maxLength = 30) {
     if (!text || text === "-") return "-";
     if (text.length <= maxLength) return text;
