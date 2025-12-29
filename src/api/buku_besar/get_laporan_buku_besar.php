@@ -79,6 +79,7 @@ try {
             MAX(bb.id) as id,
             MAX(bb.group_id) as group_id,
             MAX(bb.tgl_nota) as sort_date,
+            dibuat_pada,
             GROUP_CONCAT(DISTINCT bb.tgl_nota ORDER BY bb.tgl_nota DESC SEPARATOR '<br>') as tgl_nota,
             GROUP_CONCAT(bb.no_faktur ORDER BY bb.id ASC SEPARATOR '<br>') as no_faktur,
             GROUP_CONCAT(COALESCE(bb.ket_potongan, '-') ORDER BY bb.id ASC SEPARATOR '<br>') as ket_potongan,
@@ -98,7 +99,7 @@ try {
         LEFT JOIN kode_store ks ON bb.kode_store = ks.Kd_Store
         WHERE $where_conditions
         GROUP BY $group_logic
-        ORDER BY sort_date DESC, id DESC
+        ORDER BY dibuat_pada DESC, id DESC
         LIMIT ? OFFSET ?
     ";
     $bind_types .= 'ii';
