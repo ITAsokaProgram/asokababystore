@@ -83,7 +83,8 @@ try {
             kode_supplier,
             nama_supplier,
             kode_store,
-            total_terima_fp as total_nilai
+            total_terima_fp as total_nilai,
+            status
         FROM ff_pembelian
         WHERE no_faktur = ? OR no_invoice = ?
         LIMIT 1
@@ -106,13 +107,14 @@ try {
             'source' => 'pembelian',
             'data' => [
                 'id_pembelian' => $data['id'],
+                'status' => $data['status'],
                 'no_faktur' => !empty($data['no_invoice']) ? $data['no_invoice'] : $data['no_faktur'],
                 'no_invoice_asli' => $data['no_invoice'],
                 'tgl_nota' => $data['tgl_nota'],
                 'kode_supplier' => $data['kode_supplier'],
                 'nama_supplier' => $data['nama_supplier'],
                 'kode_store' => $data['kode_store'],
-                'total_bayar' => (float) $data['total_nilai']
+                'total_bayar' => (float) $data['total_nilai'],
             ]
         ]);
     } else {

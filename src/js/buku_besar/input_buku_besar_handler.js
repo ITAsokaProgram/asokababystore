@@ -449,6 +449,7 @@ async function fetchFakturData(noFaktur) {
         inpKodeSupplier.value = d.kode_supplier || "";
         inpNamaSupp.value = d.nama_supplier || "";
         inpTglNota.value = d.tgl_nota || "";
+        inpStatus.value = d.status || ""; // <--- Kode ditambahkan disini
         inpNilaiFaktur.value = formatNumber(parseFloat(d.total_bayar) || 0);
         inpPotongan.value = "0";
         inpKetPotongan.value = "";
