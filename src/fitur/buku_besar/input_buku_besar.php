@@ -248,6 +248,25 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                         <i class="fas fa-search absolute right-2 top-2 text-gray-400 text-xs"></i>
                                     </div>
                                 </div>
+                                <div id="installment-info-box"
+                                    class="hidden mt-3 bg-blue-50 border border-blue-100 rounded-lg p-3">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <p class="text-xs text-blue-600 font-bold mb-1"><i
+                                                    class="fas fa-info-circle mr-1"></i> Status Angsuran</p>
+                                            <div class="text-xs text-gray-600">Sudah Bayar: <span id="info-sudah-bayar"
+                                                    class="font-mono font-bold text-green-600">0</span></div>
+                                            <div class="text-xs text-gray-600 mt-1">Sisa Hutang: <span
+                                                    id="info-sisa-hutang"
+                                                    class="font-mono font-bold text-red-600 text-sm">0</span></div>
+                                        </div>
+                                        <button type="button" id="btn-view-history-detail"
+                                            class="bg-white hover:bg-blue-100 text-blue-600 border border-blue-200 rounded px-2 py-1 shadow-sm transition-all"
+                                            title="Lihat Rincian">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
 
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>

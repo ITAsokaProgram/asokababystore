@@ -22,6 +22,21 @@ document.addEventListener("DOMContentLoaded", () => {
     list_tidak_ditemukan: [],
   };
   let currentTableData = [];
+  if (paginationLinks) {
+    paginationLinks.addEventListener("click", (e) => {
+      const link = e.target.closest("a.pagination-link");
+      
+      if (!link || link.classList.contains("pagination-disabled")) return;
+
+      e.preventDefault();
+
+      const url = link.getAttribute("href");
+
+      window.history.pushState({}, "", url);
+
+      loadData();
+    });
+  }
   window.copyToClipboard = function (text, btnElement) {
     if (!text) return;
     navigator.clipboard.writeText(text).then(

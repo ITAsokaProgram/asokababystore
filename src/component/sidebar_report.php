@@ -956,7 +956,7 @@ $isFinanceOpen = $isBukuBesarOpen;
                                             class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
                                             <i
                                                 class="fa-solid fa-list mr-2 text-base text-cyan-400 group-hover:text-cyan-600 group-hover:scale-110 transition-all duration-200"></i>
-                                            Data Receipt
+                                            Check Receipt
                                         </span>
                                     </a>
                                 </li>
@@ -1002,7 +1002,7 @@ $isFinanceOpen = $isBukuBesarOpen;
                                             class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
                                             <i
                                                 class="fa-solid fa-list mr-2 text-base text-cyan-400 group-hover:text-cyan-600 group-hover:scale-110 transition-all duration-200"></i>
-                                            Data Return
+                                            Check Return
                                         </span>
                                     </a>
                                 </li>
@@ -1048,7 +1048,7 @@ $isFinanceOpen = $isBukuBesarOpen;
                                             class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
                                             <i
                                                 class="fa-solid fa-list mr-2 text-base text-cyan-400 group-hover:text-cyan-600 group-hover:scale-110 transition-all duration-200"></i>
-                                            Data Koreksi
+                                            Check Koreksi
                                         </span>
                                     </a>
                                 </li>

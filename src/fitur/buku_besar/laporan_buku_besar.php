@@ -257,7 +257,7 @@ $menuHandler = new MenuHandler('laporan_buku_besar'); // Sesuaikan permission ke
     </main>
 
     <div x-data="detailModal()" x-show="show" x-cloak @show-detail-modal.window="openModal($event.detail)"
-        style="display: none;" class="fixed inset-0 z-[9999] overflow-y-auto">
+        style="display: none; z-index: 999999999999;" class="fixed inset-0  overflow-y-auto">
         <div x-show="show" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0"
             x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-150"
             x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" @click="closeModal()"
@@ -270,7 +270,7 @@ $menuHandler = new MenuHandler('laporan_buku_besar'); // Sesuaikan permission ke
                 x-transition:leave="transition ease-in duration-150"
                 x-transition:leave-start="opacity-100 transform scale-100"
                 x-transition:leave-end="opacity-0 transform scale-95" @click.stop
-                class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md transform">
+                class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl transform">
 
                 <div
                     class="flex items-center justify-between p-5 border-b border-gray-100 bg-gradient-to-r from-pink-50 to-white rounded-t-2xl">
@@ -288,8 +288,7 @@ $menuHandler = new MenuHandler('laporan_buku_besar'); // Sesuaikan permission ke
 
                 <div class="p-6">
                     <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                        <p class="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap break-words"
-                            x-text="content"></p>
+                        <div class="text-gray-700 text-sm leading-relaxed break-words" x-html="content"></div>
                     </div>
                 </div>
 

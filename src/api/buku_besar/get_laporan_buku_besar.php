@@ -94,7 +94,11 @@ try {
             MAX(bb.ket) as ket,
             MAX(bb.total_bayar) as total_bayar,
             MAX(bb.tanggal_bayar) as tanggal_bayar,
-            MAX(bb.store_bayar) as Nm_Alias_Bayar
+            MAX(bb.store_bayar) as Nm_Alias_Bayar,
+            SUM(bb.nilai_faktur) as sum_nilai_faktur,
+            SUM(bb.potongan) as sum_potongan,
+            bb.total_bayar as total_bayar,
+            (SELECT COUNT(*) FROM buku_besar_angsuran ba WHERE ba.buku_besar_id = MAX(bb.id)) as history_count
         FROM buku_besar bb
         LEFT JOIN kode_store ks ON bb.kode_store = ks.Kd_Store
         WHERE $where_conditions

@@ -649,10 +649,14 @@ document.addEventListener("DOMContentLoaded", () => {
           if (candidateList.length === 0) return null;
           const bestCandidate = candidateList[0];
           const candidateString = availableCandidates
-            .map(
-              (c) => `${c.nsfp}###${c.supplierName}###${c.sources.join("&")}###${c.branchName || ""}`
-            )
-            .join(",");
+          .map(
+            (c) =>
+              `${c.nsfp}###${c.supplierName}###${c.sources.join("&")}###${
+                c.branchName || ""
+              }`
+          )
+          .join(",")
+          .replace(/'/g, "\\'");
           const count = availableCandidates.length;
           const textClass =
             "text-gray-500 font-medium group-hover:text-gray-800 border-gray-300 group-hover:border-gray-500";

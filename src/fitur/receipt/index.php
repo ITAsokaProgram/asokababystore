@@ -2,9 +2,10 @@
 session_start();
 include '../../../aa_kon_sett.php';
 
-// Default tanggal tetap ada untuk value input, tapi data tidak diload otomatis (via JS)
-$tgl_selesai = date('Y-m-d');
-$tgl_mulai = date('Y-m-d', strtotime('-1 day'));
+$tgl_selesai = $_GET['tgl_selesai'] ?? date('Y-m-d');
+$tgl_mulai = $_GET['tgl_mulai'] ?? date('Y-m-d', strtotime('-1 day'));
+$search_val = $_GET['search'] ?? '';
+$kode_store_val = $_GET['kode_store'] ?? '';
 $page = (int) ($_GET['page'] ?? 1);
 
 require_once __DIR__ . '/../../component/menu_handler.php';
@@ -153,7 +154,7 @@ if (!$menuHandler->initialize()) {
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 mb-2">Cari No Faktur</label>
                             <input type="text" name="search" id="search" class="input-modern w-full"
-                                placeholder="Ketik nomor faktur...">
+                                placeholder="Ketik nomor faktur..." value="<?= htmlspecialchars($search_val) ?>">
                         </div>
                         <div class="md:col-span-4 flex justify-end">
                             <button type="submit" id="filter-submit-button"
