@@ -11,7 +11,6 @@ const API_URLS = {
   getGroupDetails: "/src/api/buku_besar/get_group_details.php", 
 };
 const form = document.getElementById("single-form");
-
 const inpId = document.getElementById("inp_id");
 const inpKodeStore = document.getElementById("inp_kode_store");
 const inpStoreBayar = document.getElementById("inp_store_bayar"); 
@@ -36,7 +35,6 @@ const listSupplier = document.getElementById("supplier_list");
 const btnExport = document.getElementById("btn-export");
 const btnImport = document.getElementById("btn-import");
 const inpFileImport = document.getElementById("file_import");
-
 let editingCartIndex = -1; 
 let currentGroupId = null; 
 let deletedCartIds = [];   
@@ -56,6 +54,7 @@ const tempListBody = document.getElementById("temp-list-body");
 const lblCountItem = document.getElementById("lbl_count_item");
 const inpKetGlobal = document.getElementById("inp_ket_global");
 const inpGlobalTotal = document.getElementById("inp_global_total");
+const lblTotalTagihan = document.getElementById("lbl_total_tagihan");
 function isFormDirty() {
     const hasFaktur = inpNoFaktur.value.trim() !== "";
     const hasSupplier = inpNamaSupp.value.trim() !== "";
@@ -162,19 +161,18 @@ function renderCart() {
         btnSaveBatch.disabled = true;
         btnSaveBatch.classList.add("opacity-50", "cursor-not-allowed");
         lblCountItem.textContent = "0";
-        btnSave.style.display = "";
+        if(lblTotalTagihan) lblTotalTagihan.textContent = "0"; 
+        btnSave.style.display = ""; 
         return;
-
-
-        
     }
     btnSave.style.display = "none";
     let html = "";
-    let grandTotal = 0; 
+    let grandTotalTagihan = 0; 
     cartItems.forEach((item, index) => {
-        grandTotal += parseFloat(item.total_bayar);
+        const nilaiMurni = parseNumber(item.nilai_faktur) - parseNumber(item.potongan);
+        grandTotalTagihan += nilaiMurni;
         const activeClass = (index === editingCartIndex) ? "bg-amber-100 border-amber-300" : "hover:bg-blue-50 border-gray-100";
-        const nmStore = item.nm_alias || item.nm_store_display || item.kode_store; 
+        const nmStore = item.nm_alias || item.nm_store_display || item.kode_store;
         html += `
             <tr class="border-b transition-colors cursor-pointer ${activeClass}" onclick="editCartItem(${index})">
                 <td class="p-2 font-medium text-blue-700">
@@ -195,6 +193,9 @@ function renderCart() {
     });
     tempListBody.innerHTML = html;
     lblCountItem.textContent = cartItems.length;
+    if(lblTotalTagihan) {
+        lblTotalTagihan.textContent = formatNumber(grandTotalTagihan);
+    }
     btnSaveBatch.disabled = false;
     btnSaveBatch.classList.remove("opacity-50", "cursor-not-allowed");
 }
@@ -206,8 +207,6 @@ function renderTableRows(data) {
         const prevGroup = (i > 0) ? data[i - 1].group_id : null;
         const isGroupStart = !currentGroup || (currentGroup !== prevGroup);
         let rowSpan = 1;
-        
-        // Hitung rowspan untuk group
         if (currentGroup && isGroupStart) {
             for (let j = i + 1; j < data.length; j++) {
                 if (data[j].group_id === currentGroup) {
@@ -217,54 +216,37 @@ function renderTableRows(data) {
                 }
             }
         }
-
         const tr = document.createElement("tr");
         tr.className = "hover:bg-pink-50 transition-colors border-b border-gray-50";
         if (isGroupStart) tr.classList.add("row-group-start");
-
         const potongan = parseFloat(row.potongan || 0);
         const nilaiFaktur = parseFloat(row.nilai_faktur || 0);
         const total = parseFloat(row.total_bayar || 0);
         const storeBayarDisplay = row.store_bayar || "-";
-
         let html = '';
         html += `<td class="text-center text-gray-500 py-3 align-top">${tableRowIndex}</td>`;
-
-        // Kolom Grouping: Tgl Bayar
         if (isGroupStart) {
             html += `<td class="text-sm cell-merged font-medium" rowspan="${rowSpan}">${row.tanggal_bayar || "-"}</td>`;
         } else if (!currentGroup) {
             html += `<td class="text-sm align-top">${row.tanggal_bayar || "-"}</td>`;
         }
-
         html += `<td class="text-sm align-top text-gray-600">${row.tgl_nota || "-"}</td>`;
         html += `<td class="font-medium text-gray-800 text-sm align-top">${row.no_faktur}</td>`;
-
-        // Kolom Grouping: Supplier
         if (isGroupStart) {
             html += `<td class="text-sm cell-merged" rowspan="${rowSpan}">${row.nama_supplier}</td>`;
         } else if (!currentGroup) {
             html += `<td class="text-sm align-top">${row.nama_supplier}</td>`;
         }
-
-        // --- TAMBAHAN BARU: STATUS PAJAK & TOP ---
         html += `<td class="align-top"><span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-0.5 rounded border border-gray-200">${row.status || '-'}</span></td>`;
         html += `<td class="align-top text-xs text-red-500 font-medium">${row.top || '-'}</td>`;
-        // -----------------------------------------
-
         html += `<td class="align-top"><span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded border border-gray-200">${row.nm_alias || row.kode_store}</span></td>`;
-
-        // Kolom Grouping: Cabang Bayar & MOP (Ket)
         if (isGroupStart) {
              html += `<td class="cell-merged" rowspan="${rowSpan}"><span class="bg-pink-50 text-pink-700 text-xs px-2 py-1 rounded border border-pink-100 font-bold">${storeBayarDisplay}</span></td>`;
-             // MOP (Ket) - Grouping
              html += `<td class="cell-merged font-bold text-blue-700 text-xs" rowspan="${rowSpan}">${row.ket || "-"}</td>`; 
         } else if (!currentGroup) {
              html += `<td class="align-top"><span class="bg-pink-50 text-pink-700 text-xs px-2 py-1 rounded border border-pink-100 font-bold">${storeBayarDisplay}</span></td>`;
-             // MOP (Ket) - Single
              html += `<td class="align-top font-bold text-blue-700 text-xs">${row.ket || "-"}</td>`;
         }
-
         html += `
             <td class="text-right font-mono text-sm text-gray-600 align-top">${formatNumber(nilaiFaktur)}</td>
             <td class="text-right font-mono text-sm align-top">
@@ -283,14 +265,12 @@ function renderTableRows(data) {
                 </div>
             </td>
         `;
-
         tr.innerHTML = html;
         tr.querySelector(".btn-edit-row").addEventListener("click", () => startEditMode(row));
         tr.querySelector(".btn-delete-row").addEventListener("click", () => handleDelete(row.id));
         tableBody.appendChild(tr);
     }
 }
-
 function setupInfinityScroll() {
   const observerOptions = {
     root: document.getElementById("table-scroll-container"),
@@ -314,13 +294,11 @@ async function loadStoreOptions() {
         html += `<option value="${store.Kd_Store}">${displayName}</option>`;
       });
       inpKodeStore.innerHTML = html;
-      // HAPUS BARIS INI: inpStoreBayar.innerHTML = html; 
     }
   } catch (error) {
     console.error("Gagal memuat toko:", error);
   }
 }
-
 async function fetchFakturData(noFaktur) {
   if (!noFaktur) return;
   const originalPlaceholder = inpNoFaktur.placeholder;
@@ -395,6 +373,45 @@ async function handleSave() {
         Swal.fire("Gagal", "Pilih Cabang", "warning");
         return;
     }
+    const nilaiFaktur = parseNumber(inpNilaiFaktur.value);
+    const potongan = parseNumber(inpPotongan.value);
+    const inputTotalBayar = parseNumber(inpGlobalTotal.value);
+    const tagihanMurni = nilaiFaktur - potongan;
+    const finalTotalBayar = inputTotalBayar > 0 ? inputTotalBayar : tagihanMurni;
+    if (inputTotalBayar > 0 && Math.abs(inputTotalBayar - tagihanMurni) > 100) {
+        const selisih = inputTotalBayar - tagihanMurni;
+        const textSelisih = formatNumber(Math.abs(selisih));
+        const statusSelisih = selisih > 0 ? "LEBIH" : "KURANG";
+        const confirm = await Swal.fire({
+            title: '⚠️ NOMINAL TIDAK BALANCE!',
+            html: `
+                <div class="text-left text-sm bg-red-50 p-4 rounded-lg border border-red-200">
+                    <p class="mb-3 text-red-800 font-bold">Input Bayar tidak sama dengan Nilai Faktur!</p>
+                    <table class="w-full text-sm">
+                        <tr class="border-b border-red-200">
+                            <td class="py-2 text-gray-600">Nilai Faktur - Potongan</td>
+                            <td class="py-2 font-bold text-right text-gray-800">${formatNumber(tagihanMurni)}</td>
+                        </tr>
+                        <tr class="border-b border-red-200">
+                            <td class="py-2 text-gray-600">Input Bayar</td>
+                            <td class="py-2 font-bold text-right text-blue-600">${formatNumber(inputTotalBayar)}</td>
+                        </tr>
+                        <tr>
+                            <td class="py-2 font-bold text-red-600">Selisih ${statusSelisih}</td>
+                            <td class="py-2 font-bold text-right text-red-600 text-lg">${textSelisih}</td>
+                        </tr>
+                    </table>
+                </div>
+                <p class="mt-4 text-gray-600 font-medium text-center">Yakin ingin menyimpan data ini?</p>
+            `,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Simpan',
+            confirmButtonColor: '#d33',
+            cancelButtonText: 'Cek Kembali'
+        });
+        if (!confirm.isConfirmed) return;
+    }
     isSubmitting = true;
     const ketValue = inpKetGlobal.value; 
     const payload = {
@@ -406,35 +423,35 @@ async function handleSave() {
         nama_supplier: inpNamaSupp.value,
         tgl_nota: inpTglNota.value,
         tanggal_bayar: inpTglBayar.value,
-        potongan: parseNumber(inpPotongan.value),
-        nilai_faktur: parseNumber(inpNilaiFaktur.value),
+        potongan: potongan,
+        nilai_faktur: nilaiFaktur,
         ket_potongan: inpKetPotongan.value,
         ket: ketValue, 
-        total_bayar: parseNumber(inpGlobalTotal.value)
+        total_bayar: finalTotalBayar,
+        top: inpTop.value,        
+        status: inpStatus.value   
     };
-  const originalBtnContent = btnSave.innerHTML;
-  const originalBtnClass = btnSave.className;
-  btnSave.disabled = true;
-  btnSave.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Proses...`;
-  isSubmitting = true;
-  try {
-    const result = await sendRequestJSON(API_URLS.saveData, payload);
-    if (result.success) {
-      Swal.fire({ icon: "success", title: "Berhasil", text: result.message, timer: 1000, showConfirmButton: false });
-      cancelEditMode();
-      fetchTableData(true);
-    } else {
-      throw new Error(result.message);
+    const originalBtnContent = btnSave.innerHTML;
+    const originalBtnClass = btnSave.className;
+    btnSave.disabled = true;
+    btnSave.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Proses...`;
+    try {
+        const result = await sendRequestJSON(API_URLS.saveData, payload);
+        if (result.success) {
+            Swal.fire({ icon: "success", title: "Berhasil", text: result.message, timer: 1000, showConfirmButton: false });
+            cancelEditMode();
+            fetchTableData(true);
+        } else {
+            throw new Error(result.message);
+        }
+    } catch (error) {
+        Swal.fire("Gagal Simpan", error.message, "error");
+    } finally {
+        btnSave.disabled = false;
+        btnSave.innerHTML = originalBtnContent;
+        btnSave.className = originalBtnClass;
+        isSubmitting = false;
     }
-  } catch (error) {
-    Swal.fire("Gagal Simpan", error.message, "error");
-    isSubmitting = false;
-  } finally {
-    btnSave.disabled = false;
-    btnSave.innerHTML = originalBtnContent;
-    btnSave.className = originalBtnClass;
-    isSubmitting = false;
-  }
 }
 async function startEditMode(data) {
     cancelEditMode(); 
@@ -555,20 +572,20 @@ async function handleExport() {
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet("Data Buku Besar");
     sheet.columns = [
-      { header: "Tgl Bayar", key: "tanggal_bayar", width: 12 },    // A
-      { header: "Tgl Nota", key: "tgl_nota", width: 12 },          // B
-      { header: "No Faktur", key: "no_faktur", width: 20 },        // C
-      { header: "Kode Supp", key: "kode_supplier", width: 15 },    // D
-      { header: "Nama Supplier", key: "nama_supplier", width: 30 },// E
-      { header: "Cabang Inv", key: "nm_alias", width: 15 },        // F
-      { header: "Cabang Bayar", key: "nm_alias_bayar", width: 15 },// G
-      { header: "Nilai Faktur", key: "nilai_faktur", width: 15 },  // H
-      { header: "Potongan", key: "potongan", width: 15 },          // I
-      { header: "Ket Potongan", key: "ket_potongan", width: 20 },  // J
-      { header: "Total Bayar", key: "total_bayar", width: 15 },    // K
-      { header: "MOP", key: "ket", width: 15 },                    // L (Ubah Ket jadi MOP)
-      { header: "Status Pajak", key: "status", width: 15 },        // M (Baru)
-      { header: "TOP", key: "top", width: 15 }                     // N (Baru)
+      { header: "Tgl Bayar", key: "tanggal_bayar", width: 12 },    
+      { header: "Tgl Nota", key: "tgl_nota", width: 12 },          
+      { header: "No Faktur", key: "no_faktur", width: 20 },        
+      { header: "Kode Supp", key: "kode_supplier", width: 15 },    
+      { header: "Nama Supplier", key: "nama_supplier", width: 30 },
+      { header: "Cabang Inv", key: "nm_alias", width: 15 },        
+      { header: "Cabang Bayar", key: "nm_alias_bayar", width: 15 },
+      { header: "Nilai Faktur", key: "nilai_faktur", width: 15 },  
+      { header: "Potongan", key: "potongan", width: 15 },          
+      { header: "Ket Potongan", key: "ket_potongan", width: 20 },  
+      { header: "Total Bayar", key: "total_bayar", width: 15 },    
+      { header: "MOP", key: "ket", width: 15 },                    
+      { header: "Status Pajak", key: "status", width: 15 },        
+      { header: "TOP", key: "top", width: 15 }                     
     ];
     const headerRow = sheet.getRow(1);
     sheet.columns.forEach((col, index) => {
@@ -590,14 +607,14 @@ async function handleExport() {
         kode_supplier: row.kode_supplier, 
         nama_supplier: row.nama_supplier,
         nm_alias: row.nm_alias || row.kode_store,
-        nm_alias_bayar: row.nm_alias_bayar || row.store_bayar, // Pastikan field ini diambil dari query
+        nm_alias_bayar: row.nm_alias_bayar || row.store_bayar, 
         nilai_faktur: parseFloat(row.nilai_faktur) || 0, 
         potongan: parseFloat(row.potongan) || 0,
         ket_potongan: row.ket_potongan,    
         total_bayar: parseFloat(row.total_bayar) || 0,
-        ket: row.ket,       // MOP (CASH/TRANSFER)
-        status: row.status, // Status (PKP/NON PKP)
-        top: row.top        // TOP
+        ket: row.ket,       
+        status: row.status, 
+        top: row.top        
       });
     });
     ["nilai_faktur", "potongan", "total_bayar"].forEach((key) => {
@@ -804,22 +821,66 @@ btnSaveBatch.addEventListener("click", async () => {
     const kodeSupp = inpKodeSupplier.value.trim();
     const storeBayar = inpStoreBayar.value;
     const tglBayar = inpTglBayar.value;
-    const globalTotalVal = parseNumber(inpGlobalTotal.value);
+    const globalInputVal = parseNumber(inpGlobalTotal.value);
     if (!namaSupp) return Swal.fire("Gagal", "Isi Nama Supplier", "warning");
-    const confirm = await Swal.fire({
+    const totalTagihan = cartItems.reduce((acc, item) => {
+        const nilai = parseNumber(item.nilai_faktur);
+        const pot = parseNumber(item.potongan);
+        return acc + (nilai - pot);
+    }, 0);
+    const totalRencanaBayar = cartItems.reduce((acc, item) => {
+        const bayarPerItem = globalInputVal > 0 ? globalInputVal : parseNumber(item.total_bayar);
+        return acc + bayarPerItem;
+    }, 0);
+    let swalOptions = {
         title: 'Simpan Perubahan?',
         text: `Total ${cartItems.length} item akan disimpan.`,
         icon: 'question',
         showCancelButton: true,
         confirmButtonText: 'Ya, Simpan',
-        confirmButtonColor: '#db2777'
-    });
+        confirmButtonColor: '#db2777' 
+    };
+    if (Math.abs(totalRencanaBayar - totalTagihan) > 100) {
+        const selisih = totalRencanaBayar - totalTagihan;
+        const textSelisih = formatNumber(Math.abs(selisih));
+        const statusSelisih = selisih > 0 ? "LEBIH" : "KURANG";
+        swalOptions = {
+            title: '⚠️ NOMINAL TIDAK BALANCE!',
+            html: `
+                <div class="text-left text-sm bg-red-50 p-4 rounded-lg border border-red-200">
+                    <p class="mb-3 text-red-800 font-bold">Total Bayar tidak sama dengan Total Tagihan!</p>
+                    <table class="w-full text-sm">
+                        <tr class="border-b border-red-200">
+                            <td class="py-2 text-gray-600">Total Tagihan (Faktur - Potongan)</td>
+                            <td class="py-2 font-bold text-right text-gray-800">${formatNumber(totalTagihan)}</td>
+                        </tr>
+                        <tr class="border-b border-red-200">
+                            <td class="py-2 text-gray-600">Total Bayar</td>
+                            <td class="py-2 font-bold text-right text-blue-600">${formatNumber(totalRencanaBayar)}</td>
+                        </tr>
+                        <tr>
+                            <td class="py-2 font-bold text-red-600">Selisih ${statusSelisih}</td>
+                            <td class="py-2 font-bold text-right text-red-600 text-lg">${textSelisih}</td>
+                        </tr>
+                    </table>
+                </div>
+                <p class="mt-4 text-gray-600 font-medium text-center">Apakah Anda yakin angka ini sudah benar?</p>
+            `,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Tetap Simpan',
+            confirmButtonColor: '#d33', 
+            cancelButtonText: 'Cek Kembali',
+            focusCancel: true
+        };
+    }
+    const confirm = await Swal.fire(swalOptions);
     if (!confirm.isConfirmed) return;
     let finalDetails = cartItems;
-    if (globalTotalVal > 0) {
+    if (globalInputVal > 0) {
         finalDetails = cartItems.map(item => ({
             ...item,
-            total_bayar: globalTotalVal 
+            total_bayar: globalInputVal 
         }));
     }
     const payload = {

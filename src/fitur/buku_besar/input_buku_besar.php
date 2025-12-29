@@ -331,12 +331,18 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                     <div class="text-sm text-pink-800">
                                         Total Faktur: <span id="lbl_count_item" class="font-bold">0</span> Item
                                     </div>
+                                    <div class="text-sm text-gray-600">
+                                        Total Tagihan:
+                                        <span class="font-mono font-bold text-lg text-pink-600 ml-1">
+                                            Rp <span id="lbl_total_tagihan">0</span>
+                                        </span>
+                                    </div>
 
                                 </div>
                                 <div class="mt-4 flex justify-end gap-3">
                                     <button type="button" id="btn-save-batch" disabled
                                         class="btn-primary flex items-center gap-2 px-8 py-3 shadow-lg shadow-pink-500/30 opacity-50 cursor-not-allowed">
-                                        <i class="fas fa-save fa-lg"></i> <span>SIMPAN TRANSAKSI</span>
+                                        <i class="fas fa-save fa-lg"></i> <span>Simpan</span>
                                     </button>
                                 </div>
                             </div>
