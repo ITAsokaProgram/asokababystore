@@ -173,14 +173,14 @@ document.addEventListener("DOMContentLoaded", () => {
                     item.nama_supplier,
                     formatListExcel(item.list_status), 
                     formatListExcel(item.list_top),    
-                    item.ket || "",
                     formatListExcel(item.no_faktur),
                     formatListExcel(item.ket_potongan),
                     formatListExcel(item.list_potongan, true),
                     formatListExcel(item.list_nilai_faktur, true),
                     parseFloat(item.total_bayar) || 0,
                     item.tanggal_bayar,
-                    item.Nm_Alias_Bayar || item.store_bayar || "" 
+                    item.Nm_Alias_Bayar || item.store_bayar || "",
+                    item.ket || "",
                 ];
                 r.getCell(10).numFmt = currencyFmt; 
                 r.eachCell((cell) => {
@@ -402,13 +402,6 @@ document.addEventListener("DOMContentLoaded", () => {
                              ${listTopHtml}
                         </div>
                     </td>
-                    <td class="text-sm text-gray-600 pt-3">
-                        <div class="flex gap-4">
-                             <div class="font-mono text-xs text-blue-600 truncate">
-                                ${row.ket || '-'}
-                             </div>
-                        </div>
-                    </td>
                     <td class="text-right font-mono text-red-600 text-sm pt-3">
                       <div class="font-mono text-xs text-blue-600 truncate">
                         ${listPotonganHtml}
@@ -428,6 +421,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     </td>
                     <td class="text-center pt-3">
                          ${cabangBayar}
+                    </td>
+                    <td class="text-sm text-gray-600 pt-3">
+                        <div class="flex gap-4">
+                             <div class="font-mono text-xs text-blue-600 truncate">
+                                ${row.ket || '-'}
+                             </div>
+                        </div>
                     </td>
                 </tr>
             `;

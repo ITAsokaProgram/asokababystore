@@ -226,12 +226,12 @@ $menuHandler = new MenuHandler('laporan_buku_besar'); // Sesuaikan permission ke
                                     <th>Supplier</th>
                                     <th class="text-center">Status</th>
                                     <th class="text-center">Jatuh Tempo</th>
-                                    <th>MOP</th>
                                     <th class="text-right">Potongan</th>
                                     <th class="text-right">Nilai Faktur</th>
                                     <th class="text-right">Total Bayar</th>
                                     <th class="text-center">Tgl Bayar</th>
                                     <th class="text-center">Cabang Bayar</th>
+                                    <th>MOP</th>
                                 </tr>
                             </thead>
                             <tbody id="ledger-table-body">

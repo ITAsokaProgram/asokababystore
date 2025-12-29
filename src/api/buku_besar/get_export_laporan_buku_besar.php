@@ -84,7 +84,7 @@ try {
         LEFT JOIN kode_store ks_bayar ON bb.store_bayar = ks_bayar.Kd_Store
         WHERE $where_conditions
         GROUP BY $group_logic
-        ORDER BY sort_date DESC, id DESC
+        ORDER BY dibuat_pada DESC, id DESC
     ";
     $stmt = $conn->prepare($sql);
     if (!empty($bind_params)) {
