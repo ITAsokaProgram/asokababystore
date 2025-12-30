@@ -4,17 +4,70 @@ document.addEventListener("DOMContentLoaded", () => {
   const filterForm = document.getElementById("filter-form");
   const paginationInfo = document.getElementById("pagination-info");
   const paginationLinks = document.getElementById("pagination-links");
+
+  // Element Summary
+  const elTotalSelisih = document.getElementById("summary-total-selisih");
+  const elTotalRupiahSelisih = document.getElementById("summary-total-rupiah-selisih");
+  const elTotalMissing = document.getElementById("summary-total-missing");
+  const elTotalNotFound = document.getElementById("summary-total-notfound");
+
+  // Buttons Summary
+  const btnShowSelisih = document.getElementById("btn-show-selisih");
+  const btnShowRupiahSelisih = document.getElementById("btn-show-rupiah-selisih");
+  const btnShowMissing = document.getElementById("btn-show-missing");
+  const btnShowNotFound = document.getElementById("btn-show-notfound");
+
+  let summaryData = {
+    list_selisih: [],
+    list_belum_ada: [],
+    list_tidak_ditemukan: [],
+  };
+  let currentTableData = [];
+
+  // Handle Pagination Click
+  if (paginationLinks) {
+    paginationLinks.addEventListener("click", (e) => {
+      const link = e.target.closest("a.pagination-link");
+      if (!link || link.classList.contains("pagination-disabled")) return;
+      e.preventDefault();
+      const url = link.getAttribute("href");
+      window.history.pushState({}, "", url);
+      loadData();
+    });
+  }
+
+  // Helper Functions
+  window.copyToClipboard = function (text, btnElement) {
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(
+      () => {
+        const icon = btnElement.querySelector("i");
+        const originalClass = icon.className;
+        icon.className = "fas fa-check text-green-500";
+        setTimeout(() => {
+          icon.className = "fas fa-copy";
+        }, 1500);
+      },
+      (err) => {
+        console.error("Gagal copy: ", err);
+      }
+    );
+  };
+
   function formatRupiah(number) {
     if (isNaN(number) || number === null) return "0";
     return new Intl.NumberFormat("id-ID", {
       style: "decimal",
       minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(number);
   }
+
   function formatJustDate(dateString) {
     if (!dateString) return "-";
     return dateString.substring(0, 10);
   }
+
   function getCookie(name) {
     let nameEQ = name + "=";
     let ca = document.cookie.split(";");
@@ -25,49 +78,148 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     return null;
   }
+
+  // Open Detail Row Modal
+  window.openDetailRow = function (index) {
+    const rowData = currentTableData[index];
+    if (rowData) {
+      window.dispatchEvent(
+        new CustomEvent("open-detail-modal", { detail: rowData })
+      );
+    }
+  };
+
+  // Event Listeners for Summary Buttons
+  if (btnShowSelisih) {
+    btnShowSelisih.addEventListener("click", () => {
+      window.dispatchEvent(
+        new CustomEvent("open-summary-modal", {
+          detail: {
+            title: "Faktur Return Selisih",
+            list: summaryData.list_selisih,
+          },
+        })
+      );
+    });
+  }
+  if (btnShowRupiahSelisih) {
+    btnShowRupiahSelisih.addEventListener("click", () => {
+      window.dispatchEvent(
+        new CustomEvent("open-summary-modal", {
+          detail: {
+            title: "Detail Nominal Selisih",
+            list: summaryData.list_selisih,
+          },
+        })
+      );
+    });
+  }
+  if (btnShowMissing) {
+    btnShowMissing.addEventListener("click", () => {
+      window.dispatchEvent(
+        new CustomEvent("open-summary-modal", {
+          detail: {
+            title: "Faktur Belum Ada (Checking Return)",
+            list: summaryData.list_belum_ada,
+          },
+        })
+      );
+    });
+  }
+  if (btnShowNotFound) {
+    btnShowNotFound.addEventListener("click", () => {
+      window.dispatchEvent(
+        new CustomEvent("open-summary-modal", {
+          detail: {
+            title: "Data Tidak Ditemukan di Retur",
+            list: summaryData.list_tidak_ditemukan,
+          },
+        })
+      );
+    });
+  }
+
   async function loadStores() {
-    const token = getCookie("admin_token");
-    const url = "/src/api/cabang/get_kode.php";
     try {
-      const response = await fetch(url, {
+      const token = getCookie("admin_token");
+      const response = await fetch("/src/api/cabang/get_kode.php", {
         headers: {
           Accept: "application/json",
           Authorization: "Bearer " + token,
         },
       });
       const result = await response.json();
-      if (filterStore) {
-        if (result.data && result.data.length > 0) {
-          const defaultOption = new Option("Pilih Cabang", "");
-          filterStore.add(defaultOption);
-          const allOption = new Option("SEMUA CABANG", "SEMUA CABANG");
-          filterStore.add(allOption);
-          result.data.forEach((store) => {
-            const option = new Option(store.nama_cabang, store.store);
-            filterStore.add(option);
-          });
+      const select = filterStore;
+      if (!select) return;
+      select.innerHTML = "";
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlKodeStore = urlParams.get('kode_store');
+
+      if (result.data && result.data.length > 0) {
+        const defaultOption = new Option("Pilih Cabang", "");
+        defaultOption.disabled = true;
+        select.add(defaultOption);
+        const allOption = new Option("Semua Cabang", "");
+        select.add(allOption);
+        result.data.forEach((store) => {
+          const option = new Option(
+            `${store.nama_cabang} (${store.store})`,
+            store.store
+          );
+          select.add(option);
+        });
+
+        if (urlKodeStore !== null) {
+          if (urlKodeStore === "") {
+            select.selectedIndex = 1;
+          } else {
+            select.value = urlKodeStore;
+          }
         } else {
-          filterStore.innerHTML =
-            '<option value="">Gagal memuat data cabang</option>';
+          select.selectedIndex = 1;
         }
+      } else {
+        select.innerHTML = '<option value="">Gagal memuat data cabang</option>';
+      }
+      if (urlParams.has('page') || urlParams.has('kode_store')) {
+        loadData();
       }
     } catch (error) {
-      console.error("Error fetching stores:", error);
+      console.error("Gagal load store:", error);
       if (filterStore) {
         filterStore.innerHTML = '<option value="">Error koneksi</option>';
       }
     }
   }
+
   async function loadData() {
     setLoading(true);
     const formData = new FormData(filterForm);
     const params = new URLSearchParams(formData);
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentPageFromUrl = urlParams.get('page') || '1';
+    params.set('page', currentPageFromUrl);
+
     try {
       const response = await fetch(
         `/src/api/return/get_returns.php?${params.toString()}`
       );
       const data = await response.json();
       if (data.error) throw new Error(data.error);
+
+      // Populate Summary
+      if (data.summary) {
+        if (elTotalSelisih) elTotalSelisih.textContent = data.summary.total_selisih;
+        if (elTotalMissing) elTotalMissing.textContent = "Rp " + formatRupiah(data.summary.total_belum_ada);
+        if (elTotalRupiahSelisih) elTotalRupiahSelisih.textContent = "Rp " + formatRupiah(data.summary.total_selisih_rupiah);
+        if (elTotalNotFound) elTotalNotFound.textContent = data.summary.total_tidak_ditemukan;
+
+        summaryData.list_selisih = data.summary.list_selisih;
+        summaryData.list_belum_ada = data.summary.list_belum_ada;
+        summaryData.list_tidak_ditemukan = data.summary.list_tidak_ditemukan;
+      }
+
+      currentTableData = data.tabel_data || [];
       renderTable(data.tabel_data, data.pagination.offset);
       renderPagination(data.pagination);
     } catch (error) {
@@ -77,11 +229,13 @@ document.addEventListener("DOMContentLoaded", () => {
       setLoading(false);
     }
   }
+
   function setLoading(isLoading) {
     if (isLoading) {
       tableBody.innerHTML = `<tr><td colspan="8" class="text-center p-8"><div class="spinner-simple"></div></td></tr>`;
     }
   }
+
   function renderTable(rows, offset) {
     if (!rows || rows.length === 0) {
       tableBody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-gray-500">Tidak ada data ditemukan.</td></tr>`;
@@ -90,35 +244,60 @@ document.addEventListener("DOMContentLoaded", () => {
     let html = "";
     rows.forEach((row, index) => {
       const storeLabel = row.kode_store
-        ? `<span class="badge-pink">${row.Nm_Alias}</span>`
+        ? `<span class="badge-pink">${row.Nm_Alias || row.kode_store}</span>`
         : "-";
+
+      // Status Badge Logic
+      let statusBadge = "";
+      if (row.status_data === "MATCH") {
+        statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                           <i class="fas fa-check-circle mr-1"></i> Sesuai
+                         </span>`;
+      } else if (row.status_data === "DIFF") {
+        statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 border border-red-200">
+                           <i class="fas fa-times-circle mr-1"></i> Selisih
+                         </span>`;
+      } else if (row.status_data === "NOT_FOUND_IN_ERP") {
+        statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
+                           <i class="fas fa-question-circle mr-1"></i> Tdk Ditemukan
+                         </span>`;
+      }
+
       html += `
-        <tr class="hover:bg-gray-50 border-b border-gray-100">
-            <td class="text-center text-gray-500 text-sm py-3">${
-              offset + index + 1
-            }</td>
-            <td class="text-sm text-gray-700">${formatJustDate(
-              row.tgl_return
-            )}</td>
+        <tr class="hover:bg-gray-50 border-b border-gray-100 transition cursor-pointer" onclick="openDetailRow(${index})">
+            <td class="text-center text-gray-500 text-sm py-3">${offset + index + 1}</td>
+            <td class="text-sm" style="max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                ${statusBadge}
+            </td>
+            <td class="text-sm text-gray-700">${formatJustDate(row.tgl_return)}</td>
             <td class="text-sm font-semibold text-gray-600">${storeLabel}</td>
-            <td class="font-medium text-pink-600">${row.kode_supp}</td>
-            <td class="text-sm text-gray-700">${row.nama_supplier || "-"}</td>
-            <td class="text-sm font-bold text-gray-800">${row.no_faktur}</td>
-            <td class="text-right font-mono text-gray-700">${formatRupiah(
-              row.total_return
-            )}</td>
-            <td class="text-sm text-gray-500 italic truncate max-w-xs">${
-              row.keterangan || "-"
-            }</td>
+            <td class="text-sm text-gray-600">
+                <div class="font-medium text-pink-600">${row.kode_supp}</div>
+            </td>
+            <td class="text-sm font-bold text-gray-800 font-mono">
+                <div class="flex items-center justify-between gap-2 group">
+                    <span>${row.no_faktur}</span>
+                    <button 
+                       type="button"
+                       onclick="event.stopPropagation(); copyToClipboard('${row.no_faktur}', this)" 
+                       class="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
+                       title="Copy No Faktur">
+                       <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </td>
+            <td class="text-right font-mono text-blue-600 font-semibold">${formatRupiah(row.total_check)}</td>
+            <td class="text-sm text-gray-500 italic truncate" style="max-width: 5rem;">${row.keterangan || "-"}</td>
         </tr>
       `;
     });
     tableBody.innerHTML = html;
   }
+
   function renderPagination(pagination) {
     if (!pagination) {
-      paginationInfo.textContent = "";
-      paginationLinks.innerHTML = "";
+      if (paginationInfo) paginationInfo.textContent = "";
+      if (paginationLinks) paginationLinks.innerHTML = "";
       return;
     }
     const { current_page, total_pages, total_rows, limit, offset } = pagination;
@@ -130,14 +309,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const start_row = offset + 1;
     const end_row = Math.min(offset + limit, total_rows);
     paginationInfo.textContent = `Menampilkan ${start_row} - ${end_row} dari ${total_rows} data`;
+
+    // Logic pagination links sama dengan receipt...
     let linksHtml = "";
     linksHtml += `
-            <a href="${
-              current_page > 1 ? build_pagination_url(current_page - 1) : "#"
-            }" 
-               class="pagination-link ${
-                 current_page === 1 ? "pagination-disabled" : ""
-               }">
+            <a href="${current_page > 1 ? build_pagination_url(current_page - 1) : "#"}" 
+               class="pagination-link ${current_page === 1 ? "pagination-disabled" : ""}">
                 <i class="fas fa-chevron-left"></i>
             </a>
         `;
@@ -145,10 +322,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const max_pages_around = 2;
     for (let i = 1; i <= total_pages; i++) {
       if (
-        i === 1 ||
-        i === total_pages ||
-        (i >= current_page - max_pages_around &&
-          i <= current_page + max_pages_around)
+        i === 1 || i === total_pages ||
+        (i >= current_page - max_pages_around && i <= current_page + max_pages_around)
       ) {
         pages_to_show.push(i);
       }
@@ -159,29 +334,22 @@ document.addEventListener("DOMContentLoaded", () => {
         linksHtml += `<span class="pagination-ellipsis">...</span>`;
       }
       linksHtml += `
-                <a href="${build_pagination_url(page_num)}" 
-                   class="pagination-link ${
-                     page_num === current_page ? "pagination-active" : ""
-                   }">
-                    ${page_num}
-                </a>
-            `;
+            <a href="${build_pagination_url(page_num)}" 
+               class="pagination-link ${page_num === Number(current_page) ? "pagination-active" : ""}">
+               ${page_num}
+            </a>
+        `;
       last_page = page_num;
     }
     linksHtml += `
-            <a href="${
-              current_page < total_pages
-                ? build_pagination_url(current_page + 1)
-                : "#"
-            }" 
-               class="pagination-link ${
-                 current_page === total_pages ? "pagination-disabled" : ""
-               }">
+            <a href="${current_page < total_pages ? build_pagination_url(current_page + 1) : "#"}" 
+               class="pagination-link ${current_page === total_pages ? "pagination-disabled" : ""}">
                 <i class="fas fa-chevron-right"></i>
             </a>
         `;
     paginationLinks.innerHTML = linksHtml;
   }
+
   if (filterForm) {
     filterForm.addEventListener("submit", (e) => {
       e.preventDefault();
@@ -193,8 +361,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
   loadStores();
-  loadData();
 });
+
 function build_pagination_url(newPage) {
   const params = new URLSearchParams(window.location.search);
   params.set("page", newPage);

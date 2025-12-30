@@ -68,7 +68,6 @@ if (!$menuHandler->initialize()) {
                             </div>
                             <div>
                                 <h1 class="text-xl font-bold text-gray-800 mb-1">Checking Receipt</h1>
-                                <p class="text-xs text-gray-600">Data Checking Receipt (c_receipt).</p>
                             </div>
                         </div>
                         <a href="create.php"
