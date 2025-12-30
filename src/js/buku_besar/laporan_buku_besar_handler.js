@@ -368,28 +368,16 @@ document.addEventListener("DOMContentLoaded", () => {
     let htmlRows = "";
     let item_counter = offset + 1;
     tabel_data.forEach((row) => {
-      // 1. Ambil data angka dari row (pastikan float)
       const sumNilaiFaktur = parseFloat(row.sum_nilai_faktur) || 0;
       const sumPotongan = parseFloat(row.sum_potongan) || 0;
       const sumTotalBayar = parseFloat(row.total_bayar) || 0;
-
-      // 2. Logic Perhitungan Sisa Hutang (FIXED)
-      // Tagihan murni = Nilai Faktur - Potongan
       const tagihanSeharusnya = sumNilaiFaktur - sumPotongan;
-      // Sisa Hutang = Tagihan murni - Yang sudah dibayar
       const sisaHutang = tagihanSeharusnya - sumTotalBayar;
-
-      // 3. Tentukan status Lunas
-      // (Toleransi 100 perak untuk selisih desimal, dan harus ada tanggal bayar)
       const isPaid = (sisaHutang <= 100) && (row.tanggal_bayar !== null && row.tanggal_bayar !== "");
-
-      // 4. Siapkan Variabel Tampilan
       const totalBayarDisplay = sumTotalBayar;
       const cabangBayar = row.Nm_Alias_Bayar || row.store_bayar || "-";
       const rawStore = row.Nm_Alias || row.kode_store || "-";
       const storeList = rawStore.split('<br>');
-
-      // Helper formatting list
       const listPotonganHtml = formatListRupiah(row.list_potongan, '|');
       const listNilaiFakturHtml = formatListRupiah(row.list_nilai_faktur, '|');
       const listKetPotonganHtml = row.ket_potongan || "-";
@@ -397,21 +385,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const listTopHtml = formatListTop(row.list_top, isPaid);
       const listNoFakturHtml = row.no_faktur || "-";
       const historyCount = parseInt(row.history_count || 0);
-
-      // 5. Logic Tampilan Kolom "Total Bayar"
       let totalBayarCellContent = formatRupiah(totalBayarDisplay);
-
-      // Jika belum lunas tapi sudah ada cicilan
       if (!isPaid && sumTotalBayar > 0) {
         totalBayarCellContent += `<span class="text-[10px] text-orange-500 font-bold ml-1">(Cicil)</span>`;
       }
-
-      // Styling warna kolom bayar
       let totalBayarClass = "text-right font-bold text-gray-800 pt-3 border-l border-gray-100 bg-gray-50/50";
       if (isPaid) totalBayarClass += " text-green-600";
       else if (sumTotalBayar > 0) totalBayarClass += " text-orange-600";
-
-      // Click event untuk history angsuran
       let totalBayarClick = "";
       let totalBayarTitle = "";
       if (historyCount > 0) {
@@ -419,24 +399,18 @@ document.addEventListener("DOMContentLoaded", () => {
         totalBayarClick = `onclick="viewHistory(${row.id}, '${row.no_faktur}')"`;
         totalBayarTitle = `title="Lihat Histori Angsuran"`;
       }
-
-      // 6. Render HTML Baris
       htmlRows += `
             <tr class="hover:bg-gray-50 align-top">
                 <td class="text-center font-medium text-gray-500 pt-3">${item_counter}</td>
-                
                 <td class="pt-3 text-sm">${formatDate(row.tgl_nota)}</td>
-                
                 <td class="text-center pt-3">
                     <div class="flex flex-col gap-1 items-center">
                           ${listTopHtml}
                     </div>
                 </td>
-                
                 <td class="pt-3 text-xs font-mono text-gray-700 ">
                     ${listNoFakturHtml}
                 </td>
-                
                 <td class="text-center pt-3">
                     <div class="flex flex-col gap-1 items-center">
                         ${storeList.map(storeName => `
@@ -446,15 +420,12 @@ document.addEventListener("DOMContentLoaded", () => {
                         `).join('')}
                     </div>
                 </td>
-                
                 <td class="pt-3 font-semibold text-gray-700">
                     ${row.nama_supplier || "-"}
                 </td>
-                
                 <td class="text-center pt-3 text-xs">
                     ${listStatusHtml.split('|').map(s => `<span class="px-1 rounded bg-gray-100 border">${s}</span>`).join('<br>')}
                 </td>
-                
                 <td class="text-right font-mono text-red-600 text-sm pt-3">
                   <div class="font-mono text-xs text-blue-600 truncate">
                     ${listPotonganHtml}
@@ -463,26 +434,21 @@ document.addEventListener("DOMContentLoaded", () => {
                     ${listKetPotonganHtml}
                   </div>
                 </td>
-                
                 <td class="text-right font-mono text-gray-700 text-sm pt-3">
                     ${listNilaiFakturHtml}
                 </td>
-                
                 <td class="${totalBayarClass}" ${totalBayarClick} ${totalBayarTitle}>
                     ${totalBayarCellContent}
-                    ${(!isPaid && sisaHutang > 100) ? // Tampilkan sisa hutang jika belum lunas
+                    ${(!isPaid && sisaHutang > 100) ?
           `<div class="text-[10px] text-red-500 font-normal mt-1">Kurang: ${formatRupiah(sisaHutang)}</div>`
           : ''}
                 </td>
-                
                 <td class="text-center text-sm text-gray-600 pt-3">
                      ${formatDate(row.tanggal_bayar)}
                 </td>
-                
                 <td class="text-center pt-3">
                      ${cabangBayar}
                 </td>
-                
                 <td class="text-sm text-gray-600 pt-3">
                     <div class="flex gap-4">
                          <div class="font-mono text-xs text-blue-600 truncate">
@@ -494,7 +460,6 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
       item_counter++;
     });
-
     tableBody.innerHTML = htmlRows;
   }
   function renderPagination(pagination) {
@@ -683,9 +648,7 @@ window.viewHistory = async (id, noFaktur) => {
                     </table>
                 </div>
             `;
-
       const cleanNoFaktur = noFaktur ? noFaktur.replace(/<br>/g, ', ') : '-';
-
       if (typeof showDetailModalHistory === 'function') {
         showDetailModalHistory(`Histori Pembayaran: ${cleanNoFaktur}`, html);
       } else {
