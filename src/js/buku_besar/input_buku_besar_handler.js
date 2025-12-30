@@ -979,19 +979,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       const exists = cartItems.find(item => item.no_faktur === noFaktur && item.kode_store === kodeStore);
       if (exists) return Swal.fire("Double", "Faktur ini sudah ada di daftar", "error");
       cartItems.push(itemData);
-      if (manualTotal <= 0) {
-        Toastify({ text: "Ditambahkan (Hutang/0)", duration: 1000, style: { background: "#10b981" } }).showToast();
-      }
+
     }
     if (inpGlobalTotal.value.trim() !== "") {
       cartItems.forEach(item => {
         item.total_bayar = manualTotal;
       });
-      Toastify({
-        text: `Updated: Semua item diset ke ${formatNumber(manualTotal)}`,
-        duration: 2000,
-        style: { background: "#3b82f6" }
-      }).showToast();
+
     }
     renderCart();
     resetItemForm();

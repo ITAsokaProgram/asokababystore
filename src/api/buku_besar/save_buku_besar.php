@@ -168,6 +168,7 @@ try {
                     $ket_mop,
                     $kd_user
                 );
+
                 if (!$stmtInsertAngsuran->execute()) {
                     throw new Exception("Gagal mencatat histori angsuran: " . $stmtInsertAngsuran->error);
                 }
@@ -178,7 +179,7 @@ try {
         if ($is_group_lunas_murni && count($details) > 1) {
             $msg .= " Pelunasan Group tercatat.";
         } elseif (!$is_group_lunas_murni) {
-            $msg .= " Pembayaran/Angsuran tercatat.";
+            $msg .= " Transaksi tercatat.";
         }
         echo json_encode([
             'success' => true,
