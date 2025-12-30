@@ -14,7 +14,6 @@ if (!$menuHandler->initialize()) {
     exit();
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="id">
 

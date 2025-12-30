@@ -151,16 +151,14 @@ document.addEventListener("DOMContentLoaded", () => {
       const result = await response.json();
       const select = filterStore;
       if (!select) return;
+
+      // HAPUS OPSI DEFAULT (Semua/Pilih Cabang)
       select.innerHTML = "";
+
       const urlParams = new URLSearchParams(window.location.search);
       const urlKodeStore = urlParams.get('kode_store');
 
       if (result.data && result.data.length > 0) {
-        const defaultOption = new Option("Pilih Cabang", "");
-        defaultOption.disabled = true;
-        select.add(defaultOption);
-        const allOption = new Option("Semua Cabang", "");
-        select.add(allOption);
         result.data.forEach((store) => {
           const option = new Option(
             `${store.nama_cabang} (${store.store})`,
@@ -169,18 +167,15 @@ document.addEventListener("DOMContentLoaded", () => {
           select.add(option);
         });
 
-        if (urlKodeStore !== null) {
-          if (urlKodeStore === "") {
-            select.selectedIndex = 1;
-          } else {
-            select.value = urlKodeStore;
-          }
-        } else {
-          select.selectedIndex = 1;
+        // Set selected value jika ada di URL, jika tidak browser memilih yang pertama
+        if (urlKodeStore !== null && urlKodeStore !== "") {
+          select.value = urlKodeStore;
         }
       } else {
         select.innerHTML = '<option value="">Gagal memuat data cabang</option>';
       }
+
+      // Load data jika ada parameter atau hanya ingin refresh
       if (urlParams.has('page') || urlParams.has('kode_store')) {
         loadData();
       }
@@ -310,7 +305,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const end_row = Math.min(offset + limit, total_rows);
     paginationInfo.textContent = `Menampilkan ${start_row} - ${end_row} dari ${total_rows} data`;
 
-    // Logic pagination links sama dengan receipt...
     let linksHtml = "";
     linksHtml += `
             <a href="${current_page > 1 ? build_pagination_url(current_page - 1) : "#"}" 
@@ -361,6 +355,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
   loadStores();
+  loadData();
 });
 
 function build_pagination_url(newPage) {

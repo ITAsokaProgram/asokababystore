@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (paginationLinks) {
     paginationLinks.addEventListener("click", (e) => {
       const link = e.target.closest("a.pagination-link");
-      
+
       if (!link || link.classList.contains("pagination-disabled")) return;
 
       e.preventDefault();
@@ -133,15 +133,14 @@ document.addEventListener("DOMContentLoaded", () => {
       const result = await response.json();
       const select = filterStore || document.getElementById("cabang");
       if (!select) return;
-      select.innerHTML = ""; 
+
+      // KOSONGKAN SELECT, TANPA OPSI DEFAULT "Pilih Cabang" ATAU "Semua Cabang"
+      select.innerHTML = "";
+
       const urlParams = new URLSearchParams(window.location.search);
       const urlKodeStore = urlParams.get('kode_store');
+
       if (result.data && result.data.length > 0) {
-        const defaultOption = new Option("Pilih Cabang", "");
-        defaultOption.disabled = true;
-        select.add(defaultOption);
-        const allOption = new Option("Semua Cabang", "");
-        select.add(allOption);
         result.data.forEach((store) => {
           const option = new Option(
             `${store.nama_cabang} (${store.store})`,
@@ -149,20 +148,19 @@ document.addEventListener("DOMContentLoaded", () => {
           );
           select.add(option);
         });
-        if (urlKodeStore !== null) {
-            if (urlKodeStore === "") {
-                select.selectedIndex = 1; 
-            } else {
-                select.value = urlKodeStore;
-            }
-        } else {
-            select.selectedIndex = 1; 
+
+        // Set selected berdasarkan URL jika ada
+        if (urlKodeStore !== null && urlKodeStore !== "") {
+          select.value = urlKodeStore;
         }
+        // Jika tidak ada URL parameter, browser otomatis memilih option pertama (index 0)
       } else {
         select.innerHTML = '<option value="">Gagal memuat data cabang</option>';
       }
+
+      // Jika halaman dimuat dengan parameter tertentu, muat ulang data (meskipun loadData dipanggil di akhir)
       if (urlParams.has('page') || urlParams.has('kode_store')) {
-          loadData();
+        loadData();
       }
     } catch (error) {
       console.error("Gagal load store:", error);
@@ -240,15 +238,14 @@ document.addEventListener("DOMContentLoaded", () => {
       let rowClass = "hover:bg-gray-50";
       html += `
          <tr class="${rowClass} border-b border-gray-100 transition cursor-pointer" onclick="openDetailRow(${index})">
-             <td class="text-center text-gray-500 text-sm py-3">${
-               offset + index + 1
-             }</td>
+             <td class="text-center text-gray-500 text-sm py-3">${offset + index + 1
+        }</td>
              <td class="text-sm" style="max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                  ${statusBadge}
              </td> 
              <td class="text-sm text-gray-700">${formatJustDate(
-               row.tgl_tiba
-             )}</td>
+          row.tgl_tiba
+        )}</td>
              <td class="text-sm font-semibold text-gray-600">${storeLabel}</td>
              <td class="text-sm text-gray-600">
                  <div class="font-medium text-pink-600">${row.kode_supp}</div>
@@ -258,9 +255,8 @@ document.addEventListener("DOMContentLoaded", () => {
                      <span>${row.no_faktur}</span>
                      <button 
                         type="button"
-                        onclick="event.stopPropagation(); copyToClipboard('${
-                          row.no_faktur
-                        }', this)" 
+                        onclick="event.stopPropagation(); copyToClipboard('${row.no_faktur
+        }', this)" 
                         class="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
                         title="Copy No Faktur">
                         <i class="fas fa-copy"></i>
@@ -268,11 +264,10 @@ document.addEventListener("DOMContentLoaded", () => {
                  </div>
              </td>
              <td class="text-right font-mono text-blue-600 font-semibold">${formatRupiah(
-               row.total_check
-             )}</td>
-             <td class="text-sm text-gray-500 italic truncate" style="max-width: 5rem;">${
-               row.keterangan || "-"
-             }</td>
+          row.total_check
+        )}</td>
+             <td class="text-sm text-gray-500 italic truncate" style="max-width: 5rem;">${row.keterangan || "-"
+        }</td>
          </tr>
        `;
     });
@@ -295,12 +290,10 @@ document.addEventListener("DOMContentLoaded", () => {
     paginationInfo.textContent = `Menampilkan ${start_row} - ${end_row} dari ${total_rows} data`;
     let linksHtml = "";
     linksHtml += `
-             <a href="${
-               current_page > 1 ? build_pagination_url(current_page - 1) : "#"
-             }" 
-                class="pagination-link ${
-                  current_page === 1 ? "pagination-disabled" : ""
-                }">
+             <a href="${current_page > 1 ? build_pagination_url(current_page - 1) : "#"
+      }" 
+                class="pagination-link ${current_page === 1 ? "pagination-disabled" : ""
+      }">
                  <i class="fas fa-chevron-left"></i>
              </a>
          `;
@@ -324,23 +317,20 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       linksHtml += `
                  <a href="${build_pagination_url(page_num)}" 
-                    class="pagination-link ${
-                      page_num === Number(current_page) ? "pagination-active" : ""
-                    }">
+                    class="pagination-link ${page_num === Number(current_page) ? "pagination-active" : ""
+        }">
                      ${page_num}
                  </a>
              `;
       last_page = page_num;
     }
     linksHtml += `
-             <a href="${
-               current_page < total_pages
-                 ? build_pagination_url(current_page + 1)
-                 : "#"
-             }" 
-                class="pagination-link ${
-                  current_page === total_pages ? "pagination-disabled" : ""
-                }">
+             <a href="${current_page < total_pages
+        ? build_pagination_url(current_page + 1)
+        : "#"
+      }" 
+                class="pagination-link ${current_page === total_pages ? "pagination-disabled" : ""
+      }">
                  <i class="fas fa-chevron-right"></i>
              </a>
          `;
@@ -351,12 +341,24 @@ document.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
       const formData = new FormData(filterForm);
       const params = new URLSearchParams(formData);
-      params.set("page", "1"); 
+      params.set("page", "1");
       window.history.pushState({}, "", `?${params.toString()}`);
       loadData();
     });
   }
+  function getCookie(name) {
+    let nameEQ = name + "=";
+    let ca = document.cookie.split(";");
+    for (let i = 0; i < ca.length; i++) {
+      let c = ca[i];
+      while (c.charAt(0) == " ") c = c.substring(1, c.length);
+      if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+    }
+    return null;
+  }
+
   loadStores();
+  loadData();
 });
 function build_pagination_url(newPage) {
   const params = new URLSearchParams(window.location.search);
