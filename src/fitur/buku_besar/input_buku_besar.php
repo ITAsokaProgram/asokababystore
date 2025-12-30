@@ -173,7 +173,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                     class="fas fa-user-tie mr-1"></i> Data Pembayaran </h3>
                             <div class="space-y-3">
                                 <div>
-                                    <label class="form-label">Nama Supplier</label>
+                                    <label class="form-label">Nama Supplier <span class="text-red-500">*</span></label>
 
                                     <input type="hidden" id="inp_id">
 
@@ -201,7 +201,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                 <div class="grid grid-cols-2 gap-2">
 
                                     <div>
-                                        <label class="form-label">Status</label>
+                                        <label class="form-label">Status <span class="text-red-500">*</span></label>
                                         <select id="inp_status" class="input-compact bg-white">
                                             <option value="">Pilih Status...</option>
                                             <option value="PKP">PKP</option>
@@ -210,13 +210,14 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                         </select>
                                     </div>
                                     <div>
-                                        <label class="form-label">Cabang Bayar</label>
+                                        <label class="form-label">Cabang Bayar <span
+                                                class="text-red-500">*</span></label>
                                         <input type="text" id="inp_store_bayar" class="input-compact border-pink-200"
                                             placeholder="Ketik cabang bayar...">
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="form-label">MOP</label>
+                                    <label class="form-label">MOP <span class="text-red-500">*</span></label>
                                     <select id="inp_ket_global"
                                         class="input-compact bg-white font-semibold text-blue-800">
                                         <option value="TRANSFER">TRANSFER</option>
@@ -224,7 +225,8 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                     </select>
                                 </div>
                                 <div class="mt-3 pt-3 border-t border-dashed border-gray-200">
-                                    <label class="form-label text-blue-600">Total Bayar</label>
+                                    <label class="form-label text-blue-600">Total Bayar <span
+                                            class="text-red-500">*</span></label>
                                     <div class="flex flex-col">
                                         <input type="text" id="inp_global_total"
                                             class="input-compact text-right font-bold font-mono text-blue-700"
@@ -241,7 +243,8 @@ require_once __DIR__ . '/../../component/menu_handler.php';
 
                             <div class="space-y-3">
                                 <div>
-                                    <label class="form-label">No. Invoice / Faktur</label>
+                                    <label class="form-label">No. Invoice / Faktur <span
+                                            class="text-red-500">*</span></label>
                                     <div class="relative">
                                         <input type="text" id="inp_no_faktur" class="input-compact pr-8"
                                             placeholder="Scan / Cari Invoice...">
@@ -270,13 +273,14 @@ require_once __DIR__ . '/../../component/menu_handler.php';
 
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
-                                        <label class="form-label">Cabang (Inv)</label>
+                                        <label class="form-label">Cabang (Inv) <span
+                                                class="text-red-500">*</span></label>
                                         <select id="inp_kode_store" class="input-compact bg-white">
                                             <option value="">Pilih...</option>
                                         </select>
                                     </div>
                                     <div>
-                                        <label class="form-label">Tgl Nota</label>
+                                        <label class="form-label">Tgl Nota <span class="text-red-500">*</span></label>
                                         <input type="date" id="inp_tgl_nota" class="input-compact">
                                     </div>
                                 </div>

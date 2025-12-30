@@ -163,7 +163,7 @@ try {
         $conn->commit();
         echo json_encode([
             'success' => true,
-            'message' => "Data berhasil disimpan." . ($is_full_payment ? "" : " Pembayaran angsuran tercatat.")
+            'message' => "Data berhasil disimpan." . ($is_full_payment ? "" : " Pembayaran tercatat.")
         ]);
     } catch (Exception $e) {
         $conn->rollback();

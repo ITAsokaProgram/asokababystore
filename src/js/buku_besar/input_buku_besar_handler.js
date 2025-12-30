@@ -497,17 +497,28 @@ async function handleSupplierSearch(e) {
 }
 async function handleSave() {
   const noFaktur = inpNoFaktur.value.trim();
-  if (!noFaktur) {
-    Swal.fire("Gagal", "Nomor Faktur wajib diisi", "warning");
-    return;
-  }
-  if (inpKodeStore.value === "") {
-    Swal.fire("Gagal", "Pilih Cabang", "warning");
-    return;
-  }
+  const namaSupp = inpNamaSupp.value.trim();
+  const storeBayar = inpStoreBayar.value.trim();
+  const kodeStore = inpKodeStore.value;
+  const tglNota = inpTglNota.value;
+  const status = inpStatus.value;
+  const mop = inpKetGlobal.value;
+
+  if (!namaSupp) return Swal.fire("Validasi Gagal", "Nama Supplier wajib diisi!", "warning");
+  if (!storeBayar) return Swal.fire("Validasi Gagal", "Cabang Bayar wajib diisi!", "warning");
+  if (!status) return Swal.fire("Validasi Gagal", "Status Pajak wajib dipilih!", "warning");
+  if (!mop) return Swal.fire("Validasi Gagal", "MOP wajib dipilih!", "warning");
+
+  if (!noFaktur) return Swal.fire("Validasi Gagal", "Nomor Invoice wajib diisi!", "warning");
+  if (!kodeStore) return Swal.fire("Validasi Gagal", "Cabang (Inv) wajib dipilih!", "warning");
+  if (!tglNota) return Swal.fire("Validasi Gagal", "Tanggal Nota wajib diisi!", "warning");
+
   const nilaiFaktur = parseNumber(inpNilaiFaktur.value);
   const potongan = parseNumber(inpPotongan.value);
   const inputTotalBayar = parseNumber(inpGlobalTotal.value);
+
+  if (nilaiFaktur <= 0) return Swal.fire("Validasi Gagal", "Nilai Faktur wajib diisi (lebih dari 0)!", "warning");
+
   let tagihanMurni = nilaiFaktur - potongan;
   let labelTagihan = "Nilai Faktur - Potongan";
   if (installmentInfoBox && !installmentInfoBox.classList.contains("hidden")) {
@@ -516,6 +527,8 @@ async function handleSave() {
     labelTagihan = "Sisa Hutang Saat Ini";
   }
   const finalTotalBayar = inputTotalBayar > 0 ? inputTotalBayar : tagihanMurni;
+
+  if (finalTotalBayar <= 0) return Swal.fire("Validasi Gagal", "Total Bayar wajib diisi (lebih dari 0)!", "warning");
   if (inputTotalBayar > 0 && Math.abs(inputTotalBayar - tagihanMurni) > 100) {
     const selisih = inputTotalBayar - tagihanMurni;
     const textSelisih = formatNumber(Math.abs(selisih));
@@ -915,12 +928,21 @@ document.addEventListener("DOMContentLoaded", async () => {
     const kodeStore = inpKodeStore.value;
     const valTop = inpTop.value;
     const valStatus = inpStatus.value;
+    const tglNota = inpTglNota.value; // Ambil Tgl Nota
     const nilai = parseNumber(inpNilaiFaktur.value);
     const potongan = parseNumber(inpPotongan.value);
     const manualTotal = parseNumber(inpGlobalTotal.value);
     const totalItem = manualTotal;
-    if (!noFaktur) return Swal.fire("Warning", "Isi No Faktur", "warning");
-    if (!kodeStore) return Swal.fire("Warning", "Pilih Cabang Faktur", "warning");
+
+    // --- VALIDASI REQUIRED (ADD ITEM) ---
+    // Note: Supplier, Store Bayar, dan MOP divalidasi saat tombol SIMPAN TRANSAKSI ditekan
+    if (!noFaktur) return Swal.fire("Validasi Gagal", "Nomor Invoice / Faktur wajib diisi!", "warning");
+    if (!kodeStore) return Swal.fire("Validasi Gagal", "Cabang (Inv) wajib dipilih!", "warning");
+    if (!tglNota) return Swal.fire("Validasi Gagal", "Tanggal Nota wajib diisi!", "warning");
+    if (!valStatus) return Swal.fire("Validasi Gagal", "Status Pajak wajib dipilih!", "warning");
+    if (nilai <= 0) return Swal.fire("Validasi Gagal", "Nilai Faktur wajib diisi (lebih dari 0)!", "warning");
+    // ------------------------------------
+    // 
     const itemData = {
       no_faktur: noFaktur,
       kode_store: kodeStore,
@@ -969,11 +991,21 @@ document.addEventListener("DOMContentLoaded", async () => {
   btnSaveBatch.addEventListener("click", async () => {
     const namaSupp = inpNamaSupp.value.trim();
     const kodeSupp = inpKodeSupplier.value.trim();
-    const storeBayar = inpStoreBayar.value;
+    const storeBayar = inpStoreBayar.value.trim(); // Ambil Store Bayar
     const tglBayar = inpTglBayar.value;
+    const statusPajak = inpStatus.value;
+    const mop = inpKetGlobal.value; // Ambil MOP
     const globalInputVal = parseNumber(inpGlobalTotal.value);
     const isGlobalFilled = inpGlobalTotal.value.trim() !== "";
-    if (!namaSupp) return Swal.fire("Gagal", "Isi Nama Supplier", "warning");
+
+    // --- VALIDASI REQUIRED (BATCH SAVE) ---
+    if (!namaSupp) return Swal.fire("Validasi Gagal", "Nama Supplier wajib diisi!", "warning");
+    // Cek Cabang Bayar (Store Bayar)
+    if (!storeBayar) return Swal.fire("Validasi Gagal", "Cabang Bayar wajib diisi!", "warning");
+    // Cek MOP (inp_ket_global)
+    if (!mop) return Swal.fire("Validasi Gagal", "MOP wajib dipilih!", "warning");
+    // --------------------------------------
+
     const totalTagihan = cartItems.reduce((acc, item) => {
       return acc + parseNumber(item.nilai_faktur);
     }, 0);
@@ -988,6 +1020,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     } else {
       finalDetails = [...cartItems];
       totalRencanaBayar = cartItems.reduce((acc, item) => acc + parseNumber(item.total_bayar), 0);
+    }
+    if (totalRencanaBayar <= 0) {
+      return Swal.fire("Validasi Gagal", "Total Bayar wajib diisi (lebih dari 0)!", "warning");
     }
     const isInstallmentMode = !installmentInfoBox.classList.contains("hidden") || (currentGroupId != null);
     let swalOptions = {
