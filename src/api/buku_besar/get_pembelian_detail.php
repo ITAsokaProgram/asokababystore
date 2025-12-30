@@ -32,7 +32,7 @@ try {
             // Hitung total satu group
             $queryGroup = "SELECT 
                             SUM(nilai_faktur) as total_nilai_group, 
-                            SUM(total_bayar) as total_bayar_group,
+                            total_bayar as total_bayar,
                             SUM(potongan) as total_potongan_group
                            FROM buku_besar 
                            WHERE group_id = ?";
@@ -44,7 +44,7 @@ try {
             if ($resGroup) {
                 $groupTotals = [
                     'nilai_faktur' => (float) $resGroup['total_nilai_group'],
-                    'total_bayar' => (float) $resGroup['total_bayar_group'],
+                    'total_bayar' => (float) $resGroup['total_bayar'],
                     'potongan' => (float) $resGroup['total_potongan_group']
                 ];
             }

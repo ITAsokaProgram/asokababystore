@@ -249,7 +249,6 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                     <div class="relative">
                                         <input type="text" id="inp_no_faktur" class="input-compact pr-8"
                                             placeholder="Scan / Cari Invoice...">
-                                        <i class="fas fa-search absolute right-2 top-2 text-gray-400 text-xs"></i>
                                     </div>
                                 </div>
                                 <div id="installment-info-box"

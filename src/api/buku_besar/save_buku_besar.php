@@ -62,14 +62,16 @@ try {
             $stmtDel->bind_param($types, ...$deletedIds);
             $stmtDel->execute();
         }
-        $stmtCheck = $conn->prepare("SELECT id, total_bayar FROM buku_besar WHERE no_faktur = ? AND kode_store = ? LIMIT 1");
+        $stmtCheck = $conn->prepare("SELECT id, total_bayar, potongan FROM buku_besar WHERE no_faktur = ? AND kode_store = ? LIMIT 1");
         $stmtInsertHead = $conn->prepare("INSERT INTO buku_besar 
               (group_id, tgl_nota, no_faktur, kode_supplier, nama_supplier, 
                potongan, ket_potongan, nilai_faktur, total_bayar, tanggal_bayar, 
                kode_store, store_bayar, ket, kd_user, top, status)
               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmtUpdateHead = $conn->prepare("UPDATE buku_besar SET 
+        $stmtUpdateHeadReplace = $conn->prepare("UPDATE buku_besar SET 
             total_bayar = ?, 
+            potongan = ?,
+            ket_potongan = ?,
             tanggal_bayar = ?, 
             store_bayar = ?, 
             ket = ?,
@@ -114,18 +116,13 @@ try {
             $buku_besar_id = 0;
             if ($existingData) {
                 $buku_besar_id = $existingData['id'];
-                $stmtUpdateHeadReplace = $conn->prepare("UPDATE buku_besar SET 
-                    total_bayar = ?, 
-                    tanggal_bayar = ?, 
-                    store_bayar = ?, 
-                    ket = ?,
-                    top = ?,
-                    status = ?,
-                    edit_pada = NOW() 
-                    WHERE id = ?");
+                $db_total_bayar = (float) $existingData['total_bayar'];
+                $new_accumulated_total = $db_total_bayar + $nominal_bayar_ini;
                 $stmtUpdateHeadReplace->bind_param(
-                    "dsssssi",
-                    $nominal_bayar_ini,
+                    "ddssssssi",
+                    $new_accumulated_total,
+                    $potongan,
+                    $ket_potongan,
                     $tanggal_bayar,
                     $store_bayar,
                     $ket_mop,
@@ -161,9 +158,7 @@ try {
                 }
                 $buku_besar_id = $conn->insert_id;
             }
-            $is_item_full_payment = (abs($nominal_bayar_ini - $nilai_faktur) < 100);
-            $skip_angsuran = ($is_item_full_payment || $is_group_lunas_murni);
-            if (!$skip_angsuran && $nominal_bayar_ini > 0) {
+            if ($nominal_bayar_ini > 0) {
                 $stmtInsertAngsuran->bind_param(
                     "isdsss",
                     $buku_besar_id,

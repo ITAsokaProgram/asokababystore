@@ -223,30 +223,20 @@ async function fetchTableData(reset = false) {
 }
 function renderCart() {
   if (cartItems.length === 0) {
-    tempListBody.innerHTML = `<tr><td colspan="5" class="text-center p-10 text-gray-400">Belum ada data</td></tr>`; // colspan jadi 5 karena kolom bayar hapus
+    tempListBody.innerHTML = `<tr><td colspan="5" class="text-center p-10 text-gray-400">Belum ada data</td></tr>`;
     btnSaveBatch.disabled = true;
     btnSaveBatch.classList.add("opacity-50", "cursor-not-allowed");
     lblCountItem.textContent = "0";
-
-    // Reset Summary Values
     if (lblTotalTagihan) lblTotalTagihan.textContent = "0";
     if (summaryPaymentDetails) summaryPaymentDetails.classList.add("hidden");
-
     btnSave.style.display = "";
     return;
   }
-
   btnSave.style.display = "none";
   let html = "";
-
-  // NOTE: Perhitungan Total Tagihan dipindah ke fungsi calculateSummary() 
-  // agar bisa dipanggil realtime tanpa re-render tabel.
-
   cartItems.forEach((item, index) => {
     const activeClass = (index === editingCartIndex) ? "bg-amber-100 border-amber-300" : "hover:bg-blue-50 border-gray-100";
     const nmStore = item.nm_alias || item.nm_store_display || item.kode_store;
-
-    // KOLOM BAYAR DIHAPUS DARI TEMPLATE HTML DI BAWAH INI
     html += `
             <tr class="border-b transition-colors cursor-pointer ${activeClass}" onclick="editCartItem(${index})">
                 <td class="p-2 font-medium text-blue-700">
@@ -256,7 +246,6 @@ function renderCart() {
                 <td class="p-2 text-xs">${nmStore}</td>
                 <td class="p-2 text-right text-gray-600">${formatNumber(item.nilai_faktur)}</td>
                 <td class="p-2 text-right text-red-500">${item.potongan > 0 ? formatNumber(item.potongan) : '-'}</td>
-                
                 <td class="p-2 text-center" onclick="event.stopPropagation()">
                     <button onclick="removeCartItem(${index})" class="text-red-500 hover:text-red-700 w-6 h-6 rounded hover:bg-red-50 transition-all">
                         <i class="fas fa-times"></i>
@@ -265,14 +254,10 @@ function renderCart() {
             </tr>
         `;
   });
-
   tempListBody.innerHTML = html;
   lblCountItem.textContent = cartItems.length;
-
   btnSaveBatch.disabled = false;
   btnSaveBatch.classList.remove("opacity-50", "cursor-not-allowed");
-
-  // Panggil fungsi hitung summary
   calculateSummary();
 }
 function renderTableRows(data) {
@@ -403,9 +388,13 @@ async function fetchFakturData(noFaktur) {
         let isGroupMode = false;
         if (d.group_totals) {
           nilaiFakturHitung = parseFloat(d.group_totals.nilai_faktur);
+          if (d.group_totals.potongan) {
+            potonganHitung = parseFloat(d.group_totals.potongan);
+          }
+          sudahBayarHitung = parseFloat(d.total_bayar);
           isGroupMode = true;
         }
-        const sisaHutang = nilaiFakturHitung - sudahBayarHitung;
+        const sisaHutang = (nilaiFakturHitung - potonganHitung) - sudahBayarHitung;
         if (sisaHutang > 100) {
           if (infoSudahBayar) {
             infoSudahBayar.innerHTML = formatNumber(sudahBayarHitung);
@@ -464,13 +453,12 @@ async function fetchFakturData(noFaktur) {
         inpKodeSupplier.value = d.kode_supplier || "";
         inpNamaSupp.value = d.nama_supplier || "";
         inpTglNota.value = d.tgl_nota || "";
-        inpStatus.value = d.status || ""; // <--- Kode ditambahkan disini
+        inpStatus.value = d.status || "";
         inpNilaiFaktur.value = formatNumber(parseFloat(d.total_bayar) || 0);
         inpPotongan.value = "0";
         inpKetPotongan.value = "";
         inpNilaiFaktur.readOnly = false;
         inpNilaiFaktur.classList.remove('bg-gray-100', 'cursor-not-allowed');
-
         inpPotongan.classList.remove('bg-gray-100', 'cursor-not-allowed');
         inpNoFaktur.classList.remove("bg-yellow-50");
         inpNoFaktur.classList.add("bg-green-50", "text-green-700");
@@ -482,7 +470,6 @@ async function fetchFakturData(noFaktur) {
       inpNoFaktur.classList.remove("bg-yellow-50");
       inpNilaiFaktur.readOnly = false;
       inpNilaiFaktur.classList.remove('bg-gray-100', 'cursor-not-allowed');
-
       inpPotongan.classList.remove('bg-gray-100', 'cursor-not-allowed');
       if (installmentInfoBox) installmentInfoBox.classList.add("hidden");
       Toastify({ text: "ℹ️ Data tidak ditemukan, silakan input manual", duration: 3000, style: { background: "#3b82f6" } }).showToast();
@@ -518,31 +505,29 @@ async function handleSave() {
   const tglNota = inpTglNota.value;
   const status = inpStatus.value;
   const mop = inpKetGlobal.value;
-
   if (!namaSupp) return Swal.fire("Validasi Gagal", "Nama Supplier wajib diisi!", "warning");
   if (!storeBayar) return Swal.fire("Validasi Gagal", "Cabang Bayar wajib diisi!", "warning");
   if (!status) return Swal.fire("Validasi Gagal", "Status Pajak wajib dipilih!", "warning");
   if (!mop) return Swal.fire("Validasi Gagal", "MOP wajib dipilih!", "warning");
-
   if (!noFaktur) return Swal.fire("Validasi Gagal", "Nomor Invoice wajib diisi!", "warning");
   if (!kodeStore) return Swal.fire("Validasi Gagal", "Cabang (Inv) wajib dipilih!", "warning");
   if (!tglNota) return Swal.fire("Validasi Gagal", "Tanggal Nota wajib diisi!", "warning");
-
   const nilaiFaktur = parseNumber(inpNilaiFaktur.value);
   const potongan = parseNumber(inpPotongan.value);
   const inputTotalBayar = parseNumber(inpGlobalTotal.value);
-
   if (nilaiFaktur <= 0) return Swal.fire("Validasi Gagal", "Nilai Faktur wajib diisi (lebih dari 0)!", "warning");
-
-  let tagihanMurni = nilaiFaktur;
-  let labelTagihan = "Nilai Faktur";
+  let tagihanMurni = 0;
+  let labelTagihan = "";
   if (installmentInfoBox && !installmentInfoBox.classList.contains("hidden")) {
     const sisaHutang = parseNumber(infoSisaHutang.textContent);
     tagihanMurni = sisaHutang;
     labelTagihan = "Sisa Hutang Saat Ini";
+  } else {
+    tagihanMurni = nilaiFaktur - potongan;
+    if (tagihanMurni < 0) tagihanMurni = 0;
+    labelTagihan = "Tagihan (Netto)";
   }
   const finalTotalBayar = inputTotalBayar > 0 ? inputTotalBayar : tagihanMurni;
-
   if (finalTotalBayar <= 0) return Swal.fire("Validasi Gagal", "Total Bayar wajib diisi (lebih dari 0)!", "warning");
   if (inputTotalBayar > 0 && Math.abs(inputTotalBayar - tagihanMurni) > 100) {
     const selisih = inputTotalBayar - tagihanMurni;
@@ -943,21 +928,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     const kodeStore = inpKodeStore.value;
     const valTop = inpTop.value;
     const valStatus = inpStatus.value;
-    const tglNota = inpTglNota.value; // Ambil Tgl Nota
+    const tglNota = inpTglNota.value;
     const nilai = parseNumber(inpNilaiFaktur.value);
     const potongan = parseNumber(inpPotongan.value);
     const manualTotal = parseNumber(inpGlobalTotal.value);
     const totalItem = manualTotal;
-
-    // --- VALIDASI REQUIRED (ADD ITEM) ---
-    // Note: Supplier, Store Bayar, dan MOP divalidasi saat tombol SIMPAN TRANSAKSI ditekan
     if (!noFaktur) return Swal.fire("Validasi Gagal", "Nomor Invoice / Faktur wajib diisi!", "warning");
     if (!kodeStore) return Swal.fire("Validasi Gagal", "Cabang (Inv) wajib dipilih!", "warning");
     if (!tglNota) return Swal.fire("Validasi Gagal", "Tanggal Nota wajib diisi!", "warning");
     if (!valStatus) return Swal.fire("Validasi Gagal", "Status Pajak wajib dipilih!", "warning");
     if (nilai <= 0) return Swal.fire("Validasi Gagal", "Nilai Faktur wajib diisi (lebih dari 0)!", "warning");
-    // ------------------------------------
-    // 
+    let historyBayar = 0;
+    if (installmentInfoBox && !installmentInfoBox.classList.contains("hidden")) {
+      historyBayar = parseNumber(infoSudahBayar.textContent);
+    }
     const itemData = {
       no_faktur: noFaktur,
       kode_store: kodeStore,
@@ -969,6 +953,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       top: valTop,
       status: valStatus,
       total_bayar: totalItem,
+      sudah_bayar_history: historyBayar,
       ket: ""
     };
     if (editingCartIndex >= 0) {
@@ -1004,25 +989,33 @@ document.addEventListener("DOMContentLoaded", async () => {
     resetItemForm();
   });
   btnSaveBatch.addEventListener("click", async () => {
+    if (editingCartIndex !== -1) {
+      const liveNilaiFaktur = parseNumber(inpNilaiFaktur.value);
+      const livePotongan = parseNumber(inpPotongan.value);
+      const liveKetPotongan = inpKetPotongan.value;
+      cartItems[editingCartIndex].nilai_faktur = liveNilaiFaktur;
+      cartItems[editingCartIndex].potongan = livePotongan;
+      cartItems[editingCartIndex].ket_potongan = liveKetPotongan;
+      renderCart();
+    }
     const namaSupp = inpNamaSupp.value.trim();
     const kodeSupp = inpKodeSupplier.value.trim();
-    const storeBayar = inpStoreBayar.value.trim(); // Ambil Store Bayar
+    const storeBayar = inpStoreBayar.value.trim();
     const tglBayar = inpTglBayar.value;
     const statusPajak = inpStatus.value;
-    const mop = inpKetGlobal.value; // Ambil MOP
+    const mop = inpKetGlobal.value;
     const globalInputVal = parseNumber(inpGlobalTotal.value);
     const isGlobalFilled = inpGlobalTotal.value.trim() !== "";
-
-    // --- VALIDASI REQUIRED (BATCH SAVE) ---
     if (!namaSupp) return Swal.fire("Validasi Gagal", "Nama Supplier wajib diisi!", "warning");
-    // Cek Cabang Bayar (Store Bayar)
     if (!storeBayar) return Swal.fire("Validasi Gagal", "Cabang Bayar wajib diisi!", "warning");
-    // Cek MOP (inp_ket_global)
     if (!mop) return Swal.fire("Validasi Gagal", "MOP wajib dipilih!", "warning");
-    // --------------------------------------
-
     const totalTagihan = cartItems.reduce((acc, item) => {
-      return acc + parseNumber(item.nilai_faktur);
+      const nilai = parseNumber(item.nilai_faktur);
+      const pot = parseNumber(item.potongan);
+      const history = parseNumber(item.sudah_bayar_history) || 0;
+      let sisaTagihanItem = (nilai - pot) - history;
+      if (sisaTagihanItem < 0) sisaTagihanItem = 0;
+      return acc + sisaTagihanItem;
     }, 0);
     let finalDetails = [];
     let totalRencanaBayar = 0;
@@ -1128,23 +1121,28 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (cartItems.length > 0) btnSaveBatch.disabled = false;
     }
   });
+  inpNilaiFaktur.addEventListener("input", () => {
+    calculateSummary();
+  });
   inpNilaiFaktur.addEventListener("blur", () => {
     inpNilaiFaktur.value = formatNumber(parseNumber(inpNilaiFaktur.value));
+    calculateSummary();
+  });
+  inpPotongan.addEventListener("input", () => {
+    calculateSummary();
   });
   inpPotongan.addEventListener("blur", () => {
     inpPotongan.value = formatNumber(parseNumber(inpPotongan.value));
+    calculateSummary();
   });
   if (inpGlobalTotal) {
     inpGlobalTotal.addEventListener("input", () => {
-      // Saat user mengetik nominal bayar, hitung ulang selisih secara realtime
       calculateSummary();
     });
-
     inpGlobalTotal.addEventListener("blur", (e) => {
       e.target.value = formatNumber(parseNumber(e.target.value));
-      calculateSummary(); // Pastikan terhitung juga saat format number diterapkan
+      calculateSummary();
     });
-
     inpGlobalTotal.addEventListener("focus", (e) => e.target.select());
   }
 });
@@ -1168,7 +1166,6 @@ window.editCartItem = async (index) => {
   inpNoFaktur.classList.remove("bg-blue-50", "text-blue-700", "font-bold");
   inpNilaiFaktur.readOnly = false;
   inpNilaiFaktur.classList.remove('bg-gray-100', 'cursor-not-allowed');
-
   inpPotongan.classList.remove('bg-gray-100', 'cursor-not-allowed');
   inpNoFaktur.value = item.no_faktur;
   if (item.kode_store) {
@@ -1191,23 +1188,33 @@ window.editCartItem = async (index) => {
   try {
     const currentStore = item.kode_store;
     const url = `${API_URLS.getFakturDetail}?no_faktur=${encodeURIComponent(item.no_faktur)}&kode_store=${encodeURIComponent(currentStore)}`;
+    const result = await sendRequestGET(url);
     const oldPlaceholder = inpNoFaktur.placeholder;
     inpNoFaktur.placeholder = "Memuat info angsuran...";
-    const result = await sendRequestGET(url);
-    inpNoFaktur.placeholder = oldPlaceholder;
     if (result.success && result.found && result.source === 'buku_besar') {
       const d = result.data;
       let nilaiFakturHitung = parseFloat(d.nilai_faktur);
       let sudahBayarHitung = parseFloat(d.total_bayar);
+      let potonganHitung = parseFloat(d.potongan);
+
       let isGroupMode = false;
+
       if (d.group_totals) {
         nilaiFakturHitung = parseFloat(d.group_totals.nilai_faktur);
+
+        if (d.group_totals.potongan) {
+          potonganHitung = parseFloat(d.group_totals.potongan);
+        }
+
+        sudahBayarHitung = parseFloat(d.total_bayar);
+
         isGroupMode = true;
       }
-      const sisaHutang = nilaiFakturHitung - sudahBayarHitung;
+
+      const sisaHutang = (nilaiFakturHitung - potonganHitung) - sudahBayarHitung;
       if (sisaHutang > 100) {
         if (infoSudahBayar) {
-          infoSudahBayar.innerHTML = formatNumber(sudahBayarHitung) + (isGroupMode ? " <span class='text-[10px] text-pink-600 font-normal'>(Group)</span>" : "");
+          infoSudahBayar.innerHTML = formatNumber(sudahBayarHitung) + (isGroupMode ? " <span class='text-[10px] text-pink-600 font-normal'>(Total Group)</span>" : "");
         }
         if (infoSisaHutang) {
           infoSisaHutang.textContent = formatNumber(sisaHutang);
@@ -1245,42 +1252,41 @@ window.removeCartItem = (index) => {
   }
   renderCart();
 };
-
 function calculateSummary() {
-  // Rumus: Total Tagihan = Total Nilai Faktur - Total Potongan
   let grandTotalTagihan = 0;
-  cartItems.forEach((item) => {
-    const nilai = parseNumber(item.nilai_faktur);
-    const pot = parseNumber(item.potongan);
-    grandTotalTagihan += (nilai - pot);
+  cartItems.forEach((item, index) => {
+    let nilai, pot, history;
+    if (index === editingCartIndex) {
+      nilai = parseNumber(inpNilaiFaktur.value);
+      pot = parseNumber(inpPotongan.value);
+      if (installmentInfoBox && !installmentInfoBox.classList.contains("hidden")) {
+        history = parseNumber(infoSudahBayar.textContent);
+      } else {
+        history = 0;
+      }
+    } else {
+      nilai = parseNumber(item.nilai_faktur);
+      pot = parseNumber(item.potongan);
+      history = parseNumber(item.sudah_bayar_history) || 0;
+    }
+    let tagihanItem = (nilai - pot) - history;
+    if (tagihanItem < 0) tagihanItem = 0;
+    grandTotalTagihan += tagihanItem;
   });
-
-  // Ambil nilai Input Total Bayar (Realtime dari inputan user)
   const currentTotalBayar = parseNumber(inpGlobalTotal.value);
-
-  // Rumus: Selisih = Total Tagihan - Total Bayar
   const selisih = grandTotalTagihan - currentTotalBayar;
-
-  // Update UI
   if (lblTotalTagihan) lblTotalTagihan.textContent = formatNumber(grandTotalTagihan);
-
   if (cartItems.length > 0) {
     if (summaryPaymentDetails) summaryPaymentDetails.classList.remove("hidden");
     if (lblSummaryBayar) lblSummaryBayar.textContent = formatNumber(currentTotalBayar);
-
     if (lblSummarySelisih) {
       lblSummarySelisih.textContent = formatNumber(selisih);
-
-      // Coloring Selisih
       if (selisih === 0) {
-        // Balance (Hijau)
         lblSummarySelisihContainer.className = "font-mono ml-1 text-green-600";
         lblSummarySelisih.textContent = "0 (Balance)";
       } else if (selisih > 0) {
-        // Masih kurang bayar (Merah)
         lblSummarySelisihContainer.className = "font-mono ml-1 text-red-600";
       } else {
-        // Kelebihan bayar (Orange/Kuning)
         lblSummarySelisihContainer.className = "font-mono ml-1 text-amber-600";
       }
     }
