@@ -62,6 +62,10 @@ const lblCountItem = document.getElementById("lbl_count_item");
 const inpKetGlobal = document.getElementById("inp_ket_global");
 const inpGlobalTotal = document.getElementById("inp_global_total");
 const lblTotalTagihan = document.getElementById("lbl_total_tagihan");
+const lblSummaryBayar = document.getElementById("lbl_summary_bayar");
+const lblSummarySelisih = document.getElementById("lbl_summary_selisih");
+const lblSummarySelisihContainer = document.getElementById("lbl_summary_selisih_container");
+const summaryPaymentDetails = document.getElementById("summary-payment-details");
 function isFormDirty() {
   const hasFaktur = inpNoFaktur.value.trim() !== "";
   const hasSupplier = inpNamaSupp.value.trim() !== "";
@@ -219,21 +223,30 @@ async function fetchTableData(reset = false) {
 }
 function renderCart() {
   if (cartItems.length === 0) {
-    tempListBody.innerHTML = `<tr><td colspan="6" class="text-center p-10 text-gray-400">Belum ada data</td></tr>`;
+    tempListBody.innerHTML = `<tr><td colspan="5" class="text-center p-10 text-gray-400">Belum ada data</td></tr>`; // colspan jadi 5 karena kolom bayar hapus
     btnSaveBatch.disabled = true;
     btnSaveBatch.classList.add("opacity-50", "cursor-not-allowed");
     lblCountItem.textContent = "0";
+
+    // Reset Summary Values
     if (lblTotalTagihan) lblTotalTagihan.textContent = "0";
+    if (summaryPaymentDetails) summaryPaymentDetails.classList.add("hidden");
+
     btnSave.style.display = "";
     return;
   }
+
   btnSave.style.display = "none";
   let html = "";
-  let grandTotalTagihan = 0;
+
+  // NOTE: Perhitungan Total Tagihan dipindah ke fungsi calculateSummary() 
+  // agar bisa dipanggil realtime tanpa re-render tabel.
+
   cartItems.forEach((item, index) => {
-    grandTotalTagihan += parseNumber(item.nilai_faktur);
     const activeClass = (index === editingCartIndex) ? "bg-amber-100 border-amber-300" : "hover:bg-blue-50 border-gray-100";
     const nmStore = item.nm_alias || item.nm_store_display || item.kode_store;
+
+    // KOLOM BAYAR DIHAPUS DARI TEMPLATE HTML DI BAWAH INI
     html += `
             <tr class="border-b transition-colors cursor-pointer ${activeClass}" onclick="editCartItem(${index})">
                 <td class="p-2 font-medium text-blue-700">
@@ -243,7 +256,7 @@ function renderCart() {
                 <td class="p-2 text-xs">${nmStore}</td>
                 <td class="p-2 text-right text-gray-600">${formatNumber(item.nilai_faktur)}</td>
                 <td class="p-2 text-right text-red-500">${item.potongan > 0 ? formatNumber(item.potongan) : '-'}</td>
-                <td class="p-2 text-right font-bold text-gray-800">${formatNumber(item.total_bayar)}</td>
+                
                 <td class="p-2 text-center" onclick="event.stopPropagation()">
                     <button onclick="removeCartItem(${index})" class="text-red-500 hover:text-red-700 w-6 h-6 rounded hover:bg-red-50 transition-all">
                         <i class="fas fa-times"></i>
@@ -252,13 +265,15 @@ function renderCart() {
             </tr>
         `;
   });
+
   tempListBody.innerHTML = html;
   lblCountItem.textContent = cartItems.length;
-  if (lblTotalTagihan) {
-    lblTotalTagihan.textContent = formatNumber(grandTotalTagihan);
-  }
+
   btnSaveBatch.disabled = false;
   btnSaveBatch.classList.remove("opacity-50", "cursor-not-allowed");
+
+  // Panggil fungsi hitung summary
+  calculateSummary();
 }
 function renderTableRows(data) {
   for (let i = 0; i < data.length; i++) {
@@ -1120,9 +1135,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     inpPotongan.value = formatNumber(parseNumber(inpPotongan.value));
   });
   if (inpGlobalTotal) {
+    inpGlobalTotal.addEventListener("input", () => {
+      // Saat user mengetik nominal bayar, hitung ulang selisih secara realtime
+      calculateSummary();
+    });
+
     inpGlobalTotal.addEventListener("blur", (e) => {
       e.target.value = formatNumber(parseNumber(e.target.value));
+      calculateSummary(); // Pastikan terhitung juga saat format number diterapkan
     });
+
     inpGlobalTotal.addEventListener("focus", (e) => e.target.select());
   }
 });
@@ -1223,3 +1245,46 @@ window.removeCartItem = (index) => {
   }
   renderCart();
 };
+
+function calculateSummary() {
+  // Rumus: Total Tagihan = Total Nilai Faktur - Total Potongan
+  let grandTotalTagihan = 0;
+  cartItems.forEach((item) => {
+    const nilai = parseNumber(item.nilai_faktur);
+    const pot = parseNumber(item.potongan);
+    grandTotalTagihan += (nilai - pot);
+  });
+
+  // Ambil nilai Input Total Bayar (Realtime dari inputan user)
+  const currentTotalBayar = parseNumber(inpGlobalTotal.value);
+
+  // Rumus: Selisih = Total Tagihan - Total Bayar
+  const selisih = grandTotalTagihan - currentTotalBayar;
+
+  // Update UI
+  if (lblTotalTagihan) lblTotalTagihan.textContent = formatNumber(grandTotalTagihan);
+
+  if (cartItems.length > 0) {
+    if (summaryPaymentDetails) summaryPaymentDetails.classList.remove("hidden");
+    if (lblSummaryBayar) lblSummaryBayar.textContent = formatNumber(currentTotalBayar);
+
+    if (lblSummarySelisih) {
+      lblSummarySelisih.textContent = formatNumber(selisih);
+
+      // Coloring Selisih
+      if (selisih === 0) {
+        // Balance (Hijau)
+        lblSummarySelisihContainer.className = "font-mono ml-1 text-green-600";
+        lblSummarySelisih.textContent = "0 (Balance)";
+      } else if (selisih > 0) {
+        // Masih kurang bayar (Merah)
+        lblSummarySelisihContainer.className = "font-mono ml-1 text-red-600";
+      } else {
+        // Kelebihan bayar (Orange/Kuning)
+        lblSummarySelisihContainer.className = "font-mono ml-1 text-amber-600";
+      }
+    }
+  } else {
+    if (summaryPaymentDetails) summaryPaymentDetails.classList.add("hidden");
+  }
+}

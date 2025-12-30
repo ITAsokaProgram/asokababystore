@@ -223,6 +223,7 @@ $menuHandler = new MenuHandler('laporan_buku_besar'); // Sesuaikan permission ke
                                     <th>No</th>
                                     <th>Tgl Nota</th>
                                     <th class="text-center">Jatuh Tempo</th>
+                                    <th class="text-center">No Invoice</th>
                                     <th class="text-center">Cabang</th>
                                     <th>Supplier</th>
                                     <th class="text-center">Status</th>

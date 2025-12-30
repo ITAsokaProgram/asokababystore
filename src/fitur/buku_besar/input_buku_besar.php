@@ -335,7 +335,6 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                             <th class="p-3 border-b">Cabang</th>
                                             <th class="p-3 border-b text-right">Nilai</th>
                                             <th class="p-3 border-b text-right">Pot</th>
-                                            <th class="p-3 border-b text-right">Bayar</th>
                                             <th class="p-3 border-b text-center">Aksi</th>
                                         </tr>
                                     </thead>
@@ -351,18 +350,37 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                             </div>
 
                             <div class="p-4 bg-pink-50 border-t border-pink-100">
-                                <div class="flex justify-between items-center">
+                                <div
+                                    class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                                     <div class="text-sm text-pink-800">
                                         Total Faktur: <span id="lbl_count_item" class="font-bold">0</span> Item
                                     </div>
-                                    <div class="text-sm text-gray-600">
-                                        Total Tagihan:
-                                        <span class="font-mono font-bold text-lg text-pink-600 ml-1">
-                                            Rp <span id="lbl_total_tagihan">0</span>
-                                        </span>
-                                    </div>
 
+                                    <div class="text-right space-y-1">
+                                        <div class="text-sm text-gray-600">
+                                            Total Tagihan:
+                                            <span class="font-mono font-bold text-lg text-pink-600 ml-1">
+                                                Rp <span id="lbl_total_tagihan">0</span>
+                                            </span>
+                                        </div>
+
+                                        <div id="summary-payment-details" class="hidden">
+                                            <div class="text-xs text-gray-500">
+                                                Total Bayar:
+                                                <span class="font-mono font-bold text-blue-600 ml-1">
+                                                    Rp <span id="lbl_summary_bayar">0</span>
+                                                </span>
+                                            </div>
+                                            <div class="text-sm font-bold border-t border-pink-200 mt-1 pt-1">
+                                                Selisih:
+                                                <span class="font-mono ml-1" id="lbl_summary_selisih_container">
+                                                    Rp <span id="lbl_summary_selisih">0</span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
+
                                 <div class="mt-4 flex justify-end gap-3">
                                     <button type="button" id="btn-save-batch" disabled
                                         class="btn-primary flex items-center gap-2 px-8 py-3 shadow-lg shadow-pink-500/30 opacity-50 cursor-not-allowed">

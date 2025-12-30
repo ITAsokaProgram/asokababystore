@@ -383,6 +383,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const listKetPotonganHtml = row.ket_potongan || "-";
       const listStatusHtml = row.list_status || "-";
       const listTopHtml = formatListTop(row.list_top, isPaid);
+      const listNoFakturHtml = row.no_faktur || "-";
       const historyCount = parseInt(row.history_count || 0);
       let totalBayarCellContent = formatRupiah(totalBayarDisplay);
       if (!isPaid && sumTotalBayar > 0) {
@@ -407,6 +408,9 @@ document.addEventListener("DOMContentLoaded", () => {
                          ${listTopHtml}
                     </div>
               </td>
+              <td class="pt-3 text-xs font-mono text-gray-700 ">
+                    ${listNoFakturHtml}
+                </td>
                 <td class="text-center pt-3">
                     <div class="flex flex-col gap-1 items-center">
                         ${storeList.map(storeName => `
