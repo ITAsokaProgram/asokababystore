@@ -21,14 +21,33 @@ document.addEventListener("DOMContentLoaded", () => {
   // TAMBAHAN: Load Stores
   async function loadStoresForCreate() {
     try {
-      const response = await fetch("/src/api/shared/get_all_store.php");
+      // Helper cookie
+      const getCookie = (name) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(";").shift();
+      };
+      const token = getCookie("admin_token");
+
+      const response = await fetch("/src/api/cabang/get_kode.php", {
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + token,
+        },
+      });
+
       const result = await response.json();
-      if (result.success) {
+
+      if (result.data && result.data.length > 0) {
         let options = '<option value="">-- Pilih Cabang --</option>';
         result.data.forEach((store) => {
-          options += `<option value="${store.Kd_Store}">${store.Nm_Alias}</option>`;
+          // Mapping: store.store (Kode), store.nama_cabang (Nama)
+          options += `<option value="${store.store}">${store.nama_cabang}</option>`;
         });
         if (inpStore) inpStore.innerHTML = options;
+      } else {
+        if (inpStore)
+          inpStore.innerHTML = '<option value="">Gagal memuat / Data Kosong</option>';
       }
     } catch (error) {
       console.error("Gagal load store:", error);
