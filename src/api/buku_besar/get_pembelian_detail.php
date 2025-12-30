@@ -63,6 +63,8 @@ try {
                 'kode_supplier' => $dataBB['kode_supplier'],
                 'nama_supplier' => $dataBB['nama_supplier'],
                 'kode_store' => $dataBB['kode_store'],
+                'store_bayar' => $dataBB['store_bayar'],
+                'ket' => $dataBB['ket'],
                 'nilai_faktur' => (float) $dataBB['nilai_faktur'],
                 'total_bayar' => (float) $dataBB['total_bayar'],
                 'potongan' => (float) $dataBB['potongan'],

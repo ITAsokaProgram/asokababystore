@@ -410,13 +410,13 @@ async function fetchFakturData(noFaktur) {
         inpTglNota.value = d.tgl_nota;
         inpTop.value = d.top || "";
         inpStatus.value = d.status || "";
+        if (d.store_bayar) inpStoreBayar.value = d.store_bayar;
+        if (d.ket) inpKetGlobal.value = d.ket;
         inpNilaiFaktur.value = formatNumber(parseFloat(d.nilai_faktur));
         inpPotongan.value = formatNumber(parseFloat(d.potongan));
         inpKetPotongan.value = d.ket_potongan || "";
         inpNilaiFaktur.readOnly = true;
         inpNilaiFaktur.classList.add('bg-gray-100', 'cursor-not-allowed');
-        inpPotongan.readOnly = true;
-        inpPotongan.classList.add('bg-gray-100', 'cursor-not-allowed');
         inpNoFaktur.classList.remove("bg-yellow-50");
         inpNoFaktur.classList.add("bg-blue-50", "text-blue-700", "font-bold");
         const suggest = sisaHutang > 0 ? sisaHutang : 0;
@@ -455,7 +455,7 @@ async function fetchFakturData(noFaktur) {
         inpKetPotongan.value = "";
         inpNilaiFaktur.readOnly = false;
         inpNilaiFaktur.classList.remove('bg-gray-100', 'cursor-not-allowed');
-        inpPotongan.readOnly = false;
+
         inpPotongan.classList.remove('bg-gray-100', 'cursor-not-allowed');
         inpNoFaktur.classList.remove("bg-yellow-50");
         inpNoFaktur.classList.add("bg-green-50", "text-green-700");
@@ -467,7 +467,7 @@ async function fetchFakturData(noFaktur) {
       inpNoFaktur.classList.remove("bg-yellow-50");
       inpNilaiFaktur.readOnly = false;
       inpNilaiFaktur.classList.remove('bg-gray-100', 'cursor-not-allowed');
-      inpPotongan.readOnly = false;
+
       inpPotongan.classList.remove('bg-gray-100', 'cursor-not-allowed');
       if (installmentInfoBox) installmentInfoBox.classList.add("hidden");
       Toastify({ text: "ℹ️ Data tidak ditemukan, silakan input manual", duration: 3000, style: { background: "#3b82f6" } }).showToast();
@@ -1146,7 +1146,7 @@ window.editCartItem = async (index) => {
   inpNoFaktur.classList.remove("bg-blue-50", "text-blue-700", "font-bold");
   inpNilaiFaktur.readOnly = false;
   inpNilaiFaktur.classList.remove('bg-gray-100', 'cursor-not-allowed');
-  inpPotongan.readOnly = false;
+
   inpPotongan.classList.remove('bg-gray-100', 'cursor-not-allowed');
   inpNoFaktur.value = item.no_faktur;
   if (item.kode_store) {
@@ -1202,8 +1202,6 @@ window.editCartItem = async (index) => {
       inpNoFaktur.classList.add("bg-blue-50", "text-blue-700", "font-bold");
       inpNilaiFaktur.readOnly = true;
       inpNilaiFaktur.classList.add('bg-gray-100', 'cursor-not-allowed');
-      inpPotongan.readOnly = true;
-      inpPotongan.classList.add('bg-gray-100', 'cursor-not-allowed');
     } else {
       if (installmentInfoBox) installmentInfoBox.classList.add("hidden");
     }
