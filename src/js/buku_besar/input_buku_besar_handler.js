@@ -391,7 +391,14 @@ async function fetchFakturData(noFaktur) {
           if (d.group_totals.potongan) {
             potonganHitung = parseFloat(d.group_totals.potongan);
           }
-          sudahBayarHitung = parseFloat(d.total_bayar);
+
+          // --- KODE LAMA (SALAH) ---
+          // sudahBayarHitung = parseFloat(d.total_bayar); 
+
+          // --- KODE BARU (BENAR) ---
+          // Ambil total bayar dari group_totals agar konsisten
+          sudahBayarHitung = parseFloat(d.group_totals.total_bayar);
+
           isGroupMode = true;
         }
         const sisaHutang = (nilaiFakturHitung - potonganHitung) - sudahBayarHitung;
@@ -604,6 +611,7 @@ async function handleSave() {
     isSubmitting = false;
   }
 }
+
 async function startEditMode(data) {
   cancelEditMode();
   if (data.group_id) {
@@ -620,7 +628,7 @@ async function startEditMode(data) {
           ...item,
           nilai_faktur: parseFloat(item.nilai_faktur),
           potongan: parseFloat(item.potongan),
-          total_bayar: parseFloat(item.total_bayar)
+          total_bayar: parseFloat(item.total_bayar),
         }));
         deletedCartIds = [];
         const firstItem = cartItems[0];
@@ -1196,7 +1204,6 @@ window.editCartItem = async (index) => {
       let nilaiFakturHitung = parseFloat(d.nilai_faktur);
       let sudahBayarHitung = parseFloat(d.total_bayar);
       let potonganHitung = parseFloat(d.potongan);
-
       let isGroupMode = false;
 
       if (d.group_totals) {
@@ -1206,11 +1213,14 @@ window.editCartItem = async (index) => {
           potonganHitung = parseFloat(d.group_totals.potongan);
         }
 
-        sudahBayarHitung = parseFloat(d.total_bayar);
+        // --- KODE LAMA (SALAH) ---
+        // sudahBayarHitung = parseFloat(d.total_bayar);
+
+        // --- KODE BARU (BENAR) ---
+        sudahBayarHitung = parseFloat(d.group_totals.total_bayar);
 
         isGroupMode = true;
       }
-
       const sisaHutang = (nilaiFakturHitung - potonganHitung) - sudahBayarHitung;
       if (sisaHutang > 100) {
         if (infoSudahBayar) {
@@ -1253,9 +1263,14 @@ window.removeCartItem = (index) => {
   renderCart();
 };
 function calculateSummary() {
-  let grandTotalTagihan = 0;
+  // 1. Hitung total agregat tanpa clamp per item
+  let totalNilaiFaktur = 0;
+  let totalPotongan = 0;
+  let totalHistory = 0;
+
   cartItems.forEach((item, index) => {
     let nilai, pot, history;
+
     if (index === editingCartIndex) {
       nilai = parseNumber(inpNilaiFaktur.value);
       pot = parseNumber(inpPotongan.value);
@@ -1269,13 +1284,22 @@ function calculateSummary() {
       pot = parseNumber(item.potongan);
       history = parseNumber(item.sudah_bayar_history) || 0;
     }
-    let tagihanItem = (nilai - pot) - history;
-    if (tagihanItem < 0) tagihanItem = 0;
-    grandTotalTagihan += tagihanItem;
+
+    totalNilaiFaktur += nilai;
+    totalPotongan += pot;
+    totalHistory += history;
   });
+
+  // 2. Hitung grand total tagihan (sisa hutang keseluruhan)
+  let grandTotalTagihan = (totalNilaiFaktur - totalPotongan) - totalHistory;
+  if (grandTotalTagihan < 0) grandTotalTagihan = 0; // hanya clamp di akhir
+
   const currentTotalBayar = parseNumber(inpGlobalTotal.value);
   const selisih = grandTotalTagihan - currentTotalBayar;
+
+  // Update UI
   if (lblTotalTagihan) lblTotalTagihan.textContent = formatNumber(grandTotalTagihan);
+
   if (cartItems.length > 0) {
     if (summaryPaymentDetails) summaryPaymentDetails.classList.remove("hidden");
     if (lblSummaryBayar) lblSummaryBayar.textContent = formatNumber(currentTotalBayar);
