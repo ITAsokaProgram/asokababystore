@@ -26,7 +26,6 @@ try {
         $bind_types .= 's';
         $bind_params[] = $filter_status;
     }
-
     if ($filter_type === 'month') {
         $where_conditions .= " AND MONTH(bb.tgl_nota) = ? AND YEAR(bb.tgl_nota) = ?";
         $bind_types .= 'ss';
@@ -92,12 +91,14 @@ try {
             MAX(bb.nama_supplier) as nama_supplier,
             MAX(bb.kode_supplier) as kode_supplier,
             MAX(bb.ket) as ket,
-            MAX(bb.total_bayar) as total_bayar,
+            COALESCE(
+                (SELECT SUM(ba.nominal_bayar) FROM buku_besar_angsuran ba WHERE ba.buku_besar_id = MAX(bb.id)),
+                MAX(bb.total_bayar)
+            ) as total_bayar,
             MAX(bb.tanggal_bayar) as tanggal_bayar,
             MAX(bb.store_bayar) as Nm_Alias_Bayar,
             SUM(bb.nilai_faktur) as sum_nilai_faktur,
             SUM(bb.potongan) as sum_potongan,
-            bb.total_bayar as total_bayar,
             (SELECT COUNT(*) FROM buku_besar_angsuran ba WHERE ba.buku_besar_id = MAX(bb.id)) as history_count
         FROM buku_besar bb
         LEFT JOIN kode_store ks ON bb.kode_store = ks.Kd_Store
