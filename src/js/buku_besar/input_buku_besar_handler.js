@@ -519,8 +519,8 @@ async function handleSave() {
 
   if (nilaiFaktur <= 0) return Swal.fire("Validasi Gagal", "Nilai Faktur wajib diisi (lebih dari 0)!", "warning");
 
-  let tagihanMurni = nilaiFaktur - potongan;
-  let labelTagihan = "Nilai Faktur - Potongan";
+  let tagihanMurni = nilaiFaktur;
+  let labelTagihan = "Nilai Faktur";
   if (installmentInfoBox && !installmentInfoBox.classList.contains("hidden")) {
     const sisaHutang = parseNumber(infoSisaHutang.textContent);
     tagihanMurni = sisaHutang;

@@ -222,10 +222,10 @@ $menuHandler = new MenuHandler('laporan_buku_besar'); // Sesuaikan permission ke
                                 <tr>
                                     <th>No</th>
                                     <th>Tgl Nota</th>
+                                    <th class="text-center">Jatuh Tempo</th>
                                     <th class="text-center">Cabang</th>
                                     <th>Supplier</th>
                                     <th class="text-center">Status</th>
-                                    <th class="text-center">Jatuh Tempo</th>
                                     <th class="text-right">Potongan</th>
                                     <th class="text-right">Nilai Faktur</th>
                                     <th class="text-right">Total Bayar</th>

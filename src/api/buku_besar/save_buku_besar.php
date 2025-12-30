@@ -69,7 +69,7 @@ try {
                kode_store, store_bayar, ket, kd_user, top, status)
               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         $stmtUpdateHead = $conn->prepare("UPDATE buku_besar SET 
-            total_bayar = total_bayar + ?, 
+            total_bayar = ?, 
             tanggal_bayar = ?, 
             store_bayar = ?, 
             ket = ?,
@@ -80,6 +80,15 @@ try {
         $stmtInsertAngsuran = $conn->prepare("INSERT INTO buku_besar_angsuran 
               (buku_besar_id, tanggal_bayar, nominal_bayar, store_bayar, ket, kd_user)
               VALUES (?, ?, ?, ?, ?, ?)");
+        $sum_nilai_faktur_group = 0;
+        $nominal_bayar_sampel = 0;
+        if (count($details) > 0) {
+            $nominal_bayar_sampel = (float) ($details[0]['total_bayar'] ?? 0);
+            foreach ($details as $d) {
+                $sum_nilai_faktur_group += (float) ($d['nilai_faktur'] ?? 0);
+            }
+        }
+        $is_group_lunas_murni = (abs($sum_nilai_faktur_group - $nominal_bayar_sampel) < 100);
         foreach ($details as $item) {
             $no_faktur = trim($item['no_faktur'] ?? '');
             $kode_store = $item['kode_store'] ?? '';
@@ -105,7 +114,16 @@ try {
             $buku_besar_id = 0;
             if ($existingData) {
                 $buku_besar_id = $existingData['id'];
-                $stmtUpdateHead->bind_param(
+                $stmtUpdateHeadReplace = $conn->prepare("UPDATE buku_besar SET 
+                    total_bayar = ?, 
+                    tanggal_bayar = ?, 
+                    store_bayar = ?, 
+                    ket = ?,
+                    top = ?,
+                    status = ?,
+                    edit_pada = NOW() 
+                    WHERE id = ?");
+                $stmtUpdateHeadReplace->bind_param(
                     "dsssssi",
                     $nominal_bayar_ini,
                     $tanggal_bayar,
@@ -115,8 +133,8 @@ try {
                     $status,
                     $buku_besar_id
                 );
-                if (!$stmtUpdateHead->execute()) {
-                    throw new Exception("Gagal update angsuran (ID: $buku_besar_id): " . $stmtUpdateHead->error);
+                if (!$stmtUpdateHeadReplace->execute()) {
+                    throw new Exception("Gagal update data (ID: $buku_besar_id): " . $stmtUpdateHeadReplace->error);
                 }
             } else {
                 $stmtInsertHead->bind_param(
@@ -143,9 +161,9 @@ try {
                 }
                 $buku_besar_id = $conn->insert_id;
             }
-            $is_full_payment = (abs($nominal_bayar_ini - $nilai_faktur) < 100);
-
-            if (!$is_full_payment && $nominal_bayar_ini > 0) {
+            $is_item_full_payment = (abs($nominal_bayar_ini - $nilai_faktur) < 100);
+            $skip_angsuran = ($is_item_full_payment || $is_group_lunas_murni);
+            if (!$skip_angsuran && $nominal_bayar_ini > 0) {
                 $stmtInsertAngsuran->bind_param(
                     "isdsss",
                     $buku_besar_id,
@@ -161,9 +179,15 @@ try {
             }
         }
         $conn->commit();
+        $msg = "Data berhasil disimpan.";
+        if ($is_group_lunas_murni && count($details) > 1) {
+            $msg .= " Pelunasan Group tercatat.";
+        } elseif (!$is_group_lunas_murni) {
+            $msg .= " Pembayaran/Angsuran tercatat.";
+        }
         echo json_encode([
             'success' => true,
-            'message' => "Data berhasil disimpan." . ($is_full_payment ? "" : " Pembayaran tercatat.")
+            'message' => $msg
         ]);
     } catch (Exception $e) {
         $conn->rollback();

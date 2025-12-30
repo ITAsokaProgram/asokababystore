@@ -404,6 +404,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td class="pt-3 text-sm">${formatDate(row.tgl_nota)}</td>
                 <td class="text-center pt-3">
                     <div class="flex flex-col gap-1 items-center">
+                         ${listTopHtml}
+                    </div>
+              </td>
+                <td class="text-center pt-3">
+                    <div class="flex flex-col gap-1 items-center">
                         ${storeList.map(storeName => `
                             <span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded border border-gray-200 block w-fit truncate max-w-[150px]">
                                 ${storeName}
@@ -417,11 +422,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td class="text-center pt-3 text-xs">
                     ${listStatusHtml.split('|').map(s => `<span class="px-1 rounded bg-gray-100 border">${s}</span>`).join('<br>')}
                 </td>
-                <td class="text-center pt-3">
-                    <div class="flex flex-col gap-1 items-center">
-                         ${listTopHtml}
-                    </div>
-                </td>
+                
                 <td class="text-right font-mono text-red-600 text-sm pt-3">
                   <div class="font-mono text-xs text-blue-600 truncate">
                     ${listPotonganHtml}
@@ -436,7 +437,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td class="${totalBayarClass}" ${totalBayarClick} ${totalBayarTitle}>
                     ${totalBayarCellContent}
                     ${(!isPaid && sisaHutang > 0 && sumTotalBayar > 0) ?
-          `<div class="text-[10px] text-red-500 font-normal mt-1">Sisa: ${formatRupiah(sisaHutang)}</div>`
+          `<div class="text-[10px] text-red-500 font-normal mt-1">Kurang: ${formatRupiah(sisaHutang)}</div>`
           : ''}
                 </td>
                 <td class="text-center text-sm text-gray-600 pt-3">
