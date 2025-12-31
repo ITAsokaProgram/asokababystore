@@ -1021,16 +1021,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       const liveNilaiFaktur = parseNumber(inpNilaiFaktur.value);
       const livePotongan = parseNumber(inpPotongan.value);
       const liveKetPotongan = inpKetPotongan.value;
-
+      const liveTop = inpTop.value;
+      const liveStatus = inpStatus.value;
       cartItems[editingCartIndex].nilai_faktur = liveNilaiFaktur;
       cartItems[editingCartIndex].potongan = livePotongan;
       cartItems[editingCartIndex].ket_potongan = liveKetPotongan;
-
-      // --- TAMBAHKAN BARIS INI ---
-      // Update rincian potongan dengan data terbaru dari modal (tempPotonganList)
+      cartItems[editingCartIndex].top = liveTop;
+      cartItems[editingCartIndex].status = liveStatus;
       cartItems[editingCartIndex].details_potongan = JSON.parse(JSON.stringify(tempPotonganList));
-      // ---------------------------
-
       renderCart();
     }
     const namaSupp = inpNamaSupp.value.trim();
@@ -1042,8 +1040,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     const globalInputVal = parseNumber(inpGlobalTotal.value);
     const isGlobalFilled = inpGlobalTotal.value.trim() !== "";
     if (!namaSupp) return Swal.fire("Validasi Gagal", "Nama Supplier wajib diisi!", "warning");
-    // if (!storeBayar) return Swal.fire("Validasi Gagal", "Cabang Bayar wajib diisi!", "warning");
-    // if (!mop) return Swal.fire("Validasi Gagal", "MOP wajib dipilih!", "warning");
     const totalTagihan = cartItems.reduce((acc, item) => {
       const nilai = parseNumber(item.nilai_faktur);
       const pot = parseNumber(item.potongan);
@@ -1064,9 +1060,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       finalDetails = [...cartItems];
       totalRencanaBayar = cartItems.reduce((acc, item) => acc + parseNumber(item.total_bayar), 0);
     }
-    // if (totalRencanaBayar <= 0) {
-    //   return Swal.fire("Validasi Gagal", "Total Bayar wajib diisi (lebih dari 0)!", "warning");
-    // }
     const isInstallmentMode = !installmentInfoBox.classList.contains("hidden") || (currentGroupId != null);
     let swalOptions = {
       title: 'Simpan Transaksi?',
