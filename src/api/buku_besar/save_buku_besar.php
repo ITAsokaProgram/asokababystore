@@ -133,6 +133,20 @@ try {
                 if (!$stmtUpdateHeadReplace->execute()) {
                     throw new Exception("Gagal update data (ID: $buku_besar_id): " . $stmtUpdateHeadReplace->error);
                 }
+                $conn->query("DELETE FROM buku_besar_potongan WHERE buku_besar_id = $buku_besar_id");
+                $detail_potongan_list = $item['details_potongan'] ?? [];
+                if (!empty($detail_potongan_list)) {
+                    $stmtPot = $conn->prepare("INSERT INTO buku_besar_potongan (buku_besar_id, nominal, keterangan) VALUES (?, ?, ?)");
+                    foreach ($detail_potongan_list as $pot) {
+                        $nom = (float) ($pot['nominal'] ?? 0);
+                        $ket = $pot['keterangan'] ?? '';
+                        if ($nom > 0) {
+                            $stmtPot->bind_param("ids", $buku_besar_id, $nom, $ket);
+                            $stmtPot->execute();
+                        }
+                    }
+                    $stmtPot->close();
+                }
             } else {
                 $stmtInsertHead->bind_param(
                     "sssssdsddsssssss",
@@ -158,10 +172,7 @@ try {
                 }
                 $buku_besar_id = $conn->insert_id;
                 $conn->query("DELETE FROM buku_besar_potongan WHERE buku_besar_id = $buku_besar_id");
-
-                // Ambil array detail potongan dari input item
                 $detail_potongan_list = $item['details_potongan'] ?? [];
-
                 if (!empty($detail_potongan_list)) {
                     $stmtPot = $conn->prepare("INSERT INTO buku_besar_potongan (buku_besar_id, nominal, keterangan) VALUES (?, ?, ?)");
                     foreach ($detail_potongan_list as $pot) {
@@ -184,7 +195,6 @@ try {
                     $ket_mop,
                     $kd_user
                 );
-
                 if (!$stmtInsertAngsuran->execute()) {
                     throw new Exception("Gagal mencatat histori angsuran: " . $stmtInsertAngsuran->error);
                 }

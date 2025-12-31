@@ -280,7 +280,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                         <span class="hidden sm:inline-block sm:align-middle sm:h-screen"
                                             aria-hidden="true">&#8203;</span>
                                         <div
-                                            class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
+                                            class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle max-w-2xl w-full">
                                             <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                                                 <h3 class="text-lg leading-6 font-medium text-gray-900 mb-3"
                                                     id="modal-title">Rincian Potongan</h3>
