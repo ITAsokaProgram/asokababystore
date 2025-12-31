@@ -8,9 +8,9 @@ $response = [
         'total_selisih' => 0,
         'total_selisih_rupiah' => 0,
         'list_selisih' => [],
-        'total_belum_ada' => 0, 
+        'total_belum_ada' => 0,
         'list_belum_ada' => [],
-        'total_tidak_ditemukan' => 0, 
+        'total_tidak_ditemukan' => 0,
         'list_tidak_ditemukan' => []
     ],
     'pagination' => [
@@ -28,7 +28,8 @@ try {
     $search_faktur = $_GET['search'] ?? '';
     $kode_store = $_GET['kode_store'] ?? '';
     $page = (int) ($_GET['page'] ?? 1);
-    if ($page < 1) $page = 1;
+    if ($page < 1)
+        $page = 1;
     $limit = 100;
     $offset = ($page - 1) * $limit;
     $union_source = "
@@ -50,23 +51,23 @@ try {
     ";
     $params_base = [];
     $types_base = "";
-    $filter_sql_base = "1=1"; 
+    $filter_sql_strict = "1=1";
+    $filter_sql_loose = "1=1";
     if (!empty($kode_store)) {
-        $filter_sql_base .= " AND kd_store = ?";
+        $filter_sql_strict .= " AND erp.kd_store = ?";
+        $filter_sql_loose .= " AND kd_store = ?";
         $params_base[] = $kode_store;
         $types_base .= "s";
     }
     if (!empty($search_faktur)) {
-        $filter_sql_base .= " AND no_faktur LIKE ?";
+        $filter_sql_strict .= " AND erp.no_faktur LIKE ?";
+        $filter_sql_loose .= " AND no_faktur LIKE ?";
         $params_base[] = "%" . $search_faktur . "%";
         $types_base .= "s";
     }
-    $where_erp_strict = "$filter_sql_base AND tgl_erp BETWEEN ? AND ?";
+    $where_erp_strict = "$filter_sql_strict AND erp.tgl_erp BETWEEN ? AND ?";
     $params_strict = array_merge($params_base, [$tgl_mulai, $tgl_selesai]);
     $types_strict = $types_base . "ss";
-    $where_erp_loose = $filter_sql_base;
-    $params_loose = $params_base;
-    $types_loose = $types_base;
     $sql_missing = "
         SELECT 
             erp.tgl_erp, erp.no_faktur, SUM(erp.nilai_row) as total_erp
@@ -79,7 +80,8 @@ try {
         GROUP BY erp.no_faktur, erp.kode_supp, erp.kd_store, erp.tgl_erp
     ";
     $stmt_miss = $conn->prepare($sql_missing);
-    if($types_strict) $stmt_miss->bind_param($types_strict, ...$params_strict);
+    if ($types_strict)
+        $stmt_miss->bind_param($types_strict, ...$params_strict);
     $stmt_miss->execute();
     $res_miss = $stmt_miss->get_result();
     while ($row = $res_miss->fetch_assoc()) {
@@ -92,6 +94,9 @@ try {
             ];
         }
     }
+    $where_erp_loose = $filter_sql_loose;
+    $params_loose = $params_base;
+    $types_loose = $types_base;
     $where_check = "cr.tgl_return BETWEEN ? AND ?";
     $params_check = [$tgl_mulai, $tgl_selesai];
     $types_check = "ss";
@@ -130,10 +135,11 @@ try {
     $params_summary = array_merge($params_loose, $params_check);
     $types_summary = $types_loose . $types_check;
     $stmt_sum = $conn->prepare($sql_summary_check);
-    if($types_summary) $stmt_sum->bind_param($types_summary, ...$params_summary);
+    if ($types_summary)
+        $stmt_sum->bind_param($types_summary, ...$params_summary);
     $stmt_sum->execute();
     $res_sum = $stmt_sum->get_result();
-    $total_rows_check = 0; 
+    $total_rows_check = 0;
     while ($row = $res_sum->fetch_assoc()) {
         $total_rows_check++;
         if ($row['status_data'] == 'NOT_FOUND_IN_ERP') {
@@ -192,7 +198,8 @@ try {
         LIMIT ? OFFSET ?
     ";
     $stmt_data = $conn->prepare($sql_data);
-    if($types_data) $stmt_data->bind_param($types_data, ...$params_data);
+    if ($types_data)
+        $stmt_data->bind_param($types_data, ...$params_data);
     $stmt_data->execute();
     $res_data = $stmt_data->get_result();
     while ($row = $res_data->fetch_assoc()) {

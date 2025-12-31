@@ -25,15 +25,10 @@ document.addEventListener("DOMContentLoaded", () => {
   if (paginationLinks) {
     paginationLinks.addEventListener("click", (e) => {
       const link = e.target.closest("a.pagination-link");
-
       if (!link || link.classList.contains("pagination-disabled")) return;
-
       e.preventDefault();
-
       const url = link.getAttribute("href");
-
       window.history.pushState({}, "", url);
-
       loadData();
     });
   }
@@ -133,13 +128,12 @@ document.addEventListener("DOMContentLoaded", () => {
       const result = await response.json();
       const select = filterStore || document.getElementById("cabang");
       if (!select) return;
-
-      // KOSONGKAN SELECT, TANPA OPSI DEFAULT "Pilih Cabang" ATAU "Semua Cabang"
       select.innerHTML = "";
-
+      const defaultOption = new Option("Pilih Cabang", "", true, true);
+      defaultOption.disabled = true;
+      select.add(defaultOption);
       const urlParams = new URLSearchParams(window.location.search);
       const urlKodeStore = urlParams.get('kode_store');
-
       if (result.data && result.data.length > 0) {
         result.data.forEach((store) => {
           const option = new Option(
@@ -148,31 +142,35 @@ document.addEventListener("DOMContentLoaded", () => {
           );
           select.add(option);
         });
-
-        // Set selected berdasarkan URL jika ada
-        if (urlKodeStore !== null && urlKodeStore !== "") {
+        if (urlKodeStore) {
           select.value = urlKodeStore;
         }
-        // Jika tidak ada URL parameter, browser otomatis memilih option pertama (index 0)
       } else {
-        select.innerHTML = '<option value="">Gagal memuat data cabang</option>';
-      }
-
-      // Jika halaman dimuat dengan parameter tertentu, muat ulang data (meskipun loadData dipanggil di akhir)
-      if (urlParams.has('page') || urlParams.has('kode_store')) {
-        loadData();
+        const errOption = new Option("Gagal memuat data cabang", "");
+        select.add(errOption);
       }
     } catch (error) {
       console.error("Gagal load store:", error);
-      const select = filterStore || document.getElementById("cabang");
-      if (select) {
-        select.innerHTML = '<option value="">Error koneksi</option>';
-      }
     }
   }
   async function loadData() {
-    setLoading(true);
     const formData = new FormData(filterForm);
+    const kodeStore = formData.get('kode_store');
+    if (!kodeStore) {
+      tableBody.innerHTML = `<tr>
+            <td colspan="8" class="text-center p-8">
+                <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 mb-3">
+                    <i class="fas fa-store text-gray-400 text-xl"></i>
+                </div>
+                <p class="text-gray-500 font-medium">Silahkan pilih cabang terlebih dahulu</p>
+            </td>
+        </tr>`;
+      paginationInfo.textContent = "";
+      paginationLinks.innerHTML = "";
+      resetSummary();
+      return;
+    }
+    setLoading(true);
     const params = new URLSearchParams(formData);
     const urlParams = new URLSearchParams(window.location.search);
     const currentPageFromUrl = urlParams.get('page') || '1';
@@ -339,6 +337,11 @@ document.addEventListener("DOMContentLoaded", () => {
   if (filterForm) {
     filterForm.addEventListener("submit", (e) => {
       e.preventDefault();
+      const select = document.getElementById("kode_store_filter");
+      if (!select.value) {
+        alert("Mohon pilih cabang terlebih dahulu!");
+        return;
+      }
       const formData = new FormData(filterForm);
       const params = new URLSearchParams(formData);
       params.set("page", "1");
@@ -356,12 +359,24 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     return null;
   }
-
-  loadStores();
-  loadData();
+  loadStores().then(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('kode_store') && urlParams.get('kode_store') !== "") {
+      loadData();
+    } else {
+      loadData();
+    }
+  });
 });
 function build_pagination_url(newPage) {
   const params = new URLSearchParams(window.location.search);
   params.set("page", newPage);
   return "?" + params.toString();
+}
+function resetSummary() {
+  elTotalSelisih.textContent = "0";
+  if (elTotalRupiahSelisih) elTotalRupiahSelisih.textContent = "Rp 0";
+  elTotalMissing.textContent = "Rp 0";
+  if (elTotalNotFound) elTotalNotFound.textContent = "0";
+  summaryData = { list_selisih: [], list_belum_ada: [], list_tidak_ditemukan: [] };
 }

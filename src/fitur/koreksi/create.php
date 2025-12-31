@@ -122,11 +122,10 @@ if (!$menuHandler->initialize()) {
                         </div>
 
                         <div class="relative">
-                            <label class="block text-xs font-semibold text-gray-700 mb-1">Kode Supplier <span
-                                    class="text-red-500">*</span></label>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Kode Supplier </label>
                             <div class="relative">
                                 <input type="text" name="kode_supp" id="kode_supp" class="input-modern w-full uppercase"
-                                    placeholder="Ketik Kode (Misal: A046)..." required autocomplete="off">
+                                    placeholder="Ketik Kode (Misal: A046)..." autocomplete="off">
                                 <div id="kode_supp_list" class="autocomplete-items hidden"></div>
                             </div>
                         </div>

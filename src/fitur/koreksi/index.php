@@ -2,8 +2,9 @@
 session_start();
 include '../../../aa_kon_sett.php';
 
-$tgl_selesai = date('Y-m-d');
-$tgl_mulai = date('Y-m-d', strtotime('-1 day'));
+$tgl_selesai = $_GET['tgl_selesai'] ?? date('Y-m-d');
+$tgl_mulai = $_GET['tgl_mulai'] ?? date('Y-m-d', strtotime('-1 day'));
+$search = $_GET['search'] ?? '';
 $page = (int) ($_GET['page'] ?? 1);
 
 require_once __DIR__ . '/../../component/menu_handler.php';
@@ -62,8 +63,9 @@ if (!$menuHandler->initialize()) {
                     <form id="filter-form" class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 mb-2">Pilih Cabang</label>
-                            <select name="kode_store" id="kode_store_filter" class="input-modern w-full cursor-pointer">
-                                <option value="">Semua Cabang</option>
+                            <select name="kode_store" id="kode_store_filter" class="input-modern w-full cursor-pointer"
+                                required>
+                                <option value="" disabled selected>Pilih Cabang</option>
                             </select>
                         </div>
                         <div>
@@ -79,7 +81,7 @@ if (!$menuHandler->initialize()) {
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 mb-2">Cari No Faktur</label>
                             <input type="text" name="search" id="search" class="input-modern w-full"
-                                placeholder="Ketik nomor faktur...">
+                                placeholder="Ketik nomor faktur..." value="<?= htmlspecialchars($search) ?>">
                         </div>
                         <div class="md:col-span-4 flex justify-end">
                             <button type="submit" id="filter-submit-button"

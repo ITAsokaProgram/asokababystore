@@ -56,9 +56,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function fetchSuggestions(term) {
     try {
-      // Mengarah ke API get_suppliers di folder koreksi
+      const storeVal = inpStore ? inpStore.value : '';
+
       const res = await fetch(
-        `/src/api/koreksi/get_suppliers.php?term=${term}`
+        `/src/api/koreksi/get_suppliers.php?term=${term}&kd_store=${storeVal}`
       );
       const data = await res.json();
       listContainer.innerHTML = "";

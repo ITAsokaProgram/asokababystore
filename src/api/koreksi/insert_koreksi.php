@@ -11,32 +11,34 @@ try {
 
     $input = json_decode(file_get_contents('php://input'), true);
 
-    // Tambahan variable store
-    $kode_store = trim($input['kode_store'] ?? '');
+    $kode_store = trim($input['kode_store'] ?? null);
     $tgl_koreksi = $input['tgl_koreksi'] ?? '';
+
     $kode_supp = trim($input['kode_supp'] ?? '');
     $nama_supplier = trim($input['nama_supplier'] ?? '');
     $no_faktur = trim($input['no_faktur'] ?? '');
     $total_koreksi = (float) ($input['total_koreksi'] ?? 0);
     $keterangan = $input['keterangan'] ?? '';
 
-    // Validasi Store
-    if (empty($kode_store) || empty($tgl_koreksi) || empty($kode_supp) || empty($no_faktur)) {
-        throw new Exception("Cabang, Tanggal, Kode Supplier, dan No Faktur wajib diisi.");
+
+    if (empty($kode_store) || empty($tgl_koreksi) || empty($no_faktur)) {
+        throw new Exception("Cabang, Tanggal, dan No Faktur wajib diisi.");
     }
 
-    // Cek Duplikat berdasarkan Primary Key (kode_supp, no_faktur)
-    $cek_sql = "SELECT count(*) as cnt FROM c_koreksi WHERE kode_supp = ? AND no_faktur = ?";
+
+    $cek_sql = "SELECT count(*) as cnt FROM c_koreksi WHERE tgl_koreksi = ? AND no_faktur = ?";
     $stmt_cek = $conn->prepare($cek_sql);
-    $stmt_cek->bind_param("ss", $kode_supp, $no_faktur);
+
+
+    $stmt_cek->bind_param("ss", $tgl_koreksi, $no_faktur);
     $stmt_cek->execute();
     $res_cek = $stmt_cek->get_result()->fetch_assoc();
 
     if ($res_cek['cnt'] > 0) {
-        throw new Exception("Data duplikat! Kombinasi Kode Supplier '$kode_supp' dan No Faktur '$no_faktur' sudah ada.");
+        throw new Exception("Data duplikat! Kombinasi Tanggal '$tgl_koreksi' dan No Faktur '$no_faktur' sudah ada.");
     }
 
-    // Insert dengan kode_store
+
     $sql_insert = "INSERT INTO c_koreksi 
                    (tgl_koreksi, kode_store, kode_supp, nama_supplier, no_faktur, total_koreksi, keterangan) 
                    VALUES (?, ?, ?, ?, ?, ?, ?)";
@@ -46,7 +48,7 @@ try {
         throw new Exception("Prepare failed: " . $conn->error);
 
     $stmt->bind_param(
-        "sssssds", // Tipe data diupdate (tambah satu 's' untuk store)
+        "sssssds",
         $tgl_koreksi,
         $kode_store,
         $kode_supp,

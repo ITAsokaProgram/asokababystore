@@ -135,8 +135,9 @@ if (!$menuHandler->initialize()) {
                     <form id="filter-form" class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 mb-2">Pilih Cabang</label>
-                            <select name="kode_store" id="kode_store_filter" class="input-modern w-full cursor-pointer">
-                                <option value="" disabled selected>Memuat...</option>
+                            <select name="kode_store" id="kode_store_filter" class="input-modern w-full cursor-pointer"
+                                required>
+                                <option value="" disabled selected>Pilih Cabang</option>
                             </select>
                         </div>
                         <div>

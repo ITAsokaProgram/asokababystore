@@ -36,18 +36,27 @@ document.addEventListener("DOMContentLoaded", () => {
         },
       });
       const result = await response.json();
-      if (filterStore) {
-        filterStore.innerHTML = "";
+      const select = filterStore;
+      if (select) {
+        select.innerHTML = "";
+        const defaultOption = new Option("Pilih Cabang", "", true, true);
+        defaultOption.disabled = true;
+        select.add(defaultOption);
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentStore = urlParams.get('kode_store');
         if (result.data && result.data.length > 0) {
           result.data.forEach((store) => {
             const option = new Option(
               `${store.nama_cabang} (${store.store})`,
               store.store
             );
-            filterStore.add(option);
+            select.add(option);
           });
+          if (currentStore) {
+            select.value = currentStore;
+          }
         } else {
-          filterStore.innerHTML =
+          select.innerHTML =
             '<option value="">Gagal memuat data cabang</option>';
         }
       }
@@ -59,9 +68,26 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
   async function loadData() {
-    setLoading(true);
     const formData = new FormData(filterForm);
+    const kodeStore = formData.get("kode_store");
+    if (!kodeStore) {
+      tableBody.innerHTML = `<tr>
+            <td colspan="8" class="text-center p-8">
+                <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 mb-3">
+                    <i class="fas fa-store text-gray-400 text-xl"></i>
+                </div>
+                <p class="text-gray-500 font-medium">Silahkan pilih cabang terlebih dahulu</p>
+            </td>
+        </tr>`;
+      paginationInfo.textContent = "";
+      paginationLinks.innerHTML = "";
+      return;
+    }
+    setLoading(true);
     const params = new URLSearchParams(formData);
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentPageFromUrl = urlParams.get('page') || '1';
+    params.set('page', currentPageFromUrl);
     try {
       const response = await fetch(
         `/src/api/koreksi/get_koreksi.php?${params.toString()}`
@@ -94,23 +120,20 @@ document.addEventListener("DOMContentLoaded", () => {
         : "-";
       html += `
         <tr class="hover:bg-gray-50 border-b border-gray-100">
-            <td class="text-center text-gray-500 text-sm py-3">${
-              offset + index + 1
-            }</td>
+            <td class="text-center text-gray-500 text-sm py-3">${offset + index + 1
+        }</td>
             <td class="text-sm text-gray-700">${formatJustDate(
-              row.tgl_koreksi
-            )}</td>
-            <td class="text-sm font-semibold text-gray-600">${storeLabel}</td> <td class="font-medium text-pink-600">${
-        row.kode_supp
-      }</td>
+          row.tgl_koreksi
+        )}</td>
+            <td class="text-sm font-semibold text-gray-600">${storeLabel}</td> <td class="font-medium text-pink-600">${row.kode_supp || '-'
+        }</td>
             <td class="text-sm text-gray-700">${row.nama_supplier || "-"}</td>
             <td class="text-sm font-bold text-gray-800">${row.no_faktur}</td>
             <td class="text-right font-mono text-gray-700">${formatRupiah(
-              row.total_koreksi
-            )}</td>
-            <td class="text-sm text-gray-500 italic truncate max-w-xs">${
-              row.keterangan || "-"
-            }</td>
+          row.total_koreksi
+        )}</td>
+            <td class="text-sm text-gray-500 italic truncate max-w-xs">${row.keterangan || "-"
+        }</td>
         </tr>
       `;
     });
@@ -133,12 +156,10 @@ document.addEventListener("DOMContentLoaded", () => {
     paginationInfo.textContent = `Menampilkan ${start_row} - ${end_row} dari ${total_rows} data`;
     let linksHtml = "";
     linksHtml += `
-            <a href="${
-              current_page > 1 ? build_pagination_url(current_page - 1) : "#"
-            }" 
-               class="pagination-link ${
-                 current_page === 1 ? "pagination-disabled" : ""
-               }">
+            <a href="${current_page > 1 ? build_pagination_url(current_page - 1) : "#"
+      }" 
+               class="pagination-link ${current_page === 1 ? "pagination-disabled" : ""
+      }">
                 <i class="fas fa-chevron-left"></i>
             </a>
         `;
@@ -161,23 +182,20 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       linksHtml += `
                 <a href="${build_pagination_url(page_num)}" 
-                   class="pagination-link ${
-                     page_num === current_page ? "pagination-active" : ""
-                   }">
+                   class="pagination-link ${page_num === Number(current_page) ? "pagination-active" : ""
+        }">
                     ${page_num}
                 </a>
             `;
       last_page = page_num;
     }
     linksHtml += `
-            <a href="${
-              current_page < total_pages
-                ? build_pagination_url(current_page + 1)
-                : "#"
-            }" 
-               class="pagination-link ${
-                 current_page === total_pages ? "pagination-disabled" : ""
-               }">
+            <a href="${current_page < total_pages
+        ? build_pagination_url(current_page + 1)
+        : "#"
+      }" 
+               class="pagination-link ${current_page === total_pages ? "pagination-disabled" : ""
+      }">
                 <i class="fas fa-chevron-right"></i>
             </a>
         `;
@@ -186,6 +204,11 @@ document.addEventListener("DOMContentLoaded", () => {
   if (filterForm) {
     filterForm.addEventListener("submit", (e) => {
       e.preventDefault();
+      const select = document.getElementById("kode_store_filter");
+      if (!select.value) {
+        alert("Mohon pilih cabang terlebih dahulu!");
+        return;
+      }
       const formData = new FormData(filterForm);
       const params = new URLSearchParams(formData);
       params.set("page", "1");
@@ -193,8 +216,14 @@ document.addEventListener("DOMContentLoaded", () => {
       loadData();
     });
   }
-  loadStores();
-  loadData();
+  loadStores().then(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('kode_store') && urlParams.get('kode_store') !== "") {
+      loadData();
+    } else {
+      loadData();
+    }
+  });
 });
 function build_pagination_url(newPage) {
   const params = new URLSearchParams(window.location.search);

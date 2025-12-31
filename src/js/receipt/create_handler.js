@@ -55,8 +55,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   async function fetchSuggestions(term) {
     try {
+      const storeVal = inpStore ? inpStore.value : '';
+
       const res = await fetch(
-        `/src/api/receipt/get_suppliers.php?term=${term}`
+        `/src/api/receipt/get_suppliers.php?term=${term}&kd_store=${storeVal}`
       );
       const data = await res.json();
       listContainer.innerHTML = "";
