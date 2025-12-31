@@ -321,7 +321,7 @@ if (!$menuHandler->initialize()) {
     </main>
 
     <div x-data="detailModal()" x-show="show" x-cloak @show-detail-modal.window="openModal($event.detail)"
-        style="display: none;" class="fixed inset-0 z-[9999] overflow-y-auto">
+        style="display: none; z-index: 10000;" class="fixed inset-0 z-[9999] overflow-y-auto">
 
         <div x-show="show" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0"
             x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-150"

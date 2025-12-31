@@ -201,7 +201,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                 <div class="grid grid-cols-2 gap-2">
 
                                     <div>
-                                        <label class="form-label">Status <span class="text-red-500">*</span></label>
+                                        <label class="form-label">Status </label>
                                         <select id="inp_status" class="input-compact bg-white">
                                             <option value="">Pilih Status...</option>
                                             <option value="PKP">PKP</option>
@@ -210,14 +210,13 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                         </select>
                                     </div>
                                     <div>
-                                        <label class="form-label">Cabang Bayar <span
-                                                class="text-red-500">*</span></label>
+                                        <label class="form-label">Cabang Bayar </label>
                                         <input type="text" id="inp_store_bayar" class="input-compact border-pink-200"
                                             placeholder="Ketik cabang bayar...">
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="form-label">MOP <span class="text-red-500">*</span></label>
+                                    <label class="form-label">MOP </label>
                                     <select id="inp_ket_global"
                                         class="input-compact bg-white font-semibold text-blue-800">
                                         <option value="" selected disabled>Pilih...</option>
@@ -226,8 +225,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                     </select>
                                 </div>
                                 <div class="mt-3 pt-3 border-t border-dashed border-gray-200">
-                                    <label class="form-label text-blue-600">Total Bayar <span
-                                            class="text-red-500">*</span></label>
+                                    <label class="form-label text-blue-600">Total Bayar </label>
                                     <div class="flex flex-col">
                                         <input type="text" id="inp_global_total"
                                             class="input-compact text-right font-bold font-mono text-blue-700"

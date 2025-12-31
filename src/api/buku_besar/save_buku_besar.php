@@ -185,6 +185,7 @@ try {
                     }
                 }
             }
+
             if ($nominal_bayar_ini > 0) {
                 $stmtInsertAngsuran->bind_param(
                     "isdsss",

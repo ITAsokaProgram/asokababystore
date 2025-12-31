@@ -520,9 +520,7 @@ async function handleSave() {
   const status = inpStatus.value;
   const mop = inpKetGlobal.value;
   if (!namaSupp) return Swal.fire("Validasi Gagal", "Nama Supplier wajib diisi!", "warning");
-  if (!storeBayar) return Swal.fire("Validasi Gagal", "Cabang Bayar wajib diisi!", "warning");
   if (!status) return Swal.fire("Validasi Gagal", "Status Pajak wajib dipilih!", "warning");
-  if (!mop) return Swal.fire("Validasi Gagal", "MOP wajib dipilih!", "warning");
   if (!noFaktur) return Swal.fire("Validasi Gagal", "Nomor Invoice wajib diisi!", "warning");
   if (!kodeStore) return Swal.fire("Validasi Gagal", "Cabang (Inv) wajib dipilih!", "warning");
   if (!tglNota) return Swal.fire("Validasi Gagal", "Tanggal Nota wajib diisi!", "warning");
@@ -541,8 +539,7 @@ async function handleSave() {
     if (tagihanMurni < 0) tagihanMurni = 0;
     labelTagihan = "Tagihan (Netto)";
   }
-  const finalTotalBayar = inputTotalBayar > 0 ? inputTotalBayar : tagihanMurni;
-  if (finalTotalBayar <= 0) return Swal.fire("Validasi Gagal", "Total Bayar wajib diisi (lebih dari 0)!", "warning");
+  const finalTotalBayar = inputTotalBayar;
   if (inputTotalBayar > 0 && Math.abs(inputTotalBayar - tagihanMurni) > 100) {
     const selisih = inputTotalBayar - tagihanMurni;
     const textSelisih = formatNumber(Math.abs(selisih));
@@ -576,6 +573,16 @@ async function handleSave() {
       cancelButtonText: 'Cek Kembali'
     });
     if (!confirm.isConfirmed) return;
+  }
+  if (finalTotalBayar === 0) {
+    const confirmZero = await Swal.fire({
+      title: 'Simpan Tanpa Pembayaran?',
+      text: "Total Bayar 0. Data akan disimpan/diupdate (TOP/Potongan) tetapi tidak masuk ke histori pembayaran.",
+      icon: 'info',
+      showCancelButton: true,
+      confirmButtonText: 'Ya, Simpan',
+    });
+    if (!confirmZero.isConfirmed) return;
   }
   isSubmitting = true;
   const ketValue = inpKetGlobal.value;
@@ -1028,8 +1035,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     const globalInputVal = parseNumber(inpGlobalTotal.value);
     const isGlobalFilled = inpGlobalTotal.value.trim() !== "";
     if (!namaSupp) return Swal.fire("Validasi Gagal", "Nama Supplier wajib diisi!", "warning");
-    if (!storeBayar) return Swal.fire("Validasi Gagal", "Cabang Bayar wajib diisi!", "warning");
-    if (!mop) return Swal.fire("Validasi Gagal", "MOP wajib dipilih!", "warning");
+    // if (!storeBayar) return Swal.fire("Validasi Gagal", "Cabang Bayar wajib diisi!", "warning");
+    // if (!mop) return Swal.fire("Validasi Gagal", "MOP wajib dipilih!", "warning");
     const totalTagihan = cartItems.reduce((acc, item) => {
       const nilai = parseNumber(item.nilai_faktur);
       const pot = parseNumber(item.potongan);
@@ -1050,9 +1057,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       finalDetails = [...cartItems];
       totalRencanaBayar = cartItems.reduce((acc, item) => acc + parseNumber(item.total_bayar), 0);
     }
-    if (totalRencanaBayar <= 0) {
-      return Swal.fire("Validasi Gagal", "Total Bayar wajib diisi (lebih dari 0)!", "warning");
-    }
+    // if (totalRencanaBayar <= 0) {
+    //   return Swal.fire("Validasi Gagal", "Total Bayar wajib diisi (lebih dari 0)!", "warning");
+    // }
     const isInstallmentMode = !installmentInfoBox.classList.contains("hidden") || (currentGroupId != null);
     let swalOptions = {
       title: 'Simpan Transaksi?',

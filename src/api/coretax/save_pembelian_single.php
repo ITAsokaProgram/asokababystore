@@ -113,26 +113,26 @@ try {
             throw new Exception("Gagal simpan ff_pembelian: " . $stmtIns->error);
 
 
-        // $queryBB = "INSERT INTO buku_besar 
-        //             (tgl_nota, no_faktur, kode_supplier, nama_supplier, status, nilai_faktur, total_bayar, kode_store, kd_user) 
-        //             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        // $stmtBB = $conn->prepare($queryBB);
-        // $total_bayar_awal = 0;
+        $queryBB = "INSERT INTO buku_besar 
+                    (tgl_nota, no_faktur, kode_supplier, nama_supplier, status, nilai_faktur, total_bayar, kode_store, kd_user) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $stmtBB = $conn->prepare($queryBB);
+        $total_bayar_awal = 0;
 
-        // $stmtBB->bind_param(
-        //     "sssssddss",
-        //     $tgl_nota,
-        //     $no_invoice,
-        //     $kode_supplier,
-        //     $nama_supplier,
-        //     $status,
-        //     $total_terima_fp,
-        //     $total_bayar_awal,
-        //     $kode_store,
-        //     $kd_user
-        // );
-        // if (!$stmtBB->execute())
-        //     throw new Exception("Gagal simpan ke Buku Besar: " . $stmtBB->error);
+        $stmtBB->bind_param(
+            "sssssddss",
+            $tgl_nota,
+            $no_invoice,
+            $kode_supplier,
+            $nama_supplier,
+            $status,
+            $total_terima_fp,
+            $total_bayar_awal,
+            $kode_store,
+            $kd_user
+        );
+        if (!$stmtBB->execute())
+            throw new Exception("Gagal simpan ke Buku Besar: " . $stmtBB->error);
 
         $message = "Data berhasil disimpan ke Pembelian.";
     }
