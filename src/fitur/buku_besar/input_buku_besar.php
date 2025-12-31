@@ -271,6 +271,42 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                     </div>
                                 </div>
 
+                                <div id="modal-potongan" class="fixed inset-0 z-50 hidden overflow-y-auto"
+                                    aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                                    <div
+                                        class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                                        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+                                            aria-hidden="true"></div>
+                                        <span class="hidden sm:inline-block sm:align-middle sm:h-screen"
+                                            aria-hidden="true">&#8203;</span>
+                                        <div
+                                            class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
+                                            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                                                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-3"
+                                                    id="modal-title">Rincian Potongan</h3>
+                                                <div class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-2"
+                                                    id="container-list-potongan">
+                                                </div>
+                                                <button type="button" id="btn-add-row-potongan"
+                                                    class="mt-3 text-sm text-blue-600 hover:text-blue-800 font-semibold">
+                                                    <i class="fas fa-plus-circle"></i> Tambah Item Potongan
+                                                </button>
+                                                <div class="mt-4 pt-3 border-t flex justify-between items-center">
+                                                    <span class="font-bold text-gray-700">Total:</span>
+                                                    <span class="font-bold text-red-600 font-mono text-lg"
+                                                        id="lbl-total-modal-potongan">0</span>
+                                                </div>
+                                            </div>
+                                            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                                                <button type="button" id="btn-save-modal-potongan"
+                                                    class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 sm:ml-3 sm:w-auto sm:text-sm">
+                                                    Selesai
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
                                         <label class="form-label">Cabang (Inv) <span
@@ -292,18 +328,20 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                             class="input-compact text-right font-mono" value="0">
                                     </div>
                                     <div>
-                                        <label class="form-label">Potongan</label>
-                                        <input type="text" id="inp_potongan"
-                                            class="input-compact text-right font-mono text-red-500" value="0">
+                                        <label class="form-label">Total Potongan</label>
+                                        <div class="flex gap-1">
+                                            <input type="text" id="inp_potongan"
+                                                class="input-compact text-right font-mono text-red-500 bg-gray-100 cursor-not-allowed"
+                                                value="0" readonly>
+                                            <button type="button" id="btn-manage-potongan"
+                                                class="bg-orange-100 text-orange-600 border border-orange-200 hover:bg-orange-200 px-3 rounded"
+                                                title="Kelola Rincian Potongan">
+                                                <i class="fas fa-list"></i>
+                                            </button>
+                                        </div>
+                                        <input type="hidden" id="inp_ket_potongan">
                                     </div>
                                 </div>
-
-                                <div>
-                                    <label class="form-label">Ket. Potongan</label>
-                                    <input type="text" id="inp_ket_potongan" class="input-compact"
-                                        placeholder="(Opsional)">
-                                </div>
-
                                 <div class="pt-2 border-t border-dashed">
 
                                     <button type="button" id="btn-add-item"

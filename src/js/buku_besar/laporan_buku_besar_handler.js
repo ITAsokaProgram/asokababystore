@@ -382,8 +382,9 @@ document.addEventListener("DOMContentLoaded", () => {
     let item_counter = offset + 1;
     tabel_data.forEach((row) => {
       const sumNilaiFaktur = parseFloat(row.sum_nilai_faktur) || 0;
-      const sumPotongan = parseFloat(row.sum_potongan) || 0;
       const sumTotalBayar = parseFloat(row.total_bayar) || 0;
+      const sumPotongan = parseFloat(row.sum_potongan) || 0;
+
       const tagihanSeharusnya = sumNilaiFaktur - sumPotongan;
       const sisaHutang = tagihanSeharusnya - sumTotalBayar;
       const isPaid = (sisaHutang <= 100) && (row.tanggal_bayar !== null && row.tanggal_bayar !== "");
@@ -391,14 +392,19 @@ document.addEventListener("DOMContentLoaded", () => {
       const cabangBayar = row.Nm_Alias_Bayar || row.store_bayar || "-";
       const rawStore = row.Nm_Alias || row.kode_store || "-";
       const storeList = rawStore.split('<br>');
-      const listPotonganHtml = formatListRupiah(row.list_potongan, '|');
       const listNilaiFakturHtml = formatListRupiah(row.list_nilai_faktur, '|');
-      const listKetPotonganHtml = row.ket_potongan || "-";
       const listStatusHtml = row.list_status || "-";
       const listTopHtml = formatListTop(row.list_top, isPaid);
       const listNoFakturHtml = row.no_faktur || "-";
       const historyCount = parseInt(row.history_count || 0);
       let totalBayarCellContent = formatRupiah(totalBayarDisplay);
+
+      const listPotonganHtml = formatListRupiah(row.list_potongan, '|');
+      const listKetPotonganHtml = row.ket_potongan || "-";
+
+      let potonganClass = "text-right font-mono text-sm pt-3 ";
+      let potonganClick = "";
+      let potonganHover = "";
       if (!isPaid && sumTotalBayar > 0) {
         totalBayarCellContent += `<span class="text-[10px] text-orange-500 font-bold ml-1">(Cicil)</span>`;
       }
@@ -411,65 +417,74 @@ document.addEventListener("DOMContentLoaded", () => {
         totalBayarClass += " cursor-pointer hover:bg-pink-100 transition-colors";
         totalBayarClick = `onclick="viewHistory(${row.id}, '${row.no_faktur}')"`;
       }
+
+      if (sumPotongan > 0) {
+        potonganClass += " text-blue-600 cursor-pointer hover:bg-blue-50 hover:underline transition-colors border-l border-blue-100";
+        potonganClick = `onclick="viewPotonganDetail(${row.id}, '${row.group_id || ''}', '${row.no_faktur}')"`;
+        potonganHover = `title="Klik untuk lihat detail potongan"`;
+      } else {
+        potonganClass += " text-gray-400";
+      }
       htmlRows += `
-            <tr class="hover:bg-gray-50 align-top">
-                <td class="text-center font-medium text-gray-500 pt-3">${item_counter}</td>
-                <td class="pt-3 text-sm">${formatDate(row.tgl_nota)}</td>
-                <td class="text-center pt-3">
-                    <div class="flex flex-col gap-1 items-center">
-                          ${listTopHtml}
-                    </div>
-                </td>
-                <td class="pt-3 text-xs font-mono text-gray-700 ">
-                    ${listNoFakturHtml}
-                </td>
-                <td class="text-center pt-3">
-                    <div class="flex flex-col gap-1 items-center">
-                        ${storeList.map(storeName => `
-                            <span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded border border-gray-200 block w-fit truncate max-w-[150px]">
-                                ${storeName}
-                            </span>
-                        `).join('')}
-                    </div>
-                </td>
-                <td class="pt-3 font-semibold text-gray-700">
-                    ${row.nama_supplier || "-"}
-                </td>
-                <td class="text-center pt-3 text-xs">
-                    ${listStatusHtml.split('|').map(s => `<span class="px-1 rounded bg-gray-100 border">${s}</span>`).join('<br>')}
-                </td>
-                <td class="text-right font-mono text-red-600 text-sm pt-3">
-                  <div class="font-mono text-xs text-blue-600 truncate">
-                    ${listPotonganHtml}
-                  </div>
-                  <div class="text-xs italic text-gray-500 truncate max-w-[150px]">
-                    ${listKetPotonganHtml}
-                  </div>
-                </td>
-                <td class="text-right font-mono text-gray-700 text-sm pt-3">
-                    ${listNilaiFakturHtml}
-                </td>
-                <td class="${totalBayarClass}" ${totalBayarClick} ${totalBayarTitle}>
-                    ${totalBayarCellContent}
-                    ${(!isPaid && sisaHutang > 100) ?
+                <tr class="hover:bg-gray-50 align-top">
+                    <td class="text-center font-medium text-gray-500 pt-3">${item_counter}</td>
+                    <td class="pt-3 text-sm">${formatDate(row.tgl_nota)}</td>
+                    <td class="text-center pt-3">
+                        <div class="flex flex-col gap-1 items-center">
+                              ${listTopHtml}
+                        </div>
+                    </td>
+                    <td class="pt-3 text-xs font-mono text-gray-700 ">
+                        ${listNoFakturHtml}
+                    </td>
+                    <td class="text-center pt-3">
+                        <div class="flex flex-col gap-1 items-center">
+                            ${storeList.map(storeName => `
+                                <span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded border border-gray-200 block w-fit truncate max-w-[150px]">
+                                    ${storeName}
+                                </span>
+                            `).join('')}
+                        </div>
+                    </td>
+                    <td class="pt-3 font-semibold text-gray-700">
+                        ${row.nama_supplier || "-"}
+                    </td>
+                    <td class="text-center pt-3 text-xs">
+                        ${listStatusHtml.split('|').map(s => `<span class="px-1 rounded bg-gray-100 border">${s}</span>`).join('<br>')}
+                    </td>
+                    
+                    <td class="${potonganClass}" ${potonganClick} ${potonganHover}>
+                      <div class="truncate font-bold">
+                        ${listPotonganHtml}
+                      </div>
+                      <div class="text-[10px] italic text-gray-500 truncate max-w-[150px] mt-1">
+                        ${truncateText(listKetPotonganHtml, 20)}
+                      </div>
+                    </td>
+                    <td class="text-right font-mono text-gray-700 text-sm pt-3">
+                        ${listNilaiFakturHtml}
+                    </td>
+                    <td class="${totalBayarClass}" ${totalBayarClick} ${totalBayarTitle}>
+                        ${totalBayarCellContent}
+                        ${(!isPaid && sisaHutang > 100) ?
           `<div class="text-[10px] text-red-500 font-normal mt-1">Kurang: ${formatRupiah(sisaHutang)}</div>`
           : ''}
-                </td>
-                <td class="text-center text-sm text-gray-600 pt-3">
-                     ${formatDate(row.tanggal_bayar)}
-                </td>
-                <td class="text-center pt-3">
-                     ${cabangBayar}
-                </td>
-                <td class="text-sm text-gray-600 pt-3">
-                    <div class="flex gap-4">
-                         <div class="font-mono text-xs text-blue-600 truncate">
-                            ${row.ket || '-'}
-                         </div>
-                    </div>
-                </td>
-            </tr>
-        `;
+                    </td>
+                    <td class="text-center text-sm text-gray-600 pt-3">
+                         ${formatDate(row.tanggal_bayar)}
+                    </td>
+                    <td class="text-center pt-3">
+                         ${cabangBayar}
+                    </td>
+                    <td class="text-sm text-gray-600 pt-3">
+                        <div class="flex gap-4">
+                             <div class="font-mono text-xs text-blue-600 truncate">
+                                ${row.ket || '-'}
+                             </div>
+                        </div>
+                    </td>
+                </tr>
+            `;
       item_counter++;
     });
     tableBody.innerHTML = htmlRows;
@@ -682,6 +697,111 @@ window.viewHistory = async (id, noFaktur) => {
       icon: "error",
       title: "Oops...",
       text: "Gagal memuat histori: " + e.message
+    });
+  }
+};
+
+
+window.viewPotonganDetail = async (id, groupId, noFaktur) => {
+  const formatRupiah = (number) => {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(number);
+  };
+
+  Swal.fire({
+    title: 'Memuat Detail Potongan...',
+    allowOutsideClick: false,
+    didOpen: () => Swal.showLoading()
+  });
+
+  try {
+    const response = await fetch(`/src/api/buku_besar/get_potongan_detail.php?id=${id}&group_id=${groupId}`);
+    if (!response.ok) {
+      throw new Error(`HTTP Error: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    if (result.success) {
+      let html = `
+                <div class="overflow-hidden rounded-lg border border-gray-200">
+                    <table class="w-full text-sm text-left text-gray-500">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-50 border-b">
+                            <tr>
+                                <th class="px-4 py-3">Keterangan</th>
+                                <th class="px-4 py-3 text-right">Nominal</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+            `;
+
+      let total = 0;
+      if (!result.data || result.data.length === 0) {
+        html += `<tr><td colspan="2" class="text-center p-4 italic text-gray-400">Tidak ada detail potongan tercatat di database detail.</td></tr>`;
+      } else {
+        result.data.forEach(row => {
+          const nominal = parseFloat(row.nominal);
+          total += nominal;
+          html += `
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-3 align-top">
+                                <div class="text-gray-900 font-medium">${row.keterangan || '-'}</div>
+                                <div class="text-xs text-gray-400 mt-0.5">${row.no_faktur}</div>
+                            </td>
+                            <td class="px-4 py-3 text-right font-mono font-bold text-red-600 align-top">
+                                ${formatRupiah(nominal)}
+                            </td>
+                        </tr>
+                    `;
+        });
+      }
+
+      html += `
+                        </tbody>
+                        <tfoot class="bg-gray-50 font-bold text-gray-900">
+                            <tr>
+                                <td class="px-4 py-3 text-right uppercase text-xs tracking-wider">Total Potongan</td>
+                                <td class="px-4 py-3 text-right text-red-700 text-base">${formatRupiah(total)}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            `;
+
+      const cleanNoFaktur = noFaktur ? noFaktur.replace(/<br>/g, ', ') : '-';
+
+      // Gunakan showDetailModalHistory (fungsi global yang sudah ada) 
+      // atau panggil dispatch event manual jika fungsi tersebut spesifik untuk history
+      if (typeof window.showDetailModalHistory === 'function') {
+        window.showDetailModalHistory(`Detail Potongan`, html);
+      } else {
+        // Fallback jika function helper tidak ada, dispatch event manual sesuai AlpineJS di HTML
+        window.dispatchEvent(
+          new CustomEvent("show-detail-modal", {
+            detail: {
+              show: true,
+              title: `Detail Potongan`,
+              content: html,
+            },
+          })
+        );
+      }
+
+      Swal.close();
+
+    } else {
+      throw new Error(result.message || "Gagal mengambil data");
+    }
+  } catch (e) {
+    console.error("View Potongan Error:", e);
+    Swal.fire({
+      icon: "error",
+      title: "Gagal",
+      text: "Tidak dapat memuat detail: " + e.message
     });
   }
 };

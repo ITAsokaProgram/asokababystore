@@ -1,5 +1,4 @@
 <?php
-// src/api/buku_besar/get_group_details.php
 session_start();
 ini_set('display_errors', 0);
 header('Content-Type: application/json');
@@ -12,6 +11,7 @@ try {
 
     $group_id = $_GET['group_id'];
 
+    // 1. Ambil data induk
     $query = "SELECT bb.*, 
                      ks.Nm_Alias as nm_alias,
                      ks_bayar.Nm_Alias as nm_alias_bayar 
@@ -33,6 +33,27 @@ try {
         $row['nilai_faktur'] = (float) $row['nilai_faktur'];
         $row['potongan'] = (float) $row['potongan'];
         $row['total_bayar'] = (float) $row['total_bayar'];
+
+        // --- PERBAIKAN DIMULAI DISINI ---
+        // Kita harus mengambil rincian potongan dari tabel child (buku_besar_potongan)
+        // Agar saat diedit, itemnya terpisah kembali, tidak digabung.
+
+        $details_potongan = [];
+        $qPot = $conn->query("SELECT nominal, keterangan FROM buku_besar_potongan WHERE buku_besar_id = " . $row['id']);
+
+        if ($qPot) {
+            while ($rp = $qPot->fetch_assoc()) {
+                $details_potongan[] = [
+                    'nominal' => (float) $rp['nominal'],
+                    'keterangan' => $rp['keterangan']
+                ];
+            }
+        }
+
+        // Masukkan array detail ini ke dalam row data
+        $row['details_potongan'] = $details_potongan;
+        // --- PERBAIKAN SELESAI ---
+
         $data[] = $row;
     }
 

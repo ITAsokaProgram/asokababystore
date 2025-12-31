@@ -157,6 +157,22 @@ try {
                     throw new Exception("Gagal insert header faktur baru: " . $stmtInsertHead->error);
                 }
                 $buku_besar_id = $conn->insert_id;
+                $conn->query("DELETE FROM buku_besar_potongan WHERE buku_besar_id = $buku_besar_id");
+
+                // Ambil array detail potongan dari input item
+                $detail_potongan_list = $item['details_potongan'] ?? [];
+
+                if (!empty($detail_potongan_list)) {
+                    $stmtPot = $conn->prepare("INSERT INTO buku_besar_potongan (buku_besar_id, nominal, keterangan) VALUES (?, ?, ?)");
+                    foreach ($detail_potongan_list as $pot) {
+                        $nom = (float) ($pot['nominal'] ?? 0);
+                        $ket = $pot['keterangan'] ?? '';
+                        if ($nom > 0) {
+                            $stmtPot->bind_param("ids", $buku_besar_id, $nom, $ket);
+                            $stmtPot->execute();
+                        }
+                    }
+                }
             }
             if ($nominal_bayar_ini > 0) {
                 $stmtInsertAngsuran->bind_param(

@@ -49,7 +49,32 @@ try {
                 ];
             }
         }
+        $potonganDetails = [];
+        $qPot = $conn->query("SELECT nominal, keterangan FROM buku_besar_potongan WHERE buku_besar_id = " . $dataBB['id']);
+        while ($rp = $qPot->fetch_assoc()) {
+            $potonganDetails[] = [
+                'nominal' => (float) $rp['nominal'],
+                'keterangan' => $rp['keterangan']
+            ];
+        }
         // --- LOGIKA TAMBAHAN END ---
+        $details_potongan = [];
+        // Ambil dari tabel child
+        $qPot = $conn->query("SELECT nominal, keterangan FROM buku_besar_potongan WHERE buku_besar_id = '" . $dataBB['id'] . "'");
+        while ($rp = $qPot->fetch_assoc()) {
+            $details_potongan[] = [
+                'nominal' => (float) $rp['nominal'],
+                'keterangan' => $rp['keterangan']
+            ];
+        }
+
+        // Jika tabel child kosong tapi di tabel induk ada nilai potongan (Data Lama/Migrasi)
+        if (empty($details_potongan) && $dataBB['potongan'] > 0) {
+            $details_potongan[] = [
+                'nominal' => (float) $dataBB['potongan'],
+                'keterangan' => $dataBB['ket_potongan']
+            ];
+        }
 
         echo json_encode([
             'success' => true,
@@ -71,6 +96,7 @@ try {
                 'ket_potongan' => $dataBB['ket_potongan'],
                 'top' => $dataBB['top'],
                 'status' => $dataBB['status'],
+                'details_potongan' => $details_potongan,
                 'group_totals' => $groupTotals // <--- Tambahkan ini ke response JSON
             ]
         ]);
