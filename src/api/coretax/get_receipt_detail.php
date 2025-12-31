@@ -28,7 +28,7 @@ try {
         FROM receipt_head rh
         LEFT JOIN supplier s ON rh.kode_supp = s.kode_supp AND rh.kd_store = s.kd_store
         LEFT JOIN kode_store ks ON rh.kd_store = ks.kd_store
-        WHERE rh.no_lpb LIKE CONCAT('%', ?, '%')
+        WHERE rh.no_lpb = ?
         LIMIT 1
     ";
     $stmt = $conn->prepare($query);
@@ -70,7 +70,7 @@ try {
     } else {
         echo json_encode([
             'success' => false,
-            'message' => "Data receipt '$no_lpb' tidak ditemukan di database."
+            'message' => "Data receipt '$no_lpb' tidak ditemukan."
         ]);
     }
 } catch (Exception $e) {
