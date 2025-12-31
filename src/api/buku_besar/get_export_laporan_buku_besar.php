@@ -15,6 +15,8 @@ try {
     $search_query = $_GET['search_query'] ?? '';
     $kd_store = $_GET['kd_store'] ?? 'all';
     $status_bayar = $_GET['status_bayar'] ?? 'all';
+    $top_mulai = $_GET['top_mulai'] ?? '';
+    $top_selesai = $_GET['top_selesai'] ?? '';
     $where_conditions = "1=1";
     $bind_types = "";
     $bind_params = [];
@@ -44,6 +46,12 @@ try {
         $where_conditions .= " AND bb.tanggal_bayar IS NOT NULL";
     elseif ($status_bayar === 'unpaid')
         $where_conditions .= " AND bb.tanggal_bayar IS NULL";
+    if (!empty($top_mulai) && !empty($top_selesai)) {
+        $where_conditions .= " AND bb.top BETWEEN ? AND ?";
+        $bind_types .= 'ss';
+        $bind_params[] = $top_mulai;
+        $bind_params[] = $top_selesai;
+    }
     if (!empty($search_query)) {
         $search_raw = trim($search_query);
         $search_numeric = str_replace(['.', ','], '', $search_raw);

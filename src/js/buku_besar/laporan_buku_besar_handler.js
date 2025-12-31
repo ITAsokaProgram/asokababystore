@@ -18,6 +18,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const filterTahun = document.getElementById("tahun");
   const filterTglMulai = document.getElementById("tgl_mulai");
   const filterTglSelesai = document.getElementById("tgl_selesai");
+  const filterTopMulai = document.getElementById("top_mulai");
+  const filterTopSelesai = document.getElementById("top_selesai");
   const exportExcelButton = document.getElementById("export-excel-button");
   if (exportExcelButton) {
     exportExcelButton.addEventListener("click", handleExportExcel);
@@ -97,6 +99,8 @@ document.addEventListener("DOMContentLoaded", () => {
         kd_store: params.kd_store,
         search_query: params.search_query,
         status_bayar: params.status_bayar,
+        top_mulai: params.top_mulai,
+        top_selesai: params.top_selesai,
       }).toString();
       const response = await fetch(
         `/src/api/buku_besar/get_export_laporan_buku_besar.php?${queryString}`
@@ -238,6 +242,8 @@ document.addEventListener("DOMContentLoaded", () => {
       search_query: params.get("search_query") || "",
       status_bayar: params.get("status_bayar") || "all",
       filter_status: params.get("filter_status") || "all",
+      top_mulai: params.get("top_mulai") || "",
+      top_selesai: params.get("top_selesai") || "",
       page: parseInt(params.get("page") || "1", 10),
     };
   }
@@ -276,7 +282,9 @@ document.addEventListener("DOMContentLoaded", () => {
       search_query: params.search_query,
       page: params.page,
       status_bayar: params.status_bayar,
-      filter_status: params.filter_status
+      filter_status: params.filter_status,
+      top_mulai: params.top_mulai,
+      top_selesai: params.top_selesai
     }).toString();
     try {
       const response = await fetch(
@@ -301,6 +309,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (filterTahun) filterTahun.value = params.tahun;
       if (filterTglMulai) filterTglMulai.value = params.tgl_mulai;
       if (filterTglSelesai) filterTglSelesai.value = params.tgl_selesai;
+      if (filterTopMulai) filterTopMulai.value = params.top_mulai;
+      if (filterTopSelesai) filterTopSelesai.value = params.top_selesai;
       if (pageSubtitle) {
         let storeName = "";
         if (
@@ -309,6 +319,9 @@ document.addEventListener("DOMContentLoaded", () => {
           filterSelectStore.value !== "all"
         ) {
           storeName = " - " + filterSelectStore.options[filterSelectStore.selectedIndex].text;
+        }
+        if (params.top_mulai && params.top_selesai) {
+          pageSubtitle.textContent += ` | Filter TOP: ${formatDate(params.top_mulai)} s/d ${formatDate(params.top_selesai)}`;
         }
         let periodText = "";
         if (params.filter_type === "month") {

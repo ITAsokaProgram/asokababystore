@@ -20,6 +20,9 @@ $filter_type = $_GET['filter_type'] ?? $default_filter_type;
 $bulan = $_GET['bulan'] ?? $default_bulan;
 $tahun = $_GET['tahun'] ?? $default_tahun;
 
+$top_mulai = $_GET['top_mulai'] ?? '';
+$top_selesai = $_GET['top_selesai'] ?? '';
+
 $default_page = 1;
 $page = (int) ($_GET['page'] ?? $default_page);
 if ($page < 1) {
@@ -147,6 +150,19 @@ $menuHandler = new MenuHandler('laporan_buku_besar'); // Sesuaikan permission ke
                                 </label>
                                 <input type="date" name="tgl_selesai" id="tgl_selesai" class="input-modern w-full"
                                     value="<?php echo htmlspecialchars($tgl_selesai); ?>">
+                            </div>
+                        </div>
+                        <div class="lg:col-span-2">
+                            <label class="block text-xs font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-hourglass-half text-pink-600 mr-1"></i> Filter Jatuh Tempo (TOP)
+                            </label>
+                            <div class="flex gap-2 items-center">
+                                <input type="date" name="top_mulai" id="top_mulai" class="input-modern w-full text-xs"
+                                    value="<?php echo htmlspecialchars($top_mulai); ?>" placeholder="Mulai">
+                                <span class="text-gray-400">-</span>
+                                <input type="date" name="top_selesai" id="top_selesai"
+                                    class="input-modern w-full text-xs"
+                                    value="<?php echo htmlspecialchars($top_selesai); ?>" placeholder="Selesai">
                             </div>
                         </div>
 
