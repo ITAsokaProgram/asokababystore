@@ -255,11 +255,11 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                     class="hidden mt-3 bg-blue-50 border border-blue-100 rounded-lg p-3">
                                     <div class="flex justify-between items-start">
                                         <div>
-                                            <p class="text-xs text-blue-600 font-bold mb-1"><i
-                                                    class="fas fa-info-circle mr-1"></i> Status Angsuran</p>
+                                            <!-- <p class="text-xs text-blue-600 font-bold mb-1"><i
+                                                    class="fas fa-info-circle mr-1"></i> Status Angsuran</p> -->
                                             <div class="text-xs text-gray-600">Sudah Bayar: <span id="info-sudah-bayar"
                                                     class="font-mono font-bold text-green-600">0</span></div>
-                                            <div class="text-xs text-gray-600 mt-1">Sisa Hutang: <span
+                                            <div class="text-xs text-gray-600 mt-1">Belum Dibayar: <span
                                                     id="info-sisa-hutang"
                                                     class="font-mono font-bold text-red-600 text-sm">0</span></div>
                                         </div>

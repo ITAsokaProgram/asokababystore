@@ -1,7 +1,6 @@
 <?php
 require_once __DIR__ . "/../../../../config.php";
 require_once __DIR__ . "/../../../../redis.php";
-
 // 1. Setup Logger CLI
 $logger = null;
 if (php_sapi_name() === 'cli') {
@@ -9,55 +8,45 @@ if (php_sapi_name() === 'cli') {
     $logger = new AppLogger('cron_member_location.log');
     $logger->info("Mulai cron job get_member_by_location.php.");
 }
-
 // 2. Header JSON (Non-CLI)
 if (php_sapi_name() !== 'cli') {
     header("Content-Type:application/json");
 }
-
 ini_set("display_errors", 1);
 ini_set("display_startup_errors", 1);
 error_reporting(E_ALL);
-
 // 3. Parse Params CLI
 if (php_sapi_name() === 'cli' && isset($argv[1])) {
     parse_str($argv[1], $_GET);
 }
-
 // 4. Auth (Non-CLI)
 if (php_sapi_name() !== 'cli') {
     require_once __DIR__ . ("./../../../auth/middleware_login.php");
     $headers = getallheaders();
     $token = $headers['Authorization'] ?? null;
-
     if (!$token) {
         http_response_code(401);
         echo json_encode(['success' => false, 'message' => 'Unauthorized: Token not provided']);
         exit;
     }
-
     $token = str_replace('Bearer ', '', $token);
     $user = verify_token($token);
-
     if (!$user) {
         http_response_code(401);
         echo json_encode(['success' => false, 'message' => 'Unauthorized: Invalid token']);
         exit;
     }
 }
-
 // 5. Parameter
 $status = $_GET['status'] ?? 'active';
 $filter_type = $_GET['filter_type'] ?? 'preset';
 $filter_preset = $_GET['filter'] ?? '3bulan';
 $start_date = $_GET['start_date'] ?? null;
 $end_date = $_GET['end_date'] ?? null;
-
 $level = $_GET['level'] ?? 'city';
 $selected_city = $_GET['city'] ?? null;
 $selected_district = $_GET['district'] ?? null;
 $limit_param = $_GET['limit'] ?? 'default';
-
 $cacheKey = "report:member_loc:" .
     "status=$status" .
     "&type=$filter_type" .
@@ -81,18 +70,14 @@ try {
         $logger->error("Redis cache get failed: " . $e->getMessage());
     }
 }
-
 if (php_sapi_name() === 'cli') {
     echo date('Y-m-d H:i:s') . " - CLI Mode: Force Refresh. Mengabaikan cache lama, mengambil data baru dari DB...\n";
 }
-
-
 function getDateFilterParams($filter_type, $filter_preset, $start_date, $end_date, $table_alias = 't')
 {
     $date_where_clause = "";
     $params = [];
     $types = "";
-
     if ($filter_type === 'custom' && $start_date && $end_date) {
         $end_date_with_time = $end_date . ' 23:59:59';
         $date_where_clause = " AND {$table_alias}.tgl_trans BETWEEN ? AND ?";
@@ -109,7 +94,6 @@ function getDateFilterParams($filter_type, $filter_preset, $start_date, $end_dat
             '9bulan' => '9 months',
             '12bulan' => '12 months'
         ];
-
         if ($filter_preset === 'semua') {
         } elseif ($filter_preset === 'kemarin') {
             $cutoff_date_filter = date('Y-m-d', strtotime("-1 day"));
@@ -124,24 +108,20 @@ function getDateFilterParams($filter_type, $filter_preset, $start_date, $end_dat
             $types = "s";
         }
     }
-
     return [
         'sql_clause' => $date_where_clause,
         'params' => $params,
         'types' => $types
     ];
 }
-
 try {
     $limit_clause = "";
     if ($limit_param === 'default') {
         $limit_clause = " LIMIT 20 ";
     }
-
     $params = [];
     $types = "";
     $where_clause = "";
-
     // Logika status
     $cutoff_date_status = date('Y-m-d 00:00:00', strtotime("-3 months"));
     if ($status === 'active') {
@@ -153,24 +133,20 @@ try {
         $params[] = $cutoff_date_status;
         $types .= "s";
     }
-
     // Logika $isFilter3MonthsOrLess
     $isFilter3MonthsOrLess = false;
     if ($filter_type === 'preset') {
         $isFilter3MonthsOrLess = in_array($filter_preset, ['kemarin', '1minggu', '1bulan', '3bulan']);
     }
-
     // Date Filter
     $dateFilter = getDateFilterParams($filter_type, $filter_preset, $start_date, $end_date, 't');
     $date_where_clause = $dateFilter['sql_clause'];
     $params_for_products = $dateFilter['params'];
     $types_for_products = $dateFilter['types'];
-
     $location_field = "";
     $city_field_logic = "IF(c.Kota IS NULL OR c.Kota = '', 'Customer belum input', c.Kota)";
     $district_field_logic = "IF(c.Kec IS NULL OR c.Kec = '', 'Customer belum input', c.Kec)";
     $subdistrict_field_logic = "IF(c.Kel IS NULL OR c.Kel = '', 'Customer belum input', c.Kel)";
-
     switch ($level) {
         case 'district':
             $location_field = $district_field_logic;
@@ -190,12 +166,10 @@ try {
             $location_field = $city_field_logic;
             break;
     }
-
     $exclude_clause = "
         AND UPPER(t.descp) NOT LIKE '%MEMBER BY PHONE%'
         AND UPPER(t.descp) NOT LIKE '%TAS ASOKA BIRU%'
     ";
-
     $sql = "
         SELECT 
             loc.location_name,
@@ -223,10 +197,10 @@ try {
             FROM 
             (
                 SELECT 
-                    @rn := IF(@current_group = location_name, @rn + 1, 1) AS rn,
-                    @current_group := location_name AS location_name,
+                    location_name,
                     descp,
-                    total_qty
+                    total_qty,
+                    ROW_NUMBER() OVER (PARTITION BY location_name ORDER BY total_qty DESC) as rn
                 FROM 
                 (
                     SELECT 
@@ -241,12 +215,10 @@ try {
                         FROM customers c
                         $where_clause 
                     ) AS cloc ON t.kd_cust = cloc.kd_cust
-                    CROSS JOIN (SELECT @rn := 0, @current_group := '') AS init_vars
                     WHERE 1=1 
                         $date_where_clause 
                         $exclude_clause
                     GROUP BY cloc.location_name, t.descp
-                    ORDER BY cloc.location_name, total_qty DESC
                 ) AS ProductSums
             ) AS RankedProducts
             WHERE rn = 1
@@ -254,15 +226,12 @@ try {
         ORDER BY loc.count DESC
         $limit_clause
     ";
-
     $stmt = $conn->prepare($sql);
     if ($stmt === false) {
         throw new Exception("Database prepare failed (active): " . $conn->error);
     }
-
     $all_params = array_merge($params, $params_for_products, $params, $params_for_products);
     $all_types = $types . $types_for_products . $types . $types_for_products;
-
     if (!empty($all_params)) {
         $bind_params = [$all_types];
         foreach ($all_params as $key => $value) {
@@ -270,11 +239,9 @@ try {
         }
         call_user_func_array([$stmt, 'bind_param'], $bind_params);
     }
-
     if (!$stmt->execute()) {
         throw new Exception("Gagal eksekusi query: " . $stmt->error);
     }
-
     $result = $stmt->get_result();
     $data = [];
     while ($row = $result->fetch_assoc()) {
@@ -286,14 +253,11 @@ try {
         ];
     }
     $stmt->close();
-
     $response = [
         'success' => true,
         'data' => $data
     ];
-
     $jsonData = json_encode($response);
-
     // 7. Simpan Redis
     try {
         $redis->set($cacheKey, $jsonData);
@@ -302,18 +266,15 @@ try {
             $logger->error("Redis cache set failed: " . $e->getMessage());
         }
     }
-
     if (php_sapi_name() !== 'cli') {
         http_response_code(200);
         echo $jsonData;
     } else {
         echo date('Y-m-d H:i:s') . " - Cache generated for $cacheKey. No TTL set.\n";
     }
-
     if ($logger) {
         $logger->info("Selesai cron job get_member_by_location.php.");
     }
-
 } catch (Throwable $t) {
     if ($logger) {
         $logger->critical("FATAL ERROR: " . $t->getMessage());

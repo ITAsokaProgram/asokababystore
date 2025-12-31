@@ -140,9 +140,25 @@ try {
         $response = $shopeeService->updateStock($item_id, $new_stock, $model_id);
         if (isset($response['error']) && $response['error']) {
             $results['failed']++;
-            $results['failed_details'][] = "$name ($sku) - Error: " . ($response['message'] ?? 'Unknown');
-            $logger->error("Gagal Update $name: " . ($response['message'] ?? ''));
-        } else {
+            $msg = $response['message'] ?? 'Unknown Error';
+            $results['failed_details'][] = "$name ($sku) - API Error: $msg";
+            $logger->error("Gagal Update $name: $msg");
+        }
+        // 2. Cek Error Level Item (Partial Failure dari Shopee)
+        elseif (isset($response['response']['failure_list']) && !empty($response['response']['failure_list'])) {
+            $results['failed']++;
+            // Ambil alasan gagal dari failure_list
+            $fail_reason = json_encode($response['response']['failure_list']);
+            // Coba ambil pesan spesifik jika ada
+            if (isset($response['response']['failure_list'][0]['failed_reason'])) {
+                $fail_reason = $response['response']['failure_list'][0]['failed_reason'];
+            }
+
+            $results['failed_details'][] = "$name ($sku) - Gagal Update Shopee: $fail_reason";
+            $logger->error("Gagal Update $name (Partial): $fail_reason");
+        }
+        // 3. Jika benar-benar sukses
+        else {
             $results['synced']++;
             $logger->success("Updated $name ($sku): $current_shopee_stock -> $new_stock");
         }

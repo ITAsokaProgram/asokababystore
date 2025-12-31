@@ -248,7 +248,7 @@ class ShopeeApiService
                     "model_id" => (int) $model_id,
                     "seller_stock" => [
                         [
-                            "location_id" => "IDZ",
+                            // "location_id" => "IDZ",
                             "stock" => (int) $new_stock
                         ]
                     ]

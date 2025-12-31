@@ -397,7 +397,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (historyCount > 0) {
         totalBayarClass += " cursor-pointer hover:bg-pink-100 transition-colors";
         totalBayarClick = `onclick="viewHistory(${row.id}, '${row.no_faktur}')"`;
-        totalBayarTitle = `title="Lihat Histori Angsuran"`;
       }
       htmlRows += `
             <tr class="hover:bg-gray-50 align-top">
