@@ -1021,9 +1021,16 @@ document.addEventListener("DOMContentLoaded", async () => {
       const liveNilaiFaktur = parseNumber(inpNilaiFaktur.value);
       const livePotongan = parseNumber(inpPotongan.value);
       const liveKetPotongan = inpKetPotongan.value;
+
       cartItems[editingCartIndex].nilai_faktur = liveNilaiFaktur;
       cartItems[editingCartIndex].potongan = livePotongan;
       cartItems[editingCartIndex].ket_potongan = liveKetPotongan;
+
+      // --- TAMBAHKAN BARIS INI ---
+      // Update rincian potongan dengan data terbaru dari modal (tempPotonganList)
+      cartItems[editingCartIndex].details_potongan = JSON.parse(JSON.stringify(tempPotonganList));
+      // ---------------------------
+
       renderCart();
     }
     const namaSupp = inpNamaSupp.value.trim();
