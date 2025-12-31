@@ -162,7 +162,6 @@ $permissionChecker = new PermissionAccess($conn);
                 <span id="top_member" class="whitespace-nowrap"></span>
               </div>
               <div class="flex items-center gap-1 max-w-[200px]" title="Top Member">
-                <i class="fa-solid fa-money-bill text-green-500 text-xs"></i>
                 <span id="top_member_nominal" class="whitespace-nowrap font-mono text-xs italic"></span>
               </div>
             </div>

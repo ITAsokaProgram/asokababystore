@@ -1192,7 +1192,6 @@ window.editCartItem = async (index) => {
     const url = `${API_URLS.getFakturDetail}?no_faktur=${encodeURIComponent(item.no_faktur)}&kode_store=${encodeURIComponent(currentStore)}`;
     const result = await sendRequestGET(url);
     const oldPlaceholder = inpNoFaktur.placeholder;
-    inpNoFaktur.placeholder = "Memuat info angsuran...";
     if (result.success && result.found && result.source === 'buku_besar') {
       const d = result.data;
       let nilaiFakturHitung = parseFloat(d.nilai_faktur);

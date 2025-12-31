@@ -22,7 +22,7 @@ function updateUI(data) {
     // Ambil data transaksi tertinggi/terendah dengan safe navigation
     const transTinggi = data.trans_tertinggi?.[0] || {};
     const transRendah = data.trans_terendah?.[0] || {};
-    
+
     // Cari jumlah member per cabang
     const findMember = (cabang) => data.jumlah_member_per_cabang?.find(item => item.cabang === cabang)?.jumlah_member || "0";
 
@@ -71,7 +71,7 @@ async function loadInvalidTransaksi() {
         // Render Top Member (Gunakan properti 'success' sesuai API Anda)
         if (resMem.success && resMem.data?.[0]) {
             setText("top_member", resMem.data[0].nama_cust);
-            setText("top_member_nominal", "Rp " + resMem.data[0].total_penjualan.toLocaleString("id-ID"));
+            setText("top_member_nominal", resMem.data[0].total_penjualan.toLocaleString("id-ID"));
         } else {
             setText("top_member", "-");
             setText("top_member_nominal", "-");
@@ -208,7 +208,7 @@ function displayFeaturedReview(review) {
         container.innerHTML = `<div class="text-[10px]  text-center p-2">Belum ada review</div>`;
         return;
     }
-    
+
     let stars = "";
     for (let i = 1; i <= 5; i++) {
         stars += `<i class="fa-solid fa-star ${i <= review.rating ? "text-yellow-400" : "text-gray-200"}"></i>`;
