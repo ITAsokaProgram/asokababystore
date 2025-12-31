@@ -115,4 +115,30 @@ class ConversationService
         }
         return 0;
     }
+    public function shouldSendGiveaway($phoneNumber)
+    {
+        $stmt = $this->conn->prepare("SELECT terakhir_giveaway_tgl FROM wa_percakapan WHERE nomor_telepon = ?");
+        $stmt->bind_param("s", $phoneNumber);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $data = $result->fetch_assoc();
+        $stmt->close();
+
+        $today = date('Y-m-d');
+
+        if (!$data || is_null($data['terakhir_giveaway_tgl']) || $data['terakhir_giveaway_tgl'] < $today) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function markGiveawaySent($phoneNumber)
+    {
+        $today = date('Y-m-d');
+        $stmt = $this->conn->prepare("UPDATE wa_percakapan SET terakhir_giveaway_tgl = ? WHERE nomor_telepon = ?");
+        $stmt->bind_param("ss", $today, $phoneNumber);
+        $stmt->execute();
+        $stmt->close();
+    }
 }

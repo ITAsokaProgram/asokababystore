@@ -116,6 +116,41 @@ class WebhookHandler
             }
         }
         $conversation = $this->conversationService->getOrCreateConversation($nomorPengirim, $namaPengirim);
+        if ($this->conversationService->shouldSendGiveaway($nomorPengirim)) {
+
+            $giveawayImage = "https://res.cloudinary.com/dprxsayu0/image/upload/v1767165061/whatsapp_bot_media/giveaway_1767165059.jpg";
+
+            $pesanBody = "Mau dapat hadiah dari Asoka?";
+            $pesanFooter = "Yuk ikuti GIVEAWAY 2026";
+            $displayText = "Klik link disini";
+            $urlLink = "https://www.instagram.com/p/DS6zK4midxz1jnN0H73jTRLHkMObQcX49Bcjeo0";
+
+            $headerData = [
+                'type' => 'image',
+                'link' => $giveawayImage
+            ];
+
+            $sendResult = kirimPesanCtaUrl(
+                $nomorPengirim,
+                $pesanBody,
+                $displayText,
+                $urlLink,
+                $headerData,
+                $pesanFooter
+            );
+
+            $this->saveAdminReply(
+                $conversation['id'],
+                $nomorPengirim,
+                "Giveaway Daily: $pesanBody",
+                'interactive',
+                $sendResult['wamid'] ?? null
+            );
+
+            $this->conversationService->markGiveawaySent($nomorPengirim);
+
+            usleep(500000);
+        }
         $activeFlowSession = $this->dynamicFlowService->getActiveSession($nomorPengirim);
 
         if ($activeFlowSession) {
