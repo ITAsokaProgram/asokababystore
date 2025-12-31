@@ -139,6 +139,7 @@ try {
                 'no_faktur' => !empty($data['no_invoice']) ? $data['no_invoice'] : $data['no_faktur'],
                 'no_invoice_asli' => $data['no_invoice'],
                 'tgl_nota' => $data['tgl_nota'],
+                'tanggal_bayar' => $dataBB['tanggal_bayar'],
                 'kode_supplier' => $data['kode_supplier'],
                 'nama_supplier' => $data['nama_supplier'],
                 'kode_store' => $data['kode_store'],

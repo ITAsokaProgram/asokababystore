@@ -433,8 +433,12 @@ async function fetchFakturData(noFaktur) {
         inpNilaiFaktur.value = formatNumber(parseFloat(d.nilai_faktur));
         inpPotongan.value = formatNumber(parseFloat(d.potongan));
         inpKetPotongan.value = d.ket_potongan || "";
-        inpNilaiFaktur.readOnly = true;
-        inpNilaiFaktur.classList.add('bg-gray-100', 'cursor-not-allowed');
+        // inpNilaiFaktur.readOnly = true;
+        // inpNilaiFaktur.classList.add('bg-gray-100', 'cursor-not-allowed');
+        // inpNoFaktur.classList.remove("bg-yellow-50");
+        // inpNoFaktur.classList.add("bg-blue-50", "text-blue-700", "font-bold");
+        inpNilaiFaktur.readOnly = false; // Izinkan edit
+        inpNilaiFaktur.classList.remove('bg-gray-100', 'cursor-not-allowed');
         inpNoFaktur.classList.remove("bg-yellow-50");
         inpNoFaktur.classList.add("bg-blue-50", "text-blue-700", "font-bold");
         const suggest = sisaHutang > 0 ? sisaHutang : 0;
@@ -678,7 +682,7 @@ async function startEditMode(data) {
         deletedCartIds = [];
         inpNamaSupp.value = detailedData.nama_supplier;
         inpKodeSupplier.value = detailedData.kode_supplier;
-        inpTglBayar.value = detailedData.tanggal_bayar;
+        inpTglBayar.value = detailedData.tanggal_bayar || "";
         inpStoreBayar.value = detailedData.store_bayar;
         inpKetGlobal.value = detailedData.ket;
         editIndicator.classList.remove("hidden");
@@ -1282,7 +1286,9 @@ window.editCartItem = async (index) => {
       }
       inpNoFaktur.classList.add("bg-blue-50", "text-blue-700", "font-bold");
       inpNilaiFaktur.readOnly = true;
-      inpNilaiFaktur.classList.add('bg-gray-100', 'cursor-not-allowed');
+      // inpNilaiFaktur.classList.add('bg-gray-100', 'cursor-not-allowed');
+      inpNilaiFaktur.readOnly = false;
+      inpNilaiFaktur.classList.remove('bg-gray-100', 'cursor-not-allowed');
     } else {
       if (installmentInfoBox) installmentInfoBox.classList.add("hidden");
     }
