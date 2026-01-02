@@ -13,6 +13,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const paginationLinks = document.getElementById("pagination-links");
   const exportExcelButton = document.getElementById("export-excel-btn");
   const exportPdfButton = document.getElementById("export-pdf-btn");
+  function getCookie(name) {
+    let nameEQ = name + "=";
+    let ca = document.cookie.split(";");
+    for (let i = 0; i < ca.length; i++) {
+      let c = ca[i];
+      while (c.charAt(0) == " ") c = c.substring(1, c.length);
+      if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+    }
+    return null;
+  }
+
   function formatDate(dateString) {
     if (!dateString) return "-";
     const cleanDate = dateString.split(" ")[0];
@@ -135,12 +146,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     <td class="text-center">${no}</td>
                     <td class="font-medium">${formatDate(row.Tgl_schedule)}</td>
                     <td>
-                        <div class="font-semibold text-gray-700">${
-                          row.Kd_Store
-                        }</div>
-                        <div class="text-xs text-gray-500">${
-                          row.Nm_Store || "-"
-                        }</div>
+                        <div class="font-semibold text-gray-700">${row.Kd_Store
+        }</div>
+                        <div class="text-xs text-gray-500">${row.Nm_Store || "-"
+        }</div>
                     </td>
                     <td>${row.kode_supp}</td>
                     <td>${row.nama_supp || "-"}</td>
@@ -168,12 +177,10 @@ document.addEventListener("DOMContentLoaded", () => {
     paginationInfo.textContent = `Menampilkan ${start_row} - ${end_row} dari ${total_rows} data`;
     let linksHtml = "";
     linksHtml += `
-        <a href="${
-          current_page > 1 ? build_pagination_url(current_page - 1) : "#"
-        }" 
-           class="pagination-link ${
-             current_page === 1 ? "pagination-disabled" : ""
-           }">
+        <a href="${current_page > 1 ? build_pagination_url(current_page - 1) : "#"
+      }" 
+           class="pagination-link ${current_page === 1 ? "pagination-disabled" : ""
+      }">
             <i class="fas fa-chevron-left"></i>
         </a>`;
     const pages_to_show = [];
@@ -195,22 +202,19 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       linksHtml += `
             <a href="${build_pagination_url(page_num)}" 
-               class="pagination-link ${
-                 page_num === current_page ? "pagination-active" : ""
-               }">
+               class="pagination-link ${page_num === current_page ? "pagination-active" : ""
+        }">
                 ${page_num}
             </a>`;
       last_page = page_num;
     }
     linksHtml += `
-        <a href="${
-          current_page < total_pages
-            ? build_pagination_url(current_page + 1)
-            : "#"
-        }" 
-           class="pagination-link ${
-             current_page === total_pages ? "pagination-disabled" : ""
-           }">
+        <a href="${current_page < total_pages
+        ? build_pagination_url(current_page + 1)
+        : "#"
+      }" 
+           class="pagination-link ${current_page === total_pages ? "pagination-disabled" : ""
+      }">
             <i class="fas fa-chevron-right"></i>
         </a>`;
     paginationLinks.innerHTML = linksHtml;
@@ -229,8 +233,15 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   async function fetchDataForExport() {
     const params = getUrlParams();
+    const token = getCookie("admin_token");
+
     const q = new URLSearchParams({ ...params, export: "true" }).toString();
-    const res = await fetch(`/src/api/laporan/jadwal_so/get_data.php?${q}`);
+    const res = await fetch(`/src/api/laporan/jadwal_so/get_data.php?${q}`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token,
+      },
+    });
     return await res.json();
   }
   async function exportToExcel() {
