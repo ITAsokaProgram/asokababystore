@@ -15,6 +15,9 @@ try {
     if (!$verif)
         throw new Exception('Token tidak valid');
 
+    // --- AMBIL USER DARI TOKEN (Sesuai referensi src/api/uang_brangkas/insert.php) ---
+    $user_login = $verif->id ?? $verif->kode ?? null;
+
     // Get Input
     $json = file_get_contents('php://input');
     $input = json_decode($json, true);
@@ -28,9 +31,8 @@ try {
     $kode_supplier = trim($input['kode_supplier'] ?? '');
     $no_rev_nota = trim($input['no_rev_nota'] ?? '');
 
-    // Logic Clean Faktur di PHP (Redundansi untuk keamanan data)
+    // Logic Clean Faktur
     $no_faktur_format = trim($input['no_faktur_format'] ?? '');
-    // Regex: Remove . , / - \ ' _ and spaces
     $no_faktur = preg_replace('/[\.\,\/\-\s\\\'_]/', '', $no_faktur_format);
 
     $nominal_awal = (float) ($input['nominal_awal'] ?? 0);
@@ -46,7 +48,7 @@ try {
     if (empty($no_nota))
         throw new Exception("Nomor Nota wajib diisi.");
 
-    // Cek Duplikasi No Nota (kecuali diri sendiri)
+    // Cek Duplikasi No Nota
     $sqlCheck = "SELECT id FROM serah_terima_nota WHERE no_nota = ? AND id != ?";
     $stmtCheck = $conn->prepare($sqlCheck);
     $checkId = $id ?: 0;
@@ -57,18 +59,19 @@ try {
     }
 
     if ($id) {
-        // UPDATE
+        // --- UPDATE DATA (Isi diedit_oleh) ---
         $query = "UPDATE serah_terima_nota SET 
             no_nota=?, tgl_nota=?, nama_supplier=?, kode_supplier=?, 
             no_rev_nota=?, no_faktur=?, no_faktur_format=?, 
             nominal_awal=?, nominal_revisi=?, selisih_pembayaran=?, 
             tgl_diserahkan=?, tgl_diterima=?, status=?, 
-            diberikan=?, penerima=?, edit_pada=NOW()
+            diberikan=?, penerima=?, edit_pada=NOW(), diedit_oleh=?
             WHERE id=?";
 
         $stmt = $conn->prepare($query);
+        // Tambahan type 's' untuk diedit_oleh dan 'i' untuk id di akhir
         $stmt->bind_param(
-            "sssssssdddsssssi",
+            "sssssssdddssssssi",
             $no_nota,
             $tgl_nota,
             $nama_supplier,
@@ -84,6 +87,7 @@ try {
             $status,
             $diberikan,
             $penerima,
+            $user_login, // diedit_oleh
             $id
         );
 
@@ -92,17 +96,18 @@ try {
         $message = "Data berhasil diperbarui.";
 
     } else {
-        // INSERT
+        // --- INSERT DATA (Isi dibuat_oleh) ---
         $query = "INSERT INTO serah_terima_nota 
             (no_nota, tgl_nota, nama_supplier, kode_supplier, 
             no_rev_nota, no_faktur, no_faktur_format, 
             nominal_awal, nominal_revisi, selisih_pembayaran, 
-            tgl_diserahkan, tgl_diterima, status, diberikan, penerima)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            tgl_diserahkan, tgl_diterima, status, diberikan, penerima, dibuat_oleh)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         $stmt = $conn->prepare($query);
+        // Tambahan type 's' di akhir untuk dibuat_oleh
         $stmt->bind_param(
-            "sssssssdddsssss",
+            "sssssssdddssssss",
             $no_nota,
             $tgl_nota,
             $nama_supplier,
@@ -117,7 +122,8 @@ try {
             $tgl_diterima,
             $status,
             $diberikan,
-            $penerima
+            $penerima,
+            $user_login // dibuat_oleh
         );
 
         if (!$stmt->execute())
@@ -128,7 +134,7 @@ try {
     echo json_encode(['success' => true, 'message' => $message]);
 
 } catch (Exception $e) {
-    http_response_code(200); // Return 200 OK with success:false for frontend handling
+    http_response_code(200);
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 } finally {
     if (isset($conn))

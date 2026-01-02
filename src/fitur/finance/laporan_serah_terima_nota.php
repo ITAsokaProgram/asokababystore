@@ -228,6 +228,65 @@ require_once __DIR__ . '/../../component/menu_handler.php';
             </div>
         </section>
     </main>
+    <div id="modal-otorisasi" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title"
+        role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            <div
+                class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+                <form id="form-otorisasi">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="flex justify-between items-center mb-4 border-b pb-2">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900">Ubah Status Nota</h3>
+                            <button type="button" class="btn-close-auth text-gray-400 hover:text-gray-500">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+
+                        <input type="hidden" id="auth_nota_id" name="id">
+
+                        <div class="mb-4">
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Status Baru</label>
+                            <select name="status" id="auth_status_baru"
+                                class="input-modern w-full font-bold text-pink-600">
+                                <option value="Belum Terima">Belum Terima</option>
+                                <option value="Sudah Terima">Sudah Terima</option>
+                            </select>
+                        </div>
+
+                        <div class="p-4 border border-red-200 rounded-lg bg-red-50">
+                            <h4 class="text-xs font-bold text-red-600 mb-3 border-b border-red-200 pb-1">
+                                <i class="fas fa-lock mr-1"></i> Otorisasi Diperlukan
+                            </h4>
+                            <div class="mb-3">
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">User (Inisial)</label>
+                                <input type="text" name="nama_user_cek" class="input-modern w-full"
+                                    placeholder="Contoh: ADM" required autocomplete="off">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Kode Otorisasi</label>
+                                <input type="password" name="kode_otorisasi" class="input-modern w-full"
+                                    placeholder="Password Otorisasi" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
+                        <button type="submit"
+                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-pink-600 text-base font-medium text-white hover:bg-pink-700 focus:outline-none sm:w-auto sm:text-sm">
+                            <i class="fas fa-check mr-2 mt-1"></i> Konfirmasi
+                        </button>
+                        <button type="button"
+                            class="btn-close-auth mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:w-auto sm:text-sm">
+                            Batal
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <script src="/src/js/middleware_auth.js"></script>
     <script src="../../js/finance/laporan_serah_terima_nota_handler.js" type="module"></script>

@@ -1,5 +1,11 @@
+import { sendRequestJSON } from "../utils/api_helpers.js";
 document.addEventListener("DOMContentLoaded", () => {
     const tableBody = document.getElementById("receipt-table-body");
+    const modalAuth = document.getElementById("modal-otorisasi");
+    const formAuth = document.getElementById("form-otorisasi");
+    const authNotaId = document.getElementById("auth_nota_id");
+    const authStatusSelect = document.getElementById("auth_status_baru");
+    const btnsCloseAuth = document.querySelectorAll(".btn-close-auth");
     const filterForm = document.getElementById("filter-form");
     const filterSubmitButton = document.getElementById("filter-submit-button");
     const filterInputSupplier = document.getElementById("search_supplier");
@@ -19,6 +25,56 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (exportExcelButton) {
         exportExcelButton.addEventListener("click", handleExportExcel);
+    }
+    window.openStatusModal = (id, currentStatus) => {
+        formAuth.reset();
+        authNotaId.value = id;
+
+        let targetStatus = currentStatus === 'Sudah Terima' ? 'Sudah Terima' : 'Belum Terima';
+        authStatusSelect.value = targetStatus;
+
+        modalAuth.classList.remove("hidden");
+    };
+    btnsCloseAuth.forEach(btn => {
+        btn.addEventListener("click", () => {
+            modalAuth.classList.add("hidden");
+        });
+    });
+    if (formAuth) {
+        formAuth.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(formAuth);
+            const jsonData = Object.fromEntries(formData.entries());
+            const token = getCookie("admin_token");
+
+            try {
+                // Tampilkan loading di tombol (opsional)
+                Swal.fire({ title: 'Memproses...', didOpen: () => Swal.showLoading() });
+
+                const response = await fetch('/src/api/finance/update_status_serah_terima.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify(jsonData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    Swal.fire("Berhasil", result.message, "success");
+                    modalAuth.classList.add("hidden");
+                    loadData(); // Reload tabel untuk melihat perubahan
+                } else {
+                    Swal.fire("Gagal", result.message, "error");
+                }
+            } catch (error) {
+                console.error(error);
+                Swal.fire("Error", "Terjadi kesalahan sistem", "error");
+            }
+        });
     }
 
     function toggleFilterMode() {
@@ -115,7 +171,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 { key: "tgl_nota", width: 15 },
                 { key: "nama_supplier", width: 30 },
                 { key: "no_nota", width: 20 },
-                { key: "no_rev_nota", width: 10 },
+                { key: "no_rev_nota", width: 15 },
                 { key: "no_faktur", width: 20 },
                 { key: "nominal_awal", width: 18 },
                 { key: "nominal_revisi", width: 18 },
@@ -134,8 +190,8 @@ document.addEventListener("DOMContentLoaded", () => {
             titleCell.alignment = { horizontal: "center" };
 
             const headers = [
-                "No", "Tgl Nota", "Nama Supplier", "No. Nota", "No. Rev",
-                "No Faktur", "Nominal Awal", "Nominal Revisi", "Selisih",
+                "No", "Tgl Nota", "Nama Supplier", "No. Nota", "No. Rev. Nota",
+                "No Faktur", "Nominal Awal", "Nominal Revisi", "Selisih Pembayaran",
                 "Tgl Diserahkan", "Tgl Diterima", "Status", "Diberikan", "Penerima"
             ];
 
@@ -359,22 +415,30 @@ document.addEventListener("DOMContentLoaded", () => {
         let item_counter = offset + 1;
 
         tabel_data.forEach((row) => {
-            // Parsing Values
             const nominalAwal = parseFloat(row.nominal_awal) || 0;
             const nominalRevisi = parseFloat(row.nominal_revisi) || 0;
             const selisih = parseFloat(row.selisih_pembayaran) || 0;
 
-            // Formatting Dates
             const tglNota = formatDate(row.tgl_nota);
             const tglDiserahkan = formatDate(row.tgl_diserahkan);
             const tglDiterima = formatDate(row.tgl_diterima);
 
-            // Status Badge Logic
-            let statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-800 border border-gray-200">${row.status || '-'}</span>`;
+            // --- PERUBAHAN DI SINI: Status Badge jadi Button ---
+            let statusBadgeClass = row.status === 'Sudah Terima'
+                ? 'bg-green-100 text-green-800 border-green-200'
+                : 'bg-gray-100 text-gray-800 border-gray-200';
 
-            if (row.status === 'Sudah Terima') {
-                statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-800 border border-green-200"><i class="fas fa-check mr-1"></i> Sudah Terima</span>`;
-            }
+            let statusIcon = row.status === 'Sudah Terima' ? '<i class="fas fa-check mr-1"></i>' : '';
+
+            // Menambahkan onclick="window.openStatusModal(...)"
+            let statusBadge = `
+                <button type="button" 
+                    onclick="window.openStatusModal('${row.id}', '${row.status}')"
+                    class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border hover:opacity-80 transition-opacity cursor-pointer shadow-sm ${statusBadgeClass}">
+                    ${statusIcon} ${row.status || 'Belum Terima'} <i class="fas fa-edit ml-2 opacity-50"></i>
+                </button>
+            `;
+            // ----------------------------------------------------
 
             htmlRows += `
             <tr class="hover:bg-gray-50">
