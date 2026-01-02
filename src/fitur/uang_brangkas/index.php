@@ -84,7 +84,7 @@ if (!$menuHandler->initialize()) {
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 mb-2">Pilih Cabang</label>
                             <select name="kd_store" id="kd_store" class="input-modern w-full">
-                                <option value="all">Seluruh Store</option>
+                                <option value="" selected disabled>-- Pilih Cabang --</option>
                             </select>
                         </div>
                         <button type="submit" class="btn-primary flex items-center justify-center gap-2">
@@ -116,8 +116,11 @@ if (!$menuHandler->initialize()) {
                             <tbody id="table-body">
                                 <tr>
                                     <td colspan="7" class="text-center p-8">
-                                        <div class="spinner-simple"></div>
-                                        <p class="mt-3 text-gray-500 font-medium">Memuat data...</p>
+                                        <div class="text-gray-400 mb-2">
+                                            <i class="fas fa-store fa-3x"></i>
+                                        </div>
+                                        <p class="text-gray-500 font-medium">Silahkan pilih cabang dan klik Tampilkan
+                                        </p>
                                     </td>
                                 </tr>
                             </tbody>
