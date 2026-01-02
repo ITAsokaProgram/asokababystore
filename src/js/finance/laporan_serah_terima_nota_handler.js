@@ -94,7 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }).toString();
 
             const response = await fetch(
-                `/src/api/finance/get_export_laporan_surat_terima_nota.php?${queryString}`
+                `/src/api/finance/get_export_laporan_serah_terima_nota.php?${queryString}`
             );
 
             if (!response.ok) throw new Error("Gagal mengambil data export");
@@ -200,7 +200,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const url = window.URL.createObjectURL(blob);
             const anchor = document.createElement("a");
             anchor.href = url;
-            let filename = `Laporan_Surat_Terima_Nota_`;
+            let filename = `Laporan_serah_terima_nota_`;
             if (params.filter_type === "month") {
                 filename += `${params.bulan}_${params.tahun}`;
             } else {
@@ -266,7 +266,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         try {
             const response = await fetch(
-                `/src/api/finance/get_laporan_surat_terima_nota.php?${queryString}`
+                `/src/api/finance/get_laporan_serah_terima_nota.php?${queryString}`
             );
 
             if (!response.ok) {

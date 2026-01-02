@@ -47,7 +47,7 @@ try {
         throw new Exception("Nomor Nota wajib diisi.");
 
     // Cek Duplikasi No Nota (kecuali diri sendiri)
-    $sqlCheck = "SELECT id FROM surat_terima_nota WHERE no_nota = ? AND id != ?";
+    $sqlCheck = "SELECT id FROM serah_terima_nota WHERE no_nota = ? AND id != ?";
     $stmtCheck = $conn->prepare($sqlCheck);
     $checkId = $id ?: 0;
     $stmtCheck->bind_param("si", $no_nota, $checkId);
@@ -58,7 +58,7 @@ try {
 
     if ($id) {
         // UPDATE
-        $query = "UPDATE surat_terima_nota SET 
+        $query = "UPDATE serah_terima_nota SET 
             no_nota=?, tgl_nota=?, nama_supplier=?, kode_supplier=?, 
             no_rev_nota=?, no_faktur=?, no_faktur_format=?, 
             nominal_awal=?, nominal_revisi=?, selisih_pembayaran=?, 
@@ -93,7 +93,7 @@ try {
 
     } else {
         // INSERT
-        $query = "INSERT INTO surat_terima_nota 
+        $query = "INSERT INTO serah_terima_nota 
             (no_nota, tgl_nota, nama_supplier, kode_supplier, 
             no_rev_nota, no_faktur, no_faktur_format, 
             nominal_awal, nominal_revisi, selisih_pembayaran, 

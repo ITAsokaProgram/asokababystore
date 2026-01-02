@@ -2,7 +2,7 @@
 session_start();
 include '../../../aa_kon_sett.php';
 require_once __DIR__ . '/../../component/menu_handler.php';
-// $menuHandler = new MenuHandler('finance_surat_terima_nota');
+// $menuHandler = new MenuHandler('finance_serah_terima_nota');
 // if (!$menuHandler->initialize()) {
 //     exit();
 // }
@@ -304,7 +304,8 @@ require_once __DIR__ . '/../../component/menu_handler.php';
     </main>
 
     <script src="/src/js/middleware_auth.js"></script>
-    <script src="../../js/finance/input_surat_terima_nota_handler.js" type="module"></script>
+    <script src="../../js/finance/input_serah_terima_nota_handler.js" type="module"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </body>
 
 </html>

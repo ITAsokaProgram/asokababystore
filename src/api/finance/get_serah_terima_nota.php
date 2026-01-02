@@ -49,7 +49,7 @@ try {
     }
 
     $sqlWhere = implode(" AND ", $whereClauses);
-    $query = "SELECT * FROM surat_terima_nota WHERE $sqlWhere ORDER BY $orderClause LIMIT ? OFFSET ?";
+    $query = "SELECT * FROM serah_terima_nota WHERE $sqlWhere ORDER BY $orderClause LIMIT ? OFFSET ?";
 
     $params[] = $limit;
     $params[] = $offset;

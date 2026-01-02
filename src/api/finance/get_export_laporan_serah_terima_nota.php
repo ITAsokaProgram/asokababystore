@@ -57,7 +57,7 @@ try {
     }
 
     // Query All Data (No Limit/Offset)
-    $query = "SELECT * FROM surat_terima_nota 
+    $query = "SELECT * FROM serah_terima_nota 
               WHERE $where_conditions 
               ORDER BY tgl_nota DESC, dibuat_pada DESC";
 

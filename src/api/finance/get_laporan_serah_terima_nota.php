@@ -82,7 +82,7 @@ try {
     }
 
     // 1. Get Total Count
-    $sql_count = "SELECT COUNT(id) as total FROM surat_terima_nota WHERE $where_conditions";
+    $sql_count = "SELECT COUNT(id) as total FROM serah_terima_nota WHERE $where_conditions";
     $stmt_count = $conn->prepare($sql_count);
     if ($stmt_count === false)
         throw new Exception("Prepare failed (count): " . $conn->error);
@@ -100,7 +100,7 @@ try {
     $response['pagination']['total_pages'] = ceil($total_rows / $limit);
 
     // 2. Get Data
-    $sql_data = "SELECT * FROM surat_terima_nota 
+    $sql_data = "SELECT * FROM serah_terima_nota 
                  WHERE $where_conditions 
                  ORDER BY tgl_nota DESC, dibuat_pada DESC 
                  LIMIT ? OFFSET ?";

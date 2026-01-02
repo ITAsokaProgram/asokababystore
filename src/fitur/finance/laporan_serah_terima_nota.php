@@ -90,7 +90,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                         </div>
 
                         <div class="flex items-center gap-2">
-                            <a href="input_surat_terima_nota.php"
+                            <a href="input_serah_terima_nota.php"
                                 class="btn-primary flex items-center gap-2 px-4 py-2 shadow-lg shadow-pink-500/30 rounded-lg text-white transition-transform hover:scale-105 text-sm decoration-0">
                                 <i class="fas fa-plus"></i> <span>Input Baru</span>
                             </a>
@@ -230,7 +230,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
     </main>
 
     <script src="/src/js/middleware_auth.js"></script>
-    <script src="../../js/finance/laporan_surat_terima_nota_handler.js" type="module"></script>
+    <script src="../../js/finance/laporan_serah_terima_nota_handler.js" type="module"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

@@ -20,7 +20,7 @@ try {
     if ($id === 0)
         throw new Exception("ID tidak valid");
 
-    $query = "DELETE FROM surat_terima_nota WHERE id = ?";
+    $query = "DELETE FROM serah_terima_nota WHERE id = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("i", $id);
 

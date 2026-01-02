@@ -1,9 +1,9 @@
 import { sendRequestGET, sendRequestJSON } from "../utils/api_helpers.js";
 
 const API_URLS = {
-    saveData: "/src/api/finance/save_surat_terima_nota.php",
-    getData: "/src/api/finance/get_surat_terima_nota.php",
-    deleteData: "/src/api/finance/delete_surat_terima_nota.php",
+    saveData: "/src/api/finance/save_serah_terima_nota.php",
+    getData: "/src/api/finance/get_serah_terima_nota.php",
+    deleteData: "/src/api/finance/delete_serah_terima_nota.php",
     searchSupplier: "/src/api/coretax/get_supplier_search.php"
 };
 
