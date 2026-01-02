@@ -1,13 +1,10 @@
 import { sendRequestGET, sendRequestJSON } from "../utils/api_helpers.js";
-
 const API_URLS = {
     saveData: "/src/api/finance/save_serah_terima_nota.php",
     getData: "/src/api/finance/get_serah_terima_nota.php",
     deleteData: "/src/api/finance/delete_serah_terima_nota.php",
     searchSupplier: "/src/api/coretax/get_supplier_search.php"
 };
-
-// DOM Elements
 const form = document.getElementById("single-form");
 const inpId = document.getElementById("inp_id");
 const inpNoNota = document.getElementById("inp_no_nota");
@@ -26,18 +23,14 @@ const inpSelisih = document.getElementById("inp_selisih");
 const inpTglDiserahkan = document.getElementById("inp_tgl_diserahkan");
 const inpTglDiterima = document.getElementById("inp_tgl_diterima");
 const listSupplier = document.getElementById("supplier_list");
-
 const btnSave = document.getElementById("btn-save");
 const btnCancelEdit = document.getElementById("btn-cancel-edit");
 const editIndicator = document.getElementById("edit-mode-indicator");
-
 const tableBody = document.getElementById("table-body");
 const inpSearchTable = document.getElementById("inp_search_table");
 const filterSort = document.getElementById("filter_sort");
 const filterTgl = document.getElementById("filter_tgl");
 const loaderRow = document.getElementById("loader-row");
-
-// State Variables
 let isSubmitting = false;
 let debounceTimer;
 let searchDebounceTimer;
@@ -48,8 +41,10 @@ let currentSearchTerm = "";
 let currentDateFilter = "";
 let currentSortOption = "created";
 let tableRowIndex = 0;
-
-// Formatters
+function sanitizeNumberInput(e) {
+    e.target.value = e.target.value.replace(/[^0-9.]/g, '');
+    calculateSelisih();
+}
 function formatNumber(num) {
     if (isNaN(num) || num === null) return "0";
     return new Intl.NumberFormat("id-ID", {
@@ -57,37 +52,29 @@ function formatNumber(num) {
         maximumFractionDigits: 0,
     }).format(num);
 }
-
 function parseNumber(str) {
     if (!str) return 0;
     const cleanStr = str.toString().replace(/\./g, "").replace(",", ".");
     return parseFloat(cleanStr) || 0;
 }
-
-// Logic Clean Faktur (Excel Formula Implementation)
-// =SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(F5,"-",""),",",""),".",""),"/","")," ",""),"\",""),"'",""),"_","")
 function cleanFakturString(str) {
     if (!str) return "";
     return str.replace(/[\-\,\.\/\s\\\'_]/g, "");
 }
-
 function calculateSelisih() {
     const awal = parseNumber(inpNominalAwal.value);
     const revisi = parseNumber(inpNominalRevisi.value);
-    // Asumsi: Selisih = Awal - Revisi (Sesuaikan jika terbalik)
     const selisih = awal - revisi;
     inpSelisih.value = formatNumber(selisih);
 }
-
-// Event Listeners for Calculation & Cleaning
+inpNominalAwal.addEventListener('input', sanitizeNumberInput);
+inpNominalRevisi.addEventListener('input', sanitizeNumberInput);
 inpNominalAwal.addEventListener('input', () => calculateSelisih());
 inpNominalRevisi.addEventListener('input', () => calculateSelisih());
 inpNoFakturFormat.addEventListener('input', (e) => {
     const raw = e.target.value;
     inpNoFaktur.value = cleanFakturString(raw);
 });
-
-// Format Number on Blur
 [inpNominalAwal, inpNominalRevisi].forEach(input => {
     input.addEventListener('blur', (e) => {
         const val = parseNumber(e.target.value);
@@ -96,14 +83,9 @@ inpNoFakturFormat.addEventListener('input', (e) => {
     });
     input.addEventListener('focus', (e) => e.target.select());
 });
-
-// --- Data Fetching Logic ---
-
 let currentRequestController = null;
-
 async function fetchTableData(reset = false) {
     if (isLoadingData && !reset) return;
-
     if (reset) {
         currentPage = 1;
         tableRowIndex = 0;
@@ -124,11 +106,9 @@ async function fetchTableData(reset = false) {
     `;
         loaderRow.classList.add("hidden");
     }
-
     if (!hasMoreData && !reset) return;
     isLoadingData = true;
     if (!reset) loaderRow.classList.remove("hidden");
-
     try {
         const params = new URLSearchParams({
             page: currentPage,
@@ -136,13 +116,10 @@ async function fetchTableData(reset = false) {
             date: currentDateFilter,
             sort: currentSortOption,
         });
-
         const signal = reset ? currentRequestController.signal : null;
         const response = await fetch(`${API_URLS.getData}?${params.toString()}`, { signal });
         const result = await response.json();
-
         if (reset) tableBody.innerHTML = "";
-
         if (result.success && Array.isArray(result.data)) {
             if (result.data.length === 0 && currentPage === 1) {
                 tableBody.innerHTML = `<tr><td colspan="10" class="text-center p-8 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-300">Data tidak ditemukan</td></tr>`;
@@ -167,14 +144,8 @@ function renderTableRows(data) {
     data.forEach((row) => {
         tableRowIndex++;
         const badgeColor = row.status === 'Sudah Terima' ? 'green' : 'gray';
-
         const tr = document.createElement("tr");
         tr.className = "hover:bg-pink-50 transition-colors border-b border-gray-50";
-
-        // Urutan Kolom: 
-        // NO, TGL NOTA, SUPPLIER, NO NOTA, REV NOTA, FAKTUR, 
-        // NOM AWAL, NOM REVISI, SELISIH, TGL SERAH, TGL TERIMA, 
-        // STATUS, DIBERIKAN, PENERIMA, AKSI
         tr.innerHTML = `
             <td class="text-center text-gray-500 py-3">${tableRowIndex}</td>
             <td class="text-sm whitespace-nowrap">${row.tgl_nota || '-'}</td>
@@ -209,16 +180,13 @@ function renderTableRows(data) {
                 </div>
             </td>
         `;
-
         tr.querySelector(".btn-edit-row").addEventListener("click", () => startEditMode(row));
         tr.querySelector(".btn-delete-row").addEventListener("click", function () {
             handleDelete(this.getAttribute("data-id"), this.getAttribute("data-nota"));
         });
-
         tableBody.appendChild(tr);
     });
 }
-
 function startEditMode(data) {
     inpId.value = data.id;
     inpNoNota.value = data.no_nota;
@@ -231,15 +199,11 @@ function startEditMode(data) {
     inpNoRevNota.value = data.no_rev_nota;
     inpDiberikan.value = data.diberikan;
     inpPenerima.value = data.penerima;
-
     inpNominalAwal.value = formatNumber(data.nominal_awal);
     inpNominalRevisi.value = formatNumber(data.nominal_revisi);
-    calculateSelisih(); // Auto update selisih
-
+    calculateSelisih();
     inpTglDiserahkan.value = data.tgl_diserahkan;
     inpTglDiterima.value = data.tgl_diterima;
-
-    // UI Updates
     window.scrollTo({ top: 0, behavior: "smooth" });
     document.querySelector(".input-row-container").classList.add("border-amber-300", "bg-amber-50");
     editIndicator.classList.remove("hidden");
@@ -247,34 +211,28 @@ function startEditMode(data) {
     btnSave.innerHTML = `<i class="fas fa-sync-alt"></i> <span>Update</span>`;
     btnSave.className = "btn-warning px-6 py-2 rounded shadow-lg bg-yellow-500 text-white hover:bg-amber-600";
 }
-
 function cancelEditMode() {
     form.reset();
     inpId.value = "";
     inpKodeSupplier.value = "";
     inpNoFaktur.value = "";
-
     document.querySelector(".input-row-container").classList.remove("border-amber-300", "bg-amber-50");
     editIndicator.classList.add("hidden");
     btnCancelEdit.classList.add("hidden");
     btnSave.innerHTML = `<i class="fas fa-save"></i> <span>Simpan</span>`;
     btnSave.className = "btn-primary shadow-lg shadow-pink-500/30 flex items-center gap-2 px-6 py-2";
 }
-
 async function handleSave() {
     if (!inpNoNota.value.trim() || !inpNamaSupplier.value.trim()) {
         Swal.fire("Peringatan", "No Nota dan Nama Supplier wajib diisi.", "warning");
         return;
     }
-
+    if (isSubmitting) return;
     isSubmitting = true;
     const originalContent = btnSave.innerHTML;
     btnSave.disabled = true;
     btnSave.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Proses...`;
-
-    // Pastikan No Faktur Clean terupdate sebelum kirim
     const cleanFaktur = cleanFakturString(inpNoFakturFormat.value);
-
     const payload = {
         id: inpId.value || null,
         no_nota: inpNoNota.value.trim(),
@@ -293,7 +251,6 @@ async function handleSave() {
         tgl_diserahkan: inpTglDiserahkan.value,
         tgl_diterima: inpTglDiterima.value
     };
-
     try {
         const result = await sendRequestJSON(API_URLS.saveData, payload);
         if (result.success) {
@@ -311,13 +268,12 @@ async function handleSave() {
         }
     } catch (error) {
         Swal.fire("Gagal", error.message, "error");
+        btnSave.innerHTML = originalContent;
     } finally {
         btnSave.disabled = false;
-        btnSave.innerHTML = originalContent;
         isSubmitting = false;
     }
 }
-
 function handleDelete(id, nota) {
     Swal.fire({
         title: "Hapus Data?",
@@ -343,8 +299,6 @@ function handleDelete(id, nota) {
         }
     });
 }
-
-// Search Supplier Logic
 async function handleSupplierSearch(e) {
     const term = e.target.value;
     if (term.length < 2) return;
@@ -360,18 +314,12 @@ async function handleSupplierSearch(e) {
         } catch (err) { console.error(err); }
     }, 300);
 }
-
-// Initialization
 document.addEventListener("DOMContentLoaded", () => {
     fetchTableData(true);
     setupInfinityScroll();
-
-    // Attach Handlers
     btnSave.addEventListener("click", handleSave);
     btnCancelEdit.addEventListener("click", cancelEditMode);
-
     inpNamaSupplier.addEventListener("input", handleSupplierSearch);
-
     inpSearchTable.addEventListener("input", (e) => {
         clearTimeout(searchDebounceTimer);
         searchDebounceTimer = setTimeout(() => {
@@ -379,18 +327,15 @@ document.addEventListener("DOMContentLoaded", () => {
             fetchTableData(true);
         }, 600);
     });
-
     filterSort.addEventListener("change", (e) => {
         currentSortOption = e.target.value;
         fetchTableData(true);
     });
-
     filterTgl.addEventListener("change", (e) => {
         currentDateFilter = e.target.value;
         fetchTableData(true);
     });
 });
-
 function setupInfinityScroll() {
     const observer = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting && !isLoadingData && hasMoreData) {
