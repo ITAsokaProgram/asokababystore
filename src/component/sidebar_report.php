@@ -31,6 +31,10 @@ $isReturnToolOpen = $isActive('/src/fitur/return/');
 $isKoreksiToolOpen = $isActive('/src/fitur/koreksi/');
 $isUangBrankasOpen = $isActive('/src/fitur/uang_brangkas/');
 
+$isLogBackupOpen = $isActive('/src/fitur/log_backup/');
+$isLogPasswordOpen = $isActive('/src/fitur/logs/password_reset.php');
+$isSecurityLogOpen = $isActive('/src/fitur/security_logs/');
+
 $isToolsOpen = $isVoucherOpen || $isJadwalSoOpen || $isActive('/src/fitur/approval/izin') || $isReceiptToolOpen || $isReturnToolOpen || $isKoreksiToolOpen || $isUangBrankasOpen;
 
 $isPenjualanOpen = $isActive('/src/fitur/laporan/in_laporan_sub_dept') ||
@@ -45,8 +49,9 @@ $isReturnOpen = $isActive('/src/fitur/return_out/');
 $isMutasiOpen = $isActive('/src/fitur/mutasi_in/');
 $isTransaksiOpen = $isActive('/src/fitur/transaction/');
 $isKoreksiOpen = $isActive('/src/fitur/koreksi_stok/') || $isActive('/src/fitur/koreksi_so/');
+$isLogsOpen = $isLogBackupOpen || $isLogPasswordOpen || $isSecurityLogOpen;
 
-$isLaporanOpen = $isPenjualanOpen || $isPelangganOpen || $isReceiptOpen || $isReturnOpen || $isMutasiOpen || $isTransaksiOpen || $isKoreksiOpen || $isActive('/src/fitur/log_backup/') || $isActive('/src/fitur/stok/') || $isActive('/src/fitur/logs/password_reset.php');
+$isLaporanOpen = $isPenjualanOpen || $isPelangganOpen || $isReceiptOpen || $isReturnOpen || $isMutasiOpen || $isTransaksiOpen || $isKoreksiOpen || $isActive('/src/fitur/stok/') ;
 
 $isPembelianOpen = $isActive('/src/fitur/coretax/input_pembelian') || $isActive('/src/fitur/coretax/laporan_pembelian');
 $isPengeluaranOpen = $isActive('/src/fitur/coretax/data_coretax_keluaran.php') || $isActive('/src/fitur/coretax/import_faktur_keluaran.php'); // Tambahan Baru
@@ -699,28 +704,7 @@ $isFinanceOpen = $isBukuBesarOpen || $isSerahTerimaOpen; // Update logika induk
                             </span>
                         </a>
                     </li>
-                    <li>
-                        <a href="/src/fitur/log_backup/index.php" data-menu="laporan_log_backup"
-                            class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-blue-100 hover:text-blue-700 transition-all duration-200 group rounded-lg">
-                            <span
-                                class="transition-all duration-300 group-hover:translate-x-1 font-medium flex items-center">
-                                <i
-                                    class="fa-solid fa-database mr-2 text-lg text-blue-500 group-hover:text-blue-600 transition-all duration-200 group-hover:scale-110"></i>
-                                Log Backup
-                            </span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/src/fitur/logs/password_reset.php" data-menu="laporan_log_password"
-                            class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-red-100 hover:text-red-700 transition-all duration-200 group rounded-lg">
-                            <span
-                                class="transition-all duration-300 group-hover:translate-x-1 font-medium flex items-center">
-                                <i
-                                    class="fa-solid fa-key mr-2 text-lg text-red-500 group-hover:text-red-600 transition-all duration-200 group-hover:scale-110"></i>
-                                Log Password Reset
-                            </span>
-                        </a>
-                    </li>
+
                 </ul>
             </div>
         </div>
@@ -1537,7 +1521,64 @@ $isFinanceOpen = $isBukuBesarOpen || $isSerahTerimaOpen; // Update logika induk
                 </ul>
             </div>
         </div>
+        <div x-data="{ open: <?= $isLogsOpen ? 'true' : 'false' ?> }" class="relative"
+            @reset-menu.window="open = false">
+            <button @click="open = !open" id="logsLink" data-title="System Logs"
+                class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-red-100 hover:to-red-200 hover:text-red-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-red-300">
+                <div class="w-8 flex justify-center">
+                    <i
+                        class="fa-solid fa-clipboard-list text-xl text-red-600 group-hover:text-red-700 transition-all duration-300 group-hover:scale-125 group-hover:-rotate-12 group-hover:drop-shadow-lg"></i>
+                </div>
+                <span class="sidebar-text ml-3 font-medium transition-all duration-300 group-hover:translate-x-1">System
+                    Logs</span>
+                <svg class="ml-auto w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1"
+                    :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </button>
 
+            <div x-show="open" @click.away="open = false"
+                class="mt-3 ml-4 bg-gradient-to-br from-white to-red-50 rounded-xl shadow-xl border border-red-200 z-10 backdrop-blur-sm"
+                style="display: none;">
+                <ul class="py-2 space-y-1">
+                    <li>
+                        <a href="/src/fitur/log_backup/index.php" data-menu="log_backup"
+                            class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-red-100 hover:text-red-700 transition-all duration-200 group rounded-lg">
+                            <span
+                                class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
+                                <i
+                                    class="fa-solid fa-database mr-2 text-base text-red-400 group-hover:text-red-600 group-hover:scale-110 transition-all duration-200"></i>
+                                Log Backup
+                            </span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="/src/fitur/logs/password_reset.php" data-menu="log_password"
+                            class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-red-100 hover:text-red-700 transition-all duration-200 group rounded-lg">
+                            <span
+                                class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
+                                <i
+                                    class="fa-solid fa-key mr-2 text-base text-red-400 group-hover:text-red-600 group-hover:scale-110 transition-all duration-200"></i>
+                                Log Password Reset
+                            </span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="/src/fitur/security_logs/index.php" data-menu="log_security"
+                            class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-red-100 hover:text-red-700 transition-all duration-200 group rounded-lg">
+                            <span
+                                class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
+                                <i
+                                    class="fa-solid fa-shield-halved mr-2 text-base text-red-400 group-hover:text-red-600 group-hover:scale-110 transition-all duration-200"></i>
+                                Security Logs
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
 
     </nav>
 </div>
