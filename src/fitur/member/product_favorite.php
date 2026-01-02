@@ -53,6 +53,8 @@ $queryString = http_build_query($queryParams);
     <link rel="stylesheet" href="/src/style/default-font.css">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+
     <link rel="stylesheet" href="/src/output2.css">
     <style>
         /* --- Enhanced Glass & Card Styles --- */
@@ -182,10 +184,10 @@ $queryString = http_build_query($queryParams);
                                 <option value="qty">Sort by Qty</option>
                                 <option value="harga">Sort by Harga</option>
                             </select>
-                            <!-- <button onclick="exportAllDataToExcel()"
-                                class="bg-gradient-to-r from-emerald-500 to-emerald-700 hover:from-emerald-600 hover:to-emerald-800 text-white px-4 py-2 rounded-xl font-bold shadow-md transition-all duration-200 flex items-center gap-2">
+                            <button onclick="exportAllDataToExcel()"
+                                class="bg-gradient-to-r from-emerald-500 to-emerald-700 hover:from-emerald-600 hover:to-emerald-800 text-white px-4 py-2 rounded-xl font-bold shadow-md transition-all duration-200 flex items-center gap-2 text-sm">
                                 <i class="fas fa-file-excel"></i> Export Excel
-                            </button> -->
+                            </button>
                         </div>
                     </div>
                 </div>

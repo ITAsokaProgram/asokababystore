@@ -292,33 +292,31 @@ const renderTableData = (paginatedData, offset) => {
                     <div class="flex-shrink-0 h-10 w-10">
                         <div class="h-10 w-10 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center">
                             <span class="text-white font-bold text-sm">${getInitials(
-                              item.nama_customer
-                            )}</span>
+        item.nama_customer
+      )}</span>
                         </div>
                     </div>
                     <div class="ml-4">
-                        <div class="text-sm font-medium text-gray-900">${
-                          item.nama_customer
-                        }</div>
+                        <div class="text-sm font-medium text-gray-900">${item.nama_customer
+        }</div>
                         <div class="text-sm text-gray-500">${item.kd_cust}</div>
                     </div>
                 </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900 font-medium">${
-                  item.barang
-                }</div>
+                <div class="text-sm text-gray-900 font-medium">${item.barang
+        }</div>
                 <div class="text-sm text-gray-500">PLU: ${item.plu}</div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                 <span class="font-bold text-green-600">${parseInt(
-                  item.total_qty
-                ).toLocaleString()} pcs</span>
+          item.total_qty
+        ).toLocaleString()} pcs</span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                 <span class="font-bold">Rp ${parseInt(
-                  item.total_hrg
-                ).toLocaleString()}</span>
+          item.total_hrg
+        ).toLocaleString()}</span>
             </td>
         </tr>
     `
@@ -340,9 +338,8 @@ const renderPagination = (pagination) => {
   viewData.textContent = `Menampilkan ${startRecord} - ${endRecord} dari ${total_records} data`;
   let paginationHTML = "";
   if (current_page > 1) {
-    paginationHTML += `<button onclick="handlePaginationClick(${
-      current_page - 1
-    })" class="px-2 py-1 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-700">&laquo; Prev</button>`;
+    paginationHTML += `<button onclick="handlePaginationClick(${current_page - 1
+      })" class="px-2 py-1 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-700">&laquo; Prev</button>`;
   }
   const maxPagesToShow = 5;
   let startPage = Math.max(1, current_page - Math.floor(maxPagesToShow / 2));
@@ -370,9 +367,8 @@ const renderPagination = (pagination) => {
     paginationHTML += `<button onclick="handlePaginationClick(${total_pages})" class="px-2 py-1 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-700">${total_pages}</button>`;
   }
   if (current_page < total_pages) {
-    paginationHTML += `<button onclick="handlePaginationClick(${
-      current_page + 1
-    })" class="px-2 py-1 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-700">Next &raquo;</button>`;
+    paginationHTML += `<button onclick="handlePaginationClick(${current_page + 1
+      })" class="px-2 py-1 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-700">Next &raquo;</button>`;
   }
   paginationContainer.innerHTML = paginationHTML;
 };
@@ -382,30 +378,30 @@ const updateProductPerformance = (performanceData) => {
   performanceContainer.innerHTML = `
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       ${top4Data
-        .map((product, index) => {
-          const currentQty = parseInt(product.qty_periode_sekarang);
-          const previousQty = parseInt(product.qty_periode_sebelumnya);
-          const difference = currentQty - previousQty;
-          const percentageChange =
-            previousQty > 0 ? ((difference / previousQty) * 100).toFixed(1) : 0;
-          const isIncrease = difference > 0;
-          const isDecrease = difference < 0;
-          let borderColor = "border-gray-400";
-          let iconColor = "text-gray-500";
-          let icon = "fa-minus";
-          let changeText = "Tidak berubah";
-          if (isIncrease) {
-            borderColor = "border-green-500";
-            iconColor = "text-green-500";
-            icon = "fa-arrow-up";
-            changeText = `+${percentageChange}%`;
-          } else if (isDecrease) {
-            borderColor = "border-red-500";
-            iconColor = "text-red-500";
-            icon = "fa-arrow-down";
-            changeText = `${percentageChange}%`;
-          }
-          return `
+      .map((product, index) => {
+        const currentQty = parseInt(product.qty_periode_sekarang);
+        const previousQty = parseInt(product.qty_periode_sebelumnya);
+        const difference = currentQty - previousQty;
+        const percentageChange =
+          previousQty > 0 ? ((difference / previousQty) * 100).toFixed(1) : 0;
+        const isIncrease = difference > 0;
+        const isDecrease = difference < 0;
+        let borderColor = "border-gray-400";
+        let iconColor = "text-gray-500";
+        let icon = "fa-minus";
+        let changeText = "Tidak berubah";
+        if (isIncrease) {
+          borderColor = "border-green-500";
+          iconColor = "text-green-500";
+          icon = "fa-arrow-up";
+          changeText = `+${percentageChange}%`;
+        } else if (isDecrease) {
+          borderColor = "border-red-500";
+          iconColor = "text-red-500";
+          icon = "fa-arrow-down";
+          changeText = `${percentageChange}%`;
+        }
+        return `
                 <div class="bg-white rounded-lg border-l-4 ${borderColor} shadow-sm hover:shadow-md transition-shadow duration-200">
                   <div class="p-4">
                     <div class="flex items-center justify-between mb-3">
@@ -418,9 +414,8 @@ const updateProductPerformance = (performanceData) => {
                       </div>
                     </div>
                     <div class="mb-3">
-                      <h4 class="font-semibold text-gray-900 text-sm leading-tight mb-1">${
-                        product.barang
-                      }</h4>
+                      <h4 class="font-semibold text-gray-900 text-sm leading-tight mb-1">${product.barang
+          }</h4>
                       <p class="text-xs text-gray-500">PLU: ${product.plu}</p>
                     </div>
                     <div class="flex items-center justify-between">
@@ -436,8 +431,8 @@ const updateProductPerformance = (performanceData) => {
                   </div>
                 </div>
               `;
-        })
-        .join("")}
+      })
+      .join("")}
     </div>
   `;
 };
@@ -521,75 +516,183 @@ const getInitials = (name) => {
     return "NA";
   }
 };
-const exportMemberData = (kdCust) => {};
+const exportMemberData = (kdCust) => { };
 const exportAllDataToExcel = async () => {
-  showToast("Mempersiapkan data export...", "info");
-  const params = {
-    filter_type: currentDateFilter.filter_type,
-    filter: currentDateFilter.filter,
-    start_date: currentDateFilter.start_date,
-    end_date: currentDateFilter.end_date,
-    status: currentStatus,
-    page: 1,
-    limit: 999999,
-    search: currentSearch,
-    sort_by: currentSort,
-  };
-  Object.keys(params).forEach((key) => {
-    if (params[key] === null || params[key] === undefined) {
-      delete params[key];
-    }
+  // 1. Tampilkan Loading SweetAlert
+  Swal.fire({
+    title: "Menyiapkan Excel...",
+    text: "Sedang mengambil dan menyusun data...",
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    },
   });
-  const response = await filterProductFav(params);
-  if (
-    !response ||
-    response.success === false ||
-    !response.data ||
-    response.data.length === 0
-  ) {
-    showToast("Tidak ada data untuk diexport", "warning");
-    return;
+
+  try {
+    // 2. Siapkan Parameter (Ambil SEMUA data dengan limit besar)
+    const params = {
+      filter_type: currentDateFilter.filter_type,
+      filter: currentDateFilter.filter,
+      start_date: currentDateFilter.start_date,
+      end_date: currentDateFilter.end_date,
+      status: currentStatus,
+      page: 1,
+      limit: 999999, // Limit besar untuk mengambil semua data
+      search: currentSearch,
+      sort_by: currentSort,
+    };
+
+    // Bersihkan parameter null/undefined
+    Object.keys(params).forEach((key) => {
+      if (params[key] === null || params[key] === undefined) {
+        delete params[key];
+      }
+    });
+
+    // 3. Fetch Data dari API
+    const response = await filterProductFav(params);
+
+    if (
+      !response ||
+      response.success === false ||
+      !response.data ||
+      response.data.length === 0
+    ) {
+      Swal.fire("Info", "Tidak ada data untuk diexport", "info");
+      return;
+    }
+
+    const data = response.data;
+
+    // 4. Setup ExcelJS
+    // Pastikan ExcelJS sudah di-load di HTML via CDN
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet("Produk Favorit");
+
+    // Tentukan Teks Periode untuk Judul
+    let periodeText = "";
+    if (currentDateFilter.start_date && currentDateFilter.end_date) {
+      periodeText = `${currentDateFilter.start_date} s/d ${currentDateFilter.end_date}`;
+    } else {
+      periodeText = "Semua Periode";
+    }
+
+    // 5. Definisi Kolom
+    sheet.columns = [
+      { key: "no", width: 5 },
+      { key: "kd_cust", width: 15 },
+      { key: "nama_customer", width: 30 },
+      { key: "barang", width: 35 },
+      { key: "plu", width: 15 },
+      { key: "total_qty", width: 15 },
+      { key: "total_hrg", width: 20 },
+    ];
+
+    // 6. Buat Judul (Merged Cells)
+    sheet.mergeCells("A1:G1");
+    const titleCell = sheet.getCell("A1");
+    titleCell.value = `LAPORAN PRODUK FAVORIT MEMBER - ${periodeText}`;
+    titleCell.font = { name: "Arial", size: 14, bold: true };
+    titleCell.alignment = { horizontal: "center", vertical: "middle" };
+
+    // 7. Buat Header Table
+    const headers = [
+      "No", "Kode Member", "Nama Member", "Nama Produk", "PLU", "Total Qty", "Total Harga (Rp)"
+    ];
+
+    const headerRow = sheet.getRow(3);
+    headerRow.values = headers;
+
+    // Styling Header (Background Hijau Emerald, Teks Putih)
+    headerRow.eachCell((cell) => {
+      cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FF10B981" }, // Warna Emerald-500
+      };
+      cell.alignment = { horizontal: "center", vertical: "middle" };
+      cell.border = {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        bottom: { style: "thin" },
+        right: { style: "thin" },
+      };
+    });
+
+    // 8. Isi Data ke Rows
+    const currencyFmt = "#,##0"; // Format angka
+    let rowNum = 4;
+
+    data.forEach((item, index) => {
+      const r = sheet.getRow(rowNum);
+
+      // Pastikan tipe data number benar agar bisa dijumlah/diformat di Excel
+      const qty = parseInt(item.total_qty) || 0;
+      const harga = parseFloat(item.total_hrg) || 0;
+
+      r.values = [
+        index + 1,
+        item.kd_cust,
+        item.nama_customer,
+        item.barang,
+        item.plu,
+        qty,
+        harga
+      ];
+
+      // Format Angka & Currency
+      r.getCell(6).numFmt = "#,##0"; // Qty
+      r.getCell(6).alignment = { horizontal: "center" };
+
+      r.getCell(7).numFmt = currencyFmt; // Total Harga
+      r.getCell(7).alignment = { horizontal: "right" };
+
+      // Beri Border pada setiap sel
+      r.eachCell((cell) => {
+        cell.border = {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          bottom: { style: "thin" },
+          right: { style: "thin" },
+        };
+      });
+
+      rowNum++;
+    });
+
+    // 9. Download File
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    const url = window.URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+
+    const todayStr = formatDateLocal(new Date());
+    const filename = `Laporan_Produk_Favorit_${todayStr}.xlsx`;
+
+    anchor.download = filename;
+    anchor.click();
+    window.URL.revokeObjectURL(url);
+
+    // 10. Tutup Loading & Beri Notifikasi Sukses
+    Swal.fire({
+      icon: "success",
+      title: "Berhasil",
+      text: "Data berhasil diexport ke Excel.",
+      timer: 1500,
+      showConfirmButton: false,
+    });
+
+  } catch (e) {
+    console.error(e);
+    Swal.fire("Error", "Gagal melakukan export data: " + e.message, "error");
   }
-  const productData = response.data;
-  const groupedData = {};
-  productData.forEach((item) => {
-    if (!groupedData[item.kd_cust]) {
-      groupedData[item.kd_cust] = [];
-    }
-    groupedData[item.kd_cust].push(item);
-  });
-  Object.keys(groupedData).forEach((kdCust) => {
-    groupedData[kdCust].sort((a, b) => {
-      const qtyDiff = parseInt(b.total_qty) - parseInt(a.total_qty);
-      if (qtyDiff !== 0) return qtyDiff;
-      return b.total_hrg - a.total_hrg;
-    });
-  });
-  const sortedKdCusts = Object.keys(groupedData).sort((a, b) => {
-    return groupedData[b].length - groupedData[a].length;
-  });
-  let excelContent =
-    "Kode Customer,Nama Customer,Barang,PLU,Total Quantity,Total Harga\n";
-  sortedKdCusts.forEach((kdCust) => {
-    const customerData = groupedData[kdCust];
-    customerData.forEach((item) => {
-      excelContent += `"${item.kd_cust}","${item.nama_customer}","${item.barang}","${item.plu}","${item.total_qty}","${item.total_hrg}"\n`;
-    });
-  });
-  const blob = new Blob([excelContent], { type: "text/csv;charset=utf-8;" });
-  const link = document.createElement("a");
-  const url = URL.createObjectURL(blob);
-  const todayStr = formatDateLocal(new Date());
-  link.setAttribute("href", url);
-  link.setAttribute("download", `product_favorites_all_data_${todayStr}.csv`);
-  link.style.visibility = "hidden";
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  showToast("Data berhasil diexport", "success");
 };
-const convertToCSV = (data) => {};
-const calculateStartDateFromFilter = (filter) => {};
+const convertToCSV = (data) => { };
+const calculateStartDateFromFilter = (filter) => { };
 document.addEventListener("DOMContentLoaded", () => {
   initProductFavoriteDisplay();
 });
