@@ -45,6 +45,8 @@ $token = $menuHandler->getToken();
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+
 
     <style>
         th.th-total-poin,
@@ -319,6 +321,15 @@ $token = $menuHandler->getToken();
                                 placeholder="Pilih tanggal">
                             <i class="fa fa-calendar absolute left-3 top-1/2 -translate-y-1/2 text-pink-300"></i>
                         </div>
+                    </div>
+                    <div class="flex flex-col gap-1 md:ml-4">
+                        <label class="text-sm text-gray-600 font-semibold flex items-center gap-2">
+                            <i class="fa fa-file-excel text-green-500"></i> Export
+                        </label>
+                        <button id="btnExportExcel"
+                            class="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl shadow hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 text-sm font-semibold flex items-center gap-2">
+                            <i class="fa fa-file-excel"></i> 50 Data
+                        </button>
                     </div>
                     <div class="flex flex-col gap-1">
                         <div id="kode" class="flex items-center relative">
@@ -615,6 +626,7 @@ $token = $menuHandler->getToken();
     <!-- Custom JS -->
     <script src="../../js/data_activity_cust.js" type="module"></script>
     <script src="../../js/middleware_auth.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 </body>
 
