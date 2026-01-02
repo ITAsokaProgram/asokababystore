@@ -322,18 +322,24 @@ $token = $menuHandler->getToken();
                             <i class="fa fa-calendar absolute left-3 top-1/2 -translate-y-1/2 text-pink-300"></i>
                         </div>
                     </div>
-                    <div class="flex flex-col gap-1 md:ml-4">
-                        <label class="text-sm text-gray-600 font-semibold flex items-center gap-2">
-                            <i class="fa fa-file-excel text-green-500"></i> Export
-                        </label>
-                        <button id="btnExportExcel"
-                            class="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl shadow hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 text-sm font-semibold flex items-center gap-2">
-                            <i class="fa fa-file-excel"></i> 50 Data
-                        </button>
-                    </div>
+
                     <div class="flex flex-col gap-1">
                         <div id="kode" class="flex items-center relative">
 
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-1 md:ml-4">
+                        <label class="text-sm text-gray-600 font-semibold flex items-center gap-2">
+                            <i class="fa fa-list-ol text-pink-400"></i> Berapa Customer yang ingin di export?
+                        </label>
+                        <div class="flex items-center gap-2">
+                            <input type="number" id="limitExport" value="20" min="1" max="500"
+                                class="w-20 px-3 py-2 border border-pink-200 rounded-xl text-sm text-center shadow focus:outline-none focus:ring-2 focus:ring-pink-300">
+
+                            <button id="btnExportExcel"
+                                class="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl shadow hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 text-sm font-semibold flex items-center gap-2">
+                                <i class="fa fa-file-excel"></i> Export
+                            </button>
                         </div>
                     </div>
                 </div>

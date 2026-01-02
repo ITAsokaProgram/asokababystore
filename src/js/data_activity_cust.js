@@ -755,15 +755,18 @@ $(document).ready(function () {
   initializeDatePicker("day");
   closeModal("closeModal", "modalTable", "modalContent");
 });
+// Helper delay agar tidak forbidden
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function handleExportExcel() {
-  // 1. Ambil Parameter Filter
+  // 1. Ambil Parameter Filter & Limit
   const range = $("#filterRange").val();
   const cabang = $("#selectCabang").val() || "all";
-  let tanggalParam = "";
+  // AMBIL LIMIT DARI INPUT (Default 20 jika kosong/invalid)
+  let limitInput = parseInt($("#limitExport").val());
+  if (!limitInput || limitInput < 1) limitInput = 20;
 
-  // Pastikan parameter tanggal terisi jika filter day/week/month
+  let tanggalParam = "";
   if (range === "day" || range === "week" || range === "month") {
     tanggalParam = $("#datepicker").val();
     if (!tanggalParam) {
@@ -772,10 +775,10 @@ async function handleExportExcel() {
     }
   }
 
-  // UI Loading Awal
+  // UI Loading
   Swal.fire({
     title: "Memulai Export...",
-    html: "Mengambil daftar pelanggan...",
+    html: `Mengambil data Top ${limitInput} pelanggan...`,
     allowOutsideClick: false,
     didOpen: () => {
       Swal.showLoading();
@@ -783,10 +786,8 @@ async function handleExportExcel() {
   });
 
   try {
-    // 2. Fetch Summary (Daftar Pelanggan)
-    // Gunakan path relative ../../ agar sesuai dengan struktur folder JS Anda
+    // 2. Fetch Summary
     const urlSummary = `../../api/customer/get_activity_customer?range=${range}&cabang=${cabang}&tanggal=${tanggalParam}`;
-
     const responseSummary = await fetch(urlSummary);
     if (!responseSummary.ok) throw new Error("Gagal mengambil data summary.");
     const resultSummary = await responseSummary.json();
@@ -795,28 +796,25 @@ async function handleExportExcel() {
       throw new Error("Tidak ada data untuk diexport.");
     }
 
-    // 3. Sorting & Limit Top 50 berdasarkan Total Transaksi
-    const top50Data = resultSummary.data
+    // 3. Sorting & Apply Dynamic Limit
+    const topData = resultSummary.data
       .sort((a, b) => parseInt(b.T_Trans) - parseInt(a.T_Trans))
-      .slice(0, 50);
+      .slice(0, limitInput); // Gunakan variabel limitInput
 
-    // Array penampung untuk Sheet Detail (Flatten Data: Customer + Transaksi + Item)
+    // Array penampung data detail
     const finalDetailRows = [];
     let processedCount = 0;
 
-    // 4. LOOPING DATA (Deep Fetching: Customer -> Transaksi -> Item)
-    // Kita gunakan Loop 'for of' agar request berjalan SATU PER SATU (Sequential)
-    for (const cust of top50Data) {
+    // 4. Deep Fetching Loop
+    for (const cust of topData) {
       processedCount++;
-
-      // Update Loading UI agar user tahu progresnya
       Swal.update({
-        html: `<b>Proses ${processedCount}/${top50Data.length} Pelanggan</b><br/>
-                       Mengambil detail: ${cust.nama_cust}<br/>
-                       <small>Mohon tunggu, mengambil data struk...</small>`
+        html: `<b>Proses ${processedCount}/${topData.length} Pelanggan</b><br/>
+                       Target: ${cust.nama_cust}<br/>
+                       <small>Mengambil detail struk...</small>`
       });
 
-      // A. Fetch Detail Transaksi (Level 1)
+      // Level 1: Transaksi
       const urlTrans = `../../api/customer/get_activity_customer?range=${range}&tanggal=${tanggalParam}&kd_cust=${cust.kd_cust}&cabang=${cabang}`;
 
       try {
@@ -824,19 +822,13 @@ async function handleExportExcel() {
         const dataTrans = await resTrans.json();
         const transactions = dataTrans.detail || [];
 
-        // Jika tidak ada transaksi, lanjut ke next customer
         if (transactions.length === 0) continue;
 
-        // Loop setiap transaksi milik customer ini
         for (const trans of transactions) {
-
-          // B. Cek apakah perlu ambil Detail Barang (Level 2)?
-          // Hanya jika keterangan_struk == 'Detail' (artinya dari Kasir, bukan Manual)
+          // Level 2 & 3: Item Struk
           if (trans.keterangan_struk === "Detail") {
             const urlStruk = `/src/api/customer/get_struk_belanja_customer?member=${cust.kd_cust}&kode=${trans.no_trans}`;
-
-            // Jeda 100ms setiap request item agar server tidak menganggap SPAM (Mencegah 403 Forbidden)
-            await delay(100);
+            await delay(100); // Jeda anti-forbidden
 
             try {
               const resStruk = await fetch(urlStruk);
@@ -844,50 +836,38 @@ async function handleExportExcel() {
               const items = dataStruk.detail_transaction || [];
 
               if (items.length > 0) {
-                // Jika ada item, masukkan setiap item sebagai baris baru
                 items.forEach(item => {
                   finalDetailRows.push({
-                    // Info Customer
                     kd_cust: cust.kd_cust,
                     nama_cust: cust.nama_cust,
-                    // Info Transaksi
                     tanggal: trans.tanggal,
                     jam: trans.jam,
-                    no_faktur: trans.no_trans,
+                    no_faktur: trans.no_trans, // Key untuk grouping
                     cabang: trans.cabang,
                     kasir: trans.kasir,
-                    sumber: trans.sumber,
-                    // Info Item (Level 3)
                     nama_barang: item.item,
-                    qty: item.qty,
-                    harga: item.harga,
-                    harga_promo: item.hrg_promo,
-                    subtotal: item.qty * item.hrg_promo
+                    qty: parseInt(item.qty),
+                    harga_promo: parseFloat(item.hrg_promo),
+                    subtotal: parseFloat(item.qty * item.hrg_promo)
                   });
                 });
               } else {
-                // Jika struk kosong/error, masukkan transaksi saja
-                pushTransactionOnly(finalDetailRows, cust, trans, "Struk Kosong");
+                pushTransactionOnly(finalDetailRows, cust, trans, "Struk Kosong (0 Item)");
               }
             } catch (errStruk) {
-              console.warn("Gagal ambil struk", trans.no_trans, errStruk);
               pushTransactionOnly(finalDetailRows, cust, trans, "Gagal Ambil Struk");
             }
           } else {
-            // Jika Transaksi Manual (Tidak ada item barang)
+            // Manual
             pushTransactionOnly(finalDetailRows, cust, trans, "Input Manual");
           }
         }
-
       } catch (errTrans) {
-        console.error(`Gagal ambil transaksi ${cust.kd_cust}`, errTrans);
+        console.error(`Gagal transaksi ${cust.kd_cust}`, errTrans);
       }
-
-      // Jeda 100ms antar customer
       await delay(100);
     }
 
-    // Helper untuk push data tanpa item (Manual/Error)
     function pushTransactionOnly(arr, cust, trans, note) {
       arr.push({
         kd_cust: cust.kd_cust,
@@ -897,23 +877,21 @@ async function handleExportExcel() {
         no_faktur: trans.no_trans,
         cabang: trans.cabang,
         kasir: trans.kasir || trans.user,
-        sumber: trans.sumber,
-        nama_barang: note, // Info di kolom barang
+        nama_barang: note,
         qty: 0,
-        harga: 0,
         harga_promo: 0,
-        subtotal: trans.nominal // Pakai total belanja
+        subtotal: parseFloat(trans.nominal)
       });
     }
 
     // 5. Generate Excel
-    Swal.update({ html: "Menyusun file Excel..." });
+    Swal.update({ html: "Menyusun & Menghitung Total Excel..." });
 
     const workbook = new ExcelJS.Workbook();
 
-    // --- SHEET 1: REKAP SUMMARY ---
-    const sheetRekap = workbook.addWorksheet("Rekap Top 50");
-
+    // --- SHEET 1: REKAP ---
+    const sheetRekap = workbook.addWorksheet(`Top ${limitInput} Summary`);
+    // (Style Header Sheet 1 sama seperti sebelumnya)
     const headerStyle = {
       font: { bold: true, color: { argb: "FFFFFFFF" } },
       fill: { type: "pattern", pattern: "solid", fgColor: { argb: "FFEC4899" } },
@@ -922,102 +900,127 @@ async function handleExportExcel() {
     };
 
     sheetRekap.columns = [
-      { key: "no", width: 5 },
-      { key: "kd_cust", width: 15 },
-      { key: "nama_cust", width: 30 },
-      { key: "total_poin", width: 15 },
-      { key: "poin_trans", width: 15 },
-      { key: "sisa_poin", width: 15 },
-      { key: "t_trans", width: 15 },
-      { key: "cabang", width: 25 },
+      { key: "no", width: 5 }, { key: "kd_cust", width: 15 }, { key: "nama_cust", width: 30 },
+      { key: "total_poin", width: 15 }, { key: "t_trans", width: 15 }, { key: "cabang", width: 25 }
     ];
 
-    // Judul & Header Sheet 1
-    const titleRow = sheetRekap.getRow(1);
-    titleRow.getCell(1).value = `TOP 50 PELANGGAN - ${range.toUpperCase()}`;
-    sheetRekap.mergeCells("A1:H1");
+    sheetRekap.getRow(1).values = ["No", "No HP", "Nama Pelanggan", "Total Poin", "Total Transaksi", "Cabang"];
+    sheetRekap.getRow(1).eachCell(cell => Object.assign(cell, headerStyle));
 
-    const headerRow1 = sheetRekap.getRow(2);
-    headerRow1.values = ["No", "No HP", "Nama Pelanggan", "Total Poin", "Tukar Poin", "Sisa Poin", "Total Transaksi", "Cabang"];
-    headerRow1.eachCell(cell => Object.assign(cell, headerStyle));
-
-    top50Data.forEach((item, index) => {
-      const row = sheetRekap.getRow(index + 3);
-      row.values = [
-        index + 1,
-        item.kd_cust,
-        item.nama_cust,
+    topData.forEach((item, index) => {
+      sheetRekap.addRow([
+        index + 1, item.kd_cust, item.nama_cust,
         parseFloat(item.total_poin_pk_pm) || 0,
-        parseFloat(item.poin_trans) || 0,
-        parseFloat(item.sisa_poin) || 0,
-        parseFloat(item.T_Trans) || 0,
-        item.store_alias_pk
-      ];
-      row.eachCell(cell => cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } });
+        parseFloat(item.T_Trans) || 0, item.store_alias_pk
+      ]);
     });
 
-    // --- SHEET 2: DETAIL ITEM ---
-    const sheetDetail = workbook.addWorksheet("Detail Barang");
+    // --- SHEET 2: DETAIL BARANG (DENGAN TOTAL PER FAKTUR) ---
+    const sheetDetail = workbook.addWorksheet("Detail Transaksi");
     sheetDetail.columns = [
-      { key: "kd_cust", width: 15 },
-      { key: "nama_cust", width: 25 },
-      { key: "no_faktur", width: 20 },
-      { key: "tanggal", width: 12 },
-      { key: "jam", width: 10 },
-      { key: "cabang", width: 15 },
-      { key: "nama_barang", width: 40 }, // Kolom Barang
-      { key: "qty", width: 8 },
-      { key: "harga_promo", width: 15 },
-      { key: "subtotal", width: 18 },
-      { key: "kasir", width: 15 },
+      { width: 15 }, // A: No HP
+      { width: 25 }, // B: Nama
+      { width: 20 }, // C: No Faktur
+      { width: 12 }, // D: Tanggal
+      { width: 35 }, // E: Nama Barang
+      { width: 8 },  // F: Qty
+      { width: 15 }, // G: Harga
+      { width: 18 }, // H: Subtotal
+      { width: 15 }, // I: Kasir
     ];
 
+    // Header
     const headerRow2 = sheetDetail.getRow(1);
-    headerRow2.values = ["No HP", "Nama Pelanggan", "No Faktur", "Tanggal", "Jam", "Cabang", "Nama Barang", "Qty", "Harga", "Subtotal", "Kasir"];
+    headerRow2.values = ["No HP", "Nama Pelanggan", "No Faktur", "Tanggal", "Nama Barang / Ket", "Qty", "Harga", "Subtotal", "Kasir"];
     headerRow2.eachCell(cell => Object.assign(cell, headerStyle));
 
-    finalDetailRows.forEach((row, idx) => {
-      const excelRow = sheetDetail.getRow(idx + 2);
-      excelRow.values = [
-        row.kd_cust,
-        row.nama_cust,
-        row.no_faktur,
-        row.tanggal,
-        row.jam,
-        row.cabang,
-        row.nama_barang,
-        row.qty,
-        row.harga_promo,
-        row.subtotal,
-        row.kasir
-      ];
-      // Format Currency
-      excelRow.getCell(9).numFmt = '#,##0';
-      excelRow.getCell(10).numFmt = '#,##0';
+    // LOGIC TOTAL PER FAKTUR
+    let currentFakturSubtotal = 0;
 
-      excelRow.eachCell(cell => cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } });
-    });
+    // Loop melalui semua baris data detail
+    for (let i = 0; i < finalDetailRows.length; i++) {
+      const rowData = finalDetailRows[i];
+      const nextRowData = finalDetailRows[i + 1];
+
+      // Tambah baris data item biasa
+      const row = sheetDetail.addRow([
+        rowData.kd_cust,
+        rowData.nama_cust,
+        rowData.no_faktur,
+        rowData.tanggal,
+        rowData.nama_barang,
+        rowData.qty,
+        rowData.harga_promo,
+        rowData.subtotal,
+        rowData.kasir
+      ]);
+
+      // Format Currency
+      row.getCell(7).numFmt = '#,##0';
+      row.getCell(8).numFmt = '#,##0';
+
+      // Tambahkan ke akumulasi total faktur ini
+      currentFakturSubtotal += rowData.subtotal;
+
+      // CEK APAKAH PERLU PRINT TOTAL?
+      // Print Total jika: Ini data terakhir ATAU No Faktur baris berikutnya beda dengan sekarang
+      if (!nextRowData || nextRowData.no_faktur !== rowData.no_faktur) {
+
+        // Tambahkan Row Total
+        const totalRow = sheetDetail.addRow([
+          "", "", "", "",
+          `TOTAL FAKTUR: ${rowData.no_faktur}`, // Label di kolom E
+          "", "",
+          currentFakturSubtotal, // Nilai Total di kolom H
+          ""
+        ]);
+
+        // Styling Row Total (Warna Kuning + Bold)
+        totalRow.eachCell((cell, colNumber) => {
+          cell.font = { bold: true };
+          cell.fill = {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "FFFFF2CC" } // Warna Kuning Muda
+          };
+          cell.border = { top: { style: "thin" }, bottom: { style: "double" } };
+        });
+
+        // Format Currency Total
+        totalRow.getCell(8).numFmt = '#,##0';
+
+        // Merge Cell Label agar rapi (Kolom E sampai G)
+        // sheetDetail.mergeCells(`E${totalRow.number}:G${totalRow.number}`);
+        // Atau biarkan saja di kolom E agar tidak ribet merge
+
+        // Reset akumulasi
+        currentFakturSubtotal = 0;
+
+        // Tambahkan baris kosong pemisah antar faktur (Opsional)
+        // sheetDetail.addRow([]); 
+      }
+    }
 
     // 6. Download
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-    const downloadUrl = window.URL.createObjectURL(blob)
+    const downloadUrl = window.URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = downloadUrl;
-    anchor.download = `Laporan_Detail_Customer_${range}_${Date.now()}.xlsx`;
+    anchor.download = `Laporan_Top${limitInput}_${range}_${Date.now()}.xlsx`;
     anchor.click();
     window.URL.revokeObjectURL(downloadUrl);
 
     Swal.fire({
       icon: "success",
       title: "Berhasil",
-      text: `Data berhasil diexport dengan ${finalDetailRows.length} baris detail item.`,
+      text: `Export Top ${limitInput} selesai. Total baris detail: ${finalDetailRows.length}`,
       timer: 2000,
       showConfirmButton: false,
     });
 
   } catch (error) {
     console.error(error);
-    Swal.fire("Gagal Export", `Terjadi kesalahan: ${error.message}`, "error");
+    Swal.fire("Error", error.message, "error");
   }
 }
