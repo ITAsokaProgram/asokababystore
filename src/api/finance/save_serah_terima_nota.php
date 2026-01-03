@@ -28,7 +28,7 @@ try {
     $kode_supplier = trim($input['kode_supplier'] ?? '');
 
     $no_faktur_format = trim($input['no_faktur_format'] ?? '');
-    $no_faktur = preg_replace('/[\.\,\/\-\s\\\'_]/', '', $no_faktur_format);
+    $no_faktur = preg_replace('/[^a-zA-Z0-9]/', '', $no_faktur_format);
 
     $nominal_awal = (float) ($input['nominal_awal'] ?? 0);
     $nominal_revisi = (float) ($input['nominal_revisi'] ?? 0);
