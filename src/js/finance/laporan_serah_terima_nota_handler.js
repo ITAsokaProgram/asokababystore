@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const tableBody = document.getElementById("receipt-table-body");
     const modalAuth = document.getElementById("modal-otorisasi");
     const formAuth = document.getElementById("form-otorisasi");
-    const authNotaId = document.getElementById("auth_nota_id");
+    const authNotaFaktur = document.getElementById("auth_nota_id"); // Ganti nama variabel biar gak bingung (HTML ID nya boleh tetap atau diganti)    
     const authStatusSelect = document.getElementById("auth_status_baru");
     const btnsCloseAuth = document.querySelectorAll(".btn-close-auth");
     const filterForm = document.getElementById("filter-form");
@@ -26,12 +26,32 @@ document.addEventListener("DOMContentLoaded", () => {
     if (exportExcelButton) {
         exportExcelButton.addEventListener("click", handleExportExcel);
     }
-    window.openStatusModal = (id, currentStatus) => {
+    window.openStatusModal = (faktur, currentStatus, currentPenerima = '', currentTgl = '') => {
         formAuth.reset();
-        authNotaId.value = id;
+        authNotaFaktur.value = faktur;
+        authNotaFaktur.name = "no_faktur";
 
-        let targetStatus = currentStatus === 'Sudah Terima' ? 'Sudah Terima' : 'Belum Terima';
-        authStatusSelect.value = targetStatus;
+        // 1. SET STATUS
+        // Jika status sekarang kosong, anggap 'Belum Terima'. 
+        // Kita set dropdown sesuai status terakhir di database.
+        authStatusSelect.value = currentStatus || 'Belum Terima';
+
+        // 2. SET PENERIMA
+        const inputPenerima = document.getElementById('auth_penerima');
+        if (inputPenerima) {
+            inputPenerima.value = currentPenerima || '';
+        }
+
+        // 3. SET TANGGAL (PENTING!)
+        const inputTgl = document.getElementById('auth_tgl_diterima');
+
+        if (currentTgl && currentTgl !== 'null') {
+            // Jika di database sudah ada tanggal (misal: 2024-01-01), pakai itu
+            inputTgl.value = currentTgl;
+        } else {
+            // Jika belum ada tanggal, default ke HARI INI
+            inputTgl.valueAsDate = new Date();
+        }
 
         modalAuth.classList.remove("hidden");
     };
@@ -430,10 +450,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
             let statusIcon = row.status === 'Sudah Terima' ? '<i class="fas fa-check mr-1"></i>' : '';
 
-            // Menambahkan onclick="window.openStatusModal(...)"
+            const existingPenerima = row.penerima ? row.penerima.replace(/'/g, "\\'") : '';
+            const rawTglDiterima = row.tgl_diterima ? row.tgl_diterima : '';
             let statusBadge = `
                 <button type="button" 
-                    onclick="window.openStatusModal('${row.id}', '${row.status}')"
+                    onclick="window.openStatusModal('${row.no_faktur}', '${row.status}', '${existingPenerima}', '${rawTglDiterima}')"
                     class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border hover:opacity-80 transition-opacity cursor-pointer shadow-sm ${statusBadgeClass}">
                     ${statusIcon} ${row.status || 'Belum Terima'} <i class="fas fa-edit ml-2 opacity-50"></i>
                 </button>
@@ -444,9 +465,9 @@ document.addEventListener("DOMContentLoaded", () => {
             <tr class="hover:bg-gray-50">
                 <td class="text-center font-medium text-gray-500">${item_counter}</td>
                 <td>${tglNota}</td>
+                
                 <td class="font-semibold text-gray-700">${row.nama_supplier || '-'}</td>
-                <td class="font-mono text-sm">${row.no_nota || '-'}</td>
-                <td class="text-center">${row.no_rev_nota}</td>
+                
                 <td class="font-mono text-sm">${row.no_faktur || '-'}</td>
                 
                 <td class="text-right font-mono text-gray-700">${formatRupiah(nominalAwal)}</td>
@@ -456,9 +477,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td class="text-center text-sm">${tglDiserahkan}</td>
                 <td class="text-center text-sm">${tglDiterima}</td>
                 <td class="text-center">${statusBadge}</td>
-                <td>${row.diberikan || '-'}</td>
-                <td>${row.penerima || '-'}</td>
-            </tr>
+                <td class="text-center text-sm">${row.diberikan || '-'}</td>
+                <td class="text-center text-sm">${row.penerima || '-'}</td>
+                
+                </tr>
         `;
             item_counter++;
         });

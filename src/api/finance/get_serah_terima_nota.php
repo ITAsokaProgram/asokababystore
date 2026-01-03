@@ -22,8 +22,8 @@ try {
         $orderClause = "tgl_nota DESC, dibuat_pada DESC";
     }
 
-    // Filtering
-    $whereClauses = ["1=1"];
+    // Filtering - TAMBAHKAN VISIBILITAS
+    $whereClauses = ["visibilitas = 'Aktif'"];
     $params = [];
     $types = "";
 
@@ -36,13 +36,11 @@ try {
     if (!empty($search)) {
         $searchLike = "%" . $search . "%";
         $whereClauses[] = "(
-            no_nota LIKE ? OR 
             nama_supplier LIKE ? OR 
             no_faktur LIKE ? OR 
-            no_faktur_format LIKE ? OR
-            no_rev_nota LIKE ?
+            no_faktur_format LIKE ? 
         )";
-        for ($i = 0; $i < 5; $i++) {
+        for ($i = 0; $i < 3; $i++) {
             $params[] = $searchLike;
             $types .= "s";
         }
@@ -56,13 +54,14 @@ try {
     $types .= "ii";
 
     $stmt = $conn->prepare($query);
-    $stmt->bind_param($types, ...$params);
+    if (count($params) > 0) {
+        $stmt->bind_param($types, ...$params);
+    }
     $stmt->execute();
     $result = $stmt->get_result();
 
     $data = [];
     while ($row = $result->fetch_assoc()) {
-        // Casting numerik agar JSON type safe
         $row['id'] = (int) $row['id'];
         $row['nominal_awal'] = (float) $row['nominal_awal'];
         $row['nominal_revisi'] = (float) $row['nominal_revisi'];

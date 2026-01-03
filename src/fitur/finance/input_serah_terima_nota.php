@@ -127,6 +127,10 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                     </div>
 
                     <div class="flex items-center gap-2">
+                        <a href="laporan_serah_terima_nota.php"
+                            class="btn-report flex items-center gap-2 px-3 py-2 shadow-sm decoration-0 rounded">
+                            <i class="fas fa-file-invoice"></i> <span>Lihat Laporan</span>
+                        </a>
                         <button type="button" id="btn-save"
                             class="btn-primary flex items-center gap-2 px-6 py-2 shadow-lg shadow-pink-500/30">
                             <i class="fas fa-save"></i> <span>Simpan</span>
@@ -141,17 +145,10 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                     </div>
 
                     <form id="single-form" autocomplete="off">
-                        <input type="hidden" id="inp_id" name="id" value="">
 
                         <div class="form-grid">
                             <div>
-                                <label class="form-label">No. Nota</label>
-                                <input type="text" id="inp_no_nota" name="no_nota" class="input-compact"
-                                    placeholder="Nomor Nota...">
-                            </div>
-
-                            <div>
-                                <label class="form-label">Tgl Nota</label>
+                                <label class="form-label">Tgl Invoice</label>
                                 <input type="date" id="inp_tgl_nota" name="tgl_nota" class="input-compact">
                             </div>
 
@@ -164,35 +161,11 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                             </div>
 
                             <div>
-                                <label class="form-label">Status</label>
-                                <select id="inp_status" name="status" class="input-compact bg-white cursor-pointer">
-                                    <option value="Belum Terima">Belum Terima</option>
-                                    <option value="Sudah Terima">Sudah Terima</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label class="form-label">No. Faktur (Format)</label>
+                                <label class="form-label">No. Faktur</label>
                                 <input type="text" id="inp_no_faktur_format" name="no_faktur_format"
                                     class="input-compact" placeholder="Contoh: 010.001-24.12345678">
-                            </div>
 
-                            <div>
-                                <label class="form-label">No. Faktur (Clean)</label>
-                                <input type="text" id="inp_no_faktur" name="no_faktur"
-                                    class="input-compact input-readonly bg-gray-100" readonly
-                                    placeholder="Auto generate...">
-                            </div>
-
-                            <div>
-                                <label class="form-label">No. Rev Nota</label>
-                                <input type="text" id="inp_no_rev_nota" name="no_rev_nota" class="input-compact"
-                                    placeholder="Nomor Revisi...">
-                            </div>
-
-                            <div>
-                                <label class="form-label">Diberikan Oleh</label>
-                                <input type="text" id="inp_diberikan" name="diberikan" class="input-compact">
+                                <input type="hidden" id="inp_no_faktur" name="no_faktur">
                             </div>
 
                             <div>
@@ -201,7 +174,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                     class="input-compact text-right font-mono" value="0">
                             </div>
 
-                            <div>
+                            <div id="container-nominal-revisi" class="hidden">
                                 <label class="form-label text-right">Nominal Revisi</label>
                                 <input type="text" id="inp_nominal_revisi" name="nominal_revisi"
                                     class="input-compact text-right font-mono" value="0">
@@ -215,20 +188,22 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                             </div>
 
                             <div>
-                                <label class="form-label">Penerima</label>
-                                <input type="text" id="inp_penerima" name="penerima" class="input-compact">
-                            </div>
-
-                            <div>
                                 <label class="form-label">Tgl Diserahkan</label>
                                 <input type="date" id="inp_tgl_diserahkan" name="tgl_diserahkan" class="input-compact">
                             </div>
 
                             <div>
-                                <label class="form-label">Tgl Diterima</label>
-                                <input type="date" id="inp_tgl_diterima" name="tgl_diterima" class="input-compact">
+                                <label class="form-label">Status</label>
+                                <select id="inp_status" name="status" class="input-compact bg-white cursor-pointer">
+                                    <option value="Belum Terima">Belum Terima</option>
+                                    <option value="Sudah Terima">Sudah Terima</option>
+                                </select>
                             </div>
 
+                            <div>
+                                <label class="form-label">Diberikan Oleh</label>
+                                <input type="text" id="inp_diberikan" name="diberikan" class="input-compact">
+                            </div>
 
                             <div class="flex items-end h-full pb-1 justify-end col-span-1 md:col-span-2 lg:col-span-2">
                                 <button type="button" id="btn-cancel-edit"
@@ -271,10 +246,8 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                             <thead class="sticky top-0 z-10 shadow-sm">
                                 <tr>
                                     <th class="w-10 text-center whitespace-nowrap">NO</th>
-                                    <th class="whitespace-nowrap">TGL NOTA</th>
+                                    <th class="whitespace-nowrap">TGL INVOICE</th>
                                     <th class="whitespace-nowrap">NAMA SUPPLIER</th>
-                                    <th class="whitespace-nowrap">NO. NOTA</th>
-                                    <th class="whitespace-nowrap">NO.REV. NOTA</th>
                                     <th class="whitespace-nowrap">NO FAKTUR</th>
                                     <th class="text-right whitespace-nowrap">NOMINAL AWAL</th>
                                     <th class="text-right whitespace-nowrap">NOMINAL REVISI</th>
@@ -284,6 +257,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                     <th class="text-center whitespace-nowrap">STATUS</th>
                                     <th class="whitespace-nowrap">DIBERIKAN</th>
                                     <th class="whitespace-nowrap">PENERIMA</th>
+
                                     <th class="w-20 text-center whitespace-nowrap">AKSI</th>
                                 </tr>
                             </thead>

@@ -16,7 +16,7 @@ try {
     $tgl_selesai = $_GET['tgl_selesai'] ?? $tanggal_kemarin;
     $search_supplier = $_GET['search_supplier'] ?? '';
 
-    $where_conditions = "1=1";
+    $where_conditions = "visibilitas = 'Aktif'";
     $bind_types = "";
     $bind_params = [];
 

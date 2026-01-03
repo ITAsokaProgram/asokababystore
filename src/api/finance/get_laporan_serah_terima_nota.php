@@ -47,42 +47,46 @@ try {
     $offset = ($page - 1) * $limit;
     $response['pagination']['offset'] = $offset;
 
-    // Filter Logic
+    // --- PERBAIKAN 1: Filter Logic + Visibilitas ---
     if ($filter_type === 'month') {
-        $where_conditions = "MONTH(tgl_nota) = ? AND YEAR(tgl_nota) = ?";
+        // Tambahkan visibilitas = 'Aktif'
+        $where_conditions = "visibilitas = 'Aktif' AND MONTH(tgl_nota) = ? AND YEAR(tgl_nota) = ?";
         $bind_types = 'ss';
         $bind_params = [$bulan, $tahun];
     } else {
-        $where_conditions = "DATE(tgl_nota) BETWEEN ? AND ?";
+        // Tambahkan visibilitas = 'Aktif'
+        $where_conditions = "visibilitas = 'Aktif' AND DATE(tgl_nota) BETWEEN ? AND ?";
         $bind_types = 'ss';
         $bind_params = [$tgl_mulai, $tgl_selesai];
     }
 
-    // Search Logic
+    // --- PERBAIKAN 2: Search Logic (Hapus no_nota, Tambah no_faktur_format) ---
     if (!empty($search_supplier)) {
         $search_raw = trim($search_supplier);
-        $search_numeric = str_replace('.', '', $search_raw); // remove dots for currency search
+        $search_numeric = str_replace('.', '', $search_raw);
 
         $where_conditions .= " AND (
             nama_supplier LIKE ? 
-            OR no_nota LIKE ? 
             OR no_faktur LIKE ? 
+            OR no_faktur_format LIKE ? 
             OR kode_supplier LIKE ? 
             OR CAST(nominal_awal AS CHAR) LIKE ?
         )";
-        $bind_types .= 'sssss';
+
+        $bind_types .= 'sssss'; // 5 parameter
         $termRaw = '%' . $search_raw . '%';
         $termNumeric = '%' . $search_numeric . '%';
 
-        $bind_params[] = $termRaw;
-        $bind_params[] = $termRaw;
-        $bind_params[] = $termRaw;
-        $bind_params[] = $termRaw;
-        $bind_params[] = $termNumeric;
+        $bind_params[] = $termRaw;          // nama_supplier
+        $bind_params[] = $termRaw;          // no_faktur
+        $bind_params[] = $termRaw;          // no_faktur_format (Pengganti no_nota)
+        $bind_params[] = $termRaw;          // kode_supplier
+        $bind_params[] = $termNumeric;      // nominal
     }
 
     // 1. Get Total Count
-    $sql_count = "SELECT COUNT(id) as total FROM serah_terima_nota WHERE $where_conditions";
+    // Gunakan COUNT(*) atau COUNT(no_faktur) aman karena no_faktur sekarang PK
+    $sql_count = "SELECT COUNT(*) as total FROM serah_terima_nota WHERE $where_conditions";
     $stmt_count = $conn->prepare($sql_count);
     if ($stmt_count === false)
         throw new Exception("Prepare failed (count): " . $conn->error);

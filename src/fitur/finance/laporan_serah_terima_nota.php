@@ -192,10 +192,8 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                             <thead>
                                 <tr>
                                     <th class="whitespace-nowrap">No</th>
-                                    <th class="whitespace-nowrap">Tgl Nota</th>
+                                    <th class="whitespace-nowrap">Tgl Invoice</th>
                                     <th class="whitespace-nowrap">Nama Supplier</th>
-                                    <th class="whitespace-nowrap">No. Nota</th>
-                                    <th class="whitespace-nowrap">No. Rev</th>
                                     <th class="whitespace-nowrap">No Faktur</th>
                                     <th class="text-right whitespace-nowrap">Nominal Awal</th>
                                     <th class="text-right whitespace-nowrap">Nominal Revisi</th>
@@ -245,7 +243,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                             </button>
                         </div>
 
-                        <input type="hidden" id="auth_nota_id" name="id">
+                        <input type="hidden" id="auth_nota_id" name="no_faktur">
 
                         <div class="mb-4">
                             <label class="block text-xs font-semibold text-gray-700 mb-1">Status Baru</label>
@@ -254,6 +252,15 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                 <option value="Belum Terima">Belum Terima</option>
                                 <option value="Sudah Terima">Sudah Terima</option>
                             </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Terima</label>
+                            <input type="date" name="tgl_diterima" id="auth_tgl_diterima" class="input-modern w-full">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Penerima</label>
+                            <input type="text" name="penerima" id="auth_penerima" class="input-modern w-full"
+                                placeholder="Nama Penerima Nota" autocomplete="off">
                         </div>
 
                         <div class="p-4 border border-red-200 rounded-lg bg-red-50">
