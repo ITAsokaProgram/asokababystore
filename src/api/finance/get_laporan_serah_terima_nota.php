@@ -37,6 +37,11 @@ try {
     $tgl_selesai = $_GET['tgl_selesai'] ?? $tanggal_kemarin;
     $search_supplier = $_GET['search_supplier'] ?? '';
 
+
+    $filter_status_kontra = $_GET['status_kontra'] ?? '';
+    $filter_status_bayar = $_GET['status_bayar'] ?? '';
+    $filter_status_pinjam = $_GET['status_pinjam'] ?? '';
+
     $page = (int) ($_GET['page'] ?? 1);
     if ($page < 1)
         $page = 1;
@@ -47,20 +52,38 @@ try {
     $offset = ($page - 1) * $limit;
     $response['pagination']['offset'] = $offset;
 
-    // --- PERBAIKAN 1: Filter Logic + Visibilitas ---
+
     if ($filter_type === 'month') {
-        // Tambahkan visibilitas = 'Aktif'
+
         $where_conditions = "visibilitas = 'Aktif' AND MONTH(tgl_nota) = ? AND YEAR(tgl_nota) = ?";
         $bind_types = 'ss';
         $bind_params = [$bulan, $tahun];
     } else {
-        // Tambahkan visibilitas = 'Aktif'
+
         $where_conditions = "visibilitas = 'Aktif' AND DATE(tgl_nota) BETWEEN ? AND ?";
         $bind_types = 'ss';
         $bind_params = [$tgl_mulai, $tgl_selesai];
     }
 
-    // --- PERBAIKAN 2: Search Logic (Hapus no_nota, Tambah no_faktur_format) ---
+    if (!empty($filter_status_kontra)) {
+        $where_conditions .= " AND status_kontra = ?";
+        $bind_types .= 's';
+        $bind_params[] = $filter_status_kontra;
+    }
+
+    if (!empty($filter_status_bayar)) {
+        $where_conditions .= " AND status_bayar = ?";
+        $bind_types .= 's';
+        $bind_params[] = $filter_status_bayar;
+    }
+
+    if (!empty($filter_status_pinjam)) {
+        $where_conditions .= " AND status_pinjam = ?";
+        $bind_types .= 's';
+        $bind_params[] = $filter_status_pinjam;
+    }
+
+
     if (!empty($search_supplier)) {
         $search_raw = trim($search_supplier);
         $search_numeric = str_replace('.', '', $search_raw);
@@ -73,19 +96,19 @@ try {
             OR CAST(nominal_awal AS CHAR) LIKE ?
         )";
 
-        $bind_types .= 'sssss'; // 5 parameter
+        $bind_types .= 'sssss';
         $termRaw = '%' . $search_raw . '%';
         $termNumeric = '%' . $search_numeric . '%';
 
-        $bind_params[] = $termRaw;          // nama_supplier
-        $bind_params[] = $termRaw;          // no_faktur
-        $bind_params[] = $termRaw;          // no_faktur_format (Pengganti no_nota)
-        $bind_params[] = $termRaw;          // kode_supplier
-        $bind_params[] = $termNumeric;      // nominal
+        $bind_params[] = $termRaw;
+        $bind_params[] = $termRaw;
+        $bind_params[] = $termRaw;
+        $bind_params[] = $termRaw;
+        $bind_params[] = $termNumeric;
     }
 
-    // 1. Get Total Count
-    // Gunakan COUNT(*) atau COUNT(no_faktur) aman karena no_faktur sekarang PK
+
+
     $sql_count = "SELECT COUNT(*) as total FROM serah_terima_nota WHERE $where_conditions";
     $stmt_count = $conn->prepare($sql_count);
     if ($stmt_count === false)
@@ -103,13 +126,13 @@ try {
     $response['pagination']['total_rows'] = (int) $total_rows;
     $response['pagination']['total_pages'] = ceil($total_rows / $limit);
 
-    // 2. Get Data
+
     $sql_data = "SELECT * FROM serah_terima_nota 
                  WHERE $where_conditions 
                  ORDER BY tgl_nota DESC, dibuat_pada DESC 
                  LIMIT ? OFFSET ?";
 
-    // Append limit/offset params
+
     $bind_types .= 'ii';
     $bind_params[] = $limit;
     $bind_params[] = $offset;

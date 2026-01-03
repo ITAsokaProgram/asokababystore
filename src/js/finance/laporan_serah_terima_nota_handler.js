@@ -22,24 +22,30 @@ document.addEventListener("DOMContentLoaded", () => {
     const filterTglMulai = document.getElementById("tgl_mulai");
     const filterTglSelesai = document.getElementById("tgl_selesai");
     const exportExcelButton = document.getElementById("export-excel-button");
+    const authStatusKontra = document.getElementById("auth_status_kontra");
+    const authStatusBayar = document.getElementById("auth_status_bayar");
+    const authStatusPinjam = document.getElementById("auth_status_pinjam");
     if (exportExcelButton) {
         exportExcelButton.addEventListener("click", handleExportExcel);
     }
-    window.openStatusModal = (faktur, currentStatus, currentPenerima = '', currentTgl = '') => {
+    window.openStatusModal = (faktur, sTerima, sKontra, sBayar, sPinjam, penerima, tgl) => {
         formAuth.reset();
         authNotaFaktur.value = faktur;
-        authNotaFaktur.name = "no_faktur";
-        authStatusSelect.value = "Sudah Terima";
-        const inputPenerima = document.getElementById('auth_penerima');
-        if (inputPenerima) {
-            inputPenerima.value = currentPenerima || '';
-        }
+
+        authStatusSelect.value = sTerima || 'Belum Terima';
+        authStatusKontra.value = sKontra || 'Belum';
+        authStatusBayar.value = sBayar || 'Belum';
+        authStatusPinjam.value = sPinjam || 'Tidak';
+
+        document.getElementById('auth_penerima').value = penerima || '';
+
         const inputTgl = document.getElementById('auth_tgl_diterima');
-        if (currentTgl && currentTgl !== 'null') {
-            inputTgl.value = currentTgl;
+        if (tgl && tgl !== 'null' && tgl !== '-') {
+            inputTgl.value = tgl;
         } else {
             inputTgl.valueAsDate = new Date();
         }
+
         modalAuth.classList.remove("hidden");
     };
     btnsCloseAuth.forEach(btn => {
@@ -206,7 +212,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     item.nama_supplier,
                     item.no_nota,
                     item.no_rev_nota || 0,
-                    item.no_faktur,
+                    item.no_faktur_format,
                     parseFloat(item.nominal_awal) || 0,
                     parseFloat(item.nominal_revisi) || 0,
                     parseFloat(item.selisih_pembayaran) || 0,
@@ -272,6 +278,9 @@ document.addEventListener("DOMContentLoaded", () => {
             tgl_mulai: params.get("tgl_mulai") || yesterdayString,
             tgl_selesai: params.get("tgl_selesai") || yesterdayString,
             search_supplier: params.get("search_supplier") || "",
+            status_kontra: params.get("status_kontra") || "",
+            status_bayar: params.get("status_bayar") || "",
+            status_pinjam: params.get("status_pinjam") || "",
             page: parseInt(params.get("page") || "1", 10),
         };
     }
@@ -291,6 +300,9 @@ document.addEventListener("DOMContentLoaded", () => {
             tgl_mulai: params.tgl_mulai,
             tgl_selesai: params.tgl_selesai,
             search_supplier: params.search_supplier,
+            status_kontra: params.status_kontra,
+            status_bayar: params.status_bayar,
+            status_pinjam: params.status_pinjam,
             page: params.page,
         }).toString();
         try {
@@ -311,6 +323,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 filterTypeSelect.value = params.filter_type;
                 toggleFilterMode();
             }
+            document.getElementById("filter_status_kontra").value = params.status_kontra;
+            document.getElementById("filter_status_bayar").value = params.status_bayar;
+            document.getElementById("filter_status_pinjam").value = params.status_pinjam;
             if (filterBulan) filterBulan.value = params.bulan;
             if (filterTahun) filterTahun.value = params.tahun;
             if (filterTglMulai) filterTglMulai.value = params.tgl_mulai;
@@ -367,60 +382,96 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!tabel_data || tabel_data.length === 0) {
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="14" class="text-center p-8 text-gray-500">
-                        <i class="fas fa-inbox fa-lg mb-2"></i>
+                    <td colspan="16" class="text-center p-8 text-gray-500"> <i class="fas fa-inbox fa-lg mb-2"></i>
                         <p>Tidak ada data ditemukan untuk filter ini.</p>
                     </td>
                 </tr>`;
             return;
         }
+
         let htmlRows = "";
         let item_counter = offset + 1;
+
         tabel_data.forEach((row) => {
+            // --- Definisi Variabel Data Asli ---
             const nominalAwal = parseFloat(row.nominal_awal) || 0;
             const nominalRevisi = parseFloat(row.nominal_revisi) || 0;
             const selisih = parseFloat(row.selisih_pembayaran) || 0;
             const tglNota = formatDate(row.tgl_nota);
             const tglDiserahkan = formatDate(row.tgl_diserahkan);
-            const tglDiterima = formatDate(row.tgl_diterima);
-            let statusBadgeClass = row.status === 'Sudah Terima'
-                ? 'bg-green-100 text-green-800 border-green-200'
-                : 'bg-gray-100 text-gray-800 border-gray-200';
-            let statusIcon = row.status === 'Sudah Terima' ? '<i class="fas fa-check mr-1"></i>' : '';
-            const existingPenerima = row.penerima ? row.penerima.replace(/'/g, "\\'") : '';
+            const tglDiterima = formatDate(row.tgl_diterima); // Format Tampilan
+
+            // Variabel untuk Modal (Raw Data)
+            const rawPenerima = row.penerima ? row.penerima.replace(/'/g, "\\'") : '';
             const rawTglDiterima = row.tgl_diterima ? row.tgl_diterima : '';
-            let statusBadge;
-            if (row.status === 'Sudah Terima') {
-                statusBadge = `
-                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border cursor-default shadow-sm ${statusBadgeClass}">
-                        ${statusIcon} ${row.status}
-                    </span>
-                `;
-            } else {
-                statusBadge = `
-                    <button type="button" 
-                        onclick="window.openStatusModal('${row.no_faktur}', '${row.status}', '${existingPenerima}', '${rawTglDiterima}')"
-                        class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border hover:opacity-80 transition-opacity cursor-pointer shadow-sm ${statusBadgeClass}">
-                        ${statusIcon} ${row.status || 'Belum Terima'} <i class="fas fa-edit ml-2 opacity-50"></i>
-                    </button>
-                `;
-            }
+
+            // --- Status Data Baru ---
+            const sKontra = row.status_kontra || 'Belum';
+            const sBayar = row.status_bayar || 'Belum';
+            const sPinjam = row.status_pinjam || 'Tidak';
+            const sTerima = row.status || 'Belum Terima';
+
+            // --- Helper Badge Sederhana ---
+            const createBadge = (val, type) => {
+                let colorClass = 'bg-gray-100 text-gray-600 border-gray-200';
+
+                // Logic Warna
+                if (type === 'terima' && val === 'Sudah Terima') colorClass = 'bg-green-100 text-green-800 border-green-200';
+                if (type === 'terima' && val === 'Belum Terima') colorClass = 'bg-red-50 text-red-600 border-red-200';
+
+                if (type === 'kontra' && val === 'Sudah') colorClass = 'bg-blue-100 text-blue-700 border-blue-200';
+                if (type === 'bayar' && val === 'Sudah') colorClass = 'bg-emerald-100 text-emerald-700 border-emerald-200';
+                if (type === 'pinjam' && val === 'Pinjam') colorClass = 'bg-orange-100 text-orange-700 border-orange-200';
+
+                return `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border ${colorClass}">${val}</span>`;
+            };
+
+            // --- Render Baris ---
             htmlRows += `
-            <tr class="hover:bg-gray-50">
+            <tr class="hover:bg-gray-50 border-b transition-colors">
                 <td class="text-center font-medium text-gray-500">${item_counter}</td>
-                <td>${tglNota}</td>
-                <td class="font-semibold text-gray-700">${row.nama_supplier || '-'}</td>
-                <td class="font-mono text-sm">${row.no_faktur || '-'}</td>
-                <td class="text-right font-mono text-gray-700">${formatRupiah(nominalAwal)}</td>
-                <td class="text-right font-mono text-gray-700">${formatRupiah(nominalRevisi)}</td>
-                <td class="text-right font-mono font-bold ${selisih < 0 ? 'text-red-600' : 'text-green-600'}">${formatRupiah(selisih)}</td>
-                <td class="text-center text-sm">${tglDiserahkan}</td>
-                <td class="text-center text-sm">${tglDiterima}</td>
-                <td class="text-center">${statusBadge}</td>
-                <td class="text-center text-sm">${row.diberikan || '-'}</td>
-                <td class="text-center text-sm">${row.penerima || '-'}</td>
-                </tr>
-        `;
+                
+                <td class="whitespace-nowrap text-xs">${tglNota}</td>
+                
+                <td class="font-semibold text-gray-700 text-sm">
+                    ${row.nama_supplier || '-'}
+                    ${row.no_nota ? `<br><span class="text-[10px] text-gray-400 font-normal">${row.no_nota}</span>` : ''}
+                </td>
+                
+                <td class="font-mono text-xs text-gray-600">${row.no_faktur || '-'}</td>
+                
+                <td class="text-right font-mono text-sm text-gray-600">${formatRupiah(nominalAwal)}</td>
+                
+                <td class="text-right font-mono text-sm font-bold text-gray-800">${formatRupiah(nominalRevisi)}</td>
+                
+                <td class="text-right font-mono text-sm font-bold ${selisih < 0 ? 'text-red-600' : 'text-green-600'}">
+                    ${formatRupiah(selisih)}
+                </td>
+                
+                <td class="text-center text-xs whitespace-nowrap">${tglDiserahkan}</td>
+                
+                <td class="text-center text-xs whitespace-nowrap">${tglDiterima}</td>
+                
+                <td class="text-center">${createBadge(sTerima, 'terima')}</td>
+
+                <td class="text-center">${createBadge(sKontra, 'kontra')}</td>
+                <td class="text-center">${createBadge(sBayar, 'bayar')}</td>
+                <td class="text-center">${createBadge(sPinjam, 'pinjam')}</td>
+
+                <td class="text-center text-xs">${row.diberikan || '-'}</td>
+                
+                <td class="text-center text-xs">${row.penerima || '-'}</td>
+
+                <td class="text-center">
+                    <button type="button" 
+                        onclick="window.openStatusModal('${row.no_faktur}', '${sTerima}', '${sKontra}', '${sBayar}', '${sPinjam}', '${rawPenerima}', '${rawTglDiterima}')"
+                        class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-pink-50 text-pink-600 hover:bg-pink-100 hover:text-pink-800 transition-all shadow-sm border border-pink-100" 
+                        title="Edit Semua Status">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                </td>
+            </tr>
+            `;
             item_counter++;
         });
         tableBody.innerHTML = htmlRows;

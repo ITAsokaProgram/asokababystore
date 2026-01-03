@@ -152,6 +152,39 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                             </div>
                         </div>
 
+
+                        <div class="lg:col-span-1">
+                            <label class="block text-xs font-semibold text-gray-700 mb-2">Kontra?</label>
+                            <select name="status_kontra" id="filter_status_kontra" class="input-modern w-full">
+                                <option value="">Semua</option>
+                                <option value="Sudah" <?= ($_GET['status_kontra'] ?? '') == 'Sudah' ? 'selected' : '' ?>>
+                                    Sudah</option>
+                                <option value="Belum" <?= ($_GET['status_kontra'] ?? '') == 'Belum' ? 'selected' : '' ?>>
+                                    Belum</option>
+                            </select>
+                        </div>
+
+                        <div class="lg:col-span-1">
+                            <label class="block text-xs font-semibold text-gray-700 mb-2">Bayar?</label>
+                            <select name="status_bayar" id="filter_status_bayar" class="input-modern w-full">
+                                <option value="">Semua</option>
+                                <option value="Sudah" <?= ($_GET['status_bayar'] ?? '') == 'Sudah' ? 'selected' : '' ?>>
+                                    Sudah</option>
+                                <option value="Belum" <?= ($_GET['status_bayar'] ?? '') == 'Belum' ? 'selected' : '' ?>>
+                                    Belum</option>
+                            </select>
+                        </div>
+
+                        <div class="lg:col-span-1">
+                            <label class="block text-xs font-semibold text-gray-700 mb-2">Pinjam?</label>
+                            <select name="status_pinjam" id="filter_status_pinjam" class="input-modern w-full">
+                                <option value="">Semua</option>
+                                <option value="Pinjam" <?= ($_GET['status_pinjam'] ?? '') == 'Pinjam' ? 'selected' : '' ?>>
+                                    Pinjam</option>
+                                <option value="Tidak" <?= ($_GET['status_pinjam'] ?? '') == 'Tidak' ? 'selected' : '' ?>>
+                                    Tidak</option>
+                            </select>
+                        </div>
                         <div class="lg:col-span-2 lg:col-start-4 lg:row-start-1">
                             <label for="search_supplier" class="block text-xs font-semibold text-gray-700 mb-2">
                                 <i class="fas fa-search text-pink-600 mr-1"></i> Cari Data
@@ -200,9 +233,17 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                     <th class="text-right whitespace-nowrap">Selisih</th>
                                     <th class="whitespace-nowrap">Tgl Diserahkan</th>
                                     <th class="whitespace-nowrap">Tgl Diterima</th>
-                                    <th class="text-center whitespace-nowrap">Status</th>
+
+                                    <th class="text-center whitespace-nowrap">Status Terima</th>
+
+                                    <th class="text-center whitespace-nowrap">Kontra</th>
+                                    <th class="text-center whitespace-nowrap">Bayar</th>
+                                    <th class="text-center whitespace-nowrap">Pinjam</th>
+
                                     <th class="whitespace-nowrap">Diberikan</th>
                                     <th class="whitespace-nowrap">Penerima</th>
+
+                                    <th class="text-center whitespace-nowrap">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="receipt-table-body">
@@ -237,7 +278,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                 <form id="form-otorisasi">
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                         <div class="flex justify-between items-center mb-4 border-b pb-2">
-                            <h3 class="text-lg leading-6 font-medium text-gray-900">Ubah Status Nota</h3>
+                            <h3 class="text-lg leading-6 font-medium text-gray-900">Update Status Nota</h3>
                             <button type="button" class="btn-close-auth text-gray-400 hover:text-gray-500">
                                 <i class="fas fa-times"></i>
                             </button>
@@ -245,14 +286,37 @@ require_once __DIR__ . '/../../component/menu_handler.php';
 
                         <input type="hidden" id="auth_nota_id" name="no_faktur">
 
-                        <div class="mb-4">
-                            <label class="block text-xs font-semibold text-gray-700 mb-1">Status Baru</label>
-                            <select name="status" id="auth_status_baru"
-                                class="input-modern w-full font-bold text-pink-600">
-                                <option value="Belum Terima">Belum Terima</option>
-                                <option value="Sudah Terima">Sudah Terima</option>
-                            </select>
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Status Terima</label>
+                                <select name="status" id="auth_status_baru" class="input-modern w-full">
+                                    <option value="Belum Terima">Belum Terima</option>
+                                    <option value="Sudah Terima">Sudah Terima</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Status Kontra</label>
+                                <select name="status_kontra" id="auth_status_kontra" class="input-modern w-full">
+                                    <option value="Belum">Belum</option>
+                                    <option value="Sudah">Sudah</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Status Bayar</label>
+                                <select name="status_bayar" id="auth_status_bayar" class="input-modern w-full">
+                                    <option value="Belum">Belum</option>
+                                    <option value="Sudah">Sudah</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Status Pinjam</label>
+                                <select name="status_pinjam" id="auth_status_pinjam" class="input-modern w-full">
+                                    <option value="Tidak">Tidak</option>
+                                    <option value="Pinjam">Pinjam</option>
+                                </select>
+                            </div>
                         </div>
+
                         <div class="mb-4">
                             <label class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Terima</label>
                             <input type="date" name="tgl_diterima" id="auth_tgl_diterima" class="input-modern w-full">
@@ -264,9 +328,6 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                         </div>
 
                         <div class="p-4 border border-red-200 rounded-lg bg-red-50">
-                            <h4 class="text-xs font-bold text-red-600 mb-3 border-b border-red-200 pb-1">
-                                <i class="fas fa-lock mr-1"></i> Otorisasi Diperlukan
-                            </h4>
                             <div class="mb-3">
                                 <label class="block text-xs font-semibold text-gray-700 mb-1">User (Inisial)</label>
                                 <input type="text" name="nama_user_cek" class="input-modern w-full"
@@ -279,16 +340,11 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                             </div>
                         </div>
                     </div>
-
                     <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
-                        <button type="submit"
-                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-pink-600 text-base font-medium text-white hover:bg-pink-700 focus:outline-none sm:w-auto sm:text-sm">
-                            <i class="fas fa-check mr-2 mt-1"></i> Konfirmasi
-                        </button>
+                        <button type="submit" class="btn-primary w-full sm:w-auto px-4 py-2 text-white rounded">Simpan
+                            Perubahan</button>
                         <button type="button"
-                            class="btn-close-auth mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:w-auto sm:text-sm">
-                            Batal
-                        </button>
+                            class="btn-close-auth mt-3 w-full sm:w-auto px-4 py-2 border rounded">Batal</button>
                     </div>
                 </form>
             </div>

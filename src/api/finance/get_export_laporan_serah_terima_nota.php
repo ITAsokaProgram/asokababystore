@@ -15,6 +15,9 @@ try {
     $tgl_mulai = $_GET['tgl_mulai'] ?? $tanggal_kemarin;
     $tgl_selesai = $_GET['tgl_selesai'] ?? $tanggal_kemarin;
     $search_supplier = $_GET['search_supplier'] ?? '';
+    $filter_status_kontra = $_GET['status_kontra'] ?? '';
+    $filter_status_bayar = $_GET['status_bayar'] ?? '';
+    $filter_status_pinjam = $_GET['status_pinjam'] ?? '';
 
     $where_conditions = "visibilitas = 'Aktif'";
     $bind_types = "";
@@ -31,6 +34,23 @@ try {
         $bind_types .= 'ss';
         $bind_params[] = $tgl_mulai;
         $bind_params[] = $tgl_selesai;
+    }
+    if (!empty($filter_status_kontra)) {
+        $where_conditions .= " AND status_kontra = ?";
+        $bind_types .= 's';
+        $bind_params[] = $filter_status_kontra;
+    }
+
+    if (!empty($filter_status_bayar)) {
+        $where_conditions .= " AND status_bayar = ?";
+        $bind_types .= 's';
+        $bind_params[] = $filter_status_bayar;
+    }
+
+    if (!empty($filter_status_pinjam)) {
+        $where_conditions .= " AND status_pinjam = ?";
+        $bind_types .= 's';
+        $bind_params[] = $filter_status_pinjam;
     }
 
     // Search Logic

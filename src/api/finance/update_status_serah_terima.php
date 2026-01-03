@@ -21,6 +21,9 @@ try {
     $user_login = $verif->id ?? $verif->kode ?? null;
     $no_faktur = $input['no_faktur'] ?? null;
     $new_status = $input['status'] ?? null;
+    $new_status_kontra = $input['status_kontra'] ?? 'Belum';
+    $new_status_bayar = $input['status_bayar'] ?? 'Belum';
+    $new_status_pinjam = $input['status_pinjam'] ?? 'Tidak';
     $nama_user_cek = trim($input['nama_user_cek'] ?? '');
     $kode_otorisasi = $input['kode_otorisasi'] ?? '';
     $input_tgl_diterima = $input['tgl_diterima'] ?? null;
@@ -47,15 +50,37 @@ try {
     }
     $stmt_auth->close();
     $tgl_diterima = !empty($input_tgl_diterima) ? $input_tgl_diterima : date('Y-m-d');
-    $sql = "UPDATE serah_terima_nota SET status = ?, tgl_diterima = ?, penerima = ?, edit_pada = NOW(), diedit_oleh = ? WHERE no_faktur = ?";
+    $sql = "UPDATE serah_terima_nota SET 
+                status = ?, 
+                status_kontra = ?, 
+                status_bayar = ?, 
+                status_pinjam = ?, 
+                tgl_diterima = ?, 
+                penerima = ?, 
+                edit_pada = NOW(), 
+                diedit_oleh = ? 
+                WHERE no_faktur = ?";
+
     $stmt_upd = $conn->prepare($sql);
-    $stmt_upd->bind_param("sssss", $new_status, $tgl_diterima, $penerima, $user_login, $no_faktur);
+    $stmt_upd->bind_param(
+        "ssssssss",
+        $new_status,
+        $new_status_kontra,
+        $new_status_bayar,
+        $new_status_pinjam,
+        $tgl_diterima,
+        $penerima,
+        $user_login,
+        $no_faktur
+    );
+
     if (!$stmt_upd->execute()) {
         throw new Exception("Gagal update status.");
     }
+
     echo json_encode([
         'success' => true,
-        'message' => "Status berhasil diubah menjadi $new_status. Penerima: $penerima"
+        'message' => "Data berhasil diperbarui."
     ]);
 } catch (Exception $e) {
     http_response_code(200);
