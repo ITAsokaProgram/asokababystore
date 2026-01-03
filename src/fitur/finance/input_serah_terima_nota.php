@@ -193,14 +193,6 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                             </div>
 
                             <div>
-                                <label class="form-label">Status</label>
-                                <select id="inp_status" name="status" class="input-compact bg-white cursor-pointer">
-                                    <option value="Belum Terima">Belum Terima</option>
-                                    <option value="Sudah Terima">Sudah Terima</option>
-                                </select>
-                            </div>
-
-                            <div>
                                 <label class="form-label">Diberikan Oleh</label>
                                 <input type="text" id="inp_diberikan" name="diberikan" class="input-compact">
                             </div>

@@ -9,7 +9,6 @@ const form = document.getElementById("single-form");
 const inpTglNota = document.getElementById("inp_tgl_nota");
 const inpNamaSupplier = document.getElementById("inp_nama_supplier");
 const inpKodeSupplier = document.getElementById("inp_kode_supplier");
-const inpStatus = document.getElementById("inp_status");
 const inpNoFakturFormat = document.getElementById("inp_no_faktur_format");
 const inpNoFaktur = document.getElementById("inp_no_faktur");
 const inpDiberikan = document.getElementById("inp_diberikan");
@@ -182,6 +181,7 @@ function renderTableRows(data) {
 }
 function startEditMode(data) {
     currentEditKey = data.no_faktur;
+
     let safeTglNota = data.tgl_nota;
     if (safeTglNota && safeTglNota.includes(' ')) {
         safeTglNota = safeTglNota.split(' ')[0];
@@ -189,62 +189,102 @@ function startEditMode(data) {
     inpTglNota.value = safeTglNota;
     inpNamaSupplier.value = data.nama_supplier;
     inpKodeSupplier.value = data.kode_supplier;
-    inpStatus.value = data.status;
+    // inpStatus.value = data.status; // DIHAPUS
+
     inpNoFakturFormat.value = data.no_faktur_format;
     inpNoFaktur.value = data.no_faktur;
+
+    // Set value
     inpDiberikan.value = data.diberikan;
+    inpTglDiserahkan.value = data.tgl_diserahkan;
     inpNominalAwal.value = formatNumber(data.nominal_awal);
+
+    // LOGIKA BARU: Kunci Field saat Mode Edit
+    inpNominalAwal.readOnly = true;
+    inpNominalAwal.classList.add('input-readonly');
+
+    inpTglDiserahkan.readOnly = true;
+    inpTglDiserahkan.classList.add('input-readonly');
+
+    inpDiberikan.readOnly = true;
+    inpDiberikan.classList.add('input-readonly');
+
     const containerRevisi = document.getElementById("container-nominal-revisi");
     if (containerRevisi) {
         containerRevisi.classList.remove("hidden");
         inpNominalRevisi.value = formatNumber(data.nominal_revisi);
     }
+
     calculateSelisih();
-    inpTglDiserahkan.value = data.tgl_diserahkan;
+
     window.scrollTo({ top: 0, behavior: "smooth" });
+
     const rowContainer = document.querySelector(".input-row-container");
     if (rowContainer) {
         rowContainer.classList.add("border-amber-300", "bg-amber-50");
     }
+
     if (editIndicator) editIndicator.classList.remove("hidden");
     if (btnCancelEdit) btnCancelEdit.classList.remove("hidden");
+
     btnSave.innerHTML = `<i class="fas fa-edit"></i> <span>Update</span>`;
     btnSave.className = "btn-warning flex items-center gap-2 px-6 py-2 shadow-lg shadow-orange-500/30 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors";
 }
+
 function cancelEditMode() {
     form.reset();
     currentEditKey = null;
+
+    // LOGIKA BARU: Buka Kunci Field
+    inpNominalAwal.readOnly = false;
+    inpNominalAwal.classList.remove('input-readonly');
+
+    inpTglDiserahkan.readOnly = false;
+    inpTglDiserahkan.classList.remove('input-readonly');
+
+    inpDiberikan.readOnly = false;
+    inpDiberikan.classList.remove('input-readonly');
+
     const containerRevisi = document.getElementById("container-nominal-revisi");
     if (containerRevisi) {
         containerRevisi.classList.add("hidden");
     }
+
     const rowContainer = document.querySelector(".input-row-container");
     if (rowContainer) {
         rowContainer.classList.remove("border-amber-300", "bg-amber-50");
     }
+
     if (editIndicator) editIndicator.classList.add("hidden");
     if (btnCancelEdit) btnCancelEdit.classList.add("hidden");
+
     btnSave.innerHTML = `<i class="fas fa-save"></i> <span>Simpan</span>`;
     btnSave.className = "btn-primary flex items-center gap-2 px-6 py-2 shadow-lg shadow-pink-500/30";
+
     inpSelisih.value = "0";
 }
+
 async function handleSave() {
     if (!inpNoFakturFormat.value.trim() || !inpNamaSupplier.value.trim()) {
         Swal.fire("Peringatan", "No Faktur dan Nama Supplier wajib diisi.", "warning");
         return;
     }
+
     if (isSubmitting) return;
     isSubmitting = true;
+
     const originalContent = btnSave.innerHTML;
     btnSave.disabled = true;
     btnSave.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Proses...`;
+
     const cleanFaktur = cleanFakturString(inpNoFakturFormat.value);
+
     const payload = {
         original_no_faktur: currentEditKey ? currentEditKey : null,
         tgl_nota: inpTglNota.value,
         nama_supplier: inpNamaSupplier.value,
         kode_supplier: inpKodeSupplier.value,
-        status: inpStatus.value,
+        // status: inpStatus.value, // DIHAPUS, biar backend handle default
         no_faktur_format: inpNoFakturFormat.value,
         no_faktur: cleanFaktur,
         diberikan: inpDiberikan.value,
@@ -253,6 +293,7 @@ async function handleSave() {
         selisih_pembayaran: parseNumber(inpSelisih.value),
         tgl_diserahkan: inpTglDiserahkan.value
     };
+
     try {
         const result = await sendRequestJSON(API_URLS.saveData, payload);
         if (result.success) {
@@ -270,6 +311,7 @@ async function handleSave() {
         isSubmitting = false;
     }
 }
+
 function handleDelete(faktur) {
     Swal.fire({
         title: "Hapus Data?",

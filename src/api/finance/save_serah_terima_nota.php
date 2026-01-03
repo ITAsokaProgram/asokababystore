@@ -6,7 +6,7 @@ require_once __DIR__ . '/../../../aa_kon_sett.php';
 require_once __DIR__ . '/../../auth/middleware_login.php';
 
 try {
-    // ... (Auth Logic sama) ...
+    // ... (Auth Logic tetap sama) ...
     $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
     if (!preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
         throw new Exception('Token tidak ditemukan');
@@ -35,16 +35,16 @@ try {
     $selisih_pembayaran = (float) ($input['selisih_pembayaran'] ?? 0);
     $tgl_diserahkan = $input['tgl_diserahkan'] ?: null;
 
-    // HAPUS $tgl_diterima dan $penerima
+    // DEFAULT 'Belum Terima' SESUAI REQUEST
+    $status = 'Belum Terima';
 
-    $status = $input['status'] ?? 'Belum Terima';
     $diberikan = trim($input['diberikan'] ?? '');
     $visibilitas = 'Aktif';
 
     if (empty($no_faktur))
         throw new Exception("Nomor Faktur wajib diisi.");
 
-    // CEK DUPLIKASI
+    // CEK DUPLIKASI (Tetap sama)
     $sqlCheck = "SELECT no_faktur FROM serah_terima_nota WHERE no_faktur = ? AND visibilitas = 'Aktif'";
     $typesCheck = "s";
     $paramsCheck = [$no_faktur];
@@ -64,7 +64,7 @@ try {
 
     if (!empty($original_no_faktur)) {
         // --- UPDATE DATA ---
-        // Hapus penerima dan tgl_diterima dari Query UPDATE
+        // Status akan di-reset ke 'Belum Terima' sesuai permintaan
         $query = "UPDATE serah_terima_nota SET 
             tgl_nota=?, nama_supplier=?, kode_supplier=?, 
             no_faktur=?, no_faktur_format=?, 
@@ -86,7 +86,7 @@ try {
             $nominal_revisi,
             $selisih_pembayaran,
             $tgl_diserahkan,
-            $status,
+            $status, // Akan masuk 'Belum Terima'
             $diberikan,
             $user_login,
             $original_no_faktur
@@ -98,7 +98,6 @@ try {
 
     } else {
         // --- INSERT DATA ---
-        // Hapus penerima dan tgl_diterima dari Query INSERT
         $query = "INSERT INTO serah_terima_nota 
             (tgl_nota, nama_supplier, kode_supplier, 
             no_faktur, no_faktur_format, 
@@ -119,7 +118,7 @@ try {
             $nominal_revisi,
             $selisih_pembayaran,
             $tgl_diserahkan,
-            $status,
+            $status, // Akan masuk 'Belum Terima'
             $diberikan,
             $visibilitas,
             $user_login

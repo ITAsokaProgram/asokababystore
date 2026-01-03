@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
         formAuth.reset();
         authNotaFaktur.value = faktur;
         authNotaFaktur.name = "no_faktur";
-        authStatusSelect.value = currentStatus || 'Belum Terima';
+        authStatusSelect.value = "Sudah Terima";
         const inputPenerima = document.getElementById('auth_penerima');
         if (inputPenerima) {
             inputPenerima.value = currentPenerima || '';
@@ -389,13 +389,22 @@ document.addEventListener("DOMContentLoaded", () => {
             let statusIcon = row.status === 'Sudah Terima' ? '<i class="fas fa-check mr-1"></i>' : '';
             const existingPenerima = row.penerima ? row.penerima.replace(/'/g, "\\'") : '';
             const rawTglDiterima = row.tgl_diterima ? row.tgl_diterima : '';
-            let statusBadge = `
-                <button type="button" 
-                    onclick="window.openStatusModal('${row.no_faktur}', '${row.status}', '${existingPenerima}', '${rawTglDiterima}')"
-                    class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border hover:opacity-80 transition-opacity cursor-pointer shadow-sm ${statusBadgeClass}">
-                    ${statusIcon} ${row.status || 'Belum Terima'} <i class="fas fa-edit ml-2 opacity-50"></i>
-                </button>
-            `;
+            let statusBadge;
+            if (row.status === 'Sudah Terima') {
+                statusBadge = `
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border cursor-default shadow-sm ${statusBadgeClass}">
+                        ${statusIcon} ${row.status}
+                    </span>
+                `;
+            } else {
+                statusBadge = `
+                    <button type="button" 
+                        onclick="window.openStatusModal('${row.no_faktur}', '${row.status}', '${existingPenerima}', '${rawTglDiterima}')"
+                        class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border hover:opacity-80 transition-opacity cursor-pointer shadow-sm ${statusBadgeClass}">
+                        ${statusIcon} ${row.status || 'Belum Terima'} <i class="fas fa-edit ml-2 opacity-50"></i>
+                    </button>
+                `;
+            }
             htmlRows += `
             <tr class="hover:bg-gray-50">
                 <td class="text-center font-medium text-gray-500">${item_counter}</td>
