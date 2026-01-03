@@ -54,7 +54,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Surat Terima Nota</title>
+    <title>Laporan Serah Terima Nota</title>
     <link rel="stylesheet" href="../../style/header.css">
     <link rel="stylesheet" href="../../style/sidebar.css">
     <link rel="stylesheet" href="../../style/animation-fade-in.css">
@@ -82,7 +82,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                 <i class="fa-solid fa-file-invoice fa-lg"></i>
                             </div>
                             <div>
-                                <h1 id="page-title" class="text-xl font-bold text-gray-800 mb-1">Laporan Surat Terima
+                                <h1 id="page-title" class="text-xl font-bold text-gray-800 mb-1">Laporan Serah Terima
                                     Nota
                                 </h1>
                                 <p id="page-subtitle" class="text-xs text-gray-600">Memuat data...</p>

@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const tableBody = document.getElementById("receipt-table-body");
     const modalAuth = document.getElementById("modal-otorisasi");
     const formAuth = document.getElementById("form-otorisasi");
-    const authNotaFaktur = document.getElementById("auth_nota_id"); // Ganti nama variabel biar gak bingung (HTML ID nya boleh tetap atau diganti)    
+    const authNotaFaktur = document.getElementById("auth_nota_id");
     const authStatusSelect = document.getElementById("auth_status_baru");
     const btnsCloseAuth = document.querySelectorAll(".btn-close-auth");
     const filterForm = document.getElementById("filter-form");
@@ -22,7 +22,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const filterTglMulai = document.getElementById("tgl_mulai");
     const filterTglSelesai = document.getElementById("tgl_selesai");
     const exportExcelButton = document.getElementById("export-excel-button");
-
     if (exportExcelButton) {
         exportExcelButton.addEventListener("click", handleExportExcel);
     }
@@ -30,29 +29,17 @@ document.addEventListener("DOMContentLoaded", () => {
         formAuth.reset();
         authNotaFaktur.value = faktur;
         authNotaFaktur.name = "no_faktur";
-
-        // 1. SET STATUS
-        // Jika status sekarang kosong, anggap 'Belum Terima'. 
-        // Kita set dropdown sesuai status terakhir di database.
         authStatusSelect.value = currentStatus || 'Belum Terima';
-
-        // 2. SET PENERIMA
         const inputPenerima = document.getElementById('auth_penerima');
         if (inputPenerima) {
             inputPenerima.value = currentPenerima || '';
         }
-
-        // 3. SET TANGGAL (PENTING!)
         const inputTgl = document.getElementById('auth_tgl_diterima');
-
         if (currentTgl && currentTgl !== 'null') {
-            // Jika di database sudah ada tanggal (misal: 2024-01-01), pakai itu
             inputTgl.value = currentTgl;
         } else {
-            // Jika belum ada tanggal, default ke HARI INI
             inputTgl.valueAsDate = new Date();
         }
-
         modalAuth.classList.remove("hidden");
     };
     btnsCloseAuth.forEach(btn => {
@@ -63,15 +50,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (formAuth) {
         formAuth.addEventListener("submit", async (e) => {
             e.preventDefault();
-
             const formData = new FormData(formAuth);
             const jsonData = Object.fromEntries(formData.entries());
             const token = getCookie("admin_token");
-
             try {
-                // Tampilkan loading di tombol (opsional)
                 Swal.fire({ title: 'Memproses...', didOpen: () => Swal.showLoading() });
-
                 const response = await fetch('/src/api/finance/update_status_serah_terima.php', {
                     method: 'POST',
                     headers: {
@@ -80,13 +63,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     },
                     body: JSON.stringify(jsonData)
                 });
-
                 const result = await response.json();
-
                 if (result.success) {
                     Swal.fire("Berhasil", result.message, "success");
                     modalAuth.classList.add("hidden");
-                    loadData(); // Reload tabel untuk melihat perubahan
+                    loadData();
                 } else {
                     Swal.fire("Gagal", result.message, "error");
                 }
@@ -96,7 +77,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
-
     function toggleFilterMode() {
         const mode = filterTypeSelect.value;
         if (mode === "month") {
@@ -107,12 +87,10 @@ document.addEventListener("DOMContentLoaded", () => {
             containerDateRange.style.display = "contents";
         }
     }
-
     if (filterTypeSelect) {
         filterTypeSelect.addEventListener("change", toggleFilterMode);
         toggleFilterMode();
     }
-
     function formatRupiah(number) {
         if (isNaN(number) || number === null) return "0";
         return new Intl.NumberFormat("id-ID", {
@@ -122,7 +100,6 @@ document.addEventListener("DOMContentLoaded", () => {
             maximumFractionDigits: 0,
         }).format(number);
     }
-
     function formatDate(dateString) {
         if (!dateString) return "-";
         const dateObj = new Date(dateString);
@@ -133,12 +110,10 @@ document.addEventListener("DOMContentLoaded", () => {
             year: "numeric",
         });
     }
-
     async function handleExportExcel() {
         const params = getUrlParams();
         const currencyFmt = "#,##0";
         let periodeText = "";
-
         if (params.filter_type === "month") {
             const monthNames = [
                 "Januari", "Februari", "Maret", "April", "Mei", "Juni",
@@ -149,7 +124,6 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
             periodeText = `${params.tgl_mulai} s/d ${params.tgl_selesai}`;
         }
-
         Swal.fire({
             title: "Menyiapkan Excel...",
             text: "Sedang mengambil data...",
@@ -158,7 +132,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 Swal.showLoading();
             },
         });
-
         try {
             const queryString = new URLSearchParams({
                 filter_type: params.filter_type,
@@ -168,24 +141,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 tgl_selesai: params.tgl_selesai,
                 search_supplier: params.search_supplier,
             }).toString();
-
             const response = await fetch(
                 `/src/api/finance/get_export_laporan_serah_terima_nota.php?${queryString}`
             );
-
             if (!response.ok) throw new Error("Gagal mengambil data export");
             const result = await response.json();
             if (result.error) throw new Error(result.error);
             const data = result.data;
-
             if (!data || data.length === 0) {
                 Swal.fire("Info", "Tidak ada data untuk diexport", "info");
                 return;
             }
-
             const workbook = new ExcelJS.Workbook();
-            const sheet = workbook.addWorksheet("Surat Terima Nota");
-
+            const sheet = workbook.addWorksheet("Serah Terima Nota");
             sheet.columns = [
                 { key: "no", width: 5 },
                 { key: "tgl_nota", width: 15 },
@@ -202,19 +170,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 { key: "diberikan", width: 15 },
                 { key: "penerima", width: 15 },
             ];
-
             sheet.mergeCells("A1:N1");
             const titleCell = sheet.getCell("A1");
-            titleCell.value = `LAPORAN SURAT TERIMA NOTA - ${periodeText}`;
+            titleCell.value = `LAPORAN SERAH TERIMA NOTA - ${periodeText}`;
             titleCell.font = { name: "Arial", size: 14, bold: true };
             titleCell.alignment = { horizontal: "center" };
-
             const headers = [
                 "No", "Tgl Nota", "Nama Supplier", "No. Nota", "No. Rev. Nota",
                 "No Faktur", "Nominal Awal", "Nominal Revisi", "Selisih Pembayaran",
                 "Tgl Diserahkan", "Tgl Diterima", "Status", "Diberikan", "Penerima"
             ];
-
             const headerRow = sheet.getRow(3);
             headerRow.values = headers;
             headerRow.eachCell((cell) => {
@@ -232,7 +197,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     right: { style: "thin" },
                 };
             });
-
             let rowNum = 4;
             data.forEach((item, index) => {
                 const r = sheet.getRow(rowNum);
@@ -252,12 +216,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     item.diberikan,
                     item.penerima
                 ];
-
-                // Format Currency Columns
                 r.getCell(7).numFmt = currencyFmt;
                 r.getCell(8).numFmt = currencyFmt;
                 r.getCell(9).numFmt = currencyFmt;
-
                 r.eachCell((cell) => {
                     cell.border = {
                         top: { style: "thin" },
@@ -268,7 +229,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
                 rowNum++;
             });
-
             const buffer = await workbook.xlsx.writeBuffer();
             const blob = new Blob([buffer], {
                 type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -285,7 +245,6 @@ document.addEventListener("DOMContentLoaded", () => {
             anchor.download = `${filename}.xlsx`;
             anchor.click();
             window.URL.revokeObjectURL(url);
-
             Swal.fire({
                 icon: "success",
                 title: "Berhasil",
@@ -298,7 +257,6 @@ document.addEventListener("DOMContentLoaded", () => {
             Swal.fire("Error", e.message, "error");
         }
     }
-
     function getUrlParams() {
         const params = new URLSearchParams(window.location.search);
         const yesterday = new Date();
@@ -307,7 +265,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const now = new Date();
         const currentMonth = String(now.getMonth() + 1).padStart(2, "0");
         const currentYear = now.getFullYear();
-
         return {
             filter_type: params.get("filter_type") || "month",
             bulan: params.get("bulan") || currentMonth,
@@ -318,18 +275,15 @@ document.addEventListener("DOMContentLoaded", () => {
             page: parseInt(params.get("page") || "1", 10),
         };
     }
-
     function build_pagination_url(newPage) {
         const params = new URLSearchParams(window.location.search);
         params.set("page", newPage);
         return "?" + params.toString();
     }
-
     async function loadData() {
         const params = getUrlParams();
         const isPagination = params.page > 1;
         setLoadingState(true, isPagination);
-
         const queryString = new URLSearchParams({
             filter_type: params.filter_type,
             bulan: params.bulan,
@@ -339,25 +293,20 @@ document.addEventListener("DOMContentLoaded", () => {
             search_supplier: params.search_supplier,
             page: params.page,
         }).toString();
-
         try {
             const response = await fetch(
                 `/src/api/finance/get_laporan_serah_terima_nota.php?${queryString}`
             );
-
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(
                     errorData.error || `HTTP error! status: ${response.status}`
                 );
             }
-
             const data = await response.json();
             if (data.error) throw new Error(data.error);
-
             if (filterInputSupplier)
                 filterInputSupplier.value = params.search_supplier;
-
             if (filterTypeSelect) {
                 filterTypeSelect.value = params.filter_type;
                 toggleFilterMode();
@@ -366,7 +315,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if (filterTahun) filterTahun.value = params.tahun;
             if (filterTglMulai) filterTglMulai.value = params.tgl_mulai;
             if (filterTglSelesai) filterTglSelesai.value = params.tgl_selesai;
-
             if (pageSubtitle) {
                 let periodText = "";
                 if (params.filter_type === "month") {
@@ -382,7 +330,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
                 pageSubtitle.textContent = `${periodText}`;
             }
-
             renderTable(
                 data.tabel_data,
                 data.pagination ? data.pagination.offset : 0
@@ -395,7 +342,6 @@ document.addEventListener("DOMContentLoaded", () => {
             setLoadingState(false);
         }
     }
-
     function setLoadingState(isLoading, isPagination = false) {
         if (isLoading) {
             if (filterSubmitButton) filterSubmitButton.disabled = true;
@@ -414,11 +360,9 @@ document.addEventListener("DOMContentLoaded", () => {
             if (exportExcelButton) exportExcelButton.disabled = false;
         }
     }
-
     function showTableError(message) {
         tableBody.innerHTML = `<tr><td colspan="14" class="text-center p-8 text-red-600"><p>Gagal: ${message}</p></td></tr>`;
     }
-
     function renderTable(tabel_data, offset) {
         if (!tabel_data || tabel_data.length === 0) {
             tableBody.innerHTML = `
@@ -430,26 +374,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tr>`;
             return;
         }
-
         let htmlRows = "";
         let item_counter = offset + 1;
-
         tabel_data.forEach((row) => {
             const nominalAwal = parseFloat(row.nominal_awal) || 0;
             const nominalRevisi = parseFloat(row.nominal_revisi) || 0;
             const selisih = parseFloat(row.selisih_pembayaran) || 0;
-
             const tglNota = formatDate(row.tgl_nota);
             const tglDiserahkan = formatDate(row.tgl_diserahkan);
             const tglDiterima = formatDate(row.tgl_diterima);
-
-            // --- PERUBAHAN DI SINI: Status Badge jadi Button ---
             let statusBadgeClass = row.status === 'Sudah Terima'
                 ? 'bg-green-100 text-green-800 border-green-200'
                 : 'bg-gray-100 text-gray-800 border-gray-200';
-
             let statusIcon = row.status === 'Sudah Terima' ? '<i class="fas fa-check mr-1"></i>' : '';
-
             const existingPenerima = row.penerima ? row.penerima.replace(/'/g, "\\'") : '';
             const rawTglDiterima = row.tgl_diterima ? row.tgl_diterima : '';
             let statusBadge = `
@@ -459,35 +396,26 @@ document.addEventListener("DOMContentLoaded", () => {
                     ${statusIcon} ${row.status || 'Belum Terima'} <i class="fas fa-edit ml-2 opacity-50"></i>
                 </button>
             `;
-            // ----------------------------------------------------
-
             htmlRows += `
             <tr class="hover:bg-gray-50">
                 <td class="text-center font-medium text-gray-500">${item_counter}</td>
                 <td>${tglNota}</td>
-                
                 <td class="font-semibold text-gray-700">${row.nama_supplier || '-'}</td>
-                
                 <td class="font-mono text-sm">${row.no_faktur || '-'}</td>
-                
                 <td class="text-right font-mono text-gray-700">${formatRupiah(nominalAwal)}</td>
                 <td class="text-right font-mono text-gray-700">${formatRupiah(nominalRevisi)}</td>
                 <td class="text-right font-mono font-bold ${selisih < 0 ? 'text-red-600' : 'text-green-600'}">${formatRupiah(selisih)}</td>
-                
                 <td class="text-center text-sm">${tglDiserahkan}</td>
                 <td class="text-center text-sm">${tglDiterima}</td>
                 <td class="text-center">${statusBadge}</td>
                 <td class="text-center text-sm">${row.diberikan || '-'}</td>
                 <td class="text-center text-sm">${row.penerima || '-'}</td>
-                
                 </tr>
         `;
             item_counter++;
         });
-
         tableBody.innerHTML = htmlRows;
     }
-
     function renderPagination(pagination) {
         if (!pagination) {
             paginationInfo.textContent = "";
@@ -495,17 +423,14 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
         const { current_page, total_pages, total_rows, limit, offset } = pagination;
-
         if (total_rows === 0) {
             paginationInfo.textContent = "Menampilkan 0 dari 0 data";
             paginationLinks.innerHTML = "";
             return;
         }
-
         const start_row = offset + 1;
         const end_row = Math.min(offset + limit, total_rows);
         paginationInfo.textContent = `Menampilkan ${start_row} - ${end_row} dari ${total_rows} data`;
-
         let linksHtml = "";
         linksHtml += `
               <a href="${current_page > 1 ? build_pagination_url(current_page - 1) : "#"
@@ -515,10 +440,8 @@ document.addEventListener("DOMContentLoaded", () => {
                   <i class="fas fa-chevron-left"></i>
               </a>
           `;
-
         const pages_to_show = [];
         const max_pages_around = 2;
-
         for (let i = 1; i <= total_pages; i++) {
             if (
                 i === 1 ||
@@ -529,7 +452,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 pages_to_show.push(i);
             }
         }
-
         let last_page = 0;
         for (const page_num of pages_to_show) {
             if (last_page !== 0 && page_num > last_page + 1) {
@@ -544,7 +466,6 @@ document.addEventListener("DOMContentLoaded", () => {
               `;
             last_page = page_num;
         }
-
         linksHtml += `
               <a href="${current_page < total_pages
                 ? build_pagination_url(current_page + 1)
@@ -557,7 +478,6 @@ document.addEventListener("DOMContentLoaded", () => {
           `;
         paginationLinks.innerHTML = linksHtml;
     }
-
     if (filterForm) {
         filterForm.addEventListener("submit", (e) => {
             e.preventDefault();
@@ -568,6 +488,5 @@ document.addEventListener("DOMContentLoaded", () => {
             loadData();
         });
     }
-
     loadData();
 });
