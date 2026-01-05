@@ -65,6 +65,27 @@ require_once __DIR__ . '/../../component/menu_handler.php';
     <link rel="icon" type="image/png" href="../../../public/images/logo1.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+    <style>
+        #form-otorisasi input:disabled,
+        #form-otorisasi select:disabled {
+            background-color: #f3f4f6 !important;
+            color: #9ca3af !important;
+            cursor: not-allowed !important;
+
+        }
+
+        #form-otorisasi #auth_status_baru:disabled {
+            background-color: #f3f4f6 !important;
+            color: #9ca3af !important;
+            cursor: not-allowed !important;
+        }
+
+        #form-otorisasi #auth_display_selisih {
+            background-color: #f3f4f6 !important;
+            color: #6b7280 !important;
+            cursor: not-allowed !important;
+        }
+    </style>
 </head>
 
 <body class="bg-gray-50 theme-pembelian">
@@ -288,10 +309,30 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                         <input type="hidden" id="auth_nominal_awal">
 
                         <div id="alert-dependency"
-                            class="hidden mb-4 p-3 bg-yellow-50 border border-yellow-200 text-yellow-700 rounded-lg text-xs flex items-start gap-2">
+                            class="hidden mb-4 p-3 bg-yellow-50 border border-yellow-200 text-yellow-700 rounded-lg text-xs flex items-start gap-2"
+                            style="max-width: 412px; width: 100%">
                             <i class="fas fa-info-circle mt-0.5"></i>
                             <span>Harap isi <b>Status Terima (Sudah)</b>, <b>Tanggal</b>, dan <b>Penerima</b> terlebih
                                 dahulu untuk mengubah status lainnya.</span>
+                        </div>
+
+                        <div id="alert-locked-paid" style="max-width: 412px; width: 100%"
+                            class="hidden mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-xs flex items-start gap-2">
+                            <i class="fas fa-lock mt-0.5"></i>
+                            <span> Tidak bisa edit Nomor Faktur & Nominal Revisi karena Status
+                                sudah dibayar</span>
+                        </div>
+
+                        <div id="alert-locked-kontra" style="max-width: 412px; width: 100%"
+                            class="hidden mb-4 p-3 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg text-xs flex items-start gap-2">
+                            <i class="fas fa-info-circle mt-0.5"></i>
+                            <span><b>Info:</b> Status Kontra <b>"Sudah"</b>, tidak dapat diubah kembali.</span>
+                        </div>
+
+                        <div id="alert-locked-bayar-status" style="max-width: 412px; width: 100%"
+                            class="hidden mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-lg text-xs flex items-start gap-2">
+                            <i class="fas fa-check-circle mt-0.5"></i>
+                            <span><b>Info:</b> Status Bayar <b>"Sudah"</b>, tidak dapat diubah kembali.</span>
                         </div>
 
                         <div class="p-3 bg-pink-50 rounded-lg border border-pink-100 mb-4">

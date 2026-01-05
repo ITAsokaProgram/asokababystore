@@ -54,7 +54,7 @@ try {
         throw new Exception("Password Otorisasi Salah!");
     }
     $stmt_auth->close();
-    $stmt_old = $conn->prepare("SELECT status, status_kontra, status_bayar FROM serah_terima_nota WHERE no_faktur = ?");
+    $stmt_old = $conn->prepare("SELECT status, status_kontra, status_bayar, tgl_diterima, penerima, nominal_awal, nominal_revisi FROM serah_terima_nota WHERE no_faktur = ?");
     $stmt_old->bind_param("s", $no_faktur_lama);
     $stmt_old->execute();
     $res_old = $stmt_old->get_result();
@@ -67,6 +67,9 @@ try {
         if ($no_faktur_baru !== $no_faktur_lama) {
             throw new Exception("Gagal: No Faktur tidak dapat diubah karena status sudah Dibayar.");
         }
+        if (abs((float) $nominal_revisi - (float) $old_data['nominal_revisi']) > 1.0) {
+            throw new Exception("Gagal: Nominal Revisi tidak dapat diubah karena status sudah Dibayar.");
+        }
     }
     if ($old_data['status'] === 'Sudah Terima' && !empty($old_data['tgl_diterima']) && !empty($old_data['penerima'])) {
         if ($input_tgl_diterima !== $old_data['tgl_diterima']) {
@@ -76,12 +79,15 @@ try {
             $penerima = $old_data['penerima'];
         }
     }
+    $nominal_awal_db = (float) $old_data['nominal_awal'];
+    $nominal_revisi_val = (float) $nominal_revisi;
+    $selisih_baru = $nominal_revisi_val - $nominal_awal_db;
     $is_setting_kontra = ($new_status_kontra === 'Sudah');
     $is_setting_bayar = ($new_status_bayar === 'Sudah');
     $is_setting_pinjam = ($new_status_pinjam === 'Pinjam');
     if ($is_setting_kontra || $is_setting_bayar || $is_setting_pinjam) {
         if ($new_status !== 'Sudah Terima') {
-            throw new Exception("Gagal: Anda harus mengubah Status Terima menjadi 'Sudah Terima' terlebih dahulu sebelum mengisi Kontra, Bayar, atau Pinjam.");
+            throw new Exception("Gagal: Status harus 'Sudah Terima' sebelum mengisi Kontra, Bayar, atau Pinjam.");
         }
         if (empty($penerima)) {
             throw new Exception("Gagal: Nama Penerima wajib diisi.");
@@ -112,6 +118,7 @@ try {
     $sql = "UPDATE serah_terima_nota SET 
                 no_faktur = ?, 
                 nominal_revisi = ?,
+                selisih_pembayaran = ?,
                 status = ?, 
                 status_kontra = ?, 
                 status_bayar = ?, 
@@ -123,9 +130,10 @@ try {
             WHERE no_faktur = ?";
     $stmt_upd = $conn->prepare($sql);
     $stmt_upd->bind_param(
-        "sdssssssss",
+        "sddssssssss",
         $no_faktur_baru,
-        $nominal_revisi,
+        $nominal_revisi_val,
+        $selisih_baru,
         $new_status,
         $new_status_kontra,
         $new_status_bayar,
