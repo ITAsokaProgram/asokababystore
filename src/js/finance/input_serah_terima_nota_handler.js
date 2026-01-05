@@ -1,11 +1,9 @@
 import { sendRequestGET, sendRequestJSON } from "../utils/api_helpers.js";
-
 const API_URLS = {
     saveData: "/src/api/finance/save_serah_terima_nota.php",
     getData: "/src/api/finance/get_serah_terima_nota.php",
     searchSupplier: "/src/api/coretax/get_supplier_search.php"
 };
-
 const form = document.getElementById("single-form");
 const inpTglNota = document.getElementById("inp_tgl_nota");
 const inpNamaSupplier = document.getElementById("inp_nama_supplier");
@@ -19,12 +17,10 @@ const inpSelisih = document.getElementById("inp_selisih");
 const inpTglDiserahkan = document.getElementById("inp_tgl_diserahkan");
 const listSupplier = document.getElementById("supplier_list");
 const btnSave = document.getElementById("btn-save");
-
 const tableBody = document.getElementById("table-body");
 const inpSearchTable = document.getElementById("inp_search_table");
 const filterSort = document.getElementById("filter_sort");
 const filterTgl = document.getElementById("filter_tgl");
-
 let isSubmitting = false;
 let debounceTimer;
 let searchDebounceTimer;
@@ -33,12 +29,10 @@ let currentSearchTerm = "";
 let currentDateFilter = "";
 let currentSortOption = "created";
 let tableRowIndex = 0;
-
 function sanitizeNumberInput(e) {
     e.target.value = e.target.value.replace(/[^0-9.]/g, '');
     calculateSelisih();
 }
-
 function formatNumber(num) {
     if (isNaN(num) || num === null) return "0";
     return new Intl.NumberFormat("id-ID", {
@@ -46,36 +40,29 @@ function formatNumber(num) {
         maximumFractionDigits: 0,
     }).format(num);
 }
-
 function parseNumber(str) {
     if (!str) return 0;
     const cleanStr = str.toString().replace(/\./g, "").replace(",", ".");
     return parseFloat(cleanStr) || 0;
 }
-
 function cleanFakturString(str) {
     if (!str) return "";
     return str.replace(/[\-\,\.\/\s\\\'_]/g, "");
 }
-
 function calculateSelisih() {
     const awal = parseNumber(inpNominalAwal.value);
     const revisi = parseNumber(inpNominalRevisi.value);
     const selisih = awal - revisi;
     inpSelisih.value = formatNumber(selisih);
 }
-
 inpNominalAwal.addEventListener('input', sanitizeNumberInput);
 inpNominalRevisi.addEventListener('input', sanitizeNumberInput);
-
 inpNominalAwal.addEventListener('input', () => calculateSelisih());
 inpNominalRevisi.addEventListener('input', () => calculateSelisih());
-
 inpNoFakturFormat.addEventListener('input', (e) => {
     const raw = e.target.value;
     inpNoFaktur.value = cleanFakturString(raw);
 });
-
 [inpNominalAwal, inpNominalRevisi].forEach(input => {
     input.addEventListener('blur', (e) => {
         const val = parseNumber(e.target.value);
@@ -84,18 +71,14 @@ inpNoFakturFormat.addEventListener('input', (e) => {
     });
     input.addEventListener('focus', (e) => e.target.select());
 });
-
 let currentRequestController = null;
-
 async function fetchTableData() {
     if (isLoadingData) return;
     isLoadingData = true;
-
     if (currentRequestController) {
         currentRequestController.abort();
     }
     currentRequestController = new AbortController();
-
     tableRowIndex = 0;
     tableBody.innerHTML = `
         <tr>
@@ -107,17 +90,14 @@ async function fetchTableData() {
             </td>
         </tr>
     `;
-
     try {
         const params = new URLSearchParams({
             search: currentSearchTerm,
             date: currentDateFilter,
             sort: currentSortOption,
         });
-
         const response = await fetch(`${API_URLS.getData}?${params.toString()}`, { signal: currentRequestController.signal });
         const result = await response.json();
-
         if (result.success && Array.isArray(result.data)) {
             if (result.data.length === 0) {
                 tableBody.innerHTML = `<tr><td colspan="12" class="text-center p-8 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-300">Data tidak ditemukan</td></tr>`;
@@ -135,7 +115,6 @@ async function fetchTableData() {
         }
     }
 }
-
 function renderTableRows(data) {
     tableBody.innerHTML = "";
     data.forEach((row) => {
@@ -163,9 +142,8 @@ function renderTableRows(data) {
         tableBody.appendChild(tr);
     });
 }
-
 async function handleSave() {
-    // Validasi Semua Input Harus Diisi
+    ''
     if (!inpTglNota.value) {
         Swal.fire("Peringatan", "Tanggal Invoice wajib diisi.", "warning");
         return;
@@ -190,16 +168,12 @@ async function handleSave() {
         Swal.fire("Peringatan", "Kolom Diberikan Oleh wajib diisi.", "warning");
         return;
     }
-
     if (isSubmitting) return;
     isSubmitting = true;
-
     const originalContent = btnSave.innerHTML;
     btnSave.disabled = true;
     btnSave.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Proses...`;
-
     const cleanFaktur = cleanFakturString(inpNoFakturFormat.value);
-
     const payload = {
         tgl_nota: inpTglNota.value,
         nama_supplier: inpNamaSupplier.value,
@@ -212,13 +186,22 @@ async function handleSave() {
         selisih_pembayaran: parseNumber(inpSelisih.value),
         tgl_diserahkan: inpTglDiserahkan.value
     };
-
     try {
         const result = await sendRequestJSON(API_URLS.saveData, payload);
         if (result.success) {
-            Swal.fire({ icon: "success", title: "Berhasil", text: result.message, timer: 1000, showConfirmButton: false });
-            form.reset();
+            Swal.fire({
+                icon: "success",
+                title: "Berhasil",
+                text: result.message,
+                timer: 1000,
+                showConfirmButton: false
+            });
+            inpNoFakturFormat.value = "";
+            inpNoFaktur.value = "";
+            inpNominalAwal.value = "0";
+            inpNominalRevisi.value = "0";
             inpSelisih.value = "0";
+            inpNoFakturFormat.focus();
             fetchTableData();
         } else {
             throw new Error(result.message);
@@ -231,11 +214,9 @@ async function handleSave() {
         isSubmitting = false;
     }
 }
-
 async function handleSupplierSearch(e) {
     const term = e.target.value;
     if (term.length < 2) return;
-
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(async () => {
         try {
@@ -247,13 +228,30 @@ async function handleSupplierSearch(e) {
             }
         } catch (err) { console.error(err); }
     }, 300);
-}
-
-document.addEventListener("DOMContentLoaded", () => {
+} document.addEventListener("DOMContentLoaded", () => {
     fetchTableData();
+    const savedTglNota = localStorage.getItem('stn_tgl_nota');
+    const savedNamaSupplier = localStorage.getItem('stn_nama_supplier');
+    const savedKodeSupplier = localStorage.getItem('stn_kode_supplier');
+    const savedTglDiserahkan = localStorage.getItem('stn_tgl_diserahkan');
+    const savedDiberikan = localStorage.getItem('stn_diberikan');
+    if (savedTglNota) inpTglNota.value = savedTglNota;
+    if (savedNamaSupplier) inpNamaSupplier.value = savedNamaSupplier;
+    if (savedKodeSupplier) inpKodeSupplier.value = savedKodeSupplier;
+    if (savedTglDiserahkan) inpTglDiserahkan.value = savedTglDiserahkan;
+    if (savedDiberikan) inpDiberikan.value = savedDiberikan;
+    const saveToLS = (key, value) => localStorage.setItem(key, value);
+    inpTglNota.addEventListener('change', (e) => saveToLS('stn_tgl_nota', e.target.value));
+    inpNamaSupplier.addEventListener('change', (e) => {
+        saveToLS('stn_nama_supplier', e.target.value);
+        setTimeout(() => {
+            saveToLS('stn_kode_supplier', inpKodeSupplier.value);
+        }, 500);
+    });
+    inpTglDiserahkan.addEventListener('change', (e) => saveToLS('stn_tgl_diserahkan', e.target.value));
+    inpDiberikan.addEventListener('input', (e) => saveToLS('stn_diberikan', e.target.value));
     btnSave.addEventListener("click", handleSave);
     inpNamaSupplier.addEventListener("input", handleSupplierSearch);
-
     inpSearchTable.addEventListener("input", (e) => {
         clearTimeout(searchDebounceTimer);
         searchDebounceTimer = setTimeout(() => {
@@ -261,12 +259,10 @@ document.addEventListener("DOMContentLoaded", () => {
             fetchTableData();
         }, 600);
     });
-
     filterSort.addEventListener("change", (e) => {
         currentSortOption = e.target.value;
         fetchTableData();
     });
-
     filterTgl.addEventListener("change", (e) => {
         currentDateFilter = e.target.value;
         fetchTableData();
