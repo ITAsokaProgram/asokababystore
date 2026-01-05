@@ -6,6 +6,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const authNotaFaktur = document.getElementById("auth_nota_id");
     const authStatusSelect = document.getElementById("auth_status_baru");
     const btnsCloseAuth = document.querySelectorAll(".btn-close-auth");
+    const authNoFakturBaru = document.getElementById("auth_no_faktur_baru");
+    const authNominalRevisi = document.getElementById("auth_nominal_revisi");
+    const authNominalAwal = document.getElementById("auth_nominal_awal");
+    const authDisplaySelisih = document.getElementById("auth_display_selisih");
     const filterForm = document.getElementById("filter-form");
     const filterSubmitButton = document.getElementById("filter-submit-button");
     const filterInputSupplier = document.getElementById("search_supplier");
@@ -22,35 +26,84 @@ document.addEventListener("DOMContentLoaded", () => {
     const filterTglMulai = document.getElementById("tgl_mulai");
     const filterTglSelesai = document.getElementById("tgl_selesai");
     const exportExcelButton = document.getElementById("export-excel-button");
+
+    const alertDependency = document.getElementById("alert-dependency");
     const authStatusKontra = document.getElementById("auth_status_kontra");
     const authStatusBayar = document.getElementById("auth_status_bayar");
     const authStatusPinjam = document.getElementById("auth_status_pinjam");
     const authPenerima = document.getElementById("auth_penerima");
     const authTglDiterima = document.getElementById("auth_tgl_diterima");
-    const alertDependency = document.getElementById("alert-dependency");
 
     let initialKontraState = 'Belum';
     let initialBayarState = 'Belum';
+    let initialTerimaState = 'Belum Terima';
 
     if (exportExcelButton) {
         exportExcelButton.addEventListener("click", handleExportExcel);
     }
+    const updateCalculatedSelisih = () => {
+        const awal = parseFloat(authNominalAwal.value) || 0;
+        const revisi = parseFloat(authNominalRevisi.value) || 0;
+        const selisih = revisi - awal; // Atau awal - revisi, tergantung logika bisnismu. Di sini Revisi - Awal.
+
+        authDisplaySelisih.value = new Intl.NumberFormat("id-ID").format(selisih);
+
+        if (selisih < 0) {
+            authDisplaySelisih.classList.add("text-red-600");
+            authDisplaySelisih.classList.remove("text-green-600");
+        } else {
+            authDisplaySelisih.classList.add("text-green-600");
+            authDisplaySelisih.classList.remove("text-red-600");
+        }
+    };
+
+    // Event Listener untuk update selisih saat mengetik
+    if (authNominalRevisi) {
+        authNominalRevisi.addEventListener('input', updateCalculatedSelisih);
+    }
+
     const updateModalState = () => {
         const isTerima = authStatusSelect.value === 'Sudah Terima';
         const hasPenerima = authPenerima.value.trim() !== '';
         const hasTanggal = authTglDiterima.value !== '';
 
-        // Syarat: Harus Sudah Terima, Ada Penerima, Ada Tanggal
+        // 1. LOGIC KUNCI FAKTUR & NOMINAL JIKA SUDAH BAYAR
+        if (initialBayarState === 'Sudah') {
+            authNoFakturBaru.disabled = true;
+            authNoFakturBaru.classList.add('bg-gray-100', 'cursor-not-allowed');
+            authNominalRevisi.disabled = true;
+            authNominalRevisi.classList.add('bg-gray-100', 'cursor-not-allowed');
+        } else {
+            authNoFakturBaru.disabled = false;
+            authNoFakturBaru.classList.remove('bg-gray-100', 'cursor-not-allowed');
+            authNominalRevisi.disabled = false;
+            authNominalRevisi.classList.remove('bg-gray-100', 'cursor-not-allowed');
+        }
+
+        // 2. LOGIC KUNCI TGL & PENERIMA JIKA SUDAH TERIMA (Lengkap)
+        // Jika status awal sudah 'Sudah Terima' dan data lengkap, kunci field tersebut
+        if (initialTerimaState === 'Sudah Terima' && authPenerima.value && authTglDiterima.value) {
+            authTglDiterima.disabled = true;
+            authTglDiterima.classList.add('bg-gray-100');
+            authPenerima.disabled = true;
+            authPenerima.classList.add('bg-gray-100');
+        } else {
+            authTglDiterima.disabled = false;
+            authTglDiterima.classList.remove('bg-gray-100');
+            authPenerima.disabled = false;
+            authPenerima.classList.remove('bg-gray-100');
+        }
+
+        // 3. LOGIC DEPENDENCY UPDATE STATUS LAINNYA
         const isPrerequisitesMet = isTerima && hasPenerima && hasTanggal;
 
         if (isPrerequisitesMet) {
-            // Syarat terpenuhi: Buka akses (kecuali jika sudah permanen)
             alertDependency.classList.add("hidden");
 
-            // Logic Kontra: Jika awalnya "Sudah", kunci di "Sudah". Jika "Belum", boleh edit.
+            // Logic Kontra: Jika awalnya "Sudah", kunci di "Sudah"
             if (initialKontraState === 'Sudah') {
                 authStatusKontra.value = 'Sudah';
-                authStatusKontra.disabled = true; // Permanen
+                authStatusKontra.disabled = true;
             } else {
                 authStatusKontra.disabled = false;
             }
@@ -58,23 +111,21 @@ document.addEventListener("DOMContentLoaded", () => {
             // Logic Bayar: Sama, one-way street.
             if (initialBayarState === 'Sudah') {
                 authStatusBayar.value = 'Sudah';
-                authStatusBayar.disabled = true; // Permanen
+                authStatusBayar.disabled = true;
             } else {
                 authStatusBayar.disabled = false;
             }
 
-            // Pinjam selalu bisa diedit jika syarat terpenuhi
             authStatusPinjam.disabled = false;
 
         } else {
-            // Syarat TIDAK terpenuhi: Kunci semua status lanjutan & Tampilkan alert
             alertDependency.classList.remove("hidden");
-
             authStatusKontra.disabled = true;
             authStatusBayar.disabled = true;
             authStatusPinjam.disabled = true;
         }
     };
+
     [authStatusSelect, authPenerima, authTglDiterima].forEach(el => {
         if (el) {
             el.addEventListener('change', updateModalState);
@@ -82,40 +133,102 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    window.openStatusModal = (faktur, sTerima, sKontra, sBayar, sPinjam, penerima, tgl, nominalRev) => {
+    // Perbarui argumen fungsi openStatusModal
+    window.openStatusModal = (faktur, sTerima, sKontra, sBayar, sPinjam, penerima, tgl, nominalRev, nominalAwal) => {
         formAuth.reset();
 
-        // Set Value Dasar
         document.getElementById("auth_nota_id").value = faktur;
         document.getElementById("auth_no_faktur_baru").value = faktur;
-        document.getElementById("auth_nominal_revisi").value = nominalRev || 0;
 
-        // Set 3 Kolom Utama
+        // Set Nominal
+        authNominalRevisi.value = nominalRev || 0;
+        authNominalAwal.value = nominalAwal || 0;
+
+        // Trigger perhitungan awal
+        updateCalculatedSelisih();
+
         authStatusSelect.value = (!sTerima || sTerima === 'null') ? 'Belum Terima' : sTerima;
         authPenerima.value = (penerima && penerima !== 'null') ? penerima : '';
 
         if (tgl && tgl !== 'null' && tgl !== '-') {
             authTglDiterima.value = tgl;
         } else {
-            // Jika kosong, biarkan kosong agar user mengisi (trigger validation)
-            // Atau set hari ini tapi biarkan user sadar
             authTglDiterima.value = '';
         }
 
-        // Set Status Lanjutan
         authStatusKontra.value = (!sKontra || sKontra === 'null') ? 'Belum' : sKontra;
         authStatusBayar.value = (!sBayar || sBayar === 'null') ? 'Belum' : sBayar;
         authStatusPinjam.value = (!sPinjam || sPinjam === 'null') ? 'Tidak' : sPinjam;
 
-        // Simpan state awal untuk validasi logic (Sudah tidak bisa jadi Belum)
+        // Simpan state awal
         initialKontraState = authStatusKontra.value;
         initialBayarState = authStatusBayar.value;
+        initialTerimaState = authStatusSelect.value;
 
-        // Jalankan pengecekan UI pertama kali
         updateModalState();
-
         modalAuth.classList.remove("hidden");
     };
+
+    // --- FUNGSI HAPUS DATA DENGAN OTORISASI ---
+    window.deleteNota = (noFaktur) => {
+        Swal.fire({
+            title: 'Hapus Data Nota?',
+            html: `
+                <p class="text-sm text-gray-600 mb-4">Anda akan menghapus data nota <b>${noFaktur}</b></p>
+                <input type="text" id="del_user" class="swal2-input text-sm" placeholder="Inisial User (Contoh: ADM)" autocomplete="off">
+                <input type="password" id="del_pass" class="swal2-input text-sm" placeholder="Kode Otorisasi">
+            `,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, Hapus!',
+            cancelButtonText: 'Batal',
+            preConfirm: () => {
+                const user = Swal.getPopup().querySelector('#del_user').value;
+                const pass = Swal.getPopup().querySelector('#del_pass').value;
+                if (!user || !pass) {
+                    Swal.showValidationMessage(`Harap isi User dan Kode Otorisasi`);
+                }
+                return { user: user, pass: pass };
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                processDelete(noFaktur, result.value.user, result.value.pass);
+            }
+        });
+    };
+
+    async function processDelete(noFaktur, user, pass) {
+        const token = getCookie("admin_token"); // Pastikan helper getCookie ada/tersedia
+        try {
+            Swal.fire({ title: 'Menghapus...', didOpen: () => Swal.showLoading() });
+
+            const response = await fetch('/src/api/finance/delete_serah_terima_nota.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify({
+                    no_faktur: noFaktur,
+                    nama_user_cek: user,
+                    kode_otorisasi: pass
+                })
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                Swal.fire("Terhapus!", result.message, "success");
+                loadData(); // Reload tabel
+            } else {
+                Swal.fire("Gagal", result.message, "error");
+            }
+        } catch (error) {
+            console.error(error);
+            Swal.fire("Error", "Terjadi kesalahan sistem", "error");
+        }
+    }
     btnsCloseAuth.forEach(btn => {
         btn.addEventListener("click", () => {
             modalAuth.classList.add("hidden");
@@ -126,24 +239,27 @@ document.addEventListener("DOMContentLoaded", () => {
             e.preventDefault();
             const formData = new FormData(formAuth);
 
-            // PENTING: Karena field disabled tidak terkirim via FormData, 
-            // kita harus append manual jika field tersebut disabled.
+            // Append manual jika disabled agar terkirim ke backend
             if (authStatusKontra.disabled) formData.append("status_kontra", authStatusKontra.value);
             if (authStatusBayar.disabled) formData.append("status_bayar", authStatusBayar.value);
             if (authStatusPinjam.disabled) formData.append("status_pinjam", authStatusPinjam.value);
             if (authStatusSelect.disabled) formData.append("status", authStatusSelect.value);
+            if (authTglDiterima.disabled) formData.append("tgl_diterima", authTglDiterima.value);
+            if (authPenerima.disabled) formData.append("penerima", authPenerima.value);
+
+            // Append Faktur & Nominal jika disabled (karena sudah bayar)
+            if (authNoFakturBaru.disabled) formData.append("no_faktur_baru", authNoFakturBaru.value);
+            if (authNominalRevisi.disabled) formData.append("nominal_revisi", authNominalRevisi.value);
 
             const jsonData = Object.fromEntries(formData.entries());
+            // ... (lanjutkan fetch API update_status_serah_terima.php seperti biasa) ...
             const token = getCookie("admin_token");
-
             try {
+                // ... fetch logic ...
                 Swal.fire({ title: 'Memproses...', didOpen: () => Swal.showLoading() });
                 const response = await fetch('/src/api/finance/update_status_serah_terima.php', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + token
-                    },
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
                     body: JSON.stringify(jsonData)
                 });
                 const result = await response.json();
@@ -155,8 +271,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     Swal.fire("Gagal", result.message, "error");
                 }
             } catch (error) {
-                console.error(error);
-                Swal.fire("Error", "Terjadi kesalahan sistem", "error");
+                console.error(error); Swal.fire("Error", "Terjadi kesalahan sistem", "error");
             }
         });
     }
@@ -481,6 +596,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const sBayar = row.status_bayar || 'Belum';
             const sPinjam = row.status_pinjam || 'Tidak';
             const sTerima = row.status || 'Belum Terima';
+            const nominalAwalRaw = parseFloat(row.nominal_awal) || 0; // Ambil raw value untuk pass ke modal
             const createBadge = (val, type) => {
                 let colorClass = 'bg-gray-100 text-gray-600 border-gray-200';
                 if (type === 'terima' && val === 'Sudah Terima') colorClass = 'bg-green-100 text-green-800 border-green-200';
@@ -512,12 +628,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td class="text-center">${createBadge(sPinjam, 'pinjam')}</td>
                 <td class="text-center text-xs">${row.diberikan || '-'}</td>
                 <td class="text-center text-xs">${row.penerima || '-'}</td>
-                <td class="text-center">
+                <td class="text-center whitespace-nowrap px-2">
                     <button type="button" 
-                        onclick="window.openStatusModal('${row.no_faktur}', '${sTerima}', '${sKontra}', '${sBayar}', '${sPinjam}', '${rawPenerima}', '${rawTglDiterima}', ${nominalRevisiRaw})"
-                        class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-pink-50 text-pink-600 hover:bg-pink-100 hover:text-pink-800 transition-all shadow-sm border border-pink-100" 
-                        title="Edit Semua Status">
+                        onclick="window.openStatusModal('${row.no_faktur}', '${sTerima}', '${sKontra}', '${sBayar}', '${sPinjam}', '${rawPenerima}', '${rawTglDiterima}', ${nominalRevisiRaw}, ${nominalAwalRaw})"
+                        class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-pink-50 text-pink-600 hover:bg-pink-100 hover:text-pink-800 transition-all shadow-sm border border-pink-100 mr-1" 
+                        title="Edit Status">
                         <i class="fas fa-edit"></i>
+                    </button>
+                    
+                    <button type="button" 
+                        onclick="window.deleteNota('${row.no_faktur}')"
+                        class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-800 transition-all shadow-sm border border-red-100" 
+                        title="Hapus Data">
+                        <i class="fas fa-trash-alt"></i>
                     </button>
                 </td>
             </tr>

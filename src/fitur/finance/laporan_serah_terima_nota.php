@@ -285,6 +285,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                         </div>
 
                         <input type="hidden" id="auth_nota_id" name="no_faktur_lama">
+                        <input type="hidden" id="auth_nominal_awal">
 
                         <div id="alert-dependency"
                             class="hidden mb-4 p-3 bg-yellow-50 border border-yellow-200 text-yellow-700 rounded-lg text-xs flex items-start gap-2">
@@ -295,16 +296,25 @@ require_once __DIR__ . '/../../component/menu_handler.php';
 
                         <div class="p-3 bg-pink-50 rounded-lg border border-pink-100 mb-4">
                             <h4 class="text-xs font-bold text-pink-700 mb-2 uppercase">Edit Data Nota</h4>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
+                            <div class="grid grid-cols-2 gap-4 mb-2">
+                                <div class="col-span-2">
                                     <label class="block text-xs font-semibold text-gray-700 mb-1">No Faktur</label>
                                     <input type="text" name="no_faktur_baru" id="auth_no_faktur_baru"
                                         class="input-modern w-full font-mono text-sm" placeholder="No Faktur">
                                 </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-xs font-semibold text-gray-700 mb-1">Nominal Revisi</label>
                                     <input type="number" step="0.01" name="nominal_revisi" id="auth_nominal_revisi"
                                         class="input-modern w-full font-mono text-sm text-right" placeholder="0">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">Estimasi
+                                        Selisih</label>
+                                    <input type="text" id="auth_display_selisih" readonly
+                                        class="input-modern w-full font-mono text-sm text-right bg-gray-100 text-gray-500 cursor-not-allowed"
+                                        placeholder="0">
                                 </div>
                             </div>
                         </div>

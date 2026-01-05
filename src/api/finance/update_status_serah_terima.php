@@ -63,6 +63,19 @@ try {
     if (!$old_data) {
         throw new Exception("Data nota lama tidak ditemukan di database.");
     }
+    if ($old_data['status_bayar'] === 'Sudah') {
+        if ($no_faktur_baru !== $no_faktur_lama) {
+            throw new Exception("Gagal: No Faktur tidak dapat diubah karena status sudah Dibayar.");
+        }
+    }
+    if ($old_data['status'] === 'Sudah Terima' && !empty($old_data['tgl_diterima']) && !empty($old_data['penerima'])) {
+        if ($input_tgl_diterima !== $old_data['tgl_diterima']) {
+            $input_tgl_diterima = $old_data['tgl_diterima'];
+        }
+        if ($penerima !== $old_data['penerima']) {
+            $penerima = $old_data['penerima'];
+        }
+    }
     $is_setting_kontra = ($new_status_kontra === 'Sudah');
     $is_setting_bayar = ($new_status_bayar === 'Sudah');
     $is_setting_pinjam = ($new_status_pinjam === 'Pinjam');
