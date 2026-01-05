@@ -4,6 +4,7 @@ ini_set('display_errors', 0);
 header('Content-Type: application/json');
 require_once __DIR__ . '/../../../aa_kon_sett.php';
 require_once __DIR__ . '/../../auth/middleware_login.php';
+require_once __DIR__ . '/../../helpers/surat_terima_nota_helper.php';
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         throw new Exception('Method Not Allowed');
@@ -46,6 +47,14 @@ try {
         throw new Exception("Password Otorisasi Salah!");
     }
     $stmt_auth->close();
+    $stmtOld = $conn->prepare("SELECT * FROM serah_terima_nota WHERE no_faktur = ?");
+    $stmtOld->bind_param("s", $no_faktur);
+    $stmtOld->execute();
+    $old_data = $stmtOld->get_result()->fetch_assoc();
+    $stmtOld->close();
+    if (!$old_data) {
+        throw new Exception("Data tidak ditemukan.");
+    }
     $sql = "UPDATE serah_terima_nota SET 
             visibilitas = 'Nonaktif', 
             dihapus_pada = NOW(), 
@@ -56,9 +65,12 @@ try {
     if (!$stmt_del->execute()) {
         throw new Exception("Database Error: " . $stmt_del->error);
     }
-    if ($stmt_del->affected_rows === 0) {
-        throw new Exception("Data tidak ditemukan atau sudah dihapus.");
-    }
+    $log_new_data = [
+        'dihapus_pada' => date('Y-m-d H:i:s'),
+        'dihapus_oleh_id' => $user_login_id,
+        'diotorisasi_oleh' => $nama_user_cek
+    ];
+    log_nota($conn, $user_login_id, 'SOFT_DELETE', $no_faktur, $old_data, $log_new_data);
     echo json_encode([
         'success' => true,
         'message' => "Data nota $no_faktur berhasil dihapus."

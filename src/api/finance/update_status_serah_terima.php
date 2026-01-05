@@ -4,6 +4,7 @@ ini_set('display_errors', 0);
 header('Content-Type: application/json');
 require_once __DIR__ . '/../../../aa_kon_sett.php';
 require_once __DIR__ . '/../../auth/middleware_login.php';
+require_once __DIR__ . '/../../helpers/surat_terima_nota_helper.php';
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         throw new Exception('Method Not Allowed');
@@ -54,7 +55,7 @@ try {
         throw new Exception("Password Otorisasi Salah!");
     }
     $stmt_auth->close();
-    $stmt_old = $conn->prepare("SELECT status, status_kontra, status_bayar, tgl_diterima, penerima, nominal_awal, nominal_revisi FROM serah_terima_nota WHERE no_faktur = ?");
+    $stmt_old = $conn->prepare("SELECT * FROM serah_terima_nota WHERE no_faktur = ?");
     $stmt_old->bind_param("s", $no_faktur_lama);
     $stmt_old->execute();
     $res_old = $stmt_old->get_result();
@@ -146,6 +147,19 @@ try {
     if (!$stmt_upd->execute()) {
         throw new Exception("Database Error: " . $stmt_upd->error);
     }
+    $log_new_data = [
+        'no_faktur_baru' => $no_faktur_baru,
+        'nominal_revisi' => $nominal_revisi_val,
+        'selisih' => $selisih_baru,
+        'status' => $new_status,
+        'status_kontra' => $new_status_kontra,
+        'status_bayar' => $new_status_bayar,
+        'status_pinjam' => $new_status_pinjam,
+        'tgl_diterima' => $tgl_db,
+        'penerima' => $penerima,
+        'diotorisasi_oleh' => $nama_user_cek
+    ];
+    log_nota($conn, $user_login, 'UPDATE_STATUS', $no_faktur_lama, $old_data, $log_new_data);
     echo json_encode([
         'success' => true,
         'message' => "Data berhasil diperbarui."

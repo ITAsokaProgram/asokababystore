@@ -4,7 +4,7 @@ include '../../../aa_kon_sett.php';
 require_once __DIR__ . '/../../component/menu_handler.php';
 // $menuHandler = new MenuHandler('finance_serah_terima_nota');
 // if (!$menuHandler->initialize()) {
-//     exit();
+//      exit();
 // }
 ?>
 <!DOCTYPE html>
@@ -58,14 +58,17 @@ require_once __DIR__ . '/../../component/menu_handler.php';
             }
         }
 
-        /* Adjusted for fields */
-
         .form-label {
             font-size: 0.75rem;
             font-weight: 600;
             color: #374151;
             margin-bottom: 0.25rem;
             display: block;
+        }
+
+        .form-label::after {
+            content: " *";
+            color: #db2777;
         }
 
         .input-compact {
@@ -139,23 +142,17 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                 </div>
 
                 <div class="input-row-container mb-6 relative">
-                    <div id="edit-mode-indicator"
-                        class="hidden absolute -top-3 left-4 bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-bold border border-amber-200 shadow-sm">
-                        <i class="fas fa-edit mr-1"></i> Mode Edit
-                    </div>
-
                     <form id="single-form" autocomplete="off">
-
                         <div class="form-grid">
                             <div>
                                 <label class="form-label">Tgl Invoice</label>
-                                <input type="date" id="inp_tgl_nota" name="tgl_nota" class="input-compact">
+                                <input type="date" id="inp_tgl_nota" name="tgl_nota" class="input-compact" required>
                             </div>
 
                             <div class="relative">
                                 <label class="form-label">Nama Supplier</label>
                                 <input type="text" id="inp_nama_supplier" name="nama_supplier" class="input-compact"
-                                    list="supplier_list" placeholder="Cari Supplier...">
+                                    list="supplier_list" placeholder="Cari Supplier..." required>
                                 <datalist id="supplier_list"></datalist>
                                 <input type="hidden" id="inp_kode_supplier" name="kode_supplier">
                             </div>
@@ -163,7 +160,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                             <div>
                                 <label class="form-label">No. Faktur</label>
                                 <input type="text" id="inp_no_faktur_format" name="no_faktur_format"
-                                    class="input-compact" placeholder="Contoh: 010.001-24.12345678">
+                                    class="input-compact" placeholder="Contoh: 010.001-24.12345678" required>
 
                                 <input type="hidden" id="inp_no_faktur" name="no_faktur">
                             </div>
@@ -171,7 +168,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                             <div>
                                 <label class="form-label text-right">Nominal Awal</label>
                                 <input type="text" id="inp_nominal_awal" name="nominal_awal"
-                                    class="input-compact text-right font-mono" value="0">
+                                    class="input-compact text-right font-mono" value="0" required>
                             </div>
 
                             <div id="container-nominal-revisi" class="hidden">
@@ -189,20 +186,13 @@ require_once __DIR__ . '/../../component/menu_handler.php';
 
                             <div>
                                 <label class="form-label">Tgl Diserahkan</label>
-                                <input type="date" id="inp_tgl_diserahkan" name="tgl_diserahkan" class="input-compact">
+                                <input type="date" id="inp_tgl_diserahkan" name="tgl_diserahkan" class="input-compact"
+                                    required>
                             </div>
 
                             <div>
                                 <label class="form-label">Diberikan Oleh</label>
-                                <input type="text" id="inp_diberikan" name="diberikan" class="input-compact">
-                            </div>
-
-                            <div class="flex items-end h-full pb-1 justify-end col-span-1 md:col-span-2 lg:col-span-2">
-                                <button type="button" id="btn-cancel-edit"
-                                    class="hidden text-gray-500 hover:text-red-500 transition-colors flex items-center gap-2 px-3 py-2 border border-gray-300 rounded hover:bg-gray-100"
-                                    title="Batal Edit">
-                                    <i class="fas fa-times-circle"></i> Batal Edit
-                                </button>
+                                <input type="text" id="inp_diberikan" name="diberikan" class="input-compact" required>
                             </div>
                         </div>
                     </form>
@@ -249,19 +239,9 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                     <th class="text-center whitespace-nowrap">STATUS</th>
                                     <th class="whitespace-nowrap">DIBERIKAN</th>
                                     <th class="whitespace-nowrap">PENERIMA</th>
-
-                                    <th class="w-20 text-center whitespace-nowrap">AKSI</th>
                                 </tr>
                             </thead>
                             <tbody id="table-body"></tbody>
-                            <tbody id="loading-sentinel">
-                                <tr class="hidden" id="loader-row">
-                                    <td colspan="10" class="text-center p-4">
-                                        <i class="fas fa-circle-notch fa-spin text-pink-500 text-xl"></i>
-                                        <span class="ml-2 text-gray-500 text-sm">Memuat data lainnya...</span>
-                                    </td>
-                                </tr>
-                            </tbody>
                         </table>
                     </div>
                 </div>
