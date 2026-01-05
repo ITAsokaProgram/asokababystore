@@ -51,7 +51,7 @@ $isTransaksiOpen = $isActive('/src/fitur/transaction/');
 $isKoreksiOpen = $isActive('/src/fitur/koreksi_stok/') || $isActive('/src/fitur/koreksi_so/');
 $isLogsOpen = $isLogBackupOpen || $isLogPasswordOpen || $isSecurityLogOpen;
 
-$isLaporanOpen = $isPenjualanOpen || $isPelangganOpen || $isReceiptOpen || $isReturnOpen || $isMutasiOpen || $isTransaksiOpen || $isKoreksiOpen || $isActive('/src/fitur/stok/') ;
+$isLaporanOpen = $isPenjualanOpen || $isPelangganOpen || $isReceiptOpen || $isReturnOpen || $isMutasiOpen || $isTransaksiOpen || $isKoreksiOpen || $isActive('/src/fitur/stok/');
 
 $isPembelianOpen = $isActive('/src/fitur/coretax/input_pembelian') || $isActive('/src/fitur/coretax/laporan_pembelian');
 $isPengeluaranOpen = $isActive('/src/fitur/coretax/data_coretax_keluaran.php') || $isActive('/src/fitur/coretax/import_faktur_keluaran.php'); // Tambahan Baru
@@ -770,7 +770,7 @@ $isFinanceOpen = $isBukuBesarOpen || $isSerahTerimaOpen; // Update logika induk
             </div>
         </div>
 
-        <?php if ($isSuperAdmin): // HANYA TAMPIL JIKA SUPERADMIN ?>
+        <?php if ($isSuperAdmin): ?>
             <div x-data="{ open: false, nestedOpenAccount: false }" class="relative ">
                 <button @click="open = !open" id="account" data-title="Akun"
                     class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-indigo-100 hover:to-indigo-200 hover:text-indigo-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-indigo-300">
