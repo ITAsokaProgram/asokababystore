@@ -568,7 +568,20 @@ document.addEventListener("DOMContentLoaded", () => {
             };
             htmlRows += `
             <tr class="hover:bg-gray-50 border-b transition-colors">
-                <td class="text-center font-medium text-gray-500">${item_counter}</td>
+            <td class="text-center whitespace-nowrap px-2">
+                    <button type="button" 
+                        onclick="window.openStatusModal('${row.no_faktur}', '${sTerima}', '${sKontra}', '${sBayar}', '${sPinjam}', '${rawPenerima}', '${rawTglDiterima}', ${nominalRevisiRaw}, ${nominalAwalRaw})"
+                        class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-pink-50 text-pink-600 hover:bg-pink-100 hover:text-pink-800 transition-all shadow-sm border border-pink-100 mr-1" 
+                        title="Edit Status">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button type="button" 
+                        onclick="window.deleteNota('${row.no_faktur}')"
+                        class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-800 transition-all shadow-sm border border-red-100" 
+                        title="Hapus Data">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
                 <td class="whitespace-nowrap text-xs">${tglNota}</td>
                 <td class="font-semibold text-gray-700 text-sm">
                     ${row.nama_supplier || '-'}
@@ -588,20 +601,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td class="text-center">${createBadge(sPinjam, 'pinjam')}</td>
                 <td class="text-center text-xs">${row.diberikan || '-'}</td>
                 <td class="text-center text-xs">${row.penerima || '-'}</td>
-                <td class="text-center whitespace-nowrap px-2">
-                    <button type="button" 
-                        onclick="window.openStatusModal('${row.no_faktur}', '${sTerima}', '${sKontra}', '${sBayar}', '${sPinjam}', '${rawPenerima}', '${rawTglDiterima}', ${nominalRevisiRaw}, ${nominalAwalRaw})"
-                        class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-pink-50 text-pink-600 hover:bg-pink-100 hover:text-pink-800 transition-all shadow-sm border border-pink-100 mr-1" 
-                        title="Edit Status">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button type="button" 
-                        onclick="window.deleteNota('${row.no_faktur}')"
-                        class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-800 transition-all shadow-sm border border-red-100" 
-                        title="Hapus Data">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                </td>
+                
             </tr>
             `;
             item_counter++;

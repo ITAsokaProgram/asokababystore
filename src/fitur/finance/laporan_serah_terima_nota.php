@@ -262,7 +262,8 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                         <table class="table-modern" id="receipt-table">
                             <thead>
                                 <tr>
-                                    <th class="whitespace-nowrap">No</th>
+                                    <th class="text-center whitespace-nowrap">Aksi</th>
+
                                     <th class="whitespace-nowrap">Tgl Invoice</th>
                                     <th class="whitespace-nowrap">Nama Supplier</th>
                                     <th class="whitespace-nowrap">No Faktur</th>
@@ -281,7 +282,6 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                     <th class="whitespace-nowrap">Diberikan</th>
                                     <th class="whitespace-nowrap">Penerima</th>
 
-                                    <th class="text-center whitespace-nowrap">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="receipt-table-body">
