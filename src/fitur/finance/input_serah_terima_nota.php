@@ -161,27 +161,13 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                 <label class="form-label">No. Faktur</label>
                                 <input type="text" id="inp_no_faktur_format" name="no_faktur_format"
                                     class="input-compact" placeholder="Contoh: 010.001-24.12345678" required>
-
                                 <input type="hidden" id="inp_no_faktur" name="no_faktur">
                             </div>
 
                             <div>
-                                <label class="form-label text-right">Nominal Awal</label>
-                                <input type="text" id="inp_nominal_awal" name="nominal_awal"
+                                <label class="form-label text-right">Nominal</label>
+                                <input type="text" id="inp_nominal" name="nominal"
                                     class="input-compact text-right font-mono" value="0" required>
-                            </div>
-
-                            <div id="container-nominal-revisi" class="hidden">
-                                <label class="form-label text-right">Nominal Revisi</label>
-                                <input type="text" id="inp_nominal_revisi" name="nominal_revisi"
-                                    class="input-compact text-right font-mono" value="0">
-                            </div>
-
-                            <div>
-                                <label class="form-label text-right">Selisih Pembayaran</label>
-                                <input type="text" id="inp_selisih" name="selisih_pembayaran"
-                                    class="input-compact text-right font-bold text-pink-600 input-readonly font-mono"
-                                    readonly value="0">
                             </div>
 
                             <div>
@@ -231,9 +217,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                     <th class="whitespace-nowrap">TGL INVOICE</th>
                                     <th class="whitespace-nowrap">NAMA SUPPLIER</th>
                                     <th class="whitespace-nowrap">NO FAKTUR</th>
-                                    <th class="text-right whitespace-nowrap">NOMINAL AWAL</th>
-                                    <th class="text-right whitespace-nowrap">NOMINAL REVISI</th>
-                                    <th class="text-right whitespace-nowrap">SELISIH PEMBAYARAN</th>
+                                    <th class="text-right whitespace-nowrap">NOMINAL</th>
                                     <th class="whitespace-nowrap">TGL DISERAHKAN</th>
                                     <th class="whitespace-nowrap">TGL DITERIMA</th>
                                     <th class="text-center whitespace-nowrap">STATUS</th>

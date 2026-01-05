@@ -93,7 +93,7 @@ try {
             OR no_faktur LIKE ? 
             OR no_faktur_format LIKE ? 
             OR kode_supplier LIKE ? 
-            OR CAST(nominal_awal AS CHAR) LIKE ?
+            OR CAST(nominal AS CHAR) LIKE ? 
         )";
 
         $bind_types .= 'sssss';

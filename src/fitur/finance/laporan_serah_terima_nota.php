@@ -263,22 +263,16 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                             <thead>
                                 <tr>
                                     <th class="text-center whitespace-nowrap">Aksi</th>
-
                                     <th class="whitespace-nowrap">Tgl Invoice</th>
                                     <th class="whitespace-nowrap">Nama Supplier</th>
                                     <th class="whitespace-nowrap">No Faktur</th>
-                                    <th class="text-right whitespace-nowrap">Nominal Awal</th>
-                                    <th class="text-right whitespace-nowrap">Nominal Revisi</th>
-                                    <th class="text-right whitespace-nowrap">Selisih</th>
+                                    <th class="text-right whitespace-nowrap">Nominal</th>
                                     <th class="whitespace-nowrap">Tgl Diserahkan</th>
                                     <th class="whitespace-nowrap">Tgl Diterima</th>
-
                                     <th class="text-center whitespace-nowrap">Status Terima</th>
-
                                     <th class="text-center whitespace-nowrap">Kontra</th>
                                     <th class="text-center whitespace-nowrap">Bayar</th>
                                     <th class="text-center whitespace-nowrap">Pinjam</th>
-
                                     <th class="whitespace-nowrap">Diberikan</th>
                                     <th class="whitespace-nowrap">Penerima</th>
 
@@ -336,8 +330,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                         <div id="alert-locked-paid" style="max-width: 412px; width: 100%"
                             class="hidden mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-xs flex items-start gap-2">
                             <i class="fas fa-lock mt-0.5"></i>
-                            <span> Tidak bisa edit Nomor Faktur & Nominal Revisi karena Status
-                                sudah dibayar</span>
+                            <span> Tidak bisa edit Nomor Faktur & Nominal karena Status sudah dibayar</span>
                         </div>
 
                         <div id="alert-locked-kontra" style="max-width: 412px; width: 100%"
@@ -363,8 +356,8 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                             </div>
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-xs font-semibold text-gray-700 mb-1">Nominal Revisi</label>
-                                    <input type="number" step="0.01" name="nominal_revisi" id="auth_nominal_revisi"
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">Nominal</label>
+                                    <input type="number" step="0.01" name="nominal" id="auth_nominal"
                                         class="input-modern w-full font-mono text-sm text-right" placeholder="0">
                                 </div>
                                 <div>

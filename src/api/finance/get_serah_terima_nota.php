@@ -47,9 +47,7 @@ try {
     $data = [];
     while ($row = $result->fetch_assoc()) {
         $row['id'] = (int) $row['id'];
-        $row['nominal_awal'] = (float) $row['nominal_awal'];
-        $row['nominal_revisi'] = (float) $row['nominal_revisi'];
-        $row['selisih_pembayaran'] = (float) $row['selisih_pembayaran'];
+        $row['nominal'] = (float) $row['nominal'];
         $data[] = $row;
     }
     echo json_encode([

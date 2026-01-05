@@ -23,7 +23,7 @@ try {
     $user_login = $verif->id ?? $verif->kode ?? null;
     $no_faktur_lama = $input['no_faktur_lama'] ?? null;
     $no_faktur_baru = $input['no_faktur_baru'] ?? null;
-    $nominal_revisi = $input['nominal_revisi'] ?? 0;
+    $nominal_input = isset($input['nominal']) ? $input['nominal'] : null;
     $new_status = $input['status'] ?? 'Belum Terima';
     $input_tgl_diterima = $input['tgl_diterima'] ?? null;
     $penerima = trim($input['penerima'] ?? '');
@@ -64,12 +64,17 @@ try {
     if (!$old_data) {
         throw new Exception("Data nota lama tidak ditemukan di database.");
     }
+    if ($nominal_input !== null) {
+        $nominal = (float) $nominal_input;
+    } else {
+        $nominal = (float) $old_data['nominal'];
+    }
     if ($old_data['status_bayar'] === 'Sudah') {
         if ($no_faktur_baru !== $no_faktur_lama) {
             throw new Exception("Gagal: No Faktur tidak dapat diubah karena status sudah Dibayar.");
         }
-        if (abs((float) $nominal_revisi - (float) $old_data['nominal_revisi']) > 1.0) {
-            throw new Exception("Gagal: Nominal Revisi tidak dapat diubah karena status sudah Dibayar.");
+        if (abs((float) $nominal - (float) $old_data['nominal']) > 1.0) {
+            throw new Exception("Gagal: Nominal tidak dapat diubah karena status sudah Dibayar.");
         }
     }
     if ($old_data['status'] === 'Sudah Terima' && !empty($old_data['tgl_diterima']) && !empty($old_data['penerima'])) {
@@ -80,9 +85,6 @@ try {
             $penerima = $old_data['penerima'];
         }
     }
-    $nominal_awal_db = (float) $old_data['nominal_awal'];
-    $nominal_revisi_val = (float) $nominal_revisi;
-    $selisih_baru = $nominal_revisi_val - $nominal_awal_db;
     $is_setting_kontra = ($new_status_kontra === 'Sudah');
     $is_setting_bayar = ($new_status_bayar === 'Sudah');
     $is_setting_pinjam = ($new_status_pinjam === 'Pinjam');
@@ -118,8 +120,7 @@ try {
     }
     $sql = "UPDATE serah_terima_nota SET 
                 no_faktur = ?, 
-                nominal_revisi = ?,
-                selisih_pembayaran = ?,
+                nominal = ?, 
                 status = ?, 
                 status_kontra = ?, 
                 status_bayar = ?, 
@@ -131,10 +132,9 @@ try {
             WHERE no_faktur = ?";
     $stmt_upd = $conn->prepare($sql);
     $stmt_upd->bind_param(
-        "sddssssssss",
+        "sdssssssss",
         $no_faktur_baru,
-        $nominal_revisi_val,
-        $selisih_baru,
+        $nominal,
         $new_status,
         $new_status_kontra,
         $new_status_bayar,
@@ -149,15 +149,13 @@ try {
     }
     $log_new_data = [
         'no_faktur' => $no_faktur_baru,
-        'nominal_revisi' => $nominal_revisi_val,
-        'selisih_pembayaran' => $selisih_baru,
+        'nominal' => $nominal,
         'status' => $new_status,
         'status_kontra' => $new_status_kontra,
         'status_bayar' => $new_status_bayar,
         'status_pinjam' => $new_status_pinjam,
         'tgl_diterima' => $tgl_db,
         'penerima' => $penerima,
-
         'diotorisasi_oleh' => $nama_user_cek
     ];
     log_nota($conn, $user_login, 'UPDATE_STATUS', $no_faktur_lama, $old_data, $log_new_data);
