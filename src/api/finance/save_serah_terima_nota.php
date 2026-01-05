@@ -1,6 +1,7 @@
 <?php
 session_start();
 ini_set('display_errors', 0);
+mysqli_report(MYSQLI_REPORT_OFF);
 header('Content-Type: application/json');
 require_once __DIR__ . '/../../../aa_kon_sett.php';
 require_once __DIR__ . '/../../auth/middleware_login.php';
@@ -45,14 +46,13 @@ try {
     $stmtCheck->bind_param($typesCheck, ...$paramsCheck);
     $stmtCheck->execute();
     if ($stmtCheck->get_result()->num_rows > 0) {
-        throw new Exception("Nomor Faktur '$no_faktur_format' sudah terdaftar.");
+        throw new Exception("Nomor Faktur '$no_faktur_format' sudah ada.");
     }
     if (!empty($original_no_faktur)) {
         $stmtOld = $conn->prepare("SELECT * FROM serah_terima_nota WHERE no_faktur = ?");
         $stmtOld->bind_param("s", $original_no_faktur);
         $stmtOld->execute();
         $old_data = $stmtOld->get_result()->fetch_assoc();
-        $stmtOld->close();
         $query = "UPDATE serah_terima_nota SET 
             tgl_nota=?, nama_supplier=?, kode_supplier=?, 
             no_faktur=?, no_faktur_format=?, 
@@ -77,8 +77,9 @@ try {
             $user_login,
             $original_no_faktur
         );
-        if (!$stmt->execute())
-            throw new Exception("Gagal update: " . $stmt->error);
+        if (!$stmt->execute()) {
+            throw new Exception($stmt->error);
+        }
         log_nota($conn, $user_login, 'UPDATE', $no_faktur, $old_data, $input);
         $message = "Data berhasil diperbarui.";
     } else {
@@ -105,15 +106,20 @@ try {
             $visibilitas,
             $user_login
         );
-        if (!$stmt->execute())
-            throw new Exception("Gagal simpan: " . $stmt->error);
+        if (!$stmt->execute()) {
+            throw new Exception($stmt->error);
+        }
         log_nota($conn, $user_login, 'INSERT', $no_faktur, null, $input);
         $message = "Data berhasil disimpan.";
     }
     echo json_encode(['success' => true, 'message' => $message]);
 } catch (Exception $e) {
     http_response_code(200);
-    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    $msg = $e->getMessage();
+    if (strpos($msg, 'Duplicate entry') !== false) {
+        $msg = "Nomor Faktur sudah terdaftar di database (Mungkin di data Arsip/Hidden). Mohon gunakan nomor lain.";
+    }
+    echo json_encode(['success' => false, 'message' => $msg]);
 } finally {
     if (isset($conn))
         $conn->close();

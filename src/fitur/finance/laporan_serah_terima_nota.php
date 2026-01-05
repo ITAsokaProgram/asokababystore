@@ -85,6 +85,23 @@ require_once __DIR__ . '/../../component/menu_handler.php';
             color: #6b7280 !important;
             cursor: not-allowed !important;
         }
+
+        .table-container {
+            max-height: 70vh;
+            overflow-y: auto;
+            position: relative;
+            border-radius: 0.5rem;
+        }
+
+        .table-modern thead th {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            background-color: #fdf2f8;
+
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            border-bottom: 2px solid #fbcfe8;
+        }
     </style>
 </head>
 

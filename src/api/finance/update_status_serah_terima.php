@@ -148,15 +148,16 @@ try {
         throw new Exception("Database Error: " . $stmt_upd->error);
     }
     $log_new_data = [
-        'no_faktur_baru' => $no_faktur_baru,
+        'no_faktur' => $no_faktur_baru, // Ubah key ini
         'nominal_revisi' => $nominal_revisi_val,
-        'selisih' => $selisih_baru,
+        'selisih_pembayaran' => $selisih_baru, // Pastikan nama kolom DB benar (selisih_pembayaran atau selisih?) sesuaikan dengan DB
         'status' => $new_status,
         'status_kontra' => $new_status_kontra,
         'status_bayar' => $new_status_bayar,
         'status_pinjam' => $new_status_pinjam,
         'tgl_diterima' => $tgl_db,
         'penerima' => $penerima,
+        // Data tambahan untuk info user (tidak ada di DB, tidak masalah)
         'diotorisasi_oleh' => $nama_user_cek
     ];
     log_nota($conn, $user_login, 'UPDATE_STATUS', $no_faktur_lama, $old_data, $log_new_data);
