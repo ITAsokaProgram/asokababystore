@@ -25,34 +25,95 @@ document.addEventListener("DOMContentLoaded", () => {
     const authStatusKontra = document.getElementById("auth_status_kontra");
     const authStatusBayar = document.getElementById("auth_status_bayar");
     const authStatusPinjam = document.getElementById("auth_status_pinjam");
+    const authPenerima = document.getElementById("auth_penerima");
+    const authTglDiterima = document.getElementById("auth_tgl_diterima");
+    const alertDependency = document.getElementById("alert-dependency");
+
+    let initialKontraState = 'Belum';
+    let initialBayarState = 'Belum';
+
     if (exportExcelButton) {
         exportExcelButton.addEventListener("click", handleExportExcel);
     }
+    const updateModalState = () => {
+        const isTerima = authStatusSelect.value === 'Sudah Terima';
+        const hasPenerima = authPenerima.value.trim() !== '';
+        const hasTanggal = authTglDiterima.value !== '';
+
+        // Syarat: Harus Sudah Terima, Ada Penerima, Ada Tanggal
+        const isPrerequisitesMet = isTerima && hasPenerima && hasTanggal;
+
+        if (isPrerequisitesMet) {
+            // Syarat terpenuhi: Buka akses (kecuali jika sudah permanen)
+            alertDependency.classList.add("hidden");
+
+            // Logic Kontra: Jika awalnya "Sudah", kunci di "Sudah". Jika "Belum", boleh edit.
+            if (initialKontraState === 'Sudah') {
+                authStatusKontra.value = 'Sudah';
+                authStatusKontra.disabled = true; // Permanen
+            } else {
+                authStatusKontra.disabled = false;
+            }
+
+            // Logic Bayar: Sama, one-way street.
+            if (initialBayarState === 'Sudah') {
+                authStatusBayar.value = 'Sudah';
+                authStatusBayar.disabled = true; // Permanen
+            } else {
+                authStatusBayar.disabled = false;
+            }
+
+            // Pinjam selalu bisa diedit jika syarat terpenuhi
+            authStatusPinjam.disabled = false;
+
+        } else {
+            // Syarat TIDAK terpenuhi: Kunci semua status lanjutan & Tampilkan alert
+            alertDependency.classList.remove("hidden");
+
+            authStatusKontra.disabled = true;
+            authStatusBayar.disabled = true;
+            authStatusPinjam.disabled = true;
+        }
+    };
+    [authStatusSelect, authPenerima, authTglDiterima].forEach(el => {
+        if (el) {
+            el.addEventListener('change', updateModalState);
+            el.addEventListener('input', updateModalState);
+        }
+    });
+
     window.openStatusModal = (faktur, sTerima, sKontra, sBayar, sPinjam, penerima, tgl, nominalRev) => {
         formAuth.reset();
+
+        // Set Value Dasar
         document.getElementById("auth_nota_id").value = faktur;
         document.getElementById("auth_no_faktur_baru").value = faktur;
         document.getElementById("auth_nominal_revisi").value = nominalRev || 0;
-        document.getElementById('auth_penerima').value = penerima || '';
+
+        // Set 3 Kolom Utama
         authStatusSelect.value = (!sTerima || sTerima === 'null') ? 'Belum Terima' : sTerima;
+        authPenerima.value = (penerima && penerima !== 'null') ? penerima : '';
+
+        if (tgl && tgl !== 'null' && tgl !== '-') {
+            authTglDiterima.value = tgl;
+        } else {
+            // Jika kosong, biarkan kosong agar user mengisi (trigger validation)
+            // Atau set hari ini tapi biarkan user sadar
+            authTglDiterima.value = '';
+        }
+
+        // Set Status Lanjutan
         authStatusKontra.value = (!sKontra || sKontra === 'null') ? 'Belum' : sKontra;
         authStatusBayar.value = (!sBayar || sBayar === 'null') ? 'Belum' : sBayar;
         authStatusPinjam.value = (!sPinjam || sPinjam === 'null') ? 'Tidak' : sPinjam;
-        const isSudahTerima = authStatusSelect.value === 'Sudah Terima';
-        const isSudahKontra = authStatusKontra.value === 'Sudah';
-        const isSudahBayar = authStatusBayar.value === 'Sudah';
-        authStatusSelect.disabled = isSudahTerima;
-        authStatusKontra.disabled = !isSudahTerima || isSudahKontra;
-        authStatusBayar.disabled = !isSudahTerima || isSudahBayar;
-        authStatusPinjam.disabled = !isSudahTerima;
-        document.getElementById("auth_penerima").disabled = isSudahTerima;
-        document.getElementById("auth_tgl_diterima").disabled = isSudahTerima;
-        const inputTgl = document.getElementById('auth_tgl_diterima');
-        if (tgl && tgl !== 'null' && tgl !== '-') {
-            inputTgl.value = tgl;
-        } else {
-            inputTgl.valueAsDate = new Date();
-        }
+
+        // Simpan state awal untuk validasi logic (Sudah tidak bisa jadi Belum)
+        initialKontraState = authStatusKontra.value;
+        initialBayarState = authStatusBayar.value;
+
+        // Jalankan pengecekan UI pertama kali
+        updateModalState();
+
         modalAuth.classList.remove("hidden");
     };
     btnsCloseAuth.forEach(btn => {
@@ -64,19 +125,17 @@ document.addEventListener("DOMContentLoaded", () => {
         formAuth.addEventListener("submit", async (e) => {
             e.preventDefault();
             const formData = new FormData(formAuth);
-            if (authStatusSelect.disabled) {
-                formData.append("status", authStatusSelect.value);
-            }
-            const inputPenerima = document.getElementById("auth_penerima");
-            if (inputPenerima && inputPenerima.disabled) {
-                formData.append("penerima", inputPenerima.value);
-            }
-            const inputTgl = document.getElementById("auth_tgl_diterima");
-            if (inputTgl && inputTgl.disabled) {
-                formData.append("tgl_diterima", inputTgl.value);
-            }
+
+            // PENTING: Karena field disabled tidak terkirim via FormData, 
+            // kita harus append manual jika field tersebut disabled.
+            if (authStatusKontra.disabled) formData.append("status_kontra", authStatusKontra.value);
+            if (authStatusBayar.disabled) formData.append("status_bayar", authStatusBayar.value);
+            if (authStatusPinjam.disabled) formData.append("status_pinjam", authStatusPinjam.value);
+            if (authStatusSelect.disabled) formData.append("status", authStatusSelect.value);
+
             const jsonData = Object.fromEntries(formData.entries());
             const token = getCookie("admin_token");
+
             try {
                 Swal.fire({ title: 'Memproses...', didOpen: () => Swal.showLoading() });
                 const response = await fetch('/src/api/finance/update_status_serah_terima.php', {

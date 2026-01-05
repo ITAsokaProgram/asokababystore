@@ -16,24 +16,27 @@ try {
         throw new Exception('Token tidak ditemukan');
     }
     $verif = verify_token($matches[1]);
-    if (!$verif)
-        throw new Exception('Token tidak valid');
+    if (!$verif) {
+        throw new Exception('Token tidak valid atau kadaluwarsa');
+    }
     $user_login = $verif->id ?? $verif->kode ?? null;
     $no_faktur_lama = $input['no_faktur_lama'] ?? null;
     $no_faktur_baru = $input['no_faktur_baru'] ?? null;
     $nominal_revisi = $input['nominal_revisi'] ?? 0;
-    $new_status = $input['status'] ?? null;
+    $new_status = $input['status'] ?? 'Belum Terima';
+    $input_tgl_diterima = $input['tgl_diterima'] ?? null;
+    $penerima = trim($input['penerima'] ?? '');
     $new_status_kontra = $input['status_kontra'] ?? 'Belum';
     $new_status_bayar = $input['status_bayar'] ?? 'Belum';
     $new_status_pinjam = $input['status_pinjam'] ?? 'Tidak';
     $nama_user_cek = trim($input['nama_user_cek'] ?? '');
     $kode_otorisasi = $input['kode_otorisasi'] ?? '';
-    $input_tgl_diterima = $input['tgl_diterima'] ?? null;
-    $penerima = $input['penerima'] ?? '';
-    if (!$no_faktur_lama || !$new_status)
-        throw new Exception("Data tidak lengkap (Faktur/Status).");
-    if (empty($nama_user_cek) || empty($kode_otorisasi))
-        throw new Exception("Otorisasi wajib diisi.");
+    if (!$no_faktur_lama) {
+        throw new Exception("Data tidak valid (Faktur Lama hilang).");
+    }
+    if (empty($nama_user_cek) || empty($kode_otorisasi)) {
+        throw new Exception("User dan Password Otorisasi wajib diisi.");
+    }
     $stmt_cari = $conn->prepare("SELECT kode FROM user_account WHERE inisial = ? LIMIT 1");
     $stmt_cari->bind_param("s", $nama_user_cek);
     $stmt_cari->execute();
@@ -51,15 +54,47 @@ try {
         throw new Exception("Password Otorisasi Salah!");
     }
     $stmt_auth->close();
-    $tgl_diterima = !empty($input_tgl_diterima) ? $input_tgl_diterima : date('Y-m-d');
+    $stmt_old = $conn->prepare("SELECT status, status_kontra, status_bayar FROM serah_terima_nota WHERE no_faktur = ?");
+    $stmt_old->bind_param("s", $no_faktur_lama);
+    $stmt_old->execute();
+    $res_old = $stmt_old->get_result();
+    $old_data = $res_old->fetch_assoc();
+    $stmt_old->close();
+    if (!$old_data) {
+        throw new Exception("Data nota lama tidak ditemukan di database.");
+    }
+    $is_setting_kontra = ($new_status_kontra === 'Sudah');
+    $is_setting_bayar = ($new_status_bayar === 'Sudah');
+    $is_setting_pinjam = ($new_status_pinjam === 'Pinjam');
+    if ($is_setting_kontra || $is_setting_bayar || $is_setting_pinjam) {
+        if ($new_status !== 'Sudah Terima') {
+            throw new Exception("Gagal: Anda harus mengubah Status Terima menjadi 'Sudah Terima' terlebih dahulu sebelum mengisi Kontra, Bayar, atau Pinjam.");
+        }
+        if (empty($penerima)) {
+            throw new Exception("Gagal: Nama Penerima wajib diisi.");
+        }
+        if (empty($input_tgl_diterima)) {
+            throw new Exception("Gagal: Tanggal Diterima wajib diisi.");
+        }
+    }
+    if ($old_data['status_kontra'] === 'Sudah' && $new_status_kontra === 'Belum') {
+        throw new Exception("Gagal: Status Kontra yang sudah selesai tidak dapat diubah kembali ke Belum.");
+    }
+    if ($old_data['status_bayar'] === 'Sudah' && $new_status_bayar === 'Belum') {
+        throw new Exception("Gagal: Status Bayar yang sudah selesai tidak dapat diubah kembali ke Belum.");
+    }
     if ($no_faktur_baru !== $no_faktur_lama) {
         $stmt_cek = $conn->prepare("SELECT no_faktur FROM serah_terima_nota WHERE no_faktur = ? AND no_faktur != ?");
         $stmt_cek->bind_param("ss", $no_faktur_baru, $no_faktur_lama);
         $stmt_cek->execute();
         if ($stmt_cek->get_result()->num_rows > 0) {
-            throw new Exception("Gagal: No Faktur '$no_faktur_baru' sudah ada di database (Duplikat).");
+            throw new Exception("Gagal: No Faktur '$no_faktur_baru' sudah digunakan pada data lain.");
         }
         $stmt_cek->close();
+    }
+    $tgl_db = !empty($input_tgl_diterima) ? $input_tgl_diterima : null;
+    if ($new_status === 'Sudah Terima' && empty($tgl_db)) {
+        $tgl_db = date('Y-m-d');
     }
     $sql = "UPDATE serah_terima_nota SET 
                 no_faktur = ?, 
@@ -82,13 +117,13 @@ try {
         $new_status_kontra,
         $new_status_bayar,
         $new_status_pinjam,
-        $tgl_diterima,
+        $tgl_db,
         $penerima,
         $user_login,
         $no_faktur_lama
     );
     if (!$stmt_upd->execute()) {
-        throw new Exception("Gagal update data: " . $stmt_upd->error);
+        throw new Exception("Database Error: " . $stmt_upd->error);
     }
     echo json_encode([
         'success' => true,
@@ -96,6 +131,9 @@ try {
     ]);
 } catch (Exception $e) {
     http_response_code(200);
-    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    echo json_encode([
+        'success' => false,
+        'message' => $e->getMessage()
+    ]);
 }
 ?>

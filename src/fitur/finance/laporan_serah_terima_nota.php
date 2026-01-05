@@ -286,6 +286,13 @@ require_once __DIR__ . '/../../component/menu_handler.php';
 
                         <input type="hidden" id="auth_nota_id" name="no_faktur_lama">
 
+                        <div id="alert-dependency"
+                            class="hidden mb-4 p-3 bg-yellow-50 border border-yellow-200 text-yellow-700 rounded-lg text-xs flex items-start gap-2">
+                            <i class="fas fa-info-circle mt-0.5"></i>
+                            <span>Harap isi <b>Status Terima (Sudah)</b>, <b>Tanggal</b>, dan <b>Penerima</b> terlebih
+                                dahulu untuk mengubah status lainnya.</span>
+                        </div>
+
                         <div class="p-3 bg-pink-50 rounded-lg border border-pink-100 mb-4">
                             <h4 class="text-xs font-bold text-pink-700 mb-2 uppercase">Edit Data Nota</h4>
                             <div class="grid grid-cols-2 gap-4">
@@ -302,14 +309,32 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Status Terima</label>
-                                <select name="status" id="auth_status_baru" class="input-modern w-full">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Status Terima <span
+                                        class="text-red-500">*</span></label>
+                                <select name="status" id="auth_status_baru" class="input-modern w-full font-bold">
                                     <option value="Belum Terima">Belum Terima</option>
                                     <option value="Sudah Terima">Sudah Terima</option>
                                 </select>
                             </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Terima <span
+                                        class="text-red-500">*</span></label>
+                                <input type="date" name="tgl_diterima" id="auth_tgl_diterima"
+                                    class="input-modern w-full">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Penerima <span
+                                        class="text-red-500">*</span></label>
+                                <input type="text" name="penerima" id="auth_penerima" class="input-modern w-full"
+                                    placeholder="Nama Penerima" autocomplete="off">
+                            </div>
+                        </div>
+
+                        <hr class="border-gray-100 mb-4">
+
+                        <div class="grid grid-cols-3 gap-3 mb-4">
                             <div>
                                 <label class="block text-xs font-semibold text-gray-700 mb-1">Status Kontra</label>
                                 <select name="status_kontra" id="auth_status_kontra" class="input-modern w-full">
@@ -331,16 +356,6 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                     <option value="Pinjam">Pinjam</option>
                                 </select>
                             </div>
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Terima</label>
-                            <input type="date" name="tgl_diterima" id="auth_tgl_diterima" class="input-modern w-full">
-                        </div>
-                        <div class="mb-4">
-                            <label class="block text-xs font-semibold text-gray-700 mb-1">Penerima</label>
-                            <input type="text" name="penerima" id="auth_penerima" class="input-modern w-full"
-                                placeholder="Nama Penerima Nota" autocomplete="off">
                         </div>
 
                         <div class="p-4 border border-red-200 rounded-lg bg-red-50">
