@@ -12,10 +12,11 @@ const showLoading = () => {
 };
 export const refreshParentTable = async () => {
   try {
-    const source = sessionStorage.getItem("kategori_source");
     const { paginationKat } = await import("../table/pagination.js");
     showLoading();
-    if (source === "kategori_by_tanggal") {
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasFilterParams = urlParams.has("start") && urlParams.has("end");
+    if (hasFilterParams) {
       const start = document.getElementById("startDate").value;
       const end = document.getElementById("endDate").value;
       const kat = document.getElementById("kategori").value;
@@ -30,7 +31,7 @@ export const refreshParentTable = async () => {
     Swal.close();
   } catch (error) {
     console.warn("Soft refresh failed, forcing browser reload...", error);
-    window.location.reload();
+    Swal.close();
   }
 };
 export const fetchAllKategori = async (useLoading = true) => {
@@ -268,7 +269,6 @@ export const fetchKategoriByTgl = async (
     }).showToast();
   }
 };
-
 export const fetchCekData = async (
   data,
   kategori,
@@ -372,7 +372,7 @@ export const fetchBulkCekData = async (
     ket: formValues.keterangan,
     nama_user_cek: formValues.userCheck,
     kode_otorisasi: formValues.passAuth,
-    tipe_cek: formValues.tipe_cek, // KIRIM TIPE CEK
+    tipe_cek: formValues.tipe_cek,
     nama: sessionStorage.getItem("userName"),
   };
   Swal.showLoading();

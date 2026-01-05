@@ -72,6 +72,9 @@ export const filterByTanggal = () => {
   const btn = document.getElementById("filterTanggalBtn");
   btn.addEventListener("click", async (e) => {
     e.preventDefault();
+
+    sessionStorage.setItem("kategori_source", "kategori_by_tanggal");
+
     const startVal = startDateInput.value;
     const endVal = endDateInput.value;
     const kategoriValue = kategoriSelect.value;

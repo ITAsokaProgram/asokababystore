@@ -48,8 +48,8 @@ try {
     $stmt_auth->close();
     $sql = "UPDATE serah_terima_nota SET 
             visibilitas = 'Nonaktif', 
-            edit_pada = NOW(), 
-            diedit_oleh = ? 
+            dihapus_pada = NOW(), 
+            dihapus_oleh = ? 
             WHERE no_faktur = ?";
     $stmt_del = $conn->prepare($sql);
     $stmt_del->bind_param("ss", $user_login_id, $no_faktur);

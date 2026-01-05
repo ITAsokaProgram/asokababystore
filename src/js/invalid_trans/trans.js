@@ -6,11 +6,13 @@ const init = async () => {
   sessionStorage.removeItem("kategori_invalid");
   sessionStorage.removeItem("kategori_filtered");
   sessionStorage.removeItem("kategori_by_tanggal");
+  sessionStorage.removeItem("kategori_source");
   const cabang = await kodeCabang("cabangFilter");
   filterByTanggal();
   const urlParams = new URLSearchParams(window.location.search);
   const hasFilterParams = urlParams.has("start") && urlParams.has("end");
   if (hasFilterParams) {
+    sessionStorage.setItem("kategori_source", "kategori_by_tanggal");
     const startVal = urlParams.get("start");
     const endVal = urlParams.get("end");
     const katVal = urlParams.get("kategori") || "allKategori";
@@ -26,6 +28,7 @@ const init = async () => {
     paginationKat(1, 10, "kategori_by_tanggal");
     initSearchFilter("kategori_by_tanggal", "kategori_search_tanggal");
   } else {
+    sessionStorage.setItem("kategori_source", "kategori_invalid");
     const allKategori = await fetchAllKategori();
     paginationKat(1, 10, "kategori_invalid");
     initSearchFilter("kategori_invalid", "kategori_search");
@@ -33,6 +36,7 @@ const init = async () => {
   const resetBtn = document.getElementById("reset");
   resetBtn.addEventListener("click", (e) => {
     e.preventDefault();
+    sessionStorage.setItem("kategori_source", "kategori_invalid");
     window.history.pushState({}, "", window.location.pathname);
     const today = new Date();
     const yesterday = new Date(today);
