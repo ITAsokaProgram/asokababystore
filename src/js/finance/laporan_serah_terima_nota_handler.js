@@ -28,24 +28,31 @@ document.addEventListener("DOMContentLoaded", () => {
     if (exportExcelButton) {
         exportExcelButton.addEventListener("click", handleExportExcel);
     }
-    window.openStatusModal = (faktur, sTerima, sKontra, sBayar, sPinjam, penerima, tgl) => {
+    window.openStatusModal = (faktur, sTerima, sKontra, sBayar, sPinjam, penerima, tgl, nominalRev) => {
         formAuth.reset();
-        authNotaFaktur.value = faktur;
-
-        authStatusSelect.value = sTerima || 'Belum Terima';
-        authStatusKontra.value = sKontra || 'Belum';
-        authStatusBayar.value = sBayar || 'Belum';
-        authStatusPinjam.value = sPinjam || 'Tidak';
-
+        document.getElementById("auth_nota_id").value = faktur;
+        document.getElementById("auth_no_faktur_baru").value = faktur;
+        document.getElementById("auth_nominal_revisi").value = nominalRev || 0;
         document.getElementById('auth_penerima').value = penerima || '';
-
+        authStatusSelect.value = (!sTerima || sTerima === 'null') ? 'Belum Terima' : sTerima;
+        authStatusKontra.value = (!sKontra || sKontra === 'null') ? 'Belum' : sKontra;
+        authStatusBayar.value = (!sBayar || sBayar === 'null') ? 'Belum' : sBayar;
+        authStatusPinjam.value = (!sPinjam || sPinjam === 'null') ? 'Tidak' : sPinjam;
+        const isSudahTerima = authStatusSelect.value === 'Sudah Terima';
+        const isSudahKontra = authStatusKontra.value === 'Sudah';
+        const isSudahBayar = authStatusBayar.value === 'Sudah';
+        authStatusSelect.disabled = isSudahTerima;
+        authStatusKontra.disabled = !isSudahTerima || isSudahKontra;
+        authStatusBayar.disabled = !isSudahTerima || isSudahBayar;
+        authStatusPinjam.disabled = !isSudahTerima;
+        document.getElementById("auth_penerima").disabled = isSudahTerima;
+        document.getElementById("auth_tgl_diterima").disabled = isSudahTerima;
         const inputTgl = document.getElementById('auth_tgl_diterima');
         if (tgl && tgl !== 'null' && tgl !== '-') {
             inputTgl.value = tgl;
         } else {
             inputTgl.valueAsDate = new Date();
         }
-
         modalAuth.classList.remove("hidden");
     };
     btnsCloseAuth.forEach(btn => {
@@ -57,6 +64,17 @@ document.addEventListener("DOMContentLoaded", () => {
         formAuth.addEventListener("submit", async (e) => {
             e.preventDefault();
             const formData = new FormData(formAuth);
+            if (authStatusSelect.disabled) {
+                formData.append("status", authStatusSelect.value);
+            }
+            const inputPenerima = document.getElementById("auth_penerima");
+            if (inputPenerima && inputPenerima.disabled) {
+                formData.append("penerima", inputPenerima.value);
+            }
+            const inputTgl = document.getElementById("auth_tgl_diterima");
+            if (inputTgl && inputTgl.disabled) {
+                formData.append("tgl_diterima", inputTgl.value);
+            }
             const jsonData = Object.fromEntries(formData.entries());
             const token = getCookie("admin_token");
             try {
@@ -388,83 +406,56 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tr>`;
             return;
         }
-
         let htmlRows = "";
         let item_counter = offset + 1;
-
         tabel_data.forEach((row) => {
-            // --- Definisi Variabel Data Asli ---
             const nominalAwal = parseFloat(row.nominal_awal) || 0;
             const nominalRevisi = parseFloat(row.nominal_revisi) || 0;
             const selisih = parseFloat(row.selisih_pembayaran) || 0;
             const tglNota = formatDate(row.tgl_nota);
             const tglDiserahkan = formatDate(row.tgl_diserahkan);
-            const tglDiterima = formatDate(row.tgl_diterima); // Format Tampilan
-
-            // Variabel untuk Modal (Raw Data)
+            const tglDiterima = formatDate(row.tgl_diterima);
             const rawPenerima = row.penerima ? row.penerima.replace(/'/g, "\\'") : '';
             const rawTglDiterima = row.tgl_diterima ? row.tgl_diterima : '';
-
-            // --- Status Data Baru ---
+            const nominalRevisiRaw = parseFloat(row.nominal_revisi) || 0;
             const sKontra = row.status_kontra || 'Belum';
             const sBayar = row.status_bayar || 'Belum';
             const sPinjam = row.status_pinjam || 'Tidak';
             const sTerima = row.status || 'Belum Terima';
-
-            // --- Helper Badge Sederhana ---
             const createBadge = (val, type) => {
                 let colorClass = 'bg-gray-100 text-gray-600 border-gray-200';
-
-                // Logic Warna
                 if (type === 'terima' && val === 'Sudah Terima') colorClass = 'bg-green-100 text-green-800 border-green-200';
                 if (type === 'terima' && val === 'Belum Terima') colorClass = 'bg-red-50 text-red-600 border-red-200';
-
                 if (type === 'kontra' && val === 'Sudah') colorClass = 'bg-blue-100 text-blue-700 border-blue-200';
                 if (type === 'bayar' && val === 'Sudah') colorClass = 'bg-emerald-100 text-emerald-700 border-emerald-200';
                 if (type === 'pinjam' && val === 'Pinjam') colorClass = 'bg-orange-100 text-orange-700 border-orange-200';
-
                 return `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border ${colorClass}">${val}</span>`;
             };
-
-            // --- Render Baris ---
             htmlRows += `
             <tr class="hover:bg-gray-50 border-b transition-colors">
                 <td class="text-center font-medium text-gray-500">${item_counter}</td>
-                
                 <td class="whitespace-nowrap text-xs">${tglNota}</td>
-                
                 <td class="font-semibold text-gray-700 text-sm">
                     ${row.nama_supplier || '-'}
                     ${row.no_nota ? `<br><span class="text-[10px] text-gray-400 font-normal">${row.no_nota}</span>` : ''}
                 </td>
-                
-                <td class="font-mono text-xs text-gray-600">${row.no_faktur || '-'}</td>
-                
+                <td class="font-mono text-xs text-gray-600">${row.no_faktur_format || '-'}</td>
                 <td class="text-right font-mono text-sm text-gray-600">${formatRupiah(nominalAwal)}</td>
-                
                 <td class="text-right font-mono text-sm font-bold text-gray-800">${formatRupiah(nominalRevisi)}</td>
-                
                 <td class="text-right font-mono text-sm font-bold ${selisih < 0 ? 'text-red-600' : 'text-green-600'}">
                     ${formatRupiah(selisih)}
                 </td>
-                
                 <td class="text-center text-xs whitespace-nowrap">${tglDiserahkan}</td>
-                
                 <td class="text-center text-xs whitespace-nowrap">${tglDiterima}</td>
-                
                 <td class="text-center">${createBadge(sTerima, 'terima')}</td>
-
                 <td class="text-center">${createBadge(sKontra, 'kontra')}</td>
                 <td class="text-center">${createBadge(sBayar, 'bayar')}</td>
                 <td class="text-center">${createBadge(sPinjam, 'pinjam')}</td>
-
                 <td class="text-center text-xs">${row.diberikan || '-'}</td>
-                
                 <td class="text-center text-xs">${row.penerima || '-'}</td>
-
                 <td class="text-center">
                     <button type="button" 
-                        onclick="window.openStatusModal('${row.no_faktur}', '${sTerima}', '${sKontra}', '${sBayar}', '${sPinjam}', '${rawPenerima}', '${rawTglDiterima}')"
+                        onclick="window.openStatusModal('${row.no_faktur}', '${sTerima}', '${sKontra}', '${sBayar}', '${sPinjam}', '${rawPenerima}', '${rawTglDiterima}', ${nominalRevisiRaw})"
                         class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-pink-50 text-pink-600 hover:bg-pink-100 hover:text-pink-800 transition-all shadow-sm border border-pink-100" 
                         title="Edit Semua Status">
                         <i class="fas fa-edit"></i>

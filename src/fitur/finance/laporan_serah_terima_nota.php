@@ -284,7 +284,23 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                             </button>
                         </div>
 
-                        <input type="hidden" id="auth_nota_id" name="no_faktur">
+                        <input type="hidden" id="auth_nota_id" name="no_faktur_lama">
+
+                        <div class="p-3 bg-pink-50 rounded-lg border border-pink-100 mb-4">
+                            <h4 class="text-xs font-bold text-pink-700 mb-2 uppercase">Edit Data Nota</h4>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">No Faktur</label>
+                                    <input type="text" name="no_faktur_baru" id="auth_no_faktur_baru"
+                                        class="input-modern w-full font-mono text-sm" placeholder="No Faktur">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">Nominal Revisi</label>
+                                    <input type="number" step="0.01" name="nominal_revisi" id="auth_nominal_revisi"
+                                        class="input-modern w-full font-mono text-sm text-right" placeholder="0">
+                                </div>
+                            </div>
+                        </div>
 
                         <div class="grid grid-cols-2 gap-4 mb-4">
                             <div>

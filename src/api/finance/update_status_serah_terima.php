@@ -19,7 +19,9 @@ try {
     if (!$verif)
         throw new Exception('Token tidak valid');
     $user_login = $verif->id ?? $verif->kode ?? null;
-    $no_faktur = $input['no_faktur'] ?? null;
+    $no_faktur_lama = $input['no_faktur_lama'] ?? null;
+    $no_faktur_baru = $input['no_faktur_baru'] ?? null;
+    $nominal_revisi = $input['nominal_revisi'] ?? 0;
     $new_status = $input['status'] ?? null;
     $new_status_kontra = $input['status_kontra'] ?? 'Belum';
     $new_status_bayar = $input['status_bayar'] ?? 'Belum';
@@ -28,7 +30,7 @@ try {
     $kode_otorisasi = $input['kode_otorisasi'] ?? '';
     $input_tgl_diterima = $input['tgl_diterima'] ?? null;
     $penerima = $input['penerima'] ?? '';
-    if (!$no_faktur || !$new_status)
+    if (!$no_faktur_lama || !$new_status)
         throw new Exception("Data tidak lengkap (Faktur/Status).");
     if (empty($nama_user_cek) || empty($kode_otorisasi))
         throw new Exception("Otorisasi wajib diisi.");
@@ -50,7 +52,18 @@ try {
     }
     $stmt_auth->close();
     $tgl_diterima = !empty($input_tgl_diterima) ? $input_tgl_diterima : date('Y-m-d');
+    if ($no_faktur_baru !== $no_faktur_lama) {
+        $stmt_cek = $conn->prepare("SELECT no_faktur FROM serah_terima_nota WHERE no_faktur = ? AND no_faktur != ?");
+        $stmt_cek->bind_param("ss", $no_faktur_baru, $no_faktur_lama);
+        $stmt_cek->execute();
+        if ($stmt_cek->get_result()->num_rows > 0) {
+            throw new Exception("Gagal: No Faktur '$no_faktur_baru' sudah ada di database (Duplikat).");
+        }
+        $stmt_cek->close();
+    }
     $sql = "UPDATE serah_terima_nota SET 
+                no_faktur = ?, 
+                nominal_revisi = ?,
                 status = ?, 
                 status_kontra = ?, 
                 status_bayar = ?, 
@@ -59,11 +72,12 @@ try {
                 penerima = ?, 
                 edit_pada = NOW(), 
                 diedit_oleh = ? 
-                WHERE no_faktur = ?";
-
+            WHERE no_faktur = ?";
     $stmt_upd = $conn->prepare($sql);
     $stmt_upd->bind_param(
-        "ssssssss",
+        "sdssssssss",
+        $no_faktur_baru,
+        $nominal_revisi,
         $new_status,
         $new_status_kontra,
         $new_status_bayar,
@@ -71,13 +85,11 @@ try {
         $tgl_diterima,
         $penerima,
         $user_login,
-        $no_faktur
+        $no_faktur_lama
     );
-
     if (!$stmt_upd->execute()) {
-        throw new Exception("Gagal update status.");
+        throw new Exception("Gagal update data: " . $stmt_upd->error);
     }
-
     echo json_encode([
         'success' => true,
         'message' => "Data berhasil diperbarui."
