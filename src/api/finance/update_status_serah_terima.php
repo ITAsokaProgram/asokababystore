@@ -115,8 +115,13 @@ try {
         $stmt_cek->close();
     }
     $tgl_db = !empty($input_tgl_diterima) ? $input_tgl_diterima : null;
-    if ($new_status === 'Sudah Terima' && empty($tgl_db)) {
-        $tgl_db = date('Y-m-d');
+    if ($new_status === 'Sudah Terima') {
+        if (empty($penerima)) {
+            throw new Exception("Gagal: Nama Penerima wajib diisi.");
+        }
+        if (empty($tgl_db)) {
+            throw new Exception("Gagal: Tanggal Diterima wajib diisi (Jangan Kosong).");
+        }
     }
     $sql = "UPDATE serah_terima_nota SET 
                 no_faktur = ?, 
