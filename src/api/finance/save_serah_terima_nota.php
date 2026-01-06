@@ -37,11 +37,21 @@ try {
         $nota_tanggal_masuk = $input['nota_tanggal_masuk'] ?: null;
         $cabang_penerima = trim($input['cabang_penerima'] ?? '');
         $lengkap = isset($input['lengkap']) ? $input['lengkap'] : null;
+
         $no_rek = trim($input['no_rek'] ?? '');
         $nama_bank = trim($input['nama_bank'] ?? '');
         $atas_nama_rek = trim($input['atas_nama_rek'] ?? '');
-        if (!$nota_tanggal_masuk || !$cabang_penerima) {
-            throw new Exception("Tanggal Masuk & Cabang Penerima wajib diisi untuk COD.");
+
+        if (!$lengkap) {
+            throw new Exception("Status Kelengkapan wajib dipilih untuk COD.");
+        }
+
+        if (!$cabang_penerima) {
+            throw new Exception("Cabang Penerima wajib diisi untuk COD.");
+        }
+
+        if ($lengkap === 'Ya' && !$nota_tanggal_masuk) {
+            throw new Exception("Tanggal Nota Masuk wajib diisi jika status Lengkap.");
         }
     } else {
         $nota_tanggal_masuk = null;

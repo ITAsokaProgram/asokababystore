@@ -289,6 +289,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
             </div>
         </section>
     </main>
+
     <div id="modal-otorisasi" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title"
         role="dialog" aria-modal="true">
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -298,6 +299,8 @@ require_once __DIR__ . '/../../component/menu_handler.php';
             <div
                 class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
                 <form id="form-otorisasi">
+                    <input type="hidden" name="mode" value="status">
+
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                         <div class="flex justify-between items-center mb-4 border-b pb-2">
                             <h3 class="text-lg leading-6 font-medium text-gray-900">Update Status Nota</h3>
@@ -310,93 +313,70 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                         <input type="hidden" id="auth_nominal_awal">
 
                         <div id="alert-dependency"
-                            class="hidden mb-4 p-3 bg-yellow-50 border border-yellow-200 text-yellow-700 rounded-lg text-xs flex items-start gap-2"
-                            style="max-width: 412px; width: 100%">
+                            class="hidden mb-4 p-3 bg-yellow-50 border border-yellow-200 text-yellow-700 rounded-lg text-xs flex items-start gap-2">
                             <i class="fas fa-info-circle mt-0.5"></i>
                             <span>Harap isi <b>Status Terima (Sudah)</b>, <b>Tanggal</b>, dan <b>Penerima</b> terlebih
-                                dahulu untuk mengubah status lainnya.</span>
+                                dahulu.</span>
                         </div>
-
-                        <div id="alert-locked-paid" style="max-width: 412px; width: 100%"
-                            class="hidden mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-xs flex items-start gap-2">
-                            <i class="fas fa-lock mt-0.5"></i>
-                            <span> Tidak bisa edit Nomor Faktur & Nominal karena Status sudah dibayar</span>
-                        </div>
-
-                        <div id="alert-locked-kontra" style="max-width: 412px; width: 100%"
-                            class="hidden mb-4 p-3 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg text-xs flex items-start gap-2">
-                            <i class="fas fa-info-circle mt-0.5"></i>
-                            <span><b>Info:</b> Status Kontra <b>"Sudah"</b>, tidak dapat diubah kembali.</span>
-                        </div>
-
-                        <div id="alert-locked-bayar-status" style="max-width: 412px; width: 100%"
-                            class="hidden mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-lg text-xs flex items-start gap-2">
-                            <i class="fas fa-check-circle mt-0.5"></i>
-                            <span><b>Info:</b> Status Bayar <b>"Sudah"</b>, tidak dapat diubah kembali.</span>
-                        </div>
-
                         <div class="p-3 bg-pink-50 rounded-lg border border-pink-100 mb-4">
-                            <h4 class="text-xs font-bold text-pink-700 mb-2 uppercase">Edit Data Nota</h4>
-                            <div class="flex flex-wrap gap-4 mb-2">
-                                <div class="col-span-2">
+                            <h4 class="text-xs font-bold text-pink-700 mb-2 uppercase">Data Utama</h4>
+                            <div class="grid grid-cols-2 gap-3 mb-2">
+                                <div>
                                     <label class="block text-xs font-semibold text-gray-700 mb-1">No Faktur</label>
                                     <input type="text" name="no_faktur_baru" id="auth_no_faktur_baru"
-                                        class="input-modern w-full font-mono text-sm" placeholder="No Faktur">
+                                        class="input-modern w-full font-mono text-sm">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-semibold text-gray-700 mb-1">Nominal</label>
                                     <input type="number" step="0.01" name="nominal" id="auth_nominal"
-                                        class="input-modern w-full font-mono text-sm text-right" placeholder="0">
+                                        class="input-modern w-full font-mono text-sm text-right">
+                                </div>
+
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div class="md:col-span-2">
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">Status Terima <span
+                                            class="text-red-500">*</span></label>
+                                    <select name="status" id="auth_status_baru" class="input-modern w-full font-bold">
+                                        <option value="Belum Terima">Belum Terima</option>
+                                        <option value="Sudah Terima">Sudah Terima</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">Tgl Terima <span
+                                            class="text-red-500">*</span></label>
+                                    <input type="date" name="tgl_diterima" id="auth_tgl_diterima"
+                                        class="input-modern w-full">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">Penerima <span
+                                            class="text-red-500">*</span></label>
+                                    <input type="text" name="penerima" id="auth_penerima" class="input-modern w-full"
+                                        placeholder="Nama Penerima">
                                 </div>
                             </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                            <div class="md:col-span-2">
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Status Terima <span
-                                        class="text-red-500">*</span></label>
-                                <select name="status" id="auth_status_baru" class="input-modern w-full font-bold">
-                                    <option value="Belum Terima">Belum Terima</option>
-                                    <option value="Sudah Terima">Sudah Terima</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Terima <span
-                                        class="text-red-500">*</span></label>
-                                <input type="date" name="tgl_diterima" id="auth_tgl_diterima"
-                                    class="input-modern w-full">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Penerima <span
-                                        class="text-red-500">*</span></label>
-                                <input type="text" name="penerima" id="auth_penerima" class="input-modern w-full"
-                                    placeholder="Nama Penerima" autocomplete="off">
-                            </div>
-                        </div>
-
-                        <hr class="border-gray-100 mb-4">
-
-                        <div class="grid grid-cols-3 gap-3 mb-4">
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Status Kontra</label>
-                                <select name="status_kontra" id="auth_status_kontra" class="input-modern w-full">
-                                    <option value="Belum">Belum</option>
-                                    <option value="Sudah">Sudah</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Status Bayar</label>
-                                <select name="status_bayar" id="auth_status_bayar" class="input-modern w-full">
-                                    <option value="Belum">Belum</option>
-                                    <option value="Sudah">Sudah</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Status Pinjam</label>
-                                <select name="status_pinjam" id="auth_status_pinjam" class="input-modern w-full">
-                                    <option value="Tidak">Tidak</option>
-                                    <option value="Pinjam">Pinjam</option>
-                                </select>
+                            <div class="grid grid-cols-3 gap-3 mt-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">Status Kontra</label>
+                                    <select name="status_kontra" id="auth_status_kontra" class="input-modern w-full">
+                                        <option value="Belum">Belum</option>
+                                        <option value="Sudah">Sudah</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">Status Bayar</label>
+                                    <select name="status_bayar" id="auth_status_bayar" class="input-modern w-full">
+                                        <option value="Belum">Belum</option>
+                                        <option value="Sudah">Sudah</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-700 mb-1">Status Pinjam</label>
+                                    <select name="status_pinjam" id="auth_status_pinjam" class="input-modern w-full">
+                                        <option value="Tidak">Tidak</option>
+                                        <option value="Pinjam">Pinjam</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
 
@@ -423,6 +403,153 @@ require_once __DIR__ . '/../../component/menu_handler.php';
             </div>
         </div>
     </div>
+    <div id="modal-otorisasi-kontra" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title"
+        role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            <div
+                class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+                <form id="form-otorisasi-kontra">
+                    <input type="hidden" name="mode" value="kontra">
+                    <input type="hidden" id="kontra_nota_id" name="no_faktur_lama">
+
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="flex justify-between items-center mb-4 border-b pb-2">
+                            <div class="flex items-center gap-2">
+                                <div
+                                    class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
+                                    <i class="fas fa-book"></i>
+                                </div>
+                                <h3 class="text-lg leading-6 font-medium text-gray-900">Update Nota Kontra</h3>
+                            </div>
+                            <button type="button" class="btn-close-kontra text-gray-400 hover:text-gray-500">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+
+                        <div class="mb-4 p-3 bg-purple-50 text-purple-800 rounded text-xs border border-purple-100">
+                            Updating No Faktur: <span id="display_faktur_kontra" class="font-mono font-bold"></span>
+                        </div>
+
+                        <div class="space-y-4 mb-4">
+                            <div class="border rounded-lg p-3 bg-gray-50">
+                                <h5 class="text-xs font-bold text-gray-600 border-b pb-1 mb-2">Resepsionis (R)</h5>
+                                <div class="grid grid-cols-2 gap-2 mb-2">
+                                    <div>
+                                        <label class="block text-[10px] font-semibold text-gray-500">Tgl Tukar
+                                            Faktur</label>
+                                        <input type="date" name="r_tanggal_tukar_faktur" id="r_tanggal_tukar_faktur"
+                                            class="input-modern w-full text-xs py-1">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-semibold text-gray-500">Diterima
+                                            Oleh</label>
+                                        <input type="text" name="r_diterima_oleh" id="r_diterima_oleh"
+                                            class="input-modern w-full text-xs py-1">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-semibold text-gray-500">Tgl Serah ke
+                                            MD</label>
+                                        <input type="date" name="r_tgl_diserahkan_ke_md" id="r_tgl_diserahkan_ke_md"
+                                            class="input-modern w-full text-xs py-1">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-gray-500">Keterangan
+                                        Resepsionis</label>
+                                    <textarea id="ket_resepsionis" class="input-modern w-full text-xs py-1 h-12"
+                                        placeholder="Catatan Resepsionis..."></textarea>
+                                </div>
+                            </div>
+
+                            <div class="border rounded-lg p-3 bg-gray-50">
+                                <h5 class="text-xs font-bold text-gray-600 border-b pb-1 mb-2">Merchandise (MD)</h5>
+                                <div class="grid grid-cols-2 gap-2 mb-2">
+                                    <div>
+                                        <label class="block text-[10px] font-semibold text-gray-500">Divalidasi
+                                            Oleh</label>
+                                        <input type="text" name="md_divalidasi_oleh" id="md_divalidasi_oleh"
+                                            class="input-modern w-full text-xs py-1">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-semibold text-gray-500">Tgl Serah ke
+                                            Finance</label>
+                                        <input type="date" name="md_tgl_diserahkan_ke_finance"
+                                            id="md_tgl_diserahkan_ke_finance" class="input-modern w-full text-xs py-1">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-gray-500">Keterangan MD</label>
+                                    <textarea id="ket_merchandise" class="input-modern w-full text-xs py-1 h-12"
+                                        placeholder="Catatan MD..."></textarea>
+                                </div>
+                            </div>
+
+                            <div class="border rounded-lg p-3 bg-gray-50">
+                                <h5 class="text-xs font-bold text-gray-600 border-b pb-1 mb-2">Finance</h5>
+                                <div class="mb-2">
+                                    <label class="block text-[10px] font-semibold text-gray-500">Divalidasi Oleh</label>
+                                    <input type="text" name="finance_divalidasi_oleh" id="finance_divalidasi_oleh"
+                                        class="input-modern w-full text-xs py-1">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-gray-500">Keterangan
+                                        Finance</label>
+                                    <textarea id="ket_finance" class="input-modern w-full text-xs py-1 h-12"
+                                        placeholder="Catatan Finance..."></textarea>
+                                </div>
+                            </div>
+
+                            <div class="border rounded-lg p-3 bg-gray-50">
+                                <h5 class="text-xs font-bold text-gray-600 border-b pb-1 mb-2">Tax</h5>
+                                <div class="grid grid-cols-2 gap-2 mb-2">
+                                    <div>
+                                        <label class="block text-[10px] font-semibold text-gray-500">Tgl Terima dr
+                                            Resepsionis</label>
+                                        <input type="date" name="tax_tgl_diterima_dari_r" id="tax_tgl_diterima_dari_r"
+                                            class="input-modern w-full text-xs py-1">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-semibold text-gray-500">Divalidasi
+                                            Oleh</label>
+                                        <input type="text" name="tax_divalidasi_oleh" id="tax_divalidasi_oleh"
+                                            class="input-modern w-full text-xs py-1">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-gray-500">Keterangan Tax</label>
+                                    <textarea id="ket_tax" class="input-modern w-full text-xs py-1 h-12"
+                                        placeholder="Catatan Tax..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-4 border border-red-200 rounded-lg bg-red-50">
+                            <div class="mb-3">
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">User (Inisial)</label>
+                                <input type="text" name="nama_user_cek" class="input-modern w-full"
+                                    placeholder="Contoh: ADM" required autocomplete="off">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Kode Otorisasi</label>
+                                <input type="password" name="kode_otorisasi" class="input-modern w-full"
+                                    placeholder="Password Otorisasi" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
+                        <button type="submit" class="btn-primary w-full sm:w-auto px-4 py-2 text-white rounded">Simpan
+                            Kontra</button>
+                        <button type="button"
+                            class="btn-close-kontra mt-3 w-full sm:w-auto px-4 py-2 border rounded">Batal</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <div id="modal-detail-cod" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title"
         role="dialog" aria-modal="true">
         <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">

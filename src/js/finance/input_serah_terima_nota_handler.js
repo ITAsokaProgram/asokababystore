@@ -179,16 +179,14 @@ async function handleSave() {
         return;
     }
     if (inpCod.value === 'Ya') {
-        if (!inpNotaTanggalMasuk.value) {
-            Swal.fire("Peringatan", "Untuk COD, Tgl Nota Masuk wajib diisi.", "warning");
+
+        if (inpLengkap.value === 'Ya' && !inpNotaTanggalMasuk.value) {
+            Swal.fire("Peringatan", "Jika status Lengkap, Tgl Nota Masuk wajib diisi.", "warning");
             return;
         }
+
         if (!inpCabangPenerima.value.trim()) {
             Swal.fire("Peringatan", "Untuk COD, Cabang Penerima wajib diisi.", "warning");
-            return;
-        }
-        if (!inpLengkap.value) {
-            Swal.fire("Peringatan", "Untuk COD, Status Kelengkapan wajib dipilih.", "warning");
             return;
         }
     }
@@ -273,6 +271,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (savedDiberikan) inpDiberikan.value = savedDiberikan;
     const saveToLS = (key, value) => localStorage.setItem(key, value);
     inpTglNota.addEventListener('change', (e) => saveToLS('stn_tgl_nota', e.target.value));
+    inpKodeSupplier.addEventListener('input', (e) => saveToLS('stn_kode_supplier', e.target.value));
     inpNamaSupplier.addEventListener('change', (e) => {
         saveToLS('stn_nama_supplier', e.target.value);
         setTimeout(() => {

@@ -66,7 +66,8 @@ require_once __DIR__ . '/../../component/menu_handler.php';
             display: block;
         }
 
-        .form-label::after {
+        /* PERUBAHAN DISINI: Hanya tambahkan bintang jika ada class 'required' */
+        .form-label.required::after {
             content: " *";
             color: #db2777;
         }
@@ -145,39 +146,43 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                     <form id="single-form" autocomplete="off">
                         <div class="form-grid">
                             <div>
-                                <label class="form-label">Tgl Invoice</label>
+                                <label class="form-label required">Tgl Invoice</label>
                                 <input type="date" id="inp_tgl_nota" name="tgl_nota" class="input-compact" required>
                             </div>
 
                             <div class="relative">
-                                <label class="form-label">Nama Supplier</label>
+                                <label class="form-label required">Nama Supplier</label>
                                 <input type="text" id="inp_nama_supplier" name="nama_supplier" class="input-compact"
                                     list="supplier_list" placeholder="Cari Supplier..." required>
                                 <datalist id="supplier_list"></datalist>
-                                <input type="hidden" id="inp_kode_supplier" name="kode_supplier">
+                            </div>
+                            <div>
+                                <label class="form-label">Kode Supplier</label>
+                                <input type="text" id="inp_kode_supplier" name="kode_supplier" class="input-compact"
+                                    placeholder="Kode...">
                             </div>
 
                             <div>
-                                <label class="form-label">No. Faktur</label>
+                                <label class="form-label required">No. Faktur</label>
                                 <input type="text" id="inp_no_faktur_format" name="no_faktur_format"
                                     class="input-compact" placeholder="Contoh: 010.001-24.12345678" required>
                                 <input type="hidden" id="inp_no_faktur" name="no_faktur">
                             </div>
 
                             <div>
-                                <label class="form-label text-right">Nominal</label>
+                                <label class="form-label required text-right">Nominal</label>
                                 <input type="text" id="inp_nominal" name="nominal"
                                     class="input-compact text-right font-mono" value="0" required>
                             </div>
 
                             <div>
-                                <label class="form-label">Tgl Diserahkan</label>
+                                <label class="form-label required">Tgl Diserahkan</label>
                                 <input type="date" id="inp_tgl_diserahkan" name="tgl_diserahkan" class="input-compact"
                                     required>
                             </div>
 
                             <div>
-                                <label class="form-label">Diberikan Oleh</label>
+                                <label class="form-label required">Diberikan Oleh</label>
                                 <input type="text" id="inp_diberikan" name="diberikan" class="input-compact" required>
                             </div>
                             <div>
@@ -197,23 +202,24 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                 </div>
 
                                 <div>
-                                    <label class="form-label">Tgl Nota Masuk</label>
+                                    <label class="form-label required">Tgl Nota Masuk</label>
                                     <input type="date" id="inp_nota_tanggal_masuk"
                                         class="input-compact border-pink-300">
                                 </div>
 
                                 <div>
-                                    <label class="form-label">Cabang Penerima</label>
+                                    <label class="form-label required">Cabang Penerima</label>
                                     <input type="text" id="inp_cabang_penerima" class="input-compact border-pink-300"
                                         placeholder="Contoh: Cabang A">
                                 </div>
 
                                 <div>
-                                    <label class="form-label">Kelengkapan</label>
+                                    <label class="form-label required">Kelengkapan</label>
                                     <select id="inp_lengkap" class="input-compact border-pink-300 bg-white">
                                         <option value="">Pilih Status</option>
                                         <option value="Ya">Lengkap</option>
                                         <option value="Tidak">Tidak Lengkap</option>
+                                        <option value="Belum">Belum Lengkap</option>
                                     </select>
                                 </div>
 
