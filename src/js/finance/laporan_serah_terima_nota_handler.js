@@ -606,7 +606,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
         let keteranganText = "";
         const { lengkap } = row;
-
         sheet.mergeCells('A1:I1');
         const titleCell = sheet.getCell('A1');
         titleCell.value = "FORM COD / PEMBAYARAN CASH / TEMPO MASA TERTENTU";
@@ -647,21 +646,28 @@ document.addEventListener("DOMContentLoaded", () => {
         bankRow.font = { bold: true };
         bankRow.alignment = { horizontal: 'center', vertical: 'middle' };
         ['A6', 'C6', 'E6', 'G6'].forEach(cell => {
-            sheet.getCell(cell).border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+            sheet.getCell(cell).border = {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' }
+            };
             sheet.getCell(cell).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF0F0F0' } };
         });
         sheet.getCell('B6').border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } };
         sheet.getCell('D6').border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } };
         sheet.getCell('F6').border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } };
-        sheet.getCell('I6').border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } };
-        sheet.mergeCells('A7:B7'); sheet.getCell('A7').value = row.nama_bank || '-';
+        sheet.getCell('I6').border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } }; sheet.mergeCells('A7:B7'); sheet.getCell('A7').value = row.nama_bank || '-';
         sheet.mergeCells('C7:D7'); sheet.getCell('C7').value = row.atas_nama_rek || '-';
         sheet.mergeCells('E7:F7'); sheet.getCell('E7').value = row.no_rek ? `${row.no_rek}` : '-';
         sheet.mergeCells('G7:I7'); sheet.getCell('G7').value = today;
         const bankValRow = sheet.getRow(7);
         bankValRow.alignment = { horizontal: 'center', vertical: 'middle' };
         ['A7', 'C7', 'E7', 'G7'].forEach(cell => {
-            sheet.getCell(cell).border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+            sheet.getCell(cell).border = {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' }
+            };
         });
         sheet.getCell('B7').border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } };
         sheet.getCell('D7').border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } };
@@ -676,7 +682,11 @@ document.addEventListener("DOMContentLoaded", () => {
         ttdHeaderRow.font = { bold: true };
         ttdHeaderRow.alignment = { horizontal: 'center', vertical: 'middle' };
         [`A${startRowTTD}`, `C${startRowTTD}`, `E${startRowTTD}`, `G${startRowTTD}`].forEach(cell => {
-            sheet.getCell(cell).border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+            sheet.getCell(cell).border = {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' }
+            };
             sheet.getCell(cell).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF0F0F0' } };
         });
         sheet.getCell(`B${startRowTTD}`).border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } };
