@@ -224,6 +224,15 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                     Tidak</option>
                             </select>
                         </div>
+                        <div class="lg:col-span-1">
+                            <label class="block text-xs font-semibold text-gray-700 mb-2">COD?</label>
+                            <select name="cod" id="filter_cod" class="input-modern w-full">
+                                <option value="">Semua</option>
+                                <option value="Ya" <?= ($_GET['cod'] ?? '') == 'Ya' ? 'selected' : '' ?>>Ya</option>
+                                <option value="Tidak" <?= ($_GET['cod'] ?? '') == 'Tidak' ? 'selected' : '' ?>>Tidak
+                                </option>
+                            </select>
+                        </div>
                         <div class="lg:col-span-2 lg:col-start-4 lg:row-start-1">
                             <label for="search_supplier" class="block text-xs font-semibold text-gray-700 mb-2">
                                 <i class="fas fa-search text-pink-600 mr-1"></i> Cari Data
@@ -381,6 +390,16 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                     <select name="status_pinjam" id="auth_status_pinjam" class="input-modern w-full">
                                         <option value="Tidak">Tidak</option>
                                         <option value="Pinjam">Pinjam</option>
+                                    </select>
+                                </div>
+                                <div class="lg:col-span-1">
+                                    <label class="block text-xs font-semibold text-gray-700 mb-2">COD?</label>
+                                    <select name="cod" id="filter_cod" class="input-modern w-full">
+                                        <option value="">Semua</option>
+                                        <option value="Ya" <?= ($_GET['cod'] ?? '') == 'Ya' ? 'selected' : '' ?>>Ya
+                                        </option>
+                                        <option value="Tidak" <?= ($_GET['cod'] ?? '') == 'Tidak' ? 'selected' : '' ?>>
+                                            Tidak</option>
                                     </select>
                                 </div>
                             </div>

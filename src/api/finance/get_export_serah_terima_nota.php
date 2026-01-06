@@ -19,11 +19,13 @@ try {
     }
     $tanggal_kemarin = date('Y-m-d', strtotime('-1 day'));
     $filter_type = $_GET['filter_type'] ?? 'month';
+    $filter_cod = $_GET['cod'] ?? '';
     $bulan = $_GET['bulan'] ?? date('m');
     $tahun = $_GET['tahun'] ?? date('Y');
     $tgl_mulai = $_GET['tgl_mulai'] ?? $tanggal_kemarin;
     $tgl_selesai = $_GET['tgl_selesai'] ?? $tanggal_kemarin;
     $search_supplier = $_GET['search_supplier'] ?? '';
+
     if ($filter_type === 'month') {
         $where_conditions = "visibilitas = 'Aktif' AND MONTH(tgl_nota) = ? AND YEAR(tgl_nota) = ?";
         $bind_types = 'ss';
@@ -48,14 +50,45 @@ try {
         $bind_types .= 's';
         $bind_params[] = $_GET['status_pinjam'];
     }
+    if (!empty($filter_cod)) {
+        $where_conditions .= " AND cod = ?";
+        $bind_types .= 's';
+        $bind_params[] = $filter_cod;
+    }
     if (!empty($search_supplier)) {
         $search_raw = trim($search_supplier);
         $search_numeric = str_replace('.', '', $search_raw);
-        $where_conditions .= " AND (nama_supplier LIKE ? OR no_faktur LIKE ? OR no_faktur_format LIKE ? OR kode_supplier LIKE ? OR CAST(nominal AS CHAR) LIKE ?)";
-        $bind_types .= 'sssss';
+
+        $where_conditions .= " AND (
+            nama_supplier LIKE ? 
+            OR no_faktur LIKE ? 
+            OR no_faktur_format LIKE ? 
+            OR kode_supplier LIKE ? 
+            OR CAST(nominal AS CHAR) LIKE ?
+            OR penerima LIKE ?
+            OR nama_bank LIKE ?
+            OR no_rek LIKE ?
+            OR atas_nama_rek LIKE ?
+            OR cabang_penerima LIKE ?
+        )";
+
+        $bind_types .= 'ssssssssss';
         $termRaw = '%' . $search_raw . '%';
         $termNumeric = '%' . $search_numeric . '%';
-        array_push($bind_params, $termRaw, $termRaw, $termRaw, $termRaw, $termNumeric);
+
+        array_push(
+            $bind_params,
+            $termRaw,
+            $termRaw,
+            $termRaw,
+            $termRaw,
+            $termNumeric,
+            $termRaw,
+            $termRaw,
+            $termRaw,
+            $termRaw,
+            $termRaw
+        );
     }
     $sql_update = "UPDATE serah_terima_nota SET 
                    sudah_dicetak = 'Sudah', 

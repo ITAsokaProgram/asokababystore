@@ -216,6 +216,7 @@ document.addEventListener("DOMContentLoaded", () => {
             status_kontra: params.get("status_kontra") || "",
             status_bayar: params.get("status_bayar") || "",
             status_pinjam: params.get("status_pinjam") || "",
+            cod: params.get("cod") || "",
             page: parseInt(params.get("page") || "1", 10),
         };
     }
@@ -238,6 +239,7 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("filter_status_kontra").value = params.status_kontra;
             document.getElementById("filter_status_bayar").value = params.status_bayar;
             document.getElementById("filter_status_pinjam").value = params.status_pinjam;
+            if (document.getElementById("filter_cod")) document.getElementById("filter_cod").value = params.cod;
             if (filterBulan) filterBulan.value = params.bulan;
             if (filterTahun) filterTahun.value = params.tahun;
             if (filterTglMulai) filterTglMulai.value = params.tgl_mulai;
