@@ -22,7 +22,8 @@ try {
     }
     $user_login = $verif->id ?? $verif->kode ?? null;
     $no_faktur_lama = $input['no_faktur_lama'] ?? null;
-    $no_faktur_baru = $input['no_faktur_baru'] ?? null;
+    $input_faktur_baru = $input['no_faktur_baru'] ?? null;
+    $no_faktur_baru_clean = preg_replace('/[^a-zA-Z0-9]/', '', $input_faktur_baru);
     $nominal_input = isset($input['nominal']) ? $input['nominal'] : null;
     $new_status = $input['status'] ?? 'Belum Terima';
     $input_tgl_diterima = $input['tgl_diterima'] ?? null;
@@ -69,14 +70,14 @@ try {
     } else {
         $nominal = (float) $old_data['nominal'];
     }
-    if ($old_data['status_bayar'] === 'Sudah') {
-        if ($no_faktur_baru !== $no_faktur_lama) {
-            throw new Exception("Gagal: No Faktur tidak dapat diubah karena status sudah Dibayar.");
-        }
-        if (abs((float) $nominal - (float) $old_data['nominal']) > 1.0) {
-            throw new Exception("Gagal: Nominal tidak dapat diubah karena status sudah Dibayar.");
-        }
-    }
+    // if ($old_data['status_bayar'] === 'Sudah') {
+    //     if ($no_faktur_baru_clean !== $no_faktur_lama) {
+    //         throw new Exception("Gagal: No Faktur tidak dapat diubah karena status sudah Dibayar.");
+    //     }
+    //     if (abs((float) $nominal - (float) $old_data['nominal']) > 1.0) {
+    //         throw new Exception("Gagal: Nominal tidak dapat diubah karena status sudah Dibayar.");
+    //     }
+    // }
     if ($old_data['status'] === 'Sudah Terima' && !empty($old_data['tgl_diterima']) && !empty($old_data['penerima'])) {
         if ($input_tgl_diterima !== $old_data['tgl_diterima']) {
             $input_tgl_diterima = $old_data['tgl_diterima'];
@@ -105,12 +106,12 @@ try {
     if ($old_data['status_bayar'] === 'Sudah' && $new_status_bayar === 'Belum') {
         throw new Exception("Gagal: Status Bayar yang sudah selesai tidak dapat diubah kembali ke Belum.");
     }
-    if ($no_faktur_baru !== $no_faktur_lama) {
+    if ($no_faktur_baru_clean !== $no_faktur_lama) {
         $stmt_cek = $conn->prepare("SELECT no_faktur FROM serah_terima_nota WHERE no_faktur = ? AND no_faktur != ?");
-        $stmt_cek->bind_param("ss", $no_faktur_baru, $no_faktur_lama);
+        $stmt_cek->bind_param("ss", $no_faktur_baru_clean, $no_faktur_lama);
         $stmt_cek->execute();
         if ($stmt_cek->get_result()->num_rows > 0) {
-            throw new Exception("Gagal: No Faktur '$no_faktur_baru' sudah digunakan pada data lain.");
+            throw new Exception("Gagal: No Faktur '$input_faktur_baru' (ID: $no_faktur_baru_clean) sudah digunakan.");
         }
         $stmt_cek->close();
     }
@@ -125,6 +126,7 @@ try {
     }
     $sql = "UPDATE serah_terima_nota SET 
                 no_faktur = ?, 
+                no_faktur_format = ?, 
                 nominal = ?, 
                 status = ?, 
                 status_kontra = ?, 
@@ -137,8 +139,9 @@ try {
             WHERE no_faktur = ?";
     $stmt_upd = $conn->prepare($sql);
     $stmt_upd->bind_param(
-        "sdssssssss",
-        $no_faktur_baru,
+        "ssdssssssss",
+        $no_faktur_baru_clean,
+        $input_faktur_baru,
         $nominal,
         $new_status,
         $new_status_kontra,
@@ -153,7 +156,8 @@ try {
         throw new Exception("Database Error: " . $stmt_upd->error);
     }
     $log_new_data = [
-        'no_faktur' => $no_faktur_baru,
+        'no_faktur' => $no_faktur_baru_clean,
+        'no_faktur_format' => $input_faktur_baru,
         'nominal' => $nominal,
         'status' => $new_status,
         'status_kontra' => $new_status_kontra,

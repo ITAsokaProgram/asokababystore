@@ -23,7 +23,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const filterTahun = document.getElementById("tahun");
     const filterTglMulai = document.getElementById("tgl_mulai");
     const filterTglSelesai = document.getElementById("tgl_selesai");
-    const exportExcelButton = document.getElementById("export-excel-button");
     const alertDependency = document.getElementById("alert-dependency");
     const alertLockedPaid = document.getElementById("alert-locked-paid");
     const alertLockedKontra = document.getElementById("alert-locked-kontra");
@@ -36,32 +35,25 @@ document.addEventListener("DOMContentLoaded", () => {
     let initialKontraState = 'Belum';
     let initialBayarState = 'Belum';
     let initialTerimaState = 'Belum Terima';
-    if (exportExcelButton) {
-        exportExcelButton.addEventListener("click", handleExportExcel);
-    }
     const updateModalState = () => {
         const isTerima = authStatusSelect.value === 'Sudah Terima';
         const hasPenerima = authPenerima.value.trim() !== '';
         const hasTanggal = authTglDiterima.value !== '';
         if (initialBayarState === 'Sudah') {
             authStatusSelect.disabled = true;
-            authNoFakturBaru.disabled = true;
-            if (authNominal) authNominal.disabled = true;
-            if (alertLockedPaid) alertLockedPaid.classList.remove("hidden");
+            authTglDiterima.disabled = true;
+            authPenerima.disabled = true;
+            authNoFakturBaru.disabled = false;
+            if (authNominal) authNominal.disabled = false;
+            if (alertLockedPaid) alertLockedPaid.classList.add("hidden");
         } else {
             authStatusSelect.disabled = false;
+            authTglDiterima.disabled = false;
+            authPenerima.disabled = false;
             authNoFakturBaru.disabled = false;
             if (authNominal) authNominal.disabled = false;
             if (alertLockedPaid) alertLockedPaid.classList.add("hidden");
         }
-        if (initialBayarState === 'Sudah') {
-            authTglDiterima.disabled = true;
-            authPenerima.disabled = true;
-        } else {
-            authTglDiterima.disabled = false;
-            authPenerima.disabled = false;
-        }
-        const isPrerequisitesMet = isTerima && hasPenerima && hasTanggal;
         if (isTerima && !hasPenerima) {
             authPenerima.classList.add('border-red-500');
         } else {
@@ -72,6 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
             authTglDiterima.classList.remove('border-red-500');
         }
+        const isPrerequisitesMet = isTerima && hasPenerima && hasTanggal;
         if (isPrerequisitesMet) {
             alertDependency.classList.add("hidden");
             if (initialKontraState === 'Sudah') {
@@ -106,10 +99,10 @@ document.addEventListener("DOMContentLoaded", () => {
             el.addEventListener('input', updateModalState);
         }
     });
-    window.openStatusModal = (faktur, sTerima, sKontra, sBayar, sPinjam, penerima, tgl, nominalVal) => {
+    window.openStatusModal = (fakturClean, fakturFormat, sTerima, sKontra, sBayar, sPinjam, penerima, tgl, nominalVal) => {
         formAuth.reset();
-        document.getElementById("auth_nota_id").value = faktur;
-        document.getElementById("auth_no_faktur_baru").value = faktur;
+        document.getElementById("auth_nota_id").value = fakturClean;
+        document.getElementById("auth_no_faktur_baru").value = fakturFormat;
         if (authNominal) authNominal.value = nominalVal || 0;
         authStatusSelect.value = (!sTerima || sTerima === 'null') ? 'Belum Terima' : sTerima;
         authPenerima.value = (penerima && penerima !== 'null') ? penerima : '';
@@ -160,18 +153,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const elTgl = document.getElementById('cod_tgl_masuk');
         const elCabang = document.getElementById('cod_cabang');
         const elBadge = document.getElementById('cod_lengkap_badge');
-
         const secBank = document.getElementById('cod_bank_section');
         const msgNoBank = document.getElementById('cod_no_bank_msg');
         const elBankName = document.getElementById('cod_bank_name');
         const elNoRek = document.getElementById('cod_no_rek');
         const elAnRek = document.getElementById('cod_an_rek');
-
-        // Format Date
         elTgl.textContent = formatDate(tglMasuk);
         elCabang.textContent = (cabang && cabang !== 'null') ? cabang : '-';
-
-        // Badge Lengkap/Tidak
         if (lengkap === 'Ya' || lengkap === 'Lengkap') {
             elBadge.className = 'px-2 py-1 text-xs font-bold text-green-700 bg-green-100 rounded-full';
             elBadge.textContent = 'LENGKAP';
@@ -179,10 +167,7 @@ document.addEventListener("DOMContentLoaded", () => {
             elBadge.className = 'px-2 py-1 text-xs font-bold text-orange-700 bg-orange-100 rounded-full';
             elBadge.textContent = 'TIDAK LENGKAP';
         }
-
-        // Cek Info Bank (Nullable)
         const hasBankInfo = (noRek && noRek !== 'null' && noRek !== '') || (namaBank && namaBank !== 'null');
-
         if (hasBankInfo) {
             secBank.classList.remove('hidden');
             msgNoBank.classList.add('hidden');
@@ -193,10 +178,8 @@ document.addEventListener("DOMContentLoaded", () => {
             secBank.classList.add('hidden');
             msgNoBank.classList.remove('hidden');
         }
-
         modal.classList.remove('hidden');
     };
-
     async function processDelete(noFaktur, user, pass) {
         const token = getCookie("admin_token");
         try {
@@ -240,7 +223,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if (authStatusSelect.disabled) formData.append("status", authStatusSelect.value);
             if (authTglDiterima.disabled) formData.append("tgl_diterima", authTglDiterima.value);
             if (authPenerima.disabled) formData.append("penerima", authPenerima.value);
-            if (authNoFakturBaru.disabled) formData.append("no_faktur_baru", authNoFakturBaru.value);
             if (authStatusSelect.value === 'Sudah Terima') {
                 if (!authPenerima.value.trim()) {
                     Swal.fire("Gagal", "Nama Penerima wajib diisi jika status Sudah Terima!", "warning");
@@ -251,16 +233,16 @@ document.addEventListener("DOMContentLoaded", () => {
                     return;
                 }
             }
-            if (authNominal && authNominal.disabled === false) {
-                formData.append("nominal", authNominal.value);
-            }
             const jsonData = Object.fromEntries(formData.entries());
             const token = getCookie("admin_token");
             try {
                 Swal.fire({ title: 'Memproses...', didOpen: () => Swal.showLoading() });
                 const response = await fetch('/src/api/finance/update_status_serah_terima.php', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
                     body: JSON.stringify(jsonData)
                 });
                 const result = await response.json();
@@ -272,7 +254,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     Swal.fire("Gagal", result.message, "error");
                 }
             } catch (error) {
-                console.error(error); Swal.fire("Error", "Terjadi kesalahan sistem", "error");
+                console.error(error);
+                Swal.fire("Error", "Terjadi kesalahan sistem", "error");
             }
         });
     }
@@ -308,151 +291,6 @@ document.addEventListener("DOMContentLoaded", () => {
             month: "2-digit",
             year: "numeric",
         });
-    }
-    async function handleExportExcel() {
-        const params = getUrlParams();
-        const currencyFmt = "#,##0";
-        let periodeText = "";
-        if (params.filter_type === "month") {
-            const monthNames = [
-                "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-                "Juli", "Agustus", "September", "Oktober", "November", "Desember",
-            ];
-            const mIndex = parseInt(params.bulan) - 1;
-            periodeText = `BULAN ${monthNames[mIndex].toUpperCase()} ${params.tahun}`;
-        } else {
-            periodeText = `${params.tgl_mulai} s/d ${params.tgl_selesai}`;
-        }
-        Swal.fire({
-            title: "Menyiapkan Excel...",
-            text: "Sedang mengambil data...",
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            },
-        });
-        try {
-            const queryString = new URLSearchParams({
-                filter_type: params.filter_type,
-                bulan: params.bulan,
-                tahun: params.tahun,
-                tgl_mulai: params.tgl_mulai,
-                tgl_selesai: params.tgl_selesai,
-                search_supplier: params.search_supplier,
-            }).toString();
-            const response = await fetch(
-                `/src/api/finance/get_export_laporan_serah_terima_nota.php?${queryString}`
-            );
-            if (!response.ok) throw new Error("Gagal mengambil data export");
-            const result = await response.json();
-            if (result.error) throw new Error(result.error);
-            const data = result.data;
-            if (!data || data.length === 0) {
-                Swal.fire("Info", "Tidak ada data untuk diexport", "info");
-                return;
-            }
-            const workbook = new ExcelJS.Workbook();
-            const sheet = workbook.addWorksheet("Serah Terima Nota");
-            sheet.columns = [
-                { key: "no", width: 5 },
-                { key: "tgl_nota", width: 15 },
-                { key: "nama_supplier", width: 30 },
-                { key: "no_faktur", width: 20 },
-                { key: "nominal", width: 18 },
-                { key: "tgl_diserahkan", width: 15 },
-                { key: "tgl_diterima", width: 15 },
-                { key: "status", width: 15 },
-                { key: "status_kontra", width: 10 },
-                { key: "status_bayar", width: 10 },
-                { key: "status_pinjam", width: 10 },
-                { key: "diberikan", width: 15 },
-                { key: "penerima", width: 15 },
-            ];
-            sheet.mergeCells("A1:M1");
-            const titleCell = sheet.getCell("A1");
-            titleCell.value = `LAPORAN SERAH TERIMA NOTA - ${periodeText}`;
-            titleCell.font = { name: "Arial", size: 14, bold: true };
-            titleCell.alignment = { horizontal: "center" };
-            const headers = [
-                "No", "Tgl Nota", "Nama Supplier", "No Faktur",
-                "Nominal",
-                "Tgl Diserahkan", "Tgl Diterima", "Status",
-                "Kontra", "Bayar", "Pinjam",
-                "Diberikan", "Penerima"
-            ];
-            const headerRow = sheet.getRow(3);
-            headerRow.values = headers;
-            headerRow.eachCell((cell) => {
-                cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
-                cell.fill = {
-                    type: "pattern",
-                    pattern: "solid",
-                    fgColor: { argb: "FFDB2777" },
-                };
-                cell.alignment = { horizontal: "center", vertical: "middle" };
-                cell.border = {
-                    top: { style: "thin" },
-                    left: { style: "thin" },
-                    bottom: { style: "thin" },
-                    right: { style: "thin" },
-                };
-            });
-            let rowNum = 4;
-            data.forEach((item, index) => {
-                const r = sheet.getRow(rowNum);
-                r.values = [
-                    index + 1,
-                    item.tgl_nota,
-                    item.nama_supplier,
-                    item.no_faktur_format,
-                    parseFloat(item.nominal) || 0,
-                    item.tgl_diserahkan,
-                    item.tgl_diterima,
-                    item.status,
-                    item.status_kontra,
-                    item.status_bayar,
-                    item.status_pinjam,
-                    item.diberikan,
-                    item.penerima
-                ];
-                r.getCell(5).numFmt = currencyFmt;
-                r.eachCell((cell) => {
-                    cell.border = {
-                        top: { style: "thin" },
-                        left: { style: "thin" },
-                        bottom: { style: "thin" },
-                        right: { style: "thin" },
-                    };
-                });
-                rowNum++;
-            });
-            const buffer = await workbook.xlsx.writeBuffer();
-            const blob = new Blob([buffer], {
-                type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            });
-            const url = window.URL.createObjectURL(blob);
-            const anchor = document.createElement("a");
-            anchor.href = url;
-            let filename = `Laporan_serah_terima_nota_`;
-            if (params.filter_type === "month") {
-                filename += `${params.bulan}_${params.tahun}`;
-            } else {
-                filename += `${params.tgl_mulai}_sd_${params.tgl_selesai}`;
-            }
-            anchor.download = `${filename}.xlsx`;
-            anchor.click();
-            window.URL.revokeObjectURL(url);
-            Swal.fire({
-                icon: "success",
-                title: "Berhasil",
-                text: "Data berhasil diexport ke Excel.",
-                timer: 1500,
-                showConfirmButton: false,
-            });
-        } catch (e) {
-            console.error(e);
-            Swal.fire("Error", e.message, "error");
-        }
     }
     function getUrlParams() {
         const params = new URLSearchParams(window.location.search);
@@ -551,7 +389,6 @@ document.addEventListener("DOMContentLoaded", () => {
     function setLoadingState(isLoading, isPagination = false) {
         if (isLoading) {
             if (filterSubmitButton) filterSubmitButton.disabled = true;
-            if (exportExcelButton) exportExcelButton.disabled = true;
             if (filterSubmitButton)
                 filterSubmitButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i><span>Memuat...</span>`;
             if (tableBody)
@@ -563,7 +400,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 filterSubmitButton.disabled = false;
                 filterSubmitButton.innerHTML = `<i class="fas fa-filter"></i><span>Tampilkan</span>`;
             }
-            if (exportExcelButton) exportExcelButton.disabled = false;
         }
     }
     function showTableError(message) {
@@ -579,48 +415,35 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tr>`;
             return;
         }
-
         let htmlRows = "";
         let item_counter = offset + 1;
-
         tabel_data.forEach((row) => {
             const nominal = parseFloat(row.nominal) || 0;
             const tglNota = formatDate(row.tgl_nota);
             const tglDiserahkan = formatDate(row.tgl_diserahkan);
             const tglDiterima = formatDate(row.tgl_diterima);
-
-            // Sanitasi string untuk parameter JS
             const rawPenerima = row.penerima ? row.penerima.replace(/'/g, "\\'") : '';
             const rawTglDiterima = row.tgl_diterima ? row.tgl_diterima : '';
-
+            const rawFakturFormat = row.no_faktur_format ? row.no_faktur_format.replace(/'/g, "\\'") : row.no_faktur;
             const sKontra = row.status_kontra || 'Belum';
             const sBayar = row.status_bayar || 'Belum';
             const sPinjam = row.status_pinjam || 'Tidak';
             const sTerima = row.status || 'Belum Terima';
-
-            // --- LOGIKA COD ---
             const isCOD = row.cod === 'Ya';
-
-            // Siapkan class baris
             let trClass = "border-b transition-colors ";
             let trClickAction = "";
-
             if (isCOD) {
-                trClass += "hover:bg-blue-50 cursor-pointer"; // Visual cue bahwa bisa diklik
-
-                // Ambil data detail COD, handle null/undefined
+                trClass += "hover:bg-blue-50 cursor-pointer";
                 const codTglMasuk = row.nota_tanggal_masuk || '';
                 const codCabang = row.cabang_penerima ? row.cabang_penerima.replace(/'/g, "\\'") : '';
                 const codLengkap = row.lengkap || 'Tidak';
                 const codNoRek = row.no_rek ? row.no_rek.replace(/'/g, "\\'") : '';
                 const codNamaBank = row.nama_bank ? row.nama_bank.replace(/'/g, "\\'") : '';
                 const codAnRek = row.atas_nama_rek ? row.atas_nama_rek.replace(/'/g, "\\'") : '';
-
                 trClickAction = `onclick="window.showDetailCod('${codTglMasuk}', '${codCabang}', '${codLengkap}', '${codNoRek}', '${codNamaBank}', '${codAnRek}')"`;
             } else {
                 trClass += "hover:bg-gray-50";
             }
-
             const createBadge = (val, type) => {
                 let colorClass = 'bg-gray-100 text-gray-600 border-gray-200';
                 if (type === 'terima' && val === 'Sudah Terima') colorClass = 'bg-green-100 text-green-800 border-green-200';
@@ -630,12 +453,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (type === 'pinjam' && val === 'Pinjam') colorClass = 'bg-orange-100 text-orange-700 border-orange-200';
                 return `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border ${colorClass}">${val}</span>`;
             };
-
             htmlRows += `
             <tr class="${trClass}" ${trClickAction}>
                 <td class="px-2 text-center whitespace-nowrap">
                     <button type="button" 
-                        onclick="event.stopPropagation(); window.openStatusModal('${row.no_faktur}', '${sTerima}', '${sKontra}', '${sBayar}', '${sPinjam}', '${rawPenerima}', '${rawTglDiterima}', ${nominal})"
+                        onclick="event.stopPropagation(); window.openStatusModal('${row.no_faktur}', '${rawFakturFormat}', '${sTerima}', '${sKontra}', '${sBayar}', '${sPinjam}', '${rawPenerima}', '${rawTglDiterima}', ${nominal})"
                         class="inline-flex items-center justify-center w-8 h-8 mr-1 transition-all border rounded-full shadow-sm bg-pink-50 text-pink-600 hover:bg-pink-100 hover:text-pink-800 border-pink-100" 
                         title="Edit Status">
                         <i class="fas fa-edit"></i>
@@ -666,10 +488,8 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
             item_counter++;
         });
-
         tableBody.innerHTML = htmlRows;
     }
-
     function renderPagination(pagination) {
         if (!pagination) {
             paginationInfo.textContent = "";

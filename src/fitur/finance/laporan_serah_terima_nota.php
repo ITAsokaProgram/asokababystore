@@ -64,7 +64,6 @@ require_once __DIR__ . '/../../component/menu_handler.php';
     <link rel="stylesheet" href="../../style/pink-theme.css">
     <link rel="icon" type="image/png" href="../../../public/images/logo1.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
     <style>
         #form-otorisasi input:disabled,
         #form-otorisasi select:disabled {
@@ -80,11 +79,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
             cursor: not-allowed !important;
         }
 
-        #form-otorisasi #auth_display_selisih {
-            background-color: #f3f4f6 !important;
-            color: #6b7280 !important;
-            cursor: not-allowed !important;
-        }
+
 
         .table-container {
             max-height: 70vh;
@@ -239,11 +234,6 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                     <span>Tampilkan</span>
                                 </button>
 
-                                <button type="button" id="export-excel-button"
-                                    class="w-12 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-2 rounded-lg transition-colors shadow-sm inline-flex items-center justify-center"
-                                    title="Export Excel">
-                                    <i class="fas fa-file-excel"></i>
-                                </button>
                             </div>
                         </div>
 
@@ -347,25 +337,16 @@ require_once __DIR__ . '/../../component/menu_handler.php';
 
                         <div class="p-3 bg-pink-50 rounded-lg border border-pink-100 mb-4">
                             <h4 class="text-xs font-bold text-pink-700 mb-2 uppercase">Edit Data Nota</h4>
-                            <div class="grid grid-cols-2 gap-4 mb-2">
+                            <div class="flex flex-wrap gap-4 mb-2">
                                 <div class="col-span-2">
                                     <label class="block text-xs font-semibold text-gray-700 mb-1">No Faktur</label>
                                     <input type="text" name="no_faktur_baru" id="auth_no_faktur_baru"
                                         class="input-modern w-full font-mono text-sm" placeholder="No Faktur">
                                 </div>
-                            </div>
-                            <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-xs font-semibold text-gray-700 mb-1">Nominal</label>
                                     <input type="number" step="0.01" name="nominal" id="auth_nominal"
                                         class="input-modern w-full font-mono text-sm text-right" placeholder="0">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-semibold text-gray-700 mb-1">Estimasi
-                                        Selisih</label>
-                                    <input type="text" id="auth_display_selisih" readonly
-                                        class="input-modern w-full font-mono text-sm text-right bg-gray-100 text-gray-500 cursor-not-allowed"
-                                        placeholder="0">
                                 </div>
                             </div>
                         </div>
