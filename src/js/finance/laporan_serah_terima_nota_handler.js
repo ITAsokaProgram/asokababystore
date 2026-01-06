@@ -309,6 +309,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 `;
             }
             const isCOD = row.cod === 'Ya';
+            let btnPrintCOD = '';
+            if (isCOD) {
+                btnPrintCOD = `
+                    <button type="button" 
+                        onclick="event.stopPropagation(); window.printCodExcel('${rowDataEncoded}')"
+                        class="inline-flex items-center justify-center w-8 h-8 mr-1 transition-all border rounded-full shadow-sm bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-800 border-blue-100" 
+                        title="Cetak Form COD (Excel)">
+                        <i class="fas fa-print"></i>
+                    </button>
+                `;
+            }
             let trClass = "border-b transition-colors " + (isCOD ? "hover:bg-blue-50 cursor-pointer" : "hover:bg-gray-50");
             let trClickAction = isCOD ? `onclick="window.showDetailCod('${row.nota_tanggal_masuk || ''}', '${(row.cabang_penerima || '').replace(/'/g, "\\'")}', '${row.lengkap || ''}', '${(row.no_rek || '').replace(/'/g, "\\'")}', '${(row.nama_bank || '').replace(/'/g, "\\'")}', '${(row.atas_nama_rek || '').replace(/'/g, "\\'")}')"` : "";
             htmlRows += `
@@ -320,6 +331,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         title="Edit Status Utama">
                         <i class="fas fa-edit"></i>
                     </button>
+                    ${btnPrintCOD}
                     ${btnEditKontra}
                     <button type="button" 
                         onclick="event.stopPropagation(); window.deleteNota('${row.no_faktur}')"
@@ -503,7 +515,6 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
                 const tglMulaiFmt = formatDateExcel(params.tgl_mulai);
                 const tglSelesaiFmt = formatDateExcel(params.tgl_selesai);
-
                 if (params.tgl_mulai === params.tgl_selesai) {
                     titleText = `NOTA TANGGAL: ${tglMulaiFmt}`;
                 } else {
@@ -575,5 +586,162 @@ document.addEventListener("DOMContentLoaded", () => {
         const d = new Date(dateString);
         return d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
     }
+    window.printCodExcel = async (rowDataEncoded) => {
+        const row = JSON.parse(decodeURIComponent(rowDataEncoded));
+        try {
+            const token = getCookie("admin_token");
+            await fetch('/src/api/finance/update_print_cod.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify({ no_faktur: row.no_faktur })
+            });
+        } catch (e) {
+            console.error("Gagal tracking print:", e);
+        }
+        const workbook = new ExcelJS.Workbook();
+        const sheet = workbook.addWorksheet("Form COD");
+        const today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+        let keteranganText = "";
+        const { lengkap } = row;
+
+        sheet.mergeCells('A1:I1');
+        const titleCell = sheet.getCell('A1');
+        titleCell.value = "FORM COD / PEMBAYARAN CASH / TEMPO MASA TERTENTU";
+        titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+        titleCell.font = { bold: true, size: 14 };
+        const headers = [
+            "NO", "TGL NOTA FISIK", "TGL TERIMA NOTA", "TGL KEDATANGAN BARANG",
+            "NAMA SUPPLIER", "KODE SUPPLIER", "NO. FAKTUR", "NAMA CABANG", "KETERANGAN"
+        ];
+        sheet.getRow(2).values = headers;
+        sheet.getRow(2).font = { bold: true };
+        sheet.getRow(2).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+        for (let i = 1; i <= 9; i++) {
+            sheet.getCell(2, i).border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+            sheet.getCell(2, i).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF0F0F0' } };
+        }
+        const rowData = [
+            1,
+            formatDateExcel(row.tgl_nota),
+            formatDateExcel(row.tgl_diterima),
+            formatDateExcel(row.nota_tanggal_masuk),
+            row.nama_supplier || '-',
+            row.kode_supplier || '-',
+            row.no_faktur_format || row.no_faktur,
+            row.cabang_penerima || '-',
+            lengkap === 'Ya' ? "Lengkap" : lengkap === 'Tidak' ? "Tidak Lengkap" : "Belum Lengkap",
+        ];
+        sheet.getRow(3).values = rowData;
+        sheet.getRow(3).alignment = { vertical: 'top', wrapText: true };
+        for (let i = 1; i <= 9; i++) {
+            sheet.getCell(3, i).border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+        }
+        sheet.mergeCells('A6:B6'); sheet.getCell('A6').value = "BANK";
+        sheet.mergeCells('C6:D6'); sheet.getCell('C6').value = "A/N";
+        sheet.mergeCells('E6:F6'); sheet.getCell('E6').value = "NO. REK";
+        sheet.mergeCells('G6:I6'); sheet.getCell('G6').value = "TANGGAL";
+        const bankRow = sheet.getRow(6);
+        bankRow.font = { bold: true };
+        bankRow.alignment = { horizontal: 'center', vertical: 'middle' };
+        ['A6', 'C6', 'E6', 'G6'].forEach(cell => {
+            sheet.getCell(cell).border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+            sheet.getCell(cell).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF0F0F0' } };
+        });
+        sheet.getCell('B6').border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } };
+        sheet.getCell('D6').border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } };
+        sheet.getCell('F6').border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } };
+        sheet.getCell('I6').border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } };
+        sheet.mergeCells('A7:B7'); sheet.getCell('A7').value = row.nama_bank || '-';
+        sheet.mergeCells('C7:D7'); sheet.getCell('C7').value = row.atas_nama_rek || '-';
+        sheet.mergeCells('E7:F7'); sheet.getCell('E7').value = row.no_rek ? `${row.no_rek}` : '-';
+        sheet.mergeCells('G7:I7'); sheet.getCell('G7').value = today;
+        const bankValRow = sheet.getRow(7);
+        bankValRow.alignment = { horizontal: 'center', vertical: 'middle' };
+        ['A7', 'C7', 'E7', 'G7'].forEach(cell => {
+            sheet.getCell(cell).border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+        });
+        sheet.getCell('B7').border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } };
+        sheet.getCell('D7').border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } };
+        sheet.getCell('F7').border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } };
+        sheet.getCell('I7').border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } };
+        const startRowTTD = 10;
+        sheet.mergeCells(`A${startRowTTD}:B${startRowTTD}`); sheet.getCell(`A${startRowTTD}`).value = "DIBUAT OLEH";
+        sheet.mergeCells(`C${startRowTTD}:D${startRowTTD}`); sheet.getCell(`C${startRowTTD}`).value = "DIPERIKSA OLEH";
+        sheet.mergeCells(`E${startRowTTD}:F${startRowTTD}`); sheet.getCell(`E${startRowTTD}`).value = "DITERIMA OLEH";
+        sheet.mergeCells(`G${startRowTTD}:I${startRowTTD}`); sheet.getCell(`G${startRowTTD}`).value = "DISETUJUI OLEH";
+        const ttdHeaderRow = sheet.getRow(startRowTTD);
+        ttdHeaderRow.font = { bold: true };
+        ttdHeaderRow.alignment = { horizontal: 'center', vertical: 'middle' };
+        [`A${startRowTTD}`, `C${startRowTTD}`, `E${startRowTTD}`, `G${startRowTTD}`].forEach(cell => {
+            sheet.getCell(cell).border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+            sheet.getCell(cell).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF0F0F0' } };
+        });
+        sheet.getCell(`B${startRowTTD}`).border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } };
+        sheet.getCell(`D${startRowTTD}`).border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } };
+        sheet.getCell(`F${startRowTTD}`).border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } };
+        sheet.getCell(`I${startRowTTD}`).border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } };
+        for (let r = startRowTTD + 1; r < startRowTTD + 5; r++) {
+            sheet.mergeCells(`A${r}:B${r}`);
+            sheet.getCell(`A${r}`).border = { left: { style: 'thin' } };
+            sheet.getCell(`B${r}`).border = { right: { style: 'thin' } };
+            sheet.mergeCells(`C${r}:D${r}`);
+            sheet.getCell(`C${r}`).border = { left: { style: 'thin' } };
+            sheet.getCell(`D${r}`).border = { right: { style: 'thin' } };
+            sheet.mergeCells(`E${r}:F${r}`);
+            sheet.getCell(`E${r}`).border = { left: { style: 'thin' } };
+            sheet.getCell(`F${r}`).border = { right: { style: 'thin' } };
+            sheet.mergeCells(`G${r}:I${r}`);
+            sheet.getCell(`G${r}`).border = { left: { style: 'thin' } };
+            sheet.getCell(`I${r}`).border = { right: { style: 'thin' } };
+        }
+        const rowNama = startRowTTD + 5;
+        sheet.mergeCells(`A${rowNama}:B${rowNama}`); sheet.getCell(`A${rowNama}`).value = "(....................)";
+        sheet.mergeCells(`C${rowNama}:D${rowNama}`); sheet.getCell(`C${rowNama}`).value = "(....................)";
+        sheet.mergeCells(`E${rowNama}:F${rowNama}`); sheet.getCell(`E${rowNama}`).value = "(....................)";
+        sheet.mergeCells(`G${rowNama}:I${rowNama}`); sheet.getCell(`G${rowNama}`).value = "(....................)";
+        sheet.getRow(rowNama).alignment = { horizontal: 'center', vertical: 'bottom' };
+        sheet.getRow(rowNama).height = 20;
+        [`A${rowNama}`, `C${rowNama}`, `E${rowNama}`, `G${rowNama}`].forEach(cell => {
+            sheet.getCell(cell).border = { left: { style: 'thin' } };
+        });
+        sheet.getCell(`B${rowNama}`).border = { right: { style: 'thin' } };
+        sheet.getCell(`D${rowNama}`).border = { right: { style: 'thin' } };
+        sheet.getCell(`F${rowNama}`).border = { right: { style: 'thin' } };
+        sheet.getCell(`I${rowNama}`).border = { right: { style: 'thin' } };
+        const rowTgl = startRowTTD + 6;
+        sheet.mergeCells(`A${rowTgl}:B${rowTgl}`); sheet.getCell(`A${rowTgl}`).value = "Tgl: ....................";
+        sheet.mergeCells(`C${rowTgl}:D${rowTgl}`); sheet.getCell(`C${rowTgl}`).value = "Tgl: ....................";
+        sheet.mergeCells(`E${rowTgl}:F${rowTgl}`); sheet.getCell(`E${rowTgl}`).value = "Tgl: ....................";
+        sheet.mergeCells(`G${rowTgl}:I${rowTgl}`); sheet.getCell(`G${rowTgl}`).value = "Tgl: ....................";
+        sheet.getRow(rowTgl).font = { size: 9, italic: true };
+        sheet.getRow(rowTgl).alignment = { horizontal: 'center', vertical: 'top' };
+        [`A${rowTgl}`, `C${rowTgl}`, `E${rowTgl}`, `G${rowTgl}`].forEach(cell => {
+            sheet.getCell(cell).border = { left: { style: 'thin' }, bottom: { style: 'thin' } };
+        });
+        sheet.getCell(`B${rowTgl}`).border = { right: { style: 'thin' }, bottom: { style: 'thin' } };
+        sheet.getCell(`D${rowTgl}`).border = { right: { style: 'thin' }, bottom: { style: 'thin' } };
+        sheet.getCell(`F${rowTgl}`).border = { right: { style: 'thin' }, bottom: { style: 'thin' } };
+        sheet.getCell(`I${rowTgl}`).border = { right: { style: 'thin' }, bottom: { style: 'thin' } };
+        sheet.getColumn(1).width = 5;
+        sheet.getColumn(2).width = 15;
+        sheet.getColumn(3).width = 15;
+        sheet.getColumn(4).width = 15;
+        sheet.getColumn(5).width = 25;
+        sheet.getColumn(6).width = 15;
+        sheet.getColumn(7).width = 20;
+        sheet.getColumn(8).width = 20;
+        sheet.getColumn(9).width = 30;
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+        const url = window.URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = `FORM_COD_${row.no_faktur}.xlsx`;
+        anchor.click();
+        window.URL.revokeObjectURL(url);
+    };
     loadData();
 });
