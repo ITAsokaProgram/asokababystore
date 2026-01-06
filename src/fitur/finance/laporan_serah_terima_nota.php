@@ -64,6 +64,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
     <link rel="stylesheet" href="../../style/pink-theme.css">
     <link rel="icon" type="image/png" href="../../../public/images/logo1.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
     <style>
         #form-otorisasi input:disabled,
         #form-otorisasi select:disabled {
@@ -123,6 +124,11 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                         </div>
 
                         <div class="flex items-center gap-2">
+                            <button type="button" id="btn-export-excel"
+                                class=" flex items-center gap-2 px-4 py-2 shadow-lg shadow-green-500/30 rounded-lg text-white transition-transform hover:scale-105 text-sm decoration-0 bg-green-600 hover:bg-green-700">
+                                <i class="fas fa-file-excel"></i> <span>Export Excel</span>
+                            </button>
+
                             <a href="input_serah_terima_nota.php"
                                 class="btn-primary flex items-center gap-2 px-4 py-2 shadow-lg shadow-pink-500/30 rounded-lg text-white transition-transform hover:scale-105 text-sm decoration-0">
                                 <i class="fas fa-plus"></i> <span>Input Baru</span>
@@ -137,7 +143,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
 
                         <div class="lg:col-span-1">
                             <label for="filter_type" class="block text-xs font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-filter text-pink-600 mr-1"></i> Mode Periode
+                                <i class="fas fa-filter text-pink-600 mr-1"></i> Mode Periode (Berdasarkan Tanggal Nota)
                             </label>
                             <select name="filter_type" id="filter_type"
                                 class="input-modern w-full font-semibold text-pink-700 bg-pink-50 border-pink-200">
