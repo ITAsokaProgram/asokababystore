@@ -442,6 +442,78 @@ require_once __DIR__ . '/../../component/menu_handler.php';
             </div>
         </div>
     </div>
+    <div id="modal-detail-cod" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title"
+        role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" aria-hidden="true"
+                onclick="document.getElementById('modal-detail-cod').classList.add('hidden')"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            <div
+                class="inline-block w-full overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle max-w-lg">
+                <div class="px-4 pt-5 pb-4 bg-white sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div
+                            class="flex items-center justify-center flex-shrink-0 w-12 h-12 mx-auto bg-blue-100 rounded-full sm:mx-0 sm:h-10 sm:w-10">
+                            <i class="text-blue-600 fa-solid fa-truck-fast"></i>
+                        </div>
+                        <div class="w-full mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900" id="modal-title">Detail COD</h3>
+                            <div class="mt-4 space-y-3">
+                                <div class="grid grid-cols-2 gap-2 pb-2 border-b border-gray-100">
+                                    <div>
+                                        <p class="text-xs text-gray-500">Tanggal Masuk Nota</p>
+                                        <p class="font-semibold text-gray-800" id="cod_tgl_masuk">-</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-gray-500">Cabang Penerima</p>
+                                        <p class="font-semibold text-gray-800" id="cod_cabang">-</p>
+                                    </div>
+                                    <div class="col-span-2 mt-1">
+                                        <p class="text-xs text-gray-500">Keterangan Dokumen</p>
+                                        <span id="cod_lengkap_badge"
+                                            class="px-2 py-1 text-xs font-bold rounded-full"></span>
+                                    </div>
+                                </div>
+
+                                <div id="cod_bank_section" class="hidden pt-2">
+                                    <h4 class="mb-2 text-xs font-bold tracking-wide text-gray-400 uppercase">Informasi
+                                        Transfer</h4>
+                                    <div class="p-3 rounded-lg bg-gray-50">
+                                        <div class="grid grid-cols-1 gap-2">
+                                            <div>
+                                                <p class="text-xs text-gray-500">Bank</p>
+                                                <p class="font-bold text-gray-800" id="cod_bank_name">-</p>
+                                            </div>
+                                            <div>
+                                                <p class="text-xs text-gray-500">No. Rekening</p>
+                                                <p class="font-mono text-sm font-semibold text-gray-800"
+                                                    id="cod_no_rek">-</p>
+                                            </div>
+                                            <div>
+                                                <p class="text-xs text-gray-500">Atas Nama</p>
+                                                <p class="font-semibold text-gray-800" id="cod_an_rek">-</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="cod_no_bank_msg" class="hidden pt-2 text-center">
+                                    <p class="text-xs italic text-gray-400">Tidak ada informasi rekening.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="px-4 py-3 bg-gray-50 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" onclick="document.getElementById('modal-detail-cod').classList.add('hidden')"
+                        class="inline-flex justify-center w-full px-4 py-2 text-base font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="/src/js/middleware_auth.js"></script>
     <script src="../../js/finance/laporan_serah_terima_nota_handler.js" type="module"></script>

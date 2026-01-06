@@ -155,6 +155,48 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     };
+    window.showDetailCod = (tglMasuk, cabang, lengkap, noRek, namaBank, anRek) => {
+        const modal = document.getElementById('modal-detail-cod');
+        const elTgl = document.getElementById('cod_tgl_masuk');
+        const elCabang = document.getElementById('cod_cabang');
+        const elBadge = document.getElementById('cod_lengkap_badge');
+
+        const secBank = document.getElementById('cod_bank_section');
+        const msgNoBank = document.getElementById('cod_no_bank_msg');
+        const elBankName = document.getElementById('cod_bank_name');
+        const elNoRek = document.getElementById('cod_no_rek');
+        const elAnRek = document.getElementById('cod_an_rek');
+
+        // Format Date
+        elTgl.textContent = formatDate(tglMasuk);
+        elCabang.textContent = (cabang && cabang !== 'null') ? cabang : '-';
+
+        // Badge Lengkap/Tidak
+        if (lengkap === 'Ya' || lengkap === 'Lengkap') {
+            elBadge.className = 'px-2 py-1 text-xs font-bold text-green-700 bg-green-100 rounded-full';
+            elBadge.textContent = 'LENGKAP';
+        } else {
+            elBadge.className = 'px-2 py-1 text-xs font-bold text-orange-700 bg-orange-100 rounded-full';
+            elBadge.textContent = 'TIDAK LENGKAP';
+        }
+
+        // Cek Info Bank (Nullable)
+        const hasBankInfo = (noRek && noRek !== 'null' && noRek !== '') || (namaBank && namaBank !== 'null');
+
+        if (hasBankInfo) {
+            secBank.classList.remove('hidden');
+            msgNoBank.classList.add('hidden');
+            elBankName.textContent = (namaBank && namaBank !== 'null') ? namaBank : '-';
+            elNoRek.textContent = (noRek && noRek !== 'null') ? noRek : '-';
+            elAnRek.textContent = (anRek && anRek !== 'null') ? anRek : '-';
+        } else {
+            secBank.classList.add('hidden');
+            msgNoBank.classList.remove('hidden');
+        }
+
+        modal.classList.remove('hidden');
+    };
+
     async function processDelete(noFaktur, user, pass) {
         const token = getCookie("admin_token");
         try {
@@ -531,25 +573,54 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!tabel_data || tabel_data.length === 0) {
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="16" class="text-center p-8 text-gray-500"> <i class="fas fa-inbox fa-lg mb-2"></i>
+                    <td colspan="14" class="text-center p-8 text-gray-500"> <i class="fas fa-inbox fa-lg mb-2"></i>
                         <p>Tidak ada data ditemukan untuk filter ini.</p>
                     </td>
                 </tr>`;
             return;
         }
+
         let htmlRows = "";
         let item_counter = offset + 1;
+
         tabel_data.forEach((row) => {
             const nominal = parseFloat(row.nominal) || 0;
             const tglNota = formatDate(row.tgl_nota);
             const tglDiserahkan = formatDate(row.tgl_diserahkan);
             const tglDiterima = formatDate(row.tgl_diterima);
+
+            // Sanitasi string untuk parameter JS
             const rawPenerima = row.penerima ? row.penerima.replace(/'/g, "\\'") : '';
             const rawTglDiterima = row.tgl_diterima ? row.tgl_diterima : '';
+
             const sKontra = row.status_kontra || 'Belum';
             const sBayar = row.status_bayar || 'Belum';
             const sPinjam = row.status_pinjam || 'Tidak';
             const sTerima = row.status || 'Belum Terima';
+
+            // --- LOGIKA COD ---
+            const isCOD = row.cod === 'Ya';
+
+            // Siapkan class baris
+            let trClass = "border-b transition-colors ";
+            let trClickAction = "";
+
+            if (isCOD) {
+                trClass += "hover:bg-blue-50 cursor-pointer"; // Visual cue bahwa bisa diklik
+
+                // Ambil data detail COD, handle null/undefined
+                const codTglMasuk = row.nota_tanggal_masuk || '';
+                const codCabang = row.cabang_penerima ? row.cabang_penerima.replace(/'/g, "\\'") : '';
+                const codLengkap = row.lengkap || 'Tidak';
+                const codNoRek = row.no_rek ? row.no_rek.replace(/'/g, "\\'") : '';
+                const codNamaBank = row.nama_bank ? row.nama_bank.replace(/'/g, "\\'") : '';
+                const codAnRek = row.atas_nama_rek ? row.atas_nama_rek.replace(/'/g, "\\'") : '';
+
+                trClickAction = `onclick="window.showDetailCod('${codTglMasuk}', '${codCabang}', '${codLengkap}', '${codNoRek}', '${codNamaBank}', '${codAnRek}')"`;
+            } else {
+                trClass += "hover:bg-gray-50";
+            }
+
             const createBadge = (val, type) => {
                 let colorClass = 'bg-gray-100 text-gray-600 border-gray-200';
                 if (type === 'terima' && val === 'Sudah Terima') colorClass = 'bg-green-100 text-green-800 border-green-200';
@@ -559,28 +630,30 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (type === 'pinjam' && val === 'Pinjam') colorClass = 'bg-orange-100 text-orange-700 border-orange-200';
                 return `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border ${colorClass}">${val}</span>`;
             };
+
             htmlRows += `
-            <tr class="hover:bg-gray-50 border-b transition-colors">
-            <td class="text-center whitespace-nowrap px-2">
+            <tr class="${trClass}" ${trClickAction}>
+                <td class="px-2 text-center whitespace-nowrap">
                     <button type="button" 
-                        onclick="window.openStatusModal('${row.no_faktur}', '${sTerima}', '${sKontra}', '${sBayar}', '${sPinjam}', '${rawPenerima}', '${rawTglDiterima}', ${nominal})"
-                        class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-pink-50 text-pink-600 hover:bg-pink-100 hover:text-pink-800 transition-all shadow-sm border border-pink-100 mr-1" 
+                        onclick="event.stopPropagation(); window.openStatusModal('${row.no_faktur}', '${sTerima}', '${sKontra}', '${sBayar}', '${sPinjam}', '${rawPenerima}', '${rawTglDiterima}', ${nominal})"
+                        class="inline-flex items-center justify-center w-8 h-8 mr-1 transition-all border rounded-full shadow-sm bg-pink-50 text-pink-600 hover:bg-pink-100 hover:text-pink-800 border-pink-100" 
                         title="Edit Status">
                         <i class="fas fa-edit"></i>
                     </button>
                     <button type="button" 
-                        onclick="window.deleteNota('${row.no_faktur}')"
-                        class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-800 transition-all shadow-sm border border-red-100" 
+                        onclick="event.stopPropagation(); window.deleteNota('${row.no_faktur}')"
+                        class="inline-flex items-center justify-center w-8 h-8 transition-all border rounded-full shadow-sm bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-800 border-red-100" 
                         title="Hapus Data">
                         <i class="fas fa-trash-alt"></i>
                     </button>
                 </td>
-                <td class="whitespace-nowrap text-xs">${tglNota}</td>
-                <td class="font-semibold text-gray-700 text-sm">
-                    ${row.nama_supplier || '-'}
+                <td class="text-xs whitespace-nowrap">${tglNota}</td>
+                <td class="text-sm font-semibold text-gray-700">
+                    ${row.nama_supplier || '-'} 
+                    ${isCOD ? '<i class="ml-1 text-blue-500 fa-solid fa-truck-fast" title="COD"></i>' : ''}
                 </td>
                 <td class="font-mono text-xs text-gray-600">${row.no_faktur_format || '-'}</td>
-                <td class="text-right font-mono text-sm text-gray-800 font-bold">${formatRupiah(nominal)}</td>
+                <td class="font-mono text-sm font-bold text-right text-gray-800">${formatRupiah(nominal)}</td>
                 <td class="text-center text-xs whitespace-nowrap">${tglDiserahkan}</td>
                 <td class="text-center text-xs whitespace-nowrap">${tglDiterima}</td>
                 <td class="text-center">${createBadge(sTerima, 'terima')}</td>
@@ -593,8 +666,10 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
             item_counter++;
         });
+
         tableBody.innerHTML = htmlRows;
     }
+
     function renderPagination(pagination) {
         if (!pagination) {
             paginationInfo.textContent = "";

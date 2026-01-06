@@ -180,66 +180,6 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                 <label class="form-label">Diberikan Oleh</label>
                                 <input type="text" id="inp_diberikan" name="diberikan" class="input-compact" required>
                             </div>
-                            <div>
-                                <label class="form-label">Sistem COD?</label>
-                                <select id="inp_cod" name="cod" class="input-compact cursor-pointer bg-white">
-                                    <option value="Tidak" selected>Tidak</option>
-                                    <option value="Ya">Ya (Cash On Delivery)</option>
-                                </select>
-                            </div>
-
-                            <div id="cod-section"
-                                class="col-span-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4 bg-pink-50 border border-pink-100 rounded-lg mt-2 hidden">
-                                <div class="col-span-full mb-2">
-                                    <h3 class="text-sm font-bold text-pink-700 border-b border-pink-200 pb-1">
-                                        <i class="fas fa-truck-fast mr-1"></i> Detail COD
-                                    </h3>
-                                </div>
-
-                                <div>
-                                    <label class="form-label">Tgl Nota Masuk</label>
-                                    <input type="date" id="inp_nota_tanggal_masuk"
-                                        class="input-compact border-pink-300">
-                                </div>
-
-                                <div>
-                                    <label class="form-label">Cabang Penerima</label>
-                                    <input type="text" id="inp_cabang_penerima" class="input-compact border-pink-300"
-                                        placeholder="Contoh: Cabang A">
-                                </div>
-
-                                <div>
-                                    <label class="form-label">Kelengkapan</label>
-                                    <select id="inp_lengkap" class="input-compact border-pink-300 bg-white">
-                                        <option value="">Pilih Status</option>
-                                        <option value="Ya">Lengkap</option>
-                                        <option value="Tidak">Tidak Lengkap</option>
-                                    </select>
-                                </div>
-
-                                <div class="hidden lg:block"></div>
-
-                                <div>
-                                    <label class="form-label text-gray-500">No. Rekening <span
-                                            class="text-xs font-normal">(Opsional)</span></label>
-                                    <input type="text" id="inp_no_rek" class="input-compact"
-                                        placeholder="Nomor Rekening">
-                                </div>
-
-                                <div>
-                                    <label class="form-label text-gray-500">Nama Bank <span
-                                            class="text-xs font-normal">(Opsional)</span></label>
-                                    <input type="text" id="inp_nama_bank" class="input-compact"
-                                        placeholder="Contoh: BCA">
-                                </div>
-
-                                <div class="col-span-1 sm:col-span-2">
-                                    <label class="form-label text-gray-500">Atas Nama Rekening <span
-                                            class="text-xs font-normal">(Opsional)</span></label>
-                                    <input type="text" id="inp_atas_nama_rek" class="input-compact"
-                                        placeholder="Nama Pemilik Rekening">
-                                </div>
-                            </div>
                         </div>
                     </form>
                 </div>
