@@ -49,6 +49,7 @@ $status_display = ($status === 'active') ? 'Aktif' : (($status === 'inactive') ?
     <link rel="stylesheet" href="../../output2.css">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
 </head>
 
 <body class="bg-gradient-to-br from-slate-50 to-blue-50 text-gray-900">
@@ -82,12 +83,20 @@ $status_display = ($status === 'active') ? 'Aktif' : (($status === 'inactive') ?
                         <i class="fa-solid fa-ranking-star mr-2"></i>
                         Top Produk Terlaris (Dibeli oleh <?php echo $nama_cust; ?>)
                     </h2>
-                    <button id="btn-send-general-wa"
-                        class="bg-green-500 hover:bg-green-400 text-white px-4 py-2 rounded-lg shadow-md text-sm font-medium flex items-center"
-                        title="Kirim pesan WhatsApp ke <?php echo $nama_cust; ?>">
-                        <i class="fa-brands fa-whatsapp mr-2"></i>
-                        Kirim Pesan
-                    </button>
+                    <div class="flex space-x-2">
+                        <button id="export-excel-button"
+                            class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg shadow-md text-sm font-medium flex items-center transition-colors">
+                            <i class="fa-solid fa-file-excel mr-2"></i>
+                            Export Excel
+                        </button>
+
+                        <button id="btn-send-general-wa"
+                            class="bg-green-500 hover:bg-green-400 text-white px-4 py-2 rounded-lg shadow-md text-sm font-medium flex items-center"
+                            title="Kirim pesan WhatsApp ke <?php echo $nama_cust; ?>">
+                            <i class="fa-brands fa-whatsapp mr-2"></i>
+                            Kirim Pesan
+                        </button>
+                    </div>
                 </div>
 
                 <div id="loading-spinner" class="loading-spinner">

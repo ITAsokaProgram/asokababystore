@@ -21,9 +21,8 @@ export const getProductFav = (startDate = null, endDate = null) => {
   if (startDate) params.append("start_date", startDate);
   if (endDate) params.append("end_date", endDate);
   const queryString = params.toString();
-  const url = `${API_BASE_URL}/get_product_fav.php${
-    queryString ? `?${queryString}` : ""
-  }`;
+  const url = `${API_BASE_URL}/get_product_fav.php${queryString ? `?${queryString}` : ""
+    }`;
   return sendRequestGET(url);
 };
 export const getTrendPembelian = () => {
@@ -207,5 +206,14 @@ export const getTransactionDetails = (filterParams, kdCust, plu) => {
   params.append("kd_cust", kdCust);
   params.append("plu", plu);
   const url = `${API_MANAGEMENT_URL}/get_transaction_details_by_product.php?${params.toString()}`;
+  return sendRequestGET(url);
+};
+
+export const getExportCustomerProducts = (filterParams, kdCust) => {
+  const params = new URLSearchParams();
+  appendFilterParams(params, filterParams);
+  params.append("kd_cust", kdCust);
+
+  const url = `${API_MANAGEMENT_URL}/get_export_customer_products.php?${params.toString()}`;
   return sendRequestGET(url);
 };

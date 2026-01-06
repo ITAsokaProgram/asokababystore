@@ -2,6 +2,7 @@ import * as api from "./member_api_service.js";
 
 let currentPage = 1;
 const LIMIT = 10;
+let exportExcelButton;
 // BUAT OBJEK UNTUK MENYIMPAN SEMUA PARAMETER FILTER
 const filterParams = {
   filter_type: null,
@@ -59,15 +60,13 @@ function renderProductTable(products) {
                 data-plu="${product.plu}"
                 data-descp="${product.descp}">
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${rank}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${
-                  product.plu
-                }</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${
-                  product.descp
-                }</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${product.plu
+      }</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${product.descp
+      }</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-bold">${formatter.format(
-                  product.total_qty
-                )}</td>
+        product.total_qty
+      )}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
                     <button 
                         class="btn-send-voucher bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-xs shadow-sm" 
@@ -428,6 +427,225 @@ function initModalElements() {
     });
   }
 }
+// ... (Bagian import dan setup awal tetap sama) ...
+
+async function handleExportExcel() {
+  if (!currentKdCust) {
+    Swal.fire("Error", "Kode customer tidak ditemukan.", "error");
+    return;
+  }
+
+  Swal.fire({
+    title: "Menyiapkan Excel...",
+    text: "Mengambil data dan menghitung total...",
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    },
+  });
+
+  try {
+    const result = await api.getExportCustomerProducts(filterParams, currentKdCust);
+
+    if (!result.success || !result.data || result.data.length === 0) {
+      throw new Error("Tidak ada data transaksi ditemukan.");
+    }
+
+    const data = result.data;
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet("Riwayat Belanja");
+
+    // Lebar kolom
+    sheet.columns = [
+      { key: "A", width: 5 },  // No
+      { key: "B", width: 10 }, // Jam
+      { key: "C", width: 18 }, // No Bon
+      { key: "D", width: 15 }, // PLU
+      { key: "E", width: 40 }, // Nama Produk
+      { key: "F", width: 10 }, // Qty
+      { key: "G", width: 15 }, // Harga
+      { key: "H", width: 18 }, // Subtotal
+    ];
+
+    // --- Header Judul ---
+    sheet.mergeCells("A1:H1");
+    const titleCell = sheet.getCell("A1");
+    titleCell.value = `RIWAYAT BELANJA: ${currentKdCust}`;
+    titleCell.font = { name: "Arial", size: 14, bold: true };
+    titleCell.alignment = { horizontal: "center" };
+
+    sheet.mergeCells("A2:H2");
+    const subTitleCell = sheet.getCell("A2");
+    let filterTxt = filterParams.filter_type === 'custom'
+      ? `${filterParams.start_date} s/d ${filterParams.end_date}`
+      : `Filter: ${filterParams.filter}`;
+    subTitleCell.value = `Periode: ${filterTxt} (Diurutkan berdasarkan Qty Tertinggi per Hari)`;
+    subTitleCell.alignment = { horizontal: "center" };
+
+    let currentRow = 4;
+    let grandTotalQty = 0;
+    let grandTotalOmset = 0;
+
+    // --- Loop Data (Per Tanggal) ---
+    data.forEach((group) => {
+      // Akumulasi ke Grand Total
+      grandTotalQty += group.total_daily_qty;
+      grandTotalOmset += group.total_daily_omset;
+
+      // 1. Header Tanggal
+      const dateObj = new Date(group.date);
+      const dateStr = dateObj.toLocaleDateString('id-ID', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+      });
+
+      sheet.mergeCells(`A${currentRow}:H${currentRow}`);
+      const rowDate = sheet.getCell(`A${currentRow}`);
+      rowDate.value = `TANGGAL: ${dateStr.toUpperCase()} (${group.date})`;
+
+      // Style Header Tanggal (Kuning)
+      rowDate.font = { bold: true, size: 11 };
+      rowDate.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FFFFE082" }, // Amber-200
+      };
+      rowDate.alignment = { vertical: 'middle', indent: 1 };
+      rowDate.border = { top: { style: 'thin' }, bottom: { style: 'thin' } };
+      currentRow++;
+
+      // 2. Header Table Items
+      const tableHeaders = ["No", "Jam", "No Bon", "PLU", "Nama Produk", "Qty", "Harga", "Subtotal"];
+      const rowHeader = sheet.getRow(currentRow);
+      rowHeader.values = tableHeaders;
+
+      rowHeader.eachCell((cell) => {
+        cell.font = { bold: true };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF3F4F6' } };
+        cell.border = { bottom: { style: 'thin' } };
+        cell.alignment = { horizontal: 'center' };
+      });
+      currentRow++;
+
+      // 3. List Item
+      group.items.forEach((item, index) => {
+        const r = sheet.getRow(currentRow);
+        r.values = [
+          index + 1,
+          item.jam,
+          item.no_bon,
+          item.plu,
+          item.descp,
+          item.qty,
+          item.harga,
+          item.subtotal
+        ];
+        r.getCell(1).alignment = { horizontal: 'center' };
+        r.getCell(2).alignment = { horizontal: 'center' };
+        r.getCell(3).alignment = { horizontal: 'center' };
+        r.getCell(4).alignment = { horizontal: 'center' };
+
+        r.getCell(6).numFmt = '#,##0'; // Qty
+        r.getCell(6).alignment = { horizontal: 'center' };
+
+        r.getCell(7).numFmt = '#,##0'; // Harga
+        r.getCell(8).numFmt = '#,##0'; // Subtotal
+        currentRow++;
+      });
+
+      // 4. Footer Total Harian
+      const rowTotal = sheet.getRow(currentRow);
+      rowTotal.values = [
+        '', '', '', '', 'TOTAL TANGGAL INI:',
+        group.total_daily_qty,
+        '',
+        group.total_daily_omset
+      ];
+
+      // Style Total Harian
+      const cellLabel = rowTotal.getCell(5);
+      cellLabel.font = { bold: true, italic: true, color: { argb: 'FF4B5563' } }; // Gray-600
+      cellLabel.alignment = { horizontal: 'right' };
+
+      const cellQty = rowTotal.getCell(6);
+      cellQty.font = { bold: true };
+      cellQty.alignment = { horizontal: 'center' };
+      cellQty.numFmt = '#,##0';
+      cellQty.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFECFDF5' } }; // Green-50 (light)
+
+      const cellOmset = rowTotal.getCell(8);
+      cellOmset.font = { bold: true };
+      cellOmset.numFmt = '#,##0';
+      cellOmset.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFECFDF5' } }; // Green-50 (light)
+
+      // Garis pemisah total
+      rowTotal.eachCell((cell, colNum) => {
+        if (colNum >= 5) cell.border = { top: { style: 'thin' } };
+      });
+
+      currentRow += 2; // Spasi antar tanggal
+    });
+
+    // --- 5. GRAND TOTAL (Total Keseluruhan) ---
+    currentRow++;
+    sheet.mergeCells(`A${currentRow}:E${currentRow}`); // Merge label
+    const rowGrandTotal = sheet.getRow(currentRow);
+
+    // Label
+    const cellGrandLabel = rowGrandTotal.getCell(1);
+    cellGrandLabel.value = "GRAND TOTAL (SELURUH PERIODE):";
+    cellGrandLabel.font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } };
+    cellGrandLabel.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF059669' } }; // Emerald-600
+    cellGrandLabel.alignment = { horizontal: 'right', vertical: 'middle' };
+
+    // Nilai Qty
+    const cellGrandQty = rowGrandTotal.getCell(6);
+    cellGrandQty.value = grandTotalQty;
+    cellGrandQty.font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } };
+    cellGrandQty.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF059669' } };
+    cellGrandQty.alignment = { horizontal: 'center', vertical: 'middle' };
+    cellGrandQty.numFmt = '#,##0';
+
+    // Spacer
+    const cellGrandSpacer = rowGrandTotal.getCell(7);
+    cellGrandSpacer.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF059669' } };
+
+    // Nilai Omset
+    const cellGrandOmset = rowGrandTotal.getCell(8);
+    cellGrandOmset.value = grandTotalOmset;
+    cellGrandOmset.font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } };
+    cellGrandOmset.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF059669' } };
+    cellGrandOmset.alignment = { horizontal: 'right', vertical: 'middle' };
+    cellGrandOmset.numFmt = '#,##0';
+
+    // Tinggi Baris Grand Total
+    rowGrandTotal.height = 30;
+
+    // --- Download File ---
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    const url = window.URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    const timestamp = new Date().toISOString().slice(0, 10);
+    anchor.download = `Riwayat_${currentKdCust}_${timestamp}.xlsx`;
+    anchor.click();
+    window.URL.revokeObjectURL(url);
+
+    Swal.fire({
+      icon: "success",
+      title: "Selesai",
+      text: "Data berhasil diexport.",
+      timer: 1500,
+      showConfirmButton: false,
+    });
+
+  } catch (error) {
+    console.error(error);
+    Swal.fire("Error", error.message, "error");
+  }
+}
+
+
 
 document.addEventListener("DOMContentLoaded", () => {
   initModalElements();
@@ -460,4 +678,9 @@ document.addEventListener("DOMContentLoaded", () => {
   if (generalSendButton) {
     generalSendButton.addEventListener("click", handleSendGeneralMessageClick);
   }
+  exportExcelButton = document.getElementById("export-excel-button");
+  if (exportExcelButton) {
+    exportExcelButton.addEventListener("click", handleExportExcel);
+  }
 });
+
