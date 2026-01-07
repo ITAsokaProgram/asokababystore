@@ -929,6 +929,12 @@ $token = $menuHandler->getToken();
                         <select id="oto_tipe" required
                             class="block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500 transition-colors mb-4">
                         </select>
+                        <div id="new_tipe_container" class="hidden mt-2">
+                            <input type="text" id="oto_tipe_baru"
+                                placeholder="Masukkan Nama Tipe Baru (cth: Supervisor)"
+                                class="block w-full px-4 py-2 border-2 border-teal-200 rounded-lg focus:ring-teal-500 focus:border-teal-500 bg-teal-50">
+                            <p class="text-xs text-gray-500 mt-1">*Tipe baru akan otomatis terdaftar di sistem.</p>
+                        </div>
                     </div>
 
                     <div>

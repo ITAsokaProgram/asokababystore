@@ -36,9 +36,13 @@ const loadOtoTipe = async () => {
   try {
     const response = await getOtorisasiTipe();
     if (response.success) {
-      selectTipe.innerHTML = response.data.map(item =>
+      let options = response.data.map(item =>
         `<option value="${item.tipe}">${item.label}</option>`
       ).join('');
+
+      options += `<option value="NEW_TYPE" class="font-bold text-teal-600">+ Tambah Tipe Baru...</option>`;
+
+      selectTipe.innerHTML = options;
     }
   } catch (error) {
     console.error("Gagal load tipe otorisasi", error);
@@ -54,6 +58,16 @@ export const init = async () => {
   if (searchInput && currentState.search) {
     searchInput.value = currentState.search;
   }
+  document.getElementById("oto_tipe").addEventListener("change", (e) => {
+    const container = document.getElementById("new_tipe_container");
+    if (e.target.value === "NEW_TYPE") {
+      container.classList.remove("hidden");
+      document.getElementById("oto_tipe_baru").required = true;
+    } else {
+      container.classList.add("hidden");
+      document.getElementById("oto_tipe_baru").required = false;
+    }
+  });
 
   await loadData();
   await loadOtoTipe();
@@ -303,13 +317,22 @@ const setupGlobalEventListeners = () => {
 
   formOto.addEventListener("submit", async (e) => {
     e.preventDefault();
+
+    const tipeSelect = document.getElementById("oto_tipe").value;
+    const tipeBaru = document.getElementById("oto_tipe_baru").value;
+
     const data = {
       kode_user: document.getElementById("oto_kode_user").value,
-      tipe: document.getElementById("oto_tipe").value,
+      tipe: tipeSelect === "NEW_TYPE" ? tipeBaru : tipeSelect,
+      is_new_type: tipeSelect === "NEW_TYPE",
       password: document.getElementById("oto_password").value,
     };
+
     const success = await setOtorisasiUser(data);
-    if (success) closeModalOto();
+    if (success) {
+      closeModalOto();
+      await loadOtoTipe();
+    }
   });
 
   if (closeOtoBtn) closeOtoBtn.addEventListener("click", closeModalOto);
