@@ -48,6 +48,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const filterTglMulai = document.getElementById("tgl_mulai");
     const filterTglSelesai = document.getElementById("tgl_selesai");
     const btnExportExcel = document.getElementById("btn-export-excel");
+    const btnPrintBatch = document.getElementById("btn-print-batch-cod");
+    let activeSupplier = null;
     let initialKontraState = 'Belum';
     let initialBayarState = 'Belum';
     const updateModalState = () => {
@@ -130,6 +132,35 @@ document.addEventListener("DOMContentLoaded", () => {
             if (el_ket_resepsionis) el_ket_resepsionis.value = '';
         }
         modalKontra.classList.remove("hidden");
+    };
+    window.handleCheckboxChange = (checkbox) => {
+        const supplier = checkbox.getAttribute('data-supplier');
+        const allCheckboxes = document.querySelectorAll('.cod-checkbox');
+        if (checkbox.checked) {
+            if (activeSupplier === null) {
+                activeSupplier = supplier;
+                allCheckboxes.forEach(box => {
+                    if (box.getAttribute('data-supplier') !== activeSupplier) {
+                        box.disabled = true;
+                        box.parentElement.classList.add('opacity-30', 'cursor-not-allowed');
+                    }
+                });
+            }
+        } else {
+            const anyChecked = document.querySelectorAll('.cod-checkbox:checked').length > 0;
+            if (!anyChecked) {
+                activeSupplier = null;
+                allCheckboxes.forEach(box => {
+                    box.disabled = false;
+                    box.parentElement.classList.remove('opacity-30', 'cursor-not-allowed');
+                });
+            }
+        }
+        const checkedCount = document.querySelectorAll('.cod-checkbox:checked').length;
+        if (btnPrintBatch) {
+            btnPrintBatch.style.display = checkedCount > 0 ? 'inline-flex' : 'none';
+            btnPrintBatch.querySelector('span').textContent = `Cetak Terpilih (${checkedCount})`;
+        }
     };
     btnsCloseAuth.forEach(btn => btn.addEventListener("click", () => modalAuth.classList.add("hidden")));
     btnsCloseKontra.forEach(btn => btn.addEventListener("click", () => modalKontra.classList.add("hidden")));
@@ -231,7 +262,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const queryString = new URLSearchParams(params).toString();
         try {
             const token = getCookie("admin_token");
-
             const response = await fetch(`/src/api/finance/get_laporan_serah_terima_nota.php?${queryString}`, {
                 headers: {
                     Accept: "application/json",
@@ -306,33 +336,44 @@ document.addEventListener("DOMContentLoaded", () => {
         tabel_data.forEach((row) => {
             const nominal = parseFloat(row.nominal) || 0;
             const rowDataEncoded = encodeURIComponent(JSON.stringify(row));
+            const isCOD = row.cod === 'Ya';
             let btnEditKontra = '';
             if (row.status_kontra === 'Sudah') {
-                btnEditKontra = `
-                    <button type="button" 
-                        onclick="event.stopPropagation(); window.openKontraModal('${rowDataEncoded}')"
-                        class="inline-flex items-center justify-center w-8 h-8 mr-1 transition-all border rounded-full shadow-sm bg-purple-50 text-purple-600 hover:bg-purple-100 hover:text-purple-800 border-purple-100" 
-                        title="Update Detail Kontra">
-                        <i class="fas fa-book"></i>
-                    </button>
-                `;
+                btnEditKontra = `<button type="button" onclick="event.stopPropagation(); window.openKontraModal('${rowDataEncoded}')" class="inline-flex items-center justify-center w-8 h-8 mr-1 transition-all border rounded-full shadow-sm bg-purple-50 text-purple-600 hover:bg-purple-100 hover:text-purple-800 border-purple-100" title="Update Detail Kontra"><i class="fas fa-book"></i></button>`;
             }
-            const isCOD = row.cod === 'Ya';
-            let btnPrintCOD = '';
+            let checkboxCell = '';
+            let printStatusIcon = '';
             if (isCOD) {
-                btnPrintCOD = `
-                    <button type="button" 
-                        onclick="event.stopPropagation(); window.printCodExcel('${rowDataEncoded}')"
-                        class="inline-flex items-center justify-center w-8 h-8 mr-1 transition-all border rounded-full shadow-sm bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-800 border-blue-100" 
-                        title="Cetak Form COD (Excel)">
-                        <i class="fas fa-print"></i>
-                    </button>
+                if (row.sudah_dicetak === 'Sudah') {
+                    printStatusIcon = `<span class="ml-2 text-xs font-bold text-green-600 bg-green-100 px-2 py-0.5 rounded border border-green-200" title="Sudah Dicetak"><i class="fas fa-print"></i> Printed</span>`;
+                }
+                let isDisabled = false;
+                if (activeSupplier && activeSupplier !== row.nama_supplier) {
+                    isDisabled = true;
+                }
+                checkboxCell = `
+                    <div class="flex items-center justify-center ${isDisabled ? 'opacity-30 cursor-not-allowed' : ''}">
+                        <input type="checkbox" 
+                            class="cod-checkbox w-5 h-5 text-blue-600 rounded focus:ring-blue-500 border-gray-300 transition duration-150 ease-in-out cursor-pointer"
+                            data-supplier="${row.nama_supplier}" 
+                            data-faktur="${row.no_faktur}"
+                            data-json='${JSON.stringify(row)}'
+                            onchange="window.handleCheckboxChange(this)"
+                            onclick="event.stopPropagation();"
+                            ${isDisabled ? 'disabled' : ''}
+                        >
+                    </div>
                 `;
+            } else {
+                checkboxCell = `<span class="text-gray-300">-</span>`;
             }
             let trClass = "border-b transition-colors " + (isCOD ? "hover:bg-blue-50 cursor-pointer" : "hover:bg-gray-50");
             let trClickAction = isCOD ? `onclick="window.showDetailCod('${row.nota_tanggal_masuk || ''}', '${(row.cabang_penerima || '').replace(/'/g, "\\'")}', '${row.lengkap || ''}', '${(row.no_rek || '').replace(/'/g, "\\'")}', '${(row.nama_bank || '').replace(/'/g, "\\'")}', '${(row.atas_nama_rek || '').replace(/'/g, "\\'")}')"` : "";
             htmlRows += `
             <tr class="${trClass}" ${trClickAction}>
+                <td class="px-2 text-center align-middle bg-white/50">
+                    ${checkboxCell}
+                </td>
                 <td class="px-2 text-center whitespace-nowrap">
                     <button type="button" 
                         onclick="event.stopPropagation(); window.openStatusModal('${rowDataEncoded}')"
@@ -340,7 +381,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         title="Edit Status Utama">
                         <i class="fas fa-edit"></i>
                     </button>
-                    ${btnPrintCOD}
                     ${btnEditKontra}
                     <button type="button" 
                         onclick="event.stopPropagation(); window.deleteNota('${row.no_faktur}')"
@@ -351,8 +391,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 </td>
                 <td class="text-xs whitespace-nowrap">${formatDate(row.tgl_nota)}</td>
                 <td class="text-sm font-semibold text-gray-700">
-                    ${row.nama_supplier || '-'} 
-                    ${isCOD ? '<i class="ml-1 text-blue-500 fa-solid fa-truck-fast"></i>' : ''}
+                    <div class="flex flex-col">
+                        <span>${row.nama_supplier || '-'}</span>
+                        ${isCOD ? '<span class="text-[10px] text-blue-500 flex items-center gap-1"><i class="fa-solid fa-truck-fast"></i> COD ' + printStatusIcon + '</span>' : ''}
+                    </div>
                 </td>
                 <td class="font-mono text-xs text-gray-600">${row.no_faktur_format || row.no_faktur || '-'}</td>
                 <td class="font-mono text-sm font-bold text-right text-gray-800">${formatRupiah(nominal)}</td>
@@ -367,6 +409,8 @@ document.addEventListener("DOMContentLoaded", () => {
             </tr>`;
         });
         tableBody.innerHTML = htmlRows;
+        activeSupplier = null;
+        if (btnPrintBatch) btnPrintBatch.style.display = 'none';
     }
     function renderPagination(pagination) {
         if (!pagination) { paginationInfo.textContent = ""; paginationLinks.innerHTML = ""; return; }
@@ -449,6 +493,45 @@ document.addEventListener("DOMContentLoaded", () => {
     if (btnExportExcel) {
         btnExportExcel.addEventListener("click", handleExportExcel);
     }
+    if (btnPrintBatch) {
+        btnPrintBatch.addEventListener('click', async () => {
+            const checkedBoxes = document.querySelectorAll('.cod-checkbox:checked');
+            if (checkedBoxes.length === 0) return;
+            const selectedData = [];
+            const selectedFakturs = [];
+            let supplierName = "";
+            checkedBoxes.forEach(box => {
+                const data = JSON.parse(box.getAttribute('data-json'));
+                selectedData.push(data);
+                selectedFakturs.push(data.no_faktur);
+                supplierName = data.nama_supplier;
+            });
+            const result = await Swal.fire({
+                title: 'Cetak Tanda Terima?',
+                text: `Akan mencetak ${selectedData.length} nota untuk ${supplierName}`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Cetak',
+                confirmButtonColor: '#2563EB'
+            });
+            if (!result.isConfirmed) return;
+            try {
+                const token = getCookie("admin_token");
+                await fetch('/src/api/finance/update_print_cod_batch.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({ fakturs: selectedFakturs })
+                });
+                loadData();
+            } catch (e) {
+                console.error("Gagal update status print:", e);
+            }
+            generateBatchExcel(selectedData, supplierName);
+        });
+    }
     async function handleExportExcel() {
         const todayStr = new Date().toISOString().split('T')[0];
         const { value: formValues } = await Swal.fire({
@@ -502,9 +585,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 tgl_terima_akhir: formValues.end,
                 search_supplier: currentParams.search_supplier || ''
             }).toString();
-
             const token = getCookie("admin_token");
-
             const response = await fetch(`/src/api/finance/get_export_serah_terima_nota.php?${queryParams}`, {
                 headers: {
                     Accept: "application/json",
@@ -608,160 +689,140 @@ document.addEventListener("DOMContentLoaded", () => {
             Swal.fire("Error", e.message, "error");
         }
     }
-    function formatDateExcel(dateString) {
-        if (!dateString || dateString === '0000-00-00') return "-";
-        const d = new Date(dateString);
-        return d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    }
-    window.printCodExcel = async (rowDataEncoded) => {
-        const row = JSON.parse(decodeURIComponent(rowDataEncoded));
-        try {
-            const token = getCookie("admin_token");
-            await fetch('/src/api/finance/update_print_cod.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + token
-                },
-                body: JSON.stringify({ no_faktur: row.no_faktur })
-            });
-        } catch (e) {
-            console.error("Gagal tracking print:", e);
-        }
+    async function generateBatchExcel(dataList, supplierName) {
         const workbook = new ExcelJS.Workbook();
-        const sheet = workbook.addWorksheet("Form COD");
+        const sheet = workbook.addWorksheet("COD");
+        const borderStyle = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+        const fillHeader = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF0F0F0' } };
+        const centerStyle = { horizontal: 'center', vertical: 'middle' };
+        const boldFont = { bold: true };
         const today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-        let keteranganText = "";
-        const { lengkap } = row;
+        const firstRow = dataList[0] || {};
         sheet.mergeCells('A1:I1');
         const titleCell = sheet.getCell('A1');
         titleCell.value = "FORM COD / PEMBAYARAN CASH / TEMPO MASA TERTENTU";
-        titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+        titleCell.alignment = centerStyle;
         titleCell.font = { bold: true, size: 14 };
         const headers = [
             "NO", "TGL NOTA FISIK", "TGL TERIMA NOTA", "TGL KEDATANGAN BARANG",
             "NAMA SUPPLIER", "KODE SUPPLIER", "NO. FAKTUR", "NAMA CABANG", "KETERANGAN"
         ];
         sheet.getRow(2).values = headers;
-        sheet.getRow(2).font = { bold: true };
-        sheet.getRow(2).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+        sheet.getRow(2).font = boldFont;
+        sheet.getRow(2).alignment = { ...centerStyle, wrapText: true };
         for (let i = 1; i <= 9; i++) {
-            sheet.getCell(2, i).border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
-            sheet.getCell(2, i).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF0F0F0' } };
+            sheet.getCell(2, i).border = borderStyle;
+            sheet.getCell(2, i).fill = fillHeader;
         }
-        const rowData = [
-            1,
-            formatDateExcel(row.tgl_nota),
-            formatDateExcel(row.tgl_diterima),
-            formatDateExcel(row.nota_tanggal_masuk),
-            row.nama_supplier || '-',
-            row.kode_supplier || '-',
-            row.no_faktur_format || row.no_faktur,
-            row.cabang_penerima || '-',
-            lengkap === 'Ya' ? "Lengkap" : lengkap === 'Tidak' ? "Tidak Lengkap" : "Belum Lengkap",
-        ];
-        sheet.getRow(3).values = rowData;
-        sheet.getRow(3).alignment = { vertical: 'top', wrapText: true };
-        for (let i = 1; i <= 9; i++) {
-            sheet.getCell(3, i).border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+        let currentRowIdx = 3;
+        const startDataRow = 3;
+        dataList.forEach((row, index) => {
+            const { lengkap } = row;
+            const rowData = [
+                index + 1,
+                formatDateExcel(row.tgl_nota),
+                formatDateExcel(row.tgl_diterima),
+                formatDateExcel(row.nota_tanggal_masuk),
+                row.nama_supplier || '-',
+                row.kode_supplier || '-',
+                row.no_faktur_format || row.no_faktur,
+                row.cabang_penerima || '-',
+                lengkap === 'Ya' ? "Lengkap" : lengkap === 'Tidak' ? "Tidak Lengkap" : "Belum Lengkap",
+            ];
+            const currentRow = sheet.getRow(currentRowIdx);
+            currentRow.values = rowData;
+            currentRow.alignment = { vertical: 'top', wrapText: true };
+            currentRow.getCell(1).alignment = { vertical: 'top', horizontal: 'center' };
+            for (let i = 1; i <= 9; i++) {
+                currentRow.getCell(i).border = borderStyle;
+            }
+            currentRowIdx++;
+        });
+        const endDataRow = currentRowIdx - 1;
+        if (dataList.length > 1) {
+            sheet.mergeCells(startDataRow, 5, endDataRow, 5);
+            sheet.mergeCells(startDataRow, 6, endDataRow, 6);
+            sheet.getCell(startDataRow, 5).alignment = centerStyle;
+            sheet.getCell(startDataRow, 6).alignment = centerStyle;
+        } else {
+            sheet.getCell(startDataRow, 5).alignment = centerStyle;
+            sheet.getCell(startDataRow, 6).alignment = centerStyle;
         }
-        sheet.mergeCells('A6:B6'); sheet.getCell('A6').value = "BANK";
-        sheet.mergeCells('C6:D6'); sheet.getCell('C6').value = "A/N";
-        sheet.mergeCells('E6:F6'); sheet.getCell('E6').value = "NO. REK";
-        sheet.mergeCells('G6:I6'); sheet.getCell('G6').value = "TANGGAL";
-        const bankRow = sheet.getRow(6);
-        bankRow.font = { bold: true };
-        bankRow.alignment = { horizontal: 'center', vertical: 'middle' };
-        ['A6', 'C6', 'E6', 'G6'].forEach(cell => {
-            sheet.getCell(cell).border = {
-                top: { style: 'thin' },
-                left: { style: 'thin' },
-                bottom: { style: 'thin' }
-            };
-            sheet.getCell(cell).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF0F0F0' } };
+        const bankHeaderRowIdx = currentRowIdx + 2;
+        const bankValueRowIdx = bankHeaderRowIdx + 1;
+        sheet.mergeCells(`A${bankHeaderRowIdx}:B${bankHeaderRowIdx}`); sheet.getCell(`A${bankHeaderRowIdx}`).value = "BANK";
+        sheet.mergeCells(`C${bankHeaderRowIdx}:D${bankHeaderRowIdx}`); sheet.getCell(`C${bankHeaderRowIdx}`).value = "A/N";
+        sheet.mergeCells(`E${bankHeaderRowIdx}:F${bankHeaderRowIdx}`); sheet.getCell(`E${bankHeaderRowIdx}`).value = "NO. REK";
+        sheet.mergeCells(`G${bankHeaderRowIdx}:I${bankHeaderRowIdx}`); sheet.getCell(`G${bankHeaderRowIdx}`).value = "TANGGAL";
+        const bankRow = sheet.getRow(bankHeaderRowIdx);
+        bankRow.font = boldFont;
+        bankRow.alignment = centerStyle;
+        ['A', 'C', 'E', 'G'].forEach(col => {
+            sheet.getCell(`${col}${bankHeaderRowIdx}`).border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' } };
+            sheet.getCell(`${col}${bankHeaderRowIdx}`).fill = fillHeader;
         });
-        sheet.getCell('B6').border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } };
-        sheet.getCell('D6').border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } };
-        sheet.getCell('F6').border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } };
-        sheet.getCell('I6').border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } }; sheet.mergeCells('A7:B7'); sheet.getCell('A7').value = row.nama_bank || '-';
-        sheet.mergeCells('C7:D7'); sheet.getCell('C7').value = row.atas_nama_rek || '-';
-        sheet.mergeCells('E7:F7'); sheet.getCell('E7').value = row.no_rek ? `${row.no_rek}` : '-';
-        sheet.mergeCells('G7:I7'); sheet.getCell('G7').value = today;
-        const bankValRow = sheet.getRow(7);
-        bankValRow.alignment = { horizontal: 'center', vertical: 'middle' };
-        ['A7', 'C7', 'E7', 'G7'].forEach(cell => {
-            sheet.getCell(cell).border = {
-                top: { style: 'thin' },
-                left: { style: 'thin' },
-                bottom: { style: 'thin' }
-            };
+        ['B', 'D', 'F', 'I'].forEach(col => {
+            sheet.getCell(`${col}${bankHeaderRowIdx}`).border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } };
         });
-        sheet.getCell('B7').border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } };
-        sheet.getCell('D7').border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } };
-        sheet.getCell('F7').border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } };
-        sheet.getCell('I7').border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } };
-        const startRowTTD = 10;
+        sheet.mergeCells(`A${bankValueRowIdx}:B${bankValueRowIdx}`); sheet.getCell(`A${bankValueRowIdx}`).value = firstRow.nama_bank || '-';
+        sheet.mergeCells(`C${bankValueRowIdx}:D${bankValueRowIdx}`); sheet.getCell(`C${bankValueRowIdx}`).value = firstRow.atas_nama_rek || '-';
+        sheet.mergeCells(`E${bankValueRowIdx}:F${bankValueRowIdx}`); sheet.getCell(`E${bankValueRowIdx}`).value = firstRow.no_rek ? `${firstRow.no_rek}` : '-';
+        sheet.mergeCells(`G${bankValueRowIdx}:I${bankValueRowIdx}`); sheet.getCell(`G${bankValueRowIdx}`).value = today;
+        const bankValRow = sheet.getRow(bankValueRowIdx);
+        bankValRow.alignment = centerStyle;
+        ['A', 'C', 'E', 'G'].forEach(col => {
+            sheet.getCell(`${col}${bankValueRowIdx}`).border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' } };
+        });
+        ['B', 'D', 'F', 'I'].forEach(col => {
+            sheet.getCell(`${col}${bankValueRowIdx}`).border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } };
+        });
+        const startRowTTD = bankValueRowIdx + 3;
         sheet.mergeCells(`A${startRowTTD}:B${startRowTTD}`); sheet.getCell(`A${startRowTTD}`).value = "DIBUAT OLEH";
         sheet.mergeCells(`C${startRowTTD}:D${startRowTTD}`); sheet.getCell(`C${startRowTTD}`).value = "DIPERIKSA OLEH";
         sheet.mergeCells(`E${startRowTTD}:F${startRowTTD}`); sheet.getCell(`E${startRowTTD}`).value = "DITERIMA OLEH";
         sheet.mergeCells(`G${startRowTTD}:I${startRowTTD}`); sheet.getCell(`G${startRowTTD}`).value = "DISETUJUI OLEH";
         const ttdHeaderRow = sheet.getRow(startRowTTD);
-        ttdHeaderRow.font = { bold: true };
-        ttdHeaderRow.alignment = { horizontal: 'center', vertical: 'middle' };
-        [`A${startRowTTD}`, `C${startRowTTD}`, `E${startRowTTD}`, `G${startRowTTD}`].forEach(cell => {
-            sheet.getCell(cell).border = {
-                top: { style: 'thin' },
-                left: { style: 'thin' },
-                bottom: { style: 'thin' }
-            };
-            sheet.getCell(cell).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF0F0F0' } };
+        ttdHeaderRow.font = boldFont;
+        ttdHeaderRow.alignment = centerStyle;
+        ['A', 'C', 'E', 'G'].forEach(col => {
+            sheet.getCell(`${col}${startRowTTD}`).border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' } };
+            sheet.getCell(`${col}${startRowTTD}`).fill = fillHeader;
         });
-        sheet.getCell(`B${startRowTTD}`).border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } };
-        sheet.getCell(`D${startRowTTD}`).border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } };
-        sheet.getCell(`F${startRowTTD}`).border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } };
-        sheet.getCell(`I${startRowTTD}`).border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } };
+        ['B', 'D', 'F', 'I'].forEach(col => {
+            sheet.getCell(`${col}${startRowTTD}`).border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } };
+        });
         for (let r = startRowTTD + 1; r < startRowTTD + 5; r++) {
+            ['A', 'C', 'E', 'G'].forEach(col => {
+                sheet.getCell(`${col}${r}`).border = { left: { style: 'thin' } };
+            });
+            ['B', 'D', 'F', 'I'].forEach(col => {
+                sheet.getCell(`${col}${r}`).border = { right: { style: 'thin' } };
+            });
             sheet.mergeCells(`A${r}:B${r}`);
-            sheet.getCell(`A${r}`).border = { left: { style: 'thin' } };
-            sheet.getCell(`B${r}`).border = { right: { style: 'thin' } };
             sheet.mergeCells(`C${r}:D${r}`);
-            sheet.getCell(`C${r}`).border = { left: { style: 'thin' } };
-            sheet.getCell(`D${r}`).border = { right: { style: 'thin' } };
             sheet.mergeCells(`E${r}:F${r}`);
-            sheet.getCell(`E${r}`).border = { left: { style: 'thin' } };
-            sheet.getCell(`F${r}`).border = { right: { style: 'thin' } };
             sheet.mergeCells(`G${r}:I${r}`);
-            sheet.getCell(`G${r}`).border = { left: { style: 'thin' } };
-            sheet.getCell(`I${r}`).border = { right: { style: 'thin' } };
         }
         const rowNama = startRowTTD + 5;
-        sheet.mergeCells(`A${rowNama}:B${rowNama}`); sheet.getCell(`A${rowNama}`).value = "(....................)";
-        sheet.mergeCells(`C${rowNama}:D${rowNama}`); sheet.getCell(`C${rowNama}`).value = "(....................)";
-        sheet.mergeCells(`E${rowNama}:F${rowNama}`); sheet.getCell(`E${rowNama}`).value = "(....................)";
-        sheet.mergeCells(`G${rowNama}:I${rowNama}`); sheet.getCell(`G${rowNama}`).value = "(....................)";
+        const rowTgl = startRowTTD + 6;
+        const setFooterContent = (colStart, colEnd, valNama) => {
+            sheet.mergeCells(`${colStart}${rowNama}:${colEnd}${rowNama}`);
+            sheet.getCell(`${colStart}${rowNama}`).value = valNama;
+            sheet.mergeCells(`${colStart}${rowTgl}:${colEnd}${rowTgl}`);
+            sheet.getCell(`${colStart}${rowTgl}`).value = "Tgl: ....................";
+            sheet.getCell(`${colStart}${rowNama}`).border = { left: { style: 'thin' } };
+            sheet.getCell(`${colEnd}${rowNama}`).border = { right: { style: 'thin' } };
+            sheet.getCell(`${colStart}${rowTgl}`).border = { left: { style: 'thin' }, bottom: { style: 'thin' } };
+            sheet.getCell(`${colEnd}${rowTgl}`).border = { right: { style: 'thin' }, bottom: { style: 'thin' } };
+        };
+        setFooterContent('A', 'B', "(....................)");
+        setFooterContent('C', 'D', "(....................)");
+        setFooterContent('E', 'F', "(....................)");
+        setFooterContent('G', 'I', "(....................)");
         sheet.getRow(rowNama).alignment = { horizontal: 'center', vertical: 'bottom' };
         sheet.getRow(rowNama).height = 20;
-        [`A${rowNama}`, `C${rowNama}`, `E${rowNama}`, `G${rowNama}`].forEach(cell => {
-            sheet.getCell(cell).border = { left: { style: 'thin' } };
-        });
-        sheet.getCell(`B${rowNama}`).border = { right: { style: 'thin' } };
-        sheet.getCell(`D${rowNama}`).border = { right: { style: 'thin' } };
-        sheet.getCell(`F${rowNama}`).border = { right: { style: 'thin' } };
-        sheet.getCell(`I${rowNama}`).border = { right: { style: 'thin' } };
-        const rowTgl = startRowTTD + 6;
-        sheet.mergeCells(`A${rowTgl}:B${rowTgl}`); sheet.getCell(`A${rowTgl}`).value = "Tgl: ....................";
-        sheet.mergeCells(`C${rowTgl}:D${rowTgl}`); sheet.getCell(`C${rowTgl}`).value = "Tgl: ....................";
-        sheet.mergeCells(`E${rowTgl}:F${rowTgl}`); sheet.getCell(`E${rowTgl}`).value = "Tgl: ....................";
-        sheet.mergeCells(`G${rowTgl}:I${rowTgl}`); sheet.getCell(`G${rowTgl}`).value = "Tgl: ....................";
         sheet.getRow(rowTgl).font = { size: 9, italic: true };
         sheet.getRow(rowTgl).alignment = { horizontal: 'center', vertical: 'top' };
-        [`A${rowTgl}`, `C${rowTgl}`, `E${rowTgl}`, `G${rowTgl}`].forEach(cell => {
-            sheet.getCell(cell).border = { left: { style: 'thin' }, bottom: { style: 'thin' } };
-        });
-        sheet.getCell(`B${rowTgl}`).border = { right: { style: 'thin' }, bottom: { style: 'thin' } };
-        sheet.getCell(`D${rowTgl}`).border = { right: { style: 'thin' }, bottom: { style: 'thin' } };
-        sheet.getCell(`F${rowTgl}`).border = { right: { style: 'thin' }, bottom: { style: 'thin' } };
-        sheet.getCell(`I${rowTgl}`).border = { right: { style: 'thin' }, bottom: { style: 'thin' } };
         sheet.getColumn(1).width = 5;
         sheet.getColumn(2).width = 15;
         sheet.getColumn(3).width = 15;
@@ -776,9 +837,15 @@ document.addEventListener("DOMContentLoaded", () => {
         const url = window.URL.createObjectURL(blob);
         const anchor = document.createElement("a");
         anchor.href = url;
-        anchor.download = `FORM_COD_${row.no_faktur}.xlsx`;
+        const safeSupplier = supplierName.replace(/[^a-zA-Z0-9]/g, '_');
+        anchor.download = `COD_${safeSupplier}.xlsx`;
         anchor.click();
         window.URL.revokeObjectURL(url);
-    };
+    }
+    function formatDateExcel(dateString) {
+        if (!dateString || dateString === '0000-00-00') return "-";
+        const d = new Date(dateString);
+        return d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
     loadData();
-});
+}); 

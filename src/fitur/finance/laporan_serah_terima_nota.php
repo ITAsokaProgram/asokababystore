@@ -128,6 +128,10 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                 class=" flex items-center gap-2 px-4 py-2 shadow-lg shadow-green-500/30 rounded-lg text-white transition-transform hover:scale-105 text-sm decoration-0 bg-green-600 hover:bg-green-700">
                                 <i class="fas fa-file-excel"></i> <span>Export Excel</span>
                             </button>
+                            <button type="button" id="btn-print-batch-cod" style="display: none;"
+                                class="flex items-center gap-2 px-4 py-2 shadow-lg shadow-blue-500/30 rounded-lg text-white transition-transform hover:scale-105 text-sm decoration-0 bg-blue-600 hover:bg-blue-700">
+                                <i class="fas fa-print"></i> <span>Cetak COD Terpilih</span>
+                            </button>
 
                             <a href="input_serah_terima_nota.php"
                                 class="btn-primary flex items-center gap-2 px-4 py-2 shadow-lg shadow-pink-500/30 rounded-lg text-white transition-transform hover:scale-105 text-sm decoration-0">
@@ -267,6 +271,9 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                         <table class="table-modern" id="receipt-table">
                             <thead>
                                 <tr>
+                                    <th class="text-center whitespace-nowrap w-10">
+                                        <i class="fas fa-check-square"></i>
+                                    </th>
                                     <th class="text-center whitespace-nowrap">Aksi</th>
                                     <th class="whitespace-nowrap">Tgl Invoice</th>
                                     <th class="whitespace-nowrap">Nama Supplier</th>
