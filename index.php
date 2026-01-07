@@ -370,27 +370,16 @@ if ($stmt->num_rows === 0) {
 
     <main>
 
-        <!-- Hero Section -->
-        <section id="home-section" class="relative w-full text-center md:h-screen h-auto overflow-hidden"
+        <!-- <section id="home-section" class="relative w-full text-center md:h-screen h-auto overflow-hidden"
             data-aos="fade-up" data-aos-delay="200" data-aos-duration="1000">
-            <!-- Pengumuman Perbaikan -->
-            <!-- <div id="announcement"
-                class="fixed top-0 w-full bg-yellow-50 text-yellow-800 py-2 px-4 text-center z-50 overflow-hidden border-b border-yellow-200">
-                <div class="inline-block animate-marquee whitespace-nowrap">
-                    Kami mohon maaf kepada seluruh pelanggan yang mengalami kendala saat login setelah melakukan
-                    pendaftaran. Saat ini masalah tersebut telah diperbaiki, dan Anda sudah dapat login serta melihat
-                    riwayat transaksi Anda. Jika ada masukan dan saran untuk pengembangan website ini bisa masuk ke menu bantuan. Terima kasih atas pengertiannya.
-                </div>
-            </div> -->
+            
             <div class="swiper mySwiper h-auto w-full ">
                 <div class="swiper-wrapper" id="carousel-wrapper">
-                    <!-- Slide konten akan diisi lewat JS -->
                 </div>
             </div>
-        </section>
+        </section> -->
 
-        <!-- Stats Section -->
-        <div class="relative z-10 mt-12 max-w-4xl mx-auto bg-white/90 backdrop-blur-lg shadow-2xl rounded-2xl py-8 px-8 grid grid-cols-1 sm:grid-cols-3 gap-8 text-center border border-pink-100"
+        <!-- <div class="relative z-10 mt-12 max-w-4xl mx-auto bg-white/90 backdrop-blur-lg shadow-2xl rounded-2xl py-8 px-8 grid grid-cols-1 sm:grid-cols-3 gap-8 text-center border border-pink-100"
             data-aos="fade-up" data-aos-delay="200" data-aos-duration="1000">
             <div class="group">
                 <div class="text-4xl font-bold gradient-text mb-2 count-animation" id="total_pelanggan"></div>
@@ -413,7 +402,7 @@ if ($stmt->num_rows === 0) {
                     class="w-16 h-1 bg-gradient-to-r from-pink-500 to-purple-600 mx-auto mt-3 group-hover:w-20 transition-all duration-300">
                 </div>
             </div>
-        </div>
+        </div> -->
 
         <!-- Member Section -->
         <section id="member-section" class="py-20 bg-gradient-to-br from-pink-50 via-white to-purple-50">

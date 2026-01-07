@@ -28,7 +28,7 @@ if (token) {
           whatsappContainer &&
           (userNama === "Asfahan Rosyid" ||
             userNama === "Muhammad Ridho" ||
-            "Superadmin")
+            userNama === "Superadmin")
         ) {
           whatsappContainer.style.display = "block";
         }

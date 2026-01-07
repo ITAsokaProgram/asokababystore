@@ -345,7 +345,7 @@ document.addEventListener("DOMContentLoaded", () => {
             let printStatusIcon = '';
             if (isCOD) {
                 if (row.sudah_dicetak === 'Sudah') {
-                    printStatusIcon = `<span class="ml-2 text-xs font-bold text-green-600 bg-green-100 px-2 py-0.5 rounded border border-green-200" title="Sudah Dicetak"><i class="fas fa-print"></i> Printed</span>`;
+                    printStatusIcon = `<i class="fas fa-print text-green-500"></i>`;
                 }
                 let isDisabled = false;
                 if (activeSupplier && activeSupplier !== row.nama_supplier) {
@@ -393,7 +393,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td class="text-sm font-semibold text-gray-700">
                     <div class="flex flex-col">
                         <span>${row.nama_supplier || '-'}</span>
-                        ${isCOD ? '<span class="text-[10px] text-blue-500 flex items-center gap-1"><i class="fa-solid fa-truck-fast"></i> COD ' + printStatusIcon + '</span>' : ''}
+                        ${isCOD ? '<span class="text-[10px] text-blue-500 flex items-center gap-1"><i class="fa-solid fa-truck-fast"></i>  ' + printStatusIcon + '</span>' : ''}
                     </div>
                 </td>
                 <td class="font-mono text-xs text-gray-600">${row.no_faktur_format || row.no_faktur || '-'}</td>
