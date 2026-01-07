@@ -230,7 +230,14 @@ document.addEventListener("DOMContentLoaded", () => {
         setLoadingState(true);
         const queryString = new URLSearchParams(params).toString();
         try {
-            const response = await fetch(`/src/api/finance/get_laporan_serah_terima_nota.php?${queryString}`);
+            const token = getCookie("admin_token");
+
+            const response = await fetch(`/src/api/finance/get_laporan_serah_terima_nota.php?${queryString}`, {
+                headers: {
+                    Accept: "application/json",
+                    Authorization: "Bearer " + token,
+                },
+            });
             if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
             const data = await response.json();
             if (data.error) throw new Error(data.error);
@@ -443,92 +450,115 @@ document.addEventListener("DOMContentLoaded", () => {
         btnExportExcel.addEventListener("click", handleExportExcel);
     }
     async function handleExportExcel() {
-        const params = getUrlParams();
         const todayStr = new Date().toISOString().split('T')[0];
         const { value: formValues } = await Swal.fire({
             title: 'Export Excel',
-            width: '500px',
+            width: '450px',
             html: `
-                <div class="flex flex-col gap-3 px-2 text-left">
-                    <div class="w-full">
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">
-                            <i class="fas fa-calendar-check text-pink-600 mr-1"></i> Tanggal Diterima
-                        </label>
-                        <p class="text-xs text-gray-500 mb-2">Tanggal ini akan dicetak pada footer Excel.</p>
-                        <input id="swal-input-date" type="date" 
-                            class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-shadow" 
+                <div class="flex flex-col gap-4 text-left">
+                    <div class="p-3 bg-blue-50 text-blue-800 rounded text-sm border border-blue-100">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Data yang diexport hanya nota yang statusnya <b>"Sudah Terima"</b>.
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Mulai Tanggal Terima</label>
+                        <input id="swal-input-start" type="date" 
+                            class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500 transition-shadow" 
+                            value="${todayStr}">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Sampai Tanggal Terima</label>
+                        <input id="swal-input-end" type="date" 
+                            class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500 transition-shadow" 
                             value="${todayStr}">
                     </div>
                 </div>
             `,
             focusConfirm: false,
             showCancelButton: true,
-            confirmButtonText: '<i class="fas fa-file-excel"></i> Export Sekarang',
+            confirmButtonText: '<i class="fas fa-file-excel"></i> Download Excel',
             cancelButtonText: 'Batal',
             confirmButtonColor: '#10B981',
-            customClass: {
-                popup: 'overflow-hidden'
-            },
             preConfirm: () => {
-                const date = document.getElementById('swal-input-date').value;
-                if (!date) {
-                    Swal.showValidationMessage('Tanggal Diterima harus diisi!');
+                const start = document.getElementById('swal-input-start').value;
+                const end = document.getElementById('swal-input-end').value;
+                if (!start || !end) {
+                    Swal.showValidationMessage('Harap isi kedua tanggal!');
                 }
-                return { date };
+                return { start, end };
             }
         });
         if (!formValues) return;
         Swal.fire({
             title: "Memproses Excel...",
-            text: "Mengupdate status cetak & download...",
+            text: "Mengambil data nota yang sudah diterima...",
             allowOutsideClick: false,
             didOpen: () => Swal.showLoading(),
         });
         try {
+            const currentParams = getUrlParams();
             const queryParams = new URLSearchParams({
-                ...params,
-                tgl_cetak_label: formValues.date
+                tgl_terima_awal: formValues.start,
+                tgl_terima_akhir: formValues.end,
+                search_supplier: currentParams.search_supplier || ''
             }).toString();
-            const response = await fetch(`/src/api/finance/get_export_serah_terima_nota.php?${queryParams}`);
+
+            const token = getCookie("admin_token");
+
+            const response = await fetch(`/src/api/finance/get_export_serah_terima_nota.php?${queryParams}`, {
+                headers: {
+                    Accept: "application/json",
+                    Authorization: "Bearer " + token,
+                },
+            });
             if (!response.ok) throw new Error("Gagal mengambil data server");
             const result = await response.json();
             if (result.error) throw new Error(result.error);
             const data = result.data;
             if (!data || data.length === 0) {
-                Swal.fire("Info", "Tidak ada data untuk diexport pada filter ini.", "info");
+                Swal.fire({
+                    icon: "info",
+                    title: "Tidak Ada Data",
+                    text: "Tidak ditemukan nota dengan status 'Sudah Terima' pada rentang tanggal tersebut."
+                });
                 return;
             }
             const workbook = new ExcelJS.Workbook();
             const sheet = workbook.addWorksheet("Serah Terima Nota");
             sheet.columns = [
                 { key: "no", width: 5 },
+                { key: "tgl_diterima", width: 15 },
                 { key: "tgl_nota", width: 15 },
                 { key: "kode_supplier", width: 15 },
                 { key: "nama_supplier", width: 35 },
                 { key: "no_faktur", width: 25 },
-                { key: "ttd_serah", width: 20 },
-                { key: "ttd_terima", width: 20 },
+                { key: "ttd_diserahkan", width: 25 },
+                { key: "ttd_diterima", width: 25 },
             ];
-            let titleText = "";
-            if (params.filter_type === 'month') {
-                const elBulan = document.getElementById('bulan');
-                const namaBulan = elBulan ? elBulan.options[elBulan.selectedIndex].text : params.bulan;
-                titleText = `NOTA TANGGAL: ${namaBulan} ${params.tahun}`;
-            } else {
-                const tglMulaiFmt = formatDateExcel(params.tgl_mulai);
-                const tglSelesaiFmt = formatDateExcel(params.tgl_selesai);
-                if (params.tgl_mulai === params.tgl_selesai) {
-                    titleText = `NOTA TANGGAL: ${tglMulaiFmt}`;
-                } else {
-                    titleText = `NOTA TANGGAL: ${tglMulaiFmt} s/d ${tglSelesaiFmt}`;
-                }
+            const fmtDate = (dStr) => {
+                if (!dStr || dStr === '0000-00-00') return '-';
+                const d = new Date(dStr);
+                return d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            };
+            let titleText = `LAPORAN NOTA DITERIMA: ${fmtDate(formValues.start)} s/d ${fmtDate(formValues.end)}`;
+            if (formValues.start === formValues.end) {
+                titleText = `LAPORAN NOTA DITERIMA TANGGAL: ${fmtDate(formValues.start)}`;
             }
-            sheet.mergeCells("A1:G1");
+            sheet.mergeCells("A1:H1");
             const titleCell = sheet.getCell("A1");
             titleCell.value = titleText.toUpperCase();
             titleCell.font = { name: "Arial", size: 12, bold: true };
             titleCell.alignment = { horizontal: "center", vertical: "middle" };
-            const headers = ["NO", "TANGGAL NOTA", "KODE SUPPLIER", "NAMA SUPPLIER", "NOMOR FAKTUR", "TTD DISERAHKAN", "TTD TERIMA"];
+            const headers = [
+                "NO",
+                "TGL DITERIMA",
+                "TGL NOTA",
+                "KODE SUPP",
+                "NAMA SUPPLIER",
+                "NO FAKTUR",
+                "TTD DISERAHKAN OLEH",
+                "TTD DITERIMA OLEH"
+            ];
             const headerRow = sheet.getRow(2);
             headerRow.values = headers;
             headerRow.eachCell((cell) => {
@@ -542,7 +572,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 const r = sheet.getRow(rowNum);
                 r.values = [
                     index + 1,
-                    formatDateExcel(item.tgl_nota),
+                    fmtDate(item.tgl_diterima),
+                    fmtDate(item.tgl_nota),
                     item.kode_supplier || '',
                     item.nama_supplier || '',
                     item.no_faktur_format || item.no_faktur,
@@ -556,26 +587,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
                 rowNum++;
             });
-            rowNum += 2;
-            const dateCell = sheet.getCell(`F${rowNum}`);
-            const dateObj = new Date(formValues.date);
-            const dateStr = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-            dateCell.value = `${dateStr}`;
-            dateCell.font = { italic: true, size: 11 };
             const buffer = await workbook.xlsx.writeBuffer();
             const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
             const url = window.URL.createObjectURL(blob);
             const anchor = document.createElement("a");
             anchor.href = url;
-            anchor.download = `Laporan_Nota_${new Date().getTime()}.xlsx`;
+            anchor.download = `Laporan_Terima_${formValues.start}_sd_${formValues.end}.xlsx`;
             anchor.click();
             window.URL.revokeObjectURL(url);
             loadData();
             Swal.fire({
                 icon: "success",
                 title: "Selesai",
-                text: "Export berhasil.",
-                timer: 1000,
+                text: "Export berhasil didownload.",
+                timer: 1500,
                 showConfirmButton: false,
             });
         } catch (e) {

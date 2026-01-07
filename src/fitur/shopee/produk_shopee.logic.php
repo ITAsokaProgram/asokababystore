@@ -11,7 +11,7 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 $shopeeService = new ShopeeApiService();
-$redirect_uri = "https://" . $_SERVER['HTTP_HOST'] . preg_replace('/produk_shopee\.logic\.php$/', 'produk_shopee.php', $_SERVER['PHP_SELF']);
+$redirect_uri = "https://asokababystore.com" . preg_replace('/produk_shopee\.logic\.php$/', 'produk_shopee.php', $_SERVER['PHP_SELF']);
 if (isset($_GET['code'])) {
     $code = $_GET['code'];
     $shop_id = $_GET['shop_id'] ?? null;

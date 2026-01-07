@@ -1,7 +1,8 @@
 <?php
-session_start();
-include '../../../aa_kon_sett.php';
+ini_set('display_errors', 0);
 header('Content-Type: application/json');
+require_once __DIR__ . '/../../../aa_kon_sett.php';
+require_once __DIR__ . '/../../auth/middleware_login.php';
 register_shutdown_function(function () {
     $error = error_get_last();
     if ($error !== null && in_array($error['type'], [E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR, E_RECOVERABLE_ERROR])) {
@@ -13,52 +14,28 @@ register_shutdown_function(function () {
 });
 $response = ['data' => [], 'error' => null];
 try {
-    $printed_by = $_SESSION['inisial'] ?? $_SESSION['username'] ?? 'SYSTEM';
-    if (empty($printed_by)) {
-        $printed_by = 'USER';
+    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+    if (!preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
+        throw new Exception('Token tidak ditemukan', 401);
     }
-    $tanggal_kemarin = date('Y-m-d', strtotime('-1 day'));
-    $filter_type = $_GET['filter_type'] ?? 'month';
-    $filter_cod = $_GET['cod'] ?? '';
-    $bulan = $_GET['bulan'] ?? date('m');
-    $tahun = $_GET['tahun'] ?? date('Y');
-    $tgl_mulai = $_GET['tgl_mulai'] ?? $tanggal_kemarin;
-    $tgl_selesai = $_GET['tgl_selesai'] ?? $tanggal_kemarin;
-    $search_supplier = $_GET['search_supplier'] ?? '';
+    $token = $matches[1];
+    $verif = verify_token($token);
+    if (!$verif) {
+        throw new Exception('Token tidak valid atau kadaluwarsa', 401);
+    }
+    $kd_user = $verif->id ?? $verif->kode ?? 0;
+    $printed_by = $kd_user;
 
-    if ($filter_type === 'month') {
-        $where_conditions = "visibilitas = 'Aktif' AND MONTH(tgl_nota) = ? AND YEAR(tgl_nota) = ?";
-        $bind_types = 'ss';
-        $bind_params = [$bulan, $tahun];
-    } else {
-        $where_conditions = "visibilitas = 'Aktif' AND DATE(tgl_nota) BETWEEN ? AND ?";
-        $bind_types = 'ss';
-        $bind_params = [$tgl_mulai, $tgl_selesai];
-    }
-    if (!empty($_GET['status_kontra'])) {
-        $where_conditions .= " AND status_kontra = ?";
-        $bind_types .= 's';
-        $bind_params[] = $_GET['status_kontra'];
-    }
-    if (!empty($_GET['status_bayar'])) {
-        $where_conditions .= " AND status_bayar = ?";
-        $bind_types .= 's';
-        $bind_params[] = $_GET['status_bayar'];
-    }
-    if (!empty($_GET['status_pinjam'])) {
-        $where_conditions .= " AND status_pinjam = ?";
-        $bind_types .= 's';
-        $bind_params[] = $_GET['status_pinjam'];
-    }
-    if (!empty($filter_cod)) {
-        $where_conditions .= " AND cod = ?";
-        $bind_types .= 's';
-        $bind_params[] = $filter_cod;
-    }
+    $tgl_awal = $_GET['tgl_terima_awal'] ?? date('Y-m-d');
+    $tgl_akhir = $_GET['tgl_terima_akhir'] ?? date('Y-m-d');
+    $search_supplier = $_GET['search_supplier'] ?? '';
+    $where_conditions = "visibilitas = 'Aktif' AND status = 'Sudah Terima'";
+    $where_conditions .= " AND tgl_diterima BETWEEN ? AND ?";
+    $bind_types = 'ss';
+    $bind_params = [$tgl_awal, $tgl_akhir];
     if (!empty($search_supplier)) {
         $search_raw = trim($search_supplier);
         $search_numeric = str_replace('.', '', $search_raw);
-
         $where_conditions .= " AND (
             nama_supplier LIKE ? 
             OR no_faktur LIKE ? 
@@ -66,16 +43,10 @@ try {
             OR kode_supplier LIKE ? 
             OR CAST(nominal AS CHAR) LIKE ?
             OR penerima LIKE ?
-            OR nama_bank LIKE ?
-            OR no_rek LIKE ?
-            OR atas_nama_rek LIKE ?
-            OR cabang_penerima LIKE ?
         )";
-
-        $bind_types .= 'ssssssssss';
+        $bind_types .= 'ssssss';
         $termRaw = '%' . $search_raw . '%';
         $termNumeric = '%' . $search_numeric . '%';
-
         array_push(
             $bind_params,
             $termRaw,
@@ -83,10 +54,6 @@ try {
             $termRaw,
             $termRaw,
             $termNumeric,
-            $termRaw,
-            $termRaw,
-            $termRaw,
-            $termRaw,
             $termRaw
         );
     }
@@ -101,10 +68,10 @@ try {
     $stmt_update->bind_param($update_types, ...$update_params);
     $stmt_update->execute();
     $stmt_update->close();
-    $sql_data = "SELECT tgl_nota, kode_supplier, nama_supplier, no_faktur, no_faktur_format, nominal, dicetak_oleh 
+    $sql_data = "SELECT tgl_nota, tgl_diterima, kode_supplier, nama_supplier, no_faktur, no_faktur_format, nominal, penerima 
                  FROM serah_terima_nota 
                  WHERE $where_conditions 
-                 ORDER BY tgl_nota ASC, nama_supplier ASC";
+                 ORDER BY tgl_diterima ASC, nama_supplier ASC";
     $stmt_data = $conn->prepare($sql_data);
     $stmt_data->bind_param($bind_types, ...$bind_params);
     $stmt_data->execute();
@@ -115,7 +82,8 @@ try {
     $stmt_data->close();
     $conn->close();
 } catch (Exception $e) {
-    http_response_code(500);
+    $code = $e->getCode() ?: 500;
+    http_response_code($code);
     $response['error'] = $e->getMessage();
 }
 echo json_encode($response);

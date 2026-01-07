@@ -929,8 +929,7 @@ $token = $menuHandler->getToken();
                             Otorisasi</label>
                         <input type="text" id="oto_password" placeholder="Masukkan kode unik..." required
                             class="block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500 transition-colors font-mono text-lg tracking-wide">
-                        <p class="text-xs text-gray-500 mt-1">Kode ini digunakan untuk validasi User Cek di Uang
-                            Brangkas.</p>
+
                     </div>
                 </div>
 
