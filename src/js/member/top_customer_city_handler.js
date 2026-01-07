@@ -52,6 +52,9 @@ if (els.btnSearch) {
   });
 }
 async function loadCities() {
+  els.citySelect.innerHTML = '<option value="" disabled selected>Sedang memuat kota...</option>';
+  els.citySelect.disabled = true;
+
   try {
     const result = await api.getCitiesSimple();
     if (result.success && result.data) {
@@ -63,6 +66,8 @@ async function loadCities() {
         }
       });
       els.citySelect.innerHTML = optionsHtml;
+
+      els.citySelect.disabled = false;
     }
   } catch (error) {
     console.error("Gagal memuat list kota:", error);

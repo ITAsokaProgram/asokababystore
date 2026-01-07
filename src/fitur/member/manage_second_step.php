@@ -190,11 +190,15 @@ $queryString = http_build_query($queryParams);
                         </h2>
                     </div>
 
-                    <div class="mb-3">
+                    <div class="mb-3 flex flex-wrap gap-2">
                         <a href="full_location.php?<?php echo $queryString; ?>" id="view-all-locations-btn"
                             class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 text-sm">
                             Lihat Semua Lokasi
-                            <i class="fa-solid fa-arrow-right ml-2"></i>
+                        </a>
+
+                        <a href="top_customer_city.php?<?php echo $queryString; ?>"
+                            class="inline-block bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 text-sm">
+                            Top Customer City
                         </a>
                     </div>
                     <div id="location-table-loading-spinner" class="loading-spinner">
