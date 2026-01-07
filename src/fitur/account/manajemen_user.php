@@ -923,6 +923,13 @@ $token = $menuHandler->getToken();
                         <input type="date" id="oto_tanggal"
                             class="block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500 transition-colors">
                     </div>
+                    <div>
+                        <label for="oto_tipe" class="block text-sm font-medium text-gray-700 mb-1">Tipe
+                            Otorisasi</label>
+                        <select id="oto_tipe" required
+                            class="block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500 transition-colors mb-4">
+                        </select>
+                    </div>
 
                     <div>
                         <label for="oto_password" class="block text-sm font-medium text-gray-700 mb-1">Kode

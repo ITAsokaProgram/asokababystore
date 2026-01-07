@@ -22,24 +22,19 @@ try {
 
     $input = json_decode(file_get_contents('php://input'), true);
     $kode_user = $input['kode_user'] ?? null;
+    $tipe = $input['tipe'] ?? 'all';
     $password = $input['password'] ?? null;
-
-
 
     if (empty($kode_user) || empty($password)) {
         throw new Exception('User dan Kode Otorisasi wajib diisi.');
     }
 
-
-    $sql = "INSERT INTO otorisasi_user (kode_user, password) 
-            VALUES (?, ?) 
-            ON DUPLICATE KEY UPDATE password = VALUES(password)";
+    $sql = "INSERT INTO otorisasi_user (kode_user, tipe, password) 
+        VALUES (?, ?, ?) 
+        ON DUPLICATE KEY UPDATE password = VALUES(password)";
 
     $stmt = $conn->prepare($sql);
-    if (!$stmt)
-        throw new Exception("Database Error: " . $conn->error);
-
-    $stmt->bind_param("is", $kode_user, $password);
+    $stmt->bind_param("iss", $kode_user, $tipe, $password);
 
     if (!$stmt->execute()) {
         throw new Exception("Gagal menyimpan otorisasi: " . $stmt->error);
@@ -49,7 +44,7 @@ try {
 
     echo json_encode([
         'success' => true,
-        'message' => 'Kode Otorisasi (Permanen) berhasil disimpan'
+        'message' => 'Kode Otorisasi berhasil disimpan'
     ]);
 
 } catch (Exception $e) {

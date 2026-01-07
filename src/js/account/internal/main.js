@@ -4,7 +4,7 @@ import {
   resetPassword,
   bulkGrantAccess,
 } from "./edit_user.js";
-import { getUser, getUserEdit, setOtorisasiUser } from "./fetch.js";
+import { getUser, getUserEdit, setOtorisasiUser, getOtorisasiTipe } from "./fetch.js";
 import { paginationUserInternal } from "./pagination.js";
 import { renderTableUserInternal } from "./table.js";
 import { areaCabang } from "./../../kode_cabang/cabang_area.js";
@@ -29,6 +29,21 @@ const updateUrlState = () => {
   const newUrl = `${window.location.pathname}?${params.toString()}`;
   window.history.pushState({ path: newUrl }, "", newUrl);
 };
+const loadOtoTipe = async () => {
+  const selectTipe = document.getElementById("oto_tipe");
+  if (!selectTipe) return;
+
+  try {
+    const response = await getOtorisasiTipe();
+    if (response.success) {
+      selectTipe.innerHTML = response.data.map(item =>
+        `<option value="${item.tipe}">${item.label}</option>`
+      ).join('');
+    }
+  } catch (error) {
+    console.error("Gagal load tipe otorisasi", error);
+  }
+};
 export const init = async () => {
   const token = getCookie("admin_token");
   if (!token) {
@@ -39,7 +54,9 @@ export const init = async () => {
   if (searchInput && currentState.search) {
     searchInput.value = currentState.search;
   }
+
   await loadData();
+  await loadOtoTipe();
   setupSearchListener();
   setupGlobalEventListeners();
   window.renderTableUserInternal = renderTableUserInternal;
@@ -130,9 +147,8 @@ const setupGlobalEventListeners = () => {
       selectCabang.innerHTML = "";
       const option = document.createElement("option");
       option.value = user.kode_cabang;
-      option.textContent = `${
-        user.kode_cabang === "Pusat" ? "Pusat" : user.nama_cabang
-      }`;
+      option.textContent = `${user.kode_cabang === "Pusat" ? "Pusat" : user.nama_cabang
+        }`;
       selectCabang.appendChild(option);
       await areaCabang("editCabang");
       modal();
@@ -284,20 +300,17 @@ const setupGlobalEventListeners = () => {
     if (modalOto) modalOto.classList.remove("hidden");
   });
 
-  if (formOto) {
-    formOto.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const data = {
-        kode_user: document.getElementById("oto_kode_user").value,
-        // TANGGAL TIDAK DIKIRIM LAGI
-        password: document.getElementById("oto_password").value,
-      };
-      const success = await setOtorisasiUser(data);
-      if (success) {
-        closeModalOto();
-      }
-    });
-  }
+
+  formOto.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const data = {
+      kode_user: document.getElementById("oto_kode_user").value,
+      tipe: document.getElementById("oto_tipe").value,
+      password: document.getElementById("oto_password").value,
+    };
+    const success = await setOtorisasiUser(data);
+    if (success) closeModalOto();
+  });
 
   if (closeOtoBtn) closeOtoBtn.addEventListener("click", closeModalOto);
   if (cancelOtoBtn) cancelOtoBtn.addEventListener("click", closeModalOto);

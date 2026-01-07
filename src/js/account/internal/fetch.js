@@ -199,10 +199,15 @@ export const setOtorisasiUser = async (data) => {
     return false;
   }
 };
+export const getOtorisasiTipe = async () => {
+  const response = await fetch("/src/api/user/get_otorisasi_tipe.php");
+  return await response.json();
+};
 export default {
   getUser,
   insertUser,
   menuAccess,
   getUserEdit,
   setOtorisasiUser,
+  getOtorisasiTipe
 };
