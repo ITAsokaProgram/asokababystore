@@ -752,28 +752,26 @@ document.addEventListener("DOMContentLoaded", () => {
         const bankValueRowIdx = bankHeaderRowIdx + 1;
         sheet.mergeCells(`A${bankHeaderRowIdx}:B${bankHeaderRowIdx}`); sheet.getCell(`A${bankHeaderRowIdx}`).value = "BANK";
         sheet.mergeCells(`C${bankHeaderRowIdx}:D${bankHeaderRowIdx}`); sheet.getCell(`C${bankHeaderRowIdx}`).value = "A/N";
-        sheet.mergeCells(`E${bankHeaderRowIdx}:F${bankHeaderRowIdx}`); sheet.getCell(`E${bankHeaderRowIdx}`).value = "NO. REK";
-        sheet.mergeCells(`G${bankHeaderRowIdx}:I${bankHeaderRowIdx}`); sheet.getCell(`G${bankHeaderRowIdx}`).value = "TANGGAL";
+        sheet.mergeCells(`E${bankHeaderRowIdx}:I${bankHeaderRowIdx}`); sheet.getCell(`E${bankHeaderRowIdx}`).value = "NO. REK";
         const bankRow = sheet.getRow(bankHeaderRowIdx);
         bankRow.font = boldFont;
         bankRow.alignment = centerStyle;
-        ['A', 'C', 'E', 'G'].forEach(col => {
+        ['A', 'C', 'E'].forEach(col => {
             sheet.getCell(`${col}${bankHeaderRowIdx}`).border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' } };
             sheet.getCell(`${col}${bankHeaderRowIdx}`).fill = fillHeader;
         });
-        ['B', 'D', 'F', 'I'].forEach(col => {
+        ['B', 'D', 'I'].forEach(col => {
             sheet.getCell(`${col}${bankHeaderRowIdx}`).border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } };
         });
         sheet.mergeCells(`A${bankValueRowIdx}:B${bankValueRowIdx}`); sheet.getCell(`A${bankValueRowIdx}`).value = firstRow.nama_bank || '-';
         sheet.mergeCells(`C${bankValueRowIdx}:D${bankValueRowIdx}`); sheet.getCell(`C${bankValueRowIdx}`).value = firstRow.atas_nama_rek || '-';
-        sheet.mergeCells(`E${bankValueRowIdx}:F${bankValueRowIdx}`); sheet.getCell(`E${bankValueRowIdx}`).value = firstRow.no_rek ? `${firstRow.no_rek}` : '-';
-        sheet.mergeCells(`G${bankValueRowIdx}:I${bankValueRowIdx}`); sheet.getCell(`G${bankValueRowIdx}`).value = today;
+        sheet.mergeCells(`E${bankValueRowIdx}:I${bankValueRowIdx}`); sheet.getCell(`E${bankValueRowIdx}`).value = firstRow.no_rek ? `${firstRow.no_rek}` : '-';
         const bankValRow = sheet.getRow(bankValueRowIdx);
         bankValRow.alignment = centerStyle;
-        ['A', 'C', 'E', 'G'].forEach(col => {
+        ['A', 'C', 'E'].forEach(col => {
             sheet.getCell(`${col}${bankValueRowIdx}`).border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' } };
         });
-        ['B', 'D', 'F', 'I'].forEach(col => {
+        ['B', 'D', 'I'].forEach(col => {
             sheet.getCell(`${col}${bankValueRowIdx}`).border = { top: { style: 'thin' }, right: { style: 'thin' }, bottom: { style: 'thin' } };
         });
         const startRowTTD = bankValueRowIdx + 3;
