@@ -57,15 +57,13 @@ function renderProductTable(products) {
     const row = `
             <tr class="hover:bg-gray-50">
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${rank}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${
-                  product.plu
-                }</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${
-                  product.descp
-                }</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${product.plu
+      }</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${product.descp
+      }</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-bold">${formatter.format(
-                  product.total_qty
-                )}</td>
+        product.total_qty
+      )}</td>
             </tr>
         `;
     tableBody.innerHTML += row;
