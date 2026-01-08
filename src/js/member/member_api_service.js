@@ -261,3 +261,48 @@ export const getAvailableCities = () => {
 export const getCitiesSimple = () => {
   return sendRequestGET(`${API_MANAGEMENT_URL}/get_cities_simple.php`);
 };
+export const getCabangOptions = () => {
+  return sendRequestGET(`${API_MANAGEMENT_URL}/../../option/get_cabang.php`);
+};
+export const getTopCustomersByCabang = (
+  filterParams,
+  cabang = null,
+  page = 1,
+  limit = 10
+) => {
+  const params = new URLSearchParams();
+  if (filterParams && filterParams.filter_type) {
+    params.append("filter_type", filterParams.filter_type);
+    if (filterParams.filter_type === "custom") {
+      params.append("start_date", filterParams.start_date);
+      params.append("end_date", filterParams.end_date);
+    } else {
+      params.append("filter", filterParams.filter);
+    }
+  }
+  if (cabang && cabang !== 'all') {
+    params.append("cabang", cabang);
+  }
+  params.append("page", page);
+  params.append("limit", limit);
+  const url = `${API_MANAGEMENT_URL}/get_top_customers_by_cabang.php?${params.toString()}`;
+  return sendRequestGET(url);
+};
+export const getExportTopCustomersByCabang = (filterParams, cabang) => {
+  const params = new URLSearchParams();
+  if (filterParams && filterParams.filter_type) {
+    params.append("filter_type", filterParams.filter_type);
+    if (filterParams.filter_type === "custom") {
+      params.append("start_date", filterParams.start_date);
+      params.append("end_date", filterParams.end_date);
+    } else {
+      params.append("filter", filterParams.filter);
+    }
+  }
+  if (cabang && cabang !== 'all') {
+    params.append("cabang", cabang);
+  }
+  params.append("is_export", "true");
+  const url = `${API_MANAGEMENT_URL}/get_top_customers_by_cabang.php?${params.toString()}`;
+  return sendRequestGET(url);
+};

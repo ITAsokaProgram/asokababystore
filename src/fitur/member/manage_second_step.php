@@ -200,6 +200,10 @@ $queryString = http_build_query($queryParams);
                             class="inline-block bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 text-sm">
                             Top Customer City
                         </a>
+                        <a href="top_customer_cabang.php?<?php echo $queryString; ?>"
+                            class="inline-block bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 text-sm">
+                            Top Customer Cabang
+                        </a>
                     </div>
                     <div id="location-table-loading-spinner" class="loading-spinner">
                         <i class="fa-solid fa-spinner fa-spin"></i>
