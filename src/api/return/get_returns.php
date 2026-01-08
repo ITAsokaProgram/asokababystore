@@ -198,7 +198,7 @@ try {
             AND cr.kode_store = erp.kd_store
         LEFT JOIN kode_store ks ON cr.kode_store = ks.kd_store
         WHERE $where_check
-        ORDER BY cr.tgl_return DESC, cr.kode_store ASC
+        ORDER BY cr.no_faktur ASC
         LIMIT ? OFFSET ?
     ";
     $stmt_data = $conn->prepare($sql_data);

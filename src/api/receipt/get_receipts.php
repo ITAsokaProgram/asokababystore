@@ -171,7 +171,7 @@ try {
                  LEFT JOIN receipt_head rh ON cr.no_faktur = rh.no_faktur AND cr.kode_supp = rh.kode_supp
                  LEFT JOIN kode_store ks ON cr.kode_store = ks.kd_store 
                  WHERE $where_sql_cr 
-                 ORDER BY COALESCE(rh.tgl_tiba, cr.tgl_receipt) DESC, cr.kode_store ASC 
+                 ORDER BY cr.no_faktur ASC
                  LIMIT ? OFFSET ?";
     $stmt = $conn->prepare($sql_data);
     $stmt->bind_param($types_cr, ...$params_cr);

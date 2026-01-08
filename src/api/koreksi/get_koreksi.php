@@ -192,7 +192,7 @@ try {
         FROM c_koreksi ck
         LEFT JOIN kode_store ks ON ck.kode_store = ks.kd_store
         WHERE $where_sql_main
-        ORDER BY ck.tgl_koreksi DESC, ck.kode_store ASC
+        ORDER BY ck.no_faktur ASC
         LIMIT ? OFFSET ?
     ";
     $stmt = $conn->prepare($sql_data);
