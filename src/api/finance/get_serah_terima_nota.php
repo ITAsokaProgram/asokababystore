@@ -46,7 +46,6 @@ try {
     $result = $stmt->get_result();
     $data = [];
     while ($row = $result->fetch_assoc()) {
-        $row['id'] = (int) $row['id'];
         $row['nominal'] = (float) $row['nominal'];
         $data[] = $row;
     }

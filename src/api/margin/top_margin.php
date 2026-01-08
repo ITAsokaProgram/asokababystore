@@ -61,7 +61,6 @@ $data = $result->fetch_all(MYSQLI_ASSOC);
 $count = $result->num_rows;
 
 if ($count > 0) {
-    error_log("DEBUG: Data ditemukan, mengirim 200");
     http_response_code(200);
     echo json_encode(['status' => true, 'message' => 'Data berhasil diambil', 'data' => $data]);
 } else {
