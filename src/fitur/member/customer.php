@@ -5,8 +5,8 @@ $filter = htmlspecialchars($_GET['filter'] ?? '3bulan');
 $start_date = htmlspecialchars($_GET['start_date'] ?? '');
 $end_date = htmlspecialchars($_GET['end_date'] ?? '');
 $status = htmlspecialchars($_GET['status'] ?? 'unknown');
-$kd_cust = htmlspecialchars($_GET['kd_cust'] ?? 'Tidak diketahui');
-$nama_cust = htmlspecialchars($_GET['nama_cust'] ?? 'Tidak diketahui');
+$kd_cust = htmlspecialchars($_GET['kd_cust'] ?? '-');
+$nama_cust = htmlspecialchars($_GET['nama_cust'] ?? '-');
 
 // LOGIKA TAMPILAN FILTER BARU
 $filter_display = '';

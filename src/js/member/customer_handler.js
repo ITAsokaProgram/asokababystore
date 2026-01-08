@@ -1,9 +1,7 @@
 import * as api from "./member_api_service.js";
-
 let currentPage = 1;
 const LIMIT = 10;
 let exportExcelButton;
-// BUAT OBJEK UNTUK MENYIMPAN SEMUA PARAMETER FILTER
 const filterParams = {
   filter_type: null,
   filter: null,
@@ -12,14 +10,12 @@ const filterParams = {
 };
 let currentKdCust = "";
 let modal, modalCloseBtn, modalTitle, modalProductName, modalBody, modalSpinner;
-
 function showLoading(isLoading) {
   const spinner = document.getElementById("loading-spinner");
   if (spinner) {
     spinner.classList.toggle("hidden", !isLoading);
   }
 }
-
 function showError(message) {
   const errorEl = document.getElementById("error-message");
   if (errorEl) {
@@ -32,7 +28,6 @@ function showError(message) {
     }
   }
 }
-
 function showTable(isShown) {
   const tableContainer = document.getElementById("product-table-container");
   const paginationContainer = document.getElementById("pagination-container");
@@ -43,7 +38,6 @@ function showTable(isShown) {
     paginationContainer.classList.toggle("hidden", !isShown);
   }
 }
-
 function renderProductTable(products) {
   const tableBody = document.getElementById("product-table-body");
   if (!tableBody) return;
@@ -80,7 +74,6 @@ function renderProductTable(products) {
     tableBody.innerHTML += row;
   });
 }
-
 function renderPagination(pagination) {
   const { total_records, current_page, limit, total_pages } = pagination;
   const infoEl = document.getElementById("pagination-info");
@@ -94,7 +87,6 @@ function renderPagination(pagination) {
   const startRecord = (current_page - 1) * limit + 1;
   const endRecord = Math.min(current_page * limit, total_records);
   infoEl.innerHTML = `Menampilkan <strong>${startRecord}</strong>-<strong>${endRecord}</strong> dari <strong>${total_records}</strong> produk`;
-
   let buttonsHTML = "";
   buttonsHTML += `
         <button 
@@ -105,7 +97,6 @@ function renderPagination(pagination) {
             <i class="fa-solid fa-chevron-left"></i>
         </button>
     `;
-
   const maxPagesToShow = 5;
   let startPage = Math.max(1, current_page - Math.floor(maxPagesToShow / 2));
   let endPage = Math.min(total_pages, startPage + maxPagesToShow - 1);
@@ -115,14 +106,12 @@ function renderPagination(pagination) {
   ) {
     startPage = Math.max(1, endPage - maxPagesToShow + 1);
   }
-
   if (startPage > 1) {
     buttonsHTML += `<button class="pagination-btn" data-page="1">1</button>`;
     if (startPage > 2) {
       buttonsHTML += `<span class="pagination-ellipsis">...</span>`;
     }
   }
-
   for (let i = startPage; i <= endPage; i++) {
     buttonsHTML += `
             <button 
@@ -133,14 +122,12 @@ function renderPagination(pagination) {
             </button>
         `;
   }
-
   if (endPage < total_pages) {
     if (endPage < total_pages - 1) {
       buttonsHTML += `<span class="pagination-ellipsis">...</span>`;
     }
     buttonsHTML += `<button class="pagination-btn" data-page="${total_pages}">${total_pages}</button>`;
   }
-
   buttonsHTML += `
         <button 
             class="pagination-btn" 
@@ -150,26 +137,22 @@ function renderPagination(pagination) {
             <i class="fa-solid fa-chevron-right"></i>
         </button>
     `;
-
   buttonsEl.innerHTML = buttonsHTML;
   buttonsEl.querySelectorAll("button").forEach((button) => {
     button.addEventListener("click", () => {
       const page = parseInt(button.dataset.page);
       if (page !== currentPage) {
         currentPage = page;
-        loadTopProducts(); // Panggil tanpa parameter
+        loadTopProducts();
       }
     });
   });
 }
-
-// UBAH FUNGSI INI AGAR MENGGUNAKAN GLOBAL filterParams
 async function loadTopProducts() {
   showLoading(true);
   showError("");
   showTable(false);
   try {
-    // KIRIM OBJEK filterParams, BUKAN STRING filter
     const result = await api.getTopProductsByCustomer(
       filterParams,
       currentKdCust,
@@ -190,7 +173,6 @@ async function loadTopProducts() {
     showLoading(false);
   }
 }
-
 async function handleSendVoucherClick(e) {
   const button = e.target.closest(".btn-send-voucher");
   if (!button) {
@@ -226,7 +208,6 @@ async function handleSendVoucherClick(e) {
     button.innerHTML = '<i class="fa-solid fa-paper-plane"></i>';
   }
 }
-
 async function handleSendGeneralMessageClick() {
   const button = document.getElementById("btn-send-general-wa");
   if (!button) return;
@@ -260,13 +241,11 @@ async function handleSendGeneralMessageClick() {
     button.innerHTML = originalHtml;
   }
 }
-
 function showModal(show = true) {
   if (modal) {
     modal.classList.toggle("hidden", !show);
   }
 }
-
 function renderModalTable(transactions) {
   modalBody.innerHTML = "";
   if (transactions.length === 0) {
@@ -279,13 +258,11 @@ function renderModalTable(transactions) {
     minimumFractionDigits: 0,
   });
   const numFormatter = new Intl.NumberFormat("id-ID");
-
   let htmlRows = "";
   let current_tanggal = null;
   let current_bon = null;
   let subtotal_bon_qty = 0;
   let subtotal_bon_total = 0;
-
   function buildSubtotalBonRow() {
     if (current_bon === null) return "";
     const row = `
@@ -305,7 +282,6 @@ function renderModalTable(transactions) {
     subtotal_bon_total = 0;
     return row;
   }
-
   function buildTanggalHeaderRow(tanggal) {
     return `
             <tr class="header-tanggal-row" style="background-color: #EBF8FF;">
@@ -315,7 +291,6 @@ function renderModalTable(transactions) {
                 </td>
             </tr>`;
   }
-
   function buildBonHeaderRow(noBon, jam) {
     return `
             <tr class="header-faktur-row" style="background-color: #F7FAFC;">
@@ -327,28 +302,23 @@ function renderModalTable(transactions) {
                 </td>
             </tr>`;
   }
-
   transactions.forEach((tx) => {
     const qty = tx.qty || 0;
     const harga = tx.harga || 0;
     const total_harga = qty * harga;
-
     if (tx.tgl_trans_date !== current_tanggal) {
       htmlRows += buildSubtotalBonRow();
       current_tanggal = tx.tgl_trans_date;
       current_bon = null;
       htmlRows += buildTanggalHeaderRow(current_tanggal);
     }
-
     if (tx.no_bon !== current_bon) {
       htmlRows += buildSubtotalBonRow();
       current_bon = tx.no_bon;
       htmlRows += buildBonHeaderRow(current_bon, tx.jam_trs);
     }
-
     subtotal_bon_qty += qty;
     subtotal_bon_total += total_harga;
-
     htmlRows += `
             <tr class="item-row hover:bg-gray-50">
                 <td class="px-4 py-2 text-sm text-gray-800 text-left">
@@ -366,12 +336,9 @@ function renderModalTable(transactions) {
             </tr>
         `;
   });
-
   htmlRows += buildSubtotalBonRow();
   modalBody.innerHTML = htmlRows;
 }
-
-// UBAH FUNGSI INI AGAR MENGGUNAKAN GLOBAL filterParams
 async function handleProductRowClick(e) {
   if (e.target.closest(".btn-send-voucher")) {
     return;
@@ -380,16 +347,13 @@ async function handleProductRowClick(e) {
   if (!row) {
     return;
   }
-
   const plu = row.dataset.plu;
   const descp = row.dataset.descp;
   showModal(true);
   modalProductName.textContent = `Produk: ${descp} (${plu})`;
   modalBody.innerHTML = "";
   modalSpinner.classList.remove("hidden");
-
   try {
-    // KIRIM OBJEK filterParams, BUKAN STRING filter
     const result = await api.getTransactionDetails(
       filterParams,
       currentKdCust,
@@ -407,7 +371,6 @@ async function handleProductRowClick(e) {
     modalSpinner.classList.add("hidden");
   }
 }
-
 function initModalElements() {
   modal = document.getElementById("transaction-detail-modal");
   modalCloseBtn = document.getElementById("modal-close-btn");
@@ -415,7 +378,6 @@ function initModalElements() {
   modalProductName = document.getElementById("modal-product-name");
   modalBody = document.getElementById("modal-table-body");
   modalSpinner = document.getElementById("modal-loading-spinner");
-
   if (modalCloseBtn) {
     modalCloseBtn.addEventListener("click", () => showModal(false));
   }
@@ -427,14 +389,11 @@ function initModalElements() {
     });
   }
 }
-// ... (Bagian import dan setup awal tetap sama) ...
-
 async function handleExportExcel() {
   if (!currentKdCust) {
     Swal.fire("Error", "Kode customer tidak ditemukan.", "error");
     return;
   }
-
   Swal.fire({
     title: "Menyiapkan Excel...",
     text: "Mengambil data dan menghitung total...",
@@ -443,37 +402,29 @@ async function handleExportExcel() {
       Swal.showLoading();
     },
   });
-
   try {
     const result = await api.getExportCustomerProducts(filterParams, currentKdCust);
-
     if (!result.success || !result.data || result.data.length === 0) {
       throw new Error("Tidak ada data transaksi ditemukan.");
     }
-
     const data = result.data;
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet("Riwayat Belanja");
-
-    // Lebar kolom
     sheet.columns = [
-      { key: "A", width: 5 },  // No
-      { key: "B", width: 10 }, // Jam
-      { key: "C", width: 18 }, // No Bon
-      { key: "D", width: 15 }, // PLU
-      { key: "E", width: 40 }, // Nama Produk
-      { key: "F", width: 10 }, // Qty
-      { key: "G", width: 15 }, // Harga
-      { key: "H", width: 18 }, // Subtotal
+      { key: "A", width: 5 },
+      { key: "B", width: 10 },
+      { key: "C", width: 18 },
+      { key: "D", width: 15 },
+      { key: "E", width: 40 },
+      { key: "F", width: 10 },
+      { key: "G", width: 15 },
+      { key: "H", width: 18 },
     ];
-
-    // --- Header Judul ---
     sheet.mergeCells("A1:H1");
     const titleCell = sheet.getCell("A1");
     titleCell.value = `RIWAYAT BELANJA: ${currentKdCust}`;
     titleCell.font = { name: "Arial", size: 14, bold: true };
     titleCell.alignment = { horizontal: "center" };
-
     sheet.mergeCells("A2:H2");
     const subTitleCell = sheet.getCell("A2");
     let filterTxt = filterParams.filter_type === 'custom'
@@ -481,43 +432,31 @@ async function handleExportExcel() {
       : `Filter: ${filterParams.filter}`;
     subTitleCell.value = `Periode: ${filterTxt} (Diurutkan berdasarkan Qty Tertinggi per Hari)`;
     subTitleCell.alignment = { horizontal: "center" };
-
     let currentRow = 4;
     let grandTotalQty = 0;
     let grandTotalOmset = 0;
-
-    // --- Loop Data (Per Tanggal) ---
     data.forEach((group) => {
-      // Akumulasi ke Grand Total
       grandTotalQty += group.total_daily_qty;
       grandTotalOmset += group.total_daily_omset;
-
-      // 1. Header Tanggal
       const dateObj = new Date(group.date);
       const dateStr = dateObj.toLocaleDateString('id-ID', {
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
       });
-
       sheet.mergeCells(`A${currentRow}:H${currentRow}`);
       const rowDate = sheet.getCell(`A${currentRow}`);
-      rowDate.value = `TANGGAL: ${dateStr.toUpperCase()} (${group.date})`;
-
-      // Style Header Tanggal (Kuning)
+      rowDate.value = `${dateStr.toUpperCase()} (${group.date})`;
       rowDate.font = { bold: true, size: 11 };
       rowDate.fill = {
         type: "pattern",
         pattern: "solid",
-        fgColor: { argb: "FFFFE082" }, // Amber-200
+        fgColor: { argb: "FFFFE082" },
       };
       rowDate.alignment = { vertical: 'middle', indent: 1 };
       rowDate.border = { top: { style: 'thin' }, bottom: { style: 'thin' } };
       currentRow++;
-
-      // 2. Header Table Items
       const tableHeaders = ["No", "Jam", "No Bon", "PLU", "Nama Produk", "Qty", "Harga", "Subtotal"];
       const rowHeader = sheet.getRow(currentRow);
       rowHeader.values = tableHeaders;
-
       rowHeader.eachCell((cell) => {
         cell.font = { bold: true };
         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF3F4F6' } };
@@ -525,8 +464,6 @@ async function handleExportExcel() {
         cell.alignment = { horizontal: 'center' };
       });
       currentRow++;
-
-      // 3. List Item
       group.items.forEach((item, index) => {
         const r = sheet.getRow(currentRow);
         r.values = [
@@ -543,16 +480,12 @@ async function handleExportExcel() {
         r.getCell(2).alignment = { horizontal: 'center' };
         r.getCell(3).alignment = { horizontal: 'center' };
         r.getCell(4).alignment = { horizontal: 'center' };
-
-        r.getCell(6).numFmt = '#,##0'; // Qty
+        r.getCell(6).numFmt = '#,##0';
         r.getCell(6).alignment = { horizontal: 'center' };
-
-        r.getCell(7).numFmt = '#,##0'; // Harga
-        r.getCell(8).numFmt = '#,##0'; // Subtotal
+        r.getCell(7).numFmt = '#,##0';
+        r.getCell(8).numFmt = '#,##0';
         currentRow++;
       });
-
-      // 4. Footer Total Harian
       const rowTotal = sheet.getRow(currentRow);
       rowTotal.values = [
         '', '', '', '', 'TOTAL TANGGAL INI:',
@@ -560,67 +493,46 @@ async function handleExportExcel() {
         '',
         group.total_daily_omset
       ];
-
-      // Style Total Harian
       const cellLabel = rowTotal.getCell(5);
-      cellLabel.font = { bold: true, italic: true, color: { argb: 'FF4B5563' } }; // Gray-600
+      cellLabel.font = { bold: true, italic: true, color: { argb: 'FF4B5563' } };
       cellLabel.alignment = { horizontal: 'right' };
-
       const cellQty = rowTotal.getCell(6);
       cellQty.font = { bold: true };
       cellQty.alignment = { horizontal: 'center' };
       cellQty.numFmt = '#,##0';
-      cellQty.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFECFDF5' } }; // Green-50 (light)
-
+      cellQty.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFECFDF5' } };
       const cellOmset = rowTotal.getCell(8);
       cellOmset.font = { bold: true };
       cellOmset.numFmt = '#,##0';
-      cellOmset.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFECFDF5' } }; // Green-50 (light)
-
-      // Garis pemisah total
+      cellOmset.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFECFDF5' } };
       rowTotal.eachCell((cell, colNum) => {
         if (colNum >= 5) cell.border = { top: { style: 'thin' } };
       });
-
-      currentRow += 2; // Spasi antar tanggal
+      currentRow += 2;
     });
-
-    // --- 5. GRAND TOTAL (Total Keseluruhan) ---
     currentRow++;
-    sheet.mergeCells(`A${currentRow}:E${currentRow}`); // Merge label
+    sheet.mergeCells(`A${currentRow}:E${currentRow}`);
     const rowGrandTotal = sheet.getRow(currentRow);
-
-    // Label
     const cellGrandLabel = rowGrandTotal.getCell(1);
     cellGrandLabel.value = "GRAND TOTAL (SELURUH PERIODE):";
     cellGrandLabel.font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } };
-    cellGrandLabel.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF059669' } }; // Emerald-600
+    cellGrandLabel.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF059669' } };
     cellGrandLabel.alignment = { horizontal: 'right', vertical: 'middle' };
-
-    // Nilai Qty
     const cellGrandQty = rowGrandTotal.getCell(6);
     cellGrandQty.value = grandTotalQty;
     cellGrandQty.font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } };
     cellGrandQty.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF059669' } };
     cellGrandQty.alignment = { horizontal: 'center', vertical: 'middle' };
     cellGrandQty.numFmt = '#,##0';
-
-    // Spacer
     const cellGrandSpacer = rowGrandTotal.getCell(7);
     cellGrandSpacer.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF059669' } };
-
-    // Nilai Omset
     const cellGrandOmset = rowGrandTotal.getCell(8);
     cellGrandOmset.value = grandTotalOmset;
     cellGrandOmset.font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } };
     cellGrandOmset.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF059669' } };
     cellGrandOmset.alignment = { horizontal: 'right', vertical: 'middle' };
     cellGrandOmset.numFmt = '#,##0';
-
-    // Tinggi Baris Grand Total
     rowGrandTotal.height = 30;
-
-    // --- Download File ---
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
     const url = window.URL.createObjectURL(blob);
@@ -630,7 +542,6 @@ async function handleExportExcel() {
     anchor.download = `Riwayat_${currentKdCust}_${timestamp}.xlsx`;
     anchor.click();
     window.URL.revokeObjectURL(url);
-
     Swal.fire({
       icon: "success",
       title: "Selesai",
@@ -638,42 +549,32 @@ async function handleExportExcel() {
       timer: 1500,
       showConfirmButton: false,
     });
-
   } catch (error) {
     console.error(error);
     Swal.fire("Error", error.message, "error");
   }
 }
-
-
-
 document.addEventListener("DOMContentLoaded", () => {
   initModalElements();
   const params = new URLSearchParams(window.location.search);
-
-  // ISI OBJEK filterParams
   filterParams.filter_type = params.get("filter_type");
   filterParams.filter = params.get("filter");
   filterParams.start_date = params.get("start_date");
   filterParams.end_date = params.get("end_date");
   currentKdCust = params.get("kd_cust");
-
-  // PERIKSA filter_type BUKAN filter
   if (filterParams.filter_type && currentKdCust) {
     currentPage = 1;
-    loadTopProducts(); // Panggil tanpa parameter
+    loadTopProducts();
   } else {
     console.error("Filter atau Kode Customer tidak ditemukan di URL.");
     showLoading(false);
     showError("Parameter filter atau kode customer tidak valid.");
   }
-
   const tableBody = document.getElementById("product-table-body");
   if (tableBody) {
     tableBody.addEventListener("click", handleSendVoucherClick);
     tableBody.addEventListener("click", handleProductRowClick);
   }
-
   const generalSendButton = document.getElementById("btn-send-general-wa");
   if (generalSendButton) {
     generalSendButton.addEventListener("click", handleSendGeneralMessageClick);
@@ -683,4 +584,3 @@ document.addEventListener("DOMContentLoaded", () => {
     exportExcelButton.addEventListener("click", handleExportExcel);
   }
 });
-

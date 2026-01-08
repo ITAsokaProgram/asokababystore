@@ -14,6 +14,7 @@ const state = {
 const els = {
   citySelect: document.getElementById('city-filter'),
   btnSearch: document.getElementById('btn-search'),
+  btnExport: document.getElementById('btn-export'),
   initialState: document.getElementById('initial-state'),
   tableBody: document.getElementById('table-body'),
   loading: document.getElementById('loading-spinner'),
@@ -37,13 +38,7 @@ if (els.btnSearch) {
   els.btnSearch.addEventListener('click', () => {
     const selectedCity = els.citySelect.value;
     if (!selectedCity || selectedCity === "") {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Pilih Kota',
-        text: 'Silakan pilih kota terlebih dahulu sebelum mencari.',
-        timer: 2000,
-        showConfirmButton: false
-      });
+      Swal.fire({ icon: 'warning', title: 'Pilih Kota', text: 'Silakan pilih kota terlebih dahulu.', timer: 2000, showConfirmButton: false });
       return;
     }
     state.currentCity = selectedCity;
@@ -51,10 +46,12 @@ if (els.btnSearch) {
     loadData();
   });
 }
+if (els.btnExport) {
+  els.btnExport.addEventListener('click', handleExportExcel);
+}
 async function loadCities() {
   els.citySelect.innerHTML = '<option value="" disabled selected>Sedang memuat kota...</option>';
   els.citySelect.disabled = true;
-
   try {
     const result = await api.getCitiesSimple();
     if (result.success && result.data) {
@@ -66,7 +63,6 @@ async function loadCities() {
         }
       });
       els.citySelect.innerHTML = optionsHtml;
-
       els.citySelect.disabled = false;
     }
   } catch (error) {
@@ -78,6 +74,7 @@ async function loadData() {
   els.initialState.classList.add('hidden');
   showLoading(true);
   showError(false);
+  if (els.btnExport) els.btnExport.classList.add('hidden');
   try {
     const result = await api.getTopCustomersByCity(
       state.filterParams,
@@ -89,6 +86,9 @@ async function loadData() {
       state.totalPages = result.pagination.total_pages;
       renderTable(result.data, result.pagination);
       renderPagination();
+      if (result.data.length > 0 && els.btnExport) {
+        els.btnExport.classList.remove('hidden');
+      }
     } else {
       throw new Error(result.message || "Gagal memuat data.");
     }
@@ -201,5 +201,126 @@ function showError(message) {
     els.initialState.classList.add('hidden');
   } else {
     els.errorMsg.classList.add('hidden');
+  }
+}
+async function handleExportExcel() {
+  if (!state.currentCity) {
+    Swal.fire("Error", "Pilih kota terlebih dahulu.", "error");
+    return;
+  }
+  Swal.fire({
+    title: "Menyiapkan Excel...",
+    text: "Mengambil seluruh data customer...",
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    },
+  });
+  try {
+    const result = await api.getExportTopCustomersByCity(state.filterParams, state.currentCity);
+    if (!result.success || !result.data || result.data.length === 0) {
+      throw new Error("Tidak ada data untuk diexport.");
+    }
+    const data = result.data;
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet("Top Customer");
+    sheet.columns = [
+      { key: "rank", width: 8 },
+      { key: "nama", width: 35 },
+      { key: "kota", width: 20 },
+      { key: "no_hp", width: 18 },
+      { key: "freq", width: 15 },
+      { key: "omset", width: 20 },
+    ];
+    sheet.mergeCells("A1:G1");
+    const titleCell = sheet.getCell("A1");
+    const cityName = state.currentCity === 'all' ? 'SELURUH KOTA' : state.currentCity;
+    titleCell.value = `TOP CUSTOMER: ${cityName}`;
+    titleCell.font = { name: "Arial", size: 14, bold: true };
+    titleCell.alignment = { horizontal: "center" };
+    sheet.mergeCells("A2:G2");
+    const subTitleCell = sheet.getCell("A2");
+    let filterTxt = state.filterParams.filter_type === 'custom'
+      ? `${state.filterParams.start_date} s/d ${state.filterParams.end_date}`
+      : `Filter: ${state.filterParams.filter}`;
+    subTitleCell.value = `Periode: ${filterTxt}`;
+    subTitleCell.alignment = { horizontal: "center" };
+    const tableHeaderRowIdx = 4;
+    const headerRow = sheet.getRow(tableHeaderRowIdx);
+    headerRow.values = ["Rank", "Nama Customer", "Kota", "No HP", "Frekuensi (x)", "Total Belanja (Rp)"];
+    headerRow.eachCell((cell) => {
+      cell.font = { bold: true };
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF3F4F6' } };
+      cell.border = { bottom: { style: 'thin' }, top: { style: 'thin' } };
+      cell.alignment = { horizontal: 'center', vertical: 'middle' };
+    });
+    let currentRow = tableHeaderRowIdx + 1;
+    let grandTotalFreq = 0;
+    let grandTotalOmset = 0;
+    data.forEach((item, index) => {
+      grandTotalFreq += item.freq;
+      grandTotalOmset += item.omset;
+      const r = sheet.getRow(currentRow);
+      r.values = [
+        index + 1,
+        item.nama_cust,
+        item.kota,
+        item.kd_cust,
+        item.freq,
+        item.omset
+      ];
+      r.getCell(1).alignment = { horizontal: 'center' };
+      r.getCell(3).alignment = { horizontal: 'center' };
+      r.getCell(4).alignment = { horizontal: 'center' };
+      r.getCell(5).alignment = { horizontal: 'center' };
+      r.getCell(6).numFmt = '#,##0';
+      r.getCell(6).alignment = { horizontal: 'center' };
+      r.getCell(7).numFmt = '#,##0';
+      if (index < 3) {
+        r.getCell(1).font = { bold: true, color: { argb: 'FFD97706' } };
+      }
+      currentRow++;
+    });
+    currentRow++;
+    sheet.mergeCells(`A${currentRow}:E${currentRow}`);
+    const rowGrandTotal = sheet.getRow(currentRow);
+    const cellGrandLabel = rowGrandTotal.getCell(1);
+    cellGrandLabel.value = "GRAND TOTAL:";
+    cellGrandLabel.font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } };
+    cellGrandLabel.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF059669' } };
+    cellGrandLabel.alignment = { horizontal: 'right', vertical: 'middle' };
+    const cellGrandFreq = rowGrandTotal.getCell(6);
+    cellGrandFreq.value = grandTotalFreq;
+    cellGrandFreq.font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } };
+    cellGrandFreq.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF059669' } };
+    cellGrandFreq.alignment = { horizontal: 'center', vertical: 'middle' };
+    cellGrandFreq.numFmt = '#,##0';
+    const cellGrandOmset = rowGrandTotal.getCell(7);
+    cellGrandOmset.value = grandTotalOmset;
+    cellGrandOmset.font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } };
+    cellGrandOmset.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF059669' } };
+    cellGrandOmset.alignment = { horizontal: 'right', vertical: 'middle' };
+    cellGrandOmset.numFmt = '#,##0';
+    rowGrandTotal.height = 30;
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    const url = window.URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    const timestamp = new Date().toISOString().slice(0, 10);
+    const safeCity = cityName.replace(/[^a-zA-Z0-9]/g, '_');
+    anchor.download = `TopCust_${safeCity}_${timestamp}.xlsx`;
+    anchor.click();
+    window.URL.revokeObjectURL(url);
+    Swal.fire({
+      icon: "success",
+      title: "Selesai",
+      text: "Data berhasil diexport.",
+      timer: 1500,
+      showConfirmButton: false,
+    });
+  } catch (error) {
+    console.error(error);
+    Swal.fire("Error", error.message, "error");
   }
 }

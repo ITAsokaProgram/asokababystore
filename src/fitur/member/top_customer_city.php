@@ -40,6 +40,9 @@ if ($filter_type === 'custom' && $start_date && $end_date) {
 
     <link rel="stylesheet" href="../../style/default-font.css">
     <link rel="stylesheet" href="../../output2.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
 </head>
 
 <body class="bg-gradient-to-br from-slate-50 to-blue-50 text-gray-900">
@@ -80,6 +83,11 @@ if ($filter_type === 'custom' && $start_date && $end_date) {
                             class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg shadow-sm text-sm font-medium transition-colors h-[38px] flex items-center">
                             <i class="fa-solid fa-magnifying-glass mr-2"></i>
                             Cari
+                        </button>
+                        <button id="btn-export"
+                            class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg shadow-sm text-sm font-medium transition-colors h-[38px] flex items-center hidden">
+                            <i class="fa-solid fa-file-excel mr-2"></i>
+                            Export
                         </button>
                     </div>
                 </div>
@@ -134,6 +142,7 @@ if ($filter_type === 'custom' && $start_date && $end_date) {
     <script src="../../js/ui/navbar_toogle.js" type="module"></script>
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script type="module" src="../../js/member/top_customer_city_handler.js"></script>
 </body>

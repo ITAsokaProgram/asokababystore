@@ -24,7 +24,7 @@ class DateManager {
             this._initializeDateInputs();
             this._initializeFlatpickr();
             this._setDefaultDates();
-            
+
             this.isInitialized = true;
             return true;
         } catch (error) {
@@ -115,7 +115,7 @@ class DateManager {
      */
     _setDefaultDates() {
         const { startDate, endDate } = this._getDefaultDateRange();
-        
+
         const startDateElement = document.getElementById(ELEMENT_IDS.DATE);
         const endDateElement = document.getElementById(ELEMENT_IDS.DATE1);
 
@@ -153,16 +153,7 @@ class DateManager {
             return false;
         }
 
-        // Check if date range is not too far in the past (optional)
-        const start = new Date(startDate.split('-').reverse().join('-'));
-        const today = new Date();
-        const maxDaysBack = 365; // 1 year
-        const daysDiff = Math.ceil((today - start) / (1000 * 60 * 60 * 24));
 
-        if (daysDiff > maxDaysBack) {
-            this._showDateError(`Tanggal tidak boleh lebih dari ${maxDaysBack} hari yang lalu`);
-            return false;
-        }
 
         this._clearDateError();
         return true;

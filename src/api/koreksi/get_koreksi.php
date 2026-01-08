@@ -38,7 +38,12 @@ try {
             k.kd_store, 
             k.kode_supp,
             DATE(k.tgl_koreksi) as tgl_koreksi,
-            SUM((k.qty_kor * k.harga_beli) + IFNULL(k.ppn_kor, 0)) as total_erp_calc
+            SUM((
+                CASE 
+                    WHEN k.keterangan = 'Minus System' THEN k.sel_qty 
+                    ELSE k.qty_kor 
+                END * k.harga_beli
+            ) + IFNULL(k.ppn_kor, 0)) as total_erp_calc
         FROM koreksi k
         WHERE k.tgl_koreksi BETWEEN ? AND ?
     ";
@@ -169,7 +174,12 @@ try {
             ck.*,
             ks.Nm_Alias,
             (
-                SELECT SUM((k.qty_kor * k.harga_beli) + IFNULL(k.ppn_kor, 0))
+                SELECT SUM((
+                    CASE 
+                        WHEN k.keterangan = 'Minus System' THEN k.sel_qty 
+                        ELSE k.qty_kor 
+                    END * k.harga_beli
+                ) + IFNULL(k.ppn_kor, 0))
                 FROM koreksi k 
                 WHERE k.no_faktur = ck.no_faktur 
                 AND k.kd_store = ck.kode_store
@@ -177,7 +187,7 @@ try {
             ) as total_erp,
             CASE 
                 WHEN NOT EXISTS (SELECT 1 FROM koreksi k2 WHERE k2.no_faktur = ck.no_faktur AND k2.kd_store = ck.kode_store) THEN 'NOT_FOUND_IN_ERP'
-                ELSE 'CHECK_DIFF' -- Akan divalidasi logic PHP
+                ELSE 'CHECK_DIFF' 
             END as status_base
         FROM c_koreksi ck
         LEFT JOIN kode_store ks ON ck.kode_store = ks.kd_store

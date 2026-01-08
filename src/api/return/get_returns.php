@@ -48,6 +48,10 @@ try {
         SELECT no_faktur, kode_supp, kd_store, tgl_input as tgl_erp, 
                ((hrg_beli * qty) + IFNULL(ppn, 0) + IFNULL(ppn_bm, 0)) as nilai_row 
         FROM hilang_pasangan
+        UNION ALL
+        SELECT no_faktur, kode_supp, kd_store, tgl_mutasi as tgl_erp, 
+               ((hrg_beli * qty) + IFNULL(ppn, 0)) as nilai_row 
+        FROM mutasi_out
     ";
     $params_base = [];
     $types_base = "";

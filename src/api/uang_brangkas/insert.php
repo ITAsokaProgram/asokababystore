@@ -3,7 +3,6 @@ session_start();
 ini_set('display_errors', 0);
 require_once __DIR__ . '/../../../aa_kon_sett.php';
 require_once __DIR__ . '/../../auth/middleware_login.php';
-require_once __DIR__ . '/../../helpers/otorisasi_helper.php';
 header('Content-Type: application/json');
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -28,11 +27,23 @@ try {
     $user_hitung = $verif->id ?? $verif->kode ?? null;
     $tanggal = $input['tanggal'] ?? date('Y-m-d');
     $jam = $input['jam'] ?? date('H:i:s');
-
+    $nama_user_cek_input = trim($input['nama_user_cek'] ?? '');
+    $kode_otorisasi = $input['kode_otorisasi'] ?? '';
+    $keterangan = $input['keterangan'] ?? '';
+    $stmt_cari = $conn->prepare("SELECT kode FROM user_account WHERE inisial = ? LIMIT 1");
+    $stmt_cari->bind_param("s", $nama_user_cek_input);
+    $stmt_cari->execute();
+    $res_cari = $stmt_cari->get_result();
+    if ($res_cari->num_rows === 0)
+        throw new Exception("User Check '$nama_user_cek_input' tidak ditemukan.");
+    $user_cek = $res_cari->fetch_assoc()['kode'];
     $stmt_cari->close();
-    if (!cekOtorisasi($conn, $user_hitung, $kode_otorisasi, 'input_uang_brangkas')) {
-        throw new Exception("Otorisasi Gagal! Kode salah atau Anda tidak memiliki akses Fitur Brangkas.");
-    }
+    $stmt_auth = $conn->prepare("SELECT kode_user FROM otorisasi_user WHERE kode_user = ? AND PASSWORD = ?");
+    $stmt_auth->bind_param("is", $user_cek, $kode_otorisasi);
+    $stmt_auth->execute();
+    if ($stmt_auth->get_result()->num_rows === 0)
+        throw new Exception("Otorisasi Gagal!");
+    $stmt_auth->close();
     $denominations = [
         'qty_100rb' => 100000,
         'qty_50rb' => 50000,

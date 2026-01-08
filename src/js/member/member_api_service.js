@@ -237,10 +237,27 @@ export const getTopCustomersByCity = (
   const url = `${API_MANAGEMENT_URL}/get_top_customers_by_city.php?${params.toString()}`;
   return sendRequestGET(url);
 };
+export const getExportTopCustomersByCity = (filterParams, kota) => {
+  const params = new URLSearchParams();
+  if (filterParams && filterParams.filter_type) {
+    params.append("filter_type", filterParams.filter_type);
+    if (filterParams.filter_type === "custom") {
+      params.append("start_date", filterParams.start_date);
+      params.append("end_date", filterParams.end_date);
+    } else {
+      params.append("filter", filterParams.filter);
+    }
+  }
+  if (kota && kota !== 'all') {
+    params.append("kota", kota);
+  }
+  params.append("is_export", "true");
+  const url = `${API_MANAGEMENT_URL}/get_top_customers_by_city.php?${params.toString()}`;
+  return sendRequestGET(url);
+};
 export const getAvailableCities = () => {
   return sendRequestGET(`${API_MANAGEMENT_URL}/get_city_member_all.php`);
 };
-
 export const getCitiesSimple = () => {
   return sendRequestGET(`${API_MANAGEMENT_URL}/get_cities_simple.php`);
 };
