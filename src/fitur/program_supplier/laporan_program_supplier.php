@@ -166,6 +166,7 @@ $menuHandler = new MenuHandler('laporan_program_supplier');
                             </label>
                             <div class="flex gap-2">
                                 <input type="text" name="search_query" id="search_query" class="input-modern w-full"
+                                    style="min-width: 120px;"
                                     value="<?php echo htmlspecialchars($_GET['search_query'] ?? ''); ?>"
                                     placeholder="Cari Dok / Supplier / PIC...">
 
@@ -243,12 +244,12 @@ $menuHandler = new MenuHandler('laporan_program_supplier');
     </main>
     <div id="modal-finance" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title"
         role="dialog" aria-modal="true">
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
+
             <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
             <div
-                class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full border border-pink-100">
+                class="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-md sm:w-full border border-pink-100">
                 <form id="form-finance">
                     <input type="hidden" name="mode" value="finance">
                     <input type="hidden" name="nomor_dokumen" id="fin_nomor_dokumen">
@@ -297,14 +298,15 @@ $menuHandler = new MenuHandler('laporan_program_supplier');
         </div>
     </div>
 
+
     <div id="modal-tax" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog"
         aria-modal="true">
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:p-0">
+
             <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
             <div
-                class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-pink-100">
+                class="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-lg sm:w-full border border-pink-100">
                 <form id="form-tax">
                     <input type="hidden" name="mode" value="tax">
                     <input type="hidden" name="nomor_dokumen" id="tax_nomor_dokumen">
@@ -372,7 +374,6 @@ $menuHandler = new MenuHandler('laporan_program_supplier');
             </div>
         </div>
     </div>
-
     <script src="/src/js/middleware_auth.js"></script>
     <script src="../../js/program_supplier/laporan_program_supplier_handler.js" type="module"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
