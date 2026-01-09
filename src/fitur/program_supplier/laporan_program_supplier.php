@@ -288,7 +288,7 @@ $menuHandler = new MenuHandler('laporan_program_supplier');
                     <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
                         <button type="submit"
                             class="btn-primary w-full sm:w-auto px-4 py-2 text-white rounded bg-blue-600 hover:bg-blue-700">Simpan
-                            Finance</button>
+                        </button>
                         <button type="button"
                             class="btn-close-finance mt-3 w-full sm:w-auto px-4 py-2 border rounded bg-white text-gray-700 hover:bg-gray-50">Batal</button>
                     </div>
@@ -364,7 +364,7 @@ $menuHandler = new MenuHandler('laporan_program_supplier');
                     <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
                         <button type="submit"
                             class="btn-primary w-full sm:w-auto px-4 py-2 text-white rounded bg-purple-600 hover:bg-purple-700">Simpan
-                            Tax</button>
+                        </button>
                         <button type="button"
                             class="btn-close-tax mt-3 w-full sm:w-auto px-4 py-2 border rounded bg-white text-gray-700 hover:bg-gray-50">Batal</button>
                     </div>

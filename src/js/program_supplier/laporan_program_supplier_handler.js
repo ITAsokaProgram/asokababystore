@@ -237,7 +237,7 @@ document.addEventListener("DOMContentLoaded", () => {
         let htmlRows = "";
         let item_counter = offset + 1;
         tabel_data.forEach((row) => {
-            const cabangDisplay = row.nama_cabang ? `${row.kode_cabang}<br><span class="text-[10px] text-gray-500">${row.nama_cabang}</span>` : row.kode_cabang;
+            const cabangDisplay = row.nama_cabang ? `<span class="text-[10px] text-gray-500">${row.nama_cabang}</span>` : row.kode_cabang;
             const mopClass = row.mop === 'Transfer' ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-orange-100 text-orange-700 border-orange-200';
             const picFormatted = formatMultiLine(row.pic);
             const docFormatted = formatMultiLine(row.nomor_dokumen);

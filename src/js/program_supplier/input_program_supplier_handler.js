@@ -4,7 +4,6 @@ const API_URLS = {
     getData: "/src/api/program_supplier/get_latest_program_supplier.php",
     deleteData: "/src/api/program_supplier/delete_program_supplier.php",
     getStores: "/src/api/shared/get_all_store.php",
-    searchSupplier: "/src/api/coretax/get_supplier_search.php",
 };
 const form = document.getElementById("program-form");
 const inpOldNomorDokumen = document.getElementById("inp_old_nomor_dokumen");
@@ -308,21 +307,7 @@ function handleDelete(doc) {
         }
     });
 }
-async function handleSupplierSearch(e) {
-    const term = e.target.value;
-    if (term.length < 2) return;
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(async () => {
-        try {
-            const result = await sendRequestGET(`${API_URLS.searchSupplier}?term=${encodeURIComponent(term)}`);
-            if (result.success && Array.isArray(result.data)) {
-                let options = "";
-                result.data.forEach((name) => { options += `<option value="${name}">`; });
-                listSupplier.innerHTML = options;
-            }
-        } catch (err) { console.error(err); }
-    }, 300);
-}
+
 document.addEventListener("DOMContentLoaded", () => {
     loadStoreOptions();
     fetchTableData(true);
@@ -341,7 +326,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }, 600);
         });
     }
-    inpNamaSupplier.addEventListener("input", handleSupplierSearch);
     const observerOptions = {
         root: document.getElementById("table-scroll-container"),
         rootMargin: "100px",
