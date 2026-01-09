@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function formatDate(dateString) {
         if (!dateString || dateString === '0000-00-00') return "-";
         const dateObj = new Date(dateString);
-        if (isNaN(dateObj.getTime())) return dateString; // Jika format sudah text/invalid, kembalikan as is
+        if (isNaN(dateObj.getTime())) return dateString;
         return dateObj.toLocaleDateString("id-ID", {
             day: "2-digit",
             month: "2-digit",
@@ -59,12 +59,23 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // --- LOGIC EXPORT EXCEL ---
+    // --- FUNGSI BARU UNTUK FORMAT MULTI LINE (PENTERJEMAH KOMA KE <BR>) ---
+    function formatMultiLine(str) {
+        if (!str) return "-";
+        // Pecah berdasarkan koma, hilangkan spasi berlebih, lalu gabung dengan <br>
+        return str.split(',').map(s => `<div class="py-0.5">${s.trim()}</div>`).join('');
+    }
+
     async function handleExportExcel() {
+        // ... (Kode export excel tetap sama, biarkan format excel default comma separated atau replace <br> dengan \n jika perlu)
         const params = getUrlParams();
+        // ... logic export excel ...
+        // (Saya skip bagian export excel agar fokus ke request utama, 
+        //  tapi pastikan di excel replaceAll '<div...>' dengan '\n' jika mau rapi di excel juga)
+
+        // ... Logika Fetch Export Excel ...
         const currencyFmt = "#,##0.00";
         let periodeText = "";
-
         if (params.filter_type === "month") {
             const monthNames = [
                 "Januari", "Februari", "Maret", "April", "Mei", "Juni",
@@ -88,7 +99,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const response = await fetch(
                 `/src/api/program_supplier/get_export_program_supplier.php?${queryString}`
             );
-
             if (!response.ok) throw new Error("Gagal mengambil data export");
             const result = await response.json();
             if (result.error) throw new Error(result.error);
@@ -102,15 +112,15 @@ document.addEventListener("DOMContentLoaded", () => {
             const workbook = new ExcelJS.Workbook();
             const sheet = workbook.addWorksheet("Program Supplier");
 
-            // Definisi Kolom Excel
+            // ... setup columns ...
             sheet.columns = [
                 { key: "no", width: 5 },
-                { key: "pic", width: 15 },
+                { key: "pic", width: 20 }, // Lebarkan dikit
                 { key: "nama_supplier", width: 30 },
                 { key: "cabang", width: 20 },
                 { key: "periode_program", width: 15 },
                 { key: "nama_program", width: 25 },
-                { key: "nomor_dokumen", width: 25 },
+                { key: "nomor_dokumen", width: 30 }, // Lebarkan dikit
                 { key: "nilai_program", width: 18 },
                 { key: "mop", width: 15 },
                 { key: "top_date", width: 12 },
@@ -124,28 +134,28 @@ document.addEventListener("DOMContentLoaded", () => {
                 { key: "nomor_bukpot", width: 20 },
             ];
 
-            // Header Title
+            // ... setup headers ...
             sheet.mergeCells("A1:R1");
             const titleCell = sheet.getCell("A1");
             titleCell.value = `LAPORAN PROGRAM SUPPLIER - ${periodeText}`;
             titleCell.font = { name: "Arial", size: 14, bold: true };
             titleCell.alignment = { horizontal: "center" };
 
-            // Header Table
             const headers = [
                 "No", "PIC", "Supplier", "Cabang", "Periode Prg", "Nama Program", "No Dokumen",
                 "Nilai Program", "MOP", "TOP", "Nilai Transfer", "Tgl Transfer",
                 "Tgl FPK", "NSFP", "DPP", "PPN", "PPH", "Bukpot"
             ];
+
             const headerRow = sheet.getRow(3);
             headerRow.values = headers;
-
+            // ... header styles ...
             headerRow.eachCell((cell) => {
                 cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
                 cell.fill = {
                     type: "pattern",
                     pattern: "solid",
-                    fgColor: { argb: "FFDB2777" }, // Pink Theme
+                    fgColor: { argb: "FFDB2777" },
                 };
                 cell.alignment = { horizontal: "center", vertical: "middle" };
                 cell.border = { top: { style: "thin" }, left: { style: "thin" }, bottom: { style: "thin" }, right: { style: "thin" } };
@@ -156,14 +166,18 @@ document.addEventListener("DOMContentLoaded", () => {
                 const r = sheet.getRow(rowNum);
                 const cabangFull = item.nama_cabang ? `${item.kode_cabang} - ${item.nama_cabang}` : item.kode_cabang;
 
+                // Format ulang PIC & No Dokumen untuk Excel (Ganti koma jadi baris baru/newline character)
+                const picExcel = item.pic ? item.pic.split(',').map(s => s.trim()).join('\n') : "";
+                const docExcel = item.nomor_dokumen ? item.nomor_dokumen.split(',').map(s => s.trim()).join('\n') : "";
+
                 r.values = [
                     index + 1,
-                    item.pic || "",
+                    picExcel,
                     item.nama_supplier || "",
                     cabangFull || "",
                     item.periode_program || "",
                     item.nama_program || "",
-                    item.nomor_dokumen || "",
+                    docExcel,
                     parseFloat(item.nilai_program) || 0,
                     item.mop || "",
                     formatDate(item.top_date),
@@ -177,19 +191,18 @@ document.addEventListener("DOMContentLoaded", () => {
                     item.nomor_bukpot || ""
                 ];
 
-                // Formatting Number Columns
                 [8, 11, 15, 16, 17].forEach(colIdx => {
                     r.getCell(colIdx).numFmt = currencyFmt;
                 });
 
-                // Styling row
                 r.eachCell((cell) => {
-                    cell.alignment = { vertical: "middle", wrapText: true };
+                    // PENTING: wrapText true agar \n terbaca sebagai enter
+                    cell.alignment = { vertical: "top", wrapText: true };
                     cell.border = { top: { style: "thin" }, left: { style: "thin" }, bottom: { style: "thin" }, right: { style: "thin" } };
                 });
-                // Center specific columns
+
                 [1, 9, 10, 12, 13].forEach(colIdx => {
-                    r.getCell(colIdx).alignment = { horizontal: "center", vertical: "middle" };
+                    r.getCell(colIdx).alignment = { horizontal: "center", vertical: "top", wrapText: true };
                 });
 
                 rowNum++;
@@ -204,7 +217,6 @@ document.addEventListener("DOMContentLoaded", () => {
             anchor.download = filename;
             anchor.click();
             window.URL.revokeObjectURL(url);
-
             Swal.fire({
                 icon: "success",
                 title: "Berhasil",
@@ -212,7 +224,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 timer: 1500,
                 showConfirmButton: false,
             });
-
         } catch (e) {
             console.error(e);
             Swal.fire("Error", e.message, "error");
@@ -226,7 +237,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const currentYear = now.getFullYear();
         const firstDay = `${currentYear}-${currentMonth}-01`;
         const today = now.toISOString().split("T")[0];
-
         return {
             filter_type: params.get("filter_type") || "month",
             bulan: params.get("bulan") || currentMonth,
@@ -265,9 +275,7 @@ document.addEventListener("DOMContentLoaded", () => {
     async function loadData() {
         const params = getUrlParams();
         setLoadingState(true);
-
         const queryString = new URLSearchParams(params).toString();
-
         try {
             const response = await fetch(`/src/api/program_supplier/get_laporan_program_supplier.php?${queryString}`);
             if (!response.ok) {
@@ -280,8 +288,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if (data.stores) {
                 populateStoreFilter(data.stores, params.kd_store);
             }
-
-            // Update UI Filter Values sync with URL
             if (filterInputQuery) filterInputQuery.value = params.search_query;
             if (filterTypeSelect) {
                 filterTypeSelect.value = params.filter_type;
@@ -292,7 +298,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if (filterTglMulai) filterTglMulai.value = params.tgl_mulai;
             if (filterTglSelesai) filterTglSelesai.value = params.tgl_selesai;
 
-            // Update Subtitle
             if (pageSubtitle) {
                 let periodText = "";
                 if (params.filter_type === "month") {
@@ -307,7 +312,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
             renderTable(data.tabel_data, data.pagination ? data.pagination.offset : 0);
             renderPagination(data.pagination);
-
         } catch (error) {
             console.error("Error loading data:", error);
             showTableError(error.message);
@@ -344,34 +348,44 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tr>`;
             return;
         }
-
         let htmlRows = "";
         let item_counter = offset + 1;
-
         tabel_data.forEach((row) => {
             const cabangDisplay = row.nama_cabang ? `${row.kode_cabang}<br><span class="text-[10px] text-gray-500">${row.nama_cabang}</span>` : row.kode_cabang;
             const mopClass = row.mop === 'Transfer' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700';
 
+            // --- IMPLEMENTASI FORMATTER DISINI ---
+            const picFormatted = formatMultiLine(row.pic);
+            const docFormatted = formatMultiLine(row.nomor_dokumen);
+
             htmlRows += `
                 <tr class="hover:bg-gray-50 align-top border-b border-gray-100">
                     <td class="text-center font-medium text-gray-500 pt-3">${item_counter}</td>
-                    <td class="pt-3 font-medium text-gray-700">${row.pic || "-"}</td>
-                    <td class="pt-3 font-semibold text-gray-800">${row.nama_supplier || "-"}</td>
-                    <td class="pt-3 text-center leading-tight">${cabangDisplay}</td>
-                    <td class="pt-3 text-center text-gray-600">${row.periode_program || "-"}</td>
-                    <td class="pt-3 text-gray-700">${row.nama_program || "-"}</td>
-                    <td class="pt-3 font-mono text-gray-600 break-all text-[11px]">${row.nomor_dokumen || "-"}</td>
-                    <td class="pt-3 text-right font-mono font-medium">${formatRupiah(row.nilai_program)}</td>
-                    <td class="pt-3 text-center"><span class="${mopClass} px-2 py-0.5 rounded text-[10px] font-bold border border-opacity-20">${row.mop || "-"}</span></td>
-                    <td class="pt-3 text-center text-gray-600 font-mono">${formatDate(row.top_date)}</td>
-                    <td class="pt-3 text-right font-mono text-green-700">${formatRupiah(row.nilai_transfer)}</td>
-                    <td class="pt-3 text-center text-gray-600 font-mono">${formatDate(row.tanggal_transfer)}</td>
-                    <td class="pt-3 text-center text-gray-600 font-mono">${formatDate(row.tgl_fpk)}</td>
-                    <td class="pt-3 text-gray-600 font-mono text-[11px]">${row.nsfp || "-"}</td>
-                    <td class="pt-3 text-right font-mono text-gray-500">${formatRupiah(row.dpp)}</td>
-                    <td class="pt-3 text-right font-mono text-gray-500">${formatRupiah(row.ppn)}</td>
-                    <td class="pt-3 text-right font-mono text-gray-500">${formatRupiah(row.pph)}</td>
-                    <td class="pt-3 text-gray-600 font-mono text-[11px] text-center">${row.nomor_bukpot || "-"}</td>
+                    
+                    <td class="pt-3 font-medium text-gray-700 align-top text-[11px] leading-relaxed">
+                        ${picFormatted}
+                    </td>
+
+                    <td class="pt-3 font-semibold text-gray-800 align-top">${row.nama_supplier || "-"}</td>
+                    <td class="pt-3 text-center leading-tight align-top">${cabangDisplay}</td>
+                    <td class="pt-3 text-center text-gray-600 align-top">${row.periode_program || "-"}</td>
+                    <td class="pt-3 text-gray-700 align-top">${row.nama_program || "-"}</td>
+                    
+                    <td class="pt-3 font-mono text-gray-600 break-all text-[11px] align-top leading-relaxed">
+                        ${docFormatted}
+                    </td>
+
+                    <td class="pt-3 text-right font-mono font-medium align-top">${formatRupiah(row.nilai_program)}</td>
+                    <td class="pt-3 text-center align-top"><span class="${mopClass} px-2 py-0.5 rounded text-[10px] font-bold border border-opacity-20">${row.mop || "-"}</span></td>
+                    <td class="pt-3 text-center text-gray-600 font-mono align-top">${formatDate(row.top_date)}</td>
+                    <td class="pt-3 text-right font-mono text-green-700 align-top">${formatRupiah(row.nilai_transfer)}</td>
+                    <td class="pt-3 text-center text-gray-600 font-mono align-top">${formatDate(row.tanggal_transfer)}</td>
+                    <td class="pt-3 text-center text-gray-600 font-mono align-top">${formatDate(row.tgl_fpk)}</td>
+                    <td class="pt-3 text-gray-600 font-mono text-[11px] align-top">${row.nsfp || "-"}</td>
+                    <td class="pt-3 text-right font-mono text-gray-500 align-top">${formatRupiah(row.dpp)}</td>
+                    <td class="pt-3 text-right font-mono text-gray-500 align-top">${formatRupiah(row.ppn)}</td>
+                    <td class="pt-3 text-right font-mono text-gray-500 align-top">${formatRupiah(row.pph)}</td>
+                    <td class="pt-3 text-gray-600 font-mono text-[11px] text-center align-top">${row.nomor_bukpot || "-"}</td>
                 </tr>
             `;
             item_counter++;
@@ -382,24 +396,20 @@ document.addEventListener("DOMContentLoaded", () => {
     function renderPagination(pagination) {
         if (!pagination) return;
         const { current_page, total_pages, total_rows, limit, offset } = pagination;
-
         if (total_rows === 0) {
             paginationInfo.textContent = "Menampilkan 0 dari 0 data";
             paginationLinks.innerHTML = "";
             return;
         }
-
         const start_row = offset + 1;
         const end_row = Math.min(offset + limit, total_rows);
         paginationInfo.textContent = `Menampilkan ${start_row} - ${end_row} dari ${total_rows} data`;
-
         let linksHtml = `
             <a href="${current_page > 1 ? build_pagination_url(current_page - 1) : "#"}" 
                class="pagination-link ${current_page === 1 ? "pagination-disabled" : ""}">
                <i class="fas fa-chevron-left"></i>
             </a>
         `;
-
         const pages_to_show = [];
         const max_pages_around = 2;
         for (let i = 1; i <= total_pages; i++) {
@@ -407,7 +417,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 pages_to_show.push(i);
             }
         }
-
         let last_page = 0;
         for (const page_num of pages_to_show) {
             if (last_page !== 0 && page_num > last_page + 1) {
@@ -421,7 +430,6 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
             last_page = page_num;
         }
-
         linksHtml += `
             <a href="${current_page < total_pages ? build_pagination_url(current_page + 1) : "#"}" 
                class="pagination-link ${current_page === total_pages ? "pagination-disabled" : ""}">
@@ -441,6 +449,5 @@ document.addEventListener("DOMContentLoaded", () => {
             loadData();
         });
     }
-
     loadData();
 });

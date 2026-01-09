@@ -89,6 +89,13 @@ Options -Indexes
     Header set X-XSS-Protection "1; mode=block"
 </IfModule>
 
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+<FilesMatch "(^#.*#|\.(bak|config|dist|fla|inc|ini|log|psd|sh|sql|sw[op]|env))$">
+    Require all denied
+</FilesMatch>
+
 <Files "aa_kon_sett.php">
     Order Allow,Deny
     Deny from all
