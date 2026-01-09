@@ -38,12 +38,14 @@ $filter_type = $_GET['filter_type'] ?? null;
 $filter_preset = $_GET['filter'] ?? null;
 $start_date = $_GET['start_date'] ?? null;
 $end_date = $_GET['end_date'] ?? null;
+$key_start = ($filter_type === 'preset') ? '' : $start_date;
+$key_end = ($filter_type === 'preset') ? '' : $end_date;
 $cacheKey = "report:top_member_sales:" .
     "status=$status" .
     "&type=$filter_type" .
     "&preset=$filter_preset" .
-    "&start=$start_date" .
-    "&end=$end_date";
+    "&start=$key_start" .
+    "&end=$key_end";
 try {
     $cachedData = $redis->get($cacheKey);
     if ($cachedData && php_sapi_name() !== 'cli') {
@@ -57,7 +59,6 @@ try {
         $logger->error("Redis cache get failed: " . $e->getMessage());
     }
 }
-
 if (php_sapi_name() === 'cli') {
     echo date('Y-m-d H:i:s') . " - CLI Mode: Force Refresh. Mengabaikan cache lama, mengambil data baru dari DB...\n";
 }
@@ -289,7 +290,7 @@ if (count($top_member_by_sales) === 0 && count($top_member_by_sales_non) === 0) 
     ];
     $jsonData = json_encode($response);
     try {
-        $redis->set($cacheKey, $jsonData);
+        $redis->setex($cacheKey, 3600, $jsonData);
     } catch (Exception $e) {
         if ($logger) {
             $logger->error("Redis cache set (no data) failed: " . $e->getMessage());
@@ -312,7 +313,7 @@ $response = [
 ];
 $jsonData = json_encode($response);
 try {
-    $redis->set($cacheKey, $jsonData);
+    $redis->setex($cacheKey, 72000, $jsonData);
 } catch (Exception $e) {
     if ($logger) {
         $logger->error("Redis cache set (with data) failed: " . $e->getMessage());
@@ -322,7 +323,7 @@ if (php_sapi_name() !== 'cli') {
     http_response_code(200);
     echo $jsonData;
 } else {
-    echo "Cache generated (with data) for $cacheKey. No TTL set.\n";
+    echo "Cache generated (with data) for $cacheKey. Expires in 20 hour.\n";
 }
 if ($logger) {
     $logger->info("Selesai cron job get_top_member.php. Cache generated for $cacheKey.");

@@ -64,8 +64,8 @@ $isWhatsappOpen = $isActive('/src/fitur/whatsapp_cs/') || $isActive('/src/fitur/
 
 $isBukuBesarOpen = $isActive('/src/fitur/buku_besar/input_buku_besar') || $isActive('/src/fitur/buku_besar/laporan_buku_besar');
 $isSerahTerimaOpen = $isActive('/src/fitur/finance/laporan_serah_terima_nota.php') || $isActive('/src/fitur/finance/input_serah_terima_nota.php');
-$isFinanceOpen = $isBukuBesarOpen || $isSerahTerimaOpen; // Update logika induk
-
+$isProgramSupplierOpen = $isActive('/src/fitur/program_supplier/laporan_program_supplier.php') || $isActive('/src/fitur/program_supplier/input_program_supplier.php');
+$isFinanceOpen = $isBukuBesarOpen || $isSerahTerimaOpen || $isProgramSupplierOpen;
 ?>
 
 <div id="sidebar"
@@ -1405,10 +1405,12 @@ $isFinanceOpen = $isBukuBesarOpen || $isSerahTerimaOpen; // Update logika induk
             </div>
         </div>
         <div x-data="{ 
-    open: <?= $isFinanceOpen ? 'true' : 'false' ?>, 
-    nestedOpenBukuBesar: <?= $isBukuBesarOpen ? 'true' : 'false' ?>,
-    nestedOpenSerahTerima: <?= $isSerahTerimaOpen ? 'true' : 'false' ?> 
-}" class="relative" @reset-menu.window="open = false; nestedOpenBukuBesar = false; nestedOpenSerahTerima = false">
+            open: <?= $isFinanceOpen ? 'true' : 'false' ?>, 
+            nestedOpenBukuBesar: <?= $isBukuBesarOpen ? 'true' : 'false' ?>,
+            nestedOpenSerahTerima: <?= $isSerahTerimaOpen ? 'true' : 'false' ?>,
+            nestedOpenProgramSupplier: <?= $isProgramSupplierOpen ? 'true' : 'false' ?> 
+        }" class="relative"
+            @reset-menu.window="open = false; nestedOpenBukuBesar = false; nestedOpenSerahTerima = false; nestedOpenProgramSupplier = false">
 
             <button @click="open = !open" id="financeLink" data-title="Finance"
                 class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-emerald-100 hover:to-emerald-200 hover:text-emerald-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-emerald-300">
@@ -1518,9 +1520,55 @@ $isFinanceOpen = $isBukuBesarOpen || $isSerahTerimaOpen; // Update logika induk
                         </div>
                     </li>
 
+                    <!-- <li>
+                        <button @click="nestedOpenProgramSupplier = !nestedOpenProgramSupplier"
+                            class="w-full text-left px-4 py-2.5 text-gray-700 hover:bg-emerald-100 hover:text-emerald-700 transition-all duration-200 flex items-center group cursor-pointer rounded-lg">
+                            <span
+                                class="transition-all duration-300 group-hover:translate-x-1 font-medium flex items-center text-sm">
+                                <i
+                                    class="fa-solid fa-business-time mr-2 text-base text-emerald-500 group-hover:text-emerald-600 transition-all duration-200 group-hover:scale-110"></i>
+                                Program Supplier
+                            </span>
+                            <svg class="ml-auto w-3 h-3 transform transition-transform duration-200 group-hover:translate-x-1"
+                                :class="{ 'rotate-180': nestedOpenProgramSupplier }" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+
+                        <div x-show="nestedOpenProgramSupplier" class="ml-4 mt-1" style="display: none;">
+                            <ul class="bg-emerald-50 rounded-lg p-2 space-y-1 border border-emerald-200">
+                                <li>
+                                    <a href="/src/fitur/program_supplier/input_program_supplier.php"
+                                        data-menu="finance_input_program"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-white hover:text-emerald-800 transition-all duration-200 group rounded-md shadow-sm hover:shadow-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i class="fa-solid fa-pen-to-square mr-2 text-sm text-emerald-400"></i>
+                                            Input Program
+                                        </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/src/fitur/program_supplier/laporan_program_supplier.php"
+                                        data-menu="finance_laporan_program"
+                                        class="flex items-center px-3 py-2 text-gray-700 hover:bg-white hover:text-emerald-800 transition-all duration-200 group rounded-md shadow-sm hover:shadow-md">
+                                        <span
+                                            class="transition-all duration-300 group-hover:translate-x-1 text-sm flex items-center">
+                                            <i class="fa-solid fa-file-lines mr-2 text-sm text-emerald-400"></i>
+                                            Laporan Program
+                                        </span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li> -->
+
                 </ul>
             </div>
         </div>
+
         <div x-data="{ open: <?= $isLogsOpen ? 'true' : 'false' ?> }" class="relative"
             @reset-menu.window="open = false">
             <button @click="open = !open" id="logsLink" data-title="System Logs"
