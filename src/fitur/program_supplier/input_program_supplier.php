@@ -85,14 +85,12 @@ $menuHandler = new MenuHandler('program_supplier_input');
             box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1);
         }
 
-        /* Style Table Compact (Sesuai Referensi) */
         .table-compact th {
             padding: 0.75rem 1rem;
             font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             background-color: #fdf2f8;
-            /* Pink header base */
             color: #831843;
             font-weight: 700;
             white-space: nowrap;
@@ -103,14 +101,12 @@ $menuHandler = new MenuHandler('program_supplier_input');
             font-size: 0.875rem;
             border-bottom: 1px solid #f3f4f6;
             vertical-align: top;
-            /* Penting untuk data stacked */
         }
 
         .table-compact tr:hover {
             background-color: #fdf2f8;
         }
 
-        /* Helper khusus untuk stacked content (Vertikal List) */
         .stacked-cell div {
             margin-bottom: 2px;
             white-space: nowrap;
@@ -220,53 +216,6 @@ $menuHandler = new MenuHandler('program_supplier_input');
                                 <input type="date" id="inp_top_date" name="top_date" class="input-compact">
                             </div>
 
-                            <div>
-                                <label class="form-label text-right">Nilai Transfer (Rp)</label>
-                                <input type="text" id="inp_nilai_transfer" name="nilai_transfer"
-                                    class="input-compact text-right font-mono" value="0">
-                            </div>
-
-                            <div>
-                                <label class="form-label">Tanggal Transfer</label>
-                                <input type="date" id="inp_tanggal_transfer" name="tanggal_transfer"
-                                    class="input-compact">
-                            </div>
-
-                            <div>
-                                <label class="form-label">Tanggal FPK</label>
-                                <input type="date" id="inp_tgl_fpk" name="tgl_fpk" class="input-compact">
-                            </div>
-
-                            <div>
-                                <label class="form-label">NSFP</label>
-                                <input type="text" id="inp_nsfp" name="nsfp" class="input-compact"
-                                    placeholder="No Seri Faktur Pajak">
-                            </div>
-
-                            <div>
-                                <label class="form-label">Nomor Bukpot</label>
-                                <input type="text" id="inp_nomor_bukpot" name="nomor_bukpot" class="input-compact"
-                                    placeholder="Nomor Bukti Potong">
-                            </div>
-
-                            <div>
-                                <label class="form-label text-right">DPP</label>
-                                <input type="text" id="inp_dpp" name="dpp" class="input-compact text-right font-mono"
-                                    value="0">
-                            </div>
-
-                            <div>
-                                <label class="form-label text-right">PPN</label>
-                                <input type="text" id="inp_ppn" name="ppn" class="input-compact text-right font-mono"
-                                    value="0">
-                            </div>
-
-                            <div>
-                                <label class="form-label text-right">PPH</label>
-                                <input type="text" id="inp_pph" name="pph" class="input-compact text-right font-mono"
-                                    value="0">
-                            </div>
-
                             <div class="flex items-end h-full pb-1 gap-2">
                                 <button type="button" id="btn-cancel-edit"
                                     class="hidden text-gray-500 hover:text-red-500 transition-colors bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded text-sm w-full"
@@ -291,7 +240,6 @@ $menuHandler = new MenuHandler('program_supplier_input');
                         </div>
                     </div>
 
-
                     <div class="overflow-x-auto relative" style="max-height: 450px; overflow-y: auto;"
                         id="table-scroll-container">
                         <table class="w-full text-left border-collapse table-compact sticky top-0">
@@ -304,8 +252,6 @@ $menuHandler = new MenuHandler('program_supplier_input');
                                     <th>No Dokumen</th>
                                     <th class="text-right">Nilai Prg</th>
                                     <th class="text-center">MOP / TOP</th>
-                                    <th class="text-right">Transfer</th>
-                                    <th class="text-center">Pajak (DPP/PPN/PPH)</th>
                                     <th class="text-center w-20">Aksi</th>
                                 </tr>
                             </thead>
@@ -313,7 +259,7 @@ $menuHandler = new MenuHandler('program_supplier_input');
                             </tbody>
                             <tbody id="loading-sentinel">
                                 <tr class="hidden" id="loader-row">
-                                    <td colspan="10" class="text-center p-4">
+                                    <td colspan="8" class="text-center p-4">
                                         <i class="fas fa-circle-notch fa-spin text-pink-500 text-lg"></i>
                                         <span class="ml-2 text-gray-500 text-xs">Memuat data lainnya...</span>
                                     </td>

@@ -105,7 +105,7 @@ try {
         $stores[] = $r;
     }
     $pics = [];
-    $res_pic = $conn->query("SELECT DISTINCT pic FROM program_supplier WHERE visibilitas = 'On' AND pic IS NOT NULL AND pic != ''");
+    $res_pic = $conn->query("SELECT DISTINCT pic FROM program_supplier WHERE pic IS NOT NULL AND pic != ''");
     while ($r = $res_pic->fetch_assoc()) {
         $parts = explode(',', $r['pic']);
         foreach ($parts as $p) {
