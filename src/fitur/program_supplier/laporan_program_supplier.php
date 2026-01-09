@@ -199,6 +199,7 @@ $menuHandler = new MenuHandler('laporan_program_supplier');
                         <table class="table-modern w-full text-xs" id="program-table">
                             <thead>
                                 <tr>
+                                    <th class="whitespace-nowrap text-center w-20">Aksi</th>
                                     <th class="whitespace-nowrap">No</th>
                                     <th class="whitespace-nowrap">PIC</th>
                                     <th class="whitespace-nowrap">Supplier</th>
@@ -240,6 +241,137 @@ $menuHandler = new MenuHandler('laporan_program_supplier');
             </div>
         </section>
     </main>
+    <div id="modal-finance" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title"
+        role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            <div
+                class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full border border-pink-100">
+                <form id="form-finance">
+                    <input type="hidden" name="mode" value="finance">
+                    <input type="hidden" name="nomor_dokumen" id="fin_nomor_dokumen">
+
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="flex justify-between items-center mb-4 border-b pb-2">
+                            <div class="flex items-center gap-2">
+                                <div
+                                    class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                                    <i class="fas fa-wallet"></i>
+                                </div>
+                                <h3 class="text-lg leading-6 font-medium text-gray-900">Update Finance</h3>
+                            </div>
+                            <button type="button" class="btn-close-finance text-gray-400 hover:text-gray-500">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+
+                        <div class="mb-4 p-3 bg-blue-50 text-blue-800 rounded text-xs border border-blue-100">
+                            Dokumen: <span id="fin_display_doc" class="font-mono font-bold"></span>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Nilai Transfer
+                                    (Rp)</label>
+                                <input type="text" name="nilai_transfer" id="fin_nilai_transfer"
+                                    class="input-modern w-full font-mono text-right" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Transfer</label>
+                                <input type="date" name="tanggal_transfer" id="fin_tanggal_transfer"
+                                    class="input-modern w-full">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
+                        <button type="submit"
+                            class="btn-primary w-full sm:w-auto px-4 py-2 text-white rounded bg-blue-600 hover:bg-blue-700">Simpan
+                            Finance</button>
+                        <button type="button"
+                            class="btn-close-finance mt-3 w-full sm:w-auto px-4 py-2 border rounded bg-white text-gray-700 hover:bg-gray-50">Batal</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-tax" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog"
+        aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            <div
+                class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-pink-100">
+                <form id="form-tax">
+                    <input type="hidden" name="mode" value="tax">
+                    <input type="hidden" name="nomor_dokumen" id="tax_nomor_dokumen">
+
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="flex justify-between items-center mb-4 border-b pb-2">
+                            <div class="flex items-center gap-2">
+                                <div
+                                    class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
+                                    <i class="fas fa-file-invoice-dollar"></i>
+                                </div>
+                                <h3 class="text-lg leading-6 font-medium text-gray-900">Update Tax</h3>
+                            </div>
+                            <button type="button" class="btn-close-tax text-gray-400 hover:text-gray-500">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+
+                        <div class="mb-4 p-3 bg-purple-50 text-purple-800 rounded text-xs border border-purple-100">
+                            Dokumen: <span id="tax_display_doc" class="font-mono font-bold"></span>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="col-span-2">
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Tanggal FPK</label>
+                                <input type="date" name="tgl_fpk" id="tax_tgl_fpk" class="input-modern w-full">
+                            </div>
+                            <div class="col-span-2">
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">NSFP (Faktur
+                                    Pajak)</label>
+                                <input type="text" name="nsfp" id="tax_nsfp" class="input-modern w-full"
+                                    placeholder="No Seri Faktur Pajak">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">DPP</label>
+                                <input type="text" name="dpp" id="tax_dpp"
+                                    class="input-modern w-full font-mono text-right" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">PPN</label>
+                                <input type="text" name="ppn" id="tax_ppn"
+                                    class="input-modern w-full font-mono text-right" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">PPH</label>
+                                <input type="text" name="pph" id="tax_pph"
+                                    class="input-modern w-full font-mono text-right" placeholder="0">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Nomor Bukpot</label>
+                                <input type="text" name="nomor_bukpot" id="tax_nomor_bukpot" class="input-modern w-full"
+                                    placeholder="Nomor Bukti Potong">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
+                        <button type="submit"
+                            class="btn-primary w-full sm:w-auto px-4 py-2 text-white rounded bg-purple-600 hover:bg-purple-700">Simpan
+                            Tax</button>
+                        <button type="button"
+                            class="btn-close-tax mt-3 w-full sm:w-auto px-4 py-2 border rounded bg-white text-gray-700 hover:bg-gray-50">Batal</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <script src="/src/js/middleware_auth.js"></script>
     <script src="../../js/program_supplier/laporan_program_supplier_handler.js" type="module"></script>

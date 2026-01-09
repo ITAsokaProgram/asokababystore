@@ -18,6 +18,34 @@ document.addEventListener("DOMContentLoaded", () => {
     const filterTglMulai = document.getElementById("tgl_mulai");
     const filterTglSelesai = document.getElementById("tgl_selesai");
     const exportExcelButton = document.getElementById("export-excel-button");
+    const modalFinance = document.getElementById("modal-finance");
+    const modalTax = document.getElementById("modal-tax");
+    const formFinance = document.getElementById("form-finance");
+    const formTax = document.getElementById("form-tax");
+    function formatInputNumber(num) {
+        if (!num && num !== 0) return "";
+        let str = num.toString().replace(".", ","); // Database 10000.00 -> Input 10000,00 (Indo)
+        // Opsional: Tambah ribuan separator jika diinginkan, tapi raw value lebih aman untuk edit
+        return new Intl.NumberFormat("id-ID", { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(num);
+    }
+
+    function parseInputNumber(str) {
+        if (!str) return 0;
+        // Hapus titik ribuan, ganti koma desimal jadi titik
+        return parseFloat(str.toString().replace(/\./g, "").replace(",", ".")) || 0;
+    }
+
+    // Attach Auto Format on Keyup/Blur for Money Inputs
+    const moneyInputs = ["fin_nilai_transfer", "tax_dpp", "tax_ppn", "tax_pph"];
+    moneyInputs.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener("blur", (e) => {
+                e.target.value = formatInputNumber(parseInputNumber(e.target.value));
+            });
+            el.addEventListener("focus", (e) => e.target.select());
+        }
+    });
     if (exportExcelButton) {
         exportExcelButton.addEventListener("click", handleExportExcel);
     }
@@ -209,23 +237,44 @@ document.addEventListener("DOMContentLoaded", () => {
         let htmlRows = "";
         let item_counter = offset + 1;
         tabel_data.forEach((row) => {
-            const cabangDisplay = row.nama_cabang ? `<span class="text-[10px] text-gray-500">${row.nama_cabang}</span>` : row.kode_cabang;
+            const cabangDisplay = row.nama_cabang ? `${row.kode_cabang}<br><span class="text-[10px] text-gray-500">${row.nama_cabang}</span>` : row.kode_cabang;
             const mopClass = row.mop === 'Transfer' ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-orange-100 text-orange-700 border-orange-200';
             const picFormatted = formatMultiLine(row.pic);
             const docFormatted = formatMultiLine(row.nomor_dokumen);
+
+            // Encode data row untuk dikirim ke modal
+            const rowDataEncoded = encodeURIComponent(JSON.stringify(row));
+
             htmlRows += `
                 <tr class="hover:bg-gray-50 align-top border-b border-gray-100 transition-colors">
+                    <td class="text-center py-3 align-top whitespace-nowrap">
+                        <button type="button" onclick="window.openFinanceModal('${rowDataEncoded}')" 
+                            class="inline-flex items-center justify-center w-7 h-7 transition-all border rounded shadow-sm bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-800 border-blue-200 mr-1" 
+                            title="Update Finance">
+                            <i class="fas fa-wallet text-xs"></i>
+                        </button>
+                        <button type="button" onclick="window.openTaxModal('${rowDataEncoded}')" 
+                            class="inline-flex items-center justify-center w-7 h-7 transition-all border rounded shadow-sm bg-purple-50 text-purple-600 hover:bg-purple-100 hover:text-purple-800 border-purple-200" 
+                            title="Update Tax">
+                            <i class="fas fa-file-invoice-dollar text-xs"></i>
+                        </button>
+                    </td>
+
                     <td class="text-center font-medium text-gray-500 pt-3">${item_counter}</td>
+                    
                     <td class="pt-3 font-medium text-gray-700 align-top text-[11px] leading-relaxed">
                         ${picFormatted}
                     </td>
+
                     <td class="pt-3 font-semibold text-gray-800 align-top">${row.nama_supplier || "-"}</td>
                     <td class="pt-3 text-center leading-tight align-top text-[11px]">${cabangDisplay}</td>
                     <td class="pt-3 text-center text-gray-600 align-top">${row.periode_program || "-"}</td>
                     <td class="pt-3 text-gray-700 align-top font-medium">${row.nama_program || "-"}</td>
+                    
                     <td class="pt-3 font-mono text-gray-600 break-all text-[11px] align-top leading-relaxed text-blue-800">
                         ${docFormatted}
                     </td>
+
                     <td class="pt-3 text-right font-mono font-medium align-top">${formatRupiah(row.nilai_program)}</td>
                     <td class="pt-3 text-center align-top">
                         <span class="${mopClass} px-2 py-0.5 rounded text-[10px] font-bold border border-opacity-50 inline-block">${row.mop || "-"}</span>
@@ -244,6 +293,95 @@ document.addEventListener("DOMContentLoaded", () => {
             item_counter++;
         });
         tableBody.innerHTML = htmlRows;
+    }
+    window.openFinanceModal = (rowDataEncoded) => {
+        const row = JSON.parse(decodeURIComponent(rowDataEncoded));
+        document.getElementById("fin_nomor_dokumen").value = row.nomor_dokumen;
+        document.getElementById("fin_display_doc").textContent = row.nomor_dokumen;
+
+        document.getElementById("fin_nilai_transfer").value = formatInputNumber(row.nilai_transfer);
+        document.getElementById("fin_tanggal_transfer").value = row.tanggal_transfer || "";
+
+        modalFinance.classList.remove("hidden");
+    };
+
+    window.openTaxModal = (rowDataEncoded) => {
+        const row = JSON.parse(decodeURIComponent(rowDataEncoded));
+        document.getElementById("tax_nomor_dokumen").value = row.nomor_dokumen;
+        document.getElementById("tax_display_doc").textContent = row.nomor_dokumen;
+
+        document.getElementById("tax_tgl_fpk").value = row.tgl_fpk || "";
+        document.getElementById("tax_nsfp").value = row.nsfp || "";
+        document.getElementById("tax_dpp").value = formatInputNumber(row.dpp);
+        document.getElementById("tax_ppn").value = formatInputNumber(row.ppn);
+        document.getElementById("tax_pph").value = formatInputNumber(row.pph);
+        document.getElementById("tax_nomor_bukpot").value = row.nomor_bukpot || "";
+
+        modalTax.classList.remove("hidden");
+    };
+
+    // --- CLOSE MODALS ---
+    document.querySelectorAll(".btn-close-finance").forEach(btn => {
+        btn.addEventListener("click", () => modalFinance.classList.add("hidden"));
+    });
+    document.querySelectorAll(".btn-close-tax").forEach(btn => {
+        btn.addEventListener("click", () => modalTax.classList.add("hidden"));
+    });
+
+    // --- HANDLE FORM SUBMIT ---
+    async function handleUpdateSubmit(event, endpoint, modalEl) {
+        event.preventDefault();
+        const form = event.target;
+        const submitBtn = form.querySelector("button[type='submit']");
+        const originalText = submitBtn.innerHTML;
+
+        // Prepare FormData
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        // Parse Numbers back to float for API
+        if (data.nilai_transfer) data.nilai_transfer = parseInputNumber(data.nilai_transfer);
+        if (data.dpp) data.dpp = parseInputNumber(data.dpp);
+        if (data.ppn) data.ppn = parseInputNumber(data.ppn);
+        if (data.pph) data.pph = parseInputNumber(data.pph);
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Menyimpan...`;
+
+        try {
+            const response = await fetch('/src/api/program_supplier/update_program_supplier_partial.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+
+            if (result.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: result.message,
+                    timer: 1000,
+                    showConfirmButton: false
+                });
+                modalEl.classList.add("hidden");
+                loadData(); // Reload table
+            } else {
+                throw new Error(result.error || "Gagal update data");
+            }
+        } catch (error) {
+            Swal.fire('Error', error.message, 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }
+    }
+
+    if (formFinance) {
+        formFinance.addEventListener("submit", (e) => handleUpdateSubmit(e, null, modalFinance));
+    }
+    if (formTax) {
+        formTax.addEventListener("submit", (e) => handleUpdateSubmit(e, null, modalTax));
     }
     function renderPagination(pagination) {
         if (!pagination) return;
