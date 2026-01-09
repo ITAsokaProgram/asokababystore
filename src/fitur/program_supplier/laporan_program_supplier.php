@@ -85,11 +85,17 @@ $menuHandler = new MenuHandler('laporan_program_supplier');
                                 <p id="page-subtitle" class="text-xs text-gray-600">Memuat data...</p>
                             </div>
                         </div>
+                        <div class="flex items-center gap-2">
+                            <a href="input_program_supplier.php"
+                                class="btn-primary flex items-center gap-2 px-4 py-2 shadow-lg shadow-pink-500/30 rounded-lg text-white transition-transform hover:scale-105 text-sm decoration-0">
+                                <i class="fas fa-plus"></i> <span>Input Program Supplier</span>
+                            </a>
+                        </div>
                     </div>
                 </div>
 
                 <div class="filter-card-simple">
-                    <form id="filter-form" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-3 items-end"
+                    <form id="filter-form" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 items-end"
                         method="GET">
 
                         <div class="lg:col-span-1">
@@ -98,46 +104,39 @@ $menuHandler = new MenuHandler('laporan_program_supplier');
                             </label>
                             <select name="filter_type" id="filter_type"
                                 class="input-modern w-full font-semibold text-pink-700 bg-pink-50 border-pink-200">
-                                <option value="month" <?php echo ($filter_type == 'month') ? 'selected' : ''; ?>>Per
-                                    Bulan</option>
+                                <option value="month" <?php echo ($filter_type == 'month') ? 'selected' : ''; ?>>Per Bulan
+                                </option>
                                 <option value="date_range" <?php echo ($filter_type == 'date_range') ? 'selected' : ''; ?>>Rentang Tanggal</option>
                             </select>
                         </div>
 
                         <div id="container-month" class="contents">
                             <div class="lg:col-span-1">
-                                <label for="bulan" class="block text-xs font-semibold text-gray-700 mb-2">
-                                    <i class="fas fa-calendar-check text-pink-600 mr-1"></i> Bulan
-                                </label>
+                                <label for="bulan" class="block text-xs font-semibold text-gray-700 mb-2">Bulan</label>
                                 <select name="bulan" id="bulan" class="input-modern w-full">
                                     <?php foreach ($list_bulan as $key => $val): ?>
-                                        <option value="<?= $key ?>" <?= ($bulan == $key) ? 'selected' : '' ?>>
-                                            <?= $val ?>
+                                        <option value="<?= $key ?>" <?= ($bulan == $key) ? 'selected' : '' ?>><?= $val ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
                             <div class="lg:col-span-1">
-                                <label for="tahun" class="block text-xs font-semibold text-gray-700 mb-2">
-                                    <i class="fas fa-calendar text-pink-600 mr-1"></i> Tahun
-                                </label>
+                                <label for="tahun" class="block text-xs font-semibold text-gray-700 mb-2">Tahun</label>
                                 <input type="number" name="tahun" id="tahun" class="input-modern w-full"
-                                    value="<?= $tahun ?>" min="2000" max="2100">
+                                    value="<?= $tahun ?>">
                             </div>
                         </div>
 
                         <div id="container-date-range" class="contents" style="display: none;">
                             <div class="lg:col-span-1">
-                                <label for="tgl_mulai" class="block text-xs font-semibold text-gray-700 mb-2">
-                                    <i class="fas fa-calendar-alt text-pink-600 mr-1"></i> Dari
-                                </label>
+                                <label for="tgl_mulai"
+                                    class="block text-xs font-semibold text-gray-700 mb-2">Dari</label>
                                 <input type="date" name="tgl_mulai" id="tgl_mulai" class="input-modern w-full"
                                     value="<?php echo htmlspecialchars($tgl_mulai); ?>">
                             </div>
                             <div class="lg:col-span-1">
-                                <label for="tgl_selesai" class="block text-xs font-semibold text-gray-700 mb-2">
-                                    <i class="fas fa-calendar-alt text-pink-600 mr-1"></i> Sampai
-                                </label>
+                                <label for="tgl_selesai"
+                                    class="block text-xs font-semibold text-gray-700 mb-2">Sampai</label>
                                 <input type="date" name="tgl_selesai" id="tgl_selesai" class="input-modern w-full"
                                     value="<?php echo htmlspecialchars($tgl_selesai); ?>">
                             </div>
@@ -152,23 +151,32 @@ $menuHandler = new MenuHandler('laporan_program_supplier');
                             </select>
                         </div>
 
-                        <div class="lg:col-span-2 lg:col-start-5">
+                        <div class="lg:col-span-1">
+                            <label for="pic" class="block text-xs font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-user-tag text-pink-600 mr-1"></i> PIC
+                            </label>
+                            <select name="pic" id="filter_pic" class="input-modern w-full">
+                                <option value="all">Semua PIC</option>
+                            </select>
+                        </div>
+
+                        <div class="lg:col-span-1">
                             <label for="search_query" class="block text-xs font-semibold text-gray-700 mb-2">
                                 <i class="fas fa-search text-pink-600 mr-1"></i> Cari Data
                             </label>
                             <div class="flex gap-2">
                                 <input type="text" name="search_query" id="search_query" class="input-modern w-full"
                                     value="<?php echo htmlspecialchars($_GET['search_query'] ?? ''); ?>"
-                                    placeholder="No Dok / Supplier / Program...">
+                                    placeholder="Cari Dok / Supplier / PIC...">
 
                                 <button type="submit" id="filter-submit-button"
-                                    class="btn-primary inline-flex items-center justify-center gap-2 px-6">
+                                    class="btn-primary flex justify-center items-center rounded-lg"
+                                    title="Terapkan Filter">
                                     <i class="fas fa-filter"></i>
-                                    <span>Tampilkan</span>
                                 </button>
 
                                 <button type="button" id="export-excel-button"
-                                    class="w-12 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-2 rounded-lg transition-colors shadow-sm inline-flex items-center justify-center"
+                                    class="w-10 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-2 rounded-lg transition-colors shadow-sm inline-flex items-center justify-center"
                                     title="Export Excel">
                                     <i class="fas fa-file-excel"></i>
                                 </button>
@@ -178,6 +186,7 @@ $menuHandler = new MenuHandler('laporan_program_supplier');
                         <input type="hidden" name="page" value="1">
                     </form>
                 </div>
+
 
                 <div class="filter-card">
                     <div class="flex flex-wrap justify-between items-center mb-3 gap-3">

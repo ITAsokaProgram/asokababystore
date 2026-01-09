@@ -44,8 +44,8 @@ let currentRequestController = null;
 function formatNumber(num) {
     if (isNaN(num) || num === null) return "0";
     return new Intl.NumberFormat("id-ID", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
     }).format(num);
 }
 function parseNumber(str) {
@@ -143,6 +143,7 @@ async function fetchTableData(reset = false) {
 }
 function renderTableRows(data) {
     data.forEach((row) => {
+        console.log(row)
         tableRowIndex++;
         const picStacked = formatStackedList(row.pic);
         const docStacked = formatStackedList(row.nomor_dokumen);
@@ -159,7 +160,7 @@ function renderTableRows(data) {
         <td class="text-sm py-3 align-top">
             <div class="font-bold text-gray-800">${row.nama_supplier || '-'}</div>
             <div class="text-xs text-gray-500 mt-1 bg-gray-100 px-1.5 py-0.5 rounded w-fit border border-gray-200">
-                ${row.kode_cabang || '-'}
+                ${row.nama_cabang || '-'}
             </div>
         </td>
         <td class="text-sm py-3 align-top">

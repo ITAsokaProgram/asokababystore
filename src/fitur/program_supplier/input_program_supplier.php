@@ -329,6 +329,7 @@ $menuHandler = new MenuHandler('program_supplier_input');
 
     <script src="/src/js/middleware_auth.js"></script>
     <script src="../../js/program_supplier/input_program_supplier_handler.js" type="module"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
 </body>
 
