@@ -3,7 +3,6 @@ session_start();
 include '../../../aa_kon_sett.php';
 require_once __DIR__ . '/../../component/menu_handler.php';
 $menuHandler = new MenuHandler('program_supplier_input');
-// if (!$menuHandler->initialize()) { exit(); }
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -158,11 +157,9 @@ $menuHandler = new MenuHandler('program_supplier_input');
 
                         <div class="form-grid">
                             <div>
-                                <label class="form-label">Cabang</label>
-                                <select id="inp_kode_cabang" name="kode_cabang"
-                                    class="input-compact bg-white cursor-pointer">
-                                    <option value="">Pilih Cabang</option>
-                                </select>
+                                <label class="form-label">PIC (Pisahkan koma)</label>
+                                <input type="text" id="inp_pic" name="pic" class="input-compact"
+                                    placeholder="Cth: Dewi, Erna, Annisa">
                             </div>
 
                             <div>
@@ -173,9 +170,11 @@ $menuHandler = new MenuHandler('program_supplier_input');
                             </div>
 
                             <div>
-                                <label class="form-label">PIC (Pisahkan koma)</label>
-                                <input type="text" id="inp_pic" name="pic" class="input-compact"
-                                    placeholder="Cth: Dewi, Erna, Annisa">
+                                <label class="form-label">Cabang</label>
+                                <select id="inp_kode_cabang" name="kode_cabang"
+                                    class="input-compact bg-white cursor-pointer">
+                                    <option value="">Pilih Cabang</option>
+                                </select>
                             </div>
 
                             <div>
@@ -235,10 +234,11 @@ $menuHandler = new MenuHandler('program_supplier_input');
                         <div class="relative w-full sm:w-64">
                             <input type="text" id="inp_search_table"
                                 class="w-full pl-4 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100 transition-all"
-                                placeholder="Cari Invoice, Supplier, Harga...">
+                                placeholder="Cari Data...">
                             <i class="fas fa-search absolute right-3 top-2 text-gray-400 text-xs"></i>
                         </div>
                     </div>
+
 
                     <div class="overflow-x-auto relative" style="max-height: 450px; overflow-y: auto;"
                         id="table-scroll-container">
@@ -247,11 +247,14 @@ $menuHandler = new MenuHandler('program_supplier_input');
                                 <tr>
                                     <th class="w-10 text-center">No</th>
                                     <th>PIC</th>
-                                    <th>Supplier / Cabang</th>
-                                    <th>Program / Periode</th>
+                                    <th>Supplier</th>
+                                    <th>Cabang</th>
+                                    <th>Periode</th>
+                                    <th>Nama Program</th>
                                     <th>No Dokumen</th>
                                     <th class="text-right">Nilai Prg</th>
-                                    <th class="text-center">MOP / TOP</th>
+                                    <th class="text-center">MOP</th>
+                                    <th class="text-center">TOP</th>
                                     <th class="text-center w-20">Aksi</th>
                                 </tr>
                             </thead>
@@ -259,7 +262,7 @@ $menuHandler = new MenuHandler('program_supplier_input');
                             </tbody>
                             <tbody id="loading-sentinel">
                                 <tr class="hidden" id="loader-row">
-                                    <td colspan="8" class="text-center p-4">
+                                    <td colspan="11" class="text-center p-4">
                                         <i class="fas fa-circle-notch fa-spin text-pink-500 text-lg"></i>
                                         <span class="ml-2 text-gray-500 text-xs">Memuat data lainnya...</span>
                                     </td>
