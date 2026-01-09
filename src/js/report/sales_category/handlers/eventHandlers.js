@@ -1,8 +1,3 @@
-/**
- * @fileoverview Event Handlers untuk laporan penjualan kategori
- * @description Mengelola semua event listeners dan user interactions
- */
-
 import { ELEMENT_IDS } from "../config/constants.js";
 import { formatCurrency } from "../utils/formatters.js";
 import salesCategoryState from "../utils/state.js";
@@ -11,19 +6,10 @@ import branchService from "../services/branchService.js";
 import chartManager from "../components/chartManager.js";
 import tableManager from "../components/tableManager.js";
 import uiManager from "../components/uiManager.js";
-
-/**
- * Class untuk mengelola event handlers
- */
 class EventHandlers {
   constructor() {
     this.isInitialized = false;
   }
-
-  /**
-   * Initialize semua event handlers
-   * @returns {boolean} Success status
-   */
   initialize() {
     try {
       this._bindBranchChangeHandler();
@@ -31,7 +17,6 @@ class EventHandlers {
       this._bindSortingHandlers();
       this._bindSidebarHandlers();
       this._bindProfileHandlers();
-
       this.isInitialized = true;
       return true;
     } catch (error) {
@@ -39,15 +24,9 @@ class EventHandlers {
       return false;
     }
   }
-
-  /**
-   * Bind handler untuk perubahan cabang
-   * @private
-   */
   _bindBranchChangeHandler() {
     $("#cabang").on("change", async (e) => {
       const selectedBranch = $(e.target).val();
-
       try {
         await salesCategoryState.setStoreCode(selectedBranch);
       } catch (error) {
@@ -55,71 +34,49 @@ class EventHandlers {
         uiManager.showError("Error", "Gagal mengatur kode cabang");
       }
     });
-
-    // Trigger initial change setelah branch data loaded
     this._initializeBranchDropdown();
   }
-
-  /**
-   * Initialize branch dropdown dengan data dari API
-   * @private
-   */
   async _initializeBranchDropdown() {
-        try {
-            uiManager.showLoading("Memuat data cabang...");
-            const options = await branchService.getSelectOptions(true);
-            const $cabangSelect = $("#cabang");
-
-            if ($cabangSelect.length > 0) {
-                $cabangSelect.empty();
-                
-                // Render Options
-                options.forEach((option) => {
-                    // Kita simpan storeCode asli di atribut data agar mudah diambil
-                    const storeCodeVal = option.isAll ? 'ALL' : option.storeCode;
-                    $cabangSelect.append(
-                        `<option value="${option.value}" data-store="${storeCodeVal}">${option.text}</option>`
-                    );
-                });
-
-                // Inisialisasi Select2
-                $cabangSelect.select2({
-                    placeholder: "Pilih Cabang (Bisa lebih dari 1)",
-                    allowClear: true,
-                    width: '100%',
-                    closeOnSelect: false 
-                });
-
-                // Logic Khusus: Jika pilih "SEMUA CABANG", hapus pilihan lain
-                $cabangSelect.on('select2:select', function (e) {
-                    const selectedValue = e.params.data.id;
-                    if (selectedValue === 'SEMUA CABANG') {
-                        // Jika klik semua, reset dan set hanya SEMUA
-                        $cabangSelect.val(['SEMUA CABANG']).trigger('change');
-                    } else {
-                        // Jika klik spesifik, pastikan SEMUA tidak terpilih
-                        const currentVal = $cabangSelect.val() || [];
-                        if (currentVal.includes('SEMUA CABANG')) {
-                            const newVal = currentVal.filter(v => v !== 'SEMUA CABANG');
-                            $cabangSelect.val(newVal).trigger('change');
-                        }
-                    }
-                });
+    try {
+      uiManager.showLoading("Memuat data cabang...");
+      const options = await branchService.getSelectOptions(true);
+      const $cabangSelect = $("#cabang");
+      if ($cabangSelect.length > 0) {
+        $cabangSelect.empty();
+        options.forEach((option) => {
+          const storeCodeVal = option.isAll ? 'ALL' : option.storeCode;
+          $cabangSelect.append(
+            `<option value="${option.value}" data-store="${storeCodeVal}">${option.text}</option>`
+          );
+        });
+        $cabangSelect.select2({
+          placeholder: "Pilih Cabang (Bisa lebih dari 1)",
+          allowClear: true,
+          width: '100%',
+          closeOnSelect: false
+        });
+        $cabangSelect.on('select2:select', function (e) {
+          const selectedValue = e.params.data.id;
+          if (selectedValue === 'SEMUA CABANG') {
+            $cabangSelect.val(['SEMUA CABANG']).trigger('change');
+          } else {
+            const currentVal = $cabangSelect.val() || [];
+            if (currentVal.includes('SEMUA CABANG')) {
+              const newVal = currentVal.filter(v => v !== 'SEMUA CABANG');
+              $cabangSelect.val(newVal).trigger('change');
             }
-        } catch (error) {
-            console.error("Failed to initialize branch dropdown:", error);
-            uiManager.showError("Error", "Gagal memuat data cabang");
-        } finally {
-            uiManager.hideLoading();
-        }
+          }
+        });
+      }
+    } catch (error) {
+      console.error("Failed to initialize branch dropdown:", error);
+      uiManager.showError("Error", "Gagal memuat data cabang");
+    } finally {
+      uiManager.hideLoading();
     }
+  }
 
-  /**
-   * Bind handler untuk tombol-tombol utama
-   * @private
-   */
   _bindButtonHandlers() {
-    // Send button handler
     const btnSend = document.getElementById(ELEMENT_IDS.BTN_SEND);
     if (btnSend) {
       btnSend.addEventListener("click", async (e) => {
@@ -127,8 +84,6 @@ class EventHandlers {
         await this._handleSendButtonClick();
       });
     }
-
-    // Back button handler
     const btnBack = document.getElementById(ELEMENT_IDS.BTN_BACK);
     if (btnBack) {
       btnBack.addEventListener("click", (e) => {
@@ -138,98 +93,68 @@ class EventHandlers {
     }
   }
 
-  /**
-   * Handle send button click
-   * @private
-   */
   async _handleSendButtonClick() {
-        const startDate = uiManager.getValue(ELEMENT_IDS.DATE_START);
-        const endDate = uiManager.getValue(ELEMENT_IDS.DATE_END);
-        
-        // Ambil value dari Select2 (ini akan return Array)
-        let selectedBranchNames = $("#cabang").val();
-
-        // Validasi
-        if (!selectedBranchNames || selectedBranchNames.length === 0) {
-            uiManager.showError("Error", "Silahkan pilih minimal satu cabang");
-            return;
-        }
-
-        if (!startDate || !endDate) {
-            uiManager.showError("Error", "Silahkan isi tanggal periode");
-            return;
-        }
-
-        try {
-            uiManager.showLoading("Memuat data kategori...");
-
-            // LOGIKA PENTING: Konversi Nama Cabang ke Kode Store
-            let storeCodesToSend = [];
-            
-            // Cek apakah "SEMUA CABANG" dipilih
-            if (selectedBranchNames.includes("SEMUA CABANG")) {
-                // Ambil semua kode toko dari service
-                const allStoreMap = await branchService.getStoreCodes();
-                storeCodesToSend = Object.values(allStoreMap);
-            } else {
-                // Ambil kode toko spesifik berdasarkan nama cabang yang dipilih
-                const allStoreMap = await branchService.getStoreCodes();
-                storeCodesToSend = selectedBranchNames.map(name => allStoreMap[name]).filter(code => code);
-            }
-
-            // Simpan ke state (dalam bentuk array)
-            await salesCategoryState.setStoreCode(storeCodesToSend);
-
-            const response = await salesCategoryAPI.fetchInitialData({
-                storeCode: storeCodesToSend, // Kirim array kode toko
-                startDate: startDate,
-                endDate: endDate,
-                query: "allCate",
-            });
-
-            // ... sisa kode sama seperti sebelumnya ...
-            if (response.data && response.data.length >= 0) {
-                 const processedData = this._processInitialData(response.data);
-                 // ... rest of logic
-                 chartManager.updateEarlyChart(
-                    processedData.labels,
-                    processedData.chartData,
-                    (params) => this._handleChartClick(params, "category")
-                 );
-                 uiManager.setEarlyMode();
-                 salesCategoryState.setFullCache({
-                    chartMode: "early",
-                    labels: processedData.labels,
-                    chartData: processedData.chartData,
-                    tableMode: "early",
-                    tableData: ["input"],
-                 });
-            }
-
-        } catch (error) {
-            const errorMessage = salesCategoryAPI.handleError(error);
-            uiManager.showError("Gagal Memuat Data", errorMessage);
-        } finally {
-            uiManager.hideLoading();
-        }
+    const startDate = uiManager.getValue(ELEMENT_IDS.DATE_START);
+    const endDate = uiManager.getValue(ELEMENT_IDS.DATE_END);
+    let selectedBranchNames = $("#cabang").val();
+    if (!selectedBranchNames || selectedBranchNames.length === 0) {
+      uiManager.showError("Error", "Silahkan pilih minimal satu cabang");
+      return;
     }
+    if (!startDate || !endDate) {
+      uiManager.showError("Error", "Silahkan isi tanggal periode");
+      return;
+    }
+    try {
+      uiManager.showLoading("Memuat data kategori...");
+      let storeCodesToSend = [];
+      if (selectedBranchNames.includes("SEMUA CABANG")) {
+        const allStoreMap = await branchService.getStoreCodes();
+        storeCodesToSend = Object.values(allStoreMap);
+      } else {
+        const allStoreMap = await branchService.getStoreCodes();
+        storeCodesToSend = selectedBranchNames.map(name => allStoreMap[name]).filter(code => code);
+      }
+      await salesCategoryState.setStoreCode(storeCodesToSend);
+      const response = await salesCategoryAPI.fetchInitialData({
+        storeCode: storeCodesToSend,
+        startDate: startDate,
+        endDate: endDate,
+        query: "allCate",
+      });
+      if (response.data && response.data.length >= 0) {
+        const processedData = this._processInitialData(response.data);
+        chartManager.updateEarlyChart(
+          processedData.labels,
+          processedData.chartData,
+          (params) => this._handleChartClick(params, "category")
+        );
+        uiManager.setEarlyMode();
+        salesCategoryState.setFullCache({
+          chartMode: "early",
+          labels: processedData.labels,
+          chartData: processedData.chartData,
+          tableMode: "early",
+          tableData: ["input"],
+        });
+      }
+    } catch (error) {
+      const errorMessage = salesCategoryAPI.handleError(error);
+      uiManager.showError("Gagal Memuat Data", errorMessage);
+    } finally {
+      uiManager.hideLoading();
+    }
+  }
 
-  /**
-   * Handle back button click
-   * @private
-   */
   _handleBackButtonClick() {
     const previousState = salesCategoryState.restorePreviousState();
     if (!previousState) {
       console.warn("No previous state available");
       return;
     }
-
     const { chartMode, labels, chartData, tableMode, tableData } =
       previousState;
-
     try {
-      // Restore chart berdasarkan mode
       switch (chartMode) {
         case "early":
           chartManager.updateEarlyChart(labels, chartData, (params) =>
@@ -253,8 +178,6 @@ class EventHandlers {
           uiManager.setDetailMode();
           break;
       }
-
-      // Restore table
       if (
         tableData &&
         Array.isArray(tableData) &&
@@ -272,20 +195,12 @@ class EventHandlers {
     }
   }
 
-  /**
-   * Handle chart click events
-   * @private
-   * @param {Object} params - Click event parameters
-   * @param {string} nextMode - Next chart mode to load
-   */
   async _handleChartClick(params, nextMode) {
     const startDate = uiManager.getValue(ELEMENT_IDS.DATE_START);
     const endDate = uiManager.getValue(ELEMENT_IDS.DATE_END);
     const storeCode = salesCategoryState.getStoreCode();
-
     try {
       uiManager.showLoading();
-
       if (nextMode === "category") {
         await this._loadCategoryData(
           startDate,
@@ -310,10 +225,6 @@ class EventHandlers {
     }
   }
 
-  /**
-   * Load category data
-   * @private
-   */
   async _loadCategoryData(startDate, endDate, category, storeCode) {
     const filter = uiManager.getValue("sort-by") || "total_qty";
     const btnExcel = document.getElementById(ELEMENT_IDS.BTN_DATASET);
@@ -329,22 +240,14 @@ class EventHandlers {
     btnPDF.classList.add("hidden");
     if (response.data && response.data.length > 0) {
       const processedData = this._processCategoryData(response.data);
-
-      // Update chart
       chartManager.updateCategoryChart(
         processedData.labels,
         processedData.chartData,
         filter,
         (params) => this._handleChartClick(params, "detail")
       );
-
-      // Update table
       tableManager.renderTable(processedData.tableData);
-
-      // Update UI state
       uiManager.setCategoryMode();
-
-      // Cache state
       salesCategoryState.setFullCache({
         chartMode: "category",
         labels: processedData.labels,
@@ -355,15 +258,10 @@ class EventHandlers {
     }
   }
 
-  /**
-   * Load detail data
-   * @private
-   */
   async _loadDetailData(startDate, endDate, supplierCode, storeCode, category) {
     const filter = uiManager.getValue("sort-by1") || "total_qty";
     const btnDataSet = document.getElementById(ELEMENT_IDS.BTN_DATASET);
     const btnPDF = document.getElementById(ELEMENT_IDS.BTN_PDF);
-
     btnDataSet.dataset.supplier = supplierCode;
     btnDataSet.dataset.category = category;
     btnDataSet.dataset.kodeStore = storeCode;
@@ -382,21 +280,13 @@ class EventHandlers {
         response.data,
         response.supplierTable
       );
-
-      // Update chart
       chartManager.updateDetailChart(
         processedData.labels,
         processedData.chartData,
         filter
       );
-
-      // Update table
       tableManager.renderTable(processedData.tableData);
-
-      // Update UI state
       uiManager.setDetailMode();
-
-      // Cache state
       salesCategoryState.setFullCache({
         chartMode: "detail",
         labels: processedData.labels,
@@ -407,32 +297,18 @@ class EventHandlers {
     }
   }
 
-  /**
-   * Bind sorting handlers
-   * @private
-   */
   _bindSortingHandlers() {
-    // Sort handler untuk category mode
     $("#sort-by").on("change", (e) => {
       this._handleCategorySorting($(e.target).val());
     });
-
-    // Sort handler untuk detail mode
     $("#sort-by1").on("change", (e) => {
       this._handleDetailSorting($(e.target).val());
     });
   }
 
-  /**
-   * Handle category sorting
-   * @private
-   * @param {string} sortBy - Sort method
-   */
   _handleCategorySorting(sortBy) {
     const cached = salesCategoryState.getFullCache();
     if (!cached || !cached.tableData || !cached.chartData) return;
-
-    // Sort table data
     const sortedTableData = [...cached.tableData].sort((a, b) => {
       if (sortBy === "total_qty") {
         return parseFloat(b.qty || 0) - parseFloat(a.qty || 0);
@@ -449,8 +325,6 @@ class EventHandlers {
       }
       return 0;
     });
-
-    // Sort chart data
     const sortedChartData = [...cached.chartData].sort((a, b) => {
       if (sortBy === "total_qty") {
         return parseFloat(b.persen_qty || 0) - parseFloat(a.persen_qty || 0);
@@ -459,12 +333,9 @@ class EventHandlers {
       }
       return 0;
     });
-
     const sortedLabels = sortedChartData.map(
       (item) => item.nama_supplier || item.kode || ""
     );
-
-    // Update displays
     tableManager.renderTable(sortedTableData);
     chartManager.updateCategoryChart(
       sortedLabels,
@@ -474,16 +345,9 @@ class EventHandlers {
     );
   }
 
-  /**
-   * Handle detail sorting
-   * @private
-   * @param {string} sortBy - Sort method
-   */
   _handleDetailSorting(sortBy) {
     const cached = salesCategoryState.getFullCache();
     if (!cached || !cached.tableData || !cached.chartData) return;
-
-    // Sort table data
     const sortedTableData = [...cached.tableData].sort((a, b) => {
       if (sortBy === "total_qty") {
         return parseFloat(b.Qty || 0) - parseFloat(a.Qty || 0);
@@ -500,18 +364,10 @@ class EventHandlers {
       }
       return 0;
     });
-
-    // Update table (chart data tetap sama untuk detail)
     tableManager.renderTable(sortedTableData);
     chartManager.updateDetailChart(cached.labels, cached.chartData, sortBy);
   }
 
-  /**
-   * Process initial data response
-   * @private
-   * @param {Array} data - Raw data from API
-   * @returns {Object} Processed data
-   */
   _processInitialData(data) {
     const labels = data.map((item) => item.type_kategori);
     const chartData = data.map((item) => ({
@@ -519,16 +375,9 @@ class EventHandlers {
       persentase: item.persentase,
       uang: formatCurrency(item.total),
     }));
-
     return { labels, chartData };
   }
 
-  /**
-   * Process category data response
-   * @private
-   * @param {Array} data - Raw data from API
-   * @returns {Object} Processed data
-   */
   _processCategoryData(data) {
     const tableData = data.map((item) => ({
       nama_supplier: item.nama_supp,
@@ -537,7 +386,6 @@ class EventHandlers {
       kategori: item.type_kategori,
       total: formatCurrency(item.total),
     }));
-
     const labels = data.map((item) => item.nama_supp);
     const chartData = data.map((item) => ({
       kategori: item.type_kategori,
@@ -548,17 +396,9 @@ class EventHandlers {
       persen_rp: item.persentase_rp,
       nama_supplier: item.nama_supp,
     }));
-
     return { labels, chartData, tableData };
   }
 
-  /**
-   * Process detail data response
-   * @private
-   * @param {Array} data - Raw chart data from API
-   * @param {Array} supplierTable - Raw table data from API
-   * @returns {Object} Processed data
-   */
   _processDetailData(data, supplierTable) {
     const labels = data.map((item) => item.descp);
     const chartData = data.map((item) => ({
@@ -569,39 +409,21 @@ class EventHandlers {
       persen_rp: item.persentase_rp,
       total: formatCurrency(item.Total),
     }));
-
     const tableData = supplierTable.map((item) => ({
       Barcode: item.barcode,
       Product: item.nama_barang,
       Qty: item.total_qty,
       Total: formatCurrency(item.total),
     }));
-
     return { labels, chartData, tableData };
   }
 
-  /**
-   * Bind sidebar handlers (existing functionality)
-   * @private
-   */
   _bindSidebarHandlers() {
-    // Toggle sidebar
   }
 
-  /**
-   * Handle sidebar toggle
-   * @private
-   */
-  _handleSidebarToggle() {}
+  _handleSidebarToggle() { }
 
-  /**
-   * Bind profile handlers (existing functionality)
-   * @private
-   */
-  _bindProfileHandlers() {}
+  _bindProfileHandlers() { }
 }
-
-// Create singleton instance
 const eventHandlers = new EventHandlers();
-
 export default eventHandlers;

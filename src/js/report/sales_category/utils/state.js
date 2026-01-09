@@ -1,23 +1,15 @@
-/**
- * @fileoverview State management untuk laporan penjualan kategori
- * @description Mengelola state aplikasi, cache, dan history untuk navigasi chart
- */
+
 import { deepClone } from '../utils/formatters.js';
 import branchService from '../services/branchService.js';
-/**
- * Class untuk mengelola state aplikasi
- */
+
 class SalesCategoryState {
     constructor() {
-        this.storeCode = []; 
+        this.storeCode = [];
         this.cachedChartData = null;
         this.cachedChartMode = null;
         this.chartHistoryStack = [];
     }
-    /**
-     * Set store code berdasarkan pilihan cabang
-     * @param {string|Array} selectedBranch - Cabang yang dipilih (Bisa string nama, string kode, atau array)
-     */
+
     async setStoreCode(selectedBranch) {
         try {
             const allStoreMap = await branchService.getStoreCodes();
@@ -34,17 +26,14 @@ class SalesCategoryState {
                     return item;
                 }
                 return null;
-            }).filter(code => code !== null); 
+            }).filter(code => code !== null);
             this.storeCode = [...new Set(resolvedCodes)];
         } catch (error) {
             console.error("Failed to set store code in state:", error);
             this.storeCode = [];
         }
     }
-    /**
-     * Get current store code
-     * @returns {Array|string} Current store code
-     */
+
     getStoreCode() {
         return this.storeCode;
     }
@@ -84,9 +73,9 @@ class SalesCategoryState {
         if (!previousState || previousState.type !== 'full') {
             return null;
         }
-        this.cachedChartData = { 
-            labels: deepClone(previousState.labels), 
-            data: deepClone(previousState.chartData) 
+        this.cachedChartData = {
+            labels: deepClone(previousState.labels),
+            data: deepClone(previousState.chartData)
         };
         this.cachedChartMode = previousState.chartMode;
         return deepClone(previousState);

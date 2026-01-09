@@ -5,20 +5,15 @@ header("Access-Control-Allow-Credentials: true");
 header("Access-Control-Allow-Methods: OPTIONS, GET, POST");
 header("Access-Control-Allow-Headers: Content-Type, Depth, User-Agent, X-File-Size, X-Requested-With, If-Modified-Since, X-File-Name, Cache-Control");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
-
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 require_once __DIR__ . '/../../component/menu_handler.php';
-
 $menuHandler = new MenuHandler('laporan_penjualan_kategori');
-
 if (!$menuHandler->initialize()) {
     exit();
 }
 ?>
-
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -27,30 +22,21 @@ if (!$menuHandler->initialize()) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kategori</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
-
-    <!-- Penjelasan: Link ke CSS eksternal dengan cache busting query string -->
     <link rel="stylesheet" href="../../style/header.css">
     <link rel="stylesheet" href="../../style/sidebar.css">
     <link rel="stylesheet" href="../../style/animation-fade-in.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.2.2/css/tom-select.css">
-
     <link
         href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="../../style/default-font.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-
     <script defer src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-
-    <!-- <link rel="stylesheet" href="../../style/output.css"> -->
     <link rel="stylesheet" href="../../output2.css">
-    <!-- Setting logo pada tab di website Anda / Favicon -->
     <link rel="icon" type="image/png" href="../../../public/images/logo1.png">
-
     <style>
-        /* --- Enhanced Table & Modal Styles --- */
         table th,
         table td {
             border: 1px solid #e0e7ef;
@@ -90,23 +76,18 @@ if (!$menuHandler->initialize()) {
 
         .select2-container--default .select2-selection--multiple {
             border: 1px solid #dbeafe;
-            /* blue-100 */
             border-radius: 0.75rem;
-            /* rounded-xl */
             padding: 0.5rem;
             min-height: 50px;
         }
 
         .select2-container--default.select2-container--focus .select2-selection--multiple {
             border-color: #60a5fa;
-            /* blue-400 */
             box-shadow: 0 0 0 2px rgba(147, 197, 253, 0.5);
-            /* ring-blue-300 */
         }
 
         .select2-container--default .select2-selection--multiple .select2-selection__choice {
             background-color: #3b82f6;
-            /* blue-500 */
             border: none;
             color: white;
             border-radius: 0.5rem;
@@ -122,18 +103,14 @@ if (!$menuHandler->initialize()) {
 
         .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
             background-color: #2563eb;
-            /* blue-600 */
             color: white;
         }
     </style>
 </head>
 
 <body class="bg-gray-100 justify-center overflow-auto">
-    <!-- Header Navigation -->
     <?php include '../../component/navigation_report.php'; ?>
     <?php include '../../component/sidebar_report.php'; ?>
-
-
     <main id="main-content" class="flex-1 p-8 transition-all duration-300 ml-64 bg-gray-100">
         <form id="laporanForm" method="POST">
             <div id="pie" class="w-full mx-auto ">
@@ -142,7 +119,6 @@ if (!$menuHandler->initialize()) {
                         <i class="fa fa-layer-group text-2xl text-blue-500"></i>
                         <h2 class="text-2xl font-bold text-blue-700">Laporan Penjualan Kategori</h2>
                     </div>
-                    <!-- Grid layout filter -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-8 w-fit">
                         <button type="button" id="btn-back" title="kembali"
                             class="w-12 h-12 cursor-pointer flex items-center justify-center bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 text-white hover:brightness-110 shadow-lg rounded-xl text-2xl transition-all duration-200 hover:scale-105">
@@ -151,7 +127,6 @@ if (!$menuHandler->initialize()) {
                         <select id="cabang" name="cabang" multiple
                             class="w-full px-5 py-3 border border-blue-100 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-400 transition-all duration-200">
                         </select>
-
                         </select>
                         <input type="text" id="date" name="start_date"
                             class="w-full px-5 py-3 border border-blue-100 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-400 transition-all duration-200"
@@ -180,11 +155,9 @@ if (!$menuHandler->initialize()) {
                             <option value="total_qty">Qty</option>
                         </select>
                     </div>
-                    <!-- Chart area -->
                     <div class="flex justify-center items-center w-full mb-10">
                         <div id="chartDiagram" class="w-full aspect-[16/9] max-h-[800px] mx-auto"></div>
                     </div>
-                    <!-- Export & Table -->
                     <div class="flex flex-col md:flex-row md:items-center md:justify-end mb-4 gap-4" id="wrapper-table">
                         <div class="flex items-center justify-end gap-2 mb-4">
                             <button id="exportExcel" title="excel"
@@ -196,7 +169,6 @@ if (!$menuHandler->initialize()) {
                                 <i class="fa-regular fa-file-pdf"></i> PDF
                             </button>
                         </div>
-                        <!-- Table -->
                         <div id="container-table">
                             <table id="dataCategoryTable" class="w-full rounded-xl shadow-lg text-sm">
                                 <thead class=""></thead>
@@ -207,56 +179,37 @@ if (!$menuHandler->initialize()) {
                 </div>
             </div>
         </form>
-
-        <!-- Loading -->
         <div id="progressOverlay"
             class="fixed inset-0 loading-glass z-50 hidden flex flex-col items-center justify-center space-y-4 animate-fade-in-up">
-            <!-- Teks Loading -->
             <div class="text-lg font-semibold text-blue-700 animate-pulse flex items-center gap-2">
                 <i class="fa fa-spinner fa-spin"></i> Loading data...
             </div>
-            <!-- Progress Bar -->
             <div class="w-64 h-4 bg-blue-100 rounded-full overflow-hidden">
                 <div id="progressBar" class="h-full bg-blue-500 w-0 rounded-full transition-all duration-500"></div>
             </div>
         </div>
     </main>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
-
     <script src="https://unpkg.com/exceljs/dist/exceljs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.2.2/js/tom-select.complete.min.js"></script>
-
     <script src="../../js/report/sales_category/main.js" type="module"></script>
-
     <script src="../../js/loadingbar.js"></script>
     <script src="../../js/middleware_auth.js"></script>
-
-    <!-- DataTables + Buttons + dependencies -->
-
-
 </body>
 
 </html>

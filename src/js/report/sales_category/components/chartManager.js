@@ -1,7 +1,4 @@
-/**
- * @fileoverview Chart Manager untuk laporan penjualan kategori
- * @description Mengelola semua operasi chart menggunakan ECharts
- */
+
 import {
   CATEGORY_NAME_MAPPING,
   CHART_COLORS,
@@ -10,19 +7,13 @@ import {
   CHART_MODES,
 } from "../config/constants.js";
 import { parseCurrencyToNumber } from "../utils/formatters.js";
-/**
- * Class untuk mengelola chart operations
- */
 class ChartManager {
   constructor() {
     this.chartInstance = null;
     this.isInitialized = false;
     this.clickHandler = null;
   }
-  /**
-   * Initialize chart instance
-   * @returns {boolean} Success status
-   */
+
   initialize() {
     try {
       const chartElement = document.getElementById(ELEMENT_IDS.CHART_DIAGRAM);
@@ -39,20 +30,13 @@ class ChartManager {
       return false;
     }
   }
-  /**
-   * Handle window resize untuk responsive chart
-   */
+
   handleResize() {
     if (this.chartInstance && this.isInitialized) {
       this.chartInstance.resize();
     }
   }
-  /**
-   * Update chart untuk tampilan awal (pie chart kategori)
-   * @param {Array} labels - Labels untuk chart
-   * @param {Array} data - Data untuk chart
-   * @param {Function} onClickHandler - Handler untuk click event
-   */
+
   updateEarlyChart(labels, data, onClickHandler) {
     if (!this.ensureInitialized()) return;
     const chartData = labels.map((label, index) => ({
@@ -122,9 +106,8 @@ class ChartManager {
         showDelay: 0,
         formatter: (params) => {
           if (sortBy === "total") {
-            return `${params.name}<br/>Qty: ${
-              params.data.qty
-            }<br/>Total: Rp ${params.value.toLocaleString()}`;
+            return `${params.name}<br/>Qty: ${params.data.qty
+              }<br/>Total: Rp ${params.value.toLocaleString()}`;
           } else {
             return `${params.name}<br/>Qty: ${params.value}<br/>Total: ${params.data.total}`;
           }
@@ -160,7 +143,7 @@ class ChartManager {
           emphasis: {
             focus: "self",
             scale: true,
-            scaleSize: 20, 
+            scaleSize: 20,
             label: {
               show: true,
               fontSize: 15,
@@ -238,12 +221,7 @@ class ChartManager {
     });
     setTimeout(() => this.chartInstance.resize(), 300);
   }
-  /**
-   * Update chart untuk tampilan detail (bar/line chart timeline)
-   * @param {Array} labels - Labels untuk chart
-   * @param {Array} data - Data untuk chart
-   * @param {string} sortBy - Sorting method (qty atau total)
-   */
+
   updateDetailChart(labels, data, sortBy) {
     if (!this.ensureInitialized()) return;
     const chartData = labels.map((label, index) => {
@@ -350,31 +328,21 @@ class ChartManager {
     this.chartInstance.off("click");
     setTimeout(() => this.chartInstance.resize(), 300);
   }
-  /**
-   * Bind click handler ke chart
-   * @private
-   * @param {Function} handler - Click handler function
-   */
+
   bindClickHandler(handler) {
     if (!this.chartInstance || typeof handler !== "function") return;
     this.chartInstance.off("click");
     this.chartInstance.on("click", handler);
     this.clickHandler = handler;
   }
-  /**
-   * Remove click handler dari chart
-   */
+
   removeClickHandler() {
     if (this.chartInstance) {
       this.chartInstance.off("click");
       this.clickHandler = null;
     }
   }
-  /**
-   * Ensure chart is initialized
-   * @private
-   * @returns {boolean} Initialization status
-   */
+
   ensureInitialized() {
     if (!this.isInitialized || !this.chartInstance) {
       console.warn("Chart not initialized");
@@ -382,35 +350,27 @@ class ChartManager {
     }
     return true;
   }
-  /**
-   * Show chart element
-   */
+
   show() {
     const chartElement = document.getElementById(ELEMENT_IDS.CHART_DIAGRAM);
     if (chartElement) {
       chartElement.style.display = "block";
     }
   }
-  /**
-   * Hide chart element
-   */
+
   hide() {
     const chartElement = document.getElementById(ELEMENT_IDS.CHART_DIAGRAM);
     if (chartElement) {
       chartElement.style.display = "none";
     }
   }
-  /**
-   * Resize chart
-   */
+
   resize() {
     if (this.chartInstance && this.isInitialized) {
       this.chartInstance.resize();
     }
   }
-  /**
-   * Dispose chart instance
-   */
+
   dispose() {
     if (this.chartInstance) {
       this.chartInstance.dispose();

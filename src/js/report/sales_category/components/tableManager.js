@@ -1,22 +1,14 @@
-/**
- * @fileoverview Table Manager untuk laporan penjualan kategori
- * @description Mengelola DataTables operations dan styling
- */
+
 import { ELEMENT_IDS } from "../config/constants.js";
 import { capitalize } from "../utils/formatters.js";
-/**
- * Class untuk mengelola table operations
- */
+
 class TableManager {
   constructor() {
     this.currentTable = null;
     this.tableElement = null;
-    this.exportEventBound = false; 
+    this.exportEventBound = false;
   }
-  /**
-   * Initialize table element
-   * @returns {boolean} Success status
-   */
+
   initialize() {
     this.tableElement = document.getElementById(ELEMENT_IDS.DATA_TABLE);
     if (!this.tableElement) {
@@ -25,11 +17,7 @@ class TableManager {
     }
     return true;
   }
-  /**
-   * Render table dengan data array
-   * @param {Array} dataArray - Array data untuk table
-   * @param {Object} options - Options untuk customization
-   */
+
   renderTable(dataArray, options = {}) {
     if (!this.initialize()) return;
     if (!Array.isArray(dataArray) || dataArray.length === 0) {
@@ -48,12 +36,7 @@ class TableManager {
       console.error("Failed to render table:", error);
     }
   }
-  /**
-   * Generate columns configuration dari data
-   * @private
-   * @param {Object} sampleData - Sample data untuk generate columns
-   * @returns {Array} Columns configuration
-   */
+
   _generateColumns(sampleData) {
     const columns = [
       {
@@ -83,22 +66,12 @@ class TableManager {
     });
     return columns;
   }
-  /**
-   * Format column title
-   * @private
-   * @param {string} key - Column key
-   * @returns {string} Formatted title
-   */
+
   _formatColumnTitle(key) {
     if (key.toLowerCase() === "barcode") return "BARCODE";
     return capitalize(key.replace(/_/g, " "));
   }
-  /**
-   * Get CSS class untuk column berdasarkan key
-   * @private
-   * @param {string} key - Column key
-   * @returns {string} CSS class
-   */
+
   _getColumnClass(key) {
     const numericFields = ["qty", "total", "quantity", "amount", "price"];
     const isNumeric = numericFields.some((field) =>
@@ -106,13 +79,7 @@ class TableManager {
     );
     return isNumeric ? "text-right" : "text-left";
   }
-  /**
-   * Format cell data berdasarkan type
-   * @private
-   * @param {*} data - Cell data
-   * @param {string} key - Column key
-   * @returns {*} Formatted data
-   */
+
   _formatCellData(data, key) {
     if (typeof data === "string" && data.startsWith("Rp ")) {
       return data;
@@ -122,14 +89,7 @@ class TableManager {
     }
     return data;
   }
-  /**
-   * Get DataTable configuration
-   * @private
-   * @param {Array} dataArray - Data array
-   * @param {Array} columns - Columns configuration
-   * @param {Object} options - Additional options
-   * @returns {Object} DataTable configuration
-   */
+
   _getTableConfig(dataArray, columns, options) {
     return {
       data: dataArray,
@@ -177,10 +137,7 @@ class TableManager {
       ...options,
     };
   }
-  /**
-   * Customize DataTable layout styling
-   * @private
-   */
+
   _customizeTableLayout() {
     const tableId = ELEMENT_IDS.DATA_TABLE;
     const $wrapper = $(`#${tableId}`).closest(".dataTables_wrapper");
@@ -202,10 +159,7 @@ class TableManager {
       )
       .attr("placeholder", "Cari data...");
   }
-  /**
-   * Apply table styling
-   * @private
-   */
+
   _applyTableStyling() {
     const tableSelector = `#${ELEMENT_IDS.DATA_TABLE}`;
     $(`${tableSelector} thead th`).addClass(
@@ -219,10 +173,7 @@ class TableManager {
     );
     $(`${tableSelector} tbody tr:nth-child(even)`).addClass("bg-gray-50");
   }
-  /**
-   * Style pagination buttons
-   * @private
-   */
+
   _stylePaginationButtons() {
     $(".dataTables_paginate a").addClass(
       "px-3 py-2 mx-1 border rounded-lg text-sm text-gray-700 hover:bg-pink-100 cursor-pointer transition-colors duration-200"
@@ -236,10 +187,7 @@ class TableManager {
       "opacity-50 cursor-not-allowed hover:bg-transparent"
     );
   }
-  /**
-   * Bind export buttons (Excel & PDF)
-   * @private
-   */
+
   _bindExportButtons() {
     if (!this.currentTable) return;
     const dateStart = $("#date").val() || "";
@@ -262,7 +210,7 @@ class TableManager {
     const isQtyHeader = (t) => /(qty|quantity|jumlah)/i.test(t);
     const currencyIdx = headers
       .map((t, i) => (isCurrencyHeader(t) ? i : -1))
-      .filter((i) => i > 0); 
+      .filter((i) => i > 0);
     const qtyIdx = headers
       .map((t, i) => (isQtyHeader(t) ? i : -1))
       .filter((i) => i > 0);
@@ -294,8 +242,8 @@ class TableManager {
                     .replace(/<[^>]*>/g, "")
                     .replace(/\s+/g, "")
                     .replace(/Rp/gi, "")
-                    .replace(/\./g, "") 
-                    .replace(/,/g, "."); 
+                    .replace(/\./g, "")
+                    .replace(/,/g, ".");
                   const num = Number(cleaned);
                   return isNaN(num) ? str : num;
                 }
@@ -313,22 +261,22 @@ class TableManager {
             const styles = xlsx.xl["styles.xml"];
             const $sheet = $(sheet);
             const $styles = $(styles);
-            const lastRow = $("sheetData row", sheet).length; 
-            const lastColLetter = colLetter(headers.length - 1); 
+            const lastRow = $("sheetData row", sheet).length;
+            const lastColLetter = colLetter(headers.length - 1);
             let numFmts = $styles.find("numFmts");
             if (numFmts.length === 0) {
               $styles.find("styleSheet").prepend('<numFmts count="0"/>');
               numFmts = $styles.find("numFmts");
             }
             const currentNumFmtCount = parseInt(numFmts.attr("count")) || 0;
-            const rupiahFmtId = 300; 
+            const rupiahFmtId = 300;
             numFmts.attr("count", currentNumFmtCount + 1);
             numFmts.append(
               `<numFmt numFmtId="${rupiahFmtId}" formatCode="&quot;Rp&quot; #,##0"/>`
             );
             const cellXfs = $styles.find("cellXfs");
             const currentXfCount = parseInt(cellXfs.attr("count")) || 0;
-            const rupiahXfId = currentXfCount; 
+            const rupiahXfId = currentXfCount;
             cellXfs.attr("count", currentXfCount + 1);
             cellXfs.append(
               `<xf xfId="0" fontId="0" fillId="0" borderId="0" numFmtId="${rupiahFmtId}" applyNumberFormat="1"/>`
@@ -351,7 +299,7 @@ class TableManager {
             headers.forEach((h, i) => {
               const lower = h.toLowerCase();
               let width = 18;
-              if (i === 0) width = 6; 
+              if (i === 0) width = 6;
               else if (/barcode|kode/.test(lower)) width = 20;
               else if (/nama|label|desc|produk|kategori/.test(lower))
                 width = 32;
@@ -359,13 +307,12 @@ class TableManager {
               else if (/harga|price|amount|total|net|gross/.test(lower))
                 width = 14;
               colsXml.push(
-                `<col min="${i + 1}" max="${
-                  i + 1
+                `<col min="${i + 1}" max="${i + 1
                 }" width="${width}" customWidth="1"/>`
               );
             });
             colsXml.push("</cols>");
-            $sheet.find("cols").remove(); 
+            $sheet.find("cols").remove();
             $sheet.find("sheetData").before(colsXml.join(""));
             $sheet.find("autoFilter").remove();
             $sheet
@@ -411,7 +358,7 @@ class TableManager {
           orientation: "landscape",
           pageSize: "A4",
           customize: (doc) => {
-            doc.pageMargins = [28, 60, 28, 40]; 
+            doc.pageMargins = [28, 60, 28, 40];
             doc.defaultStyle.fontSize = 9;
             const title = `Laporan Penjualan Kategori - ${store}`;
             const sub = `Periode: ${dateStart} s/d ${dateEnd}`;
@@ -434,11 +381,11 @@ class TableManager {
               }
             );
             const tableIdx = doc.content.findIndex((n) => n.table);
-            if (tableIdx === -1) return; 
+            if (tableIdx === -1) return;
             const table = doc.content[tableIdx].table;
             table.widths = headers.map((h, i) => {
               const lower = h.toLowerCase();
-              if (i === 0) return 25; 
+              if (i === 0) return 25;
               if (/barcode|kode/.test(lower)) return 90;
               if (/nama|label|desc|produk|kategori/.test(lower)) return 220;
               if (/qty|quantity|jumlah/.test(lower)) return 50;
@@ -451,19 +398,19 @@ class TableManager {
               headerRow[c] =
                 typeof cell === "object"
                   ? {
-                      ...cell,
-                      fillColor: "#EC4899",
-                      color: "#FFFFFF",
-                      bold: true,
-                      alignment: "center",
-                    }
+                    ...cell,
+                    fillColor: "#EC4899",
+                    color: "#FFFFFF",
+                    bold: true,
+                    alignment: "center",
+                  }
                   : {
-                      text: cell,
-                      fillColor: "#EC4899",
-                      color: "#FFFFFF",
-                      bold: true,
-                      alignment: "center",
-                    };
+                    text: cell,
+                    fillColor: "#EC4899",
+                    color: "#FFFFFF",
+                    bold: true,
+                    alignment: "center",
+                  };
             }
             const totals = new Array(headerRow.length).fill(0);
             for (let r = 1; r < table.body.length; r++) {
@@ -487,10 +434,10 @@ class TableManager {
                   const formatted = isNaN(num)
                     ? text
                     : isCurrency
-                    ? `Rp ${new Intl.NumberFormat("id-ID").format(
+                      ? `Rp ${new Intl.NumberFormat("id-ID").format(
                         Math.round(num)
                       )}`
-                    : new Intl.NumberFormat("id-ID").format(Math.round(num));
+                      : new Intl.NumberFormat("id-ID").format(Math.round(num));
                   row[c] = { text: formatted, alignment: "right" };
                 } else {
                   if (typeof row[c] === "string")
@@ -507,10 +454,10 @@ class TableManager {
                 const label = isNaN(val)
                   ? ""
                   : isCurrency
-                  ? `Rp ${new Intl.NumberFormat("id-ID").format(
+                    ? `Rp ${new Intl.NumberFormat("id-ID").format(
                       Math.round(val)
                     )}`
-                  : new Intl.NumberFormat("id-ID").format(Math.round(val));
+                    : new Intl.NumberFormat("id-ID").format(Math.round(val));
                 return {
                   text: label,
                   bold: true,
@@ -523,8 +470,8 @@ class TableManager {
             table.body.push(totalRow);
             doc.content[tableIdx].layout = {
               fillColor: (rowIdx, node) => {
-                if (rowIdx === 0) return null; 
-                if (rowIdx === node.table.body.length - 1) return "#FCE7F3"; 
+                if (rowIdx === 0) return null;
+                if (rowIdx === node.table.body.length - 1) return "#FCE7F3";
                 return rowIdx % 2 === 0 ? null : "#FAFAFA";
               },
               hLineColor: () => "#E5E7EB",
@@ -688,12 +635,7 @@ class TableManager {
         this.currentTable.button(".buttons-pdf").trigger();
       });
   }
-  /**
-   * Create temporary table and trigger Excel export with fresh data
-   * @private
-   * @param {Array} data - Fresh data from API or current table state
-   * @param {Object} filterData - Filter data for filename
-   */
+
   _createTempTableAndExport(data, filterData) {
     if (!data || data.length === 0) {
       throw new Error("Tidak ada data untuk di-export");
@@ -828,10 +770,7 @@ class TableManager {
       tempTable.remove();
     }, 5000);
   }
-  /**
-   * Destroy existing table instance
-   * @private
-   */
+
   _destroyExistingTable() {
     const tableSelector = `#${ELEMENT_IDS.DATA_TABLE}`;
     if ($.fn.DataTable.isDataTable(tableSelector)) {
@@ -846,10 +785,7 @@ class TableManager {
     }
     this.currentTable = null;
   }
-  /**
-   * Show empty table message
-   * @private
-   */
+
   _showEmptyTable() {
     if (this.tableElement) {
       this.tableElement.innerHTML = `
@@ -861,43 +797,31 @@ class TableManager {
             `;
     }
   }
-  /**
-   * Show table container
-   */
+
   show() {
     const wrapperElement = document.getElementById(ELEMENT_IDS.WRAPPER_TABLE);
     if (wrapperElement) {
       wrapperElement.style.display = "block";
     }
   }
-  /**
-   * Hide table container
-   */
+
   hide() {
     const wrapperElement = document.getElementById(ELEMENT_IDS.WRAPPER_TABLE);
     if (wrapperElement) {
       wrapperElement.style.display = "none";
     }
   }
-  /**
-   * Get current table instance
-   * @returns {Object|null} DataTable instance
-   */
+
   getCurrentTable() {
     return this.currentTable;
   }
-  /**
-   * Clear table data
-   */
+
   clear() {
     if (this.currentTable) {
       this.currentTable.clear().draw();
     }
   }
-  /**
-   * Update table data
-   * @param {Array} newData - New data array
-   */
+
   updateData(newData) {
     if (this.currentTable && Array.isArray(newData)) {
       this.currentTable.clear();
