@@ -167,6 +167,7 @@ $menuHandler = new MenuHandler('program_supplier_input');
                                 <input type="text" id="inp_nama_supplier" name="nama_supplier" class="input-compact"
                                     placeholder="Nama Badan" list="supplier_list">
                                 <datalist id="supplier_list"></datalist>
+
                             </div>
                             <div>
                                 <label class="form-label">NPWP (16 Digit)</label>
