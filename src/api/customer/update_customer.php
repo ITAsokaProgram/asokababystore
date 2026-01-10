@@ -24,13 +24,13 @@ function encryptData($data)
 // Ambil data dari FormData
 $kode_member = $_POST['kode_member'] ?? '';
 $nama_lengkap = $_POST['nama_lengkap'] ?? '';
-$alamat_ktp = $_POST['alamat_ktp'] ?? '';
+$alamat_ktp = substr($_POST['alamat_ktp'] ?? '', 0, 100);
 $provinsi_ktp = $_POST['provinsi'] ?? '';
 $kota_ktp = $_POST['kota'] ?? '';
 $kec_ktp = $_POST['kec'] ?? '';
 $kel_ktp = $_POST['kel'] ?? '';
 
-$alamat_domisili = $_POST['alamat_domisili'] ?? '';
+$alamat_domisili = substr($_POST['alamat_domisili'] ?? '', 0, 100);
 $prov_domisili = $_POST['provinsi_domisili'] ?? '';
 $kota_domisili = $_POST['kota_domisili'] ?? '';
 $kec_domisili = $_POST['kec_domisili'] ?? '';

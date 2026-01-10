@@ -1,16 +1,25 @@
 <?php
 header('Content-Type: application/json');
-header("Access-Control-Allow-Origin: *"); // Optional, kalau dibutuhkan
+header("Access-Control-Allow-Origin: *");
 
 if (isset($_GET['provinsi'])) {
-    $provinsiCode = $_GET['provinsi'];
-    $url = "https://wilayah.id/api/regencies/$provinsiCode.json";
-    $data = file_get_contents($url);
-    $json = json_decode($data, true); // decode jadi array PHP
+    // FIX: Encode parameter agar spasi menjadi valid (contoh: Jawa Barat -> Jawa+Barat)
+    $provinsiCode = urlencode($_GET['provinsi']);
 
-    echo json_encode([
-        "data" => $json['data'] ?? []
-    ]);
+    $url = "https://wilayah.id/api/regencies/$provinsiCode.json";
+
+    // Gunakan @ untuk suppress warning jika gagal, lalu handle logic di bawahnya
+    $data = @file_get_contents($url);
+
+    if ($data === false) {
+        // Jika gagal fetch (misal 404 atau 400), kembalikan array kosong atau error
+        echo json_encode(["data" => []]);
+    } else {
+        $json = json_decode($data, true);
+        echo json_encode([
+            "data" => $json['data'] ?? []
+        ]);
+    }
 } else {
     echo json_encode(["data" => []]);
 }
