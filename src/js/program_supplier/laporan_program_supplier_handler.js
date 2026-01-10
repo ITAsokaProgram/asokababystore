@@ -128,7 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 filterSubmitButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i><span>Memuat...</span>`;
             }
             if (tableBody) {
-                tableBody.innerHTML = `<tr><td colspan="18" class="text-center p-8"><div class="spinner-simple"></div><p class="mt-2 text-gray-500">Memuat data...</p></td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="20" class="text-center p-8"><div class="spinner-simple"></div><p class="mt-2 text-gray-500">Memuat data...</p></td></tr>`;
             }
         } else {
             if (filterSubmitButton) {
@@ -138,7 +138,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
     function showTableError(message) {
-        tableBody.innerHTML = `<tr><td colspan="18" class="text-center p-8 text-red-600"><div class="p-4 bg-red-50 rounded border border-red-100"><strong>Gagal:</strong> ${message}</div></td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="20" class="text-center p-8 text-red-600"><div class="p-4 bg-red-50 rounded border border-red-100"><strong>Gagal:</strong> ${message}</div></td></tr>`;
     }
     async function loadData() {
         const params = getUrlParams();
@@ -175,7 +175,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!tabel_data || tabel_data.length === 0) {
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="18" class="text-center p-8 text-gray-500">
+                    <td colspan="20" class="text-center p-8 text-gray-500">
                         <i class="fas fa-inbox fa-lg mb-2 text-gray-300 block"></i>
                         <p>Tidak ada data ditemukan.</p>
                     </td>
@@ -183,33 +183,52 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
         let htmlRows = "";
-        let item_counter = offset + 1;
         tabel_data.forEach((row) => {
             const cabangDisplay = row.nama_cabang ? `<span class="text-[10px] text-gray-500">${row.nama_cabang}</span>` : row.kode_cabang;
             const mopClass = row.mop === 'Transfer' ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-orange-100 text-orange-700 border-orange-200';
             const picFormatted = formatMultiLine(row.pic);
             const docFormatted = formatMultiLine(row.nomor_dokumen);
             const rowDataEncoded = encodeURIComponent(JSON.stringify(row));
+            const noProgDisplay = row.nomor_program
+                ? `<div class="font-mono text-xs font-bold text-purple-700 bg-purple-50 px-2 py-1 rounded inline-block whitespace-nowrap border border-purple-100 shadow-sm">${row.nomor_program}</div>`
+                : '-';
+            const ppnBadge = row.status_ppn === 'PPN'
+                ? '<span class="text-[10px] font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded uppercase tracking-wider">PPN</span>'
+                : '<span class="text-[10px] font-bold text-gray-500 bg-gray-100 border border-gray-200 px-2 py-0.5 rounded uppercase tracking-wider">Non</span>';
             htmlRows += `
                 <tr class="hover:bg-gray-50 align-top border-b border-gray-100 transition-colors">
                     <td class="text-center py-3 align-top whitespace-nowrap">
-                        <button type="button" onclick="window.openFinanceModal('${rowDataEncoded}')" 
-                            class="inline-flex items-center justify-center w-7 h-7 transition-all border rounded shadow-sm bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-800 border-blue-200 mr-1" 
-                            title="Update Finance">
-                            <i class="fas fa-wallet text-xs"></i>
-                        </button>
-                        <button type="button" onclick="window.openTaxModal('${rowDataEncoded}')" 
-                            class="inline-flex items-center justify-center w-7 h-7 transition-all border rounded shadow-sm bg-purple-50 text-purple-600 hover:bg-purple-100 hover:text-purple-800 border-purple-200" 
-                            title="Update Tax">
-                            <i class="fas fa-file-invoice-dollar text-xs"></i>
-                        </button>
+                        <div class="flex items-center justify-center gap-1">
+                            <button type="button" onclick="window.openFinanceModal('${rowDataEncoded}')" 
+                                class="inline-flex items-center justify-center w-7 h-7 transition-all border rounded shadow-sm bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-800 border-blue-200" 
+                                title="Update Finance">
+                                <i class="fas fa-wallet text-xs"></i>
+                            </button>
+                            <button type="button" onclick="window.openTaxModal('${rowDataEncoded}')" 
+                                class="inline-flex items-center justify-center w-7 h-7 transition-all border rounded shadow-sm bg-purple-50 text-purple-600 hover:bg-purple-100 hover:text-purple-800 border-purple-200" 
+                                title="Update Tax">
+                                <i class="fas fa-file-invoice-dollar text-xs"></i>
+                            </button>
+                        </div>
                     </td>
-                    <td class="text-center font-medium text-gray-500 pt-3">${item_counter}</td>
+                    <td class="text-sm py-3 align-top">
+                        ${noProgDisplay}
+                    </td>
                     <td class="pt-3 font-medium text-gray-700 align-top text-[11px] leading-relaxed">
                         ${picFormatted}
                     </td>
-                    <td class="pt-3 font-semibold text-gray-800 align-top">${row.nama_supplier || "-"}</td>
+                    <td class="pt-3 align-top">
+                        <div class="flex flex-col gap-1">
+                            <div class="font-bold text-gray-800 leading-tight text-xs">${row.nama_supplier || '-'}</div>
+                            ${row.npwp
+                    ? `<div class="text-[10px] text-gray-500 font-mono flex items-center gap-1 bg-gray-50 w-fit px-1.5 py-0.5 rounded border border-gray-100"><i class="fas fa-id-card text-gray-400"></i> ${row.npwp}</div>`
+                    : ''}
+                        </div>
+                    </td>
                     <td class="pt-3 text-center leading-tight align-top text-[11px]">${cabangDisplay}</td>
+                    <td class="pt-3 text-center align-top">
+                        ${ppnBadge}
+                    </td>
                     <td class="pt-3 text-center text-gray-600 align-top">${row.periode_program || "-"}</td>
                     <td class="pt-3 text-gray-700 align-top font-medium">${row.nama_program || "-"}</td>
                     <td class="pt-3 font-mono text-gray-600 break-all text-[11px] align-top leading-relaxed text-blue-800">
@@ -230,7 +249,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     <td class="pt-3 text-gray-600 font-mono text-[11px] text-center align-top whitespace-nowrap">${row.nomor_bukpot || "-"}</td>
                 </tr>
             `;
-            item_counter++;
         });
         tableBody.innerHTML = htmlRows;
     }
@@ -358,6 +376,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const params = getUrlParams();
         const currencyFmt = "#,##0";
         let periodeText = "SEMUA DATA";
+
         Swal.fire({
             title: "Menyiapkan Excel...",
             text: "Sedang mengambil data...",
@@ -378,10 +397,13 @@ document.addEventListener("DOMContentLoaded", () => {
             const workbook = new ExcelJS.Workbook();
             const sheet = workbook.addWorksheet("Program Supplier");
             sheet.columns = [
-                { key: "no", width: 5 },
+                // No dihapus
+                { key: "nomor_program", width: 25 }, // Ditambah
                 { key: "pic", width: 25 },
                 { key: "nama_supplier", width: 35 },
+                { key: "npwp", width: 20 }, // Ditambah kolom khusus NPWP agar rapi di excel
                 { key: "cabang", width: 25 },
+                { key: "status_ppn", width: 15 }, // Ditambah
                 { key: "periode_program", width: 15 },
                 { key: "nama_program", width: 30 },
                 { key: "nomor_dokumen", width: 30 },
@@ -397,13 +419,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 { key: "pph", width: 18 },
                 { key: "nomor_bukpot", width: 20 },
             ];
-            sheet.mergeCells("A1:R1");
+            sheet.mergeCells("A1:T1");
             const titleCell = sheet.getCell("A1");
             titleCell.value = `LAPORAN PROGRAM SUPPLIER - ${periodeText}`;
             titleCell.font = { name: "Arial", size: 14, bold: true };
             titleCell.alignment = { horizontal: "center" };
+
             const headers = [
-                "No", "PIC", "Supplier", "Cabang", "Periode Prg", "Nama Program", "No Dokumen",
+                "No Program", "PIC", "Supplier", "NPWP", "Cabang", "Sts PPN", "Periode Prg", "Nama Program", "No Dokumen",
                 "Nilai Program", "MOP", "TOP", "Nilai Transfer", "Tgl Transfer",
                 "Tgl FPK", "NSFP", "DPP", "PPN", "PPH", "Bukpot"
             ];
@@ -422,10 +445,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 const picExcel = item.pic ? item.pic.split(',').map(s => s.trim()).join('\n') : "";
                 const docExcel = item.nomor_dokumen ? item.nomor_dokumen.split(',').map(s => s.trim()).join('\n') : "";
                 r.values = [
-                    index + 1,
+                    item.nomor_program || "",
                     picExcel,
                     item.nama_supplier || "",
+                    item.npwp || "",
                     cabangFull || "",
+                    item.status_ppn || "",
                     item.periode_program || "",
                     item.nama_program || "",
                     docExcel,
@@ -441,15 +466,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     parseFloat(item.pph) || 0,
                     item.nomor_bukpot || ""
                 ];
-                [8, 11, 15, 16, 17].forEach(colIdx => {
+                [10, 13, 17, 18, 19].forEach(colIdx => {
                     r.getCell(colIdx).numFmt = currencyFmt;
                 });
                 r.eachCell((cell) => {
                     cell.alignment = { vertical: "top", wrapText: true };
                     cell.border = { top: { style: "thin" }, left: { style: "thin" }, bottom: { style: "thin" }, right: { style: "thin" } };
-                });
-                [1, 9, 10, 12, 13].forEach(colIdx => {
-                    r.getCell(colIdx).alignment = { horizontal: "center", vertical: "top", wrapText: true };
                 });
                 rowNum++;
             });

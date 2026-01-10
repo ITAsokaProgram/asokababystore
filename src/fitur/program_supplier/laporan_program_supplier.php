@@ -127,10 +127,11 @@ $menuHandler = new MenuHandler('laporan_program_supplier');
                             <thead>
                                 <tr>
                                     <th class="whitespace-nowrap text-center w-20">Aksi</th>
-                                    <th class="whitespace-nowrap">No</th>
+                                    <th class="whitespace-nowrap">No Program</th>
                                     <th class="whitespace-nowrap">PIC</th>
-                                    <th class="whitespace-nowrap">Supplier</th>
+                                    <th class="whitespace-nowrap">Supplier & NPWP</th>
                                     <th class="whitespace-nowrap">Cabang</th>
+                                    <th class="whitespace-nowrap text-center">Sts PPN</th>
                                     <th class="whitespace-nowrap">Periode Prg</th>
                                     <th class="whitespace-nowrap">Nama Program</th>
                                     <th class="whitespace-nowrap">No Dokumen</th>
@@ -149,7 +150,7 @@ $menuHandler = new MenuHandler('laporan_program_supplier');
                             </thead>
                             <tbody id="program-table-body">
                                 <tr>
-                                    <td colspan="18" class="text-center p-8">
+                                    <td colspan="20" class="text-center p-8">
                                         <div class="spinner-simple"></div>
                                         <p class="mt-3 text-gray-500 font-medium">Memuat data...</p>
                                     </td>
