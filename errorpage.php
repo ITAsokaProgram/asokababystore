@@ -1,8 +1,6 @@
 <?php
-session_start();
-require_once 'aa_kon_sett.php';
-
-// Tentukan jenis error berdasarkan response code
+$is_dev = false;
+$css_version = $is_dev ? time() : filemtime('css/style.css');
 $error_code = http_response_code();
 if ($error_code == 403) {
     $error_message = "Dilarang masuk sembarangan, takut nanti kesasar sendirian!";
@@ -44,8 +42,15 @@ if ($error_code == 403) {
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
         .error-icon {
@@ -84,9 +89,11 @@ if ($error_code == 403) {
                 padding: 1.5rem;
                 max-width: 90%;
             }
+
             .error-icon {
                 font-size: 80px;
             }
+
             .error-message {
                 font-size: 18px;
             }
@@ -97,12 +104,15 @@ if ($error_code == 403) {
                 padding: 1rem;
                 max-width: 95%;
             }
+
             .error-icon {
                 font-size: 60px;
             }
+
             .error-message {
                 font-size: 16px;
             }
+
             .back-button {
                 padding: 10px 20px;
             }
@@ -113,11 +123,12 @@ if ($error_code == 403) {
 <body>
     <div class="error-container">
         <div class="error-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
-        <h1 style="font-size: 36px; font-weight: 700;">Oops! <?php echo $error_code; ?> Error</h1>
+        <h1 style="font-size: 36px; font-weight: 700;">Oops! Error</h1>
         <div class="error-message">
             <?php echo $error_message; ?>
         </div>
-        <a href="/index.php" class="back-button" >Kembali ke Beranda</a>
+        <a href="/index.php" class="back-button">Kembali ke Beranda</a>
     </div>
 </body>
+
 </html>
