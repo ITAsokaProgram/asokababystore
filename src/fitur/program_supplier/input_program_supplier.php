@@ -266,6 +266,7 @@ $menuHandler = new MenuHandler('program_supplier_input');
                         <table class="w-full text-left border-collapse table-compact sticky top-0">
                             <thead class="sticky top-0 z-10 shadow-sm">
                                 <tr>
+                                    <th class="text-center w-20">Aksi</th>
                                     <th>No Program</th>
                                     <th>PIC</th>
                                     <th>Supplier</th>
@@ -277,7 +278,6 @@ $menuHandler = new MenuHandler('program_supplier_input');
                                     <th class="text-right">Nilai Prg</th>
                                     <th class="text-center">MOP</th>
                                     <th class="text-center">TOP</th>
-                                    <th class="text-center w-20">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="table-body">

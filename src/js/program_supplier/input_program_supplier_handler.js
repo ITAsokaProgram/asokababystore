@@ -185,6 +185,18 @@ function renderTableRows(data) {
         const tr = document.createElement("tr");
         tr.className = "hover:bg-pink-50 transition-colors border-b border-gray-50 align-top";
         tr.innerHTML = `
+
+         <td class="text-center py-3 align-top">
+             <div class="flex justify-center gap-1">
+                <button class="btn-edit-row text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 w-8 h-8 flex items-center justify-center rounded transition-all" title="Edit">
+                    <i class="fas fa-pencil-alt"></i>
+                </button>
+                <button class="btn-delete-row text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 w-8 h-8 flex items-center justify-center rounded transition-all" 
+                    data-doc="${row.nomor_dokumen}" title="Hapus">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+             </div>
+        </td>
         <td class="text-sm py-3 align-top">
             ${noProgDisplay}
         </td>
@@ -223,17 +235,7 @@ function renderTableRows(data) {
         <td class="text-center py-3 align-top">
             <div class="text-xs text-gray-600 whitespace-nowrap">${formatDate(row.top_date)}</div>
         </td>
-        <td class="text-center py-3 align-top">
-             <div class="flex justify-center gap-1">
-                <button class="btn-edit-row text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 w-8 h-8 flex items-center justify-center rounded transition-all" title="Edit">
-                    <i class="fas fa-pencil-alt"></i>
-                </button>
-                <button class="btn-delete-row text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 w-8 h-8 flex items-center justify-center rounded transition-all" 
-                    data-doc="${row.nomor_dokumen}" title="Hapus">
-                    <i class="fas fa-trash-alt"></i>
-                </button>
-             </div>
-        </td>
+       
         `;
         tr.querySelector(".btn-edit-row").addEventListener("click", () => startEditMode(row));
         tr.querySelector(".btn-delete-row").addEventListener("click", function () {
