@@ -2,23 +2,8 @@
 session_start();
 include '../../../aa_kon_sett.php';
 
-// Default filters
-$tanggal_kemarin = date('Y-m-d', strtotime('-1 day'));
-$default_tgl_mulai = date('Y-m-01'); // Awal bulan ini
-$default_tgl_selesai = date('Y-m-d'); // Hari ini
 
-$default_filter_type = 'month';
-$default_bulan = date('m');
-$default_tahun = date('Y');
-
-// Get params
-$tgl_mulai = $_GET['tgl_mulai'] ?? $default_tgl_mulai;
-$tgl_selesai = $_GET['tgl_selesai'] ?? $default_tgl_selesai;
 $kd_store = $_GET['kd_store'] ?? 'all';
-
-$filter_type = $_GET['filter_type'] ?? $default_filter_type;
-$bulan = $_GET['bulan'] ?? $default_bulan;
-$tahun = $_GET['tahun'] ?? $default_tahun;
 
 $default_page = 1;
 $page = (int) ($_GET['page'] ?? $default_page);
@@ -26,24 +11,9 @@ if ($page < 1) {
     $page = 1;
 }
 
-$list_bulan = [
-    '01' => 'Januari',
-    '02' => 'Februari',
-    '03' => 'Maret',
-    '04' => 'April',
-    '05' => 'Mei',
-    '06' => 'Juni',
-    '07' => 'Juli',
-    '08' => 'Agustus',
-    '09' => 'September',
-    '10' => 'Oktober',
-    '11' => 'November',
-    '12' => 'Desember'
-];
 
 require_once __DIR__ . '/../../component/menu_handler.php';
 $menuHandler = new MenuHandler('laporan_program_supplier');
-// if (!$menuHandler->initialize()) { exit(); }
 ?>
 
 <!DOCTYPE html>
@@ -97,50 +67,6 @@ $menuHandler = new MenuHandler('laporan_program_supplier');
                 <div class="filter-card-simple">
                     <form id="filter-form" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 items-end"
                         method="GET">
-
-                        <div class="lg:col-span-1">
-                            <label for="filter_type" class="block text-xs font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-filter text-pink-600 mr-1"></i> Periode (TOP)
-                            </label>
-                            <select name="filter_type" id="filter_type"
-                                class="input-modern w-full font-semibold text-pink-700 bg-pink-50 border-pink-200">
-                                <option value="month" <?php echo ($filter_type == 'month') ? 'selected' : ''; ?>>Per Bulan
-                                </option>
-                                <option value="date_range" <?php echo ($filter_type == 'date_range') ? 'selected' : ''; ?>>Rentang Tanggal</option>
-                            </select>
-                        </div>
-
-                        <div id="container-month" class="contents">
-                            <div class="lg:col-span-1">
-                                <label for="bulan" class="block text-xs font-semibold text-gray-700 mb-2">Bulan</label>
-                                <select name="bulan" id="bulan" class="input-modern w-full">
-                                    <?php foreach ($list_bulan as $key => $val): ?>
-                                        <option value="<?= $key ?>" <?= ($bulan == $key) ? 'selected' : '' ?>><?= $val ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="lg:col-span-1">
-                                <label for="tahun" class="block text-xs font-semibold text-gray-700 mb-2">Tahun</label>
-                                <input type="number" name="tahun" id="tahun" class="input-modern w-full"
-                                    value="<?= $tahun ?>">
-                            </div>
-                        </div>
-
-                        <div id="container-date-range" class="contents" style="display: none;">
-                            <div class="lg:col-span-1">
-                                <label for="tgl_mulai"
-                                    class="block text-xs font-semibold text-gray-700 mb-2">Dari</label>
-                                <input type="date" name="tgl_mulai" id="tgl_mulai" class="input-modern w-full"
-                                    value="<?php echo htmlspecialchars($tgl_mulai); ?>">
-                            </div>
-                            <div class="lg:col-span-1">
-                                <label for="tgl_selesai"
-                                    class="block text-xs font-semibold text-gray-700 mb-2">Sampai</label>
-                                <input type="date" name="tgl_selesai" id="tgl_selesai" class="input-modern w-full"
-                                    value="<?php echo htmlspecialchars($tgl_selesai); ?>">
-                            </div>
-                        </div>
 
                         <div class="lg:col-span-1">
                             <label for="kd_store" class="block text-xs font-semibold text-gray-700 mb-2">

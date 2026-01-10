@@ -10,13 +10,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const paginationContainer = document.getElementById("pagination-container");
     const paginationInfo = document.getElementById("pagination-info");
     const paginationLinks = document.getElementById("pagination-links");
-    const filterTypeSelect = document.getElementById("filter_type");
-    const containerMonth = document.getElementById("container-month");
-    const containerDateRange = document.getElementById("container-date-range");
-    const filterBulan = document.getElementById("bulan");
-    const filterTahun = document.getElementById("tahun");
-    const filterTglMulai = document.getElementById("tgl_mulai");
-    const filterTglSelesai = document.getElementById("tgl_selesai");
     const exportExcelButton = document.getElementById("export-excel-button");
     const modalFinance = document.getElementById("modal-finance");
     const modalTax = document.getElementById("modal-tax");
@@ -44,10 +37,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (exportExcelButton) {
         exportExcelButton.addEventListener("click", handleExportExcel);
     }
-    if (filterTypeSelect) {
-        filterTypeSelect.addEventListener("change", toggleFilterMode);
-        toggleFilterMode();
-    }
     if (filterForm) {
         filterForm.addEventListener("submit", (e) => {
             e.preventDefault();
@@ -57,16 +46,6 @@ document.addEventListener("DOMContentLoaded", () => {
             window.history.pushState({}, "", `?${params.toString()}`);
             loadData();
         });
-    }
-    function toggleFilterMode() {
-        const mode = filterTypeSelect.value;
-        if (mode === "month") {
-            containerMonth.style.display = "contents";
-            containerDateRange.style.display = "none";
-        } else {
-            containerMonth.style.display = "none";
-            containerDateRange.style.display = "contents";
-        }
     }
     function formatRupiah(number) {
         if (isNaN(number) || number === null) return "0";
@@ -93,17 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     function getUrlParams() {
         const params = new URLSearchParams(window.location.search);
-        const now = new Date();
-        const currentMonth = String(now.getMonth() + 1).padStart(2, "0");
-        const currentYear = now.getFullYear();
-        const firstDay = `${currentYear}-${currentMonth}-01`;
-        const today = now.toISOString().split("T")[0];
         return {
-            filter_type: params.get("filter_type") || "month",
-            bulan: params.get("bulan") || currentMonth,
-            tahun: params.get("tahun") || currentYear,
-            tgl_mulai: params.get("tgl_mulai") || firstDay,
-            tgl_selesai: params.get("tgl_selesai") || today,
             kd_store: params.get("kd_store") || "all",
             pic: params.get("pic") || "all",
             search_query: params.get("search_query") || "",
@@ -190,24 +159,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 populatePicFilter(data.pic_list, params.pic);
             }
             if (filterInputQuery) filterInputQuery.value = params.search_query;
-            if (filterTypeSelect) {
-                filterTypeSelect.value = params.filter_type;
-                toggleFilterMode();
-            }
-            if (filterBulan) filterBulan.value = params.bulan;
-            if (filterTahun) filterTahun.value = params.tahun;
-            if (filterTglMulai) filterTglMulai.value = params.tgl_mulai;
-            if (filterTglSelesai) filterTglSelesai.value = params.tgl_selesai;
             if (pageSubtitle) {
-                let periodText = "";
-                if (params.filter_type === "month") {
-                    const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-                    const monthName = monthNames[parseInt(params.bulan) - 1];
-                    periodText = `Periode TOP: ${monthName} ${params.tahun}`;
-                } else {
-                    periodText = `Periode TOP: ${formatDate(params.tgl_mulai)} s/d ${formatDate(params.tgl_selesai)}`;
-                }
-                pageSubtitle.textContent = periodText;
+                pageSubtitle.textContent = "Menampilkan seluruh data";
             }
             renderTable(data.tabel_data, data.pagination ? data.pagination.offset : 0);
             renderPagination(data.pagination);
@@ -404,14 +357,7 @@ document.addEventListener("DOMContentLoaded", () => {
     async function handleExportExcel() {
         const params = getUrlParams();
         const currencyFmt = "#,##0";
-        let periodeText = "";
-        if (params.filter_type === "month") {
-            const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-            const mIndex = parseInt(params.bulan) - 1;
-            periodeText = `BULAN ${monthNames[mIndex].toUpperCase()} ${params.tahun}`;
-        } else {
-            periodeText = `PERIODE ${params.tgl_mulai} s/d ${params.tgl_selesai}`;
-        }
+        let periodeText = "SEMUA DATA";
         Swal.fire({
             title: "Menyiapkan Excel...",
             text: "Sedang mengambil data...",
@@ -512,7 +458,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const url = window.URL.createObjectURL(blob);
             const anchor = document.createElement("a");
             anchor.href = url;
-            let filename = `Program_Supplier_${params.filter_type === 'month' ? params.bulan + '_' + params.tahun : params.tgl_mulai + '_to_' + params.tgl_selesai}.xlsx`;
+            let filename = `Program_Supplier_Export.xlsx`;
             anchor.download = filename;
             anchor.click();
             window.URL.revokeObjectURL(url);
