@@ -266,13 +266,14 @@ $menuHandler = new MenuHandler('program_supplier_input');
                         <table class="w-full text-left border-collapse table-compact sticky top-0">
                             <thead class="sticky top-0 z-10 shadow-sm">
                                 <tr>
-                                    <th class="w-10 text-center">No</th>
+                                    <th>No Program</th>
                                     <th>PIC</th>
                                     <th>Supplier</th>
                                     <th>Cabang</th>
                                     <th>Periode</th>
                                     <th>Nama Program</th>
                                     <th>No Dokumen</th>
+                                    <th class="text-center">Sts PPN</th>
                                     <th class="text-right">Nilai Prg</th>
                                     <th class="text-center">MOP</th>
                                     <th class="text-center">TOP</th>
@@ -283,7 +284,7 @@ $menuHandler = new MenuHandler('program_supplier_input');
                             </tbody>
                             <tbody id="loading-sentinel">
                                 <tr class="hidden" id="loader-row">
-                                    <td colspan="11" class="text-center p-4">
+                                    <td colspan="12" class="text-center p-4">
                                         <i class="fas fa-circle-notch fa-spin text-pink-500 text-lg"></i>
                                         <span class="ml-2 text-gray-500 text-xs">Memuat data lainnya...</span>
                                     </td>

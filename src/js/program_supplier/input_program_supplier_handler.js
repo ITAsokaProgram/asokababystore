@@ -86,7 +86,7 @@ async function fetchTableData(reset = false) {
         currentRequestController = new AbortController();
         tableBody.innerHTML = `
             <tr>
-                <td colspan="11" class="text-center p-8">
+                <td colspan="12" class="text-center p-8">
                     <div class="flex flex-col items-center justify-center">
                         <i class="fas fa-circle-notch fa-spin text-pink-500 text-3xl mb-3"></i>
                         <span class="text-gray-500 font-medium animate-pulse">Memuat data...</span>
@@ -113,7 +113,7 @@ async function fetchTableData(reset = false) {
         }
         if (result.success && Array.isArray(result.data)) {
             if (result.data.length === 0 && currentPage === 1) {
-                tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-8 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-300">Data tidak ditemukan</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="12" class="text-center p-8 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-300">Data tidak ditemukan</td></tr>`;
                 hasMoreData = false;
             } else {
                 renderTableRows(result.data);
@@ -125,7 +125,7 @@ async function fetchTableData(reset = false) {
         if (error.name === 'AbortError') return;
         console.error(error);
         if (currentPage === 1) {
-            tableBody.innerHTML = `<tr><td colspan="11" class="text-center p-4 text-red-500">Gagal memuat data</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="12" class="text-center p-4 text-red-500">Gagal memuat data</td></tr>`;
         }
     } finally {
         if (!currentRequestController || (currentRequestController && !currentRequestController.signal.aborted)) {
@@ -143,15 +143,28 @@ function renderTableRows(data) {
         const mopBadge = row.mop === 'Transfer'
             ? '<span class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded border border-blue-200 font-bold">Transfer</span>'
             : '<span class="bg-orange-100 text-orange-700 text-xs px-2 py-0.5 rounded border border-orange-200 font-bold">Potong Tagihan</span>';
+        const ppnBadge = row.status_ppn === 'PPN'
+            ? '<span class="text-[10px] font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded uppercase tracking-wider">PPN</span>'
+            : '<span class="text-[10px] font-bold text-gray-500 bg-gray-100 border border-gray-200 px-2 py-0.5 rounded uppercase tracking-wider">Non</span>';
+        const noProgDisplay = row.nomor_program
+            ? `<div class="font-mono text-xs font-medium text-purple-700 bg-purple-50 px-2 py-1 rounded inline-block whitespace-nowrap border border-purple-100">${row.nomor_program}</div>`
+            : '-';
         const tr = document.createElement("tr");
         tr.className = "hover:bg-pink-50 transition-colors border-b border-gray-50 align-top";
         tr.innerHTML = `
-        <td class="text-center text-gray-500 py-3 font-medium text-sm">${tableRowIndex}</td>
+        <td class="text-sm py-3 align-top">
+            ${noProgDisplay}
+        </td>
         <td class="text-sm py-3 align-top">
              ${picStacked}
         </td>
         <td class="text-sm py-3 align-top">
-            <div class="font-bold text-gray-800">${row.nama_supplier || '-'}</div>
+            <div class="flex flex-col gap-0.5">
+                <div class="font-bold text-gray-800 leading-tight">${row.nama_supplier || '-'}</div>
+                ${row.npwp
+                ? `<div class="text-xs text-gray-500 font-mono tracking-wide flex items-center gap-1"><i class="fas fa-id-card text-gray-300 text-[10px]"></i> ${row.npwp}</div>`
+                : '<div class="text-xs text-gray-400 italic">-</div>'}
+            </div>
         </td>
         <td class="text-sm py-3 align-top">
             <div class="text-xs text-gray-500">${row.nama_cabang || ''}</div>
@@ -160,10 +173,13 @@ function renderTableRows(data) {
             ${row.periode_program || '-'}
         </td>
         <td class="text-sm py-3 align-top">
-            <div class="text-pink-600 font-medium">${row.nama_program || '-'}</div>
+            <div class="text-pink-600 font-medium leading-tight">${row.nama_program || '-'}</div>
         </td>
         <td class="text-xs py-3 align-top font-mono text-blue-700">
              ${docStacked}
+        </td>
+        <td class="text-center py-3 align-top">
+            ${ppnBadge}
         </td>
         <td class="text-right text-sm py-3 align-top font-mono font-bold text-gray-700">
             ${formatNumber(row.nilai_program)}
@@ -203,40 +219,30 @@ async function handleSave() {
         Swal.fire("Gagal", "Nama Supplier harus diisi", "warning");
         return;
     }
-
-    // VALIDASI NPWP (Harus 16 digit)
     const npwpVal = inpNpwp.value.trim();
     if (npwpVal && npwpVal.length !== 16) {
         Swal.fire("Gagal", "NPWP harus berjumlah tepat 16 digit angka", "warning");
         return;
     }
-
     isSubmitting = true;
     const originalBtnContent = btnSave.innerHTML;
     const originalBtnClass = btnSave.className;
     btnSave.disabled = true;
     btnSave.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Proses...`;
-
     const payload = {
         old_nomor_dokumen: inpOldNomorDokumen.value || null,
         nomor_dokumen: docVal,
         kode_cabang: inpKodeCabang.value,
         nama_supplier: inpNamaSupplier.value.trim(),
         pic: inpPic.value.trim(),
-
-        // Data Baru
         npwp: npwpVal,
         status_ppn: inpStatusPpn.value,
-        // Nomor program tidak dikirim saat insert karena digenerate server, 
-        // tapi dikirim saat update untuk keperluan integritas (opsional)
-
         periode_program: inpPeriode.value.trim(),
         nama_program: inpNamaProgram.value.trim(),
         nilai_program: parseNumber(inpNilaiProgram.value),
         mop: inpMop.value,
         top_date: inpTopDate.value || null
     };
-
     let isSuccess = false;
     try {
         const result = await sendRequestJSON(API_URLS.saveData, payload);
@@ -246,7 +252,7 @@ async function handleSave() {
                 icon: "success",
                 title: "Berhasil",
                 text: result.message,
-                timer: 1500, // Sedikit diperlama agar user sempat baca jika ada info nomor program
+                timer: 1500,
                 showConfirmButton: false
             });
             cancelEditMode();
@@ -271,12 +277,9 @@ function startEditMode(data) {
     inpOldNomorDokumen.value = data.nomor_dokumen;
     inpPic.value = data.pic || "";
     inpNamaSupplier.value = data.nama_supplier;
-
-    // Set Field Baru
     inpNpwp.value = data.npwp || "";
     inpStatusPpn.value = data.status_ppn || "Non PPN";
     inpNomorProgram.value = data.nomor_program || "";
-
     inpKodeCabang.value = data.kode_cabang || "";
     inpPeriode.value = data.periode_program || "";
     inpNamaProgram.value = data.nama_program || "";
@@ -284,7 +287,6 @@ function startEditMode(data) {
     inpNilaiProgram.value = formatNumber(data.nilai_program);
     inpMop.value = data.mop || "Potong Tagihan";
     inpTopDate.value = data.top_date;
-
     window.scrollTo({ top: 0, behavior: "smooth" });
     document.querySelector(".input-row-container").classList.add("border-amber-300", "bg-amber-50");
     editIndicator.classList.remove("hidden");
@@ -293,18 +295,14 @@ function startEditMode(data) {
     btnSave.className = "btn-warning px-6 py-2 rounded shadow-lg bg-yellow-500 text-white hover:bg-amber-600 flex items-center gap-2 font-medium";
     inpNomorDokumen.focus();
 }
-
 function cancelEditMode() {
     form.reset();
     inpOldNomorDokumen.value = "";
     document.querySelector(".input-row-container").classList.remove("border-amber-300", "bg-amber-50");
     editIndicator.classList.add("hidden");
     btnCancelEdit.classList.add("hidden");
-
-    // Reset field khusus
     inpNomorProgram.value = "";
     inpNomorProgram.placeholder = "(Auto Generated)";
-
     btnSave.disabled = false;
     btnSave.innerHTML = `<i class="fas fa-save"></i> <span>Simpan</span>`;
     btnSave.className = "btn-primary flex items-center gap-2 px-6 py-2 shadow-lg shadow-pink-500/30 rounded text-white bg-pink-600 hover:bg-pink-700 transition-all font-medium";
@@ -340,7 +338,6 @@ function handleDelete(doc) {
         }
     });
 }
-
 document.addEventListener("DOMContentLoaded", () => {
     loadStoreOptions();
     fetchTableData(true);
