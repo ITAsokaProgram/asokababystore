@@ -17,6 +17,9 @@ const inpNomorDokumen = document.getElementById("inp_nomor_dokumen");
 const inpNilaiProgram = document.getElementById("inp_nilai_program");
 const inpMop = document.getElementById("inp_mop");
 const inpTopDate = document.getElementById("inp_top_date");
+const inpNpwp = document.getElementById("inp_npwp");
+const inpStatusPpn = document.getElementById("inp_status_ppn");
+const inpNomorProgram = document.getElementById("inp_nomor_program");
 const btnSave = document.getElementById("btn-save");
 const btnCancelEdit = document.getElementById("btn-cancel-edit");
 const editIndicator = document.getElementById("edit-mode-indicator");
@@ -200,23 +203,40 @@ async function handleSave() {
         Swal.fire("Gagal", "Nama Supplier harus diisi", "warning");
         return;
     }
+
+    // VALIDASI NPWP (Harus 16 digit)
+    const npwpVal = inpNpwp.value.trim();
+    if (npwpVal && npwpVal.length !== 16) {
+        Swal.fire("Gagal", "NPWP harus berjumlah tepat 16 digit angka", "warning");
+        return;
+    }
+
     isSubmitting = true;
     const originalBtnContent = btnSave.innerHTML;
     const originalBtnClass = btnSave.className;
     btnSave.disabled = true;
     btnSave.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Proses...`;
+
     const payload = {
         old_nomor_dokumen: inpOldNomorDokumen.value || null,
         nomor_dokumen: docVal,
         kode_cabang: inpKodeCabang.value,
         nama_supplier: inpNamaSupplier.value.trim(),
         pic: inpPic.value.trim(),
+
+        // Data Baru
+        npwp: npwpVal,
+        status_ppn: inpStatusPpn.value,
+        // Nomor program tidak dikirim saat insert karena digenerate server, 
+        // tapi dikirim saat update untuk keperluan integritas (opsional)
+
         periode_program: inpPeriode.value.trim(),
         nama_program: inpNamaProgram.value.trim(),
         nilai_program: parseNumber(inpNilaiProgram.value),
         mop: inpMop.value,
         top_date: inpTopDate.value || null
     };
+
     let isSuccess = false;
     try {
         const result = await sendRequestJSON(API_URLS.saveData, payload);
@@ -226,7 +246,7 @@ async function handleSave() {
                 icon: "success",
                 title: "Berhasil",
                 text: result.message,
-                timer: 1000,
+                timer: 1500, // Sedikit diperlama agar user sempat baca jika ada info nomor program
                 showConfirmButton: false
             });
             cancelEditMode();
@@ -251,6 +271,12 @@ function startEditMode(data) {
     inpOldNomorDokumen.value = data.nomor_dokumen;
     inpPic.value = data.pic || "";
     inpNamaSupplier.value = data.nama_supplier;
+
+    // Set Field Baru
+    inpNpwp.value = data.npwp || "";
+    inpStatusPpn.value = data.status_ppn || "Non PPN";
+    inpNomorProgram.value = data.nomor_program || "";
+
     inpKodeCabang.value = data.kode_cabang || "";
     inpPeriode.value = data.periode_program || "";
     inpNamaProgram.value = data.nama_program || "";
@@ -258,6 +284,7 @@ function startEditMode(data) {
     inpNilaiProgram.value = formatNumber(data.nilai_program);
     inpMop.value = data.mop || "Potong Tagihan";
     inpTopDate.value = data.top_date;
+
     window.scrollTo({ top: 0, behavior: "smooth" });
     document.querySelector(".input-row-container").classList.add("border-amber-300", "bg-amber-50");
     editIndicator.classList.remove("hidden");
@@ -266,12 +293,18 @@ function startEditMode(data) {
     btnSave.className = "btn-warning px-6 py-2 rounded shadow-lg bg-yellow-500 text-white hover:bg-amber-600 flex items-center gap-2 font-medium";
     inpNomorDokumen.focus();
 }
+
 function cancelEditMode() {
     form.reset();
     inpOldNomorDokumen.value = "";
     document.querySelector(".input-row-container").classList.remove("border-amber-300", "bg-amber-50");
     editIndicator.classList.add("hidden");
     btnCancelEdit.classList.add("hidden");
+
+    // Reset field khusus
+    inpNomorProgram.value = "";
+    inpNomorProgram.placeholder = "(Auto Generated)";
+
     btnSave.disabled = false;
     btnSave.innerHTML = `<i class="fas fa-save"></i> <span>Simpan</span>`;
     btnSave.className = "btn-primary flex items-center gap-2 px-6 py-2 shadow-lg shadow-pink-500/30 rounded text-white bg-pink-600 hover:bg-pink-700 transition-all font-medium";

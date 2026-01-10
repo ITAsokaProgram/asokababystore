@@ -12,12 +12,17 @@ try {
     $verif = verify_token($matches[1]);
     if (!$verif)
         throw new Exception("Token tidak valid");
-    $kd_user = $verif->id ?? 'system';
+    $kd_user = $verif->kode ?? 'system';
     $input = json_decode(file_get_contents('php://input'), true);
     $old_doc = $input['old_nomor_dokumen'] ?? null;
     $new_doc = $input['nomor_dokumen'] ?? '';
     if (empty($new_doc))
         throw new Exception("Nomor Dokumen wajib diisi");
+    $npwp = $input['npwp'] ?? '';
+    if (!empty($npwp) && strlen($npwp) !== 16) {
+        throw new Exception("NPWP harus 16 karakter");
+    }
+    $status_ppn = $input['status_ppn'] ?? 'Non PPN';
     if (!$old_doc || ($old_doc && $old_doc !== $new_doc)) {
         $stmtCheck = $conn->prepare("SELECT nomor_dokumen FROM program_supplier WHERE nomor_dokumen = ?");
         $stmtCheck->bind_param("s", $new_doc);
@@ -48,17 +53,19 @@ try {
     }
     if ($old_doc) {
         $sql = "UPDATE program_supplier SET 
-                nomor_dokumen=?, pic=?, nama_supplier=?, kode_cabang=?, nama_cabang=?, 
+                nomor_dokumen=?, pic=?, nama_supplier=?, npwp=?, status_ppn=?, kode_cabang=?, nama_cabang=?, 
                 periode_program=?, nama_program=?, nilai_program=?, mop=?, top_date=?, 
                 kd_user=? 
                 WHERE nomor_dokumen=?";
-        $types = "sssssssdssss";
+        $types = "sssssssssdssss";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param(
             $types,
             $new_doc,
             $pic,
             $nama_supplier,
+            $npwp,
+            $status_ppn,
             $kode_cabang,
             $nama_cabang,
             $periode,
@@ -69,35 +76,66 @@ try {
             $kd_user,
             $old_doc
         );
+        if (!$stmt->execute()) {
+            throw new Exception("Gagal update: " . $stmt->error);
+        }
         $msg = "Data berhasil diperbarui.";
     } else {
-        $sql = "INSERT INTO program_supplier 
-                (nomor_dokumen, pic, nama_supplier, kode_cabang, nama_cabang, periode_program, nama_program, 
-                 nilai_program, mop, top_date, kd_user)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        $types = "sssssssdsss";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param(
-            $types,
-            $new_doc,
-            $pic,
-            $nama_supplier,
-            $kode_cabang,
-            $nama_cabang,
-            $periode,
-            $nama_prog,
-            $nilai_prog,
-            $mop,
-            $top_date,
-            $kd_user
-        );
-        $msg = "Data berhasil disimpan.";
+        $conn->begin_transaction();
+        try {
+            $clean_user = preg_replace('/[^a-zA-Z0-9]/', '', $kd_user);
+            $prefix = $kode_cabang . "-PS-" . $clean_user . "-";
+            $sqlGetMax = "SELECT nomor_program FROM program_supplier 
+                          WHERE nomor_program LIKE ? 
+                          ORDER BY LENGTH(nomor_program) DESC, nomor_program DESC 
+                          LIMIT 1 FOR UPDATE";
+            $stmtMax = $conn->prepare($sqlGetMax);
+            $likeParam = $prefix . "%";
+            $stmtMax->bind_param("s", $likeParam);
+            $stmtMax->execute();
+            $resMax = $stmtMax->get_result();
+            $next_seq = 1;
+            if ($rowMax = $resMax->fetch_assoc()) {
+                $last_code = $rowMax['nomor_program'];
+                $last_seq = (int) str_replace($prefix, "", $last_code);
+                $next_seq = $last_seq + 1;
+            }
+            $stmtMax->close();
+            $final_nomor_program = $prefix . $next_seq;
+            $sql = "INSERT INTO program_supplier 
+                    (nomor_dokumen, pic, nama_supplier, npwp, status_ppn, kode_cabang, nama_cabang, 
+                     periode_program, nama_program, nomor_program, nilai_program, mop, top_date, kd_user)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $types = "ssssssssssdsss";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param(
+                $types,
+                $new_doc,
+                $pic,
+                $nama_supplier,
+                $npwp,
+                $status_ppn,
+                $kode_cabang,
+                $nama_cabang,
+                $periode,
+                $nama_prog,
+                $final_nomor_program,
+                $nilai_prog,
+                $mop,
+                $top_date,
+                $kd_user
+            );
+            if (!$stmt->execute()) {
+                throw new Exception("Gagal insert: " . $stmt->error);
+            }
+            $conn->commit();
+            $msg = "Data berhasil disimpan. No Program: " . $final_nomor_program;
+        } catch (Exception $ex) {
+            $conn->rollback();
+            throw $ex;
+        }
     }
-    if ($stmt->execute()) {
-        echo json_encode(['success' => true, 'message' => $msg]);
-    } else {
-        throw new Exception("Database Error: " . $stmt->error);
-    }
+    echo json_encode(['success' => true, 'message' => $msg]);
 } catch (Exception $e) {
     http_response_code(200);
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);

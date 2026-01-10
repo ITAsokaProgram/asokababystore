@@ -165,8 +165,22 @@ $menuHandler = new MenuHandler('program_supplier_input');
                             <div>
                                 <label class="form-label">Nama Supplier</label>
                                 <input type="text" id="inp_nama_supplier" name="nama_supplier" class="input-compact"
-                                    placeholder="Cari Supplier..." list="supplier_list">
+                                    placeholder="Nama Badan" list="supplier_list">
                                 <datalist id="supplier_list"></datalist>
+                            </div>
+                            <div>
+                                <label class="form-label">NPWP (16 Digit)</label>
+                                <input type="text" id="inp_npwp" name="npwp" class="input-compact" maxlength="16"
+                                    placeholder="Cth: 1234567890123456"
+                                    oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                            </div>
+                            <div>
+                                <label class="form-label">Status PPN</label>
+                                <select id="inp_status_ppn" name="status_ppn"
+                                    class="input-compact bg-white cursor-pointer">
+                                    <option value="Non PPN">Non PPN</option>
+                                    <option value="PPN">PPN</option>
+                                </select>
                             </div>
 
                             <div>
@@ -175,6 +189,12 @@ $menuHandler = new MenuHandler('program_supplier_input');
                                     class="input-compact bg-white cursor-pointer">
                                     <option value="">Pilih Cabang</option>
                                 </select>
+                            </div>
+                            <div>
+                                <label class="form-label">Nomor Program (Auto)</label>
+                                <input type="text" id="inp_nomor_program" name="nomor_program"
+                                    class="input-compact bg-gray-100 text-gray-500 font-mono text-xs"
+                                    placeholder="(Auto Generated)" readonly>
                             </div>
 
                             <div>
@@ -214,6 +234,7 @@ $menuHandler = new MenuHandler('program_supplier_input');
                                 <label class="form-label">Jatuh Tempo (TOP)</label>
                                 <input type="date" id="inp_top_date" name="top_date" class="input-compact">
                             </div>
+
 
                             <div class="flex items-end h-full pb-1 gap-2">
                                 <button type="button" id="btn-cancel-edit"
