@@ -1,8 +1,6 @@
 document.addEventListener("DOMContentLoaded", async () => {
   const token = getCookie("admin_token");
   const currentPath = window.location.pathname;
-
-  // Kalau halaman login
   if (currentPath.includes("in_login")) {
     if (token) {
       try {
@@ -12,26 +10,21 @@ document.addEventListener("DOMContentLoaded", async () => {
             Authorization: `Bearer ${token}`,
           },
         });
-
         const result = await response.json();
         if (result.status === "success") {
           window.location.href = "/in_beranda";
         }
       } catch (error) {
         console.error("Gagal verifikasi token", error);
-        // Hapus token, biarkan user tetap di login
         document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
       }
     }
     return;
   }
-
-  // Kalau di halaman selain login
   if (!token) {
     window.location.href = "/in_login";
     return;
   }
-
   try {
     const response = await fetch("/src/auth/verify_token.php", {
       method: "GET",
@@ -41,7 +34,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     const result = await response.json();
-    sessionStorage.setItem("userName", result.data.nama);
+
+    if (result.data) {
+      sessionStorage.setItem("userName", result.data.nama);
+      sessionStorage.setItem("userKode", result.data.kode);
+    }
     if (result.status !== "success") {
       document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
       await Swal.fire({
@@ -66,8 +63,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 });
-
-// Fungsi untuk ambil cookie
 function getCookie(name) {
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);

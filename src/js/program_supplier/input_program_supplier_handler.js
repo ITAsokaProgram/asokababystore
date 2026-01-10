@@ -4,6 +4,7 @@ const API_URLS = {
     getData: "/src/api/program_supplier/get_latest_program_supplier.php",
     deleteData: "/src/api/program_supplier/delete_program_supplier.php",
     getStores: "/src/api/shared/get_all_store.php",
+    getNextNumber: "/src/api/program_supplier/get_next_program_number.php"
 };
 const form = document.getElementById("program-form");
 const inpOldNomorDokumen = document.getElementById("inp_old_nomor_dokumen");
@@ -26,6 +27,8 @@ const editIndicator = document.getElementById("edit-mode-indicator");
 const tableBody = document.getElementById("table-body");
 const inpSearchTable = document.getElementById("inp_search_table");
 const loaderRow = document.getElementById("loader-row");
+let originalBranchCode = "";
+let originalProgramNumber = "";
 let isSubmitting = false;
 let debounceTimer;
 let searchDebounceTimer;
@@ -35,6 +38,36 @@ let hasMoreData = true;
 let currentSearchTerm = "";
 let tableRowIndex = 0;
 let currentRequestController = null;
+async function generateProgramNumber() {
+    const branchCode = inpKodeCabang.value;
+    const isEditMode = !editIndicator.classList.contains('hidden');
+
+    if (!branchCode) {
+        inpNomorProgram.value = "";
+        inpNomorProgram.placeholder = "Pilih Cabang Dulu";
+        return;
+    }
+
+    // LOGIC BARU:
+    // Jika sedang Edit Mode DAN cabang yang dipilih == cabang asli
+    // Maka KEMBALIKAN nomor program ke nomor aslinya (jangan generate baru)
+    if (isEditMode && branchCode === originalBranchCode) {
+        inpNomorProgram.value = originalProgramNumber;
+        return;
+    }
+
+    // Jika New Mode ATAU (Edit Mode tapi cabangnya beda), request nomor baru
+    inpNomorProgram.placeholder = "Loading...";
+    try {
+        const result = await sendRequestGET(`${API_URLS.getNextNumber}?kode_cabang=${branchCode}`);
+        if (result.success) {
+            inpNomorProgram.value = result.nomor_program;
+        }
+    } catch (error) {
+        console.error("Gagal generate nomor:", error);
+        inpNomorProgram.placeholder = "Gagal Load";
+    }
+}
 function formatNumber(num) {
     if (isNaN(num) || num === null) return "0";
     return new Intl.NumberFormat("id-ID", {
@@ -275,18 +308,25 @@ async function handleSave() {
 }
 function startEditMode(data) {
     inpOldNomorDokumen.value = data.nomor_dokumen;
+
+    // Simpan state asli
+    originalBranchCode = data.kode_cabang;
+    originalProgramNumber = data.nomor_program;
+
     inpPic.value = data.pic || "";
     inpNamaSupplier.value = data.nama_supplier;
     inpNpwp.value = data.npwp || "";
     inpStatusPpn.value = data.status_ppn || "Non PPN";
     inpNomorProgram.value = data.nomor_program || "";
-    inpKodeCabang.value = data.kode_cabang || "";
+    inpKodeCabang.value = data.kode_cabang || ""; // Ini akan mentrigger event change jika pakai library tertentu, tapi manual set value aman
+
     inpPeriode.value = data.periode_program || "";
     inpNamaProgram.value = data.nama_program || "";
     inpNomorDokumen.value = data.nomor_dokumen;
     inpNilaiProgram.value = formatNumber(data.nilai_program);
     inpMop.value = data.mop || "Potong Tagihan";
     inpTopDate.value = data.top_date;
+
     window.scrollTo({ top: 0, behavior: "smooth" });
     document.querySelector(".input-row-container").classList.add("border-amber-300", "bg-amber-50");
     editIndicator.classList.remove("hidden");
@@ -295,9 +335,16 @@ function startEditMode(data) {
     btnSave.className = "btn-warning px-6 py-2 rounded shadow-lg bg-yellow-500 text-white hover:bg-amber-600 flex items-center gap-2 font-medium";
     inpNomorDokumen.focus();
 }
+
+// 3. UPDATE FUNCTION CANCEL EDIT (Reset Variable)
 function cancelEditMode() {
     form.reset();
     inpOldNomorDokumen.value = "";
+
+    // Reset variable global
+    originalBranchCode = "";
+    originalProgramNumber = "";
+
     document.querySelector(".input-row-container").classList.remove("border-amber-300", "bg-amber-50");
     editIndicator.classList.add("hidden");
     btnCancelEdit.classList.add("hidden");
@@ -307,6 +354,7 @@ function cancelEditMode() {
     btnSave.innerHTML = `<i class="fas fa-save"></i> <span>Simpan</span>`;
     btnSave.className = "btn-primary flex items-center gap-2 px-6 py-2 shadow-lg shadow-pink-500/30 rounded text-white bg-pink-600 hover:bg-pink-700 transition-all font-medium";
 }
+
 function handleDelete(doc) {
     Swal.fire({
         title: "Hapus Data?",
@@ -367,4 +415,5 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }, observerOptions);
     if (loaderRow) observer.observe(loaderRow);
+    inpKodeCabang.addEventListener("change", generateProgramNumber);
 });

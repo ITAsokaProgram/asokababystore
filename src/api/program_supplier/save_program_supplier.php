@@ -52,34 +52,71 @@ try {
         $top_date = $top_date_input;
     }
     if ($old_doc) {
-        $sql = "UPDATE program_supplier SET 
-                nomor_dokumen=?, pic=?, nama_supplier=?, npwp=?, status_ppn=?, kode_cabang=?, nama_cabang=?, 
-                periode_program=?, nama_program=?, nilai_program=?, mop=?, top_date=?, 
-                kd_user=? 
-                WHERE nomor_dokumen=?";
-        $types = "sssssssssdssss";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param(
-            $types,
-            $new_doc,
-            $pic,
-            $nama_supplier,
-            $npwp,
-            $status_ppn,
-            $kode_cabang,
-            $nama_cabang,
-            $periode,
-            $nama_prog,
-            $nilai_prog,
-            $mop,
-            $top_date,
-            $kd_user,
-            $old_doc
-        );
-        if (!$stmt->execute()) {
-            throw new Exception("Gagal update: " . $stmt->error);
+        $conn->begin_transaction();
+        try {
+            $stmtGetOld = $conn->prepare("SELECT kode_cabang, nomor_program FROM program_supplier WHERE nomor_dokumen = ?");
+            $stmtGetOld->bind_param("s", $old_doc);
+            $stmtGetOld->execute();
+            $resOld = $stmtGetOld->get_result();
+            $rowOld = $resOld->fetch_assoc();
+            $stmtGetOld->close();
+            $old_db_cabang = $rowOld['kode_cabang'];
+            $final_nomor_program_update = $rowOld['nomor_program'];
+            if ($old_db_cabang !== $kode_cabang) {
+                $clean_user = preg_replace('/[^a-zA-Z0-9]/', '', $kd_user);
+                $prefix = $kode_cabang . "-PS-" . $clean_user . "-";
+                $sqlGetMax = "SELECT nomor_program FROM program_supplier 
+                              WHERE nomor_program LIKE ? 
+                              ORDER BY LENGTH(nomor_program) DESC, nomor_program DESC 
+                              LIMIT 1 FOR UPDATE";
+                $stmtMax = $conn->prepare($sqlGetMax);
+                $likeParam = $prefix . "%";
+                $stmtMax->bind_param("s", $likeParam);
+                $stmtMax->execute();
+                $resMax = $stmtMax->get_result();
+                $next_seq = 1;
+                if ($rowMax = $resMax->fetch_assoc()) {
+                    $last_code = $rowMax['nomor_program'];
+                    $last_seq = (int) str_replace($prefix, "", $last_code);
+                    $next_seq = $last_seq + 1;
+                }
+                $stmtMax->close();
+                $final_nomor_program_update = $prefix . $next_seq;
+            }
+            $sql = "UPDATE program_supplier SET 
+                    nomor_dokumen=?, pic=?, nama_supplier=?, npwp=?, status_ppn=?, kode_cabang=?, nama_cabang=?, 
+                    periode_program=?, nama_program=?, nilai_program=?, mop=?, top_date=?, 
+                    kd_user=?, nomor_program=? 
+                    WHERE nomor_dokumen=?";
+            $types = "sssssssssdsssss";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param(
+                $types,
+                $new_doc,
+                $pic,
+                $nama_supplier,
+                $npwp,
+                $status_ppn,
+                $kode_cabang,
+                $nama_cabang,
+                $periode,
+                $nama_prog,
+                $nilai_prog,
+                $mop,
+                $top_date,
+                $kd_user,
+                $final_nomor_program_update,
+                $old_doc
+            );
+            if (!$stmt->execute()) {
+                throw new Exception("Gagal update: " . $stmt->error);
+            }
+            $conn->commit();
+            $msg = "Data diperbarui. No Program: " . $final_nomor_program_update;
+        } catch (Exception $ex) {
+            $conn->rollback();
+            throw $ex;
         }
-        $msg = "Data berhasil diperbarui.";
     } else {
         $conn->begin_transaction();
         try {
