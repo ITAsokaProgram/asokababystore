@@ -3,7 +3,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const filterForm = document.getElementById("filter-form");
     const filterSubmitButton = document.getElementById("filter-submit-button");
     const filterSelectStore = document.getElementById("kd_store");
-    const filterSelectPic = document.getElementById("filter_pic");
     const filterInputQuery = document.getElementById("search_query");
     const pageTitle = document.getElementById("page-title");
     const pageSubtitle = document.getElementById("page-subtitle");
@@ -74,7 +73,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const params = new URLSearchParams(window.location.search);
         return {
             kd_store: params.get("kd_store") || "all",
-            pic: params.get("pic") || "all",
             search_query: params.get("search_query") || "",
             page: parseInt(params.get("page") || "1", 10),
         };
@@ -102,25 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
         filterSelectStore.value = selectedStore;
         filterSelectStore.setAttribute('data-loaded', 'true');
     }
-    function populatePicFilter(picList, selectedPic) {
-        if (!filterSelectPic) return;
-        if (filterSelectPic.options.length > 1 && filterSelectPic.getAttribute('data-loaded') === 'true') {
-            filterSelectPic.value = selectedPic;
-            return;
-        }
-        filterSelectPic.innerHTML = '<option value="all">Semua PIC</option>';
-        picList.forEach((name) => {
-            const option = document.createElement("option");
-            option.value = name;
-            option.textContent = name;
-            if (name === selectedPic) {
-                option.selected = true;
-            }
-            filterSelectPic.appendChild(option);
-        });
-        filterSelectPic.value = selectedPic;
-        filterSelectPic.setAttribute('data-loaded', 'true');
-    }
+
     function setLoadingState(isLoading) {
         if (isLoading) {
             if (filterSubmitButton) {
@@ -155,9 +135,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (data.stores) {
                 populateStoreFilter(data.stores, params.kd_store);
             }
-            if (data.pic_list) {
-                populatePicFilter(data.pic_list, params.pic);
-            }
+
             if (filterInputQuery) filterInputQuery.value = params.search_query;
             if (pageSubtitle) {
                 pageSubtitle.textContent = "Menampilkan seluruh data";

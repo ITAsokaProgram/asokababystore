@@ -78,15 +78,6 @@ $menuHandler = new MenuHandler('laporan_program_supplier');
                         </div>
 
                         <div class="lg:col-span-1">
-                            <label for="pic" class="block text-xs font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-user-tag text-pink-600 mr-1"></i> PIC
-                            </label>
-                            <select name="pic" id="filter_pic" class="input-modern w-full">
-                                <option value="all">Semua PIC</option>
-                            </select>
-                        </div>
-
-                        <div class="lg:col-span-1">
                             <label for="search_query" class="block text-xs font-semibold text-gray-700 mb-2">
                                 <i class="fas fa-search text-pink-600 mr-1"></i> Cari Data
                             </label>
