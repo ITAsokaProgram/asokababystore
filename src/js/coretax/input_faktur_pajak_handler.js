@@ -27,6 +27,7 @@ const inpDpp = document.getElementById("inp_dpp");
 const inpDppLain = document.getElementById("inp_dpp_lain");
 const inpPpn = document.getElementById("inp_ppn");
 const inpTotal = document.getElementById("inp_total");
+const inpCatatan = document.getElementById("inp_catatan");
 const btnSave = document.getElementById("btn-save");
 const btnCancelEdit = document.getElementById("btn-cancel-edit");
 const btnExport = document.getElementById("btn-export");
@@ -105,9 +106,9 @@ async function loadStoreOptions() {
 async function fetchTableData(reset = false) {
   if (isLoadingData && !reset) return;
   if (reset) {
-    currentPage = 1; 
+    currentPage = 1;
     tableRowIndex = 0;
-    hasMoreData = true; 
+    hasMoreData = true;
     if (currentRequestController) {
       currentRequestController.abort();
     }
@@ -170,6 +171,7 @@ async function fetchTableData(reset = false) {
   }
 }
 function renderTableRows(data) {
+  console.log(data)
   data.forEach((row) => {
     tableRowIndex++;
     const storeBadge = row.nm_alias
@@ -181,22 +183,21 @@ function renderTableRows(data) {
     tr.innerHTML = `
         <td class="text-center text-gray-500 py-3">${tableRowIndex}</td>
         <td class="text-sm">${row.tgl_faktur || "-"}</td>
-        <td class="font-medium text-gray-800 text-sm">${
-          row.no_invoice || "-"
-        }</td> 
+        <td class="font-medium text-gray-800 text-sm">${row.no_invoice || "-"
+      }</td> 
         <td class="text-sm text-gray-600">${row.nsfp}</td>
         <td class="text-center">${storeBadge}</td>
-        <td class="text-sm truncate max-w-[150px]" title="${
-          row.nama_supplier
-        }">${row.nama_supplier || "-"}</td>
+        <td class="text-sm truncate max-w-[150px]" title="${row.nama_supplier
+      }">${row.nama_supplier || "-"}</td>
         <td class="text-right font-mono text-sm">${formatNumber(row.dpp)}</td>
         <td class="text-right font-mono text-gray-500 text-sm">${formatNumber(
-          row.dpp_nilai_lain
-        )}</td>
+        row.dpp_nilai_lain
+      )}</td>
         <td class="text-right font-mono text-sm">${formatNumber(row.ppn)}</td>
         <td class="text-right font-bold font-mono text-gray-800 text-sm">${formatNumber(
-          row.total
-        )}</td>
+        row.total
+      )}</td>
+        <td class="text-sm text-gray-500 italic truncate max-w-[100px]" title="${row.catatan || ''}">${row.catatan || '-'}</td>
         <td class="text-center py-2">
             <div class="flex justify-center gap-1">
                 <button class="btn-edit-row text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 w-8 h-8 flex items-center justify-center rounded transition-all" 
@@ -204,9 +205,8 @@ function renderTableRows(data) {
                     <i class="fas fa-pencil-alt"></i>
                 </button>
                 <button class="btn-delete-row text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 w-8 h-8 flex items-center justify-center rounded transition-all" 
-                    data-id="${row.id}" data-nsfp="${row.nsfp}" data-invoice="${
-      row.no_invoice || "-"
-    }" title="Hapus Data">
+                    data-id="${row.id}" data-nsfp="${row.nsfp}" data-invoice="${row.no_invoice || "-"
+      }" title="Hapus Data">
                     <i class="fas fa-trash-alt"></i>
                 </button>
             </div>
@@ -479,6 +479,7 @@ function startEditMode(data) {
   inpNoInvoice.value = data.no_invoice || "";
   inpNamaSupp.value = data.nama_supplier;
   inpKodeStore.value = data.kode_store || "";
+  inpCatatan.value = data.catatan || "";
   inpTgl.value = data.tgl_faktur;
   inpDpp.value = formatNumber(data.dpp);
   inpDppLain.value = formatNumber(data.dpp_nilai_lain);
@@ -501,6 +502,7 @@ function cancelEditMode() {
   inpId.value = "";
   inpKodeStore.value = "";
   inpKodeSupplier.value = "";
+  inpCatatan.value = "";
   detectedNoFaktur = null;
   inpTotal.value = "0";
   document
@@ -597,6 +599,7 @@ async function handleSave() {
     dpp_nilai_lain: parseNumber(inpDppLain.value),
     ppn: parseNumber(inpPpn.value),
     total: parseNumber(inpTotal.value),
+    catatan: inpCatatan.value.trim(),
   };
   const originalBtn = btnSave.innerHTML;
   const originalClass = btnSave.className;
@@ -676,7 +679,7 @@ async function handleExport() {
       cell.fill = {
         type: "pattern",
         pattern: "solid",
-        fgColor: { argb: "FFEC4899" }, 
+        fgColor: { argb: "FFEC4899" },
       };
       cell.alignment = { horizontal: "center", vertical: "middle" };
       cell.border = {

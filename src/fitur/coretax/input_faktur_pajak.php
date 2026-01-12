@@ -226,6 +226,11 @@ if (!$menuHandler->initialize()) {
                                     class="input-compact text-right font-bold text-pink-600 input-readonly font-mono"
                                     readonly value="0">
                             </div>
+                            <div>
+                                <label class="form-label">Catatan</label>
+                                <input type="text" id="inp_catatan" name="catatan" class="input-compact"
+                                    placeholder="Catatan tambahan...">
+                            </div>
 
                             <div class="flex items-end h-full pb-1">
                                 <button type="button" id="btn-cancel-edit"
@@ -281,6 +286,7 @@ if (!$menuHandler->initialize()) {
                                     <th class="text-right">DPP Lain</th>
                                     <th class="text-right">PPN</th>
                                     <th class="text-right">Total</th>
+                                    <th>Catatan</th>
                                     <th class="w-20 text-center">Aksi</th>
                                 </tr>
                             </thead>

@@ -61,6 +61,7 @@ try {
                 fp.dpp_nilai_lain, 
                 fp.ppn, 
                 fp.total,
+                fp.catatan,
                 fp.kode_store,
                 fp.edit_pada,
                 ks.Nm_Alias as nm_alias 
