@@ -1,28 +1,65 @@
-Options -Indexes -MultiViews
-
 RewriteEngine On
-
-ErrorDocument 404 /errorpage.php
-ErrorDocument 403 /errorpage.php
-ErrorDocument 401 /src/component/error_token.php
-ErrorDocument 429 /error429.php
-ErrorDocument 500 /error500.php
-
-RewriteCond %{REQUEST_URI} ^/errorpage\.php$ [NC,OR]
-RewriteCond %{REQUEST_URI} ^/error500\.php$ [NC,OR]
-RewriteCond %{REQUEST_URI} ^/error429\.php$ [NC]
-RewriteRule ^ - [L]
-
 RewriteRule ^\.well-known/ - [L,NC]
 RewriteCond %{REQUEST_URI} !^/maintanance\.php$ [NC]
-
-RewriteCond %{REQUEST_URI} ^/iclock/ [NC]
+RewriteCond %{REQUEST_URI} !^/iclock/ [NC]
 RewriteRule ^iclock/cdata$ iclock/cdata.php [L]
 RewriteRule ^iclock/getrequest$ iclock/getrequest.php [L]
 RewriteRule ^iclock/idata$ iclock/devicecmd.php [L]
 RewriteCond %{REQUEST_URI} ^/iclock [NC]
 RewriteRule ^ - [L]
-
+php_value upload_max_filesize 10M
+php_value post_max_size 12M
+RewriteCond %{HTTP:Authorization} ^(.*)
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%1]
+RewriteCond %{REQUEST_URI} ^/src/api/ [NC]
+RewriteCond %{REQUEST_URI} ^/src/config/ [NC]
+RewriteCond %{REQUEST_URI} ^/src/fitur/laporan/ [NC,OR]
+RewriteCond %{REQUEST_URI} ^/src/fitur/account/ [NC]
+RewriteCond %{THE_REQUEST} \s/+(.+?)\.php[\s?/] [NC]
+RewriteRule ^ /%1 [R=301,L,NE]
+RewriteCond %{REQUEST_URI} ^/src/fitur/laporan/ [NC,OR]
+RewriteCond %{REQUEST_URI} ^/src/fitur/account/ [NC]
+RewriteCond %{REQUEST_FILENAME} !-d 
+RewriteCond %{DOCUMENT_ROOT}/$1.php -f 
+RewriteRule ^(.+?)/?$ $1.php [L]
+RewriteRule ^index/?$ / [R=301,L]
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^(.+)$ $1.php [L]
+Options -Indexes 
+<IfModule mod_brotli.c>
+    AddOutputFilterByType BROTLI_COMPRESS text/html text/plain text/xml text/css text/javascript application/javascript
+</IfModule>
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html
+  AddOutputFilterByType DEFLATE text/css
+  AddOutputFilterByType DEFLATE text/javascript
+  AddOutputFilterByType DEFLATE text/xml
+  AddOutputFilterByType DEFLATE text/plain
+  AddOutputFilterByType DEFLATE image/x-icon
+  AddOutputFilterByType DEFLATE image/svg+xml
+  AddOutputFilterByType DEFLATE application/javascript
+  AddOutputFilterByType DEFLATE application/x-javascript
+  AddOutputFilterByType DEFLATE application/json
+</IfModule>
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpg "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType image/x-icon "access plus 1 year"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType text/javascript "access plus 1 month"
+    ExpiresByType font/woff2 "access plus 1 year"
+</IfModule>
+<IfModule mod_headers.c>
+    Header set Connection keep-alive
+    Header set X-XSS-Protection "1; mode=block"
+</IfModule>
 <FilesMatch "^\.(?!well-known)">
     Require all denied
 </FilesMatch>
@@ -33,23 +70,8 @@ RewriteRule ^ - [L]
     Order Allow,Deny
     Deny from all
 </Files>
-
-php_value upload_max_filesize 10M
-php_value post_max_size 12M
-
-RewriteCond %{THE_REQUEST} \s/+(.+?)\.php[\s?/] [NC]
-RewriteRule ^ /%1 [R=301,L,NE]
-
-RewriteCond %{HTTP:Authorization} ^(.*)
-RewriteRule .* - [E=HTTP_AUTHORIZATION:%1]
-
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{DOCUMENT_ROOT}/$1.php -f
-RewriteRule ^(.+?)/?$ $1.php [L]
-
-RewriteRule ^index/?$ / [R=301,L]
-
-<IfModule mod_headers.c>
-    Header set Connection keep-alive
-    Header set X-XSS-Protection "1; mode=block"
-</IfModule>
+ErrorDocument 404 /errorpage.php
+ErrorDocument 403 /errorpage.php
+ErrorDocument 401 /src/component/error_token.php
+ErrorDocument 429 /error429.php
+ErrorDocument 500 /error500.php
