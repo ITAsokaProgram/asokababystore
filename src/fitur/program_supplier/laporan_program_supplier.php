@@ -266,7 +266,7 @@ $menuHandler = new MenuHandler('laporan_program_supplier');
                                 <label class="block text-xs font-semibold text-gray-700 mb-1">NSFP (Faktur
                                     Pajak)</label>
                                 <input type="text" name="nsfp" id="tax_nsfp" class="input-modern w-full"
-                                    placeholder="No Seri Faktur Pajak">
+                                    placeholder="No Seri Faktur Pajak" maxlength="17">
                             </div>
 
                             <div>
@@ -287,7 +287,7 @@ $menuHandler = new MenuHandler('laporan_program_supplier');
                             <div>
                                 <label class="block text-xs font-semibold text-gray-700 mb-1">Nomor Bukpot</label>
                                 <input type="text" name="nomor_bukpot" id="tax_nomor_bukpot" class="input-modern w-full"
-                                    placeholder="Nomor Bukti Potong">
+                                    placeholder="Nomor Bukti Potong" maxlength="9">
                             </div>
                         </div>
                     </div>
