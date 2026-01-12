@@ -116,6 +116,7 @@ try {
             f.dpp, 
             f.dpp_nilai_lain, 
             f.ppn, 
+            f.catatan,
             f.total,
             f.kode_store,
             ks.Nm_Alias,

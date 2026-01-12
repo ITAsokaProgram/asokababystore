@@ -206,38 +206,37 @@ document.addEventListener("DOMContentLoaded", () => {
               <tr class="hover:bg-gray-50">
                   <td class="text-center font-medium text-gray-500">${item_counter}</td>
                   <td>${dateFormatted}</td>
-                  <td class="font-medium text-gray-700">${
-                    row.no_invoice || "-"
-                  }</td>
-                  <td class="font-semibold font-mono text-gray-700 text-xs">${
-                    row.nsfp
-                  }</td>
+                  <td class="font-medium text-gray-700">${row.no_invoice || "-"
+        }</td>
+                  <td class="font-semibold font-mono text-gray-700 text-xs">${row.nsfp
+        }</td>
                   <td class="">
                       <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-800">
                           ${row.Nm_Alias || row.kode_store || "-"}
                       </span>
                   </td>
-                  <td class="text-sm font-medium text-gray-800">${
-                    row.nama_supplier || "-"
-                  }</td>
+                  <td class="text-sm font-medium text-gray-800">${row.nama_supplier || "-"
+        }</td>
                   <td class="text-right font-mono text-gray-700">${formatRupiah(
-                    dpp
-                  )}</td>
+          dpp
+        )}</td>
                   <td class="text-right font-mono text-gray-600">${formatRupiah(
-                    dpp_lain
-                  )}</td>
+          dpp_lain
+        )}</td>
                   <td class="text-right font-mono text-red-600">${formatRupiah(
-                    ppn
-                  )}</td>
+          ppn
+        )}</td>
                   <td class="text-right font-bold text-gray-800">${formatRupiah(
-                    total
-                  )}</td>
+          total
+        )}</td>
                   <td class="text-center align-middle border-l border-gray-100 bg-green-50/30">
                       ${badgePembelian}
                   </td>
                   <td class="text-center align-middle border-l border-gray-100 bg-purple-50/30">
                       ${badgeCoretax}
                   </td>
+                                    <td >${row.catatan || "-"
+        }</td>
               </tr>
           `;
       item_counter++;
@@ -261,12 +260,10 @@ document.addEventListener("DOMContentLoaded", () => {
     paginationInfo.textContent = `Menampilkan ${start_row} - ${end_row} dari ${total_rows} data`;
     let linksHtml = "";
     linksHtml += `
-            <a href="${
-              current_page > 1 ? build_pagination_url(current_page - 1) : "#"
-            }" 
-               class="pagination-link ${
-                 current_page === 1 ? "pagination-disabled" : ""
-               }">
+            <a href="${current_page > 1 ? build_pagination_url(current_page - 1) : "#"
+      }" 
+               class="pagination-link ${current_page === 1 ? "pagination-disabled" : ""
+      }">
                 <i class="fas fa-chevron-left"></i>
             </a>
         `;
@@ -289,23 +286,20 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       linksHtml += `
               <a href="${build_pagination_url(page_num)}" 
-                 class="pagination-link ${
-                   page_num === current_page ? "pagination-active" : ""
-                 }">
+                 class="pagination-link ${page_num === current_page ? "pagination-active" : ""
+        }">
                  ${page_num}
               </a>
           `;
       last_page = page_num;
     }
     linksHtml += `
-            <a href="${
-              current_page < total_pages
-                ? build_pagination_url(current_page + 1)
-                : "#"
-            }" 
-               class="pagination-link ${
-                 current_page === total_pages ? "pagination-disabled" : ""
-               }">
+            <a href="${current_page < total_pages
+        ? build_pagination_url(current_page + 1)
+        : "#"
+      }" 
+               class="pagination-link ${current_page === total_pages ? "pagination-disabled" : ""
+      }">
                 <i class="fas fa-chevron-right"></i>
             </a>
         `;

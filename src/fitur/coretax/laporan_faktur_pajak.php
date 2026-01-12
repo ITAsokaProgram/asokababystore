@@ -167,6 +167,7 @@ if (!$menuHandler->initialize()) {
                                 <th class="text-right">Total</th>
                                 <th class="text-center" style="width: 100px;">Pembelian</th>
                                 <th class="text-center" style="width: 100px;">Coretax</th>
+                                <th class="text-right">Catatan</th>
                             </tr>
                         </thead>
                         <tbody id="receipt-table-body">
