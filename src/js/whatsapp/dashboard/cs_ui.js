@@ -202,8 +202,9 @@ function updateTotalUnreadBadge(count) {
 function updateFilterUnreadBadges(counts) {
   const liveChatBadge = document.getElementById("unread-live_chat");
   const umumBadge = document.getElementById("unread-umum");
+  const broadcastBadge = document.getElementById("unread-broadcast");
   const allBadge = document.getElementById("unread-all");
-  const total = (counts.live_chat || 0) + (counts.umum || 0);
+  const total = (counts.live_chat || 0) + (counts.umum || 0) + (counts.broadcast || 0);
   if (allBadge) {
     if (total > 0) {
       allBadge.textContent = total;
@@ -231,6 +232,15 @@ function updateFilterUnreadBadges(counts) {
       umumBadge.classList.add("hidden");
     }
   }
+  if (broadcastBadge) {
+    if (counts.broadcast > 0) {
+      broadcastBadge.textContent = counts.broadcast;
+      broadcastBadge.classList.remove("hidden");
+    } else {
+      broadcastBadge.textContent = "0";
+      broadcastBadge.classList.add("hidden");
+    }
+  }
 }
 function getStatusIcon(status) {
   let iconClass = "fa-check";
@@ -246,7 +256,6 @@ function getStatusIcon(status) {
 function createMessageBubble(msg) {
   const bubble = document.createElement("div");
   const isUser = msg.pengirim === "user";
-
   let bubbleTypeClass = "";
   if (isUser) {
     bubbleTypeClass = "user-bubble";
@@ -257,16 +266,84 @@ function createMessageBubble(msg) {
       bubbleTypeClass = "admin-bubble";
     }
   }
-
   bubble.className = `message-bubble ${bubbleTypeClass}`;
   bubble.dataset.timestamp = msg.timestamp;
-
   if (!isUser && msg.wamid) {
     bubble.dataset.wamid = msg.wamid;
   }
   const messageType = msg.tipe_pesan || "text";
   let contentHTML = "";
   switch (messageType) {
+    case "broadcast":
+      let templateName = "-";
+      let variables = [];
+      let attachmentUrl = null;
+      const lines = msg.isi_pesan.split("\n");
+      lines.forEach((line) => {
+        const trimmedLine = line.trim();
+        if (trimmedLine.startsWith("Template:")) {
+          templateName = trimmedLine.substring(9).trim();
+        } else if (trimmedLine.startsWith("Isi/Vars:")) {
+          const varsString = trimmedLine.substring(9).trim();
+          if (varsString) {
+            variables = varsString.split(",").map((v) => v.trim());
+          }
+        } else if (trimmedLine.startsWith("Lampiran:")) {
+          attachmentUrl = trimmedLine.substring(9).trim();
+        }
+      });
+      let mediaHtml = "";
+      if (attachmentUrl && attachmentUrl !== "null" && attachmentUrl !== "") {
+        mediaHtml = `
+            <div class="mb-3 rounded-lg overflow-hidden border border-gray-100 shadow-sm group relative">
+                <a href="${attachmentUrl}" target="_blank" rel="noopener noreferrer">
+                    <img src="${attachmentUrl}" alt="Broadcast Media" class="w-full h-auto object-cover max-h-[200px] transition-transform duration-300 group-hover:scale-105">
+                     <div class="absolute inset-0 opacity-50  group-hover:bg-opacity-10 transition-all flex items-center justify-center">
+                        <i class="fas fa-external-link-alt text-white opacity-0 group-hover:opacity-100 drop-shadow-md"></i>
+                    </div>
+                </a>
+            </div>`;
+      }
+      let varsHtml = "";
+      if (variables.length > 0 && variables[0] !== "") {
+        const badges = variables
+          .map(
+            (v) =>
+              `<span class="inline-block bg-blue-50 text-blue-700 text-[10px] px-2 py-1 rounded border border-blue-100 font-medium font-mono">${v}</span>`
+          )
+          .join("");
+        varsHtml = `
+            <div class="mt-2 pt-2 border-t border-dashed border-gray-200">
+                <p class="text-[10px] text-gray-400 mb-1 uppercase tracking-wider font-semibold">Variabel Data</p>
+                <div class="flex flex-wrap gap-1.5">
+                    ${badges}
+                </div>
+            </div>`;
+      }
+      contentHTML = `
+        <div class="message-content broadcast-content bg-white rounded-lg p-0 overflow-hidden" style="min-width: 260px; max-width: 320px;">
+            <div class="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-purple-50 to-white border-b border-purple-100">
+                <div class="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-bullhorn text-purple-600 text-xs"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-bold text-purple-700 uppercase tracking-wide">Broadcast</p>
+                    <p class="text-[10px] text-gray-400 leading-none">Pesan Otomatis</p>
+                </div>
+            </div>
+            <div class="p-3">
+                ${mediaHtml}
+                <div class="mb-1">
+                    <p class="text-[10px] text-gray-400 mb-0.5 uppercase tracking-wider font-semibold">Nama Template</p>
+                    <div class="bg-gray-50 text-gray-700 text-xs px-2 py-1.5 rounded border border-gray-200 font-mono break-all flex items-center gap-2">
+                        <i class="fas fa-code text-gray-400 text-[10px]"></i>
+                        ${templateName}
+                    </div>
+                </div>
+                ${varsHtml}
+            </div>
+        </div>`;
+      break;
     case "image":
       bubble.classList.add("media-bubble");
       contentHTML = `
@@ -291,42 +368,30 @@ function createMessageBubble(msg) {
       break;
     case "document":
       let url, filename;
-
-      // LANGKAH 1: Coba Parse sebagai JSON (Format Baru)
       try {
         const docInfo = JSON.parse(msg.isi_pesan);
         url = docInfo.url;
         filename = docInfo.filename || "Dokumen";
       } catch (e) {
-        // LANGKAH 2: Fallback (Jika Gagal Parse, anggap sebagai URL biasa/Format Lama)
         url = msg.isi_pesan;
-
-        // Coba ambil nama file dari ujung URL
         try {
-          // Ambil bagian setelah slash terakhir
           filename = url.split("/").pop();
-          // Hapus query parameters jika ada (misal: image.pdf?token=...)
           if (filename.includes("?")) {
             filename = filename.split("?")[0];
           }
-          // Decode URI component (misal %20 jadi spasi)
           filename = decodeURIComponent(filename);
         } catch (err) {
           filename = "Dokumen";
         }
       }
-
-      // LANGKAH 3: Render Tampilan (Sama untuk JSON maupun URL biasa)
       const filenameLower = (filename || "").toLowerCase();
       let iconClass = "fas fa-file-alt";
       let iconColor = "#4B5563";
-
       if (filenameLower.endsWith(".pdf")) {
         iconClass = "fas fa-file-pdf";
         iconColor = "#EF4444";
       } else if (
-        filenameLower.endsWith(".doc") ||
-        filenameLower.endsWith(".docx")
+        filenameLower.endsWith(".doc") || filenameLower.endsWith(".docx")
       ) {
         iconClass = "fas fa-file-word";
         iconColor = "#3B82F6";
@@ -338,14 +403,12 @@ function createMessageBubble(msg) {
         iconClass = "fas fa-file-excel";
         iconColor = "#10B981";
       }
-
       let bgColor = "#F3F4F6";
       if (isUser) {
         bgColor = "#EBF5FF";
       } else if (msg.dikirim_oleh_bot == 1) {
         bgColor = "#F0FFF4";
       }
-
       contentHTML = `
             <div class="message-content document-content" style="display: flex; align-items: center; background-color: ${bgColor}; border-radius: 8px; padding: 10px 14px; max-width: 280px; word-break: break-all;">
                 <a href="${url}" target="_blank" rel="noopener noreferrer" download="${filename}" style="display: flex; align-items: center; text-decoration: none; color: #333; width: 100%;">
@@ -363,17 +426,15 @@ function createMessageBubble(msg) {
         const contactPhone = contactInfo.phone || "Tidak ada nomor";
         let iconClass = "fas fa-user-circle";
         let iconColor = "#3B82F6";
-
         let bgColor = "#F3F4F6";
         if (isUser) {
           bgColor = "#EBF5FF";
         } else if (msg.dikirim_oleh_bot == 1) {
           bgColor = "#F0FFF4";
         }
-
         contentHTML = `
                                 <div class="message-content contact-content" style="display: flex; align-items: center; background-color: ${bgColor}; border-radius: 8px; padding: 4px; max-width: 280px; word-break: break-all;">
-                                    <div  style="display: flex; align-items: center; text-decoration: none; color: #333; width: 100%;">
+                                    <div  style="display: flex; align-items: center; text-decoration: none; color: #333; width: 100%;">
                                         <i class="${iconClass}" style="font-size: 1.6em; color: ${iconColor}; margin-right: 12px; flex-shrink: 0;"></i>
                                         <div style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: normal;">
                                             <span style="font-weight: 500; color: #1F2937; display: block;">${contactName}</span>
@@ -387,7 +448,9 @@ function createMessageBubble(msg) {
         const p = document.createElement("p");
         p.style.whiteSpace = "pre-wrap";
         p.style.marginBottom = "0";
-        p.appendChild(document.createTextNode("[Kontak] " + msg.isi_pesan));
+        p.appendChild(
+          document.createTextNode("[Kontak] " + msg.isi_pesan)
+        );
         contentHTML = `<div class="message-content text-content">${p.outerHTML}</div>`;
       }
       break;
@@ -431,15 +494,12 @@ function updateAllTimeAgoStrings() {
     }
   });
 }
-
 function formatLatestMessage(convo) {
   if (!convo.latest_message_type || !convo.latest_message_content) {
     return '<p class="text-xs text-gray-500 italic truncate">Belum ada pesan</p>';
   }
-
   let icon = "";
   let text = "";
-
   switch (convo.latest_message_type) {
     case "text":
       text = convo.latest_message_content;
@@ -474,11 +534,20 @@ function formatLatestMessage(convo) {
         text = " Kontak";
       }
       break;
+    case "broadcast":
+      icon = '<i class="fas fa-bullhorn text-purple-500 mr-2"></i>';
+      const lines = convo.latest_message_content.split('\n');
+      const templateLine = lines.find(line => line.trim().startsWith('Template:'));
+      if (templateLine) {
+        text = templateLine.substring(9).trim();
+      } else {
+        text = "Pesan Broadcast";
+      }
+      break;
     default:
       text = ` [${convo.latest_message_type}]`;
       break;
   }
-
   return `<div class="latest-message-preview text-xs text-gray-500 flex items-center truncate">
                 ${icon}
                 <span class="truncate"> ${text}</span>

@@ -761,6 +761,12 @@ if (!$menuHandler->initialize()) {
               <span id="unread-umum"
                 class="hidden absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center text-[10px]">0</span>
             </button>
+            <button data-filter="broadcast"
+              class="filter-button relative px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all">
+              <span>Broadcast</span>
+              <span id="unread-broadcast"
+                class="hidden absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center text-[10px]">0</span>
+            </button>
           </div>
           <button id="toggle-conversation-list"
             class="hidden md:block text-gray-600 hover:text-gray-900 transition-all p-2 rounded-lg"

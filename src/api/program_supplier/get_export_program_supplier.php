@@ -6,12 +6,24 @@ require_once __DIR__ . '/../../../aa_kon_sett.php';
 try {
     if (!$conn)
         throw new Exception("Koneksi Database Gagal");
-    $search = isset($_GET['search']) ? trim($_GET['search']) : '';
-    $whereClauses = ["visibilitas = 'On'"];
+    $search_query = isset($_GET['search_query']) ? trim($_GET['search_query']) : '';
+    $kd_store = isset($_GET['kd_store']) ? $_GET['kd_store'] : 'all';
+    $status_bukpot = isset($_GET['status_bukpot']) ? $_GET['status_bukpot'] : 'all';
+    $whereClauses = ["ps.visibilitas = 'On'"];
     $params = [];
     $types = "";
-    if (!empty($search)) {
-        $search_raw = $search;
+    if ($kd_store != 'all') {
+        $whereClauses[] = "ps.kode_cabang = ?";
+        $params[] = $kd_store;
+        $types .= "s";
+    }
+    if ($status_bukpot === 'sudah') {
+        $whereClauses[] = "(ps.nomor_bukpot IS NOT NULL AND ps.nomor_bukpot != '')";
+    } elseif ($status_bukpot === 'belum') {
+        $whereClauses[] = "(ps.nomor_bukpot IS NULL OR ps.nomor_bukpot = '')";
+    }
+    if (!empty($search_query)) {
+        $search_raw = $search_query;
         $term_text = '%' . $search_raw . '%';
         $search_clean_number = str_replace(['.', ','], '', $search_raw);
         $is_numeric_search = is_numeric($search_clean_number) && $search_clean_number != '';

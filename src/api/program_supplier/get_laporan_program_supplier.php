@@ -6,21 +6,24 @@ require_once __DIR__ . '/../../../aa_kon_sett.php';
 try {
     if (!$conn)
         throw new Exception("Koneksi Database Gagal");
-    // Hapus pengambilan parameter tanggal (filter_type, bulan, tahun, tgl_mulai, tgl_selesai)
     $kd_store = $_GET['kd_store'] ?? 'all';
+    $status_bukpot = $_GET['status_bukpot'] ?? 'all';
     $search_query = $_GET['search_query'] ?? '';
     $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
     $limit = 50;
     $offset = ($page - 1) * $limit;
-    // WHERE default tanpa filter tanggal
     $where_conditions = "ps.visibilitas = 'On'";
     $bind_types = "";
     $bind_params = [];
-    // Hapus logika WHERE MONTH/YEAR atau BETWEEN date
     if ($kd_store != 'all') {
         $where_conditions .= " AND ps.kode_cabang = ?";
         $bind_types .= 's';
         $bind_params[] = $kd_store;
+    }
+    if ($status_bukpot === 'sudah') {
+        $where_conditions .= " AND (ps.nomor_bukpot IS NOT NULL AND ps.nomor_bukpot != '')";
+    } elseif ($status_bukpot === 'belum') {
+        $where_conditions .= " AND (ps.nomor_bukpot IS NULL OR ps.nomor_bukpot = '')";
     }
     if (!empty($search_query)) {
         $search_raw = trim($search_query);

@@ -11,7 +11,7 @@ $menuHandler = new MenuHandler('whatsapp_broadcast');
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Broadcast WhatsApp</title>
+  <title>Broadcast WhatsApp (Template Only)</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css">
   <link rel="stylesheet" href="../../style/header.css">
   <link rel="stylesheet" href="../../style/sidebar.css">
@@ -32,9 +32,9 @@ $menuHandler = new MenuHandler('whatsapp_broadcast');
 
       <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
         <h1 class="text-2xl font-bold text-gray-800 mb-2"> <i class="fas fa-bullhorn text-blue-500 mr-2"></i> Broadcast
-          Pesan</h1>
-        <p class="text-gray-500 text-sm">Kirim pesan massal. Gunakan <b>Template</b> untuk mengirim pesan di luar
-          jendela 24 jam.</p>
+          Template</h1>
+        <p class="text-gray-500 text-sm">Kirim pesan massal menggunakan <b>Template (Official)</b> via input manual CSV.
+        </p>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -42,109 +42,62 @@ $menuHandler = new MenuHandler('whatsapp_broadcast');
         <div class="md:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
           <form id="broadcastForm" onsubmit="handleBroadcast(event)">
 
-            <div class="mb-6" x-data="{ targetType: 'manual', msgType: 'template' }">
+            <input type="hidden" name="target_type" value="manual">
+            <input type="hidden" name="message_type" value="template">
 
-              <div class="mb-4">
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Target Penerima</label>
-                <div class="flex gap-4 mb-3">
-                  <label class="flex items-center cursor-pointer">
-                    <input type="radio" name="target_type" value="manual" x-model="targetType"
-                      class="form-radio text-blue-500" checked>
-                    <span class="ml-2 text-sm text-gray-700">Input Manual (CSV)</span>
-                  </label>
-                  <label class="flex items-center cursor-pointer">
-                    <input type="radio" name="target_type" value="all" x-model="targetType"
-                      class="form-radio text-blue-500">
-                    <span class="ml-2 text-sm text-gray-700">Semua Kontak (Database)</span>
-                  </label>
-                </div>
-
-                <div x-show="targetType === 'manual'">
-                  <label class="block text-xs font-semibold text-gray-600 mb-1">
-                    Masukkan Daftar (Format: Nomor, Var1, Var2)
-                  </label>
-                  <textarea name="manual_numbers" rows="6"
-                    class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-300 focus:border-blue-500 text-sm font-mono"
-                    placeholder="Contoh:
-08123456789, VOUCHER_123, 01/12/2026
-08129876543, VOUCHER_321, 04/12/2026
-(Nomor dan Variabel dipisah koma, satu data per baris)"></textarea>
-                  <p class="text-xs text-gray-400 mt-1">*Otomatis ubah 08xx ke 628xx. Gunakan format ini untuk kirim
-                    voucher berbeda tiap nomor.</p>
-                </div>
-              </div>
+            <div class="mb-6">
 
               <div class="mb-6">
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Tipe Pesan</label>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  <i class="fas fa-list-ol mr-1"></i> Daftar Penerima & Variabel
+                </label>
+                <div class="bg-blue-50 p-3 rounded-lg border border-blue-100 mb-2">
+                  <p class="text-xs text-blue-700">
+                    <b>Format:</b> Nomor, Var1, Var2<br>
+                    (Pisahkan dengan koma, satu data per baris)
+                  </p>
+                </div>
+                <textarea name="manual_numbers" rows="6"
+                  class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-300 focus:border-blue-500 text-sm font-mono"
+                  placeholder="Contoh:
+08123456789, VOUCHER_123, 01/12/2026
+08129876543, VOUCHER_321, 04/12/2026"></textarea>
+              </div>
 
-                <div class="flex border-b border-gray-200 mb-4 overflow-x-auto">
-                  <button type="button" @click="msgType = 'text'"
-                    :class="msgType === 'text' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
-                    class="py-2 px-4 border-b-2 font-medium text-sm whitespace-nowrap">
-                    Teks (24 Jam)
-                  </button>
-                  <button type="button" @click="msgType = 'template'"
-                    :class="msgType === 'template' ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
-                    class="py-2 px-4 border-b-2 font-medium text-sm whitespace-nowrap">
-                    <i class="fas fa-star text-xs mr-1"></i> Template (Advanced)
-                  </button>
+              <hr class="border-gray-200 mb-6">
+
+              <div class="space-y-4">
+                <div class="flex items-center gap-2 mb-2">
+                  <i class="fas fa-layer-group text-green-600"></i>
+                  <h3 class="text-sm font-semibold text-gray-800">Konfigurasi Template</h3>
                 </div>
 
-                <input type="hidden" name="message_type" x-model="msgType">
-
-                <div class="mb-4" x-show="msgType === 'text'">
-                  <textarea name="message" rows="5"
-                    class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-300 focus:border-blue-500 text-sm"
-                    placeholder="Ketik pesan biasa..."></textarea>
-                  <p class="text-xs text-orange-500 mt-1"><i class="fas fa-exclamation-triangle"></i> Hanya terkirim
-                    jika
-                    user chat < 24 jam yang lalu.</p>
-                </div>
-
-                <div x-show="msgType === 'template'"
-                  class="space-y-4 bg-green-50 p-4 rounded-xl border border-green-100">
-
-                  <div class="grid grid-cols-2 gap-4">
-                    <div>
-                      <label class="block text-xs font-semibold text-gray-800 mb-1">Nama Template</label>
-                      <input type="text" name="template_name"
-                        class="w-full p-2 border border-gray-300 rounded-lg text-sm font-mono"
-                        placeholder="contoh: promo_prenagen">
-                    </div>
-                    <div>
-                      <label class="block text-xs font-semibold text-gray-800 mb-1">Bahasa</label>
-                      <select name="template_lang" class="w-full p-2 border border-gray-300 rounded-lg text-sm">
-                        <option value="id" selected>Indonesia (id)</option>
-                        <option value="en_US">English (en_US)</option>
-                      </select>
-                    </div>
-                  </div>
-
+                <div class="grid grid-cols-2 gap-4">
                   <div>
-                    <label class="block text-xs font-semibold text-gray-800 mb-1">Header Gambar (Wajib)</label>
-                    <input type="file" name="header_media"
-                      class="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:bg-white file:text-green-700 hover:file:bg-green-100 border border-gray-300 rounded-lg">
-                    <p class="text-[10px] text-gray-500 mt-1">Upload gambar promo (jpg/png) untuk header template.</p>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Nama Template</label>
+                    <input type="text" name="template_name"
+                      class="w-full p-2 border border-gray-300 rounded-lg text-sm font-mono focus:border-green-500 focus:ring-1 focus:ring-green-500"
+                      placeholder="contoh: promo_prenagen">
                   </div>
-
-                  <div x-show="targetType !== 'manual'">
-                    <label class="block text-xs font-semibold text-gray-800 mb-1">Variabel Body (Global)</label>
-                    <textarea name="template_body_vars" rows="2"
-                      class="w-full p-2 border border-gray-300 rounded-lg text-sm font-mono"
-                      placeholder="Contoh: PROMOALL, 31/12/2026"></textarea>
-
-                    <div class="mt-2 text-[10px] text-gray-500 bg-white p-2 rounded border">
-                      <p class="font-semibold">Info:</p>
-                      <p>Variabel ini akan dikirim sama rata ke semua kontak database.</p>
-                    </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Bahasa</label>
+                    <select name="template_lang" class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                      <option value="id" selected>Indonesia (id)</option>
+                      <option value="en_US">English (en_US)</option>
+                    </select>
                   </div>
+                </div>
 
-                  <div x-show="targetType === 'manual'"
-                    class="mt-2 text-[10px] text-blue-600 bg-blue-50 p-2 rounded border border-blue-200">
-                    <p class="font-semibold"><i class="fas fa-info-circle"></i> Info Mode Manual:</p>
-                    <p>Variabel template diambil langsung dari textarea input manual (setelah koma).</p>
-                  </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-600 mb-1">Header Gambar (Wajib)</label>
+                  <input type="file" name="header_media"
+                    class="block w-full text-xs text-gray-500 file:mr-2 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 border border-gray-300 rounded-lg cursor-pointer">
+                </div>
 
+                <div class="mt-2 text-[10px] text-gray-500 bg-gray-50 p-2 rounded border border-gray-200">
+                  <p class="font-semibold"><i class="fas fa-info-circle"></i> Info Variabel Body:</p>
+                  <p>Variabel body ({{1}}, {{2}}, dst) akan diambil secara otomatis dari input CSV di atas (teks setelah
+                    koma pertama).</p>
                 </div>
 
               </div>
@@ -210,28 +163,17 @@ $menuHandler = new MenuHandler('whatsapp_broadcast');
       const formData = new FormData(form);
       const btnSubmit = document.getElementById('btnSubmit');
 
-      // Validasi Input
-      const msgType = formData.get('message_type');
-      const targetType = formData.get('target_type');
+      // Validasi Wajib Template
+      if (!formData.get('template_name')) {
+        Swal.fire('Error', 'Nama Template wajib diisi', 'error');
+        return;
+      }
 
-      if (msgType === 'template') {
-        if (!formData.get('template_name')) {
-          Swal.fire('Error', 'Nama Template wajib diisi', 'error');
-          return;
-        }
-
-        // Cek Gambar Header
-        const headerFile = formData.get('header_media');
-        if (!headerFile || headerFile.size === 0) {
-          Swal.fire('Error', 'Header Gambar wajib diupload untuk template ini!', 'error');
-          return;
-        }
-
-        // Cek Variabel Global jika tipe All
-        if (targetType === 'all' && !formData.get('template_body_vars')) {
-          // Peringatan saja, siapa tahu templatenya emang gak butuh variabel
-          // Swal.fire('Warning', 'Variabel global kosong, pastikan template tidak butuh variabel.', 'warning');
-        }
+      // Cek Gambar Header
+      const headerFile = formData.get('header_media');
+      if (!headerFile || headerFile.size === 0) {
+        Swal.fire('Error', 'Header Gambar wajib diupload!', 'error');
+        return;
       }
 
       btnSubmit.disabled = true;
@@ -242,94 +184,67 @@ $menuHandler = new MenuHandler('whatsapp_broadcast');
       document.getElementById('progressBar').style.width = '0%';
 
       try {
-        let recipientsData = []; // Array of objects: { phone: '...', vars: '...' }
+        let recipientsData = [];
 
         // ==========================================
-        // 1. PROSES PENERIMA (PARSING CSV / DB)
+        // 1. PROSES PENERIMA (MANUAL CSV ONLY)
         // ==========================================
-        addLog('Memproses daftar penerima...', 'info');
+        addLog('Memproses daftar penerima CSV...', 'info');
 
-        if (targetType === 'manual') {
-          // --- LOGIKA MANUAL CSV ---
-          const manualText = formData.get('manual_numbers');
-          if (!manualText.trim()) throw new Error('Input manual kosong.');
+        const manualText = formData.get('manual_numbers');
+        if (!manualText.trim()) throw new Error('Input manual kosong.');
 
-          const lines = manualText.split('\n');
+        const lines = manualText.split('\n');
 
-          lines.forEach(line => {
-            if (!line.trim()) return;
+        lines.forEach(line => {
+          if (!line.trim()) return;
 
-            // Pisahkan Nomor dan Variabel berdasarkan koma
-            let parts = line.split(',');
-            let rawPhone = parts[0].trim();
+          // Pisahkan Nomor dan Variabel berdasarkan koma
+          let parts = line.split(',');
+          let rawPhone = parts[0].trim();
 
-            // Ambil sisa parts sebagai variabel (gabungkan kembali dengan koma jika ada lebih dari 1 var)
-            let specificVars = parts.slice(1).join(',').trim();
+          // Ambil sisa parts sebagai variabel
+          let specificVars = parts.slice(1).join(',').trim();
 
-            // Bersihkan Nomor HP
-            let cleanPhone = rawPhone.replace(/[^0-9]/g, '');
-            if (cleanPhone.startsWith('0')) {
-              cleanPhone = '62' + cleanPhone.slice(1);
-            }
+          // Bersihkan Nomor HP
+          let cleanPhone = rawPhone.replace(/[^0-9]/g, '');
+          if (cleanPhone.startsWith('0')) {
+            cleanPhone = '62' + cleanPhone.slice(1);
+          }
 
-            if (cleanPhone) {
-              recipientsData.push({
-                phone: cleanPhone,
-                vars: specificVars // Variabel unik per nomor
-              });
-            }
-          });
-
-        } else {
-          // --- LOGIKA ALL DATABASE ---
-          const recParams = new FormData();
-          recParams.append('action', 'get_recipients');
-          recParams.append('target_type', 'all'); // Paksa tipe all ke backend
-
-          const recRes = await fetch('/src/api/whatsapp/send_broadcast.php', {
-            method: 'POST', headers: { 'Authorization': `Bearer ${wa_token}` }, body: recParams
-          });
-          const recData = await recRes.json();
-
-          if (!recData.success || recData.data.length === 0) throw new Error('Tidak ada data kontak di database.');
-
-          // Gunakan variabel global dari input
-          const globalVars = formData.get('template_body_vars');
-
-          recipientsData = recData.data.map(phone => ({
-            phone: phone,
-            vars: globalVars // Semua pakai variabel yang sama
-          }));
-        }
+          if (cleanPhone) {
+            recipientsData.push({
+              phone: cleanPhone,
+              vars: specificVars
+            });
+          }
+        });
 
         const total = recipientsData.length;
-        if (total === 0) throw new Error('Tidak ada nomor tujuan yang valid.');
+        if (total === 0) throw new Error('Tidak ada nomor tujuan yang valid dalam input CSV.');
         addLog(`Siap mengirim ke ${total} nomor.`, 'info');
 
         // ==========================================
-        // 2. UPLOAD HEADER IMAGE (HANYA SEKALI)
+        // 2. UPLOAD HEADER IMAGE
         // ==========================================
         let headerUrl = '';
-        const headerFile = formData.get('header_media');
 
-        if (msgType === 'template' && headerFile && headerFile.size > 0) {
-          addLog('Mengupload Gambar Header...', 'info');
-          const mediaParams = new FormData();
-          mediaParams.append('action', 'upload_media');
-          mediaParams.append('media', headerFile);
+        addLog('Mengupload Gambar Header...', 'info');
+        const mediaParams = new FormData();
+        mediaParams.append('action', 'upload_media');
+        mediaParams.append('media', headerFile);
 
-          const upRes = await fetch('/src/api/whatsapp/send_broadcast.php', {
-            method: 'POST', headers: { 'Authorization': `Bearer ${wa_token}` }, body: mediaParams
-          });
-          const upData = await upRes.json();
-          if (!upData.success) throw new Error('Gagal upload header: ' + upData.message);
+        const upRes = await fetch('/src/api/whatsapp/send_broadcast.php', {
+          method: 'POST', headers: { 'Authorization': `Bearer ${wa_token}` }, body: mediaParams
+        });
+        const upData = await upRes.json();
+        if (!upData.success) throw new Error('Gagal upload header: ' + upData.message);
 
-          headerUrl = upData.url;
-          addLog('Gambar Header berhasil diupload.', 'success');
-        }
+        headerUrl = upData.url;
+        addLog('Gambar Header berhasil diupload.', 'success');
 
         // ==========================================
-        // 3. SEND LOOP (ITERAISI PENGIRIMAN)
+        // 3. SEND LOOP
         // ==========================================
         let successCount = 0;
         let failCount = 0;
@@ -340,19 +255,15 @@ $menuHandler = new MenuHandler('whatsapp_broadcast');
 
           sendParams.append('action', 'send_message');
           sendParams.append('phone', target.phone);
-          sendParams.append('message_type', msgType);
+          // Paksa tipe template
+          sendParams.append('message_type', 'template');
 
-          if (msgType === 'template') {
-            sendParams.append('template_name', formData.get('template_name'));
-            sendParams.append('template_lang', formData.get('template_lang'));
+          // Parameter Template
+          sendParams.append('template_name', formData.get('template_name'));
+          sendParams.append('template_lang', formData.get('template_lang'));
+          sendParams.append('template_body_vars', target.vars); // Variabel unik dari CSV
 
-            // PENTING: Gunakan variabel milik target saat ini
-            sendParams.append('template_body_vars', target.vars);
-
-            if (headerUrl) sendParams.append('template_header_url', headerUrl);
-          } else {
-            sendParams.append('message', formData.get('message'));
-          }
+          if (headerUrl) sendParams.append('template_header_url', headerUrl);
 
           try {
             const res = await fetch('/src/api/whatsapp/send_broadcast.php', {
@@ -381,7 +292,7 @@ $menuHandler = new MenuHandler('whatsapp_broadcast');
           document.getElementById('progressText').textContent = `${percent}%`;
           document.getElementById('countText').textContent = `${i + 1}/${total}`;
 
-          await delay(500); // Jeda 0.5 detik agar aman
+          await delay(500); // Jeda
         }
 
         Swal.fire('Selesai', `Sukses: ${successCount}, Gagal: ${failCount}`, 'success');

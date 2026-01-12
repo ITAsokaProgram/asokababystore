@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const filterForm = document.getElementById("filter-form");
     const filterSubmitButton = document.getElementById("filter-submit-button");
     const filterSelectStore = document.getElementById("kd_store");
+    const filterStatusBukpot = document.getElementById("status_bukpot");
     const filterInputQuery = document.getElementById("search_query");
     const pageTitle = document.getElementById("page-title");
     const pageSubtitle = document.getElementById("page-subtitle");
@@ -73,6 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const params = new URLSearchParams(window.location.search);
         return {
             kd_store: params.get("kd_store") || "all",
+            status_bukpot: params.get("status_bukpot") || "all", // TAMBAHAN
             search_query: params.get("search_query") || "",
             page: parseInt(params.get("page") || "1", 10),
         };
@@ -134,6 +136,9 @@ document.addEventListener("DOMContentLoaded", () => {
             if (data.error) throw new Error(data.error);
             if (data.stores) {
                 populateStoreFilter(data.stores, params.kd_store);
+            }
+            if (filterStatusBukpot) {
+                filterStatusBukpot.value = params.status_bukpot;
             }
 
             if (filterInputQuery) filterInputQuery.value = params.search_query;
@@ -263,6 +268,30 @@ document.addEventListener("DOMContentLoaded", () => {
         const originalText = submitBtn.innerHTML;
         const formData = new FormData(form);
         const data = Object.fromEntries(formData.entries());
+        if (data.mode === 'tax') {
+            const cleanNsfp = (data.nsfp || "").replace(/\D/g, ""); // \D artinya bukan digit
+            const cleanBukpot = (data.nomor_bukpot || "").replace(/\D/g, "");
+
+            if (data.nsfp && cleanNsfp.length !== 17) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Input Tidak Lengkap',
+                    text: `Kolom NSFP harus berisi 17 digit angka! (Saat ini: ${cleanNsfp.length} digit)`,
+                    confirmButtonColor: '#d33'
+                });
+                return;
+            }
+
+            if (data.nomor_bukpot && cleanBukpot.length !== 9) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Input Tidak Lengkap',
+                    text: `Nomor Bukti Potong harus berisi 9 digit angka! (Saat ini: ${cleanBukpot.length} digit)`,
+                    confirmButtonColor: '#d33'
+                });
+                return;
+            }
+        }
         if (data.nilai_transfer) data.nilai_transfer = parseInputNumber(data.nilai_transfer);
         if (data.dpp) data.dpp = parseInputNumber(data.dpp);
         if (data.ppn) data.ppn = parseInputNumber(data.ppn);

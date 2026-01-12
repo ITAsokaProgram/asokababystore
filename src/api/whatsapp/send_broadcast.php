@@ -4,7 +4,9 @@ require_once __DIR__ . '/../../helpers/whatsapp_helper_link.php';
 require_once __DIR__ . '/../../service/ConversationService.php';
 require_once __DIR__ . '/../../auth/middleware_login.php';
 use Cloudinary\Cloudinary;
+
 header('Content-Type: application/json');
+
 $env = parse_ini_file(__DIR__ . '/../../../.env');
 $cloudinary = new Cloudinary([
     'cloud' => [
@@ -13,6 +15,7 @@ $cloudinary = new Cloudinary([
         'api_secret' => $env['CLOUDINARY_SECRET'],
     ],
 ]);
+
 try {
     $headers = getallheaders();
     if (!isset($headers['Authorization']) || !preg_match('/^Bearer\s(\S+)$/', $headers['Authorization'], $matches)) {
@@ -24,47 +27,26 @@ try {
     }
 } catch (Exception $e) {
     http_response_code(401);
-    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
-    exit;
+    echo json_encode(['success' => FALSE, 'message' => $e->getMessage()]);
+    EXIT;
 }
-$action = $_POST['action'] ?? '';
+
+$ACTION = $_POST['action'] ?? '';
+
 try {
-    if ($action === 'get_recipients') {
-        $targetType = $_POST['target_type'] ?? 'manual';
-        $manualNumbers = $_POST['manual_numbers'] ?? '';
-        $recipients = [];
-        if ($targetType === 'manual') {
-            $rawNumbers = preg_split('/[\r\n,]+/', $manualNumbers, -1, PREG_SPLIT_NO_EMPTY);
-            foreach ($rawNumbers as $num) {
-                $clean = preg_replace('/[^0-9]/', '', trim($num));
-                if (substr($clean, 0, 1) === '0') {
-                    $clean = '62' . substr($clean, 1);
-                }
-                if (!empty($clean)) {
-                    $recipients[] = $clean;
-                }
-            }
-            $recipients = array_unique($recipients);
-        } else {
-            $stmt = $conn->prepare("SELECT DISTINCT nomor_telepon FROM wa_percakapan WHERE nomor_telepon IS NOT NULL AND nomor_telepon != ''");
-            $stmt->execute();
-            $result = $stmt->get_result();
-            while ($row = $result->fetch_assoc()) {
-                $recipients[] = $row['nomor_telepon'];
-            }
-        }
-        echo json_encode(['success' => true, 'data' => array_values($recipients)]);
-        exit;
-    }
-    if ($action === 'upload_media') {
+    // Action 'get_recipients' dihapus karena fitur database contact dihilangkan.
+
+    if ($ACTION === 'upload_media') {
         if (!isset($_FILES['media']) || $_FILES['media']['error'] !== UPLOAD_ERR_OK) {
             throw new Exception("File media tidak ditemukan atau error upload.");
         }
-        $file = $_FILES['media'];
-        $mimeType = $file['type'];
-        $originalFileName = $file['name'];
+        $FILE = $_FILES['media'];
+        $mimeType = $FILE['type'];
+        $originalFileName = $FILE['name'];
+
         $resourceType = 'raw';
         $waMediaType = 'document';
+
         if (strpos($mimeType, 'image') === 0) {
             $waMediaType = 'image';
             $resourceType = 'image';
@@ -72,92 +54,104 @@ try {
             $waMediaType = 'video';
             $resourceType = 'video';
         }
-        $uploadResult = $cloudinary->uploadApi()->upload($file['tmp_name'], [
+
+        $uploadResult = $cloudinary->uploadApi()->upload($FILE['tmp_name'], [
             'folder' => 'whatsapp_broadcast',
             'resource_type' => $resourceType,
-            'use_filename' => true,
-            'unique_filename' => true
+            'use_filename' => TRUE,
+            'unique_filename' => TRUE
         ]);
+
         echo json_encode([
-            'success' => true,
+            'success' => TRUE,
             'url' => $uploadResult['secure_url'],
             'wa_type' => $waMediaType,
             'filename' => $originalFileName
         ]);
-        exit;
+        EXIT;
     }
-    if ($action === 'send_message') {
+
+    if ($ACTION === 'send_message') {
         $phone = $_POST['phone'] ?? '';
-        $messageType = $_POST['message_type'] ?? 'text';
+
+        // Memaksa logika hanya untuk Template
+        $templateName = $_POST['template_name'] ?? '';
+        $templateLang = $_POST['template_lang'] ?? 'id';
+        $templateHeaderUrl = $_POST['template_header_url'] ?? '';
+        $templateBodyVars = $_POST['template_body_vars'] ?? '';
+
         $logger = new AppLogger('broadcast.log');
         $conversationService = new ConversationService($conn, $logger);
+
         $conversation = $conversationService->getOrCreateConversation($phone);
         $convoId = $conversation['id'];
-        $res = ['success' => false];
-        $wamid = null;
+
+        $res = ['success' => FALSE];
+        $wamid = NULL;
+
         if (empty($phone)) {
             throw new Exception("Nomor telepon kosong");
         }
-        if ($messageType === 'template') {
-            $templateName = $_POST['template_name'] ?? '';
-            $templateLang = $_POST['template_lang'] ?? 'id';
-            $templateHeaderUrl = $_POST['template_header_url'] ?? '';
-            $templateBodyVars = $_POST['template_body_vars'] ?? '';
-            if (empty($templateName)) {
-                throw new Exception("Nama template wajib diisi.");
-            }
-            $components = [];
-            if (!empty($templateHeaderUrl)) {
-                $components[] = [
-                    'type' => 'header',
-                    'parameters' => [
-                        [
-                            'type' => 'image',
-                            'image' => ['link' => $templateHeaderUrl]
-                        ]
-                    ]
-                ];
-            }
-            if (!empty($templateBodyVars)) {
-                $varsArray = preg_split('/,\s*/', $templateBodyVars); 
-                $params = [];
-                foreach ($varsArray as $var) {
-                    if (trim($var) !== '') {
-                        $params[] = [
-                            'type' => 'text',
-                            'text' => trim($var)
-                        ];
-                    }
-                }
-                $components[] = [
-                    'type' => 'body',
-                    'parameters' => $params
-                ];
-            }
-            $res = kirimPesanTemplate($phone, $templateName, $templateLang, $components);
-            if ($res['success']) {
-                $wamid = $res['wamid'];
-                $logContent = "[Template: $templateName | Vars: $templateBodyVars]";
-                $conversationService->saveMessage($convoId, 'admin', 'text', $logContent, $wamid, 1);
-            }
-        } else {
-            $messageText = $_POST['message'] ?? '';
-            if (!empty($messageText)) {
-                $res = kirimPesanTeks($phone, $messageText);
-                if ($res['success']) {
-                    $wamid = $res['wamid'];
-                    $conversationService->saveMessage($convoId, 'admin', 'text', $messageText, $wamid, 1);
-                }
-            } else {
-                throw new Exception("Pesan teks kosong.");
-            }
+        if (empty($templateName)) {
+            throw new Exception("Nama template wajib diisi.");
         }
+
+        // --- Susun Komponen Template ---
+        $components = [];
+
+        // 1. Header (Image)
+        if (!empty($templateHeaderUrl)) {
+            $components[] = [
+                'type' => 'header',
+                'parameters' => [
+                    [
+                        'type' => 'image',
+                        'image' => ['link' => $templateHeaderUrl]
+                    ]
+                ]
+            ];
+        }
+
+        // 2. Body Variables (Dari CSV)
+        if (!empty($templateBodyVars)) {
+            $varsArray = preg_split('/,\s*/', $templateBodyVars);
+            $params = [];
+            foreach ($varsArray as $var) {
+                if (TRIM($var) !== '') {
+                    $params[] = [
+                        'type' => 'text',
+                        'text' => TRIM($var)
+                    ];
+                }
+            }
+            $components[] = [
+                'type' => 'body',
+                'parameters' => $params
+            ];
+        }
+
+        // Kirim Pesan Template
+        $res = kirimPesanTemplate($phone, $templateName, $templateLang, $components);
+
+        if ($res['success']) {
+            $wamid = $res['wamid'];
+            $varText = empty($templateBodyVars) ? '(Tanpa Variabel)' : $templateBodyVars;
+
+            $logContent = "Template: " . $templateName . "\n" .
+                "Isi/Vars: " . $varText . "\n\n" .
+                "Lampiran: " . ($templateHeaderUrl ?: '-');
+
+            $conversationService->saveMessage($convoId, 'admin', 'broadcast', $logContent, $wamid, 1);
+        }
+
         echo json_encode(['success' => $res['success'], 'phone' => $phone]);
-        exit;
+        EXIT;
     }
+
     throw new Exception("Action tidak valid");
+
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    echo json_encode(['success' => FALSE, 'message' => $e->getMessage()]);
 }
 ?>

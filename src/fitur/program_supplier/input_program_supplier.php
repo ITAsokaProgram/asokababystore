@@ -171,7 +171,7 @@ $menuHandler = new MenuHandler('program_supplier_input');
                             </div>
                             <div>
                                 <label class="form-label">NPWP (16 Digit)</label>
-                                <input type="text" id="inp_npwp" name="npwp" class="input-compact" maxlength="20"
+                                <input type="text" id="inp_npwp" name="npwp" class="input-compact" maxlength="16"
                                     oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                             </div>
                             <div>

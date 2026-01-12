@@ -76,6 +76,16 @@ $menuHandler = new MenuHandler('laporan_program_supplier');
                                 <option value="all">Seluruh Store</option>
                             </select>
                         </div>
+                        <div class="lg:col-span-1">
+                            <label for="status_bukpot" class="block text-xs font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-file-invoice text-pink-600 mr-1"></i> Status Bukpot
+                            </label>
+                            <select name="status_bukpot" id="status_bukpot" class="input-modern w-full">
+                                <option value="all" <?php echo (isset($_GET['status_bukpot']) && $_GET['status_bukpot'] == 'all') ? 'selected' : ''; ?>>Semua</option>
+                                <option value="sudah" <?php echo (isset($_GET['status_bukpot']) && $_GET['status_bukpot'] == 'sudah') ? 'selected' : ''; ?>>Sudah Ada Bukpot</option>
+                                <option value="belum" <?php echo (isset($_GET['status_bukpot']) && $_GET['status_bukpot'] == 'belum') ? 'selected' : ''; ?>>Belum Ada Bukpot</option>
+                            </select>
+                        </div>
 
                         <div class="lg:col-span-1">
                             <label for="search_query" class="block text-xs font-semibold text-gray-700 mb-2">

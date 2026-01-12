@@ -34,6 +34,7 @@ try {
     if (isset($_GET['counts_only'])) {
         $live_chat_count = 0;
         $umum_count = 0;
+        $broadcast_count = 0;
         try {
             $sql_counts = "
                 SELECT
@@ -56,6 +57,20 @@ try {
                 }
             }
             $stmt_counts->close();
+            $sql_broadcast_count = "
+                SELECT COUNT(DISTINCT m.percakapan_id) AS unread_broadcast
+                FROM wa_pesan m
+                JOIN wa_percakapan p ON m.percakapan_id = p.id
+                WHERE m.pengirim = 'user' AND m.status_baca = 0
+                AND EXISTS (SELECT 1 FROM wa_pesan b WHERE b.percakapan_id = p.id AND b.tipe_pesan = 'broadcast')
+            ";
+            $stmt_bc = $conn->prepare($sql_broadcast_count);
+            if ($stmt_bc) {
+                $stmt_bc->execute();
+                $bc_result = $stmt_bc->get_result()->fetch_assoc();
+                $broadcast_count = (int) ($bc_result['unread_broadcast'] ?? 0);
+                $stmt_bc->close();
+            }
         } catch (Exception $e) {
             $logger->error("Error calculating unread counts (counts_only): " . $e->getMessage());
         }
@@ -63,7 +78,8 @@ try {
         echo json_encode([
             'unread_counts' => [
                 'live_chat' => (int) $live_chat_count,
-                'umum' => (int) $umum_count
+                'umum' => (int) $umum_count,
+                'broadcast' => (int) $broadcast_count
             ]
         ]);
         $conn->close();
@@ -229,6 +245,7 @@ try {
         $search = $_GET['search'] ?? '';
         $live_chat_count = 0;
         $umum_count = 0;
+        $broadcast_count = 0;
 
         $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
         if ($page < 1)
@@ -263,6 +280,20 @@ try {
                 }
             }
             $stmt_counts->close();
+            $sql_broadcast_count = "
+                SELECT COUNT(DISTINCT m.percakapan_id) AS unread_broadcast
+                FROM wa_pesan m
+                JOIN wa_percakapan p ON m.percakapan_id = p.id
+                WHERE m.pengirim = 'user' AND m.status_baca = 0
+                AND EXISTS (SELECT 1 FROM wa_pesan b WHERE b.percakapan_id = p.id AND b.tipe_pesan = 'broadcast')
+            ";
+            $stmt_bc = $conn->prepare($sql_broadcast_count);
+            if ($stmt_bc) {
+                $stmt_bc->execute();
+                $bc_result = $stmt_bc->get_result()->fetch_assoc();
+                $broadcast_count = (int) ($bc_result['unread_broadcast'] ?? 0);
+                $stmt_bc->close();
+            }
 
         } catch (Exception $e) {
             $logger->error("Error calculating unread counts: " . $e->getMessage());
@@ -321,6 +352,12 @@ try {
             $types .= 's';
         } elseif ($filter === 'umum') {
             $whereConditions[] = "p.status_percakapan IN ('open', 'closed')";
+        } elseif ($filter === 'broadcast') {
+            $whereConditions[] = "EXISTS (
+                SELECT 1 FROM wa_pesan bpm 
+                WHERE bpm.percakapan_id = p.id 
+                AND bpm.tipe_pesan = 'broadcast'
+            )";
         }
 
         if (!empty($search)) {
@@ -412,7 +449,8 @@ try {
             'conversations' => $conversations,
             'unread_counts' => [
                 'live_chat' => (int) $live_chat_count,
-                'umum' => (int) $umum_count
+                'umum' => (int) $umum_count,
+                'broadcast' => (int) $broadcast_count
             ],
             'pagination' => [
                 'current_page' => $page,
