@@ -403,3 +403,33 @@ function kirimPesanFlow($nomorPenerima, $flowId, $screenId, $judulHeader, $pesan
         return ['success' => false, 'response' => $result['response']];
     }
 }
+
+function kirimPesanTemplate($nomorPenerima, $namaTemplate, $languageCode = 'id', $components = [])
+{
+    $logger = new AppLogger('whatsapp_template_message.log');
+    $nomorPenerima = normalizePhoneNumber($nomorPenerima);
+
+    $data = [
+        'messaging_product' => 'whatsapp',
+        'to' => $nomorPenerima,
+        'type' => 'template',
+        'template' => [
+            'name' => $namaTemplate,
+            'language' => ['code' => $languageCode]
+        ]
+    ];
+
+    if (!empty($components)) {
+        $data['template']['components'] = $components;
+    }
+
+    $result = sendWhatsAppMessage($data);
+
+    if ($result['httpcode'] >= 200 && $result['httpcode'] < 300) {
+        $logger->success("Template '$namaTemplate' sent to $nomorPenerima");
+        return ['success' => true, 'wamid' => $result['wamid']];
+    } else {
+        $logger->error("Failed Template to $nomorPenerima. Resp: " . $result['response']);
+        return ['success' => false, 'wamid' => null];
+    }
+}
