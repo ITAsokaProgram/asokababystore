@@ -178,7 +178,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       const currentNsfp = row.nsfp || "";
       const cleanNsfp = currentNsfp.replace(/[^0-9]/g, "");
-      const currentPrefix = cleanNsfp.substring(0, 3);
+      const currentPrefix = cleanNsfp.substring(0, 4);
       const currentSuffix = cleanNsfp.length >= 8 ? cleanNsfp.slice(-8) : "";
       const isDuplicate =
         currentSuffix !== "" && suffixCounts[currentSuffix] > 1;
@@ -186,9 +186,9 @@ document.addEventListener("DOMContentLoaded", () => {
       let duplicateBadge = "";
       if (isDuplicate) {
         rowClass += "bg-yellow-50 hover:bg-yellow-100";
-        if (currentPrefix === "041") {
+        if (currentPrefix === "0401") {
           duplicateBadge = `<span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[9px] font-medium bg-red-100 text-red-800">PENGGANTI</span>`;
-        } else if (currentPrefix === "040") {
+        } else if (currentPrefix === "0400") {
           duplicateBadge = `<span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[9px] font-medium bg-gray-100 text-gray-800">DIGANTI</span>`;
         }
       } else {
@@ -227,12 +227,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td class="text-center font-medium text-gray-500">${item_counter}</td>
                 <td class="whitespace-nowrap">${dateFormatted}</td>
                 <td class="text-sm">
-                     <div class="font-mono text-gray-500 text-xs">${
-                       row.npwp_penjual || "-"
-                     }</div>
-                     <div class="font-medium text-gray-800 truncate max-w-xs" title="${
-                       row.nama_penjual
-                     }">${row.nama_penjual || "-"}</div>
+                     <div class="font-mono text-gray-500 text-xs">${row.npwp_penjual || "-"
+        }</div>
+                     <div class="font-medium text-gray-800 truncate max-w-xs" title="${row.nama_penjual
+        }">${row.nama_penjual || "-"}</div>
                 </td>
                 <td class="font-semibold text-gray-700">
                     <div class="flex items-center">
@@ -249,14 +247,14 @@ document.addEventListener("DOMContentLoaded", () => {
                     ${row.masa_pajak || "-"}/${row.tahun || "-"}
                 </td>
                 <td class="text-right font-mono text-gray-700">${formatRupiah(
-                  harga_jual
-                )}</td>
+          harga_jual
+        )}</td>
                 <td class="text-right font-mono text-gray-600">${formatRupiah(
-                  dpp_nilai_lain
-                )}</td>
+          dpp_nilai_lain
+        )}</td>
                 <td class="text-right font-mono text-red-600 font-bold">${formatRupiah(
-                  ppn
-                )}</td>
+          ppn
+        )}</td>
                 <td class="text-center align-middle border-l border-gray-100 bg-green-50/30">
                     ${badgePembelian}
                 </td>
@@ -286,12 +284,10 @@ document.addEventListener("DOMContentLoaded", () => {
     paginationInfo.textContent = `Menampilkan ${start_row} - ${end_row} dari ${total_rows} data`;
     let linksHtml = "";
     linksHtml += `
-          <a href="${
-            current_page > 1 ? build_pagination_url(current_page - 1) : "#"
-          }" 
-             class="pagination-link ${
-               current_page === 1 ? "pagination-disabled" : ""
-             }">
+          <a href="${current_page > 1 ? build_pagination_url(current_page - 1) : "#"
+      }" 
+             class="pagination-link ${current_page === 1 ? "pagination-disabled" : ""
+      }">
               <i class="fas fa-chevron-left"></i>
           </a>
       `;
@@ -314,23 +310,20 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       linksHtml += `
             <a href="${build_pagination_url(page_num)}" 
-               class="pagination-link ${
-                 page_num === current_page ? "pagination-active" : ""
-               }">
+               class="pagination-link ${page_num === current_page ? "pagination-active" : ""
+        }">
                ${page_num}
             </a>
         `;
       last_page = page_num;
     }
     linksHtml += `
-          <a href="${
-            current_page < total_pages
-              ? build_pagination_url(current_page + 1)
-              : "#"
-          }" 
-             class="pagination-link ${
-               current_page === total_pages ? "pagination-disabled" : ""
-             }">
+          <a href="${current_page < total_pages
+        ? build_pagination_url(current_page + 1)
+        : "#"
+      }" 
+             class="pagination-link ${current_page === total_pages ? "pagination-disabled" : ""
+      }">
               <i class="fas fa-chevron-right"></i>
           </a>
       `;
