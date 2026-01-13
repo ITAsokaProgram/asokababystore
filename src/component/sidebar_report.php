@@ -137,7 +137,7 @@ $isFinanceOpen = $isBukuBesarOpen || $isSerahTerimaOpen || $isProgramSupplierOpe
                             </span>
                         </a>
                     </li>
-                    <!-- <li>
+                    <li>
                         <a href="/src/fitur/whatsapp/broadcast_whatsapp.php" data-menu="whatsapp_dynamic_flow"
                             class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-green-100 hover:text-green-700 transition-all duration-200 group rounded-lg">
                             <span
@@ -148,7 +148,7 @@ $isFinanceOpen = $isBukuBesarOpen || $isSerahTerimaOpen || $isProgramSupplierOpe
                             </span>
                         </a>
 
-                    </li> -->
+                    </li>
 
 
                 </ul>

@@ -180,7 +180,9 @@ if ($filter_type === 'custom' && $start_date && $end_date) {
     }
 }
 if ($type === 'member') {
-    $typeSql = " AND t.kd_cust IS NOT NULL AND t.kd_cust NOT IN ('', '898989', '#898989', '#999999999') ";
+    $typeSql = " AND t.kd_cust IS NOT NULL AND t.kd_cust NOT IN ('', '898989', '#898989', '#999999999', '999999999') ";
+
+    $typeSql .= " AND t.plu != '999900022' ";
 } elseif ($type === 'non_member') {
     $typeSql = " AND (t.kd_cust IS NULL OR t.kd_cust IN ('', '898989', '#898989', '#999999999')) ";
     $status = 'all';

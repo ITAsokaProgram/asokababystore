@@ -199,7 +199,7 @@ if (!$menuHandler->initialize()) {
 
                 <div id="result-container"
                     class="hidden mt-6 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                    <h3 class="text-sm font-bold text-gray-800 mb-3 border-b pb-2">Log Hasil Import</h3>
+                    <h3 class="text-sm font-bold text-gray-800 mb-3 border-b pb-2">Hasil Import</h3>
                     <div id="result-content"
                         class="text-xs font-mono bg-gray-900 text-green-400 p-4 rounded-lg h-64 overflow-y-auto custom-scrollbar">
                     </div>

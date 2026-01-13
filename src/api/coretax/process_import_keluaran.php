@@ -3,6 +3,7 @@ session_start();
 ini_set('display_errors', 0);
 ini_set('memory_limit', '512M');
 set_time_limit(300);
+header('Content-Type: application/json');
 require_once __DIR__ . '/../../../aa_kon_sett.php';
 require_once __DIR__ . '/../../auth/middleware_login.php';
 require_once __DIR__ . '/../../../vendor/autoload.php';
@@ -12,11 +13,10 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Style\Alignment;
-header('Content-Type: application/json');
 try {
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST')
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         throw new Exception('Method Not Allowed');
+    }
     $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
     if (!preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
         http_response_code(401);
@@ -30,10 +30,6 @@ try {
         throw new Exception("Gagal upload file atau file tidak ada.");
     }
     $fileTmpPath = $_FILES['file_excel']['tmp_name'];
-    $fileExt = strtolower(pathinfo($_FILES['file_excel']['name'], PATHINFO_EXTENSION));
-    if (!in_array($fileExt, ['xlsx', 'xls', 'csv'])) {
-        throw new Exception("Format file harus Excel (.xlsx, .xls) atau CSV.");
-    }
     try {
         $spreadsheet = IOFactory::load($fileTmpPath);
         $sheet = $spreadsheet->getActiveSheet();
@@ -42,7 +38,7 @@ try {
         throw new Exception("Gagal membaca file Excel: " . $e->getMessage());
     }
     if (empty($rows) || !isset($rows[1])) {
-        throw new Exception("File Excel kosong atau tidak terbaca.");
+        throw new Exception("File Excel kosong atau header tidak ditemukan.");
     }
     $headerRow = $rows[1];
     $expectedHeaders = [
@@ -66,18 +62,9 @@ try {
     ];
     foreach ($expectedHeaders as $col => $expectedText) {
         if (!isset($headerRow[$col])) {
-            throw new Exception("Format Header Salah! Kolom $col ($expectedText) tidak ditemukan dalam file.");
-        }
-        $actualText = trim($headerRow[$col]);
-        if (stripos($actualText, substr($expectedText, 0, 10)) === false) {
-            throw new Exception("Format Header Salah! Kolom $col seharusnya '$expectedText', tapi tertulis '$actualText'.");
+            throw new Exception("Format Header Salah! Kolom $col tidak ditemukan.");
         }
     }
-    $count_success = 0;
-    $count_duplicate = 0;
-    $count_fail = 0;
-    $logs = [];
-    $duplicate_rows = [];
     $sql = "INSERT INTO ff_coretax_keluaran (
         kode_store, npwp_pembeli, nama_pembeli, kode_transaksi, nsfp, tgl_faktur_pajak,
         masa_pajak, tahun, status_faktur, esign_status, 
@@ -86,7 +73,12 @@ try {
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
     if (!$stmt)
-        throw new Exception("DB Error: " . $conn->error);
+        throw new Exception("DB Error Prepare: " . $conn->error);
+    $count_success = 0;
+    $count_duplicate = 0;
+    $count_fail = 0;
+    $logs = [];
+    $duplicate_rows = [];
     foreach ($rows as $idx => $row) {
         if ($idx < 2)
             continue;
@@ -98,15 +90,17 @@ try {
         $npwp_pembeli = formatNPWP($raw_npwp);
         $nama_pembeli = $row['B'] ?? '';
         $kode_transaksi = $row['C'] ?? '';
-        $tgl_faktur = NULL;
         $val_tgl = $row['E'] ?? '';
+        $tgl_faktur = NULL;
         if (!empty($val_tgl)) {
-            if (strpos($val_tgl, 'T') !== false) {
-                $tgl_faktur = date('Y-m-d', strtotime($val_tgl));
-            } else if (is_numeric($val_tgl)) {
-                $tgl_faktur = Date::excelToDateTimeObject($val_tgl)->format('Y-m-d');
-            } else {
-                $tgl_faktur = date('Y-m-d', strtotime($val_tgl));
+            try {
+                if (is_numeric($val_tgl)) {
+                    $tgl_faktur = Date::excelToDateTimeObject($val_tgl)->format('Y-m-d');
+                } else {
+                    $tgl_faktur = date('Y-m-d', strtotime($val_tgl));
+                }
+            } catch (Exception $e) {
+                $tgl_faktur = NULL;
             }
         }
         $masa_pajak = $row['F'] ?? '';
@@ -142,15 +136,26 @@ try {
             $dilaporkan_penjual,
             $dilaporkan_pemungut
         );
-        if ($stmt->execute()) {
-            $count_success++;
-        } else {
+        try {
+            if ($stmt->execute()) {
+                $count_success++;
+            } else {
+                if ($conn->errno == 1062) {
+                    $count_duplicate++;
+                    $duplicate_rows[] = $originalRowData;
+                    $logs[] = "Baris $idx Duplikat (NSFP: $no_faktur)";
+                } else {
+                    throw new Exception($stmt->error);
+                }
+            }
+        } catch (Exception $e) {
             if ($conn->errno == 1062) {
                 $count_duplicate++;
                 $duplicate_rows[] = $originalRowData;
+                $logs[] = "Baris $idx Duplikat (NSFP: $no_faktur)";
             } else {
                 $count_fail++;
-                $logs[] = "Baris $idx Gagal (NSFP: $no_faktur): " . $stmt->error;
+                $logs[] = "Baris $idx Gagal (NSFP: $no_faktur): " . $e->getMessage();
             }
         }
     }
@@ -175,10 +180,9 @@ try {
             $rowIndex++;
         }
         $lastColumn = 'Q';
-        $lastRow = $rowIndex - 1;
         $headerStyle = [
-            'font' => ['bold' => true, 'color' => ['rgb' => '000000']],
-            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'EEE0E5']],
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'DC2626']],
             'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]]
         ];
         $sheetDup->getStyle('A1:' . $lastColumn . '1')->applyFromArray($headerStyle);
@@ -192,10 +196,14 @@ try {
         ob_end_clean();
         $duplicate_file_base64 = base64_encode($xlsData);
     }
-    $message = "<b>Proses Import Keluaran Selesai.</b>\n\n";
+    $message = "<b>Proses Import Selesai.</b>\n";
     $message .= "✅ Berhasil: $count_success\n";
-    $message .= "⚠️ Duplikat (Dilewati): $count_duplicate\n";
-    $message .= "❌ Gagal: $count_fail";
+    if ($count_duplicate > 0) {
+        $message .= "⚠️ Duplikat (Dilewati): $count_duplicate\n";
+    }
+    if ($count_fail > 0) {
+        $message .= "❌ Gagal: $count_fail";
+    }
     echo json_encode([
         'success' => true,
         'message' => $message,
