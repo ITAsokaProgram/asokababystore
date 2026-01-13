@@ -103,10 +103,10 @@ if (!$menuHandler->initialize()) {
 
                         <div class="lg:col-span-1">
                             <label for="search_buyer" class="block text-xs font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-search text-blue-600 mr-1"></i> Cari Pembeli
+                                <i class="fas fa-search text-blue-600 mr-1"></i> Cari
                             </label>
                             <input type="text" name="search_buyer" id="search_buyer" class="input-modern w-full"
-                                placeholder="NSFP / NPWP / Nama Pembeli..."
+                                placeholder="NSFP / Nama / Referensi / Nilai..."
                                 value="<?php echo htmlspecialchars($search_buyer); ?>">
                         </div>
 

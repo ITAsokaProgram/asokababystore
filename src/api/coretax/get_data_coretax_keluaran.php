@@ -70,22 +70,31 @@ try {
     }
 
     if (!empty($search_raw)) {
+        // PERBAIKAN DI SINI: Tambahkan Referensi dan DPP Nilai Lain
         $where_conditions .= " AND (
             fc.nama_pembeli LIKE ? 
             OR fc.npwp_pembeli LIKE ? 
             OR fc.nsfp LIKE ?
             OR CAST(fc.harga_jual AS CHAR) LIKE ?
             OR CAST(fc.ppn AS CHAR) LIKE ?
+            OR fc.referensi LIKE ?
+            OR CAST(fc.dpp_nilai_lain AS CHAR) LIKE ?
         )";
-        $bind_types .= 'sssss';
+
+        // Update tipe data binding (tambah 2 's' lagi jadi total 7)
+        $bind_types .= 'sssssss';
+
         $searchTermRaw = '%' . $search_raw . '%';
         $searchTermNum = '%' . $search_number . '%';
 
-        $bind_params[] = $searchTermRaw;
-        $bind_params[] = $searchTermRaw;
-        $bind_params[] = $searchTermRaw;
-        $bind_params[] = $searchTermNum;
-        $bind_params[] = $searchTermNum;
+        // Urutan parameter binding harus sesuai urutan tanda tanya (?) di atas
+        $bind_params[] = $searchTermRaw; // nama
+        $bind_params[] = $searchTermRaw; // npwp
+        $bind_params[] = $searchTermRaw; // nsfp
+        $bind_params[] = $searchTermNum; // harga_jual
+        $bind_params[] = $searchTermNum; // ppn
+        $bind_params[] = $searchTermRaw; // referensi (Baru)
+        $bind_params[] = $searchTermNum; // dpp_nilai_lain (Baru)
     }
 
     // 3. Count Query

@@ -53,8 +53,13 @@ try {
             OR fc.nsfp LIKE ?
             OR CAST(fc.harga_jual AS CHAR) LIKE ?
             OR CAST(fc.ppn AS CHAR) LIKE ?
+            OR fc.referensi LIKE ?
+            OR CAST(fc.dpp_nilai_lain AS CHAR) LIKE ?
         )";
-        $bind_types .= 'sssss';
+
+        // Update tipe data binding (total 7)
+        $bind_types .= 'sssssss';
+
         $searchTermRaw = '%' . $search_raw . '%';
         $searchTermNum = '%' . $search_number . '%';
 
@@ -63,6 +68,8 @@ try {
         $bind_params[] = $searchTermRaw;
         $bind_params[] = $searchTermNum;
         $bind_params[] = $searchTermNum;
+        $bind_params[] = $searchTermRaw; // referensi (Baru)
+        $bind_params[] = $searchTermNum; // dpp_nilai_lain (Baru)
     }
 
     // 3. Main Query Data (TANPA LIMIT/OFFSET)
