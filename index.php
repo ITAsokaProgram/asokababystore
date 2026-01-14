@@ -10,7 +10,7 @@ header('Strict-Transport-Security: max-age=31536000; includeSubDomains; preload'
 
 $userId = null;
 $ip = $_SERVER['REMOTE_ADDR'];
-$ua = $_SERVER['HTTP_USER_AGENT'];
+$userAgent = $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown';
 $page = $_SERVER['REQUEST_URI'];
 $pageName = "Asoka Page";
 

@@ -394,7 +394,7 @@ class ShopeeApiService
                 }
                 $conn->commit();
                 $has_next_page = $list_response['response']['has_next_page'];
-                $offset = $list_response['response']['next_offset'];
+                $offset = $list_response['response']['next_offset'] ?? 0;
                 usleep(500000);
             }
             $stmt->close();

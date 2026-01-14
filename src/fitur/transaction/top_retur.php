@@ -268,7 +268,7 @@
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="text-xl font-semibold text-gray-700">Retur Terbaru</h3>
                     <button id="view-all-btn" class="text-violet-500 hover:text-violet-700 font-medium"
-                        onclick="window.location.href='<?php echo $base_url; ?>/src/fitur/transaction/invalid_trans'">
+                        onclick="window.location.href='invalid_trans.php'">
                         Lihat Semua <i class="fas fa-arrow-right ml-1"></i>
                     </button>
                 </div>
