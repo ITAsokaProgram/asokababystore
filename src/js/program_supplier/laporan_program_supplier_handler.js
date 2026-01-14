@@ -168,7 +168,14 @@ document.addEventListener("DOMContentLoaded", () => {
         let htmlRows = "";
         tabel_data.forEach((row) => {
             const cabangDisplay = row.nama_cabang ? `<span class="text-[10px] text-gray-500">${row.nama_cabang}</span>` : row.kode_cabang;
-            const mopClass = row.mop === 'Transfer' ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-orange-100 text-orange-700 border-orange-200';
+            let mopClass = '';
+            if (row.mop === 'Transfer') {
+                mopClass = 'bg-blue-100 text-blue-700 border-blue-200';
+            } else if (row.mop === 'Cash') {
+                mopClass = 'bg-green-100 text-green-700 border-green-200';
+            } else {
+                mopClass = 'bg-orange-100 text-orange-700 border-orange-200';
+            }
             const picFormatted = formatMultiLine(row.pic);
             const docFormatted = formatMultiLine(row.nomor_dokumen);
             const rowDataEncoded = encodeURIComponent(JSON.stringify(row));

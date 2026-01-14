@@ -227,6 +227,7 @@ $menuHandler = new MenuHandler('program_supplier_input');
                                 <select id="inp_mop" name="mop" class="input-compact bg-white cursor-pointer">
                                     <option value="Potong Tagihan">Potong Tagihan</option>
                                     <option value="Transfer">Transfer</option>
+                                    <option value="Cash">Cash</option>
                                 </select>
                             </div>
 

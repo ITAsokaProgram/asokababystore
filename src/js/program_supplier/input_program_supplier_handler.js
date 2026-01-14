@@ -167,9 +167,14 @@ function renderTableRows(data) {
         tableRowIndex++;
         const picStacked = formatStackedList(row.pic);
         const docStacked = formatStackedList(row.nomor_dokumen);
-        const mopBadge = row.mop === 'Transfer'
-            ? '<span class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded border border-blue-200 font-bold">Transfer</span>'
-            : '<span class="bg-orange-100 text-orange-700 text-xs px-2 py-0.5 rounded border border-orange-200 font-bold">Potong Tagihan</span>';
+        let mopBadge = '';
+        if (row.mop === 'Transfer') {
+            mopBadge = '<span class="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded border border-blue-200 font-bold">Transfer</span>';
+        } else if (row.mop === 'Cash') {
+            mopBadge = '<span class="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded border border-green-200 font-bold">Cash</span>';
+        } else {
+            mopBadge = `<span class="bg-orange-100 text-orange-700 text-xs px-2 py-0.5 rounded border border-orange-200 font-bold">${row.mop || 'Potong Tagihan'}</span>`;
+        }
         const ppnBadge = row.status_ppn === 'PPN'
             ? '<span class="text-[10px] font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded uppercase tracking-wider">PPN</span>'
             : '<span class="text-[10px] font-bold text-gray-500 bg-gray-100 border border-gray-200 px-2 py-0.5 rounded uppercase tracking-wider">Non</span>';
