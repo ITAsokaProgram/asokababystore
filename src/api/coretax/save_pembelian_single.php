@@ -39,7 +39,7 @@ try {
 
     $d = DateTime::createFromFormat('Y-m-d', $tgl_nota);
     if (!$d || $d->format('Y-m-d') !== $tgl_nota) {
-        throw new Exception("Format tanggal nota salah.");
+        throw new Exception("Tanggal nota tidak boleh kosong.");
     }
 
     $no_invoice = $input['no_invoice'] ?? '';
@@ -86,7 +86,16 @@ try {
         $message = "Data pembelian berhasil diperbarui (Buku Besar tidak berubah).";
 
     } else {
-
+        
+        if (!$id) { // Hanya untuk data baru
+    $checkQuery = "SELECT id FROM ff_pembelian WHERE no_invoice = ? AND kode_store = ?";
+    $stmtCheck = $conn->prepare($checkQuery);
+    $stmtCheck->bind_param("ss", $no_invoice, $kode_store);
+    $stmtCheck->execute();
+    if ($stmtCheck->get_result()->num_rows > 0) {
+        throw new Exception("Nomor invoice $no_invoice sudah pernah diinput untuk cabang ini.");
+    }
+}
 
 
         $queryIns = "INSERT INTO ff_pembelian 

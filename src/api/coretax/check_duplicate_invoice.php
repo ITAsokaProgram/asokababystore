@@ -5,14 +5,18 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/../../../aa_kon_sett.php';
 try {
     $no_invoice = $_GET['no_invoice'] ?? '';
+    $kode_store = $_GET['kode_store'] ?? ''; 
     $exclude_id = $_GET['exclude_id'] ?? 0;
-    if (empty($no_invoice)) {
+    if (empty($no_invoice) || empty($kode_store)) {
         echo json_encode(['exists' => false]);
         exit;
     }
-    $query = "SELECT id, nama_supplier, tgl_nota FROM ff_pembelian WHERE no_invoice = ? AND id != ? LIMIT 1";
+    $query = "SELECT id, nama_supplier, tgl_nota 
+              FROM ff_pembelian 
+              WHERE no_invoice = ? AND kode_store = ? AND id != ? LIMIT 1";
+    
     $stmt = $conn->prepare($query);
-    $stmt->bind_param("si", $no_invoice, $exclude_id);
+    $stmt->bind_param("ssi", $no_invoice, $kode_store, $exclude_id);
     $stmt->execute();
     $result = $stmt->get_result();
     $data = $result->fetch_assoc();

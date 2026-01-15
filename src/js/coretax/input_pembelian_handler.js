@@ -35,7 +35,7 @@ const errNoInvoice = document.getElementById("err_no_invoice");
 const inpKodeStore = document.getElementById("inp_kode_store");
 const inpStatus = document.getElementById("inp_status");
 const inpNamaSupp = document.getElementById("inp_nama_supplier");
-const inpCatatan = document.getElementById("inp_catatan"); 
+const inpCatatan = document.getElementById("inp_catatan");
 const listSupplier = document.getElementById("supplier_list");
 const inpTgl = document.getElementById("inp_tgl_nota");
 const inpDpp = document.getElementById("inp_dpp");
@@ -105,7 +105,7 @@ async function fetchTableData(reset = false) {
   if (reset) {
     currentPage = 1;
     tableRowIndex = 0;
-    hasMoreData = true; 
+    hasMoreData = true;
     if (currentRequestController) {
       currentRequestController.abort();
     }
@@ -194,32 +194,28 @@ function renderTableRows(data) {
         <td class="text-center text-gray-500 py-3">${tableRowIndex}</td>
         <td class="text-sm">${row.tgl_nota}</td>
         <td class="font-medium text-gray-800 text-sm">${row.no_invoice}</td>
-        <td><span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded border border-gray-200">${
-          row.nm_alias || "-"
-        }</span></td>
+        <td><span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded border border-gray-200">${row.nm_alias || "-"
+      }</span></td>
         <td class="">${badgeStatus}</td>
         <td class="text-sm cursor-pointer hover:text-pink-600 hover:underline" data-type="supplier">
-            <span class="truncate max-w-[150px] inline-block" title="Klik untuk detail">${
-              row.nama_supplier
-            }</span>
+            <span class="truncate max-w-[150px] inline-block" title="Klik untuk detail">${row.nama_supplier
+      }</span>
         </td>
-        <td class="text-sm text-gray-600 ${
-          row.catatan
-            ? "cursor-pointer hover:text-pink-600 hover:underline"
-            : ""
-        }" data-type="catatan">
-            <span class="truncate max-w-[150px] inline-block" ${
-              row.catatan ? 'title="Klik untuk detail"' : ""
-            }>${catatanShow}</span>
+        <td class="text-sm text-gray-600 ${row.catatan
+        ? "cursor-pointer hover:text-pink-600 hover:underline"
+        : ""
+      }" data-type="catatan">
+            <span class="truncate max-w-[150px] inline-block" ${row.catatan ? 'title="Klik untuk detail"' : ""
+      }>${catatanShow}</span>
         </td>
         <td class="text-right font-mono text-sm">${formatNumber(dpp)}</td>
         <td class="text-right font-mono text-gray-500 text-sm">${formatNumber(
-          dppLain
-        )}</td>
+        dppLain
+      )}</td>
         <td class="text-right font-mono text-sm">${formatNumber(ppn)}</td>
         <td class="text-right font-bold font-mono text-gray-800 text-sm">${formatNumber(
-          total
-        )}</td>
+        total
+      )}</td>
         <td class="text-center py-2">
             <div class="flex justify-center gap-1">
                 <button class="btn-edit-row text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 w-8 h-8 flex items-center justify-center rounded transition-all" 
@@ -227,9 +223,8 @@ function renderTableRows(data) {
                     <i class="fas fa-pencil-alt"></i>
                 </button>
                 <button class="btn-delete-row text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 w-8 h-8 flex items-center justify-center rounded transition-all" 
-                    data-id="${row.id}" data-invoice="${
-      row.no_invoice
-    }" title="Hapus Data">
+                    data-id="${row.id}" data-invoice="${row.no_invoice
+      }" title="Hapus Data">
                     <i class="fas fa-trash-alt"></i>
                 </button>
             </div>
@@ -311,11 +306,12 @@ async function handleSupplierSearch(e) {
 async function checkDuplicateInvoice(noInvoice) {
   if (!noInvoice) return false;
   const currentId = inpId.value || 0;
+  const kodeStore = inpKodeStore.value;
   try {
     const result = await sendRequestGET(
       `${API_URLS.checkDuplicate}?no_invoice=${encodeURIComponent(
         noInvoice
-      )}&exclude_id=${currentId}`
+      )}&kode_store=${encodeURIComponent(kodeStore)}&exclude_id=${currentId}`
     );
     if (result.exists) {
       inpNoInvoice.classList.add("border-red-500", "bg-red-50", "text-red-700");
@@ -344,6 +340,9 @@ function resetErrorState() {
 }
 async function fetchReceiptData(noInvoice) {
   if (!noInvoice) return;
+  const trimmedInvoice = noInvoice.trim();
+  if (!trimmedInvoice) return;
+  inpNoInvoice.value = trimmedInvoice;
   detectedNoFaktur = null;
   const selectedStore = inpKodeStore.value;
   if (!selectedStore) {
@@ -374,6 +373,7 @@ async function fetchReceiptData(noInvoice) {
       inpKodeSupplier.value = d.kode_supplier || "";
       inpDpp.value = formatNumber(parseFloat(d.dpp) || 0);
       inpPpn.value = formatNumber(parseFloat(d.ppn) || 0);
+      if (d.nama_supplier) inpNamaSupp.value = d.nama_supplier;
       calculateTotal();
       if (!isDuplicate) {
         inpNoInvoice.classList.remove("bg-yellow-50", "text-yellow-700");
@@ -386,32 +386,21 @@ async function fetchReceiptData(noInvoice) {
       inpNamaSupp.focus();
     } else {
       detectedNoFaktur = null;
-      inpNoInvoice.classList.remove("bg-yellow-50", "text-yellow-700");
-      if (result.error_type === "wrong_store") {
-        Swal.fire({
-          icon: "error",
-          title: "Salah Cabang",
-          text: result.message,
-          confirmButtonColor: "#ef4444",
-        });
-        inpNoInvoice.value = "";
-        inpNoInvoice.focus();
-      } else {
-        if (!isDuplicate) {
-          Toastify({
-            text: "Info: Data invoice baru (input manual)",
-            duration: 2000,
-            style: { background: "#3b82f6" },
-          }).showToast();
-        }
+      if (!isDuplicate) {
+        Toastify({
+          text: "Info: Data invoice baru untuk cabang ini (input manual)",
+          duration: 2500,
+          style: { background: "#3b82f6" },
+        }).showToast();
       }
     }
   } catch (error) {
     console.error("Fetch Error", error);
   } finally {
     inpNoInvoice.classList.remove("bg-yellow-50", "text-yellow-700");
-    if (isDuplicate)
+    if (isDuplicate) {
       inpNoInvoice.classList.add("border-red-500", "bg-red-50", "text-red-700");
+    }
     inpNoInvoice.placeholder = originalPlaceholder;
   }
 }
@@ -424,7 +413,7 @@ function startEditMode(data) {
   inpKodeStore.value = data.kode_store || "";
   inpStatus.value = data.status || "PKP";
   inpNamaSupp.value = data.nama_supplier;
-  inpCatatan.value = data.catatan || ""; 
+  inpCatatan.value = data.catatan || "";
   inpTgl.value = data.tgl_nota;
   inpDpp.value = formatNumber(data.dpp);
   inpDppLain.value = formatNumber(data.dpp_nilai_lain || 0);
@@ -449,7 +438,7 @@ function cancelEditMode() {
   inpTotal.value = "0";
   inpKodeStore.value = "";
   inpStatus.value = "";
-  inpCatatan.value = ""; 
+  inpCatatan.value = "";
   detectedNoFaktur = null;
   document
     .querySelector(".input-row-container")
@@ -515,10 +504,6 @@ async function handleSave() {
     Swal.fire("Gagal", "No Invoice dan Nama Supplier harus diisi", "warning");
     return;
   }
-  if (inpNoInvoice.classList.contains("border-red-500")) {
-    inpNoInvoice.focus();
-    return;
-  }
   isSubmitting = true;
   const payload = {
     id: inpId.value || null,
@@ -527,7 +512,7 @@ async function handleSave() {
     kode_store: inpKodeStore.value,
     kode_supplier: inpKodeSupplier.value,
     status: inpStatus.value,
-    catatan: inpCatatan.value.trim(), 
+    catatan: inpCatatan.value.trim(),
     nama_supplier: namaSupp,
     tgl_nota: inpTgl.value,
     dpp: parseNumber(inpDpp.value),

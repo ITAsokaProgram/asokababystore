@@ -28,29 +28,18 @@ try {
         FROM receipt_head rh
         LEFT JOIN supplier s ON rh.kode_supp = s.kode_supp AND rh.kd_store = s.kd_store
         LEFT JOIN kode_store ks ON rh.kd_store = ks.kd_store
-        WHERE rh.no_lpb = ?
+        WHERE rh.no_lpb = ? AND rh.kd_store = ? 
         LIMIT 1
     ";
     $stmt = $conn->prepare($query);
     if (!$stmt) {
         throw new Exception("Database Error: " . $conn->error);
     }
-    $stmt->bind_param("s", $no_lpb);
+    $stmt->bind_param("ss", $no_lpb, $req_kode_store);
     $stmt->execute();
     $result = $stmt->get_result();
     $data = $result->fetch_assoc();
     if ($data) {
-        $db_store = trim($data['kd_store']);
-        $req_store = trim($req_kode_store);
-        if ($db_store != $req_store) {
-            $nama_cabang_asli = $data['Nm_Alias'] ? $data['Nm_Alias'] : ($data['Nm_Store'] ?? $data['kd_store']);
-            echo json_encode([
-                'success' => false,
-                'error_type' => 'wrong_store',
-                'message' => "Nomor invoice ini terdaftar milik cabang [{$nama_cabang_asli}] (Kode: $db_store), bukan cabang yang Anda pilih (Kode: $req_store)."
-            ]);
-            exit;
-        }
         if (!empty($data['tgl_nota'])) {
             $data['tgl_nota'] = date('Y-m-d', strtotime($data['tgl_nota']));
         }
@@ -70,11 +59,10 @@ try {
     } else {
         echo json_encode([
             'success' => false,
-            'message' => "Data receipt '$no_lpb' tidak ditemukan."
+            'message' => "Data invoice '$no_lpb' tidak ditemukan untuk cabang ini."
         ]);
     }
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
-?>
