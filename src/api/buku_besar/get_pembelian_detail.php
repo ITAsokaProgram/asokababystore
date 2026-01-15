@@ -85,6 +85,7 @@ try {
                 'group_id' => $dataBB['group_id'],
                 'no_faktur' => $dataBB['no_faktur'],
                 'tgl_nota' => $dataBB['tgl_nota'],
+                'tanggal_bayar' => $dataBB['tanggal_bayar'], // TAMBAHKAN BARIS INI
                 'kode_supplier' => $dataBB['kode_supplier'],
                 'nama_supplier' => $dataBB['nama_supplier'],
                 'kode_store' => $dataBB['kode_store'],

@@ -722,7 +722,7 @@ function cancelEditMode() {
   btnSave.classList.remove("hidden");
   btnSave.className = "btn-primary shadow-lg shadow-pink-500/30 flex items-center gap-2 px-6 py-2";
   document.querySelector(".input-row-container").classList.remove("border-amber-300", "bg-amber-50");
-  inpTglBayar.value = new Date().toISOString().split('T')[0];
+  inpTglBayar.value = "";
   inpPotongan.value = "0";
 }
 function handleDelete(id) {
@@ -1208,6 +1208,7 @@ window.addEventListener('beforeunload', (e) => {
 });
 window.editCartItem = async (index) => {
   const item = cartItems[index];
+  console.log("ITEM: ", item)
   editingCartIndex = index;
   if (installmentInfoBox) {
     installmentInfoBox.classList.add("hidden");
@@ -1233,6 +1234,9 @@ window.editCartItem = async (index) => {
   inpPotongan.value = formatNumber(item.potongan);
   inpKetPotongan.value = item.ket_potongan || "";
   if (inpGlobalTotal) inpGlobalTotal.value = "";
+  if (item.tanggal_bayar) {
+    inpTglBayar.value = item.tanggal_bayar;
+  }
   btnAddItem.innerHTML = `<i class="fas fa-sync-alt mr-1"></i> Update Item`;
   btnAddItem.classList.remove("bg-blue-600", "hover:bg-blue-700");
   btnAddItem.classList.add("bg-yellow-500", "hover:bg-amber-600");

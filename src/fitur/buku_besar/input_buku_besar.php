@@ -189,8 +189,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
                                         <label class="form-label">Tanggal Bayar</label>
-                                        <input type="date" id="inp_tgl_bayar" class="input-compact"
-                                            value="<?php echo date('Y-m-d'); ?>">
+                                        <input type="date" id="inp_tgl_bayar" class="input-compact">
                                     </div>
                                     <div>
                                         <label class="form-label">Jatuh Tempo (TOP)</label>
