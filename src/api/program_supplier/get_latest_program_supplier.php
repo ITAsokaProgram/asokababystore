@@ -35,6 +35,7 @@ try {
             'nama_cabang',
             'periode_program',
             'nama_program',
+            'keterangan',
             'mop',
             'kd_user'
         ];

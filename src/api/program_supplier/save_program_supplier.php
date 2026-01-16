@@ -47,6 +47,7 @@ try {
     $nama_prog = $input['nama_program'];
     $nilai_prog = (float) $input['nilai_program'];
     $mop = $input['mop'];
+    $keterangan = isset($input['keterangan']) ? $input['keterangan'] : null;
     $top_date_input = $input['top_date'] ?? null;
     if (empty($top_date_input) || strlen($top_date_input) < 10) {
         $top_date = null;
@@ -86,11 +87,11 @@ try {
                 $final_nomor_program_update = $prefix . $next_seq;
             }
             $sql = "UPDATE program_supplier SET 
-                    nomor_dokumen=?, pic=?, nama_supplier=?, npwp=?, status_ppn=?, kode_cabang=?, nama_cabang=?, 
-                    periode_program=?, nama_program=?, nilai_program=?, mop=?, top_date=?, 
-                    kd_user=?, nomor_program=? 
-                    WHERE nomor_dokumen=?";
-            $types = "sssssssssdsssss";
+                nomor_dokumen=?, pic=?, nama_supplier=?, npwp=?, status_ppn=?, kode_cabang=?, nama_cabang=?, 
+                periode_program=?, nama_program=?, nilai_program=?, mop=?, top_date=?, keterangan=?, 
+                kd_user=?, nomor_program=? 
+                WHERE nomor_dokumen=?";
+            $types = "sssssssssdssssss";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param(
                 $types,
@@ -106,6 +107,7 @@ try {
                 $nilai_prog,
                 $mop,
                 $top_date,
+                $keterangan, // <-- Masukkan keterangan
                 $kd_user,
                 $final_nomor_program_update,
                 $old_doc
@@ -146,10 +148,13 @@ try {
             $stmtMax->close();
             $final_nomor_program = $prefix . $next_seq;
             $sql = "INSERT INTO program_supplier 
-                    (nomor_dokumen, pic, nama_supplier, npwp, status_ppn, kode_cabang, nama_cabang, 
-                     periode_program, nama_program, nomor_program, nilai_program, mop, top_date, kd_user)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            $types = "ssssssssssdsss";
+                (nomor_dokumen, pic, nama_supplier, npwp, status_ppn, kode_cabang, nama_cabang, 
+                 periode_program, nama_program, nomor_program, nilai_program, mop, top_date, keterangan, kd_user)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+            // Tambah 's' untuk keterangan. Total 15 parameter
+            $types = "ssssssssssdssss";
+
             $stmt = $conn->prepare($sql);
             $stmt->bind_param(
                 $types,
@@ -166,6 +171,7 @@ try {
                 $nilai_prog,
                 $mop,
                 $top_date,
+                $keterangan, // <-- Masukkan keterangan
                 $kd_user
             );
             if (!$stmt->execute()) {

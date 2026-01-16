@@ -3,7 +3,6 @@ session_start();
 include '../../../aa_kon_sett.php';
 header('Content-Type: application/json');
 $selected_date = $_GET['tanggal'] ?? date('Y-m-d');
-$excluded_branches = ['ASKT', 'MAYA', 'ACE', 'ASP', 'ASLI'];
 $log_stats = [];
 $tabel_data = [];
 $total_cabang = 0;
@@ -46,9 +45,7 @@ try {
     }
     while ($row_cabang = $result_cabang->fetch_assoc()) {
         $nm_alias = trim($row_cabang['Nm_Alias']);
-        if (in_array($nm_alias, $excluded_branches)) {
-            continue;
-        }
+
         $total_cabang++;
         $stats = $log_stats[$nm_alias] ?? null;
         $total_sinkron = $stats ? (int) $stats['total_sinkron'] : 0;

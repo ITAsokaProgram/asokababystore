@@ -187,6 +187,19 @@ document.addEventListener("DOMContentLoaded", () => {
             const ppnBadge = row.status_ppn === 'PPN'
                 ? '<span class="text-[10px] font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded uppercase tracking-wider">PPN</span>'
                 : '<span class="text-[10px] font-bold text-gray-500 bg-gray-100 border border-gray-200 px-2 py-0.5 rounded uppercase tracking-wider">Non</span>';
+            let keteranganDisplay = "-";
+            if (row.keterangan) {
+                const encodedContent = encodeURIComponent(row.keterangan);
+                const safeTitle = `Keterangan - ${row.nomor_program || ''}`;
+
+                keteranganDisplay = `
+                    <div class="truncate cursor-pointer text-gray-600 hover:text-pink-600 border-b border-transparent hover:border-pink-300 transition-all"
+                         title="Klik untuk baca selengkapnya" style="max-width: 200px;"
+                         onclick="window.dispatchEvent(new CustomEvent('show-detail-modal', { detail: { title: '${safeTitle}', content: decodeURIComponent('${encodedContent}') } }))">
+                        ${row.keterangan}
+                    </div>
+                `;
+            }
             htmlRows += `
                 <tr class="hover:bg-gray-50 align-top border-b border-gray-100 transition-colors">
                     <td class="text-center py-3 align-top whitespace-nowrap">
@@ -239,6 +252,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     <td class="pt-3 text-right font-mono text-gray-500 align-top text-[11px]">${formatRupiah(row.ppn)}</td>
                     <td class="pt-3 text-right font-mono text-gray-500 align-top text-[11px]">${formatRupiah(row.pph)}</td>
                     <td class="pt-3 text-gray-600 font-mono text-[11px] text-center align-top whitespace-nowrap">${row.nomor_bukpot || "-"}</td>
+                    <td class="pt-3 text-[11px] align-top font-mono">
+                        ${keteranganDisplay}
+                    </td>
                 </tr>
             `;
         });

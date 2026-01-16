@@ -235,6 +235,11 @@ $menuHandler = new MenuHandler('program_supplier_input');
                                 <label class="form-label">Jatuh Tempo (TOP)</label>
                                 <input type="date" id="inp_top_date" name="top_date" class="input-compact">
                             </div>
+                            <div class="md:col-span-2 lg:col-span-4 xl:col-span-4"> <label
+                                    class="form-label">Keterangan</label>
+                                <textarea id="inp_keterangan" name="keterangan" class="input-compact" rows="1"
+                                    placeholder="Tambahkan catatan jika ada..."></textarea>
+                            </div>
 
 
                             <div class="flex items-end h-full pb-1 gap-2">
@@ -279,6 +284,7 @@ $menuHandler = new MenuHandler('program_supplier_input');
                                     <th class="text-right">Nilai Prg</th>
                                     <th class="text-center">MOP</th>
                                     <th class="text-center">TOP</th>
+                                    <th>Keterangan</th>
                                 </tr>
                             </thead>
                             <tbody id="table-body">
@@ -298,6 +304,84 @@ $menuHandler = new MenuHandler('program_supplier_input');
             </div>
         </section>
     </main>
+
+    <div x-data="detailModal()" x-show="show" x-cloak @show-detail-modal.window="openModal($event.detail)"
+        style="display: none; z-index: 10000;" class="fixed inset-0 z-[9999] overflow-y-auto">
+
+        <div x-show="show" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-150"
+            x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" @click="closeModal()"
+            class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm">
+        </div>
+
+        <div class="flex min-h-screen items-center justify-center p-4">
+            <div x-show="show" x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 transform scale-95"
+                x-transition:enter-end="opacity-100 transform scale-100"
+                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="opacity-100 transform scale-100"
+                x-transition:leave-end="opacity-0 transform scale-95" @click.stop
+                class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md transform">
+
+                <div
+                    class="flex items-center justify-between p-5 border-b border-gray-100 bg-gradient-to-r from-pink-50 to-white rounded-t-2xl">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-info-circle text-pink-600 text-lg"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-800" x-text="title"></h3>
+                    </div>
+                    <button @click="closeModal()"
+                        class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg p-2 transition-all">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+
+                <div class="p-6">
+                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                        <p class="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap break-words"
+                            x-text="content"></p>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 p-5 border-t border-gray-100 bg-gray-50 rounded-b-2xl">
+                    <button @click="closeModal()"
+                        class="px-4 py-2 text-sm bg-gray-200 hover:bg-gray-300 rounded text-gray-700 font-medium transition-colors">
+                        <i class="fas fa-times mr-2"></i>
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function detailModal() {
+            return {
+                show: false,
+                title: '',
+                content: '',
+
+                openModal(data) {
+                    this.title = data.title;
+                    this.content = data.content;
+                    this.show = true;
+                    document.body.style.overflow = 'hidden';
+                },
+
+                closeModal() {
+                    this.show = false;
+                    document.body.style.overflow = 'auto';
+                }
+            }
+        }
+    </script>
+
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
 
     <script src="/src/js/middleware_auth.js"></script>
     <script src="../../js/program_supplier/input_program_supplier_handler.js" type="module"></script>

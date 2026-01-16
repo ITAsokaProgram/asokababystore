@@ -19,6 +19,7 @@ const inpNomorDokumen = document.getElementById("inp_nomor_dokumen");
 const inpNilaiProgram = document.getElementById("inp_nilai_program");
 const inpMop = document.getElementById("inp_mop");
 const inpTopDate = document.getElementById("inp_top_date");
+const inpKeterangan = document.getElementById("inp_keterangan");
 const inpNpwp = document.getElementById("inp_npwp");
 const inpStatusPpn = document.getElementById("inp_status_ppn");
 const inpNomorProgram = document.getElementById("inp_nomor_program");
@@ -181,10 +182,22 @@ function renderTableRows(data) {
         const noProgDisplay = row.nomor_program
             ? `<div class="font-mono text-xs font-medium text-purple-700 bg-purple-50 px-2 py-1 rounded inline-block whitespace-nowrap border border-purple-100">${row.nomor_program}</div>`
             : '-';
+        let keteranganDisplay = '<div class="text-xs text-gray-400 italic">-</div>';
+        if (row.keterangan) {
+            const encodedContent = encodeURIComponent(row.keterangan);
+            const safeTitle = `Keterangan - ${row.nomor_program || ''}`;
+            keteranganDisplay = `
+                <div class="text-gray-600 text-xs italic truncate cursor-pointer hover:text-pink-600 hover:underline decoration-pink-300 transition-all" 
+                     title="Klik untuk baca selengkapnya" style="max-width: 200px;"
+                     onclick="window.dispatchEvent(new CustomEvent('show-detail-modal', { detail: { title: '${safeTitle}', content: decodeURIComponent('${encodedContent}') } }))">
+                    ${row.keterangan}
+                </div>
+            `;
+        }
         const tr = document.createElement("tr");
         tr.className = "hover:bg-pink-50 transition-colors border-b border-gray-50 align-top";
         tr.innerHTML = `
-         <td class="text-center py-3 align-top">
+        <td class="text-center py-3 align-top">
              <div class="flex justify-center gap-1">
                 <button class="btn-edit-row text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 w-8 h-8 flex items-center justify-center rounded transition-all" title="Edit">
                     <i class="fas fa-pencil-alt"></i>
@@ -233,6 +246,9 @@ function renderTableRows(data) {
         <td class="text-center py-3 align-top">
             <div class="text-xs text-gray-600 whitespace-nowrap">${formatDate(row.top_date)}</div>
         </td>
+        <td class="text-sm py-3 align-top">
+             ${keteranganDisplay}
+        </td>
         `;
         tr.querySelector(".btn-edit-row").addEventListener("click", () => startEditMode(row));
         tr.querySelector(".btn-delete-row").addEventListener("click", function () {
@@ -273,7 +289,8 @@ async function handleSave() {
         nama_program: inpNamaProgram.value.trim(),
         nilai_program: parseNumber(inpNilaiProgram.value),
         mop: inpMop.value,
-        top_date: inpTopDate.value || null
+        top_date: inpTopDate.value || null,
+        keterangan: inpKeterangan.value.trim()
     };
     let isSuccess = false;
     try {
@@ -321,6 +338,7 @@ function startEditMode(data) {
     inpNilaiProgram.value = formatNumber(data.nilai_program);
     inpMop.value = data.mop || "Potong Tagihan";
     inpTopDate.value = data.top_date;
+    inpKeterangan.value = data.keterangan || "";
     window.scrollTo({ top: 0, behavior: "smooth" });
     document.querySelector(".input-row-container").classList.add("border-amber-300", "bg-amber-50");
     editIndicator.classList.remove("hidden");
@@ -334,6 +352,7 @@ function cancelEditMode() {
     inpOldNomorDokumen.value = "";
     originalBranchCode = "";
     originalProgramNumber = "";
+    inpKeterangan.value = "";
     document.querySelector(".input-row-container").classList.remove("border-amber-300", "bg-amber-50");
     editIndicator.classList.add("hidden");
     btnCancelEdit.classList.add("hidden");
