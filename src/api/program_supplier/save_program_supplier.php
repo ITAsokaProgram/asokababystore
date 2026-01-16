@@ -4,6 +4,8 @@ ini_set('display_errors', 0);
 header('Content-Type: application/json');
 require_once __DIR__ . '/../../../aa_kon_sett.php';
 require_once __DIR__ . '/../../auth/middleware_login.php';
+require_once __DIR__ . '/../../helpers/finance_log_helper.php'; // <--- Tambahkan ini
+
 try {
     $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
     if (!preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
@@ -54,14 +56,14 @@ try {
     if ($old_doc) {
         $conn->begin_transaction();
         try {
-            $stmtGetOld = $conn->prepare("SELECT kode_cabang, nomor_program FROM program_supplier WHERE nomor_dokumen = ?");
+            $stmtGetOld = $conn->prepare("SELECT * FROM program_supplier WHERE nomor_dokumen = ?");
             $stmtGetOld->bind_param("s", $old_doc);
             $stmtGetOld->execute();
             $resOld = $stmtGetOld->get_result();
-            $rowOld = $resOld->fetch_assoc();
+            $oldData = $resOld->fetch_assoc();
             $stmtGetOld->close();
-            $old_db_cabang = $rowOld['kode_cabang'];
-            $final_nomor_program_update = $rowOld['nomor_program'];
+            $old_db_cabang = $oldData['kode_cabang'];
+            $final_nomor_program_update = $oldData['nomor_program'];
             if ($old_db_cabang !== $kode_cabang) {
                 $clean_user = preg_replace('/[^a-zA-Z0-9]/', '', $kd_user);
                 $prefix = $kode_cabang . "-PS-" . $clean_user . "-";
@@ -111,6 +113,10 @@ try {
             if (!$stmt->execute()) {
                 throw new Exception("Gagal update: " . $stmt->error);
             }
+            $newData = array_merge($oldData, $input);
+            $newData['nomor_program'] = $final_nomor_program_update;
+
+            write_finance_log($conn, $kd_user, 'program_supplier', $new_doc, 'UPDATE', $oldData, $newData);
             $conn->commit();
             $msg = "Data diperbarui. No Program: " . $final_nomor_program_update;
         } catch (Exception $ex) {
@@ -165,6 +171,7 @@ try {
             if (!$stmt->execute()) {
                 throw new Exception("Gagal insert: " . $stmt->error);
             }
+            write_finance_log($conn, $kd_user, 'program_supplier', $new_doc, 'INSERT', null, $input);
             $conn->commit();
             $msg = "Data berhasil disimpan. No Program: " . $final_nomor_program;
         } catch (Exception $ex) {

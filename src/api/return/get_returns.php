@@ -34,23 +34,23 @@ try {
     $offset = ($page - 1) * $limit;
     $union_source = "
         SELECT no_faktur, kode_supp, kd_store, tgl_return as tgl_erp, 
-               ((hrg_beli * qty) + IFNULL(ppn, 0) + IFNULL(ppn_bm, 0)) as nilai_row 
+               ((hrg_beli + IFNULL(ppn, 0) + IFNULL(ppn_bm, 0)) * qty) as nilai_row 
         FROM retur
         UNION ALL
         SELECT no_faktur, kode_supp, kd_store, tgl_expproduk as tgl_erp, 
-               ((hrg_beli * qty) + IFNULL(ppn, 0) + IFNULL(ppn_bm, 0)) as nilai_row 
+               ((hrg_beli + IFNULL(ppn, 0) + IFNULL(ppn_bm, 0)) * qty) as nilai_row 
         FROM exp_produk
         UNION ALL
         SELECT no_faktur, kode_supp, kd_store, tgl_badstock as tgl_erp, 
-               ((hrg_beli * qty) + IFNULL(ppn, 0) + IFNULL(ppn_bm, 0)) as nilai_row 
+               ((hrg_beli + IFNULL(ppn, 0) + IFNULL(ppn_bm, 0)) * qty) as nilai_row 
         FROM bad_stock
         UNION ALL
         SELECT no_faktur, kode_supp, kd_store, tgl_input as tgl_erp, 
-               ((hrg_beli * qty) + IFNULL(ppn, 0) + IFNULL(ppn_bm, 0)) as nilai_row 
+               ((hrg_beli + IFNULL(ppn, 0) + IFNULL(ppn_bm, 0)) * qty) as nilai_row 
         FROM hilang_pasangan
         UNION ALL
         SELECT no_faktur, kode_supp, kd_store, tgl_mutasi as tgl_erp, 
-               ((hrg_beli * qty) + IFNULL(ppn, 0)) as nilai_row 
+               ((hrg_beli + IFNULL(ppn, 0)) * qty) as nilai_row 
         FROM mutasi_out
     ";
     $params_base = [];

@@ -1,3 +1,5 @@
+import { sendRequestGET, sendRequestJSON } from "../utils/api_helpers.js";
+
 document.addEventListener("DOMContentLoaded", () => {
     const tableBody = document.getElementById("program-table-body");
     const filterForm = document.getElementById("filter-form");
@@ -309,12 +311,9 @@ document.addEventListener("DOMContentLoaded", () => {
         submitBtn.disabled = true;
         submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Menyimpan...`;
         try {
-            const response = await fetch('/src/api/program_supplier/update_program_supplier_partial.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            const result = await response.json();
+
+            const result = await sendRequestJSON("/src/api/program_supplier/update_program_supplier_partial.php", data);
+
             if (result.success) {
                 Swal.fire({
                     icon: 'success',
