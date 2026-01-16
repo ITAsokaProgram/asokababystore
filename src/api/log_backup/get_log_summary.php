@@ -3,7 +3,7 @@ session_start();
 include '../../../aa_kon_sett.php';
 header('Content-Type: application/json');
 $selected_date = $_GET['tanggal'] ?? date('Y-m-d');
-$excluded_branches = ['ASKT', 'MAYA', 'ACE', 'ASP', 'ASIA', 'ASLI'];
+$excluded_branches = ['ASKT', 'MAYA', 'ACE', 'ASP', 'ASLI'];
 $log_stats = [];
 $tabel_data = [];
 $total_cabang = 0;
