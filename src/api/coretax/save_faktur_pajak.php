@@ -4,6 +4,7 @@ ini_set('display_errors', 0);
 header('Content-Type: application/json');
 require_once __DIR__ . '/../../../aa_kon_sett.php';
 require_once __DIR__ . '/../../auth/middleware_login.php';
+require_once __DIR__ . '/../../helpers/finance_log_helper.php';
 try {
     $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
     if (!preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
@@ -53,6 +54,14 @@ try {
     }
     $checkInv->close();
     if ($id) {
+        $qOld = $conn->prepare("SELECT * FROM ff_faktur_pajak WHERE id = ?");
+        $qOld->bind_param("i", $id);
+        $qOld->execute();
+        $oldData = $qOld->get_result()->fetch_assoc();
+        $qOld->close();
+        if (!$oldData) {
+            throw new Exception("Data ID $id tidak ditemukan.");
+        }
         $stmt = $conn->prepare("UPDATE ff_faktur_pajak SET nsfp=?, no_invoice=?, no_faktur=?, tgl_faktur=?, nama_supplier=?, kode_supplier=?, dpp=?, dpp_nilai_lain=?, ppn=?, total=?, catatan=?, kd_user=?, kode_store=?, edit_pada=NOW() WHERE id=?");
         if (!$stmt)
             throw new Exception("Prepare Update Error: " . $conn->error);
@@ -76,6 +85,8 @@ try {
         if (!$stmt->execute()) {
             throw new Exception("Gagal mengupdate data: " . $stmt->error);
         }
+        $newData = array_merge($oldData, $input);
+        write_finance_log($conn, $kd_user, 'ff_faktur_pajak', $no_invoice, 'UPDATE', $oldData, $newData);
         $message = "Data berhasil diperbarui.";
     } else {
         $check = $conn->prepare("SELECT id FROM ff_faktur_pajak WHERE nsfp = ?");
@@ -108,6 +119,7 @@ try {
         if (!$stmt->execute()) {
             throw new Exception("Gagal menyimpan data: " . $stmt->error);
         }
+        write_finance_log($conn, $kd_user, 'ff_faktur_pajak', $no_invoice, 'INSERT', null, $input);
         $message = "Data berhasil disimpan.";
     }
     echo json_encode(['success' => true, 'message' => $message]);
