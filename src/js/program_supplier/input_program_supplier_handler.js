@@ -114,7 +114,7 @@ async function fetchTableData(reset = false) {
         currentRequestController = new AbortController();
         tableBody.innerHTML = `
             <tr>
-                <td colspan="12" class="text-center p-8">
+                <td colspan="13" class="text-center p-8">
                     <div class="flex flex-col items-center justify-center">
                         <i class="fas fa-circle-notch fa-spin text-pink-500 text-3xl mb-3"></i>
                         <span class="text-gray-500 font-medium animate-pulse">Memuat data...</span>
@@ -141,7 +141,7 @@ async function fetchTableData(reset = false) {
         }
         if (result.success && Array.isArray(result.data)) {
             if (result.data.length === 0 && currentPage === 1) {
-                tableBody.innerHTML = `<tr><td colspan="12" class="text-center p-8 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-300">Data tidak ditemukan</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="13" class="text-center p-8 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-300">Data tidak ditemukan</td></tr>`;
                 hasMoreData = false;
             } else {
                 renderTableRows(result.data);
@@ -153,7 +153,7 @@ async function fetchTableData(reset = false) {
         if (error.name === 'AbortError') return;
         console.error(error);
         if (currentPage === 1) {
-            tableBody.innerHTML = `<tr><td colspan="12" class="text-center p-4 text-red-500">Gagal memuat data</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="13" class="text-center p-4 text-red-500">Gagal memuat data</td></tr>`;
         }
     } finally {
         if (!currentRequestController || (currentRequestController && !currentRequestController.signal.aborted)) {
@@ -418,6 +418,13 @@ async function handleSupplierSearch(e) {
 document.addEventListener("DOMContentLoaded", () => {
     loadStoreOptions();
     fetchTableData(true);
+    inpNilaiProgram.addEventListener("input", handleRupiahInput);
+    inpNpwp.addEventListener("input", validateNPWP);
+    form.querySelectorAll('input, select').forEach(el => {
+        el.addEventListener('focus', () => el.classList.add('ring-2', 'ring-pink-100'));
+        el.addEventListener('blur', () => el.classList.remove('ring-2', 'ring-pink-100'));
+    });
+    setupKeyboardNavigation();
     inpNilaiProgram.addEventListener("blur", (e) => {
         e.target.value = formatNumber(parseNumber(e.target.value));
     });
@@ -446,4 +453,57 @@ document.addEventListener("DOMContentLoaded", () => {
     if (loaderRow) observer.observe(loaderRow);
     inpKodeCabang.addEventListener("change", generateProgramNumber);
     inpNamaSupplier.addEventListener("input", handleSupplierSearch);
+    inpPic.focus();
+    setupGlobalShortcuts();
 });
+function handleRupiahInput(e) {
+    let value = e.target.value.replace(/[^0-9]/g, "");
+    e.target.value = formatNumber(value);
+}
+function validateNPWP(e) {
+    const val = e.target.value.replace(/[^0-9]/g, "");
+    e.target.value = val;
+    const remaining = 16 - val.length;
+    document.getElementById('npwp-char-count').innerText = remaining;
+    if (val.length === 16) {
+        e.target.classList.add('border-green-500');
+        e.target.classList.remove('border-red-400');
+    } else if (val.length > 0) {
+        e.target.classList.add('border-red-400');
+    }
+}
+function setupKeyboardNavigation() {
+    const inputs = Array.from(form.querySelectorAll('input, select, textarea'))
+        .filter(el => !el.readOnly && el.type !== 'hidden');
+    inputs.forEach((input, index) => {
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+                e.preventDefault();
+                const next = inputs[index + 1];
+                if (next) next.focus();
+                else btnSave.click();
+            }
+        });
+    });
+}
+function setupGlobalShortcuts() {
+    window.addEventListener('keydown', (e) => {
+        if (e.altKey && e.code === 'KeyS') {
+            e.preventDefault();
+            btnSave.click();
+        }
+        if (e.altKey && e.code === 'KeyC') {
+            e.preventDefault();
+            if (!btnCancelEdit.classList.contains('hidden')) {
+                btnCancelEdit.click();
+            } else {
+                form.reset();
+                inpPic.focus();
+            }
+        }
+        if (e.key === 'Escape') {
+            const modalCloseBtn = document.querySelector('[@click="closeModal()"]');
+            if (modalCloseBtn) modalCloseBtn.click();
+        }
+    });
+}
