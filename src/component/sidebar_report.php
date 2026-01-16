@@ -34,6 +34,7 @@ $isUangBrankasOpen = $isActive('/src/fitur/uang_brangkas/');
 $isLogBackupOpen = $isActive('/src/fitur/log_backup/');
 $isLogPasswordOpen = $isActive('/src/fitur/logs/password_reset.php');
 $isSecurityLogOpen = $isActive('/src/fitur/security_logs/');
+$isLogFinanceOpen = $isActive('/src/fitur/log_finance/');
 
 $isToolsOpen = $isVoucherOpen || $isJadwalSoOpen || $isActive('/src/fitur/approval/izin') || $isReceiptToolOpen || $isReturnToolOpen || $isKoreksiToolOpen || $isUangBrankasOpen;
 
@@ -49,8 +50,7 @@ $isReturnOpen = $isActive('/src/fitur/return_out/');
 $isMutasiOpen = $isActive('/src/fitur/mutasi_in/');
 $isTransaksiOpen = $isActive('/src/fitur/transaction/');
 $isKoreksiOpen = $isActive('/src/fitur/koreksi_stok/') || $isActive('/src/fitur/koreksi_so/');
-$isLogsOpen = $isLogBackupOpen || $isLogPasswordOpen || $isSecurityLogOpen;
-
+$isLogsOpen = $isLogBackupOpen || $isLogPasswordOpen || $isSecurityLogOpen || $isLogFinanceOpen;
 $isLaporanOpen = $isPenjualanOpen || $isPelangganOpen || $isReceiptOpen || $isReturnOpen || $isMutasiOpen || $isTransaksiOpen || $isKoreksiOpen || $isActive('/src/fitur/stok/');
 
 $isPembelianOpen = $isActive('/src/fitur/coretax/input_pembelian') || $isActive('/src/fitur/coretax/laporan_pembelian');
@@ -1635,6 +1635,17 @@ $isFinanceOpen = $isBukuBesarOpen || $isSerahTerimaOpen || $isProgramSupplierOpe
                                 <i
                                     class="fa-solid fa-shield-halved mr-2 text-base text-red-400 group-hover:text-red-600 group-hover:scale-110 transition-all duration-200"></i>
                                 Security Logs
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/src/fitur/log_finance/index.php" data-menu="log_finance"
+                            class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-red-100 hover:text-red-700 transition-all duration-200 group rounded-lg">
+                            <span
+                                class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
+                                <i
+                                    class="fa-solid fa-file-invoice-dollar mr-2 text-base text-red-400 group-hover:text-red-600 group-hover:scale-110 transition-all duration-200"></i>
+                                Log Finance
                             </span>
                         </a>
                     </li>
