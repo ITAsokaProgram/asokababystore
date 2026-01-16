@@ -4,6 +4,7 @@ ini_set('display_errors', 0);
 header('Content-Type: application/json');
 require_once __DIR__ . '/../../../aa_kon_sett.php';
 require_once __DIR__ . '/../../auth/middleware_login.php';
+require_once __DIR__ . '/../../helpers/finance_log_helper.php';
 try {
     $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
     if (!preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
@@ -133,6 +134,17 @@ try {
                 if (!$stmtUpdateHeadReplace->execute()) {
                     throw new Exception("Gagal update data (ID: $buku_besar_id): " . $stmtUpdateHeadReplace->error);
                 }
+                $newDataLog = [
+                    'total_bayar' => $new_accumulated_total,
+                    'potongan' => $potongan,
+                    'ket_potongan' => $ket_potongan,
+                    'tanggal_bayar' => $tanggal_bayar,
+                    'store_bayar' => $store_bayar,
+                    'ket' => $ket_mop,
+                    'top' => $top,
+                    'status' => $status
+                ];
+                write_finance_log($conn, $kd_user, 'buku_besar', $no_faktur, 'UPDATE', $existingData, $newDataLog);
                 $conn->query("DELETE FROM buku_besar_potongan WHERE buku_besar_id = $buku_besar_id");
                 $detail_potongan_list = $item['details_potongan'] ?? [];
                 if (!empty($detail_potongan_list)) {
@@ -171,6 +183,16 @@ try {
                     throw new Exception("Gagal insert header faktur baru: " . $stmtInsertHead->error);
                 }
                 $buku_besar_id = $conn->insert_id;
+                $newDataLog = [
+                    'group_id' => $gen_group_id,
+                    'tgl_nota' => $tgl_nota,
+                    'no_faktur' => $no_faktur,
+                    'kode_supplier' => $kode_supplier,
+                    'nilai_faktur' => $nilai_faktur,
+                    'total_bayar' => $nominal_bayar_ini,
+                    'store_bayar' => $store_bayar
+                ];
+                write_finance_log($conn, $kd_user, 'buku_besar', $no_faktur, 'INSERT', null, $newDataLog);
                 $conn->query("DELETE FROM buku_besar_potongan WHERE buku_besar_id = $buku_besar_id");
                 $detail_potongan_list = $item['details_potongan'] ?? [];
                 if (!empty($detail_potongan_list)) {
