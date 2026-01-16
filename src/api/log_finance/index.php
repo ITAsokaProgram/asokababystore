@@ -2,10 +2,13 @@
 session_start();
 include '../../../aa_kon_sett.php';
 
+// Default tanggal hari ini jika tidak ada filter
 $selected_date = $_GET['tanggal'] ?? date('Y-m-d');
 
 require_once __DIR__ . '/../../component/menu_handler.php';
+// Pastikan nama menu sesuai dengan database permissions Anda
 $menuHandler = new MenuHandler('laporan_log_finance');
+
 if (!$menuHandler->initialize()) {
   exit();
 }
@@ -42,16 +45,6 @@ if (!$menuHandler->initialize()) {
       gap: 1rem;
     }
 
-    /* Style tambahan untuk baris yang bisa diklik */
-    .clickable-row {
-      cursor: pointer;
-    }
-
-    .clickable-row:hover {
-      background-color: #fdf2f8;
-      /* Pink-50ish */
-    }
-
     @media (max-width: 768px) {
       .diff-grid {
         grid-template-columns: 1fr;
@@ -76,6 +69,7 @@ if (!$menuHandler->initialize()) {
               </div>
               <div>
                 <h1 class="text-2xl font-bold text-gray-800 mb-1">Log Aktivitas Finance</h1>
+                <p class="text-sm text-gray-600">Monitor perubahan data insert, update, dan delete pada modul finance.
                 </p>
               </div>
             </div>
@@ -126,16 +120,6 @@ if (!$menuHandler->initialize()) {
               <input type="date" name="tanggal" id="tanggal" value="<?php echo $selected_date; ?>"
                 class="input-modern w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500">
             </div>
-
-            <div class="flex-1 min-w-[200px]">
-              <label for="search_ref" class="block text-sm font-semibold text-gray-700 mb-2">
-                <i class="fas fa-search text-pink-600 mr-1"></i>
-                Cari Ref ID
-              </label>
-              <input type="text" name="search_ref" id="search_ref" placeholder="Contoh: INV/2023/..."
-                class="input-modern w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500">
-            </div>
-
             <button type="submit" id="filter-submit-button"
               class="btn-primary px-6 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg font-medium inline-flex items-center gap-2 transition-colors">
               <i class="fas fa-filter"></i>
@@ -148,7 +132,9 @@ if (!$menuHandler->initialize()) {
           <div class="p-4 border-b border-gray-200 bg-gray-50">
             <h3 class="text-lg font-bold text-gray-800">
               <i class="fas fa-history text-pink-600 mr-2"></i>
-              Riwayat Perubahan (<span id="tanggal-dipilih-teks"><?php echo htmlspecialchars($selected_date); ?></span>)
+              Riwayat Perubahan (<span id="tanggal-dipilih-teks">
+                <?php echo htmlspecialchars($selected_date); ?>
+              </span>)
             </h3>
           </div>
           <div class="table-container overflow-x-auto">
@@ -160,11 +146,12 @@ if (!$menuHandler->initialize()) {
                   <th class="p-4 border-b"><i class="fas fa-table mr-2"></i>Table Name</th>
                   <th class="p-4 border-b"><i class="fas fa-fingerprint mr-2"></i>Ref ID</th>
                   <th class="p-4 border-b"><i class="fas fa-bolt mr-2"></i>Action</th>
+                  <th class="p-4 border-b text-center"><i class="fas fa-eye mr-2"></i>Detail</th>
                 </tr>
               </thead>
               <tbody id="log-table-body" class="text-sm text-gray-700">
                 <tr>
-                  <td colspan="5" class="text-center p-8">
+                  <td colspan="6" class="text-center p-8">
                     <div
                       class="spinner-simple animate-spin inline-block w-6 h-6 border-2 border-current border-t-transparent text-pink-600 rounded-full">
                     </div>
@@ -174,12 +161,6 @@ if (!$menuHandler->initialize()) {
               </tbody>
             </table>
           </div>
-
-          <div id="pagination-container"
-            class="flex flex-wrap justify-between items-center p-4 border-t border-gray-200">
-            <span id="pagination-info" class="text-sm text-gray-600 mb-2 sm:mb-0"></span>
-            <div id="pagination-links" class="flex items-center gap-2"></div>
-          </div>
         </div>
 
       </div>
@@ -187,8 +168,7 @@ if (!$menuHandler->initialize()) {
   </main>
 
   <div id="logDetailModal"
-    class="modal-overlay fixed inset-0 bg-black bg-opacity-50 z-50 items-center justify-center p-4"
-    style="display: none;">
+    class="modal-overlay fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center p-4">
     <div class="modal-content relative bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] flex flex-col">
       <div class="flex justify-between items-center border-b border-gray-200 p-6">
         <div>
@@ -231,8 +211,6 @@ if (!$menuHandler->initialize()) {
   <script src="/src/js/middleware_auth.js"></script>
   <script src="../../js/log_finance/log_handler.js" type="module"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
 </body>
 
 </html>
