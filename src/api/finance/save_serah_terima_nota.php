@@ -5,7 +5,7 @@ mysqli_report(MYSQLI_REPORT_OFF);
 header('Content-Type: application/json');
 require_once __DIR__ . '/../../../aa_kon_sett.php';
 require_once __DIR__ . '/../../auth/middleware_login.php';
-require_once __DIR__ . '/../../helpers/surat_terima_nota_helper.php';
+require_once __DIR__ . '/../../helpers/finance_log_helper.php';
 try {
     $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
     if (!preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
@@ -118,7 +118,8 @@ try {
         if (!$stmt->execute()) {
             throw new Exception("Database Error: " . $stmt->error);
         }
-        log_nota($conn, $user_login, 'UPDATE', $no_faktur, $old_data, $input);
+        $newData = array_merge($old_data, $input);
+        write_finance_log($conn, $user_login, 'serah_terima_nota', $no_faktur, 'UPDATE', $old_data, $newData);
         $message = "Data berhasil diperbarui.";
     } else {
         $query = "INSERT INTO serah_terima_nota 
@@ -157,7 +158,7 @@ try {
         if (!$stmt->execute()) {
             throw new Exception("Database Error: " . $stmt->error);
         }
-        log_nota($conn, $user_login, 'INSERT', $no_faktur, null, $input);
+        write_finance_log($conn, $user_login, 'serah_terima_nota', $no_faktur, 'INSERT', null, $input);
         $message = "Data berhasil disimpan.";
     }
     echo json_encode(['success' => true, 'message' => $message]);

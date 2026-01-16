@@ -4,7 +4,7 @@ ini_set('display_errors', 0);
 header('Content-Type: application/json');
 require_once __DIR__ . '/../../../aa_kon_sett.php';
 require_once __DIR__ . '/../../auth/middleware_login.php';
-require_once __DIR__ . '/../../helpers/surat_terima_nota_helper.php';
+require_once __DIR__ . '/../../helpers/finance_log_helper.php';
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         throw new Exception('Method Not Allowed');
@@ -141,14 +141,9 @@ try {
     if (!$stmt_upd->execute()) {
         throw new Exception("Database Error: " . $stmt_upd->error);
     }
-    $log_new_data = [
-        'mode_update' => $mode,
-        'no_faktur' => $no_faktur_baru_clean,
-        'status' => $new_status,
-        'status_kontra' => $new_status_kontra,
-        'otorisasi_oleh' => $nama_user_cek
-    ];
-    log_nota($conn, $user_login, 'UPDATE', $no_faktur_lama, $old_data, $log_new_data);
+    $newData = array_merge($old_data, $input);
+    $newData['otorisasi_oleh'] = $nama_user_cek;
+    write_finance_log($conn, $user_login, 'serah_terima_nota', $no_faktur_lama, 'UPDATE', $old_data, $newData);
     echo json_encode([
         'success' => true,
         'message' => "Data ($mode) berhasil diperbarui."
