@@ -141,6 +141,7 @@ try {
     $stmt_count->close();
     $response['pagination']['total_rows'] = (int) $total_rows;
     $response['pagination']['total_pages'] = ceil($total_rows / $limit);
+    $conn->query("SET SESSION group_concat_max_len = 1000000");
     $sql_data = "
         SELECT 
             p.id,

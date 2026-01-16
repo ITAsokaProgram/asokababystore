@@ -82,7 +82,7 @@ if (!$menuHandler->initialize()) {
                                 <i class="fa-solid fa-cart-shopping fa-lg"></i>
                             </div>
                             <div>
-                                <h1 id="page-title" class="text-xl font-bold text-gray-800 mb-1">Rekap Data Pembelian
+                                <h1 id="page-title" class="text-xl font-bold text-gray-800 mb-1">Rekap Pembelian
                                 </h1>
                                 <p id="page-subtitle" class="text-xs text-gray-600">Memuat data pembelian...</p>
                             </div>
