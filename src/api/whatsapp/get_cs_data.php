@@ -352,6 +352,13 @@ try {
             $types .= 's';
         } elseif ($filter === 'umum') {
             $whereConditions[] = "p.status_percakapan IN ('open', 'closed')";
+
+            $whereConditions[] = "NOT EXISTS (
+                SELECT 1 FROM wa_pesan bpm 
+                WHERE bpm.percakapan_id = p.id 
+                AND bpm.tipe_pesan = 'broadcast'
+            )";
+
         } elseif ($filter === 'broadcast') {
             $whereConditions[] = "EXISTS (
                 SELECT 1 FROM wa_pesan bpm 
