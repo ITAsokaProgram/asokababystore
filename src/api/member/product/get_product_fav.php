@@ -189,12 +189,21 @@ if ($status === 'active') {
   $types .= "s";
 }
 if (!empty($search)) {
-  $searchSql = " AND (c.nama_cust LIKE ? OR t.descp LIKE ? OR t.kd_cust LIKE ?) ";
+  $searchSql = " AND (
+        c.nama_cust LIKE ? OR 
+        t.descp LIKE ? OR 
+        t.kd_cust LIKE ? OR 
+        s.nama_supp LIKE ? OR 
+        s.nama_inisial LIKE ?
+    ) ";
   $searchValue = "%" . $search . "%";
+
   $params[] = $searchValue;
   $params[] = $searchValue;
   $params[] = $searchValue;
-  $types .= "sss";
+  $params[] = $searchValue;
+  $params[] = $searchValue;
+  $types .= "sssss";
 }
 $orderBySql = " ORDER BY total_qty DESC ";
 if ($sortBy === 'harga') {
@@ -210,6 +219,7 @@ $sql = "SELECT
     SUM(t.qty * t.harga) AS total_hrg
 FROM trans_b t
 LEFT JOIN customers c ON t.kd_cust = c.kd_cust
+LEFT JOIN supplier s ON t.kode_supp = s.kode_supp AND t.kd_store = s.kd_store 
 WHERE 
     t.kd_cust IS NOT NULL
     AND t.kd_cust NOT IN ('', '898989', '89898989', '999999999')
@@ -219,6 +229,7 @@ WHERE
 GROUP BY t.kd_cust, t.plu, c.nama_cust, t.descp
 $orderBySql
 LIMIT ? OFFSET ?";
+
 $params[] = $limit;
 $params[] = $offset;
 $types .= 'ii';

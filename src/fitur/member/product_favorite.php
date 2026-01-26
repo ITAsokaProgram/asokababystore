@@ -174,8 +174,8 @@ $queryString = http_build_query($queryParams);
                                     <i class="fas fa-times"></i> Reset
                                 </button>
                             </div>
-                            <div class="relative hidden">
-                                <input type="text" id="search-input" placeholder="Cari member atau produk..."
+                            <div class="relative">
+                                <input type="text" id="search-input" placeholder="Cari Produk, Supplier, Member..."
                                     class="pl-10 pr-4 py-2 border border-emerald-100 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-400 shadow-sm">
                                 <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
                             </div>

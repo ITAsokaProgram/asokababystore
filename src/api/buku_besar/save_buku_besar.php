@@ -208,6 +208,11 @@ try {
                 }
             }
 
+            // $stmtUpdateSTN = $conn->prepare("UPDATE serah_terima_nota SET status_bayar = 'Sudah' WHERE no_faktur = ?");
+            // $stmtUpdateSTN->bind_param("s", $no_faktur);
+            // $stmtUpdateSTN->execute();
+            // $stmtUpdateSTN->close();
+
             if ($nominal_bayar_ini > 0) {
                 $stmtInsertAngsuran->bind_param(
                     "isdsss",

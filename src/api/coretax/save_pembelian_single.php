@@ -132,6 +132,11 @@ try {
         );
         if (!$stmtBB->execute())
             throw new Exception("Gagal simpan ke Buku Besar: " . $stmtBB->error);
+
+        // $stmtSTN = $conn->prepare("UPDATE serah_terima_nota SET status_bayar = 'Sudah' WHERE no_faktur = ?");
+        // $stmtSTN->bind_param("s", $no_invoice);
+        // $stmtSTN->execute();
+        // $stmtSTN->close();
         $message = "Data berhasil disimpan ke Pembelian.";
     }
     $conn->commit();

@@ -28,6 +28,45 @@ $menuHandler = new MenuHandler('program_supplier_input');
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
     <style>
+        .input-compact {
+            @apply transition-all duration-200;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+        }
+
+        .input-group-addon {
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            border-right: none;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem 0 0 0.375rem;
+            font-size: 0.875rem;
+            color: #6b7280;
+            font-weight: 600;
+        }
+
+        .input-group .input-compact {
+            border-radius: 0 0.375rem 0.375rem 0;
+        }
+
+        /* Status Indikator untuk NPWP */
+        .valid-feedback {
+            color: #10b981;
+            font-size: 0.7rem;
+            margin-top: 2px;
+            display: none;
+        }
+
+        .invalid-feedback {
+            color: #ef4444;
+            font-size: 0.7rem;
+            margin-top: 2px;
+            display: none;
+        }
+
         .input-row-container {
             background: #fff;
             border: 1px solid #e5e7eb;
@@ -170,9 +209,12 @@ $menuHandler = new MenuHandler('program_supplier_input');
 
                             </div>
                             <div>
-                                <label class="form-label">NPWP (16 Digit)</label>
-                                <input type="text" id="inp_npwp" name="npwp" class="input-compact" maxlength="16"
-                                    oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                <label class="form-label">
+                                    NPWP (16 Digit)
+                                </label>
+                                <input type="text" id="inp_npwp" name="npwp" class="input-compact font-mono"
+                                    maxlength="16" placeholder="0000000000000000">
+
                             </div>
                             <div>
                                 <label class="form-label">Status PPN</label>
@@ -217,9 +259,13 @@ $menuHandler = new MenuHandler('program_supplier_input');
                             </div>
 
                             <div>
-                                <label class="form-label text-right">Nilai Program (Rp)</label>
-                                <input type="text" id="inp_nilai_program" name="nilai_program"
-                                    class="input-compact text-right font-mono" value="0">
+                                <label class="form-label text-gray-700">Nilai Program</label>
+                                <div class="input-group">
+                                    <span class="input-group-addon">Rp</span>
+                                    <input type="text" id="inp_nilai_program" name="nilai_program"
+                                        class="input-compact text-right font-mono font-bold text-pink-600"
+                                        placeholder="0">
+                                </div>
                             </div>
 
                             <div>
@@ -304,6 +350,35 @@ $menuHandler = new MenuHandler('program_supplier_input');
             </div>
         </section>
     </main>
+    <div class="fixed bottom-6 right-6 flex gap-2 z-50">
+        <div
+            class="bg-white/80 backdrop-blur-md border border-gray-200 rounded-lg shadow-lg p-3 text-xs text-gray-500 flex gap-4">
+            <div class="flex items-center gap-1">
+                <kbd
+                    class="px-2 py-1 bg-gray-100 border border-gray-300 rounded shadow-sm font-sans font-bold text-gray-800">Alt</kbd>
+                +
+                <kbd
+                    class="px-2 py-1 bg-gray-100 border border-gray-300 rounded shadow-sm font-sans font-bold text-gray-800">CTRL</kbd>
+                +
+                <kbd
+                    class="px-2 py-1 bg-gray-100 border border-gray-300 rounded shadow-sm font-sans font-bold text-gray-800">S</kbd>
+                <span>Simpan</span>
+            </div>
+            <div class="flex items-center gap-1">
+                <kbd
+                    class="px-2 py-1 bg-gray-100 border border-gray-300 rounded shadow-sm font-sans font-bold text-gray-800">Alt</kbd>
+                +
+                <kbd
+                    class="px-2 py-1 bg-gray-100 border border-gray-300 rounded shadow-sm font-sans font-bold text-gray-800">C</kbd>
+                <span>Batal/Reset</span>
+            </div>
+            <div class="flex items-center gap-1">
+                <kbd
+                    class="px-2 py-1 bg-gray-100 border border-gray-300 rounded shadow-sm font-sans font-bold text-gray-800">Enter</kbd>
+                <span>Next Field</span>
+            </div>
+        </div>
+    </div>
 
     <div x-data="detailModal()" x-show="show" x-cloak @show-detail-modal.window="openModal($event.detail)"
         style="display: none; z-index: 10000;" class="fixed inset-0 z-[9999] overflow-y-auto">
