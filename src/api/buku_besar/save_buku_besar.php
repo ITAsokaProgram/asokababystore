@@ -70,6 +70,7 @@ try {
                kode_store, store_bayar, ket, kd_user, top, status)
               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         $stmtUpdateHeadReplace = $conn->prepare("UPDATE buku_besar SET 
+            nilai_faktur = ?, 
             total_bayar = ?, 
             potongan = ?,
             ket_potongan = ?,
@@ -120,7 +121,8 @@ try {
                 $db_total_bayar = (float) $existingData['total_bayar'];
                 $new_accumulated_total = $db_total_bayar + $nominal_bayar_ini;
                 $stmtUpdateHeadReplace->bind_param(
-                    "ddssssssi",
+                    "dddssssssi",
+                    $nilai_faktur,
                     $new_accumulated_total,
                     $potongan,
                     $ket_potongan,

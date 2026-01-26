@@ -370,16 +370,16 @@ if ($stmt->num_rows === 0) {
 
     <main>
 
-        <!-- <section id="home-section" class="relative w-full text-center md:h-screen h-auto overflow-hidden"
+        <section id="home-section" class="relative w-full text-center md:h-screen h-auto overflow-hidden"
             data-aos="fade-up" data-aos-delay="200" data-aos-duration="1000">
-            
+
             <div class="swiper mySwiper h-auto w-full ">
                 <div class="swiper-wrapper" id="carousel-wrapper">
                 </div>
             </div>
-        </section> -->
+        </section>
 
-        <!-- <div class="relative z-10 mt-12 max-w-4xl mx-auto bg-white/90 backdrop-blur-lg shadow-2xl rounded-2xl py-8 px-8 grid grid-cols-1 sm:grid-cols-3 gap-8 text-center border border-pink-100"
+        <div class="relative z-10 mt-12 max-w-4xl mx-auto bg-white/90 backdrop-blur-lg shadow-2xl rounded-2xl py-8 px-8 grid grid-cols-1 sm:grid-cols-3 gap-8 text-center border border-pink-100"
             data-aos="fade-up" data-aos-delay="200" data-aos-duration="1000">
             <div class="group">
                 <div class="text-4xl font-bold gradient-text mb-2 count-animation" id="total_pelanggan"></div>
@@ -402,7 +402,7 @@ if ($stmt->num_rows === 0) {
                     class="w-16 h-1 bg-gradient-to-r from-pink-500 to-purple-600 mx-auto mt-3 group-hover:w-20 transition-all duration-300">
                 </div>
             </div>
-        </div> -->
+        </div>
 
         <!-- Member Section -->
         <section id="member-section" class="py-20 bg-gradient-to-br from-pink-50 via-white to-purple-50">
