@@ -335,7 +335,7 @@ document.addEventListener("DOMContentLoaded", () => {
         };
         tabel_data.forEach((row) => {
             const nominal = parseFloat(row.nominal) || 0;
-            const rowDataEncoded = encodeURIComponent(JSON.stringify(row));
+            const rowDataEncoded = encodeURIComponent(JSON.stringify(row)).replace(/'/g, "%27");
             const isCOD = row.cod === 'Ya';
             let btnEditKontra = '';
             if (row.status_kontra === 'Sudah') {
