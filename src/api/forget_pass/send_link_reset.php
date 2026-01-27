@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $mail = new PHPMailer(true);
     try {
         $mail->isSMTP();
-        $mail->Host = $env['SMTP_HOST'];
+        $mail->Host = gethostbyname($env['SMTP_HOST']);
         $mail->SMTPAuth = true;
         $mail->Username = $env['SMTP_USER'];
         $mail->Password = $env['SMTP_PASS'];

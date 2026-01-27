@@ -163,15 +163,16 @@ logVisitor($conn, $user->id, "Customer Profile");
                 <!-- Phone Number -->
                 <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-colors duration-300 cursor-pointer"
                     id="numberPhoneContainer">
-                    <div
-                        class="w-10 h-10 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center">
+                    <div class="w-10 h-10 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center">
                         <i class="fas fa-phone text-white text-sm"></i>
                     </div>
+                    
                     <div class="flex-1">
                         <p class="text-xs text-gray-500 font-medium">No. HP</p>
-                        <p class="text-gray-800 font-semibold">-</p>
+                        <p class="text-gray-800 font-semibold" id="phoneValueText">-</p>
                     </div>
-                    <i class="fas fa-edit text-gray-400 text-sm"></i>
+
+                    <i class="fas fa-chevron-right text-gray-400 text-sm" id="phoneActionIcon"></i>
                 </div>
 
                 <!-- Address -->

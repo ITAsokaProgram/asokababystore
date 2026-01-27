@@ -124,43 +124,68 @@ const isiFormProfile = (data) => {
   setSelectValue("jumlah_anak", data.anak);
   document.getElementById("syarat").checked = !!data.syarat_ketentuan;
 };
+
 const isiNumberPhone = (data) => {
+  // 1. Ambil elemen dari DOM
   const numberPhoneContainer = document.getElementById("numberPhoneContainer");
+  const phoneValueText = document.getElementById("phoneValueText");
+  const phoneActionIcon = document.getElementById("phoneActionIcon");
+  
   const editBtn = document.getElementById("sendEdit");
   const editNote = document.getElementById("editNote");
+
+  numberPhoneContainer.onclick = null;
+
   if (!data.phone_number) {
-    numberPhoneContainer.innerHTML = `
-        <button id="btnIsiNoHp" class="text-blue-600 hover:underline">
-            ➕ Masukkan No. HP
-        </button>
-    `;
-    Swal.fire({
-      icon: "info",
-      title: "No Handphone Kosong",
-      text: "Silahkan masukan no handphone terlebih dahulu untuk pengecekan member atau tidak",
-      showConfirmButton: true,
-      allowOutsideClick: false,
-      allowEscapeKey: false,
-    }).then(() => {
-      showModalPhone();
-    });
-    document.getElementById("btnIsiNoHp").addEventListener("click", () => {
-      showModalPhone();
-    });
+    
+    phoneValueText.innerHTML = `<span class="text-blue-600 font-bold">Masukkan No. HP</span>`;
+    phoneActionIcon.className = "fas fa-exclamation-circle text-blue-500 animate-pulse";
+
+    const actionInputHp = () => {
+      Swal.fire({
+        icon: "info",
+        title: "No Handphone Kosong",
+        text: "Silahkan masukan no handphone terlebih dahulu untuk pengecekan member.",
+        showConfirmButton: true,
+      }).then(() => {
+        showModalPhone();
+      });
+    };
+
+    numberPhoneContainer.onclick = actionInputHp;
+
+
   } else {
-    numberPhoneContainer.innerHTML = `
-        <div class="w-10 h-10 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center">
-            <i class="fas fa-phone text-white text-sm"></i>
-        </div>
-        <div class="flex-1">
-            <p class="text-xs text-gray-500 font-medium">No. HP</p>
-            <p class="text-gray-800 font-semibold">${data.phone_number}</p>
-        </div>
-        `;
+    phoneValueText.textContent = data.phone_number;
+    phoneValueText.classList.remove("text-blue-600", "font-bold"); 
+    
+    if (data.status_member === "member") {
+      phoneActionIcon.className = "fas fa-lock text-gray-400"; 
+      
+      numberPhoneContainer.onclick = () => {
+        Swal.fire({
+          icon: "info",
+          title: "Nomor Terkunci",
+          text: "Nomor HP tidak dapat diubah karena sudah terdaftar sebagai Member. Silakan hubungi store cabang Asoka Baby Store untuk perubahan data.",
+          showConfirmButton: true,
+        });
+      };
+      
+      if (editNote) editNote.classList.add("hidden");
+
+    } else {
+      phoneActionIcon.className = "fas fa-pen text-green-500"; 
+      
+      numberPhoneContainer.onclick = () => showModalPhone();
+      
+      if (editBtn) editBtn.remove();
+      if (editNote) editNote.classList.remove("hidden");
+    }
   }
+
   const openProfileModal = () => {
-    if (editBtn) {
-      editBtn.addEventListener("click", () => {
+    if (document.getElementById("sendEdit")) {
+      document.getElementById("sendEdit").addEventListener("click", () => {
         openModal("modalMemberProfile", "modalContentProfile", "sendEdit");
         closeModalProfile(
           "closeModalProfile",
@@ -171,42 +196,17 @@ const isiNumberPhone = (data) => {
     }
   };
   openProfileModal();
-  const disablePhoneEdit = () => {
-    numberPhoneContainer.onclick = () => {
-      Swal.fire({
-        icon: "info",
-        text: "Anda tidak bisa mengubah no telp karena sudah terhubung member. Jika ingin mengalihkan ke no lain, silakan ke store cabang Asoka Baby Store.",
-        showConfirmButton: true,
-      });
-    };
-  };
-  const enablePhoneEdit = () => {
-    if (!document.getElementById("btnIsiNoHp")) {
-      numberPhoneContainer.onclick = () => showModalPhone();
-    }
-  };
-  if (data.status_member === "member" && data.phone_number) {
-    disablePhoneEdit();
-    if (editNote) editNote.classList.add("hidden");
-  } else {
-    enablePhoneEdit();
-    if (editBtn) {
-      editBtn.remove();
-    }
-    if (editNote) editNote.classList.remove("hidden");
-  }
-  if (data.updated === 1 && editBtn) {
+
+  if (data.updated === 1 && document.getElementById("sendEdit")) {
     Swal.fire({
       icon: "info",
-      title: "Informasi",
+      title: "Lengkapi Data",
       text: "Harap mengisi data diri untuk mengakses semua fitur",
       showConfirmButton: true,
       allowOutsideClick: false,
-      allowEscapeKey: false,
     }).then(() => {
-      if (editBtn) {
-        editBtn.click();
-      }
+      const btn = document.getElementById("sendEdit");
+      if (btn) btn.click();
     });
   }
 };

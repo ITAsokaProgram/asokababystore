@@ -1,4 +1,5 @@
 <?php
+ini_set('memory_limit', '512M'); 
 require_once __DIR__ . "/../../../config.php";
 require_once __DIR__ . "/../../../redis.php";
 header("Content-Type: application/json");
