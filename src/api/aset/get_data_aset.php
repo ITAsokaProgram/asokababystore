@@ -4,7 +4,6 @@ require_once __DIR__ . '/../../auth/middleware_login.php';
 header("Access-Control-Allow-Methods: GET");
 header('Content-Type: application/json');
 
-$verif = authenticate_request();
 
 
 try {
