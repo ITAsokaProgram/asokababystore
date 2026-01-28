@@ -122,15 +122,25 @@ try {
         $bind_params[] = $termNumeric;
         $bind_params[] = $termNumeric;
     }
-    $sql_count = "SELECT COUNT(DISTINCT p.id) as total 
-              FROM ff_pembelian p 
-              LEFT JOIN ff_coretax c ON ROUND(p.dpp) = ROUND(c.harga_jual) AND ROUND(p.ppn) = ROUND(c.ppn) 
-              LEFT JOIN ff_faktur_pajak f ON (
-                        p.no_invoice = f.no_invoice 
-                        OR 
-                        (p.dpp = f.dpp AND p.ppn = f.ppn)
-                  )
-                  WHERE $where_conditions";
+    $needs_join_count = false;
+    
+    if ($status_data != 'all' || !empty($search_supplier)) {
+        $needs_join_count = true;
+    }
+
+    $sql_count = "SELECT COUNT(DISTINCT p.id) as total FROM ff_pembelian p ";
+
+    if ($needs_join_count) {
+        $sql_count .= " LEFT JOIN ff_coretax c ON p.dpp = c.harga_jual AND p.ppn = c.ppn ";
+        
+        $sql_count .= " LEFT JOIN ff_faktur_pajak f ON (
+                            p.no_invoice = f.no_invoice 
+                            OR 
+                            (p.dpp = f.dpp AND p.ppn = f.ppn)
+                        ) ";
+    }
+
+    $sql_count .= " WHERE $where_conditions";
     $stmt_count = $conn->prepare($sql_count);
     if ($stmt_count === false)
         throw new Exception("Prepare failed (count): " . $conn->error);
@@ -142,94 +152,127 @@ try {
     $response['pagination']['total_rows'] = (int) $total_rows;
     $response['pagination']['total_pages'] = ceil($total_rows / $limit);
     $conn->query("SET SESSION group_concat_max_len = 1000000");
-    $sql_data = "
-        SELECT 
-            p.id,
-            p.nama_supplier, 
-            p.tgl_nota, 
-            p.catatan,
-            p.no_invoice, 
-            p.no_faktur,  
-            p.dpp_nilai_lain,
-            p.dpp, 
-            p.ppn, 
-            p.total_terima_fp,
-            p.ada_di_coretax,
-            p.tipe_nsfp,
-            p.status, 
-            ks.Nm_Alias,
-            p.nsfp, 
-            CONCAT_WS(',', 
-                GROUP_CONCAT(
-                    DISTINCT
-                    IF(c.nsfp IS NOT NULL,
-                        CONCAT(
-                            c.nsfp,
-                            '|',
-                            CASE 
-                                WHEN p_used_c.id IS NOT NULL AND p_used_c.id != p.id THEN 'USED' 
-                                ELSE 'AVAILABLE' 
-                            END,
-                            '|',
-                            IFNULL(p_used_c.no_invoice, ''),
-                            '|CORETAX|VALUE|',
-                            REPLACE(IFNULL(c.nama_penjual, ''), '|', ' '),
-                            '|',
-                            IFNULL(ks_c.Nm_Alias, IFNULL(c.kode_store, ''))
-                        ),
-                        NULL
-                    )
-                    SEPARATOR ','
-                ),
-                GROUP_CONCAT(
-                    DISTINCT
-                    IF(f.nsfp IS NOT NULL,
-                        CONCAT(
-                            f.nsfp,
-                            '|',
-                            CASE 
-                                WHEN p_used_f.id IS NOT NULL AND p_used_f.id != p.id THEN 'USED' 
-                                ELSE 'AVAILABLE' 
-                            END,
-                            '|',
-                            IFNULL(p_used_f.no_invoice, ''),
-                            '|FISIK|',
-                            IF(p.no_invoice = f.no_invoice, 'INVOICE', 'VALUE'),
-                            '|',
-                            REPLACE(IFNULL(f.nama_supplier, ''), '|', ' '),
-                            '|',
-                            IFNULL(ks_f.Nm_Alias, IFNULL(f.kode_store, ''))
-                        ),
-                        NULL
-                    )
-                    SEPARATOR ','
-                )
-            ) as candidate_nsfps
-        FROM ff_pembelian p
-        LEFT JOIN kode_store ks ON p.kode_store = ks.Kd_Store
-        LEFT JOIN ff_coretax c ON ROUND(p.dpp) = ROUND(c.harga_jual) AND ROUND(p.ppn) = ROUND(c.ppn) 
-        LEFT JOIN kode_store ks_c ON c.kode_store = ks_c.Kd_Store
-        LEFT JOIN ff_pembelian p_used_c ON c.nsfp = p_used_c.nsfp AND p_used_c.ada_di_coretax = 1
-        LEFT JOIN ff_faktur_pajak f ON (
-            p.no_invoice = f.no_invoice 
-            OR 
-            (p.dpp = f.dpp AND p.ppn = f.ppn)
-        )
-        LEFT JOIN kode_store ks_f ON f.kode_store = ks_f.Kd_Store
-        LEFT JOIN ff_pembelian p_used_f ON f.nsfp = p_used_f.nsfp AND p_used_f.ada_di_coretax = 1
-        WHERE $where_conditions
-        GROUP BY p.id
-        ORDER BY p.tgl_nota DESC, p.no_invoice ASC 
-        LIMIT ? OFFSET ?
-    ";
-    $bind_types .= 'ii';
-    $bind_params[] = $limit;
-    $bind_params[] = $offset;
-    $stmt_data = $conn->prepare($sql_data);
-    if ($stmt_data === false)
-        throw new Exception("Prepare failed (data): " . $conn->error);
-    $stmt_data->bind_param($bind_types, ...$bind_params);
+    $is_heavy_filter = ($status_data != 'all' || !empty($search_supplier));
+    
+    $final_sql_data = "";
+    $final_bind_types = "";
+    $final_bind_params = [];
+
+    // SKENARIO 1: MODE CEPAT (Default View / Filter Tanggal Saja)
+    // Kita ambil ID-nya dulu, baru Join. Ini memangkas waktu load drastis.
+    if (!$is_heavy_filter) {
+        
+        // 1. Ambil 100 ID untuk halaman ini
+        $sql_get_ids = "SELECT p.id FROM ff_pembelian p WHERE $where_conditions ORDER BY p.tgl_nota DESC, p.no_invoice ASC LIMIT ? OFFSET ?";
+        
+        // Siapkan params untuk query ID (copy dari params filter yang sudah ada)
+        $params_ids = $bind_params; 
+        $types_ids = $bind_types . 'ii'; // Tambah integer untuk limit & offset
+        $params_ids[] = $limit;
+        $params_ids[] = $offset;
+
+        $stmt_ids = $conn->prepare($sql_get_ids);
+        if ($stmt_ids === false) throw new Exception("Prepare ID failed: " . $conn->error);
+        $stmt_ids->bind_param($types_ids, ...$params_ids);
+        $stmt_ids->execute();
+        $res_ids = $stmt_ids->get_result();
+        
+        $ids_to_fetch = [];
+        while ($r = $res_ids->fetch_assoc()) {
+            $ids_to_fetch[] = $r['id'];
+        }
+        $stmt_ids->close();
+
+        if (empty($ids_to_fetch)) {
+            // Jika halaman ini kosong, stop & return kosong
+            echo json_encode($response);
+            exit;
+        }
+
+        // 2. Buat Query Utama HANYA untuk ID yang terpilih (WHERE p.id IN (...))
+        $id_list_str = implode(',', $ids_to_fetch);
+        
+        $final_sql_data = "
+            SELECT 
+                p.id, p.nama_supplier, p.tgl_nota, p.catatan, p.no_invoice, p.no_faktur,  
+                p.dpp_nilai_lain, p.dpp, p.ppn, p.total_terima_fp, p.ada_di_coretax,
+                p.tipe_nsfp, p.status, ks.Nm_Alias, p.nsfp, 
+                
+                -- Subquery / Logic Candidate NSFP (Sama seperti sebelumnya)
+                CONCAT_WS(',', 
+                    GROUP_CONCAT(DISTINCT IF(c.nsfp IS NOT NULL, CONCAT(c.nsfp, '|', CASE WHEN p_used_c.id IS NOT NULL AND p_used_c.id != p.id THEN 'USED' ELSE 'AVAILABLE' END, '|', IFNULL(p_used_c.no_invoice, ''), '|CORETAX|VALUE|', REPLACE(IFNULL(c.nama_penjual, ''), '|', ' '), '|', IFNULL(ks_c.Nm_Alias, IFNULL(c.kode_store, ''))), NULL) SEPARATOR ','),
+                    GROUP_CONCAT(DISTINCT IF(f.nsfp IS NOT NULL, CONCAT(f.nsfp, '|', CASE WHEN p_used_f.id IS NOT NULL AND p_used_f.id != p.id THEN 'USED' ELSE 'AVAILABLE' END, '|', IFNULL(p_used_f.no_invoice, ''), '|FISIK|', IF(p.no_invoice = f.no_invoice, 'INVOICE', 'VALUE'), '|', REPLACE(IFNULL(f.nama_supplier, ''), '|', ' '), '|', IFNULL(ks_f.Nm_Alias, IFNULL(f.kode_store, ''))), NULL) SEPARATOR ',')
+                ) as candidate_nsfps
+
+            FROM ff_pembelian p
+            LEFT JOIN kode_store ks ON p.kode_store = ks.Kd_Store
+            
+            -- JOIN Core Tax
+            LEFT JOIN ff_coretax c ON p.dpp = c.harga_jual AND p.ppn = c.ppn 
+            LEFT JOIN kode_store ks_c ON c.kode_store = ks_c.Kd_Store
+            LEFT JOIN ff_pembelian p_used_c ON c.nsfp = p_used_c.nsfp AND p_used_c.ada_di_coretax = 1
+            
+            -- JOIN Faktur Pajak (Dengan OR yang biasanya lambat, tapi sekarang cepat karena cuma 100 baris)
+            LEFT JOIN ff_faktur_pajak f ON (p.no_invoice = f.no_invoice OR (p.dpp = f.dpp AND p.ppn = f.ppn))
+            LEFT JOIN kode_store ks_f ON f.kode_store = ks_f.Kd_Store
+            LEFT JOIN ff_pembelian p_used_f ON f.nsfp = p_used_f.nsfp AND p_used_f.ada_di_coretax = 1
+            
+            WHERE p.id IN ($id_list_str)
+            GROUP BY p.id
+            ORDER BY p.tgl_nota DESC, p.no_invoice ASC
+        ";
+        
+        // Query ini tidak butuh bind param lagi karena ID sudah di-hardcode di string IN (...)
+        // Ini aman karena $ids_to_fetch berasal dari integer database kita sendiri
+        $final_bind_types = "";
+        $final_bind_params = [];
+
+    } else {
+        // SKENARIO 2: MODE BERAT (Jika User Search / Filter Status)
+        // Kita terpaksa pakai cara lama karena harus men-scan status hasil join
+        
+        $final_sql_data = "
+            SELECT 
+                p.id, p.nama_supplier, p.tgl_nota, p.catatan, p.no_invoice, p.no_faktur,  
+                p.dpp_nilai_lain, p.dpp, p.ppn, p.total_terima_fp, p.ada_di_coretax,
+                p.tipe_nsfp, p.status, ks.Nm_Alias, p.nsfp, 
+                
+                CONCAT_WS(',', 
+                    GROUP_CONCAT(DISTINCT IF(c.nsfp IS NOT NULL, CONCAT(c.nsfp, '|', CASE WHEN p_used_c.id IS NOT NULL AND p_used_c.id != p.id THEN 'USED' ELSE 'AVAILABLE' END, '|', IFNULL(p_used_c.no_invoice, ''), '|CORETAX|VALUE|', REPLACE(IFNULL(c.nama_penjual, ''), '|', ' '), '|', IFNULL(ks_c.Nm_Alias, IFNULL(c.kode_store, ''))), NULL) SEPARATOR ','),
+                    GROUP_CONCAT(DISTINCT IF(f.nsfp IS NOT NULL, CONCAT(f.nsfp, '|', CASE WHEN p_used_f.id IS NOT NULL AND p_used_f.id != p.id THEN 'USED' ELSE 'AVAILABLE' END, '|', IFNULL(p_used_f.no_invoice, ''), '|FISIK|', IF(p.no_invoice = f.no_invoice, 'INVOICE', 'VALUE'), '|', REPLACE(IFNULL(f.nama_supplier, ''), '|', ' '), '|', IFNULL(ks_f.Nm_Alias, IFNULL(f.kode_store, ''))), NULL) SEPARATOR ',')
+                ) as candidate_nsfps
+
+            FROM ff_pembelian p
+            LEFT JOIN kode_store ks ON p.kode_store = ks.Kd_Store
+            LEFT JOIN ff_coretax c ON p.dpp = c.harga_jual AND p.ppn = c.ppn 
+            LEFT JOIN kode_store ks_c ON c.kode_store = ks_c.Kd_Store
+            LEFT JOIN ff_pembelian p_used_c ON c.nsfp = p_used_c.nsfp AND p_used_c.ada_di_coretax = 1
+            LEFT JOIN ff_faktur_pajak f ON (p.no_invoice = f.no_invoice OR (p.dpp = f.dpp AND p.ppn = f.ppn))
+            LEFT JOIN kode_store ks_f ON f.kode_store = ks_f.Kd_Store
+            LEFT JOIN ff_pembelian p_used_f ON f.nsfp = p_used_f.nsfp AND p_used_f.ada_di_coretax = 1
+            
+            WHERE $where_conditions
+            GROUP BY p.id
+            ORDER BY p.tgl_nota DESC, p.no_invoice ASC 
+            LIMIT ? OFFSET ?
+        ";
+        
+        $final_bind_types = $bind_types . 'ii';
+        $final_bind_params = $bind_params;
+        $final_bind_params[] = $limit;
+        $final_bind_params[] = $offset;
+    }
+
+    // Eksekusi Query Final
+    $stmt_data = $conn->prepare($final_sql_data);
+    if ($stmt_data === false) throw new Exception("Prepare data failed: " . $conn->error);
+    
+    if (!empty($final_bind_params)) {
+        $stmt_data->bind_param($final_bind_types, ...$final_bind_params);
+    }
+    
     $stmt_data->execute();
+    
     $result_data = $stmt_data->get_result();
     while ($row = $result_data->fetch_assoc()) {
         foreach ($row as $key => $value) {
