@@ -41,9 +41,10 @@ try {
             SUM((
                 CASE 
                     WHEN k.keterangan = 'Minus System' THEN k.sel_qty 
-                    ELSE k.qty_kor 
-                END * k.harga_beli
-            ) + IFNULL(k.ppn_kor, 0)) as total_erp_calc
+                    WHEN k.keterangan = 'Stock Opname' THEN k.sel_qty 
+                    ELSE 0 
+                END * (k.harga_beli + IFNULL(k.ppn_kor, 0))
+            ) ) as total_erp_calc
         FROM koreksi k
         WHERE k.tgl_koreksi BETWEEN ? AND ?
     ";
@@ -177,9 +178,10 @@ try {
                 SELECT SUM((
                     CASE 
                         WHEN k.keterangan = 'Minus System' THEN k.sel_qty 
-                        ELSE k.qty_kor 
-                    END * k.harga_beli
-                ) + IFNULL(k.ppn_kor, 0))
+                        WHEN k.keterangan = 'Stock Opname' THEN k.sel_qty 
+                        ELSE 0 
+                    END * (k.harga_beli + IFNULL(k.ppn_kor, 0))
+                ))
                 FROM koreksi k 
                 WHERE k.no_faktur = ck.no_faktur 
                 AND k.kd_store = ck.kode_store
