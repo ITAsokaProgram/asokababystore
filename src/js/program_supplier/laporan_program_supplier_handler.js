@@ -1,5 +1,4 @@
 import { sendRequestGET, sendRequestJSON } from "../utils/api_helpers.js";
-
 document.addEventListener("DOMContentLoaded", () => {
     const tableBody = document.getElementById("program-table-body");
     const filterForm = document.getElementById("filter-form");
@@ -70,13 +69,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     function formatMultiLine(str) {
         if (!str) return "-";
-        return str.split(',').map(s => `<div class="py-0.5 truncate">${s.trim()}</div>`).join('');
+        return str.split(',').map(s => `<div class="py-0.5 whitespace-normal break-words" style="max-width: 200px;">${s.trim()}</div>`).join('');
     }
     function getUrlParams() {
         const params = new URLSearchParams(window.location.search);
         return {
             kd_store: params.get("kd_store") || "all",
-            status_bukpot: params.get("status_bukpot") || "all", // TAMBAHAN
+            status_bukpot: params.get("status_bukpot") || "all", 
             search_query: params.get("search_query") || "",
             page: parseInt(params.get("page") || "1", 10),
         };
@@ -104,7 +103,6 @@ document.addEventListener("DOMContentLoaded", () => {
         filterSelectStore.value = selectedStore;
         filterSelectStore.setAttribute('data-loaded', 'true');
     }
-
     function setLoadingState(isLoading) {
         if (isLoading) {
             if (filterSubmitButton) {
@@ -142,7 +140,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if (filterStatusBukpot) {
                 filterStatusBukpot.value = params.status_bukpot;
             }
-
             if (filterInputQuery) filterInputQuery.value = params.search_query;
             if (pageSubtitle) {
                 pageSubtitle.textContent = "Menampilkan seluruh data";
@@ -191,7 +188,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if (row.keterangan) {
                 const encodedContent = encodeURIComponent(row.keterangan);
                 const safeTitle = `Keterangan - ${row.nomor_program || ''}`;
-
                 keteranganDisplay = `
                     <div class="truncate cursor-pointer text-gray-600 hover:text-pink-600 border-b border-transparent hover:border-pink-300 transition-all"
                          title="Klik untuk baca selengkapnya" style="max-width: 200px;"
@@ -236,7 +232,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     </td>
                     <td class="pt-3 text-center text-gray-600 align-top">${row.periode_program || "-"}</td>
                     <td class="pt-3 text-gray-700 align-top font-medium">${row.nama_program || "-"}</td>
-                    <td class="pt-3 font-mono text-gray-600 break-all text-[11px] align-top leading-relaxed text-blue-800">
+                    <td class="pt-3 font-mono text-gray-600 text-[11px] align-top leading-relaxed text-blue-800" >
                         ${docFormatted}
                     </td>
                     <td class="pt-3 text-right font-mono font-medium align-top">${formatRupiah(row.nilai_program)}</td>
@@ -294,9 +290,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const formData = new FormData(form);
         const data = Object.fromEntries(formData.entries());
         if (data.mode === 'tax') {
-            const cleanNsfp = (data.nsfp || "").replace(/\D/g, ""); // \D artinya bukan digit
-            const cleanBukpot = (data.nomor_bukpot || "").replace(/\D/g, "");
-
+            const cleanNsfp = (data.nsfp || "").replace(/\D/g, ""); 
+            const cleanBukpot = (data.nomor_bukpot || "").replace(/[^a-zA-Z0-9]/g, "");
             if (data.nsfp && cleanNsfp.length !== 17) {
                 Swal.fire({
                     icon: 'warning',
@@ -306,12 +301,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
                 return;
             }
-
             if (data.nomor_bukpot && cleanBukpot.length !== 9) {
                 Swal.fire({
                     icon: 'warning',
                     title: 'Input Tidak Lengkap',
-                    text: `Nomor Bukti Potong harus berisi 9 digit angka! (Saat ini: ${cleanBukpot.length} digit)`,
+                    text: `Nomor Bukti Potong harus berisi 9 karakter (huruf & angka)! (Saat ini: ${cleanBukpot.length} karakter)`,
                     confirmButtonColor: '#d33'
                 });
                 return;
@@ -324,12 +318,13 @@ document.addEventListener("DOMContentLoaded", () => {
         if (data.nsfp) {
             data.nsfp = data.nsfp.replace(/[^a-zA-Z0-9]/g, "");
         }
+        if (data.nomor_bukpot) {
+            data.nomor_bukpot = data.nomor_bukpot.replace(/[^a-zA-Z0-9]/g, "");
+        }
         submitBtn.disabled = true;
         submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Menyimpan...`;
         try {
-
             const result = await sendRequestJSON("/src/api/program_supplier/update_program_supplier_partial.php", data);
-
             if (result.success) {
                 Swal.fire({
                     icon: 'success',
@@ -405,7 +400,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const params = getUrlParams();
         const currencyFmt = "#,##0";
         let periodeText = "SEMUA DATA";
-
         Swal.fire({
             title: "Menyiapkan Excel...",
             text: "Sedang mengambil data...",
@@ -426,13 +420,12 @@ document.addEventListener("DOMContentLoaded", () => {
             const workbook = new ExcelJS.Workbook();
             const sheet = workbook.addWorksheet("Program Supplier");
             sheet.columns = [
-                // No dihapus
-                { key: "nomor_program", width: 25 }, // Ditambah
+                { key: "nomor_program", width: 25 }, 
                 { key: "pic", width: 25 },
                 { key: "nama_supplier", width: 35 },
-                { key: "npwp", width: 20 }, // Ditambah kolom khusus NPWP agar rapi di excel
+                { key: "npwp", width: 20 }, 
                 { key: "cabang", width: 25 },
-                { key: "status_ppn", width: 15 }, // Ditambah
+                { key: "status_ppn", width: 15 }, 
                 { key: "periode_program", width: 15 },
                 { key: "nama_program", width: 30 },
                 { key: "nomor_dokumen", width: 30 },
@@ -453,7 +446,6 @@ document.addEventListener("DOMContentLoaded", () => {
             titleCell.value = `LAPORAN PROGRAM SUPPLIER - ${periodeText}`;
             titleCell.font = { name: "Arial", size: 14, bold: true };
             titleCell.alignment = { horizontal: "center" };
-
             const headers = [
                 "No Program", "PIC", "Supplier", "NPWP", "Cabang", "Sts PPN", "Periode Prg", "Nama Program", "No Dokumen",
                 "Nilai Program", "MOP", "TOP", "Nilai Transfer", "Tgl Transfer",
