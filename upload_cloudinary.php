@@ -97,7 +97,6 @@ function processUploadFiles($fileArray, $conn, $cloudinary, $noHp, $uploadedAt, 
             }
             $stmt->close();
         } catch (Exception $e) {
-            error_log("Cloudinary Upload Error: " . $e->getMessage());
             continue;
         }
     }

@@ -87,14 +87,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $mail->SMTPDebug = 2;
     $mail->Debugoutput = function ($str, $level) {
-        error_log("PHPMailer [$level]: $str");
     };
 
-    error_log("Email tujuan: $email");
-    error_log("Token reset: $token");
-    error_log("Client ID: $clientId");
-    error_log("Client Secret: $clientSecret");
-    error_log("Refresh Token: $refreshToken");
 
     try {
         // Cek apakah email ada di database user

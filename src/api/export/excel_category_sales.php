@@ -38,12 +38,6 @@ try {
         throw new Exception("Invalid date format. Use d-m-Y format");
     }
 
-    // Debug logging
-    error_log("Excel Export Debug - Store codes: " . json_encode($kd_store));
-    error_log("Excel Export Debug - Date range: $tgl_awal to $tgl_akhir");
-    error_log("Excel Export Debug - Category: $type_kategory");
-    error_log("Excel Export Debug - Supplier: $kode_supp");
-
     // Create placeholders for IN clause
     $placeholders = implode(',', array_fill(0, count($kd_store), '?'));
 
@@ -77,7 +71,6 @@ try {
     $stmtCols->close();
 
     // Debug: Log the generated columns
-    error_log("Excel Export Debug - Generated columns: " . ($colsPivot ?: "NULL"));
 
     // Check if we have valid columns
     if (!$colsPivot) {
@@ -92,9 +85,7 @@ try {
             $resCount = $stmtCount->get_result()->fetch_assoc();
             $rowCount = $resCount ? $resCount['cnt'] : 0;
             $stmtCount->close();
-            error_log("Excel Export Debug - Data count for filter: $rowCount");
         } else {
-            error_log("Excel Export Debug - Failed to prepare count query: " . $conn->error);
         }
         throw new Exception("No dynamic columns generated. Kemungkinan tidak ada data yang cocok dengan filter (store, kategori, supplier, tanggal). Silakan cek data sumber.");
     }
@@ -119,7 +110,6 @@ try {
 ";
 
     // Debug: Log the final SQL query (with placeholders)
-    error_log("Excel Export Debug - Main SQL: " . $sql);
 
     // Prepare and execute main query
     $stmt = $conn->prepare($sql);
@@ -146,10 +136,7 @@ try {
 
     // Debug: Log sample data structure
     if (!empty($data)) {
-        error_log("Excel Export Debug - Sample row: " . json_encode($data[0]));
-        error_log("Excel Export Debug - Total rows: " . count($data));
     } else {
-        error_log("Excel Export Debug - No data returned from main query");
     }
 
     // Close statement safely
