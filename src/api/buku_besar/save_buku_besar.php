@@ -73,11 +73,14 @@ try {
             ket = ?,
             top = ?,
             status = ?,
+            nama_supplier = ?, 
+            kode_supplier = ?,
             edit_pada = NOW() 
             WHERE id = ?");
+
         $stmtInsertAngsuran = $conn->prepare("INSERT INTO buku_besar_angsuran 
-              (buku_besar_id, tanggal_bayar, nominal_bayar, store_bayar, ket, kd_user)
-              VALUES (?, ?, ?, ?, ?, ?)");
+            (buku_besar_id, tanggal_bayar, nominal_bayar, store_bayar, ket, kd_user)
+            VALUES (?, ?, ?, ?, ?, ?)");
         $sum_nilai_faktur_group = 0;
         $nominal_bayar_sampel = 0;
         if (count($details) > 0) {
@@ -115,18 +118,20 @@ try {
                 $db_total_bayar = (float) $existingData['total_bayar'];
                 $new_accumulated_total = $db_total_bayar + $nominal_bayar_ini;
                 $stmtUpdateHeadReplace->bind_param(
-                    "dddssssssi",
-                    $nilai_faktur,
-                    $new_accumulated_total,
-                    $potongan,
-                    $ket_potongan,
-                    $tanggal_bayar,
-                    $store_bayar,
-                    $ket_mop,
-                    $top,
-                    $status,
-                    $buku_besar_id
-                );
+                        "dddssssssssi", 
+                        $nilai_faktur,
+                        $new_accumulated_total,
+                        $potongan,
+                        $ket_potongan,
+                        $tanggal_bayar,
+                        $store_bayar,
+                        $ket,
+                        $top,
+                        $status,
+                        $nama_supplier, 
+                        $kode_supplier, 
+                        $buku_besar_id
+                    );
                 if (!$stmtUpdateHeadReplace->execute()) {
                     throw new Exception("Gagal update data (ID: $buku_besar_id): " . $stmtUpdateHeadReplace->error);
                 }

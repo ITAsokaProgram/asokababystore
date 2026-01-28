@@ -174,7 +174,7 @@ async function fetchTableData(reset = false) {
     currentRequestController = new AbortController();
     tableBody.innerHTML = `
         <tr>
-            <td colspan="9" class="text-center p-8">
+            <td colspan="15" class="text-center p-8">
                 <div class="flex flex-col items-center justify-center">
                     <i class="fas fa-circle-notch fa-spin text-pink-500 text-3xl mb-3"></i>
                     <span class="text-gray-500 font-medium animate-pulse">Memuat data...</span>
@@ -204,7 +204,7 @@ async function fetchTableData(reset = false) {
     }
     if (result.success && Array.isArray(result.data)) {
       if (result.data.length === 0 && currentPage === 1) {
-        tableBody.innerHTML = `<tr><td colspan="9" class="text-center p-8 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-300">Data tidak ditemukan</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="15" class="text-center p-8 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-300">Data tidak ditemukan</td></tr>`;
         hasMoreData = false;
       } else {
         renderTableRows(result.data);
@@ -216,7 +216,7 @@ async function fetchTableData(reset = false) {
     if (error.name === "AbortError") return;
     console.error(error);
     if (currentPage === 1) {
-      tableBody.innerHTML = `<tr><td colspan="9" class="text-center p-4 text-red-500">Terjadi kesalahan koneksi</td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="15" class="text-center p-4 text-red-500">Terjadi kesalahan koneksi</td></tr>`;
     }
   } finally {
     if (
@@ -433,11 +433,7 @@ async function fetchFakturData(noFaktur) {
         inpNilaiFaktur.value = formatNumber(parseFloat(d.nilai_faktur));
         inpPotongan.value = formatNumber(parseFloat(d.potongan));
         inpKetPotongan.value = d.ket_potongan || "";
-        // inpNilaiFaktur.readOnly = true;
-        // inpNilaiFaktur.classList.add('bg-gray-100', 'cursor-not-allowed');
-        // inpNoFaktur.classList.remove("bg-yellow-50");
-        // inpNoFaktur.classList.add("bg-blue-50", "text-blue-700", "font-bold");
-        inpNilaiFaktur.readOnly = false; // Izinkan edit
+        inpNilaiFaktur.readOnly = false; 
         inpNilaiFaktur.classList.remove('bg-gray-100', 'cursor-not-allowed');
         inpNoFaktur.classList.remove("bg-yellow-50");
         inpNoFaktur.classList.add("bg-blue-50", "text-blue-700", "font-bold");
@@ -646,7 +642,8 @@ async function startEditMode(data) {
           ...item,
           nilai_faktur: parseFloat(item.nilai_faktur),
           potongan: parseFloat(item.potongan),
-          total_bayar: parseFloat(item.total_bayar),
+          total_bayar: 0, 
+          sudah_bayar_history: parseFloat(item.total_bayar), 
           details_potongan: item.details_potongan || []
         }));
         deletedCartIds = [];
@@ -663,8 +660,7 @@ async function startEditMode(data) {
         window.scrollTo({ top: 0, behavior: "smooth" });
         Toastify({ text: "Data group dimuat ke keranjang", style: { background: "#db2777" } }).showToast();
       }
-    }
-    else {
+    } else {
       const url = `${API_URLS.getFakturDetail}?no_faktur=${encodeURIComponent(data.no_faktur)}&kode_store=${encodeURIComponent(data.kode_store)}`;
       const result = await sendRequestGET(url);
       Swal.close();
@@ -675,7 +671,8 @@ async function startEditMode(data) {
           ...detailedData,
           nilai_faktur: parseFloat(detailedData.nilai_faktur),
           potongan: parseFloat(detailedData.potongan),
-          total_bayar: parseFloat(detailedData.total_bayar),
+          total_bayar: 0, 
+          sudah_bayar_history: parseFloat(detailedData.total_bayar), 
           details_potongan: detailedData.details_potongan || []
         };
         cartItems = [singleItem];
@@ -1074,14 +1071,26 @@ document.addEventListener("DOMContentLoaded", async () => {
       confirmButtonColor: '#db2777'
     };
     if (totalRencanaBayar === 0) {
-      swalOptions = {
-        title: 'Simpan Sebagai Hutang?',
-        html: `Total Bayar adalah <b>0 (Nol)</b>.<br>Data akan disimpan sebagai faktur belum lunas dan <b>tidak ada angsuran</b> yang dicatat.`,
-        icon: 'info',
-        showCancelButton: true,
-        confirmButtonText: 'Ya, Simpan',
-        confirmButtonColor: '#3b82f6'
-      };
+      
+      if (totalTagihan <= 100) { 
+         swalOptions = {
+            title: 'Simpan Perubahan Data?',
+            html: `Status Faktur: <b>LUNAS</b>.<br>Anda tidak menginput pembayaran baru.<br>Hanya data (Nama/Ket/Potongan/Status) yang akan diupdate.`,
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Update Data',
+            confirmButtonColor: '#10b981' 
+         };
+      } else {
+         swalOptions = {
+            title: 'Simpan Perubahan Data?',
+            html: ``,
+            icon: 'warning', 
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Simpan',
+            confirmButtonColor: '#3b82f6'
+         };
+      }
     }
     else if (!isInstallmentMode && Math.abs(totalRencanaBayar - totalTagihan) > 100) {
       const selisih = totalRencanaBayar - totalTagihan;
@@ -1290,7 +1299,6 @@ window.editCartItem = async (index) => {
       }
       inpNoFaktur.classList.add("bg-blue-50", "text-blue-700", "font-bold");
       inpNilaiFaktur.readOnly = true;
-      // inpNilaiFaktur.classList.add('bg-gray-100', 'cursor-not-allowed');
       inpNilaiFaktur.readOnly = false;
       inpNilaiFaktur.classList.remove('bg-gray-100', 'cursor-not-allowed');
     } else {

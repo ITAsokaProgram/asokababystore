@@ -477,7 +477,8 @@ require_once __DIR__ . '/../../component/menu_handler.php';
     <script src="/src/js/middleware_auth.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
-    <script src="../../js/buku_besar/input_buku_besar_handler.js" type="module"></script>
+    <script src="../../js/buku_besar/input_buku_besar_handler.js?v=<?= filemtime(__DIR__ . '/../../js/buku_besar/input_buku_besar_handler.js') ?>" type="module"></script>
+
 </body>
 
 </html>
