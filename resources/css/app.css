@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+
+@source "../../src/**/*.php";
+@source "../../src/**/*.html";
+@source "../../resources/**/*.js"; 
+
+@theme {
+  --font-sans: "Poppins", sans-serif;
+}

@@ -6,13 +6,14 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Master Produk</title>
     <!-- Tailwind via CDN -->
-    <link rel="stylesheet" href="../../output2.css">
     <script>
 
     </script>
     <link rel="stylesheet" href="../../style/header.css">
     <link rel="stylesheet" href="../../style/sidebar.css">
     <link rel="icon" type="image/png" href="../../../public/images/logo1.png">
+    <link rel="stylesheet" href="/dist/assets/app.css">
+    <script type="module" src="/dist/assets/app.js"></script>
 
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
@@ -1003,7 +1004,6 @@
     </main>
 
     <script type="module" src="/src/js/products/main.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
 </body>
 
