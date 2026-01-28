@@ -21,41 +21,21 @@ try {
     echo json_encode(['success' => false, 'message' => 'Internal Server Error: Gagal memuat file.']);
     exit();
 }
-if (php_sapi_name() === 'cli' && isset($argv[1])) {
-    parse_str($argv[1], $_GET);
-}
-if (php_sapi_name() !== 'cli') {
-    require_once __DIR__ . '/../../../auth/middleware_login.php';
-    try {
-        $authHeader = null;
-        if (function_exists('getallheaders')) {
-            $headers = getallheaders();
-            $authHeader = $headers['Authorization'] ?? null;
-        }
-        if ($authHeader === null && isset($_SERVER['HTTP_AUTHORIZATION'])) {
-            $authHeader = $_SERVER['HTTP_AUTHORIZATION'];
-        }
-        if ($authHeader === null && isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
-            $authHeader = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
-        }
-        if ($authHeader === null || !preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-            http_response_code(401);
-            echo json_encode(['success' => false, 'message' => "Token tidak ditemukan atau format salah."]);
-            exit;
-        }
-        $token = $matches[1];
-        $decoded = verify_token($token);
-        if (!is_object($decoded) || !isset($decoded->kode)) {
-            http_response_code(403);
-            echo json_encode(['success' => false, 'message' => 'Token tidak valid.']);
-            exit;
-        }
-    } catch (Exception $e) {
-        http_response_code(500);
-        $logger->error("Token validation error: " . $e->getMessage());
-        echo json_encode(['success' => false, 'message' => 'Token validation error: ' . $e->getMessage()]);
-        exit;
+if (php_sapi_name() === 'cli') {
+    require_once __DIR__ . "/../../../../src/utils/Logger.php";
+    $logger = new AppLogger('cron_member_age.log');
+    $logger->info("Mulai cron job get_member_by_age.php.");
+    
+    if (isset($argv[1])) {
+        parse_str($argv[1], $_GET);
     }
+} 
+else {
+    header("Content-Type:application/json");
+    
+    require_once __DIR__ . "/../../../auth/middleware_login.php";
+    
+    $userInfo = authenticate_request();
 }
 if (!isset($conn) || !$conn instanceof mysqli) {
     if ($logger)

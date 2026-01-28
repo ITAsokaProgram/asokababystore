@@ -11,28 +11,8 @@ if ($_SERVER['REQUEST_METHOD'] != 'POST') {
     $logger->warning('Request method not allowed', ['method' => $_SERVER['REQUEST_METHOD']]);
     exit;
 }
-$header = getAllHeaders();
+$verif = authenticate_request();
 
-if (!isset($header['Authorization']) || $header['Authorization'] == null) {
-    http_response_code(401);
-    echo json_encode(['status' => false, 'message' => 'Request ditolak user tidak terdaftar']);
-    $logger->warning('Authorization header missing');
-    exit;
-}
-$authHeader = $header['Authorization'];
-$token = null;
-
-if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-    $token = $matches[1];
-}
-if (!$token) {
-    http_response_code(401);
-    echo json_encode(['status' => false, 'message' => 'Request ditolak user tidak terdaftar']);
-    $logger->warning('Bearer token missing or invalid');
-    exit;
-}
-
-$verif = verify_token($token);
 
 try {
     $inputJson = json_decode(file_get_contents('php://input'), true);

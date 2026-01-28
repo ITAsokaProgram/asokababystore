@@ -17,22 +17,7 @@ register_shutdown_function(function () {
 
 header('Content-Type: application/json');
 
-// --- BAGIAN OTENTIKASI (DARI get_kode.php) ---
-$header = getAllHeaders();
-$authHeader = $header['Authorization'] ?? '';
-$token = null;
-if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-    $token = $matches[1];
-}
-
-if (!$token) {
-    http_response_code(401);
-    echo json_encode(['error' => 'Unauthenticated', 'message' => 'Request ditolak user tidak terdaftar']);
-    exit;
-}
-$verif = verify_token($token);
-// ---------------------------------------------
-
+$verif = authenticate_request();
 $is_export = $_GET['export'] ?? false;
 $is_export = ($is_export === 'true' || $is_export === true);
 

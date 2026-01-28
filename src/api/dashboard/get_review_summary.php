@@ -5,19 +5,7 @@ header("Content-Type: application/json");
 header("Access-Control-Allow-Methods: GET");
 
 
-$headers = getallheaders();
-if (!isset($headers['Authorization'])) {
-    http_response_code(401);
-    echo json_encode(['status' => "Unauthenticated", 'message' => 'Request ditolak, token tidak ditemukan']);
-    exit;
-}
-$authHeader = $headers['Authorization'];
-$token = null;
-if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-    $token = $matches[1];
-}
-$verif = verify_token($token);
-
+$verif = authenticate_request();
 
 $sqlStats = "SELECT 
     ROUND(AVG(rating), 1) AS avg_rating,

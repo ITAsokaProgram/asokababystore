@@ -3,20 +3,7 @@ require_once __DIR__ . '/../../../aa_kon_sett.php';
 require_once __DIR__ . '/../../auth/middleware_login.php';
 header('Content-Type: application/json');
 
-$headers = getallheaders();
-$auth_header = $headers['Authorization'] ?? '';
-$token = $auth_header ? str_replace('Bearer ', '', $auth_header) : null;
-if (!$token) {
-    http_response_code(401);
-    echo json_encode(['status' => false, 'message' => 'Unauthorized']);
-    exit;
-}
-$verif = verify_token($token);
-if (!$verif) {
-    http_response_code(401);
-    echo json_encode(['status' => false, 'message' => 'Invalid token']);
-    exit;
-}
+$verif = authenticate_request();
 
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {

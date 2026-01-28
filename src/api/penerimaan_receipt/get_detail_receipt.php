@@ -18,25 +18,9 @@ register_shutdown_function(function () {
 header('Content-Type: application/json');
 
 // Verifikasi Token Bearer
-$header = getAllHeaders();
-$authHeader = $header['Authorization'] ?? '';
-$token = null;
-if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-    $token = $matches[1];
-}
+$verif = authenticate_request();
 
-if (!$token) {
-    http_response_code(401);
-    echo json_encode(['error' => 'Unauthenticated', 'message' => 'Request ditolak user tidak terdaftar']);
-    exit;
-}
 
-$verif = verify_token($token);
-if (!$verif) {
-    http_response_code(401);
-    echo json_encode(['error' => 'Token kadaluarsa atau tidak valid']);
-    exit;
-}
 
 $is_export = $_GET['export'] ?? false;
 $is_export = ($is_export === 'true' || $is_export === true);

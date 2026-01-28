@@ -1,48 +1,14 @@
 <?php
-include '../config/JWT/JWT.php';
-include '../config/JWT/Key.php';
-include '../config/JWT/config.php';
-use Firebase\JWT\JWT;
-use Firebase\JWT\Key;
+require_once __DIR__ . '/middleware_login.php';
+require_once __DIR__ . '/../../aa_kon_sett.php';
 
-$jwt = null;
-$headers = getallheaders(); // Ambil semua headers yang dikirim
+header("Content-Type: application/json");
 
-// Cek apakah ada header Authorization
-if (isset($headers['Authorization'])) {
-    // Ambil token dari header Authorization
-    $jwt = $headers['Authorization'];
-    list($type, $jwt) = explode(' ', $jwt); // Memisahkan Bearer dan tokennya
-    if (strcasecmp($type, 'Bearer') !== 0) {
-        // Kalau tipe bukan Bearer, return error
-        echo json_encode([
-            'status' => 'error',
-            'message' => 'Format Authorization tidak sesuai.'
-        ]);
-        exit;
-    }
-} else {
-    // Jika Authorization header tidak ditemukan
-    echo json_encode([
-        'status' => 'error',
-        'message' => 'Token tidak ditemukan, silakan login terlebih dahulu.'
-    ]);
-    exit;
-}
-
-$secretKey = JWT_SECRET_KEY; // Gunakan kunci yang sama saat membuat token
+$decoded = authenticate_request();
 
 try {
-    // Decode token untuk mengambil data yang ada di dalamnya
-    $decoded = JWT::decode($jwt, new Key($secretKey, 'HS256'));
-
-    // Ambil kode user yang ada di token
     $kode_user = $decoded->kode;
 
-    // Koneksi ke database
-    include "../../aa_kon_sett.php";
-
-    // Ambil expired_token dari database berdasarkan kode_user
     $stmt = $conn->prepare("SELECT expired_token FROM user_account WHERE kode = ?");
     $stmt->bind_param("s", $kode_user);
     $stmt->execute();
@@ -52,17 +18,15 @@ try {
         $stmt->bind_result($expired_token);
         $stmt->fetch();
 
-        // Bandingkan expired_token dengan waktu sekarang
-        $current_time = date('Y-m-d H:i:s'); // Waktu saat ini
+        $current_time = date('Y-m-d H:i:s');
+        
         if ($expired_token < $current_time) {
-            // Jika token sudah kadaluarsa
+            http_response_code(401);
             echo json_encode([
                 'status' => 'error',
                 'message' => 'Token sudah kadaluarsa, silakan login ulang.'
             ]);
-            exit;
         } else {
-            // Token valid, lanjutkan ke resource yang diminta
             echo json_encode([
                 'status' => 'success',
                 'message' => 'Token valid!',
@@ -70,23 +34,21 @@ try {
             ]);
         }
     } else {
-        // Jika user tidak ditemukan
+        http_response_code(404);
         echo json_encode([
             'status' => 'error',
             'message' => 'User tidak ditemukan.'
         ]);
-        exit;
     }
 
     $stmt->close();
 
 } catch (Exception $e) {
-    // Jika token tidak valid
+    http_response_code(500);
     echo json_encode([
         'status' => 'error',
-        'message' => 'Token tidak valid!',
+        'message' => 'Terjadi kesalahan sistem',
         'error' => $e->getMessage()
     ]);
-    exit;
 }
 ?>

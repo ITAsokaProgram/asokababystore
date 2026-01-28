@@ -8,24 +8,8 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 
-$headers = getallheaders();
-$authHeader = $headers['Authorization'];
-$token = null;
-if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-    $token = $matches[1];
-}
-if (!$token) {
-    http_response_code(401);
-    echo json_encode(['status' => "Unauthenticated", 'message' => 'Request ditolak user tak terdaftar']);
-    exit;
-}
+$verif = authenticate_request();
 
-$verif = verify_token($token);
-if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-    http_response_code(405);
-    echo json_encode(['status' => 'error', 'message' => 'Metode tak diizinkan']);
-    exit;
-}
 $kode = $_GET['kode'] ?? 0;
 
 if (!$kode) {

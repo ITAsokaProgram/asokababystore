@@ -9,19 +9,7 @@ try {
         throw new Exception("Metode yang diizinkan hanya POST", 405);
     }
 
-    $headers = getallheaders();
-    $authHeader = isset($headers['Authorization']) ? $headers['Authorization'] : '';
-    
-    if (!preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-        throw new Exception("Token tidak ditemukan atau format salah", 401);
-    }
-    
-    $token = $matches[1];
-    $verif = verify_token($token);
-    
-    if (!$verif) {
-        throw new Exception("Token tidak valid", 401);
-    }
+    $verify = authenticate_request();
 
     $pengirim_id = null;
     $pengirim_type = null;

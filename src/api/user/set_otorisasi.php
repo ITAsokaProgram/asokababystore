@@ -9,16 +9,7 @@ try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         throw new Exception('Method Not Allowed');
     }
-    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-    if (!preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-        http_response_code(401);
-        throw new Exception('Token tidak ditemukan');
-    }
-    $token = $matches[1];
-    if (!verify_token($token)) {
-        http_response_code(401);
-        throw new Exception('Token tidak valid');
-    }
+    $verif = authenticate_request();
     $input = json_decode(file_get_contents('php://input'), true);
     $kode_user = $input['kode_user'] ?? null;
     $tipe = $input['tipe'] ?? '';

@@ -17,21 +17,8 @@ register_shutdown_function(function () {
 
 header('Content-Type: application/json');
 
-// --- BAGIAN GET KODE CABANG (LOGIKA DARI get_kode.php) ---
-$header = getAllHeaders();
-$authHeader = $header['Authorization'] ?? '';
-$token = null;
-if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-    $token = $matches[1];
-}
+$verif = authenticate_request();
 
-if (!$token) {
-    http_response_code(401);
-    echo json_encode(['error' => 'Unauthenticated', 'message' => 'Request ditolak user tidak terdaftar']);
-    exit;
-}
-
-$verif = verify_token($token);
 $stores_allowed = [];
 
 $sqlUserCabang = "SELECT kd_store FROM user_account WHERE kode = ?";

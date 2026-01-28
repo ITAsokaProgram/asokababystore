@@ -8,27 +8,8 @@ $env = parse_ini_file(__DIR__ . '/../../../.env');
 
 header('Content-Type: application/json');
 
-try {
-    $headers = getallheaders();
-    if (!isset($headers['Authorization']) || !preg_match('/^Bearer\s(\S+)$/', $headers['Authorization'], $matches)) {
-        http_response_code(401);
-        echo json_encode(['success' => false, 'message' => 'Token tidak ditemukan atau format salah.']);
-        exit;
-    }
-    $token = $matches[1];
-    $decoded = verify_token($token);
-    $isTokenValidAdmin = is_object($decoded) && isset($decoded->kode);
+$decoded = authenticate_request();
 
-    if (!$isTokenValidAdmin) {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'Token tidak valid.']);
-        exit;
-    }
-} catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Token validation error: ' . $e->getMessage()]);
-    exit;
-}
 $logger = new AppLogger('update');
 
 

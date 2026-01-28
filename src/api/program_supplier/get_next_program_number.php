@@ -5,13 +5,7 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/../../../aa_kon_sett.php';
 require_once __DIR__ . '/../../auth/middleware_login.php';
 try {
-    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-    if (!preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-        throw new Exception("Token tidak ditemukan");
-    }
-    $verif = verify_token($matches[1]);
-    if (!$verif)
-        throw new Exception("Token tidak valid");
+    $verif = authenticate_request();
     $kd_user = $verif->kode ?? 'system';
     $kode_cabang = $_GET['kode_cabang'] ?? '';
     if (empty($kode_cabang)) {

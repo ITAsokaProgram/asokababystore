@@ -16,20 +16,8 @@ $cloudinary = new Cloudinary([
     ],
 ]);
 
-try {
-    $headers = getallheaders();
-    if (!isset($headers['Authorization']) || !preg_match('/^Bearer\s(\S+)$/', $headers['Authorization'], $matches)) {
-        throw new Exception('Unauthorized: Token tidak ditemukan.');
-    }
-    $decoded = verify_token($matches[1]);
-    if (!(is_object($decoded) && isset($decoded->kode))) {
-        throw new Exception('Invalid Token');
-    }
-} catch (Exception $e) {
-    http_response_code(401);
-    echo json_encode(['success' => FALSE, 'message' => $e->getMessage()]);
-    EXIT;
-}
+$decoded = authenticate_request();
+
 
 $ACTION = $_POST['action'] ?? '';
 

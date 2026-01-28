@@ -4,19 +4,9 @@ require_once __DIR__ . "/../../auth/middleware_login.php";
 
 header("Content-Type:application/json");
 header("Access-Control-Allow-Methods: POST");
-date_default_timezone_set('Asia/Jakarta');
 
 try {
-    $headers = getallheaders();
-    $authHeader = $headers['Authorization'] ?? '';
-    $token = null;
-    if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-        $token = $matches[1];
-    }
-    if (!$token) {
-        throw new Exception('Request ditolak user tidak terdaftar', 401);
-    }
-    $verif = verify_token($token);
+    $verif = authenticate_request();
 
     $input = json_decode(file_get_contents("php://input"), true);
 

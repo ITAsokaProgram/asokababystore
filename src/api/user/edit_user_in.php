@@ -3,25 +3,8 @@ require_once __DIR__ . "/../../../aa_kon_sett.php";
 require_once __DIR__ . "/../../auth/middleware_login.php";
 
 header("Content-Type:application/json");
-$headers = getallheaders();
-if(!isset($headers['Authorization'])){
-    http_response_code(401);
-    echo json_encode(['status' => "Unauthenticated", 'message' => 'Request ditolak user tidak terdaftar']);
-    exit;
-}
-$authHeader = $headers['Authorization'];
-$token = null;
-if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-    $token = $matches[1]; // ini yang aman dan baku
-}
-if (!$token) {
-    http_response_code(401);
-    echo json_encode(['status' => "Unauthenticated", 'message' => 'Request ditolak user tidak terdaftar']);
-    exit;
-}
+$verif = authenticate_request();
 
-$verif = verify_token($token);
-// Ambil JSON dari body request
 $data = json_decode(file_get_contents("php://input"), true);
 
 // Ambil field dan validasi

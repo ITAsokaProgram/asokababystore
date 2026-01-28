@@ -25,24 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'DELETE') {
     exit;
 }
 
-$headers = getallheaders();
-$authHeader = $headers['Authorization'] ?? null;
-if (!$authHeader) {
-    http_response_code(401);
-    echo json_encode(['status' => "Unauthenticated", 'message' => 'Request ditolak, token tidak ditemukan']);
-    exit;
-}
-$token = null;
-if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-    $token = $matches[1];
-}
-if (!$token) {
-    http_response_code(401);
-    echo json_encode(['status' => "Unauthenticated", 'message' => 'Format token tidak valid.']);
-    exit;
-}
+$verif = authenticate_request();
 
-$verif = verify_token($token);
 
 // [MODIFIKASI] Verifikasi token dan otorisasi role
 if (!is_object($verif) || !isset($verif->role)) {

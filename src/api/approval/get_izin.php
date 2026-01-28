@@ -18,13 +18,7 @@ register_shutdown_function(function () {
 
 header('Content-Type: application/json');
 
-// --- LOGIKA AUTHENTICATION UNTUK DAFTAR CABANG ---
-$header = getAllHeaders();
-$authHeader = $header['Authorization'] ?? '';
-$token = null;
-if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-    $token = $matches[1];
-}
+
 
 $is_export = $_GET['export'] ?? false;
 $is_export = ($is_export === 'true' || $is_export === true);
@@ -37,11 +31,8 @@ $response = [
 ];
 
 try {
-    // Verifikasi Token untuk filter cabang
-    if (!$token) {
-        throw new Exception("Unauthenticated: Token tidak ditemukan");
-    }
-    $verif = verify_token($token);
+    $verif = authenticate_request();
+
 
     $tanggal_kemarin = date('Y-m-d', strtotime('-1 day'));
     $tgl_mulai = $_GET['tgl_mulai'] ?? date('Y-m-d', strtotime('-1 month'));

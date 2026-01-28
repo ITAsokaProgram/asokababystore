@@ -23,16 +23,7 @@ $response = [
     'start_group_index' => 0
 ];
 try {
-    $header = getAllHeaders();
-    $authHeader = $header['Authorization'] ?? '';
-    $token = null;
-    if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-        $token = $matches[1];
-    }
-    if (!$token) {
-        throw new Exception('Unauthenticated: Request ditolak user tidak terdaftar');
-    }
-    $verif = verify_token($token);
+    $verif = authenticate_request();
     $sqlUserCabang = "SELECT kd_store FROM user_account WHERE kode = ?";
     $stmtUserCabang = $conn->prepare($sqlUserCabang);
     $stmtUserCabang->bind_param("s", $verif->kode);

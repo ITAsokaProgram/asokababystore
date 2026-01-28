@@ -9,15 +9,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     echo json_encode(['success' => false, 'message' => 'Gunakan metode GET.']);
     exit;
 }
+$decoded = authenticate_request();
 
-$authHeader = getallheaders()['Authorization'] ?? '';
-$token = preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches) ? $matches[1] : null;
-
-if (!$token || !($decoded = verify_token($token)) || (is_array($decoded) && isset($decoded['status']) && $decoded['status'] === 'error')) {
-    http_response_code(401);
-    echo json_encode(['status' => "Unauthenticated", 'message' => 'Token tidak valid atau kadaluwarsa.']);
-    exit;
-}
 
 $pageSize = isset($_GET['pageSize']) ? (int)$_GET['pageSize'] : 10;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;

@@ -3,16 +3,8 @@ require_once __DIR__ . ("/../../../../aa_kon_sett.php");
 require_once __DIR__ . ("/../../../auth/middleware_login.php");
 header('Content-Type: application/json');
 try {
-    $headers = getallheaders();
-    $authHeader = isset($headers['Authorization']) ? $headers['Authorization'] : '';
-    if (!preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-        throw new Exception("Token tidak ditemukan atau format salah", 401);
-    }
-    $token = $matches[1];
-    $verif = verify_token($token);
-    if (!$verif) {
-        throw new Exception("Token tidak valid", 401);
-    }
+    $verif = authenticate_request();
+
     $accessor_type = null;
     if (isset($verif->id)) {
         $accessor_type = 'customer';

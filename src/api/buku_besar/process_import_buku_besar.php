@@ -50,13 +50,9 @@ try {
         throw new Exception('Method Not Allowed');
 
     $kd_user = 0;
-    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-    if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-        $token = $matches[1];
-        $verif = verify_token($token);
-        if ($verif)
-            $kd_user = $verif->id ?? $verif->kode ?? 0;
-    }
+    $verif = authenticate_request();
+
+    $kd_user = $verif->id ?? $verif->kode ?? 0;
 
     if ($kd_user == 0 && isset($_SESSION['user_id'])) {
         $kd_user = $_SESSION['user_id'];

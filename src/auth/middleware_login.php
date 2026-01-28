@@ -507,3 +507,37 @@ function getAuthenticatedUser()
 
     return $decodedData;
 }
+
+
+/**
+ * Fungsi Authentikasi Otomatis (Cloudflare/HTTP2 Friendly)
+ * Mengambil token, memvalidasi, dan mengembalikan data user.
+ * Jika gagal, otomatis mematikan proses (exit) dan return 401 JSON.
+ */
+function authenticate_request() {
+    $headers = function_exists('getallheaders') ? getallheaders() : [];
+
+    $authHeader = $headers['Authorization'] 
+                ?? $headers['authorization'] 
+                ?? $_SERVER['HTTP_AUTHORIZATION'] 
+                ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] 
+                ?? null;
+
+    if (!$authHeader) {
+        http_response_code(401);
+        echo json_encode(['status' => false, 'message' => 'Request ditolak, token tidak ditemukan']);
+        exit;
+    }
+
+    $token = trim(preg_replace('/^Bearer\s/i', '', $authHeader));
+
+    $verif = verify_token($token);
+
+    if (!$verif || (is_array($verif) && isset($verif['status']) && $verif['status'] === 'error')) {
+        http_response_code(401);
+        echo json_encode(['status' => false, 'message' => 'Token tidak valid atau kadaluarsa']);
+        exit;
+    }
+
+    return $verif;
+}

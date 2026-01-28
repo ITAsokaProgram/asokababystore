@@ -8,19 +8,7 @@ try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         throw new Exception('Method Not Allowed');
     }
-    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-    if (!preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-        http_response_code(401);
-        echo json_encode(['success' => false, 'message' => 'Token tidak ditemukan']);
-        exit;
-    }
-    $token = $matches[1];
-    $verif = verify_token($token);
-    if (!$verif) {
-        http_response_code(401);
-        echo json_encode(['success' => false, 'message' => 'Token tidak valid']);
-        exit;
-    }
+    $verif = authenticate_request();
     $kd_user = $verif->id ?? $verif->kode ?? null;
     if (empty($kd_user)) {
         throw new Exception("ID User tidak valid atau tidak ditemukan dalam token.");

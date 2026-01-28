@@ -17,26 +17,7 @@ register_shutdown_function(function () {
 
 header('Content-Type: application/json');
 
-// --- BAGIAN AUTH & KODE CABANG (Logic dari get_kode.php) ---
-$header = getAllHeaders();
-$authHeader = $header['Authorization'] ?? '';
-$token = null;
-if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-    $token = $matches[1];
-}
-
-if (!$token) {
-    http_response_code(401);
-    echo json_encode(['error' => 'Unauthenticated', 'message' => 'Token tidak ditemukan']);
-    exit;
-}
-
-$verif = verify_token($token);
-if (!$verif) {
-    http_response_code(401);
-    echo json_encode(['error' => 'Invalid Token']);
-    exit;
-}
+$verif = authenticate_request();
 
 $allowed_stores = [];
 $sqlUserCabang = "SELECT kd_store FROM user_account WHERE kode = ?";

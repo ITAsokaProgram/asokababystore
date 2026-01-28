@@ -13,14 +13,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-$headers = getallheaders();
-$authHeader = $headers['Authorization'] ?? '';
-$token = null;
-if (preg_match('/Bearer\s(\S+)/', $authHeader, $matches)) {
-    $token = $matches[1];
-}
+$verify = authenticate_request();
 
-$verify = verify_token($token);
 
 
 try {

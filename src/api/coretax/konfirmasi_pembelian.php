@@ -13,19 +13,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 try {
-    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-    if (!preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-        http_response_code(401);
-        echo json_encode(['success' => false, 'message' => 'Token tidak ditemukan']);
-        exit;
-    }
-    $token = $matches[1];
-    $verif = verify_token($token);
-    if (!$verif) {
-        http_response_code(401);
-        echo json_encode(['success' => false, 'message' => 'Token tidak valid']);
-        exit;
-    }
+    $verif = authenticate_request();
+
     $kd_user = $verif->id ?? $verif->kode ?? 0;
     $input = json_decode(file_get_contents('php://input'), true);
     $id = $input['id'] ?? null;

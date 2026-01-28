@@ -5,20 +5,8 @@ header("Content-Type: application/json");
 header("Access-Control-Allow-Methods: DELETE");
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
-$headers = getallheaders();
-$authHeader = $headers['Authorization'] ?? null;
-if (!$authHeader || !preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-    http_response_code(401);
-    echo json_encode(['status' => "Unauthenticated", 'message' => 'Token tidak ditemukan atau format salah']);
-    exit;
-}
-$token = $matches[1];
-$verif = verify_token($token);
-if (!$verif) {
-    http_response_code(401);
-    echo json_encode(['status' => 'error', 'message' => 'Token tidak valid']);
-    exit;
-}
+$verif = authenticate_request();
+
 if ($_SERVER['REQUEST_METHOD'] !== 'DELETE') {
     http_response_code(405);
     echo json_encode(['status' => 'error', 'message' => 'Metode tidak diizinkan']);

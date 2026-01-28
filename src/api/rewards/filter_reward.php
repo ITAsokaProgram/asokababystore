@@ -13,15 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 
-$headers = getallheaders();
-$authHeader = $headers['Authorization'] ?? null;
-if (!$authHeader || !preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-    http_response_code(401);
-    echo json_encode(['status' => "Unauthenticated", 'message' => 'Request ditolak user tidak terdaftar']);
-    exit;
-}
-$token = $matches[1];
-$verif = verify_token($token);
+$verif = authenticate_request();
 
 
 $pageSize = isset($_GET['pageSize']) ? (int)$_GET['pageSize'] : 10;

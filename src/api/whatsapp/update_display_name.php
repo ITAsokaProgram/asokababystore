@@ -3,28 +3,8 @@ require_once __DIR__ . '/../../../aa_kon_sett.php';
 require_once __DIR__ . '/../../auth/middleware_login.php';
 
 header('Content-Type: application/json');
+$decoded = authenticate_request();
 
-try {
-    $headers = getallheaders();
-    if (!isset($headers['Authorization']) || !preg_match('/^Bearer\s(\S+)$/', $headers['Authorization'], $matches)) {
-        http_response_code(401);
-        echo json_encode(['success' => false, 'message' => 'Token tidak ditemukan atau format salah.']);
-        exit;
-    }
-
-    $token = $matches[1];
-    $decoded = verify_token($token);
-
-    if (!is_object($decoded) || !isset($decoded->kode)) {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'Token tidak valid atau bukan token admin.']);
-        exit;
-    }
-} catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Token validation error: ' . $e->getMessage()]);
-    exit;
-}
 
 $data = json_decode(file_get_contents('php://input'), true);
 

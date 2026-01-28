@@ -16,26 +16,21 @@ ini_set("display_errors", 1);
 ini_set("display_startup_errors", 1);
 error_reporting(E_ALL);
 // 3. Parse Params CLI
-if (php_sapi_name() === 'cli' && isset($argv[1])) {
-    parse_str($argv[1], $_GET);
-}
-// 4. Auth (Non-CLI)
-if (php_sapi_name() !== 'cli') {
-    require_once __DIR__ . ("./../../../auth/middleware_login.php");
-    $headers = getallheaders();
-    $token = $headers['Authorization'] ?? null;
-    if (!$token) {
-        http_response_code(401);
-        echo json_encode(['success' => false, 'message' => 'Unauthorized: Token not provided']);
-        exit;
+if (php_sapi_name() === 'cli') {
+    require_once __DIR__ . "/../../../../src/utils/Logger.php";
+    $logger = new AppLogger('cron_member_age.log');
+    $logger->info("Mulai cron job get_member_by_age.php.");
+    
+    if (isset($argv[1])) {
+        parse_str($argv[1], $_GET);
     }
-    $token = str_replace('Bearer ', '', $token);
-    $user = verify_token($token);
-    if (!$user) {
-        http_response_code(401);
-        echo json_encode(['success' => false, 'message' => 'Unauthorized: Invalid token']);
-        exit;
-    }
+} 
+else {
+    header("Content-Type:application/json");
+    
+    require_once __DIR__ . "/../../../auth/middleware_login.php";
+    
+    $userInfo = authenticate_request();
 }
 // 5. Parameter
 $status = $_GET['status'] ?? 'active';

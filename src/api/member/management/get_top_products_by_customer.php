@@ -15,45 +15,8 @@ try {
 }
 
 header('Content-Type: application/json');
-$user_kode = 'UNKNOWN';
+$verif = authenticate_request();
 
-try {
-    $authHeader = null;
-    if (function_exists('getallheaders')) {
-        $headers = getallheaders();
-        if (isset($headers['Authorization'])) {
-            $authHeader = $headers['Authorization'];
-        }
-    }
-    if ($authHeader === null && isset($_SERVER['HTTP_AUTHORIZATION'])) {
-        $authHeader = $_SERVER['HTTP_AUTHORIZATION'];
-    }
-    if ($authHeader === null && isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
-        $authHeader = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
-    }
-
-    if ($authHeader === null || !preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-        http_response_code(401);
-        echo json_encode(['success' => false, 'message' => "Token tidak ditemukan atau format salah."]);
-        exit;
-    }
-
-    $token = $matches[1];
-    $decoded = verify_token($token);
-    $isTokenValidAdmin = is_object($decoded) && isset($decoded->kode);
-
-    if (!$isTokenValidAdmin) {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'Token tidak valid.']);
-        exit;
-    }
-    $user_kode = $decoded->kode;
-} catch (Exception $e) {
-    http_response_code(500);
-    $logger->error("Token validation error: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'Token validation error: ' . $e->getMessage()]);
-    exit;
-}
 
 if (!isset($conn) || !$conn instanceof mysqli) {
     $logger->critical("Objek koneksi database (\$conn) tidak ada.");

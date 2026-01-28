@@ -6,26 +6,9 @@ require_once __DIR__ . '/../../../auth/middleware_login.php';
 require_once __DIR__ . '/../../../utils/Logger.php';
 header('Content-Type: application/json');
 $logger = new AppLogger('debug_jadwal_so.log');
-$user_kode = 'UNKNOWN';
-$user_name = 'System';
-try {
-    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-    if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-        $decoded = verify_token($matches[1]);
-        $logger->info("CHECKING DECODED DATA: " . json_encode($decoded));
-        if ($decoded) {
-            if (is_array($decoded)) {
-                $user_kode = $decoded['kode'] ?? 'UNKNOWN';
-                $user_name = $decoded['nama'] ?? 'System';
-            } elseif (is_object($decoded)) {
-                $user_kode = $decoded->kode ?? 'UNKNOWN';
-                $user_name = $decoded->nama ?? 'System';
-            }
-        }
-    }
-} catch (Exception $e) {
-    $logger->error("Auth Error: " . $e->getMessage());
-}
+$decoded = authenticate_request();
+$user_kode = $decoded->kode ?? 'UNKNOWN';
+$user_name = $decoded->nama ?? 'System';
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['success' => false, 'message' => 'Method Not Allowed']);

@@ -6,10 +6,7 @@ require_once __DIR__ . '/../../../aa_kon_sett.php';
 require_once __DIR__ . '/../../auth/middleware_login.php';
 
 try {
-    // Auth Check
-    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-    // Logika Token Authentication opsional, disesuaikan dengan standar project Anda. 
-    // Jika frontend tidak kirim header auth, validasi session PHP bisa diandalkan.
+    $verif = authenticate_request();
 
     $input = json_decode(file_get_contents('php://input'), true);
     $doc = $input['nomor_dokumen'] ?? '';

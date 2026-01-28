@@ -4,16 +4,7 @@ require_once __DIR__ . '/../../helpers/finance_log_helper.php';
 require_once __DIR__ . '/../../../aa_kon_sett.php';
 
 try {
-    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-    if (!preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-        http_response_code(401);
-        throw new Exception('Token tidak ditemukan');
-    }
-    $verif = verify_token($matches[1]);
-    if (!$verif) {
-        http_response_code(401);
-        throw new Exception("Token tidak valid");
-    }
+    $verif = authenticate_request();
     $kd_user = $verif->id ?? $verif->kode ?? 0;
     $json = file_get_contents('php://input');
     $input = json_decode($json, true);

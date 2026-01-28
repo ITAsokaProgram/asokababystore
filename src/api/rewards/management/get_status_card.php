@@ -10,18 +10,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-$headers = getallheaders();
-if (!$headers || !isset($headers['Authorization'])) {
-    http_response_code(401);
-    echo json_encode(['status' => false, 'error' => 'Unauthorized']);
-    exit();
-}
-$authHeader = $headers['Authorization'] ?? '';
-$token = null;
-if(preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-    $token = $matches[1];
-}
-$verify = verify_token($token);
+$verify = authenticate_request();
+
 
 
 try {

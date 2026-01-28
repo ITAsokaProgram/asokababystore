@@ -14,15 +14,7 @@ register_shutdown_function(function () {
 });
 $response = ['data' => [], 'error' => null];
 try {
-    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-    if (!preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-        throw new Exception('Token tidak ditemukan', 401);
-    }
-    $token = $matches[1];
-    $verif = verify_token($token);
-    if (!$verif) {
-        throw new Exception('Token tidak valid atau kadaluwarsa', 401);
-    }
+    $verif = authenticate_request();
     $kd_user = $verif->id ?? $verif->kode ?? 0;
     $printed_by = $kd_user;
 

@@ -21,22 +21,7 @@ register_shutdown_function(function () {
 
 header('Content-Type: application/json');
 
-// --- BAGIAN AUTHENTICATION (DIAMBIL DARI LOGIKA get_kode.php) ---
-$header = getAllHeaders();
-$authHeader = $header['Authorization'] ?? '';
-$token = null;
-if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-    $token = $matches[1];
-}
-
-if (!$token) {
-    http_response_code(401);
-    echo json_encode(['error' => 'Unauthenticated', 'message' => 'Request ditolak user tidak terdaftar']);
-    exit;
-}
-
-$verif = verify_token($token);
-// --------------------------------------------------------------
+$verif = authenticate_request();
 
 $table_name = "jadwal_so";
 $is_export = filter_var($_GET['export'] ?? false, FILTER_VALIDATE_BOOLEAN);

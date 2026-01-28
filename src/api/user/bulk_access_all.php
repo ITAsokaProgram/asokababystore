@@ -1,12 +1,8 @@
 <?php
 header("Content-Type: application/json");
 include '../../../aa_kon_sett.php';
-$headers = getallheaders();
-if (!isset($headers['Authorization'])) {
-    http_response_code(401);
-    echo json_encode(["message" => "Unauthorized"]);
-    exit();
-}
+$verif = authenticate_request();
+
 try {
     $conn->begin_transaction();
     $sqlMenu = "SELECT menu_code, endpoint_url FROM menu_website WHERE menu_code != 'dashboard_sales_graph'";

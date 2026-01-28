@@ -9,15 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 try {
-    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-    if (!preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-        throw new Exception('Token tidak ditemukan', 401);
-    }
-    $token = $matches[1];
-    $verif = verify_token($token);
-    if (!$verif) {
-        throw new Exception('Token tidak valid', 401);
-    }
+    $verif = authenticate_request();
     $kd_user = $verif->id ?? $verif->kode ?? 0;
     $input = json_decode(file_get_contents('php://input'), true);
     $no_faktur = $input['no_faktur'] ?? null;

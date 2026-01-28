@@ -5,18 +5,7 @@ require_once __DIR__ . ("./../../auth/middleware_login.php");
 header("Content-Type:application/json");
 header("Access-Control-Allow-Methods: GET");
 
-$headers = getallheaders();
-$authHeader = $headers['Authorization'];
-$token = null;
-if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-    $token = $matches[1]; // ini yang aman dan baku
-}
-if (!$token) {
-    http_response_code(401);
-    echo json_encode(['status' => "Unauthenticated", 'message' => 'Request ditolak user tidak terdaftar']);
-    exit;
-}
-$verif = verify_token($token);
+$verif = authenticate_request();
 $plu = $_GET['plu'];
 $bon = $_GET['bon'];
 $kd_store = $_GET['cabang'];

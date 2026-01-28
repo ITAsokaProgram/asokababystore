@@ -10,16 +10,7 @@ try {
         throw new Exception('Method Not Allowed');
     }
     $input = json_decode(file_get_contents('php://input'), true);
-    $header = getAllHeaders();
-    $authHeader = $header['Authorization'] ?? $header['authorization'] ?? '';
-    if (!preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-        http_response_code(401);
-        throw new Exception('Token tidak ditemukan');
-    }
-    $verif = verify_token($matches[1]);
-    if (!$verif) {
-        throw new Exception('Token tidak valid atau kadaluwarsa');
-    }
+    $verif = authenticate_request();
     $user_login_id = $verif->id ?? $verif->kode ?? null;
     $no_faktur = $input['no_faktur'] ?? null;
     $nama_user_cek = trim($input['nama_user_cek'] ?? '');

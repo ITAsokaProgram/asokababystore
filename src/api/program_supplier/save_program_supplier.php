@@ -7,13 +7,7 @@ require_once __DIR__ . '/../../auth/middleware_login.php';
 require_once __DIR__ . '/../../helpers/finance_log_helper.php'; // <--- Tambahkan ini
 
 try {
-    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-    if (!preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-        throw new Exception("Token tidak ditemukan");
-    }
-    $verif = verify_token($matches[1]);
-    if (!$verif)
-        throw new Exception("Token tidak valid");
+    $verif = authenticate_request();
     $kd_user = $verif->kode ?? 'system';
     $input = json_decode(file_get_contents('php://input'), true);
     $old_doc = $input['old_nomor_dokumen'] ?? null;

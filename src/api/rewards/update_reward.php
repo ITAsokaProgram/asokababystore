@@ -27,25 +27,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// ================== Validasi Token ==================
-$headers = getallheaders();
-$authHeader = $headers['Authorization'] ?? '';
-if (!$authHeader) {
-    http_response_code(401);
-    echo json_encode(['status' => "Unauthenticated", 'message' => 'Tidak ada Authorization header']);
-    exit;
-}
-$token = null;
-if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-    $token = $matches[1];
-}
-if (!$token || !verify_token($token)) {
-    http_response_code(401);
-    echo json_encode(['status' => "Unauthenticated", 'message' => 'Token tidak valid']);
-    exit;
-}
+$verif = authenticate_request();
 
-// ================== Ambil Data ==================
 $id = $_POST['id'] ?? 0;
 $nama_hadiah = trim($_POST['nama_hadiah'] ?? '');
 $tanggal_diubah = date("Y-m-d H:i:s");

@@ -6,18 +6,8 @@ header("Content-Type: application/json");
 header("Access-Control-Allow-Methods: PUT");
 
 
-// Cek Authorization header
-$headers = getallheaders();
-$authHeader = $headers['Authorization'] ?? null;
+$verif = authenticate_request();
 
-if (!$authHeader || !preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-    http_response_code(401);
-    echo json_encode(['status' => "Unauthenticated", 'message' => 'Token tidak ditemukan atau format salah']);
-    exit;
-}
-
-$token = $matches[1];
-$verif = verify_token($token);
 // Pastikan metode PUT
 if ($_SERVER['REQUEST_METHOD'] !== 'PUT') {
     http_response_code(405);

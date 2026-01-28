@@ -5,23 +5,8 @@ require_once __DIR__ . '/../../auth/middleware_login.php';
 header("Access-Control-Allow-Methods: GET");
 header('Content-Type: application/json');
 
-// Get token from Authorization header
-$headers = getallheaders();
-$auth_header = $headers['Authorization'] ?? '';
-$token = str_replace('Bearer ', '', $auth_header);
+$verif = authenticate_request();
 
-if (!$token) {
-    http_response_code(401);
-    echo json_encode(['status' => false, 'message' => 'Request ditolak, token tidak ada']);
-    exit;
-}
-
-$verif = verify_token($token);
-if (!$verif) {
-    http_response_code(401);
-    echo json_encode(['status' => false, 'message' => 'Token tidak valid']);
-    exit;
-}
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     http_response_code(405);

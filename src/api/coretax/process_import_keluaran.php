@@ -17,11 +17,8 @@ try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         throw new Exception('Method Not Allowed');
     }
-    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-    if (!preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-        http_response_code(401);
-        throw new Exception('Token tidak ditemukan');
-    }
+    $verif = authenticate_request();
+
     if (empty($_POST['kode_store'])) {
         throw new Exception("Harap pilih Cabang/Store terlebih dahulu.");
     }

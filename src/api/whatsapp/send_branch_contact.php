@@ -8,28 +8,7 @@ require_once __DIR__ . '/../../utils/Logger.php';
 
 header('Content-Type: application/json');
 
-try {
-    $headers = getallheaders();
-    if (!isset($headers['Authorization']) || !preg_match('/^Bearer\s(\S+)$/', $headers['Authorization'], $matches)) {
-        http_response_code(401);
-        echo json_encode(['success' => false, 'message' => 'Token tidak ditemukan atau format salah.']);
-        exit;
-    }
-
-    $token = $matches[1];
-    $decoded = verify_token($token);
-    $isTokenValidAdmin = is_object($decoded) && isset($decoded->kode);
-
-    if (!$isTokenValidAdmin) {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'Token tidak valid.']);
-        exit;
-    }
-} catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Token validation error: ' . $e->getMessage()]);
-    exit;
-}
+$decoded = authenticate_request();
 
 $input = json_decode(file_get_contents('php://input'), true);
 

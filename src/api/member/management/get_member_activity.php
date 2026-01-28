@@ -13,41 +13,8 @@ try {
     exit();
 }
 header('Content-Type: application/json');
-$user_kode = 'UNKNOWN';
-try {
-    $authHeader = null;
-    if (function_exists('getallheaders')) {
-        $headers = getallheaders();
-        if (isset($headers['Authorization'])) {
-            $authHeader = $headers['Authorization'];
-        }
-    }
-    if ($authHeader === null && isset($_SERVER['HTTP_AUTHORIZATION'])) {
-        $authHeader = $_SERVER['HTTP_AUTHORIZATION'];
-    }
-    if ($authHeader === null && isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
-        $authHeader = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
-    }
-    if ($authHeader === null || !preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-        http_response_code(401);
-        echo json_encode(['success' => false, 'message' => "Token tidak ditemukan atau format salah."]);
-        exit;
-    }
-    $token = $matches[1];
-    $decoded = verify_token($token);
-    $isTokenValidAdmin = is_object($decoded) && isset($decoded->kode);
-    if (!$isTokenValidAdmin) {
-        http_response_code(403);
-        echo json_encode(['success' => false, 'message' => 'Token tidak valid.']);
-        exit;
-    }
-    $user_kode = $decoded->kode;
-} catch (Exception $e) {
-    http_response_code(500);
-    $logger->error("Token validation error: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'Token validation error: ' . $e->getMessage()]);
-    exit;
-}
+$userInfo = authenticate_request();
+$user_kode = $userInfo->kode ?? 'UNKNOWN';
 if (!isset($conn) || !$conn instanceof mysqli) {
     $logger->critical("Objek koneksi database (\$conn) tidak ada.");
     http_response_code(500);
@@ -80,12 +47,8 @@ try {
     } else {
         $filter = $_GET['filter'] ?? '3bulan';
         $valid_filters = [
-            'kemarin' => '-1 day',
-            '1minggu' => '-1 week',
-            '1bulan' => '-1 month',
-            '3bulan' => '-3 months',
-            '6bulan' => '-6 months',
-            '9bulan' => '-9 months',
+            'kemarin' => '-1 day', '1minggu' => '-1 week', '1bulan' => '-1 month',
+            '3bulan' => '-3 months', '6bulan' => '-6 months', '9bulan' => '-9 months',
             '12bulan' => '-12 months'
         ];
         if ($filter === 'semua') {

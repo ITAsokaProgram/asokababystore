@@ -8,17 +8,8 @@ try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         throw new Exception('Method Not Allowed');
     }
-    $header = getAllHeaders();
-    $authHeader = $header['Authorization'] ?? $header['authorization'] ?? '';
-    if (!preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-        http_response_code(401);
-        exit(json_encode(['success' => false, 'message' => 'Token tidak ditemukan']));
-    }
-    $verif = verify_token($matches[1]);
-    if (!$verif) {
-        http_response_code(401);
-        exit(json_encode(['success' => false, 'message' => 'Token tidak valid']));
-    }
+    $verif = authenticate_request();
+
     $input = json_decode(file_get_contents('php://input'), true);
     $kd_store_input = $input['kd_store'] ?? null;
     if (empty($kd_store_input)) {

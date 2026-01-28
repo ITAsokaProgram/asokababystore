@@ -17,9 +17,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     send_response(405, ['error' => 'Method not allowed']);
 }
 
-$headers = getallheaders();
-$token = extract_token($headers);
-$verif = verify_token($token);
+$verif = authenticate_request();
+
 
 try {
     $input = get_input_data();
@@ -59,16 +58,6 @@ try {
         $conn->rollBack();
     }
     send_response(400, ['success' => false, 'error' => $e->getMessage()]);
-}
-
-function extract_token($headers) {
-    if (!isset($headers['Authorization']) || $headers['Authorization'] == null) {
-        send_response(401, ['status' => false, 'message' => 'Request ditolak user tidak terdaftar']);
-    }
-    if (preg_match('/^Bearer\s(\S+)$/', $headers['Authorization'], $matches)) {
-        return $matches[1];
-    }
-    send_response(401, ['status' => false, 'message' => 'Request ditolak user tidak terdaftar']);
 }
 
 function get_input_data() {

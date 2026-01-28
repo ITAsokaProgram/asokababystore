@@ -16,26 +16,8 @@ if ($_SERVER['REQUEST_METHOD'] != 'GET') {
     exit;
 }
 
-$header = getAllHeaders();
-if (!isset($header['Authorization']) || $header['Authorization'] == null) {
-    $logger->warning('Request tanpa Authorization header');
-    http_response_code(401);
-    echo json_encode(['status' => false, 'message' => 'Request ditolak user tidak terdaftar']);
-    exit;
-}
+$verif = authenticate_request();
 
-$authHeader = $header['Authorization'];
-$token = null;
-if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-    $token = $matches[1];
-}
-if (!$token) {
-    $logger->warning('Request tanpa token Bearer');
-    http_response_code(401);
-    echo json_encode(['status' => false, 'message' => 'Request ditolak user tidak terdaftar']);
-    exit;
-}
-$verif = verify_token($token);
 $user_id = $verif->id;
 
 // Get pagination parameters

@@ -7,14 +7,7 @@ require_once __DIR__ . '/../../../aa_kon_sett.php';
 require_once __DIR__ . '/../../auth/middleware_login.php';
 require_once __DIR__ . '/../../helpers/finance_log_helper.php';
 try {
-    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-    if (!preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-        throw new Exception('Token tidak ditemukan');
-    }
-    $verif = verify_token($matches[1]);
-    if (!$verif) {
-        throw new Exception('Token tidak valid');
-    }
+    $verif = authenticate_request();
     $user_login = $verif->id ?? $verif->kode ?? null;
     $json = file_get_contents('php://input');
     $input = json_decode($json, true);

@@ -6,19 +6,8 @@ require_once __DIR__ . '/../../../aa_kon_sett.php';
 require_once __DIR__ . '/../../auth/middleware_login.php';
 require_once __DIR__ . '/../../helpers/finance_log_helper.php';
 try {
-    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-    if (!preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-        http_response_code(401);
-        echo json_encode(['success' => false, 'message' => 'Token tidak ditemukan']);
-        exit;
-    }
-    $token = $matches[1];
-    $verif = verify_token($token);
-    if (!$verif) {
-        http_response_code(401);
-        echo json_encode(['success' => false, 'message' => 'Token tidak valid']);
-        exit;
-    }
+    $verif = authenticate_request();
+
     $kd_user = $verif->id ?? $verif->kode ?? 0;
     $json = file_get_contents('php://input');
     $input = json_decode($json, true);

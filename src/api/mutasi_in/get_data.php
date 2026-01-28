@@ -5,15 +5,10 @@ require_once __DIR__ . "/../../auth/middleware_login.php";
 
 try {
     $allow_print = false;
-    $headers = getallheaders();
-    $token = null;
-
-    if (isset($headers['Authorization']) && preg_match('/^Bearer\s(\S+)$/', $headers['Authorization'], $matches)) {
-        $token = $matches[1];
-    }
+    
 
     if ($token) {
-        $user = verify_token($token);
+        $user = authenticate_request();
         if ($user) {
             $user_id = $user->kode ?? $user->id ?? 0;
             $checkSql = "SELECT 1 FROM user_internal_access 

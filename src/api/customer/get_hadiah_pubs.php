@@ -18,32 +18,12 @@ if($_SERVER['REQUEST_METHOD'] != 'GET') {
     $logger->warning('Request method not allowed', ['method' => $_SERVER['REQUEST_METHOD']]);
     exit;
 }
-$header = getAllHeaders();
-
-if(!isset($header['Authorization']) || $header['Authorization'] == null) {
-    http_response_code(401);
-    echo json_encode(['status' => false, 'message' => 'Request ditolak user tidak terdaftar']);
-    $logger->warning('Authorization header missing');
-    exit;
-}
-$authHeader = $header['Authorization'];
-$token = null;
-
-if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-    $token = $matches[1];
-}
-if (!$token) {
-    http_response_code(401);
-    echo json_encode(['status' => false, 'message' => 'Request ditolak user tidak terdaftar']);
-    $logger->warning('Bearer token missing or invalid');
-    exit;
-}
-
 
 // JWT validation only
 $user_id = null;
 try {
-    $verif = verify_token($token);
+    $verif = authenticate_request();
+
     $user_id = $verif->id ?? null;
 } catch (Exception $e) {
     $logger->error('Token verification failed: ' . $e->getMessage());

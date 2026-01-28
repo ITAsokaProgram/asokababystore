@@ -11,23 +11,7 @@ use Cloudinary\Api\Exception\NotFound;
 
 $env = parse_ini_file(__DIR__ . '/../../../.env');
 
-// Get token from Authorization header
-$headers = getallheaders();
-$auth_header = $headers['Authorization'] ?? '';
-$token = str_replace('Bearer ', '', $auth_header);
-
-if (!$token) {
-    http_response_code(401);
-    echo json_encode(['status' => false, 'message' => 'Request ditolak: user tidak terdaftar']);
-    exit;
-}
-
-$verif = verify_token($token);
-if (!$verif) {
-    http_response_code(401);
-    echo json_encode(['status' => false, 'message' => 'Token tidak valid']);
-    exit;
-}
+$verif = authenticate_request();
 
 // Configure Cloudinary
 $cloudinary = new Cloudinary([

@@ -25,19 +25,7 @@ $response = [
 ];
 
 try {
-    // --- BAGIAN GET KODE CABANG (LOGIKA DARI get_kode.php) ---
-    $header = getAllHeaders();
-    $authHeader = $header['Authorization'] ?? '';
-    $token = null;
-    if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-        $token = $matches[1];
-    }
-
-    if (!$token) {
-        throw new Exception("Unauthenticated: Token tidak ditemukan");
-    }
-
-    $verif = verify_token($token);
+    $verif = authenticate_request();
 
     // Ambil hak akses cabang user
     $sqlUserCabang = "SELECT kd_store FROM user_account WHERE kode = ?";

@@ -11,13 +11,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'message' => 'Gunakan metode POST.']);
     exit;
 }
-$authHeader = getallheaders()['Authorization'] ?? '';
-$token = preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches) ? $matches[1] : null;
-if (!$token || !($decoded = verify_token($token)) || (is_array($decoded) && isset($decoded['status']) && $decoded['status'] === 'error')) {
-    http_response_code(401);
-    echo json_encode(['status' => "Unauthenticated", 'message' => 'Token tidak valid atau kadaluwarsa.']);
-    exit;
-}
+$decoded = authenticate_request();
+
 
 
 $plu = $_POST['plu'] ?? '';

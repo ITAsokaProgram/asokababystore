@@ -3,12 +3,7 @@ require_once __DIR__ . "/../../../aa_kon_sett.php";
 require_once __DIR__ . "/../../auth/middleware_login.php";
 header("Content-Type:application/json");
 header("Access-Control-Allow-Methods: GET");
-$headers = getallheaders();
-if (!isset($headers['Authorization'])) {
-    http_response_code(401);
-    echo json_encode(['status' => "Unauthenticated"]);
-    exit;
-}
+$verif = authenticate_request();
 $cabang = isset($_GET['cabang']) ? $_GET['cabang'] : '';
 $sql = "SELECT 
             inv.DESCP as nama_product,

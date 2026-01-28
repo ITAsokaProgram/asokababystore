@@ -9,15 +9,7 @@ try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         throw new Exception('Method Not Allowed');
     }
-    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-    if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-        $token = $matches[1];
-        if (!verify_token($token)) {
-            throw new Exception("Sesi login berakhir/tidak valid.");
-        }
-    } else {
-        throw new Exception("Token otorisasi diperlukan.");
-    }
+    $verif = authenticate_request();
     $input = json_decode(file_get_contents('php://input'), true);
     $pk_tanggal = $input['pk_tanggal'] ?? null;
     $pk_jam = $input['pk_jam'] ?? null;

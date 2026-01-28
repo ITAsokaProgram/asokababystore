@@ -26,22 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 
 try {
     
-    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-    if (!preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-        http_response_code(401);
-        echo json_encode(['success' => false, 'message' => 'Token tidak ditemukan atau format salah']);
-        exit;
-    }
-    $token = $matches[1];
-    $verif = verify_token($token);
-    
-    
-    if (!$verif || !($verif->id ?? $verif->kode ?? null)) {
-        http_response_code(401);
-        echo json_encode(['success' => false, 'message' => 'Token tidak valid atau tidak lengkap']);
-        exit;
-    }
-    
+    $verif = authenticate_request();
     
     $review_id = filter_input(INPUT_GET, 'review_id', FILTER_VALIDATE_INT);
     if (!$review_id) {

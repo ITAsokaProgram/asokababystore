@@ -12,26 +12,8 @@ try {
     exit();
 }
 header('Content-Type: application/json');
-try {
-    $authHeader = null;
-    if (function_exists('getallheaders')) {
-        $headers = getallheaders();
-        if (isset($headers['Authorization']))
-            $authHeader = $headers['Authorization'];
-    }
-    if ($authHeader === null && isset($_SERVER['HTTP_AUTHORIZATION']))
-        $authHeader = $_SERVER['HTTP_AUTHORIZATION'];
-    if ($authHeader === null || !preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-        http_response_code(401);
-        echo json_encode(['success' => false, 'message' => "Token tidak valid."]);
-        exit;
-    }
-    verify_token($matches[1]);
-} catch (Exception $e) {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'Unauthorized: ' . $e->getMessage()]);
-    exit;
-}
+$verif = authenticate_request();
+
 function getDateFilterParams($get_params, $table_alias = 't')
 {
     $date_where_clause = "";

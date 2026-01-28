@@ -3,18 +3,10 @@ require_once __DIR__ . ("/../../../aa_kon_sett.php");
 require_once __DIR__ . ("/../../auth/middleware_login.php");
 header("Content-Type:application/json");
 header("Access-Control-Allow-Methods: GET");
-$headers = getallheaders();
-$authHeader = isset($headers['Authorization']) ? $headers['Authorization'] : '';
-$token = null;
-if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $matches)) {
-    $token = $matches[1];
-}
-if (!$token) {
-    http_response_code(401);
-    echo json_encode(['status' => "Unauthenticated", 'message' => 'Request ditolak user tidak terdaftar']);
-    exit;
-}
-$verif = verify_token($token);
+
+$verify = authenticate_request();
+
+
 $statsSql = "SELECT 
                 AVG(rating) as avg_rating, 
                 COUNT(id) as total_reviews, 

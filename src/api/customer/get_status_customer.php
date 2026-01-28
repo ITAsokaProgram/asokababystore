@@ -1,17 +1,10 @@
 <?php
 include "../../../aa_kon_sett.php";
-include "../../auth/verify_tokens.php";
+require_once __DIR__ . "/../../auth/middleware_login.php";
 header("Content-Type: application/json");
 $data = json_decode(file_get_contents("php://input"), true);
-$headers = getallheaders();
-if (!isset($headers['Authorization'])) {
-    http_response_code(401);
-    echo json_encode(['status' => 'error', 'message' => 'Authorization header missing']);
-    exit;
-}
-$authHeader = $headers['Authorization'];
-$token = str_replace('Bearer ', '', $authHeader);
-$verify = verify_token($token);
+$verify = authenticate_request();
+
 if (!$verify || !isset($verify->email)) {
     http_response_code(401);
     echo json_encode(['status' => 'unauthorized', 'message' => 'Token tidak valid atau tidak memiliki email']);

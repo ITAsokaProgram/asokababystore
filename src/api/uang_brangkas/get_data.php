@@ -4,22 +4,8 @@ include '../../../aa_kon_sett.php';
 require_once __DIR__ . "./../../auth/middleware_login.php";
 header('Content-Type: application/json');
 
-$header = getAllHeaders();
-$authHeader = $header['Authorization'] ?? $header['authorization'] ?? '';
-$token = null;
-if (preg_match('/^Bearer\s(\S+)$/', $authHeader, $macthes))
-    $token = $macthes[1];
+$verif = authenticate_request();
 
-if (!$token) {
-    http_response_code(401);
-    exit(json_encode(['error' => 'Token tidak ditemukan']));
-}
-
-$verif = verify_token($token);
-if (!$verif) {
-    http_response_code(401);
-    exit(json_encode(['error' => 'Sesi login tidak valid']));
-}
 
 $response = ['stores' => [], 'tabel_data' => [], 'pagination' => ['total_rows' => 0], 'error' => null];
 

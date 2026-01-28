@@ -1,24 +1,11 @@
 <?php
-include "../../../aa_kon_sett.php";
-include "../../auth/verify_tokens.php";
+require_once __DIR__ . "/../../../aa_kon_sett.php";
+require_once __DIR__ . "/../../auth/middleware_login.php";
 header("Content-Type: application/json");
 header("Access-Allow-Methods: GET, POST");
-$headers = getallheaders();
 $inputJSON = file_get_contents("php://input");
 $data = json_decode($inputJSON, true);
-if (!isset($headers['Authorization'])) {
-    http_response_code(401);
-    echo json_encode(['status' => 'error', 'message' => 'Authorization header missing']);
-    exit;
-}
-$authHeader = $headers['Authorization'];
-$token = str_replace('Bearer ', '', $authHeader);
-$verify = verify_token($token);
-if (!$verify) {
-    http_response_code(401);
-    echo json_encode(['status' => 'unauthorized', 'message' => 'Token tidak valid']);
-    exit;
-}
+$verify = authenticate_request();
 $token_identifier = null;
 if (isset($verify->no_hp)) {
     $token_identifier = $verify->no_hp;
@@ -26,6 +13,8 @@ if (isset($verify->no_hp)) {
     $token_identifier = $verify->user_name;
 } elseif (isset($verify->data) && isset($verify->data->no_hp)) {
     $token_identifier = $verify->data->no_hp;
+} elseif (isset($verify->kode)) {
+    $token_identifier = $verify->kode; 
 }
 $kd_cust = $data['kode'] ?? $token_identifier;
 if (empty($kd_cust)) {
@@ -42,21 +31,23 @@ $sql = "SELECT
 FROM customers c
 WHERE c.kd_cust = ?";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param('s', $kd_cust);
 if (!$stmt) {
     http_response_code(500);
-    echo json_encode(['status' => 'error', 'message' => 'Gagal Query Database']);
+    echo json_encode(['status' => 'error', 'message' => 'Gagal Query Database: ' . $conn->error]);
     exit;
 }
+$stmt->bind_param('s', $kd_cust);
 $stmt->execute();
 $result = $stmt->get_result();
 if ($result->num_rows > 0) {
     $row = $result->fetch_assoc();
-    $finalData = [$row];
+    $finalData = [$row]; 
     http_response_code(200);
     echo json_encode(['status' => 'success', 'message' => 'Data berhasil di fetch', 'data' => $finalData]);
 } else {
     http_response_code(200);
     echo json_encode(['status' => 'success', 'message' => 'Data user tidak ditemukan', 'data' => [['total_poin_pk_pm' => 0]]]);
 }
+$stmt->close();
+$conn->close();
 ?>
