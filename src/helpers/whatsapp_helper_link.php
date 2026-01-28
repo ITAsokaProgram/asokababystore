@@ -132,11 +132,16 @@ function kirimPesanKontak($nomorPenerima, $namaKontak, $nomorTeleponKontak)
         return ['success' => false, 'wamid' => null];
     }
 }
-
 function kirimPesanList($nomorPenerima, $judulHeader, $pesanBody, $pesanFooter, $namaTombol, $sections)
 {
     $logger = new AppLogger('whatsapp_list_message.log');
     $nomorPenerima = normalizePhoneNumber($nomorPenerima);
+
+    $cleanHeader = str_replace(['*', '_', '~', '`'], '', $judulHeader);
+    
+    if (strlen($cleanHeader) > 60) {
+        $cleanHeader = substr($cleanHeader, 0, 57) . '...';
+    }
 
     $data = [
         'messaging_product' => 'whatsapp',
@@ -144,7 +149,7 @@ function kirimPesanList($nomorPenerima, $judulHeader, $pesanBody, $pesanFooter, 
         'type' => 'interactive',
         'interactive' => [
             'type' => 'list',
-            'header' => ['type' => 'text', 'text' => $judulHeader],
+            'header' => ['type' => 'text', 'text' => $cleanHeader], 
             'body' => ['text' => $pesanBody],
             'footer' => ['text' => $pesanFooter],
             'action' => [
@@ -159,7 +164,8 @@ function kirimPesanList($nomorPenerima, $judulHeader, $pesanBody, $pesanFooter, 
     if ($result['httpcode'] >= 200 && $result['httpcode'] < 300) {
         return ['success' => true, 'wamid' => $result['wamid']];
     } else {
-        $logger->error("Gagal kirim pesan List ke {$nomorPenerima}. HTTP: {$result['httpcode']}. Response: {$result['response']}");
+        // Log the sanitized header to see what was actually sent
+        $logger->error("Gagal kirim pesan List ke {$nomorPenerima}. Header: {$cleanHeader}. HTTP: {$result['httpcode']}. Response: {$result['response']}");
         return ['success' => false, 'wamid' => null];
     }
 }
