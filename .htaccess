@@ -1,4 +1,5 @@
 RewriteEngine On
+RewriteRule ^\.git - [F,L]
 RewriteRule ^\.well-known/ - [L,NC]
 RewriteCond %{REQUEST_URI} !^/maintanance\.php$ [NC]
 RewriteCond %{REQUEST_URI} !^/iclock/ [NC]

@@ -3,7 +3,16 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if(userData) {
         const nama = userData.nama || 'Supplier';
-        const wilayah = userData.wilayah || 'Area Supplier'; 
+        let wilayahRaw = userData.wilayah || 'Area Supplier'; 
+        let wilayahDisplay = wilayahRaw;
+
+        const wilayahArray = wilayahRaw.split(',').map(item => item.trim());
+        
+        if (wilayahArray.length > 3) {
+            const tigaPertama = wilayahArray.slice(0, 3).join(', ');
+            const sisa = wilayahArray.length - 3;
+            wilayahDisplay = `${tigaPertama} + ${sisa} wilayah`;
+        }
 
         const elNama = document.getElementById('user-nama');
         const elRole = document.getElementById('user-role');
@@ -11,9 +20,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const elRoleDrop = document.getElementById('user-role-dropdown');
 
         if(elNama) elNama.textContent = nama;
-        if(elRole) elRole.textContent = wilayah;
+        if(elRole) {
+            elRole.textContent = wilayahDisplay;
+            elRole.title = wilayahRaw; 
+        }
         if(elNamaDrop) elNamaDrop.textContent = nama;
-        if(elRoleDrop) elRoleDrop.textContent = wilayah;
+        if(elRoleDrop) elRoleDrop.textContent = wilayahDisplay;
 
         const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(nama)}&background=random`;
         const elHeaderAvatar = document.getElementById('header-avatar');
@@ -22,7 +34,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if(elHeaderAvatar) elHeaderAvatar.src = avatarUrl;
         if(elDropAvatar) elDropAvatar.src = avatarUrl;
     }
-
     const profileBtn = document.getElementById('profile-img');
     const profileCard = document.getElementById('profile-card');
     const chevron = document.getElementById('chevron-icon');
