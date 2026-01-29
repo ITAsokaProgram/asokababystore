@@ -208,11 +208,26 @@ try {
                     }
                 }
             }
+            if (!empty($no_faktur) && !empty($buku_besar_id)) {
+                
+                $sqlSyncSTN = "UPDATE serah_terima_nota stn
+                               JOIN buku_besar bb ON bb.id = ? 
+                               AND stn.no_faktur_format = bb.no_faktur
+                               AND stn.nominal = bb.nilai_faktur
+                               SET stn.status_bayar = 
+                                   CASE 
+                                       WHEN (COALESCE(bb.total_bayar, 0) + COALESCE(bb.potongan, 0)) >= stn.nominal THEN 'Sudah'
+                                       ELSE 'Belum'
+                                   END
+                               WHERE stn.no_faktur_format = ?";
 
-            // $stmtUpdateSTN = $conn->prepare("UPDATE serah_terima_nota SET status_bayar = 'Sudah' WHERE no_faktur = ?");
-            // $stmtUpdateSTN->bind_param("s", $no_faktur);
-            // $stmtUpdateSTN->execute();
-            // $stmtUpdateSTN->close();
+                $stmtSync = $conn->prepare($sqlSyncSTN);
+                if ($stmtSync) {
+                    $stmtSync->bind_param("is", $buku_besar_id, $no_faktur);
+                    $stmtSync->execute();
+                    $stmtSync->close();
+                }
+            }
 
             if ($nominal_bayar_ini > 0) {
                 $stmtInsertAngsuran->bind_param(
