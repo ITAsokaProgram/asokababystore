@@ -28,23 +28,19 @@ try {
     $search_faktur = $_GET['search'] ?? '';
     $kode_store = $_GET['kode_store'] ?? '';
     $page = (int) ($_GET['page'] ?? 1);
-    if ($page < 1)
-        $page = 1;
+    if ($page < 1) $page = 1;
     $limit = 100;
     $offset = ($page - 1) * $limit;
     $sql_erp_agg = "
         SELECT 
-            k.no_faktur, 
-            k.kd_store, 
-            k.kode_supp,
-            DATE(k.tgl_koreksi) as tgl_koreksi,
+            k.no_faktur, k.kd_store, k.kode_supp, DATE(k.tgl_koreksi) as tgl_koreksi,
             SUM((
                 CASE 
                     WHEN k.keterangan = 'Minus System' THEN k.sel_qty 
                     WHEN k.keterangan = 'Stock Opname' THEN k.sel_qty 
                     ELSE 0 
                 END * (k.harga_beli + IFNULL(k.ppn_kor, 0))
-            ) ) as total_erp_calc
+            )) as total_erp_calc
         FROM koreksi k
         WHERE k.tgl_koreksi BETWEEN ? AND ?
     ";
@@ -58,31 +54,35 @@ try {
     $sql_erp_agg .= " GROUP BY k.no_faktur, k.kd_store, k.kode_supp";
     $filter_search_param = "%" . $search_faktur . "%";
     $sql_check_erp = "
-        SELECT 
-            erp.tgl_koreksi,
-            erp.no_faktur,
-            erp.total_erp_calc,
-            IFNULL(ck.total_koreksi, 0) as total_scan,
-            CASE 
-                WHEN ck.no_faktur IS NULL THEN 'MISSING'
-                WHEN ABS(erp.total_erp_calc - IFNULL(ck.total_koreksi, 0)) > 100 THEN 'DIFF'
-                ELSE 'OK'
-            END as status_cek
-        FROM ($sql_erp_agg) erp
-        LEFT JOIN c_koreksi ck ON erp.no_faktur = ck.no_faktur 
-             AND erp.kd_store = ck.kode_store 
-             AND erp.kode_supp = ck.kode_supp
+        SELECT * FROM (
+            SELECT 
+                erp.tgl_koreksi, erp.no_faktur, erp.total_erp_calc,
+                IFNULL(ck.total_koreksi, 0) as total_scan,
+                CASE 
+                    WHEN ck.no_faktur IS NULL THEN 'MISSING'
+                    WHEN ABS(erp.total_erp_calc - IFNULL(ck.total_koreksi, 0)) > 100 THEN 'DIFF'
+                    ELSE 'OK'
+                END as status_cek
+            FROM ($sql_erp_agg) erp
+            LEFT JOIN c_koreksi ck ON erp.no_faktur = ck.no_faktur 
+                 AND erp.kd_store = ck.kode_store 
+                 AND erp.kode_supp = ck.kode_supp
+        ) as summary_data
+        WHERE status_cek != 'OK'  -- HANYA AMBIL YANG BERMASALAH
     ";
+
     if (!empty($search_faktur)) {
-        $sql_check_erp .= " WHERE erp.no_faktur LIKE '$filter_search_param'";
+        $sql_check_erp .= " AND no_faktur LIKE '$filter_search_param'";
     }
+
     $stmt_sum = $conn->prepare($sql_check_erp);
     $stmt_sum->bind_param($types_agg, ...$params_agg);
     $stmt_sum->execute();
     $res_sum = $stmt_sum->get_result();
     while ($row = $res_sum->fetch_assoc()) {
         if ($row['status_cek'] == 'MISSING') {
-            $response['summary']['total_belum_ada'] += $row['total_erp_calc'];
+            $response['summary']['total_belum_ada'] += $row['total_erp_calc']; 
+            
             if (count($response['summary']['list_belum_ada']) < 50) {
                 $response['summary']['list_belum_ada'][] = [
                     'tgl_tiba' => $row['tgl_koreksi'],
@@ -94,6 +94,7 @@ try {
             $response['summary']['total_selisih']++;
             $selisih = abs($row['total_erp_calc'] - $row['total_scan']);
             $response['summary']['total_selisih_rupiah'] += $selisih;
+            
             if (count($response['summary']['list_selisih']) < 50) {
                 $response['summary']['list_selisih'][] = [
                     'tgl_tiba' => $row['tgl_koreksi'],
@@ -118,9 +119,7 @@ try {
         WHERE $where_sql_nf
         AND NOT EXISTS (
             SELECT 1 FROM koreksi k 
-            WHERE k.no_faktur = ck.no_faktur 
-            AND k.kd_store = ck.kode_store
-            AND k.kode_supp = ck.kode_supp
+            WHERE k.no_faktur = ck.no_faktur AND k.kd_store = ck.kode_store AND k.kode_supp = ck.kode_supp
         )
     ";
     if (!empty($search_faktur)) {
@@ -166,48 +165,70 @@ try {
     $response['pagination']['current_page'] = $page;
     $response['pagination']['limit'] = $limit;
     $response['pagination']['offset'] = $offset;
-    $params_final = array_merge($params_main, $params_main);
-    $params_main[] = $limit;
-    $params_main[] = $offset;
-    $types_main .= "ii";
-    $sql_data = "
-        SELECT 
-            ck.*,
-            ks.Nm_Alias,
-            (
-                SELECT SUM((
-                    CASE 
-                        WHEN k.keterangan = 'Minus System' THEN k.sel_qty 
-                        WHEN k.keterangan = 'Stock Opname' THEN k.sel_qty 
-                        ELSE 0 
-                    END * (k.harga_beli + IFNULL(k.ppn_kor, 0))
-                ))
-                FROM koreksi k 
-                WHERE k.no_faktur = ck.no_faktur 
-                AND k.kd_store = ck.kode_store
-                AND k.kode_supp = ck.kode_supp
-            ) as total_erp,
-            CASE 
-                WHEN NOT EXISTS (SELECT 1 FROM koreksi k2 WHERE k2.no_faktur = ck.no_faktur AND k2.kd_store = ck.kode_store) THEN 'NOT_FOUND_IN_ERP'
-                ELSE 'CHECK_DIFF' 
-            END as status_base
+    $params_limit = $params_main;
+    $params_limit[] = $limit;
+    $params_limit[] = $offset;
+    $types_limit = $types_main . "ii";
+    $sql_ck = "
+        SELECT ck.*, ks.Nm_Alias 
         FROM c_koreksi ck
         LEFT JOIN kode_store ks ON ck.kode_store = ks.kd_store
         WHERE $where_sql_main
         ORDER BY ck.no_faktur ASC
         LIMIT ? OFFSET ?
     ";
-    $stmt = $conn->prepare($sql_data);
-    $stmt->bind_param($types_main, ...$params_main);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    while ($row = $result->fetch_assoc()) {
-        $total_erp = floatval($row['total_erp'] ?? 0);
-        $total_scan = floatval($row['total_koreksi'] ?? 0);
-        if ($row['status_base'] == 'NOT_FOUND_IN_ERP') {
-            $row['status_data'] = 'NOT_FOUND_IN_ERP';
-            $row['nilai_selisih_row'] = 0;
-        } else {
+    $stmt_ck = $conn->prepare($sql_ck);
+    $stmt_ck->bind_param($types_limit, ...$params_limit);
+    $stmt_ck->execute();
+    $res_ck = $stmt_ck->get_result();
+    $temp_data = [];
+    $faktur_list = [];
+    while ($row = $res_ck->fetch_assoc()) {
+        $row['total_koreksi'] = floatval($row['total_koreksi']);
+        $row['total_erp'] = 0; 
+        $row['status_data'] = 'NOT_FOUND_IN_ERP';
+        $row['nilai_selisih_row'] = 0;
+        $key = $row['kode_store'] . "_" . $row['no_faktur'] . "_" . $row['kode_supp'];
+        $temp_data[] = $row;
+        if (!in_array($row['no_faktur'], $faktur_list)) {
+            $faktur_list[] = $row['no_faktur'];
+        }
+    }
+    $erp_map = [];
+    if (!empty($faktur_list) && !empty($kode_store)) {
+        $placeholders = implode(',', array_fill(0, count($faktur_list), '?'));
+        $sql_lookup = "
+            SELECT 
+                k.no_faktur, k.kd_store, k.kode_supp,
+                SUM((
+                    CASE 
+                        WHEN k.keterangan = 'Minus System' THEN k.sel_qty 
+                        WHEN k.keterangan = 'Stock Opname' THEN k.sel_qty 
+                        ELSE 0 
+                    END * (k.harga_beli + IFNULL(k.ppn_kor, 0))
+                )) as total_erp_calc
+            FROM koreksi k
+            WHERE k.kd_store = ? 
+            AND k.no_faktur IN ($placeholders)
+            GROUP BY k.no_faktur, k.kd_store, k.kode_supp
+        ";
+        $stmt_lookup = $conn->prepare($sql_lookup);
+        $types_lookup = "s" . str_repeat('s', count($faktur_list));
+        $params_lookup = array_merge([$kode_store], $faktur_list);
+        $stmt_lookup->bind_param($types_lookup, ...$params_lookup);
+        $stmt_lookup->execute();
+        $res_lookup = $stmt_lookup->get_result();
+        while ($r = $res_lookup->fetch_assoc()) {
+            $key = $r['kd_store'] . "_" . $r['no_faktur'] . "_" . $r['kode_supp'];
+            $erp_map[$key] = floatval($r['total_erp_calc']);
+        }
+    }
+    foreach ($temp_data as $row) {
+        $key = $row['kode_store'] . "_" . $row['no_faktur'] . "_" . $row['kode_supp'];
+        if (isset($erp_map[$key])) {
+            $total_erp = $erp_map[$key];
+            $total_scan = $row['total_koreksi'];
+            $row['total_erp'] = $total_erp;
             if (abs($total_erp - $total_scan) > 100) {
                 $row['status_data'] = 'DIFF';
                 $row['nilai_selisih_row'] = $total_erp - $total_scan;
@@ -215,8 +236,8 @@ try {
                 $row['status_data'] = 'MATCH';
                 $row['nilai_selisih_row'] = 0;
             }
+        } else {
         }
-        $row['total_erp'] = $total_erp;
         $response['tabel_data'][] = $row;
     }
     $conn->close();
