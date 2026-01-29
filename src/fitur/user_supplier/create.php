@@ -1,8 +1,6 @@
 <?php
 session_start();
 require_once __DIR__ . '/../../component/menu_handler.php';
-// $menuHandler = new MenuHandler('user_supplier_create'); 
-// if (!$menuHandler->initialize()) { exit(); }
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -21,7 +19,38 @@ require_once __DIR__ . '/../../component/menu_handler.php';
     <link rel="stylesheet" href="../../style/pink-theme.css">
     <link rel="icon" type="image/png" href="../../../public/images/logo1.png">
     
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+    <style>
+        .ts-control {
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            border-color: #e5e7eb;
+            font-size: 0.875rem;
+            background-color: #f9fafb;
+        }
+        .ts-control.focus {
+            box-shadow: none;
+            border-color: #db2777;
+            background-color: #fff;
+        }
+        .ts-wrapper.multi .ts-control > div {
+            background: #fdf2f8; 
+            color: #be185d;       
+            border: 1px solid #fbcfe8;
+            border-radius: 4px;
+        }
+        .ts-dropdown {
+            border-radius: 0.5rem;
+            border-color: #db2777;
+        }
+        .ts-dropdown .active {
+            background-color: #fdf2f8;
+            color: #be185d;
+        }
+    </style>
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 </head>
 
 <body class="bg-gray-50">
@@ -76,7 +105,10 @@ require_once __DIR__ . '/../../component/menu_handler.php';
 
                         <div class="md:col-span-2">
                             <label class="block text-xs font-semibold text-gray-700 mb-1">Wilayah Cakupan</label>
-                            <textarea name="wilayah" class="input-modern w-full h-24" placeholder="Pisahkan dengan koma. Contoh: Jakarta Barat, Tangerang, Bekasi"></textarea>
+                            <select id="select-wilayah" multiple placeholder="Pilih kota/kabupaten..." autocomplete="off">
+                                <option value="">Memuat data kota...</option>
+                            </select>
+                            <p class="text-[10px] text-gray-400 mt-1">*Bisa pilih lebih dari satu.</p>
                         </div>
 
                     </div>

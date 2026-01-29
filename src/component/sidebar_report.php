@@ -36,7 +36,11 @@ $isLogPasswordOpen = $isActive('/src/fitur/logs/password_reset.php');
 $isSecurityLogOpen = $isActive('/src/fitur/security_logs/');
 $isLogFinanceOpen = $isActive('/src/fitur/log_finance/');
 
-$isToolsOpen = $isVoucherOpen || $isJadwalSoOpen || $isActive('/src/fitur/approval/izin') || $isReceiptToolOpen || $isReturnToolOpen || $isKoreksiToolOpen || $isUangBrankasOpen;
+$isUserSupplierOpen = $isActive('/src/fitur/user_supplier/');
+
+$isToolsOpen = $isVoucherOpen || $isJadwalSoOpen || $isActive('/src/fitur/approval/izin') || 
+               $isReceiptToolOpen || $isReturnToolOpen || $isKoreksiToolOpen || 
+               $isUangBrankasOpen || $isUserSupplierOpen;
 
 $isPenjualanOpen = $isActive('/src/fitur/laporan/in_laporan_sub_dept') ||
     $isActive('/src/fitur/laporan/in_sales_ratio') ||
@@ -895,7 +899,9 @@ $isFinanceOpen = $isBukuBesarOpen || $isSerahTerimaOpen || $isProgramSupplierOpe
                 nestedOpenVoucher: <?= $isVoucherOpen ? 'true' : 'false' ?>,
                 nestedOpenReceipt: <?= $isReceiptToolOpen ? 'true' : 'false' ?>,
                 nestedOpenReturn: <?= $isReturnToolOpen ? 'true' : 'false' ?>,
-                nestedOpenKoreksi: <?= $isKoreksiToolOpen ? 'true' : 'false' ?>
+                nestedOpenKoreksi: <?= $isKoreksiToolOpen ? 'true' : 'false' ?>,
+                nestedOpenUserSupplier: <?= $isUserSupplierOpen ? 'true' : 'false' ?>
+
             }" class="relative "
             @reset-menu.window="open = false; nestedOpenJadwalSO = false; nestedOpenVoucher = false; nestedOpenReceipt = false; nestedOpenReturn = false; nestedOpenKoreksi = false">
             <button @click="open = !open" id="tools" data-title="Alat"
@@ -925,6 +931,15 @@ $isFinanceOpen = $isBukuBesarOpen || $isSerahTerimaOpen || $isProgramSupplierOpe
                                 <i
                                     class="fa-solid fa-clipboard-check mr-2 text-base text-cyan-400 group-hover:text-cyan-600 group-hover:scale-110 transition-all duration-200"></i>
                                 Approval Koreksi
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/src/fitur/user_supplier/index.php" data-menu="user_supplier"
+                            class="flex items-center px-4 py-2.5 text-gray-700 hover:bg-cyan-100 hover:text-cyan-700 transition-all duration-200 group rounded-lg">
+                            <span class="transition-all duration-300 group-hover:translate-x-1 text-sm font-medium flex items-center">
+                                <i class="fa-solid fa-user-tag mr-2 text-base text-cyan-400 group-hover:text-cyan-600 group-hover:scale-110 transition-all duration-200"></i>
+                                User Supplier
                             </span>
                         </a>
                     </li>

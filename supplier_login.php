@@ -1,7 +1,5 @@
 <?php
-// supplier_login.php
 session_start();
-// Cek jika sudah login (cek cookie supplier_token)
 if (isset($_COOKIE['supplier_token'])) {
     header("Location: /supplier_dashboard");
     exit;
