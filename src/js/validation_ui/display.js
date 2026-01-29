@@ -19,6 +19,37 @@ import {
   closeLoadingScreen,
 } from "./loading_screen_login.js";
 const initValidationUi = () => {
+  const forgotEmailFormHp = document.querySelector("#forgotEmailFormHp");
+  if (forgotEmailFormHp) {
+      forgotEmailFormHp.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const noHp = document.getElementById('forgotEmailHp').value;
+          const newEmail = document.getElementById('newEmailReset').value;
+          const button = document.getElementById('resetEmailButton');
+          
+          button.disabled = true;
+          button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...';
+
+          try {
+              const response = await fetch('/src/api/forget_pass/request_change_email_wa.php', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ no_hp: noHp, new_email: newEmail }),
+              });
+              const data = await response.json();
+              if (data.success) {
+                  window.location.href = data.whatsapp_url;
+              } else {
+                  Swal.fire('Gagal', data.message, 'error');
+              }
+          } catch (error) {
+              Swal.fire('Error', 'Terjadi kesalahan jaringan', 'error');
+          } finally {
+              button.disabled = false;
+              button.innerHTML = '<i class="fab fa-whatsapp mr-2"></i> Verifikasi via WhatsApp';
+          }
+      });
+  }
   const registerForm = document.querySelector("#register-form");
   if (registerForm) {
     registerForm.addEventListener("submit", (event) => {

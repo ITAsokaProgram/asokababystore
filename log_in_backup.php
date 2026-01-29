@@ -216,11 +216,6 @@ header("Pragma: no-cache");
                 <i class="fas fa-key mr-1"></i>Lupa Password?
               </button>
             </div>
-            <div class="text-sm">
-              <button id="show-forgot-email" class="text-gray-500 hover:text-orange-500 hover:underline transition-colors">
-                <i class="fas fa-envelope-open-text mr-1"></i>Lupa Email?
-              </button>
-            </div>
           </div>
         </div>
 
@@ -411,43 +406,6 @@ header("Pragma: no-cache");
           <div class="text-center">
             <button id="show-login2"
               class="text-pink-600 font-semibold hover:text-pink-700 hover:underline transition-colors">
-              <i class="fas fa-arrow-left mr-1"></i>Kembali ke Login
-            </button>
-          </div>
-        </div>
-        <div id="forgot-email-form" class="w-full hidden space-y-6">
-          <div class="text-center mb-6">
-            <h2 class="text-3xl lg:text-4xl font-bold gradient-text mb-2">Lupa Email?</h2>
-            <p class="text-gray-600">Verifikasi No. HP untuk mengganti email Anda</p>
-          </div>
-
-          <form id="forgotEmailFormHp" method="POST" class="space-y-5">
-            <div class="space-y-2">
-              <label for="forgotEmailHp" class="block text-sm font-medium text-gray-700">Nomor HP Terdaftar</label>
-              <div class="relative">
-                <i class="fas fa-phone absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                <input type="tel" id="forgotEmailHp" placeholder="Contoh: 081234567890"
-                  class="w-full border-2 border-gray-200 pl-10 pr-4 py-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all text-lg" />
-              </div>
-            </div>
-            
-            <div class="space-y-2">
-              <label for="newEmailReset" class="block text-sm font-medium text-gray-700">Email Baru</label>
-              <div class="relative">
-                <i class="fas fa-envelope absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                <input type="email" id="newEmailReset" placeholder="Masukkan email baru Anda"
-                  class="w-full border-2 border-gray-200 pl-10 pr-4 py-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all text-lg" />
-              </div>
-            </div>
-
-            <button type="submit" id="resetEmailButton"
-              class="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:opacity-90 transition-all text-white py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 relative">
-              <span class="button-text"><i class="fab fa-whatsapp mr-2"></i>Verifikasi via WhatsApp</span>
-            </button>
-          </form>
-
-          <div class="text-center">
-            <button id="back-to-login-from-email" class="text-pink-600 font-semibold hover:text-pink-700 hover:underline transition-colors">
               <i class="fas fa-arrow-left mr-1"></i>Kembali ke Login
             </button>
           </div>

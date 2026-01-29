@@ -31,6 +31,17 @@ export const switchPageForgot = () => {
     const forgotPage = document.querySelector("#forgot-form");
     const loginPage = document.querySelector("#login-form");
     const registerPage = document.querySelector("#register-form");
+    const forgotEmailPage = document.querySelector("#forgot-email-form");
+
+    document.getElementById('show-forgot-email').onclick = () => {
+        forgotEmailPage.classList.remove('hidden');
+        loginPage.classList.add('hidden');
+    };
+
+    document.getElementById('back-to-login-from-email').onclick = () => {
+        forgotEmailPage.classList.add('hidden');
+        loginPage.classList.remove('hidden');
+    };
 
     document.getElementById('show-forgot').onclick = () => {
         forgotPage.classList.remove('hidden');

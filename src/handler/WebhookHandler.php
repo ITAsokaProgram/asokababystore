@@ -114,6 +114,17 @@ class WebhookHandler
                 $this->verificationService->processPasswordResetToken($token, $nomorPengirim);
                 return;
             }
+            if (preg_match(WhatsappConstants::REGEX_CHANGE_EMAIL, $textBody, $matches)) {
+                $token = $matches[1];
+                
+                $emailBaru = '';
+                if (preg_match(WhatsappConstants::REGEX_EXTRACT_EMAIL, $textBody, $emailMatches)) {
+                    $emailBaru = $emailMatches[1];
+                }
+
+                $this->verificationService->processChangeEmailToken($token, $nomorPengirim, $emailBaru);
+                return;
+            }
         }
         $conversation = $this->conversationService->getOrCreateConversation($nomorPengirim, $namaPengirim);
         if ($this->conversationService->shouldSendGiveaway($nomorPengirim)) {

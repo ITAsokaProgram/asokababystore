@@ -27,6 +27,8 @@ class WhatsappConstants
     public const REGEX_REGISTER_CUSTOMER = '/(?:Token saya|token saya): (reg_[a-zA-Z0-9]+)/';
     public const REGEX_CHANGE_PHONE = '/https:\/\/asokababystore\.com\/verifikasi-wa\?token=([a-f0-9]{64})/';
     public const REGEX_RESET_PASSWORD = '/Token saya: (resetpw_[a-f0-9]{60})/';
+    public const REGEX_CHANGE_EMAIL = '/Token: (resetmail_[a-f0-9]{60})/';
+    public const REGEX_EXTRACT_EMAIL = '/Email Baru: ([\w\.-]+@[\w\.-]+\.\w+)/';
 
     public const WELCOME_HEADER = "Asoka Baby Store";
     public const WELCOME_BODY = "Terimakasih telah menghubungi Asoka Baby Store.\n\n" .
