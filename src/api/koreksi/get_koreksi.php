@@ -199,18 +199,18 @@ try {
         $placeholders = implode(',', array_fill(0, count($faktur_list), '?'));
         $sql_lookup = "
             SELECT 
-                k.no_faktur, k.kd_store, k.kode_supp,
+                k.no_faktur, k.kd_store,
                 SUM((
                     CASE 
-                        WHEN k.keterangan = 'Minus System' THEN k.sel_qty 
-                        WHEN k.keterangan = 'Stock Opname' THEN k.sel_qty 
+                        WHEN TRIM(UPPER(k.keterangan)) = 'MINUS SYSTEM' THEN k.sel_qty 
+                        WHEN TRIM(UPPER(k.keterangan)) = 'STOCK OPNAME' THEN k.sel_qty 
                         ELSE 0 
                     END * (k.harga_beli + IFNULL(k.ppn_kor, 0))
                 )) as total_erp_calc
             FROM koreksi k
             WHERE k.kd_store = ? 
             AND k.no_faktur IN ($placeholders)
-            GROUP BY k.no_faktur, k.kd_store, k.kode_supp
+            GROUP BY k.no_faktur, k.kd_store
         ";
         $stmt_lookup = $conn->prepare($sql_lookup);
         $types_lookup = "s" . str_repeat('s', count($faktur_list));
@@ -219,12 +219,12 @@ try {
         $stmt_lookup->execute();
         $res_lookup = $stmt_lookup->get_result();
         while ($r = $res_lookup->fetch_assoc()) {
-            $key = $r['kd_store'] . "_" . $r['no_faktur'] . "_" . $r['kode_supp'];
+            $key = $r['kd_store'] . "_" . $r['no_faktur']; 
             $erp_map[$key] = floatval($r['total_erp_calc']);
         }
     }
     foreach ($temp_data as $row) {
-        $key = $row['kode_store'] . "_" . $row['no_faktur'] . "_" . $row['kode_supp'];
+        $key = $row['kode_store'] . "_" . $row['no_faktur'];
         if (isset($erp_map[$key])) {
             $total_erp = $erp_map[$key];
             $total_scan = $row['total_koreksi'];

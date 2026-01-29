@@ -171,11 +171,19 @@ if (!$menuHandler->initialize()) {
 
     <script>
         function formatCurrency(input) {
-            let value = input.value.replace(/[^0-9]/g, '');
-            if (value) {
-                let formatted = new Intl.NumberFormat('id-ID').format(value);
-                input.value = formatted;
-                document.getElementById('total_koreksi').value = value;
+            let value = input.value.replace(/[^-0-9]/g, '');
+
+            if (value.lastIndexOf('-') > 0) {
+                value = value.replace(/(?!^)-/g, '');
+            }
+
+            const numericValue = (value === '-' || value === '') ? 0 : parseFloat(value);
+            document.getElementById('total_koreksi').value = numericValue;
+
+            if (value === '-') {
+                input.value = '-'; 
+            } else if (value) {
+                input.value = new Intl.NumberFormat('id-ID').format(numericValue);
             } else {
                 input.value = '';
                 document.getElementById('total_koreksi').value = 0;
