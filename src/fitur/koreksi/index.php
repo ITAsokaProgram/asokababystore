@@ -307,20 +307,17 @@ if (!$menuHandler->initialize()) {
 
                     <div class="max-h-[60vh] overflow-y-auto px-2">
                         <ul class="divide-y divide-gray-50">
-                            <template x-for="item in summaryList" :key="item.no_faktur">
+                            <template x-for="(item, index) in summaryList" :key="index + '-' + item.no_faktur">
                                 <li class="p-3 hover:bg-gray-50 rounded-lg transition-colors duration-150">
                                     <div class="flex justify-between items-center">
                                         <div class="flex flex-col">
-                                            <span
-                                                class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-0.5">Tanggal</span>
-                                            <span class="text-sm font-medium text-gray-700"
-                                                x-text="formatDate(item.tgl_tiba)"></span>
+                                            <span class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-0.5">Tanggal</span>
+                                            <span class="text-sm font-medium text-gray-700" x-text="formatDate(item.tgl_tiba || item.tgl_koreksi)"></span>
                                         </div>
                                         <div class="flex flex-col items-end">
-                                            <span
-                                                class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-0.5">Nilai</span>
-                                            <span class="text-sm font-bold font-mono text-pink-600"
-                                                x-text="'Rp ' + formatRupiah(item.total)"></span>
+                                            <span class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-0.5">Nilai</span>
+                                            <span class="text-sm font-bold font-mono text-pink-600" 
+                                                x-text="'Rp ' + formatRupiah(item.total || item.total_koreksi)"></span>
                                         </div>
                                     </div>
                                     <div class="mt-1 text-xs text-gray-500 font-mono" x-text="item.no_faktur"></div>

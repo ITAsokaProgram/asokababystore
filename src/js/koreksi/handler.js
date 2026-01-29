@@ -77,7 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
         new CustomEvent("open-summary-modal", {
           detail: {
             title: "Belum Ada (Ada di ERP, Belum Scan)",
-            list: summaryData.list_belum_ada,
+            list: summaryData.list_belum_ada || [], 
           },
         })
       );
