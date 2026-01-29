@@ -2,11 +2,9 @@
 session_start();
 include '../../../aa_kon_sett.php';
 
-// Default tanggal hari ini jika tidak ada filter
 $selected_date = $_GET['tanggal'] ?? date('Y-m-d');
 
 require_once __DIR__ . '/../../component/menu_handler.php';
-// Pastikan nama menu sesuai dengan database permissions Anda
 $menuHandler = new MenuHandler('laporan_log_finance');
 
 if (!$menuHandler->initialize()) {

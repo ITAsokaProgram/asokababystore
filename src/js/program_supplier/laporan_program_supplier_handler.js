@@ -186,12 +186,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 : '<span class="text-[10px] font-bold text-gray-500 bg-gray-100 border border-gray-200 px-2 py-0.5 rounded uppercase tracking-wider">Non</span>';
             let keteranganDisplay = "-";
             if (row.keterangan) {
-                const encodedContent = encodeURIComponent(row.keterangan);
-                const safeTitle = `Keterangan - ${row.nomor_program || ''}`;
+                const safeKeterangan = row.keterangan.replace(/'/g, "\\'");
+                const safeTitle = `Keterangan - ${row.nomor_program || ''}`.replace(/'/g, "\\'");
+                
                 keteranganDisplay = `
                     <div class="truncate cursor-pointer text-gray-600 hover:text-pink-600 border-b border-transparent hover:border-pink-300 transition-all"
-                         title="Klik untuk baca selengkapnya" style="max-width: 200px;"
-                         onclick="window.dispatchEvent(new CustomEvent('show-detail-modal', { detail: { title: '${safeTitle}', content: decodeURIComponent('${encodedContent}') } }))">
+                        title="Klik untuk baca selengkapnya" 
+                        style="max-width: 200px;"
+                        onclick="window.dispatchEvent(new CustomEvent('show-detail-modal', { 
+                            detail: { 
+                                title: '${safeTitle}', 
+                                content: '${safeKeterangan}' 
+                            } 
+                        }))">
                         ${row.keterangan}
                     </div>
                 `;
