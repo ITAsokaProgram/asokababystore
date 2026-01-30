@@ -30,7 +30,6 @@ function forSelectQuery($queries, $conn)
 $redisKey = "transaction_dashboard";
 $now = new DateTime('now', new DateTimeZone('Asia/Jakarta'));
 $next9am = new DateTime('tomorrow 09:00', new DateTimeZone('Asia/Jakarta'));
-$ttl = $next9am->getTimestamp() - $now->getTimestamp();
 
 // sql total pelanggan member dan non member
 $sqlTotalTransaksi = "SELECT COUNT(DISTINCT no_bon) AS total_transaksi,
@@ -145,6 +144,6 @@ $queries = [
 
 
 $response = forSelectQuery($queries, $conn);
-$redis->setex($redisKey, $ttl, json_encode(['data' => $response]));
+$redis->setex($redisKey, 172800, json_encode(['data' => $response]));
 echo date('Y-m-d H:i:s') . " - Redis updated: $redisKey\n";
 $conn->close();

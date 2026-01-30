@@ -92,7 +92,7 @@ if ($stmt->num_rows === 0) {
         onload="this.media='all'" />
     <link rel="preload" as="image" href="public/images/promo/WhatsApp Image 2025-07-19 at 151919_6891aeb80969a.jpeg">
 
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js" defer></script>
     <script src="https://unpkg.com/splitting/dist/splitting.min.js" defer></script>
