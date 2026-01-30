@@ -43,74 +43,79 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Buat placeholder (?) sesuai jumlah kd_store
             $placeholders = implode(',', array_fill(0, count($kd_store), '?'));
 
-            // **Query untuk mendapatkan data**
+            // **OPTIMASI 1: Hapus CROSS JOIN & Subquery Total**
+            // Kita hanya ambil SUM per subdept. Total keseluruhan dihitung di PHP nanti.
             $sql = "SELECT 
-    t.kd_store,
-    t.subdept, 
-    s.nama_subdept, 
-    SUM(t.qty) AS Qty, 
-    SUM(t.qty * t.hrg_promo) AS Total,
-    CONCAT(ROUND((SUM(t.qty) * 100.0 / total_qty.total), 2), '%') AS Percentage,
-    ROUND((SUM(t.hrg_promo * t.qty) * 100.0 / total_qty.total_rp), 2) AS persentase_rp
-FROM 
-    trans_b t
-JOIN 
-    subdept s ON t.subdept = s.SubDept
-CROSS JOIN (
-    SELECT 
-        SUM(qty) AS total,
-        SUM(hrg_promo * qty) AS total_rp
-    FROM trans_b 
-    WHERE kd_store IN ($placeholders) 
-    AND tgl_trans BETWEEN ? AND ?
-) total_qty
-WHERE 
-    t.kd_store IN ($placeholders)
-    AND t.tgl_trans BETWEEN ? AND ?
-GROUP BY t.subdept ORDER BY $filter DESC  ";
+                        t.kd_store,
+                        t.subdept, 
+                        s.nama_subdept, 
+                        SUM(t.qty) AS Qty, 
+                        SUM(t.qty * t.hrg_promo) AS Total
+                    FROM 
+                        trans_b t
+                    LEFT JOIN 
+                        subdept s ON t.subdept = s.SubDept
+                    WHERE 
+                        t.kd_store IN ($placeholders)
+                        AND t.tgl_trans BETWEEN ? AND ?
+                    GROUP BY t.subdept 
+                    ORDER BY $filter DESC";
 
             $stmt = $conn->prepare($sql);
 
-            // Gabungkan parameter (kd_store harus dipecah satu per satu)
+            // Parameter hanya butuh sekali (tidak perlu double untuk subquery)
             $params = array_merge(
-                $kd_store,
-                [$startDate, $endDate],
                 $kd_store,
                 [$startDate, $endDate]
             );
 
-            // **Tentukan tipe parameter**
-            $paramTypes =
-                str_repeat('s', count($kd_store)) .  // kd_store subquery
-                "ss" .                               // startDate, endDate subquery
-                str_repeat('s', count($kd_store)) .  // kd_store main
-                "ss";
-            // Bind parameter dengan cara yang benar
+            // Tentukan tipe parameter
+            $paramTypes = str_repeat('s', count($kd_store)) . "ss";
+            
             $stmt->bind_param($paramTypes, ...$params);
             $stmt->execute();
             $result = $stmt->get_result();
 
+            $tempData = [];
+            $grandTotalQty = 0;
+            $grandTotalRp = 0;
+
+            // **OPTIMASI 2: Hitung Grand Total via PHP Loop**
+            // Loop pertama: Ambil data & hitung total
+            while ($row = $result->fetch_assoc()) {
+                $row['Qty'] = (float)$row['Qty']; // Pastikan tipe number
+                $row['Total'] = (float)$row['Total'];
+                
+                $grandTotalQty += $row['Qty'];
+                $grandTotalRp += $row['Total'];
+                
+                $tempData[] = $row;
+            }
+
+            // **OPTIMASI 3: Hitung Persentase**
+            // Loop kedua: Isi persentase berdasarkan grand total yang sudah didapat
             $labels = [];
             $data = [];
             $tableData = [];
-            while ($row = $result->fetch_assoc()) {
+
+            foreach ($tempData as $row) {
+                // Hindari division by zero
+                $percentageQty = $grandTotalQty > 0 ? round(($row['Qty'] * 100) / $grandTotalQty, 2) : 0;
+                $percentageRp = $grandTotalRp > 0 ? round(($row['Total'] * 100) / $grandTotalRp, 2) : 0;
+
+                // Format data sesuai kebutuhan frontend
+                $row['Percentage'] = $percentageQty . '%';
+                $row['persentase_rp'] = $percentageRp;
+
                 $labels[] = htmlspecialchars($row['nama_subdept'] ?? '');
                 $data[] = [$row['subdept'], $row['Qty'], $row['Total']];
                 $tableData[] = $row;
             }
 
-            // **Query untuk menghitung total data**
-            $countSql = "SELECT COUNT(DISTINCT subdept) AS total FROM trans_b WHERE kd_store IN ($placeholders) AND tgl_trans BETWEEN ? AND ?";
-            $countStmt = $conn->prepare($countSql);
-
-            $countParams = array_merge($kd_store, [$startDate, $endDate]);
-            $countParamTypes = str_repeat('s', count($kd_store)) . "ss";
-
-            $countStmt->bind_param($countParamTypes, ...$countParams);
-            $countStmt->execute();
-            $countResult = $countStmt->get_result();
-            $rowCount = $countResult->fetch_assoc()['total'];
-            // $totalPages = ceil($rowCount / $limit);
+            // **OPTIMASI 4: Hapus Query Count Terpisah**
+            // Karena GROUP BY subdept menghasilkan baris unik per subdept,
+            // total data sama dengan jumlah baris yang kita fetch.
+            $rowCount = count($tempData); 
         }
 
         if ($queryType === "query2") {
@@ -348,9 +353,14 @@ ORDER BY tgl_trans ASC, $filter ASC";
         }
 
 
-        // **Tutup koneksi**
-        $stmt->close();
-        $countStmt->close();
+
+        if (isset($stmt)) {
+            $stmt->close();
+        }
+        
+        if (isset($countStmt)) {
+            $countStmt->close();
+        }
         $conn->close();
         // **Kirimkan JSON response**
         echo json_encode([
