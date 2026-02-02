@@ -114,6 +114,10 @@ function resetItemForm() {
   if (installmentInfoBox) installmentInfoBox.classList.add("hidden");
   currentHistoryData = [];
   document.querySelectorAll("#temp-list-body tr").forEach(tr => tr.classList.remove("bg-amber-50"));
+  inpGlobalTotal.disabled = false;
+  inpGlobalTotal.classList.remove("bg-gray-100", "cursor-not-allowed");
+  inpGlobalTotal.value = "";
+  inpGlobalTotal.placeholder = "0";
   inpNoFaktur.focus();
 }
 function parseNumber(str) {
@@ -553,6 +557,15 @@ async function fetchFakturData(noFaktur) {
         inpNoFaktur.classList.add("bg-blue-50", "text-blue-700", "font-bold");
         const suggest = sisaHutang > 0 ? sisaHutang : 0;
         inpGlobalTotal.value = formatNumber(suggest);
+        if (sisaHutang <= 100) {
+             inpGlobalTotal.disabled = true;
+             inpGlobalTotal.classList.add("bg-gray-100", "cursor-not-allowed");
+             inpGlobalTotal.value = "0";
+             inpGlobalTotal.placeholder = "LUNAS";
+        } else {
+             inpGlobalTotal.disabled = false;
+             inpGlobalTotal.classList.remove("bg-gray-100", "cursor-not-allowed");
+        }
         const msg = sisaHutang > 100
           ? `ℹ️ Angsuran Sisa: ${formatNumber(sisaHutang)}`
           : `✅ Lunas.`;
@@ -1492,6 +1505,14 @@ window.editCartItem = async (index) => {
                     let totalTagihanBase = domFaktur + domTambahan - domPotongan;
                     let realHistory = parseFloat(item.sudah_bayar_history || 0);
                     const sisaHutang = totalTagihanBase - realHistory;
+                    if (sisaHutang <= 100) {
+                        inpGlobalTotal.disabled = true;
+                        inpGlobalTotal.classList.add("bg-gray-100", "cursor-not-allowed");
+                        inpGlobalTotal.placeholder = "LUNAS";
+                    } else {
+                        inpGlobalTotal.disabled = false;
+                        inpGlobalTotal.classList.remove("bg-gray-100", "cursor-not-allowed");
+                    }
                     if (infoSudahBayar) {
                         let labelBayar = formatNumber(realHistory);
                         infoSudahBayar.innerHTML = labelBayar;
