@@ -167,73 +167,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
 
                     <div class="lg:col-span-1 space-y-4 input-row-container">
-
-                        <div class="bg-white p-4 rounded-xl shadow-sm border border-pink-100">
-                            <h3 class="text-pink-600 font-bold text-sm mb-3 border-b pb-2"><i
-                                    class="fas fa-user-tie mr-1"></i> Data Pembayaran </h3>
-                            <div class="space-y-3">
-                                <div>
-                                    <label class="form-label">Nama Supplier <span class="text-red-500">*</span></label>
-
-                                    <input type="hidden" id="inp_id">
-
-                                    <input type="hidden" id="inp_total_bayar">
-
-                                    <input type="hidden" id="inp_ket">
-
-                                    <input type="hidden" id="inp_kode_supplier">
-                                    <input type="text" id="inp_nama_supplier" class="input-compact" list="supplier_list"
-                                        placeholder="Ketik nama supplier...">
-                                    <datalist id="supplier_list"></datalist>
-                                </div>
-                                <div class="grid grid-cols-2 gap-2">
-                                    <div>
-                                        <label class="form-label">Tanggal Bayar</label>
-                                        <input type="date" id="inp_tgl_bayar" class="input-compact">
-                                    </div>
-                                    <div>
-                                        <label class="form-label">Jatuh Tempo (TOP)</label>
-                                        <input type="date" id="inp_top" class="input-compact" title="Opsional">
-                                    </div>
-
-                                </div>
-                                <div class="grid grid-cols-2 gap-2">
-
-                                    <div>
-                                        <label class="form-label">Status </label>
-                                        <select id="inp_status" class="input-compact bg-white">
-                                            <option value="">Pilih Status...</option>
-                                            <option value="PKP">PKP</option>
-                                            <option value="NON PKP">NON PKP</option>
-                                            <option value="BTKP">BTKP</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="form-label">Cabang Bayar </label>
-                                        <input type="text" id="inp_store_bayar" class="input-compact border-pink-200"
-                                            placeholder="Ketik cabang bayar...">
-                                    </div>
-                                </div>
-                                <div>
-                                    <label class="form-label">MOP </label>
-                                    <select id="inp_ket_global"
-                                        class="input-compact bg-white font-semibold text-blue-800">
-                                        <option value="" selected disabled>Pilih...</option>
-                                        <option value="TRANSFER">TRANSFER</option>
-                                        <option value="CASH">CASH</option>
-                                    </select>
-                                </div>
-                                <div class="mt-3 pt-3 border-t border-dashed border-gray-200">
-                                    <label class="form-label text-blue-600">Total Bayar </label>
-                                    <div class="flex flex-col">
-                                        <input type="text" id="inp_global_total"
-                                            class="input-compact text-right font-bold font-mono text-blue-700"
-                                            placeholder="0">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
+                        
                         <div class="bg-white p-4 rounded-xl shadow-sm border border-blue-100 relative">
                             <div class="absolute top-0 left-0 w-1 h-full bg-blue-500 rounded-l-xl"></div>
                             <h3 class="text-blue-600 font-bold text-sm mb-3 border-b pb-2 pl-2"><i
@@ -325,6 +259,10 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                             class="input-compact text-right font-mono" value="0">
                                     </div>
                                     <div>
+                                        <label class="form-label">Nilai Tambahan</label>
+                                        <input type="text" id="inp_nilai_tambahan" class="input-compact text-right font-mono text-green-600" value="0">
+                                    </div>
+                                    <div>
                                         <label class="form-label">Total Potongan</label>
                                         <div class="flex gap-1">
                                             <input type="text" id="inp_potongan"
@@ -346,8 +284,77 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                         <i class="fas fa-arrow-down mr-1"></i> Tambah ke Daftar
                                     </button>
                                 </div>
+
                             </div>
                         </div>
+
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-pink-100">
+                            <h3 class="text-pink-600 font-bold text-sm mb-3 border-b pb-2"><i
+                                    class="fas fa-user-tie mr-1"></i> Data Pembayaran </h3>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="form-label">Nama Supplier <span class="text-red-500">*</span></label>
+
+                                    <input type="hidden" id="inp_id">
+
+                                    <input type="hidden" id="inp_total_bayar">
+
+                                    <input type="hidden" id="inp_ket">
+
+                                    <input type="hidden" id="inp_kode_supplier">
+                                    <input type="text" id="inp_nama_supplier" class="input-compact" list="supplier_list"
+                                        placeholder="Ketik nama supplier...">
+                                    <datalist id="supplier_list"></datalist>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="form-label">Tanggal Bayar</label>
+                                        <input type="date" id="inp_tgl_bayar" class="input-compact">
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Jatuh Tempo (TOP)</label>
+                                        <input type="date" id="inp_top" class="input-compact" title="Opsional">
+                                    </div>
+
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+
+                                    <div>
+                                        <label class="form-label">Status </label>
+                                        <select id="inp_status" class="input-compact bg-white">
+                                            <option value="">Pilih Status...</option>
+                                            <option value="PKP">PKP</option>
+                                            <option value="NON PKP">NON PKP</option>
+                                            <option value="BTKP">BTKP</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Cabang Bayar </label>
+                                        <input type="text" id="inp_store_bayar" class="input-compact border-pink-200"
+                                            placeholder="Ketik cabang bayar...">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="form-label">MOP </label>
+                                    <select id="inp_ket_global"
+                                        class="input-compact bg-white font-semibold text-blue-800">
+                                        <option value="" selected disabled>Pilih...</option>
+                                        <option value="TRANSFER">TRANSFER</option>
+                                        <option value="CASH">CASH</option>
+                                    </select>
+                                </div>
+                                <div class="mt-3 pt-3 border-t border-dashed border-gray-200">
+                                    <label class="form-label text-blue-600">Total Bayar </label>
+                                    <div class="flex flex-col">
+                                        <input type="text" id="inp_global_total"
+                                            class="input-compact text-right font-bold font-mono text-blue-700"
+                                            placeholder="0">
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+
                     </div>
 
                     <div class="lg:col-span-1 flex flex-col h-full">
@@ -368,6 +375,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                             <th class="p-3 border-b">No. Inv</th>
                                             <th class="p-3 border-b">Cabang</th>
                                             <th class="p-3 border-b text-right">Nilai</th>
+                                            <th class="p-3 border-b text-right">Plus</th>
                                             <th class="p-3 border-b text-right">Pot</th>
                                             <th class="p-3 border-b text-center">Aksi</th>
                                         </tr>
@@ -454,6 +462,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                     <th>Cabang Bayar</th>
                                     <th>MOP</th>
                                     <th class="text-right">Nilai Faktur</th>
+                                    <th class="text-right">Tambahan</th>
                                     <th class="text-right">Potongan</th>
                                     <th class="text-right">Total Bayar</th>
                                     <th class="w-20 text-center">Aksi</th>

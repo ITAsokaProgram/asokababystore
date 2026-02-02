@@ -82,6 +82,7 @@ try {
         $row['id'] = (int) $row['id'];
         $row['total_bayar'] = (float) $row['total_bayar'];
         $row['potongan'] = (float) $row['potongan'];
+        $row['nilai_tambahan'] = (float) ($row['nilai_tambahan'] ?? 0);
         $data[] = $row;
     }
 

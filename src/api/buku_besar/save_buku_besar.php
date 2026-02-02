@@ -17,7 +17,7 @@ try {
         $is_single_transaction = true;
         $header = [
             'store_bayar' => $input['store_bayar'] ?? '',
-            'tanggal_bayar' => $input['tanggal_bayar'] ?? date('Y-m-d'),
+            'tanggal_bayar' => !empty($input['tanggal_bayar']) ? $input['tanggal_bayar'] : null,
             'ket' => $input['ket'] ?? '',
             'kode_supplier' => $input['kode_supplier'] ?? '',
             'nama_supplier' => $input['nama_supplier'] ?? ''
@@ -38,7 +38,7 @@ try {
         throw new Exception("Tidak ada item untuk disimpan.");
     }
     $store_bayar_global = $header['store_bayar'] ?? '';
-    $tanggal_bayar_global = !empty($header['tanggal_bayar']) ? $header['tanggal_bayar'] : date('Y-m-d');
+    $tanggal_bayar_global = !empty($header['tanggal_bayar']) ? $header['tanggal_bayar'] : null;
     $existing_group_id = $header['group_id'] ?? null;
     if ($existing_group_id) {
         $gen_group_id = $existing_group_id;
@@ -59,18 +59,21 @@ try {
         }
         $stmtCheck = $conn->prepare("SELECT id, total_bayar, potongan FROM buku_besar WHERE no_faktur = ? AND kode_store = ? LIMIT 1");
         $stmtInsertHead = $conn->prepare("INSERT INTO buku_besar 
-              (group_id, tgl_nota, no_faktur, kode_supplier, nama_supplier, 
-               potongan, ket_potongan, nilai_faktur, total_bayar, tanggal_bayar, 
-               kode_store, store_bayar, ket, kd_user, top, status)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            (group_id, tgl_nota, no_faktur, kode_supplier, nama_supplier, 
+            potongan, nilai_tambahan, ket_potongan, nilai_faktur, total_bayar, tanggal_bayar, 
+            kode_store, store_bayar, mop, ket, kd_user, top, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         $stmtUpdateHeadReplace = $conn->prepare("UPDATE buku_besar SET 
             nilai_faktur = ?, 
             total_bayar = ?, 
             potongan = ?,
+            nilai_tambahan = ?,
+            tgl_nota = ?, 
             ket_potongan = ?,
             tanggal_bayar = ?, 
             store_bayar = ?, 
-            ket = ?,
+            ket = ?,           
+            mop = ?,          
             top = ?,
             status = ?,
             nama_supplier = ?, 
@@ -103,11 +106,19 @@ try {
             $status = !empty($item['status']) ? $item['status'] : null;
             $nilai_faktur = (float) ($item['nilai_faktur'] ?? 0);
             $potongan = (float) ($item['potongan'] ?? 0);
+            $nilai_tambahan = (float)($item['nilai_tambahan'] ?? 0);
+            $raw_ket = $item['ket'] ?? ($header['ket'] ?? null);
+            
+            $mop = $item['mop'] ?? ($header['mop'] ?? '');
+
             $ket_potongan = $item['ket_potongan'] ?? '';
             $nominal_bayar_ini = (float) ($item['total_bayar'] ?? 0);
             $store_bayar = !empty($item['store_bayar']) ? $item['store_bayar'] : $store_bayar_global;
             $tanggal_bayar = !empty($item['tanggal_bayar']) ? $item['tanggal_bayar'] : $tanggal_bayar_global;
-            $ket_mop = !empty($item['ket']) ? $item['ket'] : ($header['ket'] ?? '');
+            if (empty($tanggal_bayar) && $nominal_bayar_ini > 0) {
+                $tanggal_bayar = date('Y-m-d');
+            }
+            $ket_mop = (!empty($raw_ket) && $raw_ket !== "") ? $raw_ket : null;
             $stmtCheck->bind_param("ss", $no_faktur, $kode_store);
             $stmtCheck->execute();
             $resCheck = $stmtCheck->get_result();
@@ -117,21 +128,26 @@ try {
                 $buku_besar_id = $existingData['id'];
                 $db_total_bayar = (float) $existingData['total_bayar'];
                 $new_accumulated_total = $db_total_bayar + $nominal_bayar_ini;
+                $nilai_tambahan = (float) ($item['nilai_tambahan'] ?? 0); // Ambil dari input
+                $mop = $item['mop'] ?? ($header['mop'] ?? ''); // Pastikan dikirim dari JS
                 $stmtUpdateHeadReplace->bind_param(
-                        "dddssssssssi", 
-                        $nilai_faktur,
-                        $new_accumulated_total,
-                        $potongan,
-                        $ket_potongan,
-                        $tanggal_bayar,
-                        $store_bayar,
-                        $ket,
-                        $top,
-                        $status,
-                        $nama_supplier, 
-                        $kode_supplier, 
-                        $buku_besar_id
-                    );
+                    "ddddssssssssssi", 
+                    $nilai_faktur,       
+                    $new_accumulated_total, 
+                    $potongan,           
+                    $nilai_tambahan,     
+                    $tgl_nota,           
+                    $ket_potongan,       
+                    $tanggal_bayar,      
+                    $store_bayar,        
+                    $ket_mop,            
+                    $mop,                
+                    $top,                
+                    $status,             
+                    $nama_supplier,      
+                    $kode_supplier,      
+                    $buku_besar_id       
+                );
                 if (!$stmtUpdateHeadReplace->execute()) {
                     throw new Exception("Gagal update data (ID: $buku_besar_id): " . $stmtUpdateHeadReplace->error);
                 }
@@ -142,6 +158,7 @@ try {
                     'tanggal_bayar' => $tanggal_bayar,
                     'store_bayar' => $store_bayar,
                     'ket' => $ket_mop,
+                    'mop' => $mop, // Log juga perubahan MOP
                     'top' => $top,
                     'status' => $status
                 ];
@@ -161,24 +178,28 @@ try {
                     $stmtPot->close();
                 }
             } else {
+                $nilai_tambahan = (float) ($item['nilai_tambahan'] ?? 0);
+                $mop = $item['mop'] ?? ($header['mop'] ?? '');
                 $stmtInsertHead->bind_param(
-                    "sssssdsddsssssss",
-                    $gen_group_id,
-                    $tgl_nota,
-                    $no_faktur,
-                    $kode_supplier,
-                    $nama_supplier,
-                    $potongan,
-                    $ket_potongan,
-                    $nilai_faktur,
-                    $nominal_bayar_ini,
-                    $tanggal_bayar,
-                    $kode_store,
-                    $store_bayar,
-                    $ket_mop,
-                    $kd_user,
-                    $top,
-                    $status
+                    "sssssddddsssssssss", 
+                    $gen_group_id,      // 1
+                    $tgl_nota,          // 2
+                    $no_faktur,         // 3
+                    $kode_supplier,     // 4
+                    $nama_supplier,     // 5
+                    $potongan,          // 6
+                    $nilai_tambahan,    // 7
+                    $ket_potongan,      // 8
+                    $nilai_faktur,      // 9
+                    $nominal_bayar_ini, // 10
+                    $tanggal_bayar,     // 11
+                    $kode_store,        // 12
+                    $store_bayar,       // 13
+                    $mop,               // 14
+                    $ket_mop,           // 15
+                    $kd_user,           // 16
+                    $top,               // 17
+                    $status             // 18
                 );
                 if (!$stmtInsertHead->execute()) {
                     throw new Exception("Gagal insert header faktur baru: " . $stmtInsertHead->error);
@@ -216,7 +237,7 @@ try {
                                AND stn.nominal = bb.nilai_faktur
                                SET stn.status_bayar = 
                                    CASE 
-                                       WHEN (COALESCE(bb.total_bayar, 0) + COALESCE(bb.potongan, 0)) >= stn.nominal THEN 'Sudah'
+                                       WHEN (COALESCE(bb.total_bayar, 0) + COALESCE(bb.potongan, 0)) >= (stn.nominal + COALESCE(bb.nilai_tambahan, 0)) THEN 'Sudah'
                                        ELSE 'Belum'
                                    END
                                WHERE stn.no_faktur_format = ?";

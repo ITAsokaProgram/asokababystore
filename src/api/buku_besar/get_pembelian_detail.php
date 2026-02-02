@@ -94,6 +94,7 @@ try {
                 'nilai_faktur' => (float) $dataBB['nilai_faktur'],
                 'total_bayar' => (float) $dataBB['total_bayar'],
                 'potongan' => (float) $dataBB['potongan'],
+                'nilai_tambahan' => (float) ($dataBB['nilai_tambahan'] ?? 0),
                 'ket_potongan' => $dataBB['ket_potongan'],
                 'top' => $dataBB['top'],
                 'status' => $dataBB['status'],
