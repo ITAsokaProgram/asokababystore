@@ -78,13 +78,53 @@ try {
     $result = $stmt->get_result();
 
     $data = [];
+    $ids = []; // Array untuk menampung ID buku_besar yang terpilih
+
     while ($row = $result->fetch_assoc()) {
         $row['id'] = (int) $row['id'];
         $row['total_bayar'] = (float) $row['total_bayar'];
         $row['potongan'] = (float) $row['potongan'];
         $row['nilai_tambahan'] = (float) ($row['nilai_tambahan'] ?? 0);
+        
+        // Inisialisasi details_potongan sebagai array kosong (default)
+        $row['details_potongan'] = [];
+        
         $data[] = $row;
+        $ids[] = $row['id']; // Simpan ID untuk query kedua
     }
+
+    // --- LOGIKA BARU START: AMBIL RINCIAN POTONGAN ---
+    if (!empty($ids)) {
+        // Ambil semua rincian potongan yang ID induknya ada di list $ids
+        // Menggunakan implode aman karena $ids berasal dari database dan sudah dicasting (int)
+        $idsStr = implode(",", $ids);
+        
+        $sqlPot = "SELECT buku_besar_id, nominal, keterangan 
+                   FROM buku_besar_potongan 
+                   WHERE buku_besar_id IN ($idsStr)";
+        
+        $resPot = $conn->query($sqlPot);
+        
+        // Grouping potongan berdasarkan buku_besar_id
+        $potonganMap = [];
+        if ($resPot) {
+            while ($p = $resPot->fetch_assoc()) {
+                $potonganMap[$p['buku_besar_id']][] = [
+                    'nominal' => (float) $p['nominal'],
+                    'keterangan' => $p['keterangan']
+                ];
+            }
+        }
+
+        // Masukkan rincian potongan ke dalam data utama
+        foreach ($data as &$item) {
+            if (isset($potonganMap[$item['id']])) {
+                $item['details_potongan'] = $potonganMap[$item['id']];
+            }
+        }
+        unset($item); // Putus referensi
+    }
+    // --- LOGIKA BARU END ---
 
     echo json_encode([
         'success' => true,

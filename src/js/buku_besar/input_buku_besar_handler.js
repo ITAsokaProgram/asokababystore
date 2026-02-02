@@ -320,12 +320,36 @@ function renderTableRows(data) {
       html += `<td class="align-top"><span class="bg-pink-50 text-pink-700 text-xs px-2 py-1 rounded border border-pink-100 font-bold">${storeBayarDisplay}</span></td>`;
       html += `<td class="align-top font-bold text-blue-700 text-xs">${row.ket || "-"}</td>`;
     }
+    let htmlPotongan = '';
+    if (row.details_potongan && Array.isArray(row.details_potongan) && row.details_potongan.length > 0) {
+        // Loop rincian potongan
+        row.details_potongan.forEach((det, idx) => {
+            const nom = parseFloat(det.nominal || 0);
+            const ket = det.keterangan || '';
+            // Tambahkan border bawah tipis jika item lebih dari 1 dan bukan item terakhir
+            const borderClass = (idx !== row.details_potongan.length - 1) ? 'border-b border-gray-100 pb-1 mb-1' : '';
+            
+            htmlPotongan += `
+                <div class="${borderClass}">
+                    <div class="text-red-500 font-mono text-sm">${formatNumber(nom)}</div>
+                    ${ket ? `<div class="text-[10px] text-gray-400 italic leading-tight truncate max-w-[150px]" title="${ket}">${ket}</div>` : ''}
+                </div>
+            `;
+        });
+    } else {
+        // FALLBACK: Jika tidak ada rincian, gunakan data total/header lama
+        const pot = parseFloat(row.potongan || 0);
+        htmlPotongan = `
+            <div class="text-red-500 font-mono text-sm">${formatNumber(pot)}</div>
+            ${row.ket_potongan ? `<div class="text-[10px] text-gray-400 italic leading-tight mt-1 truncate max-w-[150px]" title="${row.ket_potongan}">${row.ket_potongan}</div>` : ''}
+        `;
+    }
+
     html += `
             <td class="text-right font-mono text-sm text-gray-600 align-top">${formatNumber(nilaiFaktur)}</td>
             <td class="text-right font-mono text-sm text-green-600 align-top">${formatNumber(nilaiTambahan)}</td>
-            <td class="text-right font-mono text-sm align-top">
-                <div class="text-red-500">${formatNumber(potongan)}</div>
-                ${row.ket_potongan ? `<div class="text-[10px] text-gray-400 italic leading-tight mt-1 truncate max-w-[150px]" title="Ket: ${row.ket_potongan}">${row.ket_potongan}</div>` : ''}
+            <td class="text-right align-top">
+                ${htmlPotongan}
             </td>
             <td class="text-right font-bold font-mono text-pink-600 text-sm align-top">${formatNumber(total)}</td>
             <td class="text-center py-2 align-top">
@@ -643,7 +667,8 @@ async function handleSave() {
     ket: inpKetGlobal.value === "" ? null : inpKetGlobal.value,
     total_bayar: finalTotalBayar,
     top: inpTop.value,
-    status: inpStatus.value
+    status: inpStatus.value,
+    details_potongan: tempPotonganList
   };
   const originalBtnContent = btnSave.innerHTML;
   const originalBtnClass = btnSave.className;
@@ -1493,7 +1518,7 @@ function renderModalPotonganRows() {
     div.className = "flex gap-2 items-center mb-2";
     div.innerHTML = `
             <input type="text" class="input-compact text-sm" placeholder="Keterangan..." value="${item.keterangan}" onchange="updatePotonganItem(${index}, 'keterangan', this.value)">
-            <input type="text" class="input-compact w-32 text-right font-mono text-sm" placeholder="0" value="${formatNumber(item.nominal)}" onchange="updatePotonganItem(${index}, 'nominal', this.value)" onfocus="this.select()">
+            <input type="text" class="input-compact w-32 text-right font-mono text-sm" placeholder="0" value="${item.nominal}" onchange="updatePotonganItem(${index}, 'nominal', this.value)" onfocus="this.select()">
             <button type="button" class="text-red-500 hover:text-red-700 ml-1" onclick="removePotonganItem(${index})"><i class="fas fa-times"></i></button>
         `;
     containerListPotongan.appendChild(div);

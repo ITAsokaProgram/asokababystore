@@ -367,128 +367,150 @@ document.addEventListener("DOMContentLoaded", () => {
   function showTableError(message) {
     tableBody.innerHTML = `<tr><td colspan="10" class="text-center p-8 text-red-600"><p>Gagal: ${message}</p></td></tr>`;
   }
-  function renderTable(tabel_data, offset) {
+function renderTable(tabel_data, offset) {
     if (!tabel_data || tabel_data.length === 0) {
-      tableBody.innerHTML = `
+        tableBody.innerHTML = `
                 <tr>
-                    <td colspan="10" class="text-center p-8 text-gray-500">
+                    <td colspan="12" class="text-center p-8 text-gray-500">
                         <i class="fas fa-inbox fa-lg mb-2"></i>
                         <p>Tidak ada data ditemukan untuk filter ini.</p>
                     </td>
                 </tr>`;
-      return;
+        return;
     }
     let htmlRows = "";
     let item_counter = offset + 1;
+    
     tabel_data.forEach((row) => {
-      const sumNilaiFaktur = parseFloat(row.sum_nilai_faktur) || 0;
-      const sumTotalBayar = parseFloat(row.total_bayar) || 0;
-      const sumPotongan = parseFloat(row.sum_potongan) || 0;
+        const sumNilaiFaktur = parseFloat(row.sum_nilai_faktur) || 0;
+        const sumTotalBayar = parseFloat(row.total_bayar) || 0;
+        const sumPotongan = parseFloat(row.sum_potongan) || 0;
 
-      const tagihanSeharusnya = sumNilaiFaktur - sumPotongan;
-      const sisaHutang = tagihanSeharusnya - sumTotalBayar;
-      const isPaid = (sisaHutang <= 100) && (row.tanggal_bayar !== null && row.tanggal_bayar !== "");
-      const totalBayarDisplay = sumTotalBayar;
-      const cabangBayar = row.Nm_Alias_Bayar || row.store_bayar || "-";
-      const rawStore = row.Nm_Alias || row.kode_store || "-";
-      const storeList = rawStore.split('<br>');
-      const listNilaiFakturHtml = formatListRupiah(row.list_nilai_faktur, '|');
-      const listStatusHtml = row.list_status || "-";
-      const listTopHtml = formatListTop(row.list_top, isPaid);
-      const listNoFakturHtml = row.no_faktur || "-";
-      const historyCount = parseInt(row.history_count || 0);
-      let totalBayarCellContent = formatRupiah(totalBayarDisplay);
+        const tagihanSeharusnya = sumNilaiFaktur - sumPotongan;
+        const sisaHutang = tagihanSeharusnya - sumTotalBayar;
+        const isPaid = (sisaHutang <= 100) && (row.tanggal_bayar !== null && row.tanggal_bayar !== "");
+        const totalBayarDisplay = sumTotalBayar;
+        const cabangBayar = row.Nm_Alias_Bayar || row.store_bayar || "-";
+        const rawStore = row.Nm_Alias || row.kode_store || "-";
+        const storeList = rawStore.split('<br>');
+        const listNilaiFakturHtml = formatListRupiah(row.list_nilai_faktur, '|');
+        const listStatusHtml = row.list_status || "-";
+        // Asumsi formatListTop ada di kodemu yang lain
+        const listTopHtml = typeof formatListTop === 'function' ? formatListTop(row.list_top, isPaid) : (row.list_top || '-'); 
+        const listNoFakturHtml = row.no_faktur || "-";
+        const historyCount = parseInt(row.history_count || 0);
+        let totalBayarCellContent = formatRupiah(totalBayarDisplay);
 
-      const listPotonganHtml = formatListRupiah(row.list_potongan, '|');
-      const listKetPotonganHtml = row.ket_potongan || "-";
+        // --- BAGIAN POTONGAN DIPERBAIKI ---
+        let potonganContentHtml = "";
+        
+        // Cek apakah ada rincian potongan dari backend
+        if (row.details_potongan_list && Array.isArray(row.details_potongan_list) && row.details_potongan_list.length > 0) {
+            row.details_potongan_list.forEach((det, idx) => {
+                const nom = parseFloat(det.nominal || 0);
+                const ket = det.keterangan || "";
+                // Border pemisah antar item potongan (kecuali item terakhir)
+                const borderClass = (idx !== row.details_potongan_list.length - 1) ? 'border-b border-gray-200 pb-1 mb-1 border-dashed' : '';
+                
+                potonganContentHtml += `
+                    <div class="${borderClass} text-right">
+                        <div class="font-bold text-red-500 text-xs">${formatRupiah(nom)}</div>
+                        ${ket ? `<div class="text-[10px] text-gray-500 italic leading-tight truncate max-w-[150px]" title="${ket}">${ket}</div>` : ''}
+                    </div>
+                `;
+            });
+        } else {
+            // Fallback jika kosong / 0
+            potonganContentHtml = `<span class="text-gray-300">-</span>`;
+        }
 
-      let potonganClass = "text-right font-mono text-sm pt-3 ";
-      let potonganClick = "";
-      let potonganHover = "";
-      if (!isPaid && sumTotalBayar > 0) {
-        totalBayarCellContent += `<span class="text-[10px] text-orange-500 font-bold ml-1">(Cicil)</span>`;
-      }
-      let totalBayarClass = "text-right font-bold text-gray-800 pt-3 border-l border-gray-100 bg-gray-50/50";
-      if (isPaid) totalBayarClass += " text-green-600";
-      else if (sumTotalBayar > 0) totalBayarClass += " text-orange-600";
-      let totalBayarClick = "";
-      let totalBayarTitle = "";
-      if (historyCount > 0) {
-        totalBayarClass += " cursor-pointer hover:bg-pink-100 transition-colors";
-        totalBayarClick = `onclick="viewHistory(${row.id}, '${row.no_faktur}')"`;
-      }
+        let potonganClass = "text-right pt-3 align-top ";
+        let potonganClick = "";
+        let potonganHover = "";
+        
+        if (sumPotongan > 0) {
+            potonganClass += " cursor-pointer hover:bg-blue-50 transition-colors border-l border-blue-100 bg-blue-50/30";
+            // Tetap kirim group_id/id untuk modal detail (jika logic viewPotonganDetail masih diperlukan)
+            potonganClick = `onclick="viewPotonganDetail(${row.id}, '${row.group_id || ''}', '${row.no_faktur}')"`;
+            potonganHover = `title="Klik untuk kelola potongan"`;
+        } else {
+            potonganClass += " text-gray-400";
+        }
+        // ----------------------------------
 
-      if (sumPotongan > 0) {
-        potonganClass += " text-blue-600 cursor-pointer hover:bg-blue-50 hover:underline transition-colors border-l border-blue-100";
-        potonganClick = `onclick="viewPotonganDetail(${row.id}, '${row.group_id || ''}', '${row.no_faktur}')"`;
-        potonganHover = `title="Klik untuk lihat detail potongan"`;
-      } else {
-        potonganClass += " text-gray-400";
-      }
-      htmlRows += `
-                <tr class="hover:bg-gray-50 align-top">
+        if (!isPaid && sumTotalBayar > 0) {
+            totalBayarCellContent += `<span class="text-[10px] text-orange-500 font-bold ml-1 block">(Cicil)</span>`;
+        }
+        
+        let totalBayarClass = "text-right font-bold text-gray-800 pt-3 border-l border-gray-100 bg-gray-50/50 align-top";
+        if (isPaid) totalBayarClass += " text-green-600";
+        else if (sumTotalBayar > 0) totalBayarClass += " text-orange-600";
+        
+        let totalBayarClick = "";
+        let totalBayarTitle = "";
+        if (historyCount > 0) {
+            totalBayarClass += " cursor-pointer hover:bg-pink-100 transition-colors";
+            totalBayarClick = `onclick="viewHistory(${row.id}, '${row.no_faktur}')"`;
+        }
+
+        htmlRows += `
+                <tr class="hover:bg-gray-50 align-top border-b border-gray-50">
                     <td class="text-center font-medium text-gray-500 pt-3">${item_counter}</td>
-                    <td class="pt-3 text-sm">${formatDate(row.tgl_nota)}</td>
-                    <td class="text-center pt-3">
-                        <div class="flex flex-col gap-1 items-center">
-                              ${listTopHtml}
+                    <td class="pt-3 text-sm">${formatDate(row.sort_date)}</td> <td class="text-center pt-3">
+                        <div class="flex flex-col gap-1 items-center text-xs">
+                             ${listTopHtml}
                         </div>
                     </td>
-                    <td class="pt-3 text-xs font-mono text-gray-700 ">
+                    <td class="pt-3 text-xs font-mono text-gray-700">
                         ${listNoFakturHtml}
                     </td>
                     <td class="text-center pt-3">
                         <div class="flex flex-col gap-1 items-center">
                             ${storeList.map(storeName => `
-                                <span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded border border-gray-200 block w-fit truncate max-w-[150px]">
+                                <span class="bg-gray-100 text-gray-800 text-[10px] px-2 py-0.5 rounded border border-gray-200 block w-fit truncate max-w-[120px]" title="${storeName}">
                                     ${storeName}
                                 </span>
                             `).join('')}
                         </div>
                     </td>
-                    <td class="pt-3 font-semibold text-gray-700">
+                    <td class="pt-3 font-semibold text-gray-700 text-sm">
                         ${row.nama_supplier || "-"}
                     </td>
-                    <td class="text-center pt-3 text-xs">
-                        ${listStatusHtml.split('|').map(s => `<span class="px-1 rounded bg-gray-100 border">${s}</span>`).join('<br>')}
+                    <td class="text-center pt-3 text-[10px]">
+                        ${listStatusHtml.split('|').map(s => `<span class="px-1 rounded bg-gray-100 border inline-block mb-1">${s}</span>`).join('<br>')}
                     </td>
                     
                     <td class="${potonganClass}" ${potonganClick} ${potonganHover}>
-                      <div class="truncate font-bold">
-                        ${listPotonganHtml}
-                      </div>
-                      <div class="text-[10px] italic text-gray-500 truncate max-w-[150px] mt-1">
-                        ${truncateText(listKetPotonganHtml, 20)}
-                      </div>
+                      ${potonganContentHtml}
                     </td>
-                    <td class="text-right font-mono text-gray-700 text-sm pt-3">
+                    
+                    <td class="text-right font-mono text-gray-700 text-sm pt-3 align-top">
                         ${listNilaiFakturHtml}
                     </td>
                     <td class="${totalBayarClass}" ${totalBayarClick} ${totalBayarTitle}>
                         ${totalBayarCellContent}
                         ${(!isPaid && sisaHutang > 100) ?
-          `<div class="text-[10px] text-red-500 font-normal mt-1">Kurang: ${formatRupiah(sisaHutang)}</div>`
+          `<div class="text-[10px] text-red-500 font-normal mt-1 italic">Sisa: ${formatRupiah(sisaHutang)}</div>`
           : ''}
                     </td>
-                    <td class="text-center text-sm text-gray-600 pt-3">
+                    <td class="text-center text-sm text-gray-600 pt-3 align-top">
                          ${formatDate(row.tanggal_bayar)}
                     </td>
-                    <td class="text-center pt-3">
+                    <td class="text-center pt-3 text-sm align-top">
                          ${cabangBayar}
                     </td>
-                    <td class="text-sm text-gray-600 pt-3">
-                        <div class="flex gap-4">
-                             <div class="font-mono text-xs text-blue-600 truncate">
-                                ${row.ket || '-'}
-                             </div>
-                        </div>
+                    <td class="text-sm text-gray-600 pt-3 align-top">
+                         <div class="font-mono text-xs text-blue-600 truncate max-w-[100px]" title="${row.ket || ''}">
+                            ${row.ket || '-'}
+                         </div>
                     </td>
                 </tr>
             `;
-      item_counter++;
+        item_counter++;
     });
     tableBody.innerHTML = htmlRows;
-  }
+}
+
   function renderPagination(pagination) {
     if (!pagination) {
       paginationInfo.textContent = "";
