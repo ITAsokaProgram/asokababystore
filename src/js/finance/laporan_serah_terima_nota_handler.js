@@ -58,6 +58,20 @@ document.addEventListener("DOMContentLoaded", () => {
     let activeSupplier = null;
     let initialKontraState = 'Belum';
     let initialBayarState = 'Belum';
+    const modalsToHandle = [modalAuth, modalKontra, modalBulk];
+    modalsToHandle.forEach(modal => {
+        if (modal) {
+            const overlay = modal.querySelector('.fixed.inset-0.bg-gray-500');
+            
+            if (overlay) {
+                overlay.addEventListener('click', (e) => {
+                    if (e.target === overlay) {
+                        modal.classList.add('hidden');
+                    }
+                });
+            }
+        }
+    });
     const updateModalState = () => {
         const isTerima = authStatusSelect.value === 'Sudah Terima';
         const hasPenerima = authPenerima.value.trim() !== '';
