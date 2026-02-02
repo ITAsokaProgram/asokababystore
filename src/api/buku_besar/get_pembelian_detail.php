@@ -24,12 +24,9 @@ try {
     $stmtBB->execute();
     $resBB = $stmtBB->get_result();
     $dataBB = $resBB->fetch_assoc();
-
     if ($dataBB) {
-        // --- LOGIKA TAMBAHAN START ---
         $groupTotals = null;
         if (!empty($dataBB['group_id'])) {
-            // Hitung total satu group
             $queryGroup = "SELECT 
                             SUM(nilai_faktur) as total_nilai_group, 
                             total_bayar as total_bayar,
@@ -40,7 +37,6 @@ try {
             $stmtGroup->bind_param("s", $dataBB['group_id']);
             $stmtGroup->execute();
             $resGroup = $stmtGroup->get_result()->fetch_assoc();
-
             if ($resGroup) {
                 $groupTotals = [
                     'nilai_faktur' => (float) $resGroup['total_nilai_group'],
@@ -49,17 +45,8 @@ try {
                 ];
             }
         }
-        $potonganDetails = [];
-        $qPot = $conn->query("SELECT nominal, keterangan FROM buku_besar_potongan WHERE buku_besar_id = " . $dataBB['id']);
-        while ($rp = $qPot->fetch_assoc()) {
-            $potonganDetails[] = [
-                'nominal' => (float) $rp['nominal'],
-                'keterangan' => $rp['keterangan']
-            ];
-        }
-        // --- LOGIKA TAMBAHAN END ---
+        
         $details_potongan = [];
-        // Ambil dari tabel child
         $qPot = $conn->query("SELECT nominal, keterangan FROM buku_besar_potongan WHERE buku_besar_id = '" . $dataBB['id'] . "'");
         while ($rp = $qPot->fetch_assoc()) {
             $details_potongan[] = [
@@ -67,15 +54,28 @@ try {
                 'keterangan' => $rp['keterangan']
             ];
         }
-
-        // Jika tabel child kosong tapi di tabel induk ada nilai potongan (Data Lama/Migrasi)
+        $details_tambahan = [];
+        $qTam = $conn->query("SELECT nominal, keterangan FROM buku_besar_tambahan WHERE buku_besar_id = '" . $dataBB['id'] . "'");
+        if ($qTam) {
+            while ($rt = $qTam->fetch_assoc()) {
+                $details_tambahan[] = [
+                    'nominal' => (float) $rt['nominal'],
+                    'keterangan' => $rt['keterangan']
+                ];
+            }
+        }
         if (empty($details_potongan) && $dataBB['potongan'] > 0) {
             $details_potongan[] = [
                 'nominal' => (float) $dataBB['potongan'],
                 'keterangan' => $dataBB['ket_potongan']
             ];
         }
-
+        if (empty($details_tambahan) && ($dataBB['nilai_tambahan'] ?? 0) > 0) {
+            $details_tambahan[] = [
+                'nominal' => (float) $dataBB['nilai_tambahan'],
+                'keterangan' => $dataBB['ket_tambahan'] ?? 'Manual'
+            ];
+        }
         echo json_encode([
             'success' => true,
             'found' => true,
@@ -85,7 +85,7 @@ try {
                 'group_id' => $dataBB['group_id'],
                 'no_faktur' => $dataBB['no_faktur'],
                 'tgl_nota' => $dataBB['tgl_nota'],
-                'tanggal_bayar' => $dataBB['tanggal_bayar'], // TAMBAHKAN BARIS INI
+                'tanggal_bayar' => $dataBB['tanggal_bayar'], 
                 'kode_supplier' => $dataBB['kode_supplier'],
                 'nama_supplier' => $dataBB['nama_supplier'],
                 'kode_store' => $dataBB['kode_store'],
@@ -99,7 +99,8 @@ try {
                 'top' => $dataBB['top'],
                 'status' => $dataBB['status'],
                 'details_potongan' => $details_potongan,
-                'group_totals' => $groupTotals // <--- Tambahkan ini ke response JSON
+                'details_tambahan' => $details_tambahan,
+                'group_totals' => $groupTotals 
             ]
         ]);
         exit();

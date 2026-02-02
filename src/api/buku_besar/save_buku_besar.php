@@ -107,6 +107,7 @@ try {
             $nilai_faktur = (float) ($item['nilai_faktur'] ?? 0);
             $potongan = (float) ($item['potongan'] ?? 0);
             $nilai_tambahan = (float)($item['nilai_tambahan'] ?? 0);
+            $ket_tambahan = $item['ket_tambahan'] ?? '';
             $raw_ket = $item['ket'] ?? ($header['ket'] ?? null);
             
             $mop = $item['mop'] ?? ($header['mop'] ?? '');
@@ -128,8 +129,8 @@ try {
                 $buku_besar_id = $existingData['id'];
                 $db_total_bayar = (float) $existingData['total_bayar'];
                 $new_accumulated_total = $db_total_bayar + $nominal_bayar_ini;
-                $nilai_tambahan = (float) ($item['nilai_tambahan'] ?? 0); // Ambil dari input
-                $mop = $item['mop'] ?? ($header['mop'] ?? ''); // Pastikan dikirim dari JS
+                $nilai_tambahan = (float) ($item['nilai_tambahan'] ?? 0); 
+                $mop = $item['mop'] ?? ($header['mop'] ?? ''); 
                 $stmtUpdateHeadReplace->bind_param(
                     "ddddssssssssssi", 
                     $nilai_faktur,       
@@ -158,7 +159,7 @@ try {
                     'tanggal_bayar' => $tanggal_bayar,
                     'store_bayar' => $store_bayar,
                     'ket' => $ket_mop,
-                    'mop' => $mop, // Log juga perubahan MOP
+                    'mop' => $mop, 
                     'top' => $top,
                     'status' => $status
                 ];
@@ -177,29 +178,45 @@ try {
                     }
                     $stmtPot->close();
                 }
+                $conn->query("DELETE FROM buku_besar_tambahan WHERE buku_besar_id = $buku_besar_id");
+        
+                $detail_tambahan_list = $item['details_tambahan'] ?? [];
+                
+                if (!empty($detail_tambahan_list)) {
+                    $stmtTam = $conn->prepare("INSERT INTO buku_besar_tambahan (buku_besar_id, nominal, keterangan) VALUES (?, ?, ?)");
+                    foreach ($detail_tambahan_list as $tam) {
+                        $nom = (float) ($tam['nominal'] ?? 0);
+                        $ket = $tam['keterangan'] ?? '';
+                        if ($nom > 0) {
+                            $stmtTam->bind_param("ids", $buku_besar_id, $nom, $ket);
+                            $stmtTam->execute();
+                        }
+                    }
+                    $stmtTam->close();
+                }
             } else {
                 $nilai_tambahan = (float) ($item['nilai_tambahan'] ?? 0);
                 $mop = $item['mop'] ?? ($header['mop'] ?? '');
                 $stmtInsertHead->bind_param(
                     "sssssddddsssssssss", 
-                    $gen_group_id,      // 1
-                    $tgl_nota,          // 2
-                    $no_faktur,         // 3
-                    $kode_supplier,     // 4
-                    $nama_supplier,     // 5
-                    $potongan,          // 6
-                    $nilai_tambahan,    // 7
-                    $ket_potongan,      // 8
-                    $nilai_faktur,      // 9
-                    $nominal_bayar_ini, // 10
-                    $tanggal_bayar,     // 11
-                    $kode_store,        // 12
-                    $store_bayar,       // 13
-                    $mop,               // 14
-                    $ket_mop,           // 15
-                    $kd_user,           // 16
-                    $top,               // 17
-                    $status             // 18
+                    $gen_group_id,      
+                    $tgl_nota,          
+                    $no_faktur,         
+                    $kode_supplier,     
+                    $nama_supplier,     
+                    $potongan,          
+                    $nilai_tambahan,    
+                    $ket_potongan,      
+                    $nilai_faktur,      
+                    $nominal_bayar_ini, 
+                    $tanggal_bayar,     
+                    $kode_store,        
+                    $store_bayar,       
+                    $mop,               
+                    $ket_mop,           
+                    $kd_user,           
+                    $top,               
+                    $status             
                 );
                 if (!$stmtInsertHead->execute()) {
                     throw new Exception("Gagal insert header faktur baru: " . $stmtInsertHead->error);
@@ -227,6 +244,20 @@ try {
                             $stmtPot->execute();
                         }
                     }
+                }
+                $detail_tambahan_list = $item['details_tambahan'] ?? [];
+                
+                if (!empty($detail_tambahan_list)) {
+                    $stmtTam = $conn->prepare("INSERT INTO buku_besar_tambahan (buku_besar_id, nominal, keterangan) VALUES (?, ?, ?)");
+                    foreach ($detail_tambahan_list as $tam) {
+                        $nom = (float) ($tam['nominal'] ?? 0);
+                        $ket = $tam['keterangan'] ?? '';
+                        if ($nom > 0) {
+                            $stmtTam->bind_param("ids", $buku_besar_id, $nom, $ket);
+                            $stmtTam->execute();
+                        }
+                    }
+                    $stmtTam->close();
                 }
             }
             if (!empty($no_faktur) && !empty($buku_besar_id)) {

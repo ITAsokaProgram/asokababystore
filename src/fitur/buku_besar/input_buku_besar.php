@@ -237,6 +237,34 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                         </div>
                                     </div>
                                 </div>
+                                <div id="modal-tambahan" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title-tambahan" role="dialog" aria-modal="true">
+                                    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                                        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+                                        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                                        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle max-w-2xl w-full">
+                                            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                                                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-3" id="modal-title-tambahan">Rincian Nilai Tambahan</h3>
+                                                
+                                                <div class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-2" id="container-list-tambahan">
+                                                    </div>
+
+                                                <button type="button" id="btn-add-row-tambahan" class="mt-3 text-sm text-green-600 hover:text-green-800 font-semibold">
+                                                    <i class="fas fa-plus-circle"></i> Tambah Item Tambahan
+                                                </button>
+
+                                                <div class="mt-4 pt-3 border-t flex justify-between items-center">
+                                                    <span class="font-bold text-gray-700">Total:</span>
+                                                    <span class="font-bold text-green-600 font-mono text-lg" id="lbl-total-modal-tambahan">0</span>
+                                                </div>
+                                            </div>
+                                            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                                                <button type="button" id="btn-save-modal-tambahan" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 sm:ml-3 sm:w-auto sm:text-sm">
+                                                    Selesai
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
 
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
@@ -258,9 +286,20 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                         <input type="text" id="inp_nilai_faktur"
                                             class="input-compact text-right font-mono" value="0">
                                     </div>
+           
                                     <div>
                                         <label class="form-label">Nilai Tambahan</label>
-                                        <input type="text" id="inp_nilai_tambahan" class="input-compact text-right font-mono text-green-600" value="0">
+                                        <div class="flex gap-1">
+                                            <input type="text" id="inp_nilai_tambahan" 
+                                                class="input-compact text-right font-mono text-green-600 bg-gray-100 cursor-not-allowed" 
+                                                value="0" readonly>
+                                            <button type="button" id="btn-manage-tambahan"
+                                                class="bg-green-100 text-green-600 border border-green-200 hover:bg-green-200 px-3 rounded"
+                                                title="Kelola Rincian Tambahan">
+                                                <i class="fas fa-list"></i>
+                                            </button>
+                                        </div>
+                                        <input type="hidden" id="inp_ket_tambahan">
                                     </div>
                                     <div>
                                         <label class="form-label">Total Potongan</label>
@@ -482,6 +521,76 @@ require_once __DIR__ . '/../../component/menu_handler.php';
             </div>
         </section>
     </main>
+
+    <div x-data="detailModal()" x-show="show" x-cloak @show-detail-modal.window="openModal($event.detail)"
+        style="display: none; z-index: 999999999999;" class="fixed inset-0 overflow-y-auto">
+        
+        <div x-show="show" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-150"
+            x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" @click="closeModal()"
+            class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm">
+        </div>
+
+        <div class="flex min-h-screen items-center justify-center p-4">
+            <div x-show="show" x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 transform scale-95"
+                x-transition:enter-end="opacity-100 transform scale-100"
+                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="opacity-100 transform scale-100"
+                x-transition:leave-end="opacity-0 transform scale-95" @click.stop
+                class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl transform">
+
+                <div class="flex items-center justify-between p-5 border-b border-gray-100 bg-gradient-to-r from-pink-50 to-white rounded-t-2xl">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-info-circle text-pink-600 text-lg"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-800" x-text="title"></h3>
+                    </div>
+                    <button @click="closeModal()"
+                        class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg p-2 transition-all">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+
+                <div class="p-6">
+                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                        <div class="text-gray-700 text-sm leading-relaxed break-words" x-html="content"></div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 p-5 border-t border-gray-100 bg-gray-50 rounded-b-2xl">
+                    <button @click="closeModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-sm font-medium transition-colors">
+                        <i class="fas fa-times mr-2"></i> Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function detailModal() {
+            return {
+                show: false,
+                title: '',
+                content: '',
+                openModal(data) {
+                    this.title = data.title;
+                    this.content = data.content;
+                    this.show = true;
+                    document.body.style.overflow = 'hidden';
+                },
+                closeModal() {
+                    this.show = false;
+                    document.body.style.overflow = 'auto';
+                }
+            }
+        }
+    </script>
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+
 
     <script src="/src/js/middleware_auth.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>

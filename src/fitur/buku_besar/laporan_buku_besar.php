@@ -75,7 +75,7 @@ $menuHandler = new MenuHandler('laporan_buku_besar'); // Sesuaikan permission ke
 
     <main id="main-content" class="flex-1 p-4 ml-64">
         <section class="min-h-screen">
-            <div class="max-w-7xl mx-auto">
+            <div class="max-w-full mx-auto">
 
                 <div class="header-card p-4 rounded-2xl mb-4">
                     <div class="flex items-center justify-between flex-wrap gap-3">
@@ -244,6 +244,7 @@ $menuHandler = new MenuHandler('laporan_buku_besar'); // Sesuaikan permission ke
                                     <th>Supplier</th>
                                     <th class="text-center">Status</th>
                                     <th class="text-right">Potongan</th>
+                                    <th class="text-right">Tambahan</th>
                                     <th class="text-right">Nilai Faktur</th>
                                     <th class="text-right">Total Bayar</th>
                                     <th class="text-center">Tgl Bayar</th>
