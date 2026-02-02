@@ -49,6 +49,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const filterTglSelesai = document.getElementById("tgl_selesai");
     const btnExportExcel = document.getElementById("btn-export-excel");
     const btnPrintBatch = document.getElementById("btn-print-batch-cod");
+    const btnBulkEdit = document.getElementById("btn-bulk-edit");
+    const countBulkSpan = document.getElementById("count-bulk");
+    const modalBulk = document.getElementById("modal-bulk-edit");
+    const formBulk = document.getElementById("form-bulk-edit");
+    const bulkSelectedCountSpan = document.getElementById("bulk-selected-count");
+    const btnsCloseBulk = document.querySelectorAll(".btn-close-bulk");
     let activeSupplier = null;
     let initialKontraState = 'Belum';
     let initialBayarState = 'Belum';
@@ -134,32 +140,40 @@ document.addEventListener("DOMContentLoaded", () => {
         modalKontra.classList.remove("hidden");
     };
     window.handleCheckboxChange = (checkbox) => {
-        const supplier = checkbox.getAttribute('data-supplier');
         const allCheckboxes = document.querySelectorAll('.cod-checkbox');
-        if (checkbox.checked) {
-            if (activeSupplier === null) {
-                activeSupplier = supplier;
-                allCheckboxes.forEach(box => {
-                    if (box.getAttribute('data-supplier') !== activeSupplier) {
-                        box.disabled = true;
-                        box.parentElement.classList.add('opacity-30', 'cursor-not-allowed');
-                    }
-                });
-            }
-        } else {
-            const anyChecked = document.querySelectorAll('.cod-checkbox:checked').length > 0;
-            if (!anyChecked) {
-                activeSupplier = null;
-                allCheckboxes.forEach(box => {
-                    box.disabled = false;
-                    box.parentElement.classList.remove('opacity-30', 'cursor-not-allowed');
-                });
+        const checkedBoxes = document.querySelectorAll('.cod-checkbox:checked');
+        const checkedCount = checkedBoxes.length;
+
+        // 1. Logic untuk tombol BULK EDIT
+        if (btnBulkEdit) {
+            if (checkedCount > 0) {
+                btnBulkEdit.style.display = 'inline-flex';
+                if(countBulkSpan) countBulkSpan.textContent = checkedCount;
+            } else {
+                btnBulkEdit.style.display = 'none';
             }
         }
-        const checkedCount = document.querySelectorAll('.cod-checkbox:checked').length;
+
+        // 2. Logic untuk tombol PRINT BATCH (Hanya untuk COD & Supplier Sama)
         if (btnPrintBatch) {
-            btnPrintBatch.style.display = checkedCount > 0 ? 'inline-flex' : 'none';
-            btnPrintBatch.querySelector('span').textContent = `Cetak Terpilih (${checkedCount})`;
+            let showPrint = false;
+            if (checkedCount > 0) {
+                const firstSupplier = checkedBoxes[0].getAttribute('data-supplier');
+                let allSameSupplier = true;
+                let allIsCod = true;
+
+                checkedBoxes.forEach(box => {
+                    if (box.getAttribute('data-supplier') !== firstSupplier) allSameSupplier = false;
+                    if (box.getAttribute('data-is-cod') !== '1') allIsCod = false;
+                });
+
+                // Hanya tampilkan tombol print jika semua supplier sama DAN semua item adalah COD
+                if (allSameSupplier && allIsCod) {
+                    showPrint = true;
+                    btnPrintBatch.querySelector('span').textContent = `Cetak COD Terpilih (${checkedCount})`;
+                }
+            }
+            btnPrintBatch.style.display = showPrint ? 'inline-flex' : 'none';
         }
     };
     btnsCloseAuth.forEach(btn => btn.addEventListener("click", () => modalAuth.classList.add("hidden")));
@@ -334,46 +348,56 @@ document.addEventListener("DOMContentLoaded", () => {
             return `<span class="px-2 py-0.5 rounded text-[10px] font-bold border ${colorClass} border-opacity-20">${safeVal}</span>`;
         };
         tabel_data.forEach((row) => {
+            // 1. Persiapan Data
             const nominal = parseFloat(row.nominal) || 0;
+            // Encode data baris untuk dikirim ke Modal Edit/Kontra
             const rowDataEncoded = encodeURIComponent(JSON.stringify(row)).replace(/'/g, "%27");
             const isCOD = row.cod === 'Ya';
+
+            // 2. Logic Tombol Edit Kontra (Hanya muncul jika Status Kontra = Sudah)
             let btnEditKontra = '';
             if (row.status_kontra === 'Sudah') {
                 btnEditKontra = `<button type="button" onclick="event.stopPropagation(); window.openKontraModal('${rowDataEncoded}')" class="inline-flex items-center justify-center w-8 h-8 mr-1 transition-all border rounded-full shadow-sm bg-purple-50 text-purple-600 hover:bg-purple-100 hover:text-purple-800 border-purple-100" title="Update Detail Kontra"><i class="fas fa-book"></i></button>`;
             }
-            let checkboxCell = '';
+
+            // 3. Logic Icon Print Status (Hanya untuk COD)
             let printStatusIcon = '';
-            if (isCOD) {
-                if (row.sudah_dicetak === 'Sudah') {
-                    printStatusIcon = `<i class="fas fa-print text-green-500"></i>`;
-                }
-                let isDisabled = false;
-                if (activeSupplier && activeSupplier !== row.nama_supplier) {
-                    isDisabled = true;
-                }
-                checkboxCell = `
-                    <div class="flex items-center justify-center ${isDisabled ? 'opacity-30 cursor-not-allowed' : ''}">
-                        <input type="checkbox" 
-                            class="cod-checkbox w-5 h-5 text-blue-600 rounded focus:ring-blue-500 border-gray-300 transition duration-150 ease-in-out cursor-pointer"
-                            data-supplier="${row.nama_supplier}" 
-                            data-faktur="${row.no_faktur}"
-                            data-json='${JSON.stringify(row)}'
-                            onchange="window.handleCheckboxChange(this)"
-                            onclick="event.stopPropagation();"
-                            ${isDisabled ? 'disabled' : ''}
-                        >
-                    </div>
-                `;
-            } else {
-                checkboxCell = `<span class="text-gray-300">-</span>`;
+            if (isCOD && row.sudah_dicetak === 'Sudah') {
+                printStatusIcon = `<i class="fas fa-print text-green-500"></i>`;
             }
+
+            // 4. Logic Checkbox (UPDATED: Muncul di SEMUA baris)
+            // Kita tambahkan atribut `data-is-cod` agar handleCheckboxChange bisa membedakan
+            // mana yang bisa diprint batch (hanya COD) dan mana yang hanya bisa diedit batch.
+            let checkboxCell = `
+                <div class="flex items-center justify-center">
+                    <input type="checkbox" 
+                        class="cod-checkbox w-5 h-5 text-blue-600 rounded focus:ring-blue-500 border-gray-300 transition duration-150 ease-in-out cursor-pointer"
+                        data-supplier="${row.nama_supplier}" 
+                        data-faktur="${row.no_faktur}"
+                        data-is-cod="${isCOD ? '1' : '0'}"
+                        data-json='${JSON.stringify(row)}'
+                        onchange="window.handleCheckboxChange(this)"
+                        onclick="event.stopPropagation();"
+                    >
+                </div>
+            `;
+
+            // 5. Styling Baris & Click Event (Khusus Row COD bisa diklik untuk detail)
             let trClass = "border-b transition-colors " + (isCOD ? "hover:bg-blue-50 cursor-pointer" : "hover:bg-gray-50");
-            let trClickAction = isCOD ? `onclick="window.showDetailCod('${row.nota_tanggal_masuk || ''}', '${(row.cabang_penerima || '').replace(/'/g, "\\'")}', '${row.lengkap || ''}', '${(row.no_rek || '').replace(/'/g, "\\'")}', '${(row.nama_bank || '').replace(/'/g, "\\'")}', '${(row.atas_nama_rek || '').replace(/'/g, "\\'")}')"` : "";
+            
+            // Helper escape quote untuk parameter function showDetailCod
+            const esc = (str) => (str || '').replace(/'/g, "\\'");
+
+            let trClickAction = isCOD ? `onclick="window.showDetailCod('${row.nota_tanggal_masuk || ''}', '${esc(row.cabang_penerima)}', '${row.lengkap || ''}', '${esc(row.no_rek)}', '${esc(row.nama_bank)}', '${esc(row.atas_nama_rek)}')"` : "";
+
+            // 6. Susun HTML Baris
             htmlRows += `
             <tr class="${trClass}" ${trClickAction}>
                 <td class="px-2 text-center align-middle bg-white/50">
                     ${checkboxCell}
                 </td>
+
                 <td class="px-2 text-center whitespace-nowrap">
                     <button type="button" 
                         onclick="event.stopPropagation(); window.openStatusModal('${rowDataEncoded}')"
@@ -389,21 +413,24 @@ document.addEventListener("DOMContentLoaded", () => {
                         <i class="fas fa-trash-alt"></i>
                     </button>
                 </td>
+
                 <td class="text-xs whitespace-nowrap">${formatDate(row.tgl_nota)}</td>
                 <td class="text-sm font-semibold text-gray-700">
                     <div class="flex flex-col">
                         <span>${row.nama_supplier || '-'}</span>
-                        ${isCOD ? '<span class="text-[10px] text-blue-500 flex items-center gap-1"><i class="fa-solid fa-truck-fast"></i>  ' + printStatusIcon + '</span>' : ''}
+                        ${isCOD ? '<span class="text-[10px] text-blue-500 flex items-center gap-1"><i class="fa-solid fa-truck-fast"></i> ' + printStatusIcon + '</span>' : ''}
                     </div>
                 </td>
                 <td class="font-mono text-xs text-gray-600">${row.no_faktur_format || row.no_faktur || '-'}</td>
                 <td class="font-mono text-sm font-bold text-right text-gray-800">${formatRupiah(nominal)}</td>
                 <td class="text-center text-xs whitespace-nowrap">${formatDate(row.tgl_diserahkan)}</td>
                 <td class="text-center text-xs whitespace-nowrap font-medium text-gray-700">${formatDate(row.tgl_diterima)}</td>
+                
                 <td class="text-center">${createBadge(row.status, 'terima')}</td>
                 <td class="text-center">${createBadge(row.status_kontra, 'kontra')}</td>
                 <td class="text-center">${createBadge(row.status_bayar, 'bayar')}</td>
                 <td class="text-center">${createBadge(row.status_pinjam, 'pinjam')}</td>
+                
                 <td class="text-center text-xs">${row.diberikan || '-'}</td>
                 <td class="text-center text-xs">${row.penerima || '-'}</td>
             </tr>`;
@@ -844,6 +871,77 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!dateString || dateString === '0000-00-00') return "-";
         const d = new Date(dateString);
         return d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+    if (btnBulkEdit) {
+        btnBulkEdit.addEventListener('click', () => {
+            const checkedCount = document.querySelectorAll('.cod-checkbox:checked').length;
+            if (checkedCount === 0) return;
+            
+            formBulk.reset();
+            if(bulkSelectedCountSpan) bulkSelectedCountSpan.textContent = checkedCount;
+            modalBulk.classList.remove("hidden");
+        });
+    }
+
+    // Handler Tutup Modal Bulk
+    if (btnsCloseBulk) {
+        btnsCloseBulk.forEach(btn => btn.addEventListener("click", () => modalBulk.classList.add("hidden")));
+    }
+
+    // Handler Submit Bulk Edit
+    if (formBulk) {
+        formBulk.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Ambil semua no_faktur yang dicentang
+            const checkedBoxes = document.querySelectorAll('.cod-checkbox:checked');
+            const fakturs = Array.from(checkedBoxes).map(box => box.getAttribute('data-faktur'));
+            
+            if (fakturs.length === 0) {
+                Swal.fire("Error", "Tidak ada data yang dipilih", "error");
+                return;
+            }
+
+            const formData = new FormData(formBulk);
+            const payload = {
+                fakturs: fakturs,
+                tgl_terima: formData.get('tgl_terima'),
+                penerima: formData.get('penerima'),
+                nama_user_cek: formData.get('nama_user_cek'),
+                kode_otorisasi: formData.get('kode_otorisasi')
+            };
+
+            const token = getCookie("admin_token");
+
+            try {
+                Swal.fire({ title: 'Memproses Update Massal...', didOpen: () => Swal.showLoading() });
+                
+                const response = await fetch('/src/api/finance/update_bulk_terima.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    Swal.fire("Berhasil", result.message, "success");
+                    modalBulk.classList.add("hidden");
+                    loadData(); // Reload tabel
+                    // Sembunyikan tombol aksi karena checkbox akan ke-reset
+                    btnBulkEdit.style.display = 'none';
+                    if(btnPrintBatch) btnPrintBatch.style.display = 'none';
+                } else {
+                    Swal.fire("Gagal", result.message, "error");
+                }
+            } catch (error) {
+                console.error(error);
+                Swal.fire("Error", "Terjadi kesalahan sistem", "error");
+            }
+        });
     }
     loadData();
 }); 

@@ -120,7 +120,7 @@ try {
     $response['pagination']['total_pages'] = ceil($total_rows / $limit);
     $sql_data = "SELECT * FROM serah_terima_nota 
                  WHERE $where_conditions 
-                 ORDER BY tgl_nota DESC, dibuat_pada DESC 
+                 ORDER BY dibuat_pada DESC 
                  LIMIT ? OFFSET ?";
     $bind_types .= 'ii';
     $bind_params[] = $limit;

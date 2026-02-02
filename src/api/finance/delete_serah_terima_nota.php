@@ -38,30 +38,37 @@ try {
         throw new Exception("Password Otorisasi Salah!");
     }
     $stmt_auth->close();
-    $stmtOld = $conn->prepare("SELECT * FROM serah_terima_nota WHERE no_faktur = ?");
+    $stmtOld = $conn->prepare("SELECT * FROM serah_terima_nota WHERE no_faktur = ? AND visibilitas = 'Aktif' LIMIT 1");
     $stmtOld->bind_param("s", $no_faktur);
     $stmtOld->execute();
     $old_data = $stmtOld->get_result()->fetch_assoc();
     $stmtOld->close();
     if (!$old_data) {
-        throw new Exception("Data tidak ditemukan.");
+        throw new Exception("Data aktif tidak ditemukan atau sudah dihapus.");
     }
     $sql = "UPDATE serah_terima_nota SET 
             visibilitas = 'Nonaktif', 
             dihapus_pada = NOW(), 
             dihapus_oleh = ? 
-            WHERE no_faktur = ?";
+            WHERE no_faktur = ? AND visibilitas = 'Aktif'";
     $stmt_del = $conn->prepare($sql);
     $stmt_del->bind_param("ss", $user_login_id, $no_faktur);
-    if (!$stmt_del->execute()) {
-        throw new Exception("Database Error: " . $stmt_del->error);
+    try {
+        if (!$stmt_del->execute()) {
+            throw new Exception($stmt_del->error);
+        }
+    } catch (Exception $e) {
+        if ($conn->errno == 1062 || strpos($e->getMessage(), 'Duplicate entry') !== false) {
+            throw new Exception("Mohon hubungi IT jika tidak menghapus data ini.");
+        } else {
+            throw new Exception("Database Error: " . $e->getMessage());
+        }
     }
     $newData = $old_data;
     $newData['visibilitas'] = 'Nonaktif';
     $newData['dihapus_pada'] = date('Y-m-d H:i:s');
     $newData['dihapus_oleh'] = $user_login_id;
     $newData['otorisasi_oleh'] = $nama_user_cek;
-
     write_finance_log($conn, $user_login_id, 'serah_terima_nota', $no_faktur, 'SOFT_DELETE', $old_data, $newData);
     echo json_encode([
         'success' => true,
