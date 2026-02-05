@@ -182,6 +182,22 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                             placeholder="Scan / Cari Invoice...">
                                     </div>
                                 </div>
+                                <div>
+                                    <label class="form-label">Nama Supplier <span class="text-red-500">*</span></label>
+
+                                    <input type="hidden" id="inp_id">
+
+                                    <input type="hidden" id="inp_total_bayar">
+
+                                    <input type="hidden" id="inp_ket">
+
+                                    <input type="hidden" id="inp_kode_supplier">
+                                    <input type="text" id="inp_nama_supplier" class="input-compact" list="supplier_list"
+                                        placeholder="Ketik nama supplier...">
+                                    <datalist id="supplier_list"></datalist>
+                                </div>
+                                
+
                                 <div id="installment-info-box"
                                     class="hidden mt-3 bg-blue-50 border border-blue-100 rounded-lg p-3">
                                     <div class="flex justify-between items-start">
@@ -280,6 +296,8 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                                     </div>
                                 </div>
 
+                                
+
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
                                         <label class="form-label">Nilai Faktur</label>
@@ -331,20 +349,7 @@ require_once __DIR__ . '/../../component/menu_handler.php';
                             <h3 class="text-pink-600 font-bold text-sm mb-3 border-b pb-2"><i
                                     class="fas fa-user-tie mr-1"></i> Data Pembayaran </h3>
                             <div class="space-y-3">
-                                <div>
-                                    <label class="form-label">Nama Supplier <span class="text-red-500">*</span></label>
-
-                                    <input type="hidden" id="inp_id">
-
-                                    <input type="hidden" id="inp_total_bayar">
-
-                                    <input type="hidden" id="inp_ket">
-
-                                    <input type="hidden" id="inp_kode_supplier">
-                                    <input type="text" id="inp_nama_supplier" class="input-compact" list="supplier_list"
-                                        placeholder="Ketik nama supplier...">
-                                    <datalist id="supplier_list"></datalist>
-                                </div>
+                                
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
                                         <label class="form-label">Tanggal Bayar</label>

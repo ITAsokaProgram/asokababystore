@@ -7,23 +7,21 @@ try {
     $allow_print = false;
     
 
-    if ($token) {
-        $user = authenticate_request();
-        if ($user) {
-            $user_id = $user->kode ?? $user->id ?? 0;
-            $checkSql = "SELECT 1 FROM user_internal_access 
-                         WHERE id_user = ? AND menu_code = 'izin_cetak' AND can_view = 1 
-                         LIMIT 1";
-            $stmtPerm = $conn->prepare($checkSql);
-            if ($stmtPerm) {
-                $stmtPerm->bind_param("i", $user_id);
-                $stmtPerm->execute();
-                $stmtPerm->store_result();
-                if ($stmtPerm->num_rows > 0) {
-                    $allow_print = true;
-                }
-                $stmtPerm->close();
+    $user = authenticate_request();
+    if ($user) {
+        $user_id = $user->kode ?? $user->id ?? 0;
+        $checkSql = "SELECT 1 FROM user_internal_access 
+                        WHERE id_user = ? AND menu_code = 'izin_cetak' AND can_view = 1 
+                        LIMIT 1";
+        $stmtPerm = $conn->prepare($checkSql);
+        if ($stmtPerm) {
+            $stmtPerm->bind_param("i", $user_id);
+            $stmtPerm->execute();
+            $stmtPerm->store_result();
+            if ($stmtPerm->num_rows > 0) {
+                $allow_print = true;
             }
+            $stmtPerm->close();
         }
     }
 
