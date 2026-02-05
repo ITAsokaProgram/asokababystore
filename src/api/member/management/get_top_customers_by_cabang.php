@@ -70,7 +70,7 @@ try {
         $params[] = $cabang_filter;
         $types .= "s";
     }
-    $exclude = " AND c.kd_cust NOT IN ('INTERNAL', 'DUMMY') AND UPPER(c.nama_cust) NOT LIKE '%DUMMY%' ";
+    $exclude = " AND c.kd_cust != '' AND c.kd_cust IS NOT NULL AND c.kd_cust NOT IN ('INTERNAL', 'DUMMY') AND UPPER(c.nama_cust) NOT LIKE '%DUMMY%' ";
     $sql_count = "
         SELECT COUNT(DISTINCT c.kd_cust) as total
         FROM trans_b t
