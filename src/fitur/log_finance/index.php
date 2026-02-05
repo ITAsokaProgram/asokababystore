@@ -57,6 +57,58 @@ if (!$menuHandler->initialize()) {
         grid-template-columns: 1fr;
       }
     }
+    /* Style untuk Diff Viewer */
+    .diff-container {
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 0.85rem;
+      background: #fff;
+      border-radius: 0.5rem;
+      overflow: hidden;
+    }
+
+    .diff-row {
+      display: flex;
+      padding: 4px 8px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    
+    .diff-row:last-child {
+      border-bottom: none;
+    }
+
+    .diff-key {
+      font-weight: 600;
+      min-width: 140px;
+      color: #4b5563;
+    }
+
+    .diff-val {
+      flex: 1;
+      word-break: break-all;
+    }
+
+    /* Highlight Colors */
+    .bg-diff-add {
+      background-color: #dcfce7; /* Hijau muda */
+      color: #166534;
+    }
+
+    .bg-diff-remove {
+      background-color: #fee2e2; /* Merah muda */
+      color: #991b1b;
+      text-decoration: line-through;
+    }
+
+    .bg-diff-change-old {
+      background-color: #ffedd5; /* Orange muda */
+      color: #9a3412;
+    }
+    
+    .bg-diff-change-new {
+      background-color: #ffedd5; /* Orange muda */
+      color: #9a3412;
+      font-weight: bold;
+    }
   </style>
 </head>
 
@@ -215,13 +267,18 @@ if (!$menuHandler->initialize()) {
         </div>
 
         <div class="diff-grid">
-          <div class="card-old bg-red-50 border border-red-100 rounded-lg p-4">
-            <h4 class="font-bold text-red-700 mb-2 border-b border-red-200 pb-2">DATA LAMA (Old)</h4>
-            <pre id="contentOld" class="json-container text-red-800">null</pre>
+          <div class="card-old bg-gray-50 border border-gray-200 rounded-lg overflow-hidden">
+            <div class="bg-gray-100 p-3 border-b border-gray-200">
+              <h4 class="font-bold text-gray-700 text-xs uppercase tracking-wider">DATA LAMA (Old)</h4>
+            </div>
+            <div id="contentOld" class="diff-container p-0"></div>
           </div>
-          <div class="card-new bg-green-50 border border-green-100 rounded-lg p-4">
-            <h4 class="font-bold text-green-700 mb-2 border-b border-green-200 pb-2">DATA BARU (New)</h4>
-            <pre id="contentNew" class="json-container text-green-800">null</pre>
+          
+          <div class="card-new bg-gray-50 border border-gray-200 rounded-lg overflow-hidden">
+            <div class="bg-gray-100 p-3 border-b border-gray-200">
+              <h4 class="font-bold text-gray-700 text-xs uppercase tracking-wider">DATA BARU (New)</h4>
+            </div>
+            <div id="contentNew" class="diff-container p-0"></div>
           </div>
         </div>
       </div>

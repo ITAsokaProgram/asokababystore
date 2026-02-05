@@ -258,7 +258,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const icon = copyBtn.querySelector("i");
         const originalClass = icon.className;
         icon.className = "fas fa-check text-green-500";
-
       }).catch(err => {
         console.error("Gagal menyalin:", err);
       });
@@ -278,19 +277,89 @@ document.addEventListener("DOMContentLoaded", () => {
     modalLogId.textContent = "#" + id;
     modalIp.textContent = ip;
     modalUa.textContent = ua;
+    let oldObj = null;
+    let newObj = null;
     try {
-      const oldJson = oldDataStr !== "null" ? JSON.parse(oldDataStr) : null;
-      contentOld.textContent = oldJson ? JSON.stringify(oldJson, null, 2) : "NULL";
+      oldObj = oldDataStr && oldDataStr !== "null" ? JSON.parse(oldDataStr) : null;
     } catch (e) {
-      contentOld.textContent = oldDataStr;
+      console.error("Error parsing old data", e);
     }
     try {
-      const newJson = newDataStr !== "null" ? JSON.parse(newDataStr) : null;
-      contentNew.textContent = newJson ? JSON.stringify(newJson, null, 2) : "NULL";
+      newObj = newDataStr && newDataStr !== "null" ? JSON.parse(newDataStr) : null;
     } catch (e) {
-      contentNew.textContent = newDataStr;
+      console.error("Error parsing new data", e);
     }
+    renderDiffView(oldObj, newObj);
     modal.style.display = "flex";
+  }
+  function renderDiffView(oldObj, newObj) {
+    const containerOld = document.getElementById("contentOld");
+    const containerNew = document.getElementById("contentNew");
+    containerOld.innerHTML = "";
+    containerNew.innerHTML = "";
+    if (!oldObj && !newObj) {
+      containerOld.innerHTML = '<div class="p-4 text-gray-400 italic">No Data</div>';
+      containerNew.innerHTML = '<div class="p-4 text-gray-400 italic">No Data</div>';
+      return;
+    }
+    const keysOld = oldObj ? Object.keys(oldObj) : [];
+    const keysNew = newObj ? Object.keys(newObj) : [];
+    const allKeys = Array.from(new Set([...keysOld, ...keysNew])).sort();
+    let htmlOld = "";
+    let htmlNew = "";
+    allKeys.forEach(key => {
+      const valOld = oldObj ? oldObj[key] : undefined;
+      const valNew = newObj ? newObj[key] : undefined;
+      const strOld = formatValue(valOld);
+      const strNew = formatValue(valNew);
+      let classOld = "";
+      let classNew = "";
+      if (valOld === undefined && valNew !== undefined) {
+        classNew = "bg-diff-add"; 
+      } 
+      else if (valOld !== undefined && valNew === undefined) {
+        classOld = "bg-diff-remove";
+      } 
+      else if (JSON.stringify(valOld) !== JSON.stringify(valNew)) {
+        classOld = "bg-diff-change-old";
+        classNew = "bg-diff-change-new";
+      }
+      if (valOld !== undefined) {
+        htmlOld += `
+          <div class="diff-row ${classOld}">
+            <div class="diff-key">${key}</div>
+            <div class="diff-val">${strOld}</div>
+          </div>`;
+      } else {
+         htmlOld += `
+          <div class="diff-row opacity-30">
+            <div class="diff-key">${key}</div>
+            <div class="diff-val">-</div>
+          </div>`;
+      }
+      if (valNew !== undefined) {
+        htmlNew += `
+          <div class="diff-row ${classNew}">
+            <div class="diff-key">${key}</div>
+            <div class="diff-val">${strNew}</div>
+          </div>`;
+      } else {
+         htmlNew += `
+          <div class="diff-row opacity-30">
+            <div class="diff-key">${key}</div>
+            <div class="diff-val">-</div>
+          </div>`;
+      }
+    });
+    containerOld.innerHTML = htmlOld || '<div class="p-4 text-gray-400 italic">NULL</div>';
+    containerNew.innerHTML = htmlNew || '<div class="p-4 text-gray-400 italic">NULL</div>';
+  }
+  function formatValue(val) {
+    if (val === undefined) return "-";
+    if (val === null) return '<span class="text-blue-600">null</span>';
+    if (typeof val === 'boolean') return `<span class="text-purple-600">${val}</span>`;
+    if (typeof val === 'number') return `<span class="text-green-600">${val}</span>`;
+    return `"${val}"`; 
   }
   function closeModal() {
     modal.style.display = "none";
