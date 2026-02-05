@@ -835,7 +835,7 @@ $isFinanceOpen = $isBukuBesarOpen || $isSerahTerimaOpen || $isProgramSupplierOpe
             </div>
         <?php endif; ?>
 
-        <div class="relative ">
+        <!-- <div class="relative ">
             <a href="/src/fitur/products/product" id="productLink" data-menu="products" data-title="Produk"
                 class="group flex items-center w-full py-3 px-4 rounded-xl hover:bg-gradient-to-r hover:from-cyan-100 hover:to-cyan-200 hover:text-cyan-700 hover:shadow-lg transition-all duration-300 cursor-pointer focus:outline-none border border-transparent hover:border-cyan-300">
                 <div class="w-8 flex justify-center">
@@ -845,7 +845,7 @@ $isFinanceOpen = $isBukuBesarOpen || $isSerahTerimaOpen || $isProgramSupplierOpe
                 <span
                     class="sidebar-text ml-3 font-medium transition-all duration-300 group-hover:translate-x-1">Produk</span>
             </a>
-        </div>
+        </div> -->
 
         <div class="relative ">
             <a href="/src/fitur/aset/history_aset" id="productLink" data-menu="history_aset" data-title="Aset"
