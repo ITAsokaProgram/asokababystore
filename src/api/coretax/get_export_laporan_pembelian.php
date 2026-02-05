@@ -3,9 +3,11 @@ session_start();
 ini_set('display_errors', 0);
 header('Content-Type: application/json');
 require_once __DIR__ . '/../../../aa_kon_sett.php';
+
 try {
     if (!$conn)
         throw new Exception("Koneksi Database Gagal");
+
     $tanggal_kemarin = date('Y-m-d', strtotime('-1 day'));
     $filter_type = $_GET['filter_type'] ?? 'month';
     $bulan = $_GET['bulan'] ?? date('m');
@@ -16,9 +18,11 @@ try {
     $status_data = $_GET['status_data'] ?? 'all';
     $filter_tipe_pembelian = $_GET['filter_tipe_pembelian'] ?? 'semua';
     $search_supplier = $_GET['search_supplier'] ?? '';
+
     $where_conditions = "1=1";
     $bind_types = "";
     $bind_params = [];
+
     if ($filter_type === 'month') {
         $where_conditions .= " AND MONTH(p.tgl_nota) = ? AND YEAR(p.tgl_nota) = ?";
         $bind_types .= 'ss';
@@ -30,11 +34,13 @@ try {
         $bind_params[] = $tgl_mulai;
         $bind_params[] = $tgl_selesai;
     }
+
     if ($kd_store != 'all') {
         $where_conditions .= " AND p.kode_store = ?";
         $bind_types .= 's';
         $bind_params[] = $kd_store;
     }
+
     switch ($filter_tipe_pembelian) {
         case 'PKP':
             $where_conditions .= " AND p.status = 'PKP'";
@@ -46,6 +52,7 @@ try {
             $where_conditions .= " AND p.status = 'BTKP'";
             break;
     }
+
     if ($status_data != 'all') {
         if ($status_data == 'unlinked') {
             $where_conditions .= " AND (p.ada_di_coretax = 0 OR p.ada_di_coretax IS NULL)";
@@ -62,6 +69,7 @@ try {
                                    AND (c.nsfp IS NOT NULL OR f.nsfp IS NOT NULL)";
         }
     }
+
     if (!empty($search_supplier)) {
         $search_raw = trim($search_supplier);
         $search_numeric = str_replace('.', '', $search_raw);
@@ -79,6 +87,7 @@ try {
         $bind_types .= 'sssssssss';
         $termRaw = '%' . $search_raw . '%';
         $termNumeric = '%' . $search_numeric . '%';
+        
         $bind_params[] = $termRaw;
         $bind_params[] = $termRaw;
         $bind_params[] = $termRaw;
@@ -89,6 +98,8 @@ try {
         $bind_params[] = $termNumeric;
         $bind_params[] = $termNumeric;
     }
+
+    // UPDATE QUERY: Memastikan kolom ada_di_coretax, tipe_nsfp, dan nsfp terpilih
     $query = "SELECT 
                 p.tgl_nota, 
                 p.no_invoice, 
@@ -100,31 +111,36 @@ try {
                 p.dpp_nilai_lain, 
                 p.ppn, 
                 p.total_terima_fp,
-                ks.nm_alias 
+                ks.nm_alias,
+                p.ada_di_coretax,
+                p.tipe_nsfp,
+                p.nsfp
               FROM ff_pembelian as p
               LEFT JOIN kode_store as ks on p.kode_store = ks.kd_store
-              /* JOIN Tambahan untuk mendukung filter status_data (need_selection) */
-              LEFT JOIN ff_coretax c ON ROUND(p.dpp) = ROUND(c.harga_jual) AND ROUND(p.ppn) = ROUND(c.ppn) 
+              LEFT JOIN ff_coretax c ON p.dpp = c.harga_jual AND p.ppn = c.ppn 
               LEFT JOIN ff_faktur_pajak f ON (
                   p.no_invoice = f.no_invoice 
                   OR 
                   (p.dpp = f.dpp AND p.ppn = f.ppn)
               )
               WHERE $where_conditions
-              /* Group by ID agar jika join menghasilkan duplikat (jarang terjadi di logic ini tapi aman), tetap 1 baris */
               GROUP BY p.id 
               ORDER BY p.tgl_nota DESC, p.dibuat_pada DESC";
+
     $stmt = $conn->prepare($query);
     if (!empty($bind_params)) {
         $stmt->bind_param($bind_types, ...$bind_params);
     }
+
     $stmt->execute();
     $result = $stmt->get_result();
     $data = [];
     while ($row = $result->fetch_assoc()) {
         $data[] = $row;
     }
+
     echo json_encode(['success' => true, 'data' => $data]);
+
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);

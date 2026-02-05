@@ -182,24 +182,15 @@ document.addEventListener("DOMContentLoaded", () => {
     let periodeText = "";
     if (params.filter_type === "month") {
       const monthNames = [
-        "Januari",
-        "Februari",
-        "Maret",
-        "April",
-        "Mei",
-        "Juni",
-        "Juli",
-        "Agustus",
-        "September",
-        "Oktober",
-        "November",
-        "Desember",
+        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+        "Juli", "Agustus", "September", "Oktober", "November", "Desember",
       ];
       const mIndex = parseInt(params.bulan) - 1;
       periodeText = `BULAN ${monthNames[mIndex].toUpperCase()} ${params.tahun}`;
     } else {
       periodeText = `${params.tgl_mulai} s/d ${params.tgl_selesai}`;
     }
+
     Swal.fire({
       title: "Menyiapkan Excel...",
       text: "Sedang mengambil seluruh data...",
@@ -208,6 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
         Swal.showLoading();
       },
     });
+
     try {
       const queryString = new URLSearchParams({
         filter_type: params.filter_type,
@@ -220,19 +212,25 @@ document.addEventListener("DOMContentLoaded", () => {
         filter_tipe_pembelian: params.filter_tipe_pembelian,
         search_supplier: params.search_supplier,
       }).toString();
+
       const response = await fetch(
         `/src/api/coretax/get_export_laporan_pembelian.php?${queryString}`
       );
+
       if (!response.ok) throw new Error("Gagal mengambil data export");
       const result = await response.json();
       if (result.error) throw new Error(result.error);
       const data = result.data;
+
       if (!data || data.length === 0) {
         Swal.fire("Info", "Tidak ada data untuk diexport", "info");
         return;
       }
+
       const workbook = new ExcelJS.Workbook();
       const sheet = workbook.addWorksheet("Rekap Pembelian");
+
+      // Setup Columns
       sheet.columns = [
         { key: "no", width: 5 },
         { key: "tgl_nota", width: 12 },
@@ -245,29 +243,24 @@ document.addEventListener("DOMContentLoaded", () => {
         { key: "dpp_lain", width: 15 },
         { key: "ppn", width: 15 },
         { key: "total", width: 15 },
-        { key: "status_fisik", width: 12 },
-        { key: "status_coretax", width: 12 },
+        { key: "status_fisik", width: 20 }, // Lebarkan sedikit untuk NSFP
+        { key: "status_coretax", width: 20 }, // Lebarkan sedikit untuk NSFP
       ];
-      sheet.mergeCells("A1:L1");
+
+      // Judul
+      sheet.mergeCells("A1:M1");
       const titleCell = sheet.getCell("A1");
       titleCell.value = `REKAP PEMBELIAN - ${periodeText}`;
       titleCell.font = { name: "Arial", size: 14, bold: true };
       titleCell.alignment = { horizontal: "center" };
+
+      // Headers
       const headers = [
-        "No",
-        "Tgl Nota",
-        "No Invoice",
-        "Status",
-        "Cabang",
-        "Nama Supplier",
-        "Catatan",
-        "DPP",
-        "DPP Nilai Lain",
-        "PPN",
-        "Total",
-        "Fisik",
-        "Coretax",
+        "No", "Tgl Nota", "No Invoice", "Status", "Cabang",
+        "Nama Supplier", "Catatan", "DPP", "DPP Nilai Lain", "PPN", "Total",
+        "Fisik", "Coretax",
       ];
+
       const headerRow = sheet.getRow(3);
       headerRow.values = headers;
       headerRow.eachCell((cell) => {
@@ -279,28 +272,44 @@ document.addEventListener("DOMContentLoaded", () => {
         };
         cell.alignment = { horizontal: "center", vertical: "middle" };
         cell.border = {
-          top: { style: "thin" },
-          left: { style: "thin" },
-          bottom: { style: "thin" },
-          right: { style: "thin" },
+          top: { style: "thin" }, left: { style: "thin" },
+          bottom: { style: "thin" }, right: { style: "thin" },
         };
       });
+
       let rowNum = 4;
       data.forEach((item, index) => {
         const r = sheet.getRow(rowNum);
+
         let statusFisik = "-";
         let statusCoretax = "-";
+        
+        // Ambil NSFP jika ada
+        const nsfpValue = item.nsfp ? item.nsfp : "-";
+
+        // LOGIKA PENENTUAN STATUS DI EXCEL
         if (item.ada_di_coretax == 1) {
+          // Jika sudah linked, tampilkan NSFP-nya
           const tipe = (item.tipe_nsfp || "").toLowerCase();
-          if (tipe === "all" || tipe.includes("fisik")) statusFisik = "OK";
-          if (tipe === "all" || tipe.includes("coretax")) statusCoretax = "OK";
+          
+          // Cek link ke Fisik
+          if (tipe === "all" || tipe.includes("fisik")) {
+             statusFisik = nsfpValue;
+          }
+          
+          // Cek link ke Coretax
+          if (tipe === "all" || tipe.includes("coretax")) {
+             statusCoretax = nsfpValue;
+          }
         }
+        // Jika belum linked (walaupun ada kandidat), biarkan tetap "-" sesuai permintaan.
+
         r.values = [
           index + 1,
           item.tgl_nota,
           item.no_invoice,
           item.status,
-          item.Nm_Alias || item.kode_store,
+          item.nm_alias || item.kode_store,
           item.nama_supplier,
           item.catatan || "",
           parseFloat(item.dpp) || 0,
@@ -310,22 +319,27 @@ document.addEventListener("DOMContentLoaded", () => {
           statusFisik,
           statusCoretax,
         ];
+
+        // Format Currency
         r.getCell(8).numFmt = currencyFmt;
         r.getCell(9).numFmt = currencyFmt;
         r.getCell(10).numFmt = currencyFmt;
         r.getCell(11).numFmt = currencyFmt;
+        
+        // Alignment
         r.getCell(12).alignment = { horizontal: "center" };
         r.getCell(13).alignment = { horizontal: "center" };
+
         r.eachCell((cell) => {
           cell.border = {
-            top: { style: "thin" },
-            left: { style: "thin" },
-            bottom: { style: "thin" },
-            right: { style: "thin" },
+            top: { style: "thin" }, left: { style: "thin" },
+            bottom: { style: "thin" }, right: { style: "thin" },
           };
         });
+
         rowNum++;
       });
+
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -333,6 +347,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const url = window.URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
+
       let filename = `Rekap_Pembelian_`;
       if (params.filter_type === "month") {
         filename += `${params.bulan}_${params.tahun}`;
@@ -342,6 +357,7 @@ document.addEventListener("DOMContentLoaded", () => {
       anchor.download = `${filename}.xlsx`;
       anchor.click();
       window.URL.revokeObjectURL(url);
+
       Swal.fire({
         icon: "success",
         title: "Berhasil",
@@ -354,6 +370,7 @@ document.addEventListener("DOMContentLoaded", () => {
       Swal.fire("Error", e.message, "error");
     }
   }
+
   function getUrlParams() {
     const params = new URLSearchParams(window.location.search);
     const yesterday = new Date();
