@@ -199,9 +199,9 @@ try {
                 p.tipe_nsfp, p.status, ks.Nm_Alias, p.nsfp, 
                 
                 -- Subquery / Logic Candidate NSFP (Sama seperti sebelumnya)
-                CONCAT_WS(',', 
-                    GROUP_CONCAT(DISTINCT IF(c.nsfp IS NOT NULL, CONCAT(c.nsfp, '|', CASE WHEN p_used_c.id IS NOT NULL AND p_used_c.id != p.id THEN 'USED' ELSE 'AVAILABLE' END, '|', IFNULL(p_used_c.no_invoice, ''), '|CORETAX|VALUE|', REPLACE(IFNULL(c.nama_penjual, ''), '|', ' '), '|', IFNULL(ks_c.Nm_Alias, IFNULL(c.kode_store, ''))), NULL) SEPARATOR ','),
-                    GROUP_CONCAT(DISTINCT IF(f.nsfp IS NOT NULL, CONCAT(f.nsfp, '|', CASE WHEN p_used_f.id IS NOT NULL AND p_used_f.id != p.id THEN 'USED' ELSE 'AVAILABLE' END, '|', IFNULL(p_used_f.no_invoice, ''), '|FISIK|', IF(p.no_invoice = f.no_invoice, 'INVOICE', 'VALUE'), '|', REPLACE(IFNULL(f.nama_supplier, ''), '|', ' '), '|', IFNULL(ks_f.Nm_Alias, IFNULL(f.kode_store, ''))), NULL) SEPARATOR ',')
+                CONCAT_WS(';;', 
+                    GROUP_CONCAT(DISTINCT IF(c.nsfp IS NOT NULL, CONCAT(c.nsfp, '|', CASE WHEN p_used_c.id IS NOT NULL AND p_used_c.id != p.id THEN 'USED' ELSE 'AVAILABLE' END, '|', IFNULL(p_used_c.no_invoice, ''), '|CORETAX|VALUE|', REPLACE(IFNULL(c.nama_penjual, ''), '|', ' '), '|', IFNULL(ks_c.Nm_Alias, IFNULL(c.kode_store, ''))), NULL) SEPARATOR ';;'),
+                    GROUP_CONCAT(DISTINCT IF(f.nsfp IS NOT NULL, CONCAT(f.nsfp, '|', CASE WHEN p_used_f.id IS NOT NULL AND p_used_f.id != p.id THEN 'USED' ELSE 'AVAILABLE' END, '|', IFNULL(p_used_f.no_invoice, ''), '|FISIK|', IF(p.no_invoice = f.no_invoice, 'INVOICE', 'VALUE'), '|', REPLACE(IFNULL(f.nama_supplier, ''), '|', ' '), '|', IFNULL(ks_f.Nm_Alias, IFNULL(f.kode_store, ''))), NULL) SEPARATOR ';;')
                 ) as candidate_nsfps
 
             FROM ff_pembelian p
@@ -237,10 +237,10 @@ try {
                 p.dpp_nilai_lain, p.dpp, p.ppn, p.total_terima_fp, p.ada_di_coretax,
                 p.tipe_nsfp, p.status, ks.Nm_Alias, p.nsfp, 
                 
-                CONCAT_WS(',', 
-                    GROUP_CONCAT(DISTINCT IF(c.nsfp IS NOT NULL, CONCAT(c.nsfp, '|', CASE WHEN p_used_c.id IS NOT NULL AND p_used_c.id != p.id THEN 'USED' ELSE 'AVAILABLE' END, '|', IFNULL(p_used_c.no_invoice, ''), '|CORETAX|VALUE|', REPLACE(IFNULL(c.nama_penjual, ''), '|', ' '), '|', IFNULL(ks_c.Nm_Alias, IFNULL(c.kode_store, ''))), NULL) SEPARATOR ','),
-                    GROUP_CONCAT(DISTINCT IF(f.nsfp IS NOT NULL, CONCAT(f.nsfp, '|', CASE WHEN p_used_f.id IS NOT NULL AND p_used_f.id != p.id THEN 'USED' ELSE 'AVAILABLE' END, '|', IFNULL(p_used_f.no_invoice, ''), '|FISIK|', IF(p.no_invoice = f.no_invoice, 'INVOICE', 'VALUE'), '|', REPLACE(IFNULL(f.nama_supplier, ''), '|', ' '), '|', IFNULL(ks_f.Nm_Alias, IFNULL(f.kode_store, ''))), NULL) SEPARATOR ',')
-                ) as candidate_nsfps
+            CONCAT_WS(';;', 
+                GROUP_CONCAT(DISTINCT IF(c.nsfp IS NOT NULL, CONCAT(c.nsfp, '|', CASE WHEN p_used_c.id IS NOT NULL AND p_used_c.id != p.id THEN 'USED' ELSE 'AVAILABLE' END, '|', IFNULL(p_used_c.no_invoice, ''), '|CORETAX|VALUE|', REPLACE(IFNULL(c.nama_penjual, ''), '|', ' '), '|', IFNULL(ks_c.Nm_Alias, IFNULL(c.kode_store, ''))), NULL) SEPARATOR ';;'),
+                GROUP_CONCAT(DISTINCT IF(f.nsfp IS NOT NULL, CONCAT(f.nsfp, '|', CASE WHEN p_used_f.id IS NOT NULL AND p_used_f.id != p.id THEN 'USED' ELSE 'AVAILABLE' END, '|', IFNULL(p_used_f.no_invoice, ''), '|FISIK|', IF(p.no_invoice = f.no_invoice, 'INVOICE', 'VALUE'), '|', REPLACE(IFNULL(f.nama_supplier, ''), '|', ' '), '|', IFNULL(ks_f.Nm_Alias, IFNULL(f.kode_store, ''))), NULL) SEPARATOR ';;')
+            ) as candidate_nsfps
 
             FROM ff_pembelian p
             LEFT JOIN kode_store ks ON p.kode_store = ks.Kd_Store

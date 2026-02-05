@@ -562,7 +562,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       let mergedCandidatesMap = new Map();
       if (row.candidate_nsfps) {
-        const candidatesRaw = row.candidate_nsfps.split(",");
+        const candidatesRaw = row.candidate_nsfps.split(";;");
         candidatesRaw.forEach((raw) => {
           const parts = raw.split("|");
           if (parts.length >= 2) {
@@ -631,11 +631,11 @@ document.addEventListener("DOMContentLoaded", () => {
           const linkedBranchName = (linkedData.branchName || "")
             .trim()
             .toUpperCase();
-          if (linkedBranchName && linkedBranchName !== currentBranchName) {
-            branchInfoHtml = `<span class="block text-[10px] text-pink-600 font-bold mt-0.5">
-                                    <i class="fas fa-exclamation-circle"></i> ${linkedData.branchName}
-                                  </span>`;
-          }
+          // if (linkedBranchName && linkedBranchName !== currentBranchName) {
+          //   branchInfoHtml = `<span class="block text-[10px] text-pink-600 font-bold mt-0.5">
+          //                           <i class="fas fa-exclamation-circle"></i> ${linkedData.branchName}
+          //                         </span>`;
+          // }
         }
         existingNsfpBadge = `
                   <div class="flex flex-col items-center justify-center gap-1">
