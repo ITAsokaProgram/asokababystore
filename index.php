@@ -370,7 +370,7 @@ if ($stmt->num_rows === 0) {
 
     <main>
 
-        <section id="home-section" class="relative w-full text-center md:h-screen h-auto overflow-hidden"
+        <section id="home-section" style="display: none;" class="relative w-full text-center md:h-screen h-auto overflow-hidden"
             data-aos="fade-up" data-aos-delay="200" data-aos-duration="1000">
 
             <div class="swiper mySwiper h-auto w-full ">
