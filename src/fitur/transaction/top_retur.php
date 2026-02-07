@@ -241,11 +241,6 @@
                         <i class="fas fa-users text-violet-500"></i>
                         Retur Transaksi per Kasir
                     </h2>
-                    <div class="flex items-center gap-2">
-                        <button id="view-grid" class="p-2 bg-violet-500 text-white rounded-lg">
-                            <i class="fas fa-th-large"></i>
-                        </button>
-                    </div>
                 </div>
 
                 <div id="cashier-cards-container"
