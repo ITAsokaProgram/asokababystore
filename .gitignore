@@ -79,3 +79,6 @@ qur.text.env*
 main.js
 preview.php
 upload_drive.php
+redis.php 
+.htaccess 
+upload_cloudinary.php
