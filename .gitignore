@@ -70,6 +70,8 @@ coverage/
 
 # Local config
 config.env
+redis.php
+server.js
 
 #qur
 qur.text.env*

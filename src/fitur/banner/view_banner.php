@@ -146,10 +146,10 @@ $token = $menuHandler->getToken();
                     </div>
 
                     <!-- Date Selection -->
-                    <div class="grid md:grid-cols-2 gap-6">
+                    <div class="grid md:grid-cols-2 gap-6 hidden">
                         <div class="space-y-2">
                             <label for="mainPromoName"
-                                class="block text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                class=" text-sm font-semibold text-gray-700 flex items-center gap-2">
                                 <i class="fas fa-tag text-blue-500"></i>
                                 Nama Promo (Default)
                             </label>
