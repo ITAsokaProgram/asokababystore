@@ -39,15 +39,6 @@ include '../../../aa_kon_sett.php';
             box-shadow: 0 0 0 2px rgba(236, 72, 153, 0.1);
         }
         
-        .sticky-col {
-            position: sticky;
-            background-color: white;
-            z-index: 10;
-        }
-        .sticky-col.left-0 { left: 0; }
-        .sticky-col.left-1 { left: 40px; } 
-        .sticky-col.left-2 { left: 120px; } 
-        
         thead th {
             background: linear-gradient(180deg, #fdf2f8 0%, #fce7f3 100%);
             color: #831843;
@@ -114,11 +105,14 @@ include '../../../aa_kon_sett.php';
                             <i class="fa-solid fa-file-invoice-dollar fa-lg"></i>
                         </div>
                         <div>
-                            <h1 class="text-lg font-bold text-gray-800">ACC PO / Sisa Stok</h1>
+                            <h1  class="text-xl  font-bold text-gray-800">ACC PO / Sisa Stok</h1>
+                            <p id="dynamic-subtitle" class=" text-gray-600"></p>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <style id="dynamic-column-styles"></style>
 
             <div class="bg-white p-3 rounded-2xl shadow-md border border-pink-100 mb-4">
                 <form id="filter-form" class="space-y-2">
@@ -172,6 +166,16 @@ include '../../../aa_kon_sett.php';
                                 </div>
                             </div>
                         </div>
+                        <div class="relative">
+                            <button type="button" id="btn-col-toggle" class="text-xs bg-white border border-pink-300 text-pink-600 px-3 py-2 rounded-lg hover:bg-pink-50 transition-all whitespace-nowrap shadow-sm">
+                                <i class="fas fa-columns mr-1"></i> Atur Kolom
+                            </button>
+                            <div id="col-menu" class="hidden absolute right-0 mt-2 w-48 bg-white border border-pink-200 rounded-lg shadow-xl z-50 max-h-[300px] overflow-y-auto scrollbar-pink p-2">
+                                <div class="text-[10px] font-bold text-gray-400 mb-2 uppercase border-b pb-1">Pilih Kolom</div>
+                                <div id="col-list-container" class="space-y-1">
+                                    </div>
+                            </div>
+                        </div>
 
                         <div class="flex gap-2 ml-auto">
                             <button type="button" id="btn-reset-form" class="text-xs bg-gray-100 px-4 py-2 rounded-lg hover:bg-gray-200 text-gray-600 whitespace-nowrap">
@@ -194,7 +198,7 @@ include '../../../aa_kon_sett.php';
                     </div>
                 </div>
 
-                <div class="overflow-auto scrollbar-pink" style="max-height: 700px;">
+                <div class="overflow-auto scrollbar-pink" style="max-height: 640px;">
                     <table id="acc-po-table" class="w-full border-collapse">
                         <thead class="sticky top-0 z-20 shadow-sm" id="table-head">
                         </thead>

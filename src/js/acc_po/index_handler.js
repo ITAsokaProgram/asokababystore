@@ -18,15 +18,37 @@ document.addEventListener("DOMContentLoaded", () => {
     const tableHead = document.getElementById("table-head");
     const tableBody = document.getElementById("table-body");
     const resultContainer = document.getElementById("result-container");
+    const pageTitle = document.getElementById("dynamic-subtitle");
     const totalBadge = document.getElementById("total-badge");
     const scrollContainer = document.querySelector(".overflow-auto");
+    const btnColToggle = document.getElementById("btn-col-toggle");
+    const colMenu = document.getElementById("col-menu");
+    const colListContainer = document.getElementById("col-list-container");
+    const styleElement = document.getElementById("dynamic-column-styles");
     let debounceTimer;
     let accumulatedData = [];
     let currentHeaders = [];
     let currentPage = 1;
     let isLoading = false;
     let hasMore = true;
-    let allBranches = []; 
+    let allBranches = [];
+    const columnConfig = [
+        { id: 'no', label: 'No', class: 'c-no', default: true },
+        { id: 'plu', label: 'PLU', class: 'c-plu', default: true },
+        { id: 'barcode', label: 'Barcode', class: 'c-barcode', default: true },
+        { id: 'nama', label: 'Nama Barang', class: 'c-nama', default: true },
+        { id: 'hbeli', label: 'H. Beli', class: 'c-hbeli', default: true },
+        { id: 'hjual', label: 'H. Jual', class: 'c-hjual', default: true },
+        { id: 's_jual', label: 'Toko: Jual', class: 'c-s-jual', default: true },
+        { id: 's_stok', label: 'Toko: Stok', class: 'c-s-stok', default: true },
+        { id: 's_posys', label: 'Toko: PO Sys', class: 'c-s-posys', default: true },
+        { id: 's_pomd', label: 'Toko: PO MD', class: 'c-s-pomd', default: true },
+        { id: 't_po', label: 'Total PO', class: 'c-t-po', default: true },
+        { id: 't_pj', label: 'Total PJ', class: 'c-t-pj', default: true },
+        { id: 't_ss', label: 'Total SS', class: 'c-t-ss', default: true },
+        { id: 't_rasio', label: 'Rasio', class: 'c-t-rasio', default: true },
+        { id: 't_rp', label: 'Total Rp', class: 'c-t-rp', default: true },
+    ]; 
     init();
     async function init() {
         if (!branchTrigger || !branchMenu) {
@@ -35,6 +57,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         await Promise.all([loadAreas(), loadBranches()]);
         checkFormValidity();
+        await loadUrlParams();
+        initColumnToggler();
     }
     if(inputSupp) {
         inputSupp.addEventListener("input", function() {
@@ -65,6 +89,77 @@ document.addEventListener("DOMContentLoaded", () => {
                 suppList.classList.add("hidden");
             }
         });
+    }
+    async function loadUrlParams() {
+        const params = new URLSearchParams(window.location.search);
+        const kodeSupp = params.get('kode_supp');
+        const namaSupp = params.get('supp_name'); 
+        if (kodeSupp && namaSupp) {
+            hiddenSupp.value = kodeSupp;
+            inputSupp.value = namaSupp;
+        }
+        const area = params.get('kode_area');
+        if (area) {
+            selectArea.value = area;
+            selectArea.dispatchEvent(new Event('change'));
+        }
+        const branches = params.get('kd_store');
+        if (branches && !area) {
+            const branchList = branches.split(',');
+            branchList.forEach(alias => {
+                const cb = document.querySelector(`.branch-checkbox[value="${alias}"]`);
+                if (cb) cb.checked = true;
+            });
+            handleBranchChange(); 
+        }
+        checkFormValidity();
+        if (!btnSubmit.disabled) {
+            form.dispatchEvent(new Event('submit'));
+        }
+    }
+    function syncUrlParams() {
+        const params = new URLSearchParams();
+        if (hiddenSupp.value) {
+            params.set('kode_supp', hiddenSupp.value);
+            params.set('supp_name', inputSupp.value); 
+        }
+        if (selectArea.value) {
+            params.set('kode_area', selectArea.value);
+        } else {
+            const checked = Array.from(document.querySelectorAll(".branch-checkbox:checked"))
+                .map(cb => cb.value);
+            if (checked.length > 0) {
+                params.set('kd_store', checked.join(','));
+            }
+        }
+        const newUrl = `${window.location.pathname}?${params.toString()}`;
+        window.history.replaceState(null, '', newUrl);
+    }
+    function updateHeaderTitle(firstRowData) {
+        if (!pageTitle) return;
+        const suppName = inputSupp.value || "Semua Supplier";
+        let locationText = "";
+        if (selectArea.value) {
+            const areaText = selectArea.options[selectArea.selectedIndex].text;
+            locationText = `AREA ${areaText}`;
+        } else {
+            const checkedBoxes = Array.from(document.querySelectorAll(".branch-checkbox:checked"));
+            if (checkedBoxes.length === 0) {
+                locationText = "Semua Cabang";
+            } else {
+                const names = checkedBoxes.map(cb => cb.value); 
+                if (names.length <= 2) {
+                    locationText = names.join(", ");
+                } else {
+                    locationText = `${names[0]}, ${names[1]}, ...`;
+                }
+            }
+        }
+        let dateText = "";
+        if (firstRowData && firstRowData.tgl_awal && firstRowData.tgl_akhir) {
+            dateText = `${firstRowData.tgl_awal} s/d ${firstRowData.tgl_akhir}`;
+        }
+        pageTitle.innerText = `Sisa Stok Supplier ${suppName}, ${locationText}, ${dateText}`;
     }
     function renderSupplierList(data) {
         suppList.innerHTML = "";
@@ -280,6 +375,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (form) {
         form.addEventListener("submit", (e) => {
             e.preventDefault();
+            syncUrlParams();
             accumulatedData = [];
             tableBody.innerHTML = "";
             currentPage = 1;
@@ -332,6 +428,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 const count = result.data.length; 
                 totalBadge.innerText = `${count}+ Data Ditampilkan`; 
                 tableBody.innerHTML = ""; 
+                const firstItem = result.data.length > 0 ? result.data[0] : null;
+                updateHeaderTitle(firstItem);
             }
             if (result.data.length > 0) {
                 accumulatedData = [...accumulatedData, ...result.data];
@@ -352,38 +450,77 @@ document.addEventListener("DOMContentLoaded", () => {
             btnSubmit.innerHTML = '<i class="fas fa-search mr-1"></i> Tampilkan Data';
         }
     }
+    function initColumnToggler() {
+        if (!colListContainer) return;
+        colListContainer.innerHTML = '';
+        columnConfig.forEach(col => {
+            const div = document.createElement('div');
+            div.className = 'flex items-center gap-2 mb-1';
+            div.innerHTML = `
+                <input type="checkbox" id="chk-${col.id}" class="col-checkbox rounded text-pink-500 focus:ring-pink-400" ${col.default ? 'checked' : ''} data-class="${col.class}">
+                <label for="chk-${col.id}" class="text-xs text-gray-700 cursor-pointer select-none">${col.label}</label>
+            `;
+            colListContainer.appendChild(div);
+        });
+        const checkboxes = document.querySelectorAll('.col-checkbox');
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', updateTableVisibility);
+        });
+        btnColToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            colMenu.classList.toggle('hidden');
+        });
+        document.addEventListener('click', (e) => {
+            if (!colMenu.contains(e.target) && !btnColToggle.contains(e.target)) {
+                colMenu.classList.add('hidden');
+            }
+        });
+    }
+    function updateTableVisibility() {
+        if (!styleElement) return;
+        let cssRules = "";
+        const checkboxes = document.querySelectorAll('.col-checkbox');
+        checkboxes.forEach(cb => {
+            if (!cb.checked) {
+                const className = cb.getAttribute('data-class');
+                cssRules += `.${className} { display: none !important; } \n`;
+            }
+        });
+        styleElement.textContent = cssRules;
+    }
     function renderTableHeader(stores) {
         let row1 = `
             <tr class="divide-x divide-pink-200">
-                <th rowspan="2" class="p-2 sticky-col left-0 bg-pink-50 w-10 z-30 border-b border-pink-200">No</th>
-                <th rowspan="2" class="p-2 sticky-col left-1 bg-pink-50 min-w-[80px] z-30 border-b border-pink-200">PLU</th>
-                <th rowspan="2" class="p-2 sticky-col left-2 bg-pink-50 min-w-[100px] z-30 border-b border-pink-200 shadow-lg">Barcode</th>
-                <th rowspan="2" class="p-2 min-w-[200px] bg-pink-50 border-b border-pink-200">Nama Barang</th>
-                <th rowspan="2" class="p-2 min-w-[80px] bg-pink-50 border-b border-pink-200">H. Beli</th>
-                <th rowspan="2" class="p-2 min-w-[80px] bg-pink-50 border-b border-pink-200">H. Jual</th>
+                <th rowspan="2" class="c-no p-2  left-0 bg-pink-50 w-10 z-30 border-b border-pink-200">No</th>
+                <th rowspan="2" class="c-plu p-2  left-1 bg-pink-50 min-w-[80px] z-30 border-b border-pink-200">PLU</th>
+                <th rowspan="2" class="c-barcode p-2  left-2 bg-pink-50 min-w-[100px] z-30 border-b border-pink-200 shadow-lg">Barcode</th>
+                <th rowspan="2" class="c-nama p-2 min-w-[200px] bg-pink-50 border-b border-pink-200">Nama Barang</th>
+                <th rowspan="2" class="c-hbeli p-2 min-w-[80px] bg-pink-50 border-b border-pink-200">H. Beli</th>
+                <th rowspan="2" class="c-hjual p-2 min-w-[80px] bg-pink-50 border-b border-pink-200">H. Jual</th>
         `;
         stores.forEach(store => {
             row1 += `<th colspan="4" class="p-1 text-center bg-pink-100 text-pink-800 font-bold border-b border-pink-300 text-[10px] uppercase tracking-wider">${store.name}</th>`;
         });
         row1 += `
-                <th rowspan="2" class="p-2 min-w-[80px] bg-yellow-50 border-b border-yellow-200 text-yellow-800">Total PO</th>
-                <th rowspan="2" class="p-2 min-w-[80px] bg-yellow-50 border-b border-yellow-200 text-yellow-800">Total PJ</th>
-                <th rowspan="2" class="p-2 min-w-[80px] bg-yellow-50 border-b border-yellow-200 text-yellow-800">Total SS</th>
-                <th rowspan="2" class="p-2 min-w-[60px] bg-yellow-50 border-b border-yellow-200 text-yellow-800">Rasio</th>
-                <th rowspan="2" class="p-2 min-w-[100px] bg-yellow-50 border-b border-yellow-200 text-yellow-800">Total Rp</th>
+                <th rowspan="2" class="c-t-po p-2 min-w-[80px] bg-yellow-50 border-b border-yellow-200 text-yellow-800">Total PO</th>
+                <th rowspan="2" class="c-t-pj p-2 min-w-[80px] bg-yellow-50 border-b border-yellow-200 text-yellow-800">Total PJ</th>
+                <th rowspan="2" class="c-t-ss p-2 min-w-[80px] bg-yellow-50 border-b border-yellow-200 text-yellow-800">Total SS</th>
+                <th rowspan="2" class="c-t-rasio p-2 min-w-[60px] bg-yellow-50 border-b border-yellow-200 text-yellow-800">Rasio</th>
+                <th rowspan="2" class="c-t-rp p-2 min-w-[100px] bg-yellow-50 border-b border-yellow-200 text-yellow-800">Total Rp</th>
             </tr>
         `;
         let row2 = `<tr class="divide-x divide-pink-200">`;
         stores.forEach(() => {
             row2 += `
-                <th class="p-1 min-w-[60px] text-[9px] bg-white text-gray-500 font-normal">Jual</th>
-                <th class="p-1 min-w-[60px] text-[9px] bg-white text-gray-500 font-normal">Stok</th>
-                <th class="p-1 min-w-[60px] text-[9px] bg-blue-50 text-blue-600 font-bold">PO Sys</th>
-                <th class="p-1 min-w-[60px] text-[9px] bg-pink-50 text-pink-600 font-bold">PO MD</th>
+                <th class="c-s-jual p-1 min-w-[60px] text-[9px] bg-white text-gray-500 font-normal">Jual</th>
+                <th class="c-s-stok p-1 min-w-[60px] text-[9px] bg-white text-gray-500 font-normal">Stok</th>
+                <th class="c-s-posys p-1 min-w-[60px] text-[9px] bg-blue-50 text-blue-600 font-bold">PO Sys</th>
+                <th class="c-s-pomd p-1 min-w-[60px] text-[9px] bg-pink-50 text-pink-600 font-bold">PO MD</th>
             `;
         });
         row2 += `</tr>`;
         tableHead.innerHTML = row1 + row2;
+        updateTableVisibility();
     }
     function renderTableBody(data, stores) {
         const fragment = document.createDocumentFragment();
@@ -392,29 +529,29 @@ document.addEventListener("DOMContentLoaded", () => {
             const tr = document.createElement("tr");
             tr.className = "hover:bg-pink-50 transition-colors border-b border-gray-100 text-xs group";
             let html = `
-                <td class="p-2 text-center sticky-col left-0 bg-white group-hover:bg-pink-50 font-bold text-gray-400 border-r border-gray-100">${startNum + idx}</td>
-                <td class="p-2 sticky-col left-1 bg-white group-hover:bg-pink-50 font-mono text-pink-600 font-bold border-r border-gray-100">${item.plu}</td>
-                <td class="p-2 sticky-col left-2 bg-white group-hover:bg-pink-50 font-mono text-gray-500 border-r border-gray-100 shadow-md">${item.barcode || '-'}</td>
-                <td class="p-2 text-gray-800 font-medium truncate max-w-[200px]" title="${item.descp}">${item.descp}</td>
-                <td class="p-2 text-right font-mono text-gray-600">${formatNumber(item.h_beli)}</td>
-                <td class="p-2 text-right font-mono text-gray-600">${formatNumber(item.h_jual)}</td>
+                <td class="c-no p-2 text-center  left-0 bg-white group-hover:bg-pink-50 font-bold text-gray-400 border-r border-gray-100">${startNum + idx}</td>
+                <td class="c-plu p-2  left-1 bg-white group-hover:bg-pink-50 font-mono text-pink-600 font-bold border-r border-gray-100">${item.plu}</td>
+                <td class="c-barcode p-2  left-2 bg-white group-hover:bg-pink-50 font-mono text-gray-500 border-r border-gray-100 shadow-md">${item.barcode || '-'}</td>
+                <td class="c-nama p-2 text-gray-800 font-medium truncate max-w-[200px]" title="${item.descp}">${item.descp}</td>
+                <td class="c-hbeli p-2 text-right font-mono text-gray-600">${formatNumber(item.h_beli)}</td>
+                <td class="c-hjual p-2 text-right font-mono text-gray-600">${formatNumber(item.h_jual)}</td>
             `;
             stores.forEach(store => {
                 const branchData = item.branches[store.code] || { penjualan:0, stok_akhir:0, po_by_system:0, po_by_md:0 };
                 html += `
-                    <td class="p-1"><input type="text" class="table-input text-gray-500" value="${formatNumber(branchData.penjualan)}" readonly tabindex="-1"></td>
-                    <td class="p-1"><input type="text" class="table-input text-gray-500" value="${formatNumber(branchData.stok_akhir)}" readonly tabindex="-1"></td>
-                    <td class="p-1"><input type="number" class="table-input bg-blue-50 focus:bg-white border-blue-100 text-blue-700" value="${branchData.po_by_system}"></td>
-                    <td class="p-1"><input type="number" class="table-input bg-pink-50 focus:bg-white border-pink-200 font-bold text-pink-700" value="${branchData.po_by_md}"></td>
+                    <td class="c-s-jual p-1"><input type="text" class="table-input text-gray-500" value="${formatNumber(branchData.penjualan)}" readonly tabindex="-1"></td>
+                    <td class="c-s-stok p-1"><input type="text" class="table-input text-gray-500" value="${formatNumber(branchData.stok_akhir)}" readonly tabindex="-1"></td>
+                    <td class="c-s-posys p-1"><input type="number" class="table-input bg-blue-50 focus:bg-white border-blue-100 text-blue-700" value="${branchData.po_by_system}"></td>
+                    <td class="c-s-pomd p-1"><input type="number" class="table-input bg-pink-50 focus:bg-white border-pink-200 font-bold text-pink-700" value="${branchData.po_by_md}"></td>
                 `;
             });
             const sum = item.summary;
             html += `
-                <td class="p-1 bg-yellow-50/30 border-l border-yellow-100"><input type="number" class="table-input font-bold bg-transparent" value="${sum.Total_PO}" readonly tabindex="-1"></td>
-                <td class="p-1 bg-yellow-50/30"><input type="number" class="table-input bg-transparent" value="${sum.Total_PJ}" readonly tabindex="-1"></td>
-                <td class="p-1 bg-yellow-50/30"><input type="number" class="table-input bg-transparent" value="${sum.Total_SS}" readonly tabindex="-1"></td>
-                <td class="p-1 bg-yellow-50/30"><input type="number" step="0.01" class="table-input bg-transparent" value="${sum.Rasio}" readonly tabindex="-1"></td>
-                <td class="p-1 bg-yellow-50/30"><input type="text" class="table-input font-bold text-gray-800 bg-transparent text-right" value="${formatNumber(sum.Total_Rp)}" readonly tabindex="-1"></td>
+                <td class="c-t-po p-1 bg-yellow-50/30 border-l border-yellow-100"><input type="number" class="table-input font-bold bg-transparent" value="${sum.Total_PO}" readonly tabindex="-1"></td>
+                <td class="c-t-pj p-1 bg-yellow-50/30"><input type="number" class="table-input bg-transparent" value="${sum.Total_PJ}" readonly tabindex="-1"></td>
+                <td class="c-t-ss p-1 bg-yellow-50/30"><input type="number" class="table-input bg-transparent" value="${sum.Total_SS}" readonly tabindex="-1"></td>
+                <td class="c-t-rasio p-1 bg-yellow-50/30"><input type="number" step="0.01" class="table-input bg-transparent" value="${sum.Rasio}" readonly tabindex="-1"></td>
+                <td class="c-t-rp p-1 bg-yellow-50/30"><input type="text" class="table-input font-bold text-gray-800 bg-transparent text-right" value="${formatNumber(sum.Total_Rp)}" readonly tabindex="-1"></td>
             `;
             tr.innerHTML = html;
             fragment.appendChild(tr);
@@ -434,5 +571,4 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
-
 });

@@ -92,6 +92,8 @@ try {
                 'plu' => $row['plu'],
                 'barcode' => $row['barcode'],
                 'descp' => $row['descp'],
+                'tgl_awal' => $row['tgl_awal'],
+                'tgl_akhir' => $row['tgl_akhir'],
                 'h_beli' => (float)$row['h_beli'],
                 'h_jual' => (float)$row['h_jual'],
                 'branches' => [],
