@@ -103,10 +103,13 @@ try {
             ];
         }
         $groupedData[$plu]['branches'][$row['cabang']] = [
-            'penjualan' => (int)$row['penjualan'],
-            'stok_akhir' => (int)$row['stok_akhir'],
-            'po_by_system' => (int)$row['po_by_system'],
-            'po_by_md' => (int)$row['po_by_md']
+            'penjualan'    => $row['penjualan'],      
+            'stok_akhir'   => $row['stok_akhir'],     
+            'po_by_system' => $row['po_by_system'],   
+            'po_by_md'     => $row['po_by_md'],       
+            'penjualan_s'  => null,                   
+            'mutasi'       => $row['Mutasi'],         
+            'sudah_po'     => $row['sudah_PO']        
         ];
         $groupedData[$plu]['summary']['Total_PO'] += (int)$row['Total_PO'];
         $groupedData[$plu]['summary']['Total_PJ'] += (int)$row['Total_PJ'];

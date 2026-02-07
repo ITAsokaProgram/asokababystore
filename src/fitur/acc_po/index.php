@@ -23,13 +23,15 @@ include '../../../aa_kon_sett.php';
     <style>
         .table-input {
             background-color: transparent;
+            width: 100%;
             border: 1px solid #fce7f3;
             border-radius: 4px;
-            padding: 4px;
-            width: 100%;
-            min-width: 60px;
+            max-width: 80px;    
+            min-width: 60px;    
             text-align: right;
-            font-size: 11px;
+            font-size: 10px;    
+            height: 24px;       
+            line-height: 1;
             transition: all 0.2s;
         }
         .table-input:focus {
@@ -89,6 +91,34 @@ include '../../../aa_kon_sett.php';
         .branch-checkbox:checked + i {
             opacity: 1 !important;
         }
+        .row-modified td {
+            background-color: #fffbeb !important; /* Warna kuning muda */
+            border-bottom-color: #fcd34d !important;
+        }
+        .row-modified input {
+            background-color: #fffbeb !important;
+            font-weight: bold;
+        }
+
+        /* Style Sticky Columns */
+        .sticky-col {
+            position: sticky;
+            z-index: 10;
+            background-color: white; /* Default background */
+        }
+        /* Pastikan header juga sticky dan z-index lebih tinggi */
+        thead th.sticky-col {
+            z-index: 30 !important; 
+        }
+        
+        /* Helper untuk value kosong */
+        .empty-val {
+            color: #d1d5db; /* Gray-300 */
+            font-style: italic;
+            text-align: center;
+            width: 100%;
+            display: block;
+        }
     </style>
 </head>
 
@@ -118,7 +148,7 @@ include '../../../aa_kon_sett.php';
                 <form id="filter-form" class="space-y-2">
                     <div class="flex flex-wrap gap-2 items-end">
                         
-                        <div class="flex-1 min-w-[250px] relative">
+                        <div class="flex-1 relative">
                             <label class="text-xs font-bold text-gray-700 block mb-1">Supplier</label>
                             <div class="relative">
                                 <input type="text" id="input-supplier" class="w-full text-xs border border-pink-200 rounded-lg p-2 focus:ring-pink-500 focus:border-pink-500" placeholder="Ketik Kode / Nama Supplier..." autocomplete="off">
@@ -128,14 +158,14 @@ include '../../../aa_kon_sett.php';
                             </div>
                         </div>
 
-                        <div class="flex-1 min-w-[200px]">
+                        <div class="flex-1
                             <label class="text-xs font-bold text-gray-700 block mb-1">Filter Area</label>
                             <select name="kode_area" id="select-area" class="w-full text-xs border border-pink-200 rounded-lg p-2 focus:ring-pink-500 bg-white">
                                 <option value="">-- Pilih Area --</option>
                             </select>
                         </div>
 
-                        <div class="flex-1 min-w-[250px] relative" id="section-cabang">
+                        <div class="flex-1 relative" id="section-cabang">
                             <label class="text-xs font-bold text-gray-700 block mb-1">Filter Cabang</label>
                             
                             <div class="relative">

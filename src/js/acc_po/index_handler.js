@@ -33,22 +33,25 @@ document.addEventListener("DOMContentLoaded", () => {
     let hasMore = true;
     let allBranches = [];
     const columnConfig = [
-        { id: 'no', label: 'No', class: 'c-no', default: true },
-        { id: 'plu', label: 'PLU', class: 'c-plu', default: true },
-        { id: 'barcode', label: 'Barcode', class: 'c-barcode', default: true },
-        { id: 'nama', label: 'Nama Barang', class: 'c-nama', default: true },
-        { id: 'hbeli', label: 'H. Beli', class: 'c-hbeli', default: true },
-        { id: 'hjual', label: 'H. Jual', class: 'c-hjual', default: true },
-        { id: 's_jual', label: 'Toko: Jual', class: 'c-s-jual', default: true },
-        { id: 's_stok', label: 'Toko: Stok', class: 'c-s-stok', default: true },
-        { id: 's_posys', label: 'Toko: PO Sys', class: 'c-s-posys', default: true },
-        { id: 's_pomd', label: 'Toko: PO MD', class: 'c-s-pomd', default: true },
-        { id: 't_po', label: 'Total PO', class: 'c-t-po', default: true },
-        { id: 't_pj', label: 'Total PJ', class: 'c-t-pj', default: true },
-        { id: 't_ss', label: 'Total SS', class: 'c-t-ss', default: true },
-        { id: 't_rasio', label: 'Rasio', class: 'c-t-rasio', default: true },
-        { id: 't_rp', label: 'Total Rp', class: 'c-t-rp', default: true },
-    ]; 
+    { id: 'no', label: 'No', class: 'c-no', default: true, isSticky: true },
+    { id: 'plu', label: 'PLU', class: 'c-plu', default: true, isSticky: true },
+    { id: 'barcode', label: 'Barcode', class: 'c-barcode', default: true, isSticky: true },
+    { id: 'nama', label: 'Nama Barang', class: 'c-nama', default: true, isSticky: true },
+    { id: 'hbeli', label: 'H. Beli', class: 'c-hbeli', default: true },
+    { id: 'hjual', label: 'H. Jual', class: 'c-hjual', default: true },
+    { id: 's_jual', label: 'Toko: Jual', class: 'c-s-jual', default: true, isStoreCol: true },
+    { id: 's_stok', label: 'Toko: Stok', class: 'c-s-stok', default: true, isStoreCol: true },
+    { id: 's_posys', label: 'Toko: PO Sys', class: 'c-s-posys', default: true, isStoreCol: true },
+    { id: 's_pomd', label: 'Toko: PO MD', class: 'c-s-pomd', default: true, isStoreCol: true },
+    { id: 's_seas', label: 'Toko: Pj Season', class: 'c-s-seas', default: false, isStoreCol: true },
+    { id: 's_mutasi', label: 'Toko: Mutasi', class: 'c-s-mutasi', default: false, isStoreCol: true },
+    { id: 's_sdhpo', label: 'Toko: Sdh PO', class: 'c-s-sdhpo', default: false, isStoreCol: true },
+    { id: 't_po', label: 'Total PO', class: 'c-t-po', default: true },
+    { id: 't_pj', label: 'Total PJ', class: 'c-t-pj', default: true },
+    { id: 't_ss', label: 'Total SS', class: 'c-t-ss', default: true },
+    { id: 't_rasio', label: 'Rasio', class: 'c-t-rasio', default: true },
+    { id: 't_rp', label: 'Total Rp', class: 'c-t-rp', default: true },
+];
     init();
     async function init() {
         if (!branchTrigger || !branchMenu) {
@@ -89,6 +92,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 suppList.classList.add("hidden");
             }
         });
+    }
+    function formatValueDisplay(val, isNumber = true) {
+        if (val === null || val === undefined || val === '') {
+            return '<span class="empty-val">-</span>';
+        }
+        if (val == 0) return '<span class="empty-val">0</span>';
+        return isNumber ? formatNumber(val) : val;
     }
     async function loadUrlParams() {
         const params = new URLSearchParams(window.location.search);
@@ -453,9 +463,30 @@ document.addEventListener("DOMContentLoaded", () => {
     function initColumnToggler() {
         if (!colListContainer) return;
         colListContainer.innerHTML = '';
+        const stickyDiv = document.createElement('div');
+        stickyDiv.className = 'p-2 mb-2 bg-pink-50 rounded border border-pink-100';
+        stickyDiv.innerHTML = `
+            <div class="flex items-center gap-2">
+                <input type="checkbox" id="chk-sticky-main" class="rounded text-pink-500 focus:ring-pink-400" checked>
+                <label for="chk-sticky-main" class="text-xs font-bold text-pink-700 cursor-pointer">Sticky Info Barang</label>
+            </div>
+        `;
+        colListContainer.appendChild(stickyDiv);
+        document.getElementById('chk-sticky-main').addEventListener('change', function() {
+            const isSticky = this.checked;
+            const cols = document.querySelectorAll('.sticky-col');
+            cols.forEach(el => {
+                if(isSticky) {
+                    el.style.position = 'sticky';
+                    el.style.zIndex = el.tagName === 'TH' ? '30' : '10';
+                } else {
+                    el.style.position = 'static';
+                }
+            });
+        });
         columnConfig.forEach(col => {
             const div = document.createElement('div');
-            div.className = 'flex items-center gap-2 mb-1';
+            div.className = 'flex items-center gap-2 mb-1 pl-2';
             div.innerHTML = `
                 <input type="checkbox" id="chk-${col.id}" class="col-checkbox rounded text-pink-500 focus:ring-pink-400" ${col.default ? 'checked' : ''} data-class="${col.class}">
                 <label for="chk-${col.id}" class="text-xs text-gray-700 cursor-pointer select-none">${col.label}</label>
@@ -487,35 +518,56 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
         styleElement.textContent = cssRules;
+        let activeStoreCols = 0;
+        columnConfig.forEach(col => {
+            if (col.isStoreCol) {
+                const cb = document.getElementById(`chk-${col.id}`);
+                if (cb && cb.checked) {
+                    activeStoreCols++;
+                }
+            }
+        });
+        const storeHeaders = document.querySelectorAll('.store-header-dynamic');
+        storeHeaders.forEach(th => {
+            if (activeStoreCols > 0) {
+                th.style.display = 'table-cell'; 
+                th.colSpan = activeStoreCols;    
+            } else {
+                th.style.display = 'none';       
+            }
+        });
     }
     function renderTableHeader(stores) {
         let row1 = `
             <tr class="divide-x divide-pink-200">
-                <th rowspan="2" class="c-no p-2  left-0 bg-pink-50 w-10 z-30 border-b border-pink-200">No</th>
-                <th rowspan="2" class="c-plu p-2  left-1 bg-pink-50 min-w-[80px] z-30 border-b border-pink-200">PLU</th>
-                <th rowspan="2" class="c-barcode p-2  left-2 bg-pink-50 min-w-[100px] z-30 border-b border-pink-200 shadow-lg">Barcode</th>
-                <th rowspan="2" class="c-nama p-2 min-w-[200px] bg-pink-50 border-b border-pink-200">Nama Barang</th>
-                <th rowspan="2" class="c-hbeli p-2 min-w-[80px] bg-pink-50 border-b border-pink-200">H. Beli</th>
-                <th rowspan="2" class="c-hjual p-2 min-w-[80px] bg-pink-50 border-b border-pink-200">H. Jual</th>
+                <th rowspan="2" class="c-no p-2 bg-pink-50 w-10 border-b border-pink-200 sticky-col" style="left:0;">No</th>
+                <th rowspan="2" class="c-plu p-2 bg-pink-50  border-b border-pink-200 sticky-col" style="left:40px;">PLU</th>
+                <th rowspan="2" class="c-barcode p-2 bg-pink-50  border-b border-pink-200 sticky-col shadow-lg" style="left:120px;">Barcode</th>
+                <th rowspan="2" class="c-nama p-2  bg-pink-50 border-b border-pink-200 sticky-col" style="left:220px;">Nama Barang</th>
+                <th rowspan="2" class="c-hbeli p-2  bg-pink-50 border-b border-pink-200">H. Beli</th>
+                <th rowspan="2" class="c-hjual p-2  bg-pink-50 border-b border-pink-200">H. Jual</th>
         `;
         stores.forEach(store => {
-            row1 += `<th colspan="4" class="p-1 text-center bg-pink-100 text-pink-800 font-bold border-b border-pink-300 text-[10px] uppercase tracking-wider">${store.name}</th>`;
+            row1 += `<th class="store-header-dynamic p-1 text-center bg-pink-100 text-pink-800 font-bold border-b border-pink-300 text-[10px] uppercase tracking-wider">${store.name}</th>`;
         });
         row1 += `
-                <th rowspan="2" class="c-t-po p-2 min-w-[80px] bg-yellow-50 border-b border-yellow-200 text-yellow-800">Total PO</th>
-                <th rowspan="2" class="c-t-pj p-2 min-w-[80px] bg-yellow-50 border-b border-yellow-200 text-yellow-800">Total PJ</th>
-                <th rowspan="2" class="c-t-ss p-2 min-w-[80px] bg-yellow-50 border-b border-yellow-200 text-yellow-800">Total SS</th>
-                <th rowspan="2" class="c-t-rasio p-2 min-w-[60px] bg-yellow-50 border-b border-yellow-200 text-yellow-800">Rasio</th>
-                <th rowspan="2" class="c-t-rp p-2 min-w-[100px] bg-yellow-50 border-b border-yellow-200 text-yellow-800">Total Rp</th>
+                <th rowspan="2" class="c-t-po p-2  bg-yellow-50 border-b border-yellow-200 text-yellow-800">Total PO</th>
+                <th rowspan="2" class="c-t-pj p-2  bg-yellow-50 border-b border-yellow-200 text-yellow-800">Total PJ</th>
+                <th rowspan="2" class="c-t-ss p-2  bg-yellow-50 border-b border-yellow-200 text-yellow-800">Total SS</th>
+                <th rowspan="2" class="c-t-rasio p-2  bg-yellow-50 border-b border-yellow-200 text-yellow-800">Rasio</th>
+                <th rowspan="2" class="c-t-rp p-2  bg-yellow-50 border-b border-yellow-200 text-yellow-800">Total Rp</th>
             </tr>
         `;
         let row2 = `<tr class="divide-x divide-pink-200">`;
         stores.forEach(() => {
             row2 += `
-                <th class="c-s-jual p-1 min-w-[60px] text-[9px] bg-white text-gray-500 font-normal">Jual</th>
-                <th class="c-s-stok p-1 min-w-[60px] text-[9px] bg-white text-gray-500 font-normal">Stok</th>
-                <th class="c-s-posys p-1 min-w-[60px] text-[9px] bg-blue-50 text-blue-600 font-bold">PO Sys</th>
-                <th class="c-s-pomd p-1 min-w-[60px] text-[9px] bg-pink-50 text-pink-600 font-bold">PO MD</th>
+                <th class="c-s-jual p-1  text-[9px] bg-white text-gray-500 font-normal">Jual</th>
+                <th class="c-s-stok p-1  text-[9px] bg-white text-gray-500 font-normal">Stok</th>
+                <th class="c-s-posys p-1  text-[9px] bg-blue-50 text-blue-600 font-bold">PO Sys</th>
+                <th class="c-s-pomd p-1  text-[9px] bg-pink-50 text-pink-600 font-bold">PO MD</th>
+                <th class="c-s-seas p-1  text-[9px] bg-purple-50 text-purple-600 font-normal">Pj Season</th>
+                <th class="c-s-mutasi p-1  text-[9px] bg-gray-50 text-gray-600 font-normal">Mutasi</th>
+                <th class="c-s-sdhpo p-1  text-[9px] bg-green-50 text-green-600 font-normal">Sdh PO</th>
             `;
         });
         row2 += `</tr>`;
@@ -529,34 +581,69 @@ document.addEventListener("DOMContentLoaded", () => {
             const tr = document.createElement("tr");
             tr.className = "hover:bg-pink-50 transition-colors border-b border-gray-100 text-xs group";
             let html = `
-                <td class="c-no p-2 text-center  left-0 bg-white group-hover:bg-pink-50 font-bold text-gray-400 border-r border-gray-100">${startNum + idx}</td>
-                <td class="c-plu p-2  left-1 bg-white group-hover:bg-pink-50 font-mono text-pink-600 font-bold border-r border-gray-100">${item.plu}</td>
-                <td class="c-barcode p-2  left-2 bg-white group-hover:bg-pink-50 font-mono text-gray-500 border-r border-gray-100 shadow-md">${item.barcode || '-'}</td>
-                <td class="c-nama p-2 text-gray-800 font-medium truncate max-w-[200px]" title="${item.descp}">${item.descp}</td>
+                <td class="c-no p-2 text-center bg-white group-hover:bg-pink-50 font-bold text-gray-400 border-r border-gray-100 sticky-col" style="left:0;">${startNum + idx}</td>
+                <td class="c-plu p-2 bg-white group-hover:bg-pink-50 font-mono text-pink-600 font-bold border-r border-gray-100 sticky-col" style="left:40px;">${item.plu}</td>
+                <td class="c-barcode p-2 bg-white group-hover:bg-pink-50 font-mono text-gray-500 border-r border-gray-100 shadow-md sticky-col" style="left:120px;">${item.barcode || '-'}</td>
+                <td class="c-nama p-2 text-gray-800 font-medium truncate max-w-[200px] bg-white sticky-col" style="left:220px;" title="${item.descp}">${item.descp}</td>
                 <td class="c-hbeli p-2 text-right font-mono text-gray-600">${formatNumber(item.h_beli)}</td>
                 <td class="c-hjual p-2 text-right font-mono text-gray-600">${formatNumber(item.h_jual)}</td>
             `;
             stores.forEach(store => {
-                const branchData = item.branches[store.code] || { penjualan:0, stok_akhir:0, po_by_system:0, po_by_md:0 };
+                const branchData = item.branches[store.code] || { 
+                    penjualan: null, stok_akhir: null, po_by_system: null, 
+                    po_by_md: null, penjualan_s: null, mutasi: null, sudah_po: null 
+                };
+                const valPOMD = branchData.po_by_md !== null ? branchData.po_by_md : '';
                 html += `
-                    <td class="c-s-jual p-1"><input type="text" class="table-input text-gray-500" value="${formatNumber(branchData.penjualan)}" readonly tabindex="-1"></td>
-                    <td class="c-s-stok p-1"><input type="text" class="table-input text-gray-500" value="${formatNumber(branchData.stok_akhir)}" readonly tabindex="-1"></td>
-                    <td class="c-s-posys p-1"><input type="number" class="table-input bg-blue-50 focus:bg-white border-blue-100 text-blue-700" value="${branchData.po_by_system}"></td>
-                    <td class="c-s-pomd p-1"><input type="number" class="table-input bg-pink-50 focus:bg-white border-pink-200 font-bold text-pink-700" value="${branchData.po_by_md}"></td>
+                    <td class="c-s-jual p-1 text-right border-r border-pink-50">${formatValueDisplay(branchData.penjualan)}</td>
+                    <td class="c-s-stok p-1 text-right border-r border-pink-50">${formatValueDisplay(branchData.stok_akhir)}</td>
+                    <td class="c-s-posys p-1 text-right border-r border-pink-50 text-blue-600 font-bold">${formatValueDisplay(branchData.po_by_system)}</td>
+                    <td class="c-s-pomd p-1 border-r border-pink-50">
+                        <input type="number" class="input-po-md table-input bg-pink-50 focus:bg-white border-pink-200 font-bold text-pink-700" 
+                            value="${valPOMD}" 
+                            placeholder="0"
+                            data-original="${valPOMD}">
+                    </td>
+                    <td class="c-s-seas p-1 text-right border-r border-pink-50 text-purple-600">${formatValueDisplay(branchData.penjualan_s)}</td>
+                    <td class="c-s-mutasi p-1 text-right border-r border-pink-50 text-gray-600">${formatValueDisplay(branchData.mutasi)}</td>
+                    <td class="c-s-sdhpo p-1 text-right border-r border-pink-50 text-green-600">${formatValueDisplay(branchData.sudah_po)}</td>
                 `;
             });
             const sum = item.summary;
             html += `
-                <td class="c-t-po p-1 bg-yellow-50/30 border-l border-yellow-100"><input type="number" class="table-input font-bold bg-transparent" value="${sum.Total_PO}" readonly tabindex="-1"></td>
-                <td class="c-t-pj p-1 bg-yellow-50/30"><input type="number" class="table-input bg-transparent" value="${sum.Total_PJ}" readonly tabindex="-1"></td>
-                <td class="c-t-ss p-1 bg-yellow-50/30"><input type="number" class="table-input bg-transparent" value="${sum.Total_SS}" readonly tabindex="-1"></td>
-                <td class="c-t-rasio p-1 bg-yellow-50/30"><input type="number" step="0.01" class="table-input bg-transparent" value="${sum.Rasio}" readonly tabindex="-1"></td>
-                <td class="c-t-rp p-1 bg-yellow-50/30"><input type="text" class="table-input font-bold text-gray-800 bg-transparent text-right" value="${formatNumber(sum.Total_Rp)}" readonly tabindex="-1"></td>
+                <td class="c-t-po p-1 bg-yellow-50/30 border-l border-yellow-100 text-right font-bold">${formatNumber(sum.Total_PO)}</td>
+                <td class="c-t-pj p-1 bg-yellow-50/30 text-right">${formatNumber(sum.Total_PJ)}</td>
+                <td class="c-t-ss p-1 bg-yellow-50/30 text-right">${formatNumber(sum.Total_SS)}</td>
+                <td class="c-t-rasio p-1 bg-yellow-50/30 text-right">${sum.Rasio}</td>
+                <td class="c-t-rp p-1 bg-yellow-50/30 text-right font-bold">${formatNumber(sum.Total_Rp)}</td>
             `;
             tr.innerHTML = html;
             fragment.appendChild(tr);
         });
         tableBody.appendChild(fragment);
+        attachInputListeners();
+    }
+    function attachInputListeners() {
+        const inputs = document.querySelectorAll('.input-po-md');
+        inputs.forEach(input => {
+            input.addEventListener('input', function() {
+                const tr = this.closest('tr');
+                const originalVal = this.dataset.original;
+                const currentVal = this.value;
+                if (currentVal !== originalVal) {
+                    tr.classList.add('row-modified');
+                } else {
+                    const allInputsInRow = tr.querySelectorAll('.input-po-md');
+                    let isAnyChanged = false;
+                    allInputsInRow.forEach(inp => {
+                        if (inp.value !== inp.dataset.original) isAnyChanged = true;
+                    });
+                    if (!isAnyChanged) {
+                        tr.classList.remove('row-modified');
+                    }
+                }
+            });
+        });
     }
     function formatNumber(num) {
         return new Intl.NumberFormat('id-ID').format(num);
