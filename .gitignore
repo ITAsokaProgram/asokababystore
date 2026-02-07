@@ -12,6 +12,8 @@ vendor/
 *.env
 **/*.env
 .env.php
+config.php
+
 # OS / Editor junk
 .DS_Store
 Thumbs.db
