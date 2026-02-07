@@ -1,0 +1,438 @@
+document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("filter-form");
+    const inputSupp = document.getElementById("input-supplier");
+    const hiddenSupp = document.getElementById("kode_supp_val");
+    const suppList = document.getElementById("supplier-list");
+    const selectArea = document.getElementById("select-area");
+    const sectionCabang = document.getElementById("section-cabang");
+    const branchTrigger = document.getElementById("branch-dropdown-trigger");
+    const branchMenu = document.getElementById("branch-dropdown-menu");
+    const branchLabel = document.getElementById("branch-selected-label");
+    const branchIcon = document.getElementById("branch-dropdown-icon");
+    const branchSearch = document.getElementById("branch-search");
+    const branchContainer = document.getElementById("branch-container");
+    const btnSelectAll = document.getElementById("btn-select-all");
+    const btnDeselectAll = document.getElementById("btn-deselect-all");
+    const btnResetForm = document.getElementById("btn-reset-form");
+    const btnSubmit = document.getElementById("btn-submit");
+    const tableHead = document.getElementById("table-head");
+    const tableBody = document.getElementById("table-body");
+    const resultContainer = document.getElementById("result-container");
+    const totalBadge = document.getElementById("total-badge");
+    const scrollContainer = document.querySelector(".overflow-auto");
+    let debounceTimer;
+    let accumulatedData = [];
+    let currentHeaders = [];
+    let currentPage = 1;
+    let isLoading = false;
+    let hasMore = true;
+    let allBranches = []; 
+    init();
+    async function init() {
+        if (!branchTrigger || !branchMenu) {
+            console.error("CRITICAL: Elemen Dropdown tidak ditemukan di HTML. Pastikan index.php sudah diupdate.");
+            return;
+        }
+        await Promise.all([loadAreas(), loadBranches()]);
+        checkFormValidity();
+    }
+    if(inputSupp) {
+        inputSupp.addEventListener("input", function() {
+            const val = this.value;
+            if (hiddenSupp.value !== "") {
+                hiddenSupp.value = "";
+                checkFormValidity();
+            }
+            clearTimeout(debounceTimer);
+            if (!val || val.length < 1) {
+                suppList.classList.add("hidden");
+                return;
+            }
+            debounceTimer = setTimeout(async () => {
+                try {
+                    suppList.classList.remove("hidden");
+                    suppList.innerHTML = `<div class="p-2 text-gray-400 text-xs"><i class="fas fa-spinner fa-spin"></i> Mencari...</div>`;
+                    const res = await fetch(`/src/api/acc_po/get_suppliers.php?q=${encodeURIComponent(val)}`);
+                    const data = await res.json();
+                    renderSupplierList(data);
+                } catch (e) {
+                    suppList.innerHTML = `<div class="p-2 text-red-400 text-xs">Gagal memuat data</div>`;
+                }
+            }, 300);
+        });
+        document.addEventListener("click", (e) => {
+            if (!inputSupp.contains(e.target) && !suppList.contains(e.target)) {
+                suppList.classList.add("hidden");
+            }
+        });
+    }
+    function renderSupplierList(data) {
+        suppList.innerHTML = "";
+        if (data.length === 0) {
+            suppList.innerHTML = `<div class="p-2 text-gray-400 text-xs">Tidak ditemukan</div>`;
+            return;
+        }
+        data.forEach(item => {
+            const div = document.createElement("div");
+            div.className = "autocomplete-item flex items-center gap-2 p-2 hover:bg-pink-50 cursor-pointer border-b border-gray-100 last:border-0 transition-colors";
+            div.innerHTML = `<i class="fas fa-truck text-pink-400 text-xs"></i> <span class="text-xs text-gray-700">${item.text}</span>`;
+            div.addEventListener("click", () => {
+                inputSupp.value = item.text;
+                hiddenSupp.value = item.id;
+                suppList.classList.add("hidden");
+                checkFormValidity();
+            });
+            suppList.appendChild(div);
+        });
+    }
+    if (branchTrigger && branchMenu && branchSearch) {
+        branchTrigger.addEventListener("click", (e) => {
+            if (sectionCabang.classList.contains("opacity-50")) return; 
+            e.stopPropagation();
+            toggleBranchMenu();
+        });
+        document.addEventListener("click", (e) => {
+            if (branchMenu && !branchMenu.classList.contains("hidden")) {
+                if (!branchTrigger.contains(e.target) && !branchMenu.contains(e.target)) {
+                    closeBranchMenu();
+                }
+            }
+        });
+        branchSearch.addEventListener("input", (e) => {
+            const keyword = e.target.value.toLowerCase();
+            const filtered = allBranches.filter(b => {
+                const name = b.Nm_Alias || b.Nm_Store || "";
+                const code = b.Kd_Store || "";
+                return code.toLowerCase().includes(keyword) || name.toLowerCase().includes(keyword);
+            });
+            renderBranches(filtered);
+        });
+    }
+    function toggleBranchMenu() {
+        const isHidden = branchMenu.classList.contains("hidden");
+        if (isHidden) {
+            branchMenu.classList.remove("hidden");
+            if(branchIcon) branchIcon.style.transform = "rotate(180deg)";
+            branchTrigger.classList.add("ring-2", "ring-pink-500", "border-pink-500");
+            if(branchSearch) branchSearch.focus();
+        } else {
+            closeBranchMenu();
+        }
+    }
+    function closeBranchMenu() {
+        branchMenu.classList.add("hidden");
+        if(branchIcon) branchIcon.style.transform = "rotate(0deg)";
+        branchTrigger.classList.remove("ring-2", "ring-pink-500", "border-pink-500");
+    }
+    async function loadAreas() {
+        try {
+            const res = await fetch("/src/api/option/get_area.php");
+            const json = await res.json();
+            if (json.success) {
+                selectArea.innerHTML = '<option value="">-- Pilih Area --</option>';
+                json.data.forEach(area => {
+                    const opt = document.createElement("option");
+                    opt.value = area.id;
+                    opt.textContent = area.text;
+                    selectArea.appendChild(opt);
+                });
+            }
+        } catch (e) {
+            console.error("Error load areas", e);
+        }
+    }
+    async function loadBranches() {
+        try {
+            const res = await fetch("/src/api/option/get_cabang.php");
+            const json = await res.json();
+            if (json.success) {
+                allBranches = json.data; 
+                renderBranches(allBranches);
+            } else {
+                throw new Error(json.message || "Gagal mengambil data cabang");
+            }
+        } catch (e) {
+            console.error("LOAD BRANCH ERROR:", e); 
+            if (branchContainer) {
+                branchContainer.innerHTML = `<p class="text-red-500 text-xs p-2 text-center">Gagal memuat: ${e.message}</p>`;
+            }
+        }
+    }
+    function renderBranches(data) {
+        if (!branchContainer) return;
+        branchContainer.innerHTML = "";
+        if(data.length === 0) {
+            branchContainer.innerHTML = '<p class="text-gray-400 text-xs p-2 text-center">Tidak ditemukan</p>';
+            return;
+        }
+        data.forEach(store => {
+            const storeCode = store.Kd_Store;
+            const storeName = store.Nm_Alias || store.Nm_Store || "No Name";
+            const label = document.createElement("label");
+            label.className = "flex items-center gap-3 p-2 hover:bg-pink-50 rounded cursor-pointer transition-colors border-b border-gray-50 last:border-0";
+            const isChecked = document.querySelector(`.branch-checkbox[value="${store.Nm_Alias}"]`)?.checked || false;
+            label.innerHTML = `
+                <div class="relative flex items-center">
+                    <input type="checkbox" name="kd_store[]" value="${store.Nm_Alias}" 
+                        class="branch-checkbox peer h-4 w-4 cursor-pointer appearance-none rounded border border-gray-300 shadow-sm checked:border-pink-500 checked:bg-pink-500 hover:border-pink-400 focus:ring-1 focus:ring-pink-200"
+                        ${isChecked ? 'checked' : ''}>
+                    <i class="fas fa-check absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[10px] text-white opacity-0 peer-checked:opacity-100 pointer-events-none"></i>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-[11px] font-bold text-gray-700 leading-tight">${storeCode}</span>
+                    <span class="text-[10px] text-gray-500 leading-tight">${storeName}</span>
+                </div>
+            `;
+            label.querySelector("input").addEventListener("change", handleBranchChange);
+            branchContainer.appendChild(label);
+        });
+    }
+    if (selectArea) {
+        selectArea.addEventListener("change", () => {
+            const isAreaSelected = selectArea.value !== "";
+            if (isAreaSelected) {
+                sectionCabang.classList.add("opacity-50", "pointer-events-none", "grayscale");
+                document.querySelectorAll(".branch-checkbox").forEach(cb => cb.checked = false);
+                updateBranchLabel();
+            } else {
+                sectionCabang.classList.remove("opacity-50", "pointer-events-none", "grayscale");
+            }
+            checkFormValidity();
+        });
+    }
+    function handleBranchChange() {
+        const checkedBoxes = document.querySelectorAll(".branch-checkbox:checked");
+        const checkedCount = checkedBoxes.length;
+        if (checkedCount > 0) {
+            selectArea.value = ""; 
+            selectArea.disabled = true;
+            selectArea.classList.add("bg-gray-100", "cursor-not-allowed");
+        } else {
+            selectArea.disabled = false;
+            selectArea.classList.remove("bg-gray-100", "cursor-not-allowed");
+        }
+        updateBranchLabel(checkedCount, checkedBoxes);
+        checkFormValidity();
+    }
+    function updateBranchLabel(count = 0, checkedNodes = []) {
+        if (!branchLabel) return;
+        if (count === 0) {
+            branchLabel.textContent = "-- Pilih Cabang --";
+            branchLabel.classList.remove("text-pink-600", "font-bold");
+            branchLabel.classList.add("text-gray-500");
+        } else if (count === 1) {
+            const name = checkedNodes[0].closest('label').querySelector('span:last-child').textContent;
+            branchLabel.textContent = name;
+            branchLabel.classList.add("text-pink-600", "font-bold");
+        } else if (count === allBranches.length && allBranches.length > 0) {
+            branchLabel.textContent = "Semua Cabang Terpilih";
+            branchLabel.classList.add("text-pink-600", "font-bold");
+        } else {
+            branchLabel.textContent = `${count} Cabang Terpilih`;
+            branchLabel.classList.add("text-pink-600", "font-bold");
+        }
+    }
+    if (btnSelectAll) {
+        btnSelectAll.addEventListener("click", () => {
+            const visibleCheckboxes = branchContainer.querySelectorAll(".branch-checkbox");
+            visibleCheckboxes.forEach(cb => cb.checked = true);
+            handleBranchChange();
+        });
+    }
+    if (btnDeselectAll) {
+        btnDeselectAll.addEventListener("click", () => {
+            document.querySelectorAll(".branch-checkbox").forEach(cb => cb.checked = false);
+            handleBranchChange();
+            if (branchSearch) {
+                branchSearch.value = "";
+                renderBranches(allBranches);
+                branchSearch.focus();
+            }
+        });
+    }
+    if (btnResetForm) {
+        btnResetForm.addEventListener("click", () => {
+            form.reset();
+            hiddenSupp.value = "";
+            sectionCabang.classList.remove("opacity-50", "pointer-events-none", "grayscale");
+            selectArea.disabled = false;
+            selectArea.classList.remove("bg-gray-100", "cursor-not-allowed");
+            document.querySelectorAll(".branch-checkbox").forEach(cb => cb.checked = false);
+            updateBranchLabel();
+            if(branchSearch) branchSearch.value = "";
+            renderBranches(allBranches);
+            resultContainer.classList.add("hidden");
+            checkFormValidity();
+        });
+    }
+    function checkFormValidity() {
+        const hasSupp = hiddenSupp.value !== "";
+        const hasArea = selectArea.value !== "";
+        const hasBranch = document.querySelectorAll(".branch-checkbox:checked").length > 0;
+        const isValid = hasSupp && (hasArea || hasBranch);
+        btnSubmit.disabled = !isValid;
+        if (isValid) {
+            btnSubmit.classList.remove("opacity-50", "cursor-not-allowed");
+        } else {
+            btnSubmit.classList.add("opacity-50", "cursor-not-allowed");
+        }
+    }
+    if (form) {
+        form.addEventListener("submit", (e) => {
+            e.preventDefault();
+            accumulatedData = [];
+            tableBody.innerHTML = "";
+            currentPage = 1;
+            hasMore = true;
+            currentHeaders = [];
+            resultContainer.classList.remove("hidden");
+            if (scrollContainer) scrollContainer.scrollTop = 0;
+            fetchData(1);
+        });
+    }
+    async function fetchData(page) {
+        if (isLoading) return;
+        isLoading = true;
+        if (page === 1) {
+            btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+            tableBody.innerHTML = `<tr><td colspan="100%" class="text-center py-10"><i class="fas fa-spinner fa-spin text-pink-500 text-2xl"></i><p class="text-gray-500 text-xs mt-2">Memuat data...</p></td></tr>`;
+        } else {
+            const loadingRow = document.createElement("tr");
+            loadingRow.id = "loading-row";
+            loadingRow.innerHTML = `<td colspan="100%" class="text-center py-4 bg-gray-50"><i class="fas fa-spinner fa-spin text-pink-500"></i></td>`;
+            tableBody.appendChild(loadingRow);
+        }
+        const formData = new FormData(form);
+        const payload = {
+            kode_supp: hiddenSupp.value,
+            page: page
+        };
+        if (selectArea.value) {
+            payload.kode_area = selectArea.value;
+        } else {
+            payload.kd_store = formData.getAll("kd_store[]");
+        }
+        try {
+            const res = await fetch("/src/api/acc_po/get_data.php", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+            const result = await res.json();
+            if (!result.success) {
+                if (page === 1) tableBody.innerHTML = `<tr><td colspan="100%" class="text-center py-4 text-red-500 text-xs">${result.error}</td></tr>`;
+                Swal.fire("Peringatan", result.error || "Gagal mengambil data", "warning");
+                return;
+            }
+            const lr = document.getElementById("loading-row");
+            if (lr) lr.remove();
+            if (page === 1) {
+                currentHeaders = result.headers; 
+                renderTableHeader(result.headers);
+                const count = result.data.length; 
+                totalBadge.innerText = `${count}+ Data Ditampilkan`; 
+                tableBody.innerHTML = ""; 
+            }
+            if (result.data.length > 0) {
+                accumulatedData = [...accumulatedData, ...result.data];
+                renderTableBody(result.data, result.headers);
+            } else if (page === 1) {
+                tableBody.innerHTML = `<tr><td colspan="100%" class="text-center py-8 text-gray-400 text-xs">
+                    <i class="fas fa-box-open text-2xl mb-2 opacity-50"></i><br>Tidak ada data ditemukan
+                </td></tr>`;
+            }
+            hasMore = result.has_more;
+            currentPage = page;
+        } catch (error) {
+            console.error(error);
+            Swal.fire("Error", "Terjadi kesalahan sistem", "error");
+            if (page === 1) tableBody.innerHTML = `<tr><td colspan="100%" class="text-center text-red-500 py-4">Error koneksi</td></tr>`;
+        } finally {
+            isLoading = false;
+            btnSubmit.innerHTML = '<i class="fas fa-search mr-1"></i> Tampilkan Data';
+        }
+    }
+    function renderTableHeader(stores) {
+        let row1 = `
+            <tr class="divide-x divide-pink-200">
+                <th rowspan="2" class="p-2 sticky-col left-0 bg-pink-50 w-10 z-30 border-b border-pink-200">No</th>
+                <th rowspan="2" class="p-2 sticky-col left-1 bg-pink-50 min-w-[80px] z-30 border-b border-pink-200">PLU</th>
+                <th rowspan="2" class="p-2 sticky-col left-2 bg-pink-50 min-w-[100px] z-30 border-b border-pink-200 shadow-lg">Barcode</th>
+                <th rowspan="2" class="p-2 min-w-[200px] bg-pink-50 border-b border-pink-200">Nama Barang</th>
+                <th rowspan="2" class="p-2 min-w-[80px] bg-pink-50 border-b border-pink-200">H. Beli</th>
+                <th rowspan="2" class="p-2 min-w-[80px] bg-pink-50 border-b border-pink-200">H. Jual</th>
+        `;
+        stores.forEach(store => {
+            row1 += `<th colspan="4" class="p-1 text-center bg-pink-100 text-pink-800 font-bold border-b border-pink-300 text-[10px] uppercase tracking-wider">${store.name}</th>`;
+        });
+        row1 += `
+                <th rowspan="2" class="p-2 min-w-[80px] bg-yellow-50 border-b border-yellow-200 text-yellow-800">Total PO</th>
+                <th rowspan="2" class="p-2 min-w-[80px] bg-yellow-50 border-b border-yellow-200 text-yellow-800">Total PJ</th>
+                <th rowspan="2" class="p-2 min-w-[80px] bg-yellow-50 border-b border-yellow-200 text-yellow-800">Total SS</th>
+                <th rowspan="2" class="p-2 min-w-[60px] bg-yellow-50 border-b border-yellow-200 text-yellow-800">Rasio</th>
+                <th rowspan="2" class="p-2 min-w-[100px] bg-yellow-50 border-b border-yellow-200 text-yellow-800">Total Rp</th>
+            </tr>
+        `;
+        let row2 = `<tr class="divide-x divide-pink-200">`;
+        stores.forEach(() => {
+            row2 += `
+                <th class="p-1 min-w-[60px] text-[9px] bg-white text-gray-500 font-normal">Jual</th>
+                <th class="p-1 min-w-[60px] text-[9px] bg-white text-gray-500 font-normal">Stok</th>
+                <th class="p-1 min-w-[60px] text-[9px] bg-blue-50 text-blue-600 font-bold">PO Sys</th>
+                <th class="p-1 min-w-[60px] text-[9px] bg-pink-50 text-pink-600 font-bold">PO MD</th>
+            `;
+        });
+        row2 += `</tr>`;
+        tableHead.innerHTML = row1 + row2;
+    }
+    function renderTableBody(data, stores) {
+        const fragment = document.createDocumentFragment();
+        let startNum = (currentPage - 1) * 20 + 1;
+        data.forEach((item, idx) => {
+            const tr = document.createElement("tr");
+            tr.className = "hover:bg-pink-50 transition-colors border-b border-gray-100 text-xs group";
+            let html = `
+                <td class="p-2 text-center sticky-col left-0 bg-white group-hover:bg-pink-50 font-bold text-gray-400 border-r border-gray-100">${startNum + idx}</td>
+                <td class="p-2 sticky-col left-1 bg-white group-hover:bg-pink-50 font-mono text-pink-600 font-bold border-r border-gray-100">${item.plu}</td>
+                <td class="p-2 sticky-col left-2 bg-white group-hover:bg-pink-50 font-mono text-gray-500 border-r border-gray-100 shadow-md">${item.barcode || '-'}</td>
+                <td class="p-2 text-gray-800 font-medium truncate max-w-[200px]" title="${item.descp}">${item.descp}</td>
+                <td class="p-2 text-right font-mono text-gray-600">${formatNumber(item.h_beli)}</td>
+                <td class="p-2 text-right font-mono text-gray-600">${formatNumber(item.h_jual)}</td>
+            `;
+            stores.forEach(store => {
+                const branchData = item.branches[store.code] || { penjualan:0, stok_akhir:0, po_by_system:0, po_by_md:0 };
+                html += `
+                    <td class="p-1"><input type="text" class="table-input text-gray-500" value="${formatNumber(branchData.penjualan)}" readonly tabindex="-1"></td>
+                    <td class="p-1"><input type="text" class="table-input text-gray-500" value="${formatNumber(branchData.stok_akhir)}" readonly tabindex="-1"></td>
+                    <td class="p-1"><input type="number" class="table-input bg-blue-50 focus:bg-white border-blue-100 text-blue-700" value="${branchData.po_by_system}"></td>
+                    <td class="p-1"><input type="number" class="table-input bg-pink-50 focus:bg-white border-pink-200 font-bold text-pink-700" value="${branchData.po_by_md}"></td>
+                `;
+            });
+            const sum = item.summary;
+            html += `
+                <td class="p-1 bg-yellow-50/30 border-l border-yellow-100"><input type="number" class="table-input font-bold bg-transparent" value="${sum.Total_PO}" readonly tabindex="-1"></td>
+                <td class="p-1 bg-yellow-50/30"><input type="number" class="table-input bg-transparent" value="${sum.Total_PJ}" readonly tabindex="-1"></td>
+                <td class="p-1 bg-yellow-50/30"><input type="number" class="table-input bg-transparent" value="${sum.Total_SS}" readonly tabindex="-1"></td>
+                <td class="p-1 bg-yellow-50/30"><input type="number" step="0.01" class="table-input bg-transparent" value="${sum.Rasio}" readonly tabindex="-1"></td>
+                <td class="p-1 bg-yellow-50/30"><input type="text" class="table-input font-bold text-gray-800 bg-transparent text-right" value="${formatNumber(sum.Total_Rp)}" readonly tabindex="-1"></td>
+            `;
+            tr.innerHTML = html;
+            fragment.appendChild(tr);
+        });
+        tableBody.appendChild(fragment);
+    }
+    function formatNumber(num) {
+        return new Intl.NumberFormat('id-ID').format(num);
+    }
+    if (scrollContainer) {
+        scrollContainer.addEventListener("scroll", () => {
+            const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
+            if (scrollTop + clientHeight >= scrollHeight - 50) {
+                if (!isLoading && hasMore) {
+                    fetchData(currentPage + 1);
+                }
+            }
+        });
+    }
+
+});
